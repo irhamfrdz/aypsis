@@ -5,21 +5,21 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 
 class EnsureKaryawanPresent
 {
     public function handle(Request $request, Closure $next)
     {
         $user = Auth::user();
-        
+
         // Skip middleware for supir routes - they handle their own authorization
         $routeName = optional($request->route())->getName();
         if ($routeName && str_starts_with($routeName, 'supir.')) {
             return $next($request);
         }
-        
+
         if ($user && empty($user->karyawan_id)) {
             // Allow access to logout and karyawan creation routes.
             // Use Route::has() to avoid calling route() for non-existent names which throws.
@@ -31,7 +31,6 @@ class EnsureKaryawanPresent
                 // ignore
             }
 
-
             // Prefer the onboarding (non-master) create route for users without karyawan
             if (Route::has('karyawan.create')) {
                 $allowed[] = route('karyawan.create');
@@ -42,7 +41,7 @@ class EnsureKaryawanPresent
             }
 
             $current = $request->url();
-            if (!in_array($current, array_filter($allowed))) {
+            if (! in_array($current, array_filter($allowed))) {
                 // Prefer existing named route for redirect - prefer onboarding route first
                 Log::warning('EnsureKaryawanPresent blocking user without karyawan', [
                     'user_id' => $user->id ?? null,
@@ -60,6 +59,7 @@ class EnsureKaryawanPresent
                 return abort(403, 'Karyawan creation route not found.');
             }
         }
+
         return $next($request);
     }
 }

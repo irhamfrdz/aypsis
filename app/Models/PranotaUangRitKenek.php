@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class PranotaUangRitKenek extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'pranota_uang_rit_keneks';
 
@@ -36,7 +35,7 @@ class PranotaUangRitKenek extends Model
         'created_by',
         'updated_by',
         'approved_by',
-        'approved_at'
+        'approved_at',
     ];
 
     protected $casts = [
@@ -56,9 +55,13 @@ class PranotaUangRitKenek extends Model
 
     // Status constants
     const STATUS_DRAFT = 'draft';
+
     const STATUS_SUBMITTED = 'submitted';
+
     const STATUS_APPROVED = 'approved';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_CANCELLED = 'cancelled';
 
     public static function getStatusOptions()
@@ -68,13 +71,14 @@ class PranotaUangRitKenek extends Model
             self::STATUS_SUBMITTED => 'Submitted',
             self::STATUS_APPROVED => 'Approved',
             self::STATUS_PAID => 'Paid',
-            self::STATUS_CANCELLED => 'Cancelled'
+            self::STATUS_CANCELLED => 'Cancelled',
         ];
     }
 
     public function getStatusLabelAttribute()
     {
         $statuses = self::getStatusOptions();
+
         return $statuses[$this->status] ?? $this->status;
     }
 
@@ -107,8 +111,8 @@ class PranotaUangRitKenek extends Model
     public function pembayaranUangRitKeneks()
     {
         return $this->belongsToMany(PembayaranPranotaRitKenek::class, 'pembayaran_pranota_rit_kenek_items', 'pranota_uang_rit_kenek_id', 'pembayaran_pranota_rit_kenek_id')
-                    ->withPivot('subtotal')
-                    ->withTimestamps();
+            ->withPivot('subtotal')
+            ->withTimestamps();
     }
 
     // Has many kenek details
@@ -174,7 +178,7 @@ class PranotaUangRitKenek extends Model
     {
         $prefix = 'PNK'; // Pranota Kenek
         $date = now()->format('Ymd');
-        
+
         // Get last pranota number for today
         $lastPranota = self::where('no_pranota', 'like', "{$prefix}-{$date}-%")
             ->orderBy('no_pranota', 'desc')

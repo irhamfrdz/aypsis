@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
             $table->string('vendor_listrik')->nullable()->after('penerima');
         });
-        
+
         // Add penerima to invoice_aktivitas_lain_listrik
         Schema::table('invoice_aktivitas_lain_listrik', function (Blueprint $table) {
             $table->string('penerima')->nullable()->after('referensi');
@@ -30,7 +30,7 @@ return new class extends Migration
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
             $table->dropColumn('vendor_listrik');
         });
-        
+
         Schema::table('invoice_aktivitas_lain_listrik', function (Blueprint $table) {
             $table->dropColumn('penerima');
         });

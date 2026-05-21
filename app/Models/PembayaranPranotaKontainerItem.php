@@ -2,27 +2,26 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class PembayaranPranotaKontainerItem extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $table = 'pembayaran_pranota_kontainer_items';
 
     protected $fillable = [
         'pembayaran_pranota_kontainer_id',
         'pranota_id',
         'amount',
-        'keterangan'
+        'keterangan',
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2'
+        'amount' => 'decimal:2',
     ];
 
     /**

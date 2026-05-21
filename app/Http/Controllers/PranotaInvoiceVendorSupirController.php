@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use App\Models\PranotaInvoiceVendorSupir;
 use App\Models\InvoiceTagihanVendor;
-use App\Models\VendorSupir;
+use App\Models\PranotaInvoiceVendorSupir;
 use App\Models\TagihanSupirVendor;
-use Illuminate\Support\Facades\DB;
+use App\Models\VendorSupir;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PranotaInvoiceVendorSupirController extends Controller
 {
@@ -21,13 +19,13 @@ class PranotaInvoiceVendorSupirController extends Controller
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where('no_pranota', 'like', "%{$search}%")
-                  ->orWhereHas('vendor', function($q) use ($search) {
-                      $q->where('nama_vendor', 'like', "%{$search}%");
-                  });
+                ->orWhereHas('vendor', function ($q) use ($search) {
+                    $q->where('nama_vendor', 'like', "%{$search}%");
+                });
         }
-        
+
         $pranotas = $query->latest()->paginate(10)->withQueryString();
-        
+
         return view('pranota-invoice-vendor-supir.index', compact('pranotas'));
     }
 
@@ -36,7 +34,7 @@ class PranotaInvoiceVendorSupirController extends Controller
         $vendors = VendorSupir::orderBy('nama_vendor')->get();
         $selectedVendor = $request->vendor_id;
         $invoices = collect();
-        
+
         if ($selectedVendor) {
             $invoices = InvoiceTagihanVendor::where('vendor_id', $selectedVendor)
                 ->whereNull('pranota_invoice_vendor_supir_id')
@@ -47,7 +45,7 @@ class PranotaInvoiceVendorSupirController extends Controller
         // Generate default pranota number: PRANOTA-VS-YYYYMMDD-XXXX
         $today = now()->format('Ymd');
         $countToday = PranotaInvoiceVendorSupir::whereDate('created_at', now()->toDateString())->count();
-        $defaultPranotaNo = 'PRANOTA-VS-' . $today . '-' . str_pad($countToday + 1, 4, '0', STR_PAD_LEFT);
+        $defaultPranotaNo = 'PRANOTA-VS-'.$today.'-'.str_pad($countToday + 1, 4, '0', STR_PAD_LEFT);
 
         return view('pranota-invoice-vendor-supir.create', compact('vendors', 'selectedVendor', 'invoices', 'defaultPranotaNo'));
     }
@@ -60,32 +58,32 @@ class PranotaInvoiceVendorSupirController extends Controller
             'tanggal_pranota' => 'required|date',
             'invoice_id' => 'required|array|min:1',
             'invoice_id.*' => 'exists:invoice_tagihan_vendors,id',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         try {
             DB::beginTransaction();
-            
+
             // Calculate total from selected invoices
             $invoices = InvoiceTagihanVendor::whereIn('id', $request->invoice_id)
                 ->where('vendor_id', $request->vendor_id)
                 ->whereNull('pranota_invoice_vendor_supir_id')
                 ->get();
-                
+
             if ($invoices->isEmpty()) {
                 return back()->with('error', 'Tidak ada invoice valid yang dipilih.');
             }
 
             $totalInvoices = $invoices->sum('total_nominal');
             $pph = 0;
-            
+
             if ($request->filled('potong_pph')) {
                 $pphRate = floatval($request->potong_pph);
                 if ($pphRate > 0) {
                     $pph = $totalInvoices * $pphRate;
                 }
             }
-            
+
             $grandTotal = $totalInvoices - $pph;
 
             $pranota = PranotaInvoiceVendorSupir::create([
@@ -110,19 +108,22 @@ class PranotaInvoiceVendorSupirController extends Controller
             return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', 'Pranota berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
     public function show($id)
     {
         $pranota = PranotaInvoiceVendorSupir::with(['vendor', 'invoiceTagihanVendors.tagihanSupirVendors.suratJalan', 'creator', 'updater'])->findOrFail($id);
+
         return view('pranota-invoice-vendor-supir.show', compact('pranota'));
     }
 
     public function edit($id)
     {
         $pranota = PranotaInvoiceVendorSupir::with(['vendor', 'invoiceTagihanVendors'])->findOrFail($id);
+
         return view('pranota-invoice-vendor-supir.edit', compact('pranota'));
     }
 
@@ -130,20 +131,20 @@ class PranotaInvoiceVendorSupirController extends Controller
     {
         $request->validate([
             'status_pembayaran' => 'required|in:belum_dibayar,sebagian,lunas',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         $pranota = PranotaInvoiceVendorSupir::findOrFail($id);
         $pranota->update([
             'status_pembayaran' => $request->status_pembayaran,
             'keterangan' => $request->keterangan,
-            'updated_by' => Auth::id()
+            'updated_by' => Auth::id(),
         ]);
-        
+
         // Also update the status of related invoices and tagihans
         InvoiceTagihanVendor::where('pranota_invoice_vendor_supir_id', $pranota->id)
             ->update(['status_pembayaran' => $request->status_pembayaran]);
-            
+
         // Get all invoice IDs to update tagihans
         $invoiceIds = InvoiceTagihanVendor::where('pranota_invoice_vendor_supir_id', $pranota->id)->pluck('id');
         \App\Models\TagihanSupirVendor::whereIn('invoice_tagihan_vendor_id', $invoiceIds)
@@ -157,23 +158,26 @@ class PranotaInvoiceVendorSupirController extends Controller
         try {
             DB::beginTransaction();
             $pranota = PranotaInvoiceVendorSupir::findOrFail($id);
-            
+
             // Release invoices
             InvoiceTagihanVendor::where('pranota_invoice_vendor_supir_id', $pranota->id)
                 ->update(['pranota_invoice_vendor_supir_id' => null]);
-                
+
             $pranota->delete();
             DB::commit();
+
             return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', 'Pranota berhasil dihapus dan invoice dilepaskan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
     public function print($id)
     {
         $pranota = PranotaInvoiceVendorSupir::with(['vendor', 'invoiceTagihanVendors.tagihanSupirVendors.suratJalan.prospeks'])->findOrFail($id);
+
         return view('pranota-invoice-vendor-supir.print', compact('pranota'));
     }
 
@@ -182,37 +186,39 @@ class PranotaInvoiceVendorSupirController extends Controller
         try {
             DB::beginTransaction();
             $pranota = PranotaInvoiceVendorSupir::with('vendor')->findOrFail($id);
-            
+
             $isMAS = strpos($pranota->vendor->nama_vendor ?? '', 'Menara Anugrah Semesta') !== false;
-            
+
             // Base calculation
             $baseForPph = $pranota->total_nominal;
             if ($isMAS) {
                 $baseForPph += $pranota->total_uang_muat;
             }
-            
+
             $rate = $request->input('rate', 0.02);
-            $ratePercentLabel = ($rate * 100) . '%';
+            $ratePercentLabel = ($rate * 100).'%';
             if ($rate == 0.005) {
                 $ratePercentLabel = '0,5%';
             }
-            
+
             $pph = $baseForPph * $rate;
             $netNominal = $pranota->total_nominal - $pph;
             $grandTotal = $netNominal + $pranota->total_uang_muat;
-            
+
             $pranota->update([
                 'pph' => $pph,
                 'total_nominal' => $netNominal,
                 'grand_total' => $grandTotal,
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
-            
+
             DB::commit();
-            return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', "PPH {$ratePercentLabel} berhasil ditambahkan ke Pranota" . ($isMAS ? ' (termasuk Uang Muat)' : '') . '.');
+
+            return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', "PPH {$ratePercentLabel} berhasil ditambahkan ke Pranota".($isMAS ? ' (termasuk Uang Muat)' : '').'.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -221,25 +227,27 @@ class PranotaInvoiceVendorSupirController extends Controller
         try {
             DB::beginTransaction();
             $pranota = PranotaInvoiceVendorSupir::with('vendor')->findOrFail($id);
-            
+
             if ($pranota->pph > 0) {
                 // Return total_nominal to its original state by adding back the PPH
                 $originalNominal = $pranota->total_nominal + $pranota->pph;
                 $grandTotal = $originalNominal + $pranota->total_uang_muat;
-                
+
                 $pranota->update([
                     'pph' => 0,
                     'total_nominal' => $originalNominal,
                     'grand_total' => $grandTotal,
-                    'updated_by' => Auth::id()
+                    'updated_by' => Auth::id(),
                 ]);
             }
-            
+
             DB::commit();
+
             return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', 'PPH berhasil dihapus dari Pranota.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -247,18 +255,18 @@ class PranotaInvoiceVendorSupirController extends Controller
     {
         try {
             $pranota = PranotaInvoiceVendorSupir::with('invoiceTagihanVendors.tagihanSupirVendors.suratJalan')->findOrFail($id);
-            
+
             $suratJalans = [];
             foreach ($pranota->invoiceTagihanVendors as $invoice) {
                 foreach ($invoice->tagihanSupirVendors as $tagihan) {
                     $suratJalans[] = [
                         'id' => $tagihan->id,
                         'no_surat_jalan' => $tagihan->suratJalan->no_surat_jalan ?? '-',
-                        'uang_muat' => $tagihan->uang_muat ?? 0
+                        'uang_muat' => $tagihan->uang_muat ?? 0,
                     ];
                 }
             }
-            
+
             return response()->json($suratJalans);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -271,23 +279,23 @@ class PranotaInvoiceVendorSupirController extends Controller
             DB::beginTransaction();
             $pranota = PranotaInvoiceVendorSupir::with('vendor')->findOrFail($id);
             $uangMuatInputs = $request->input('uang_muat', []);
-            
+
             $totalNominalUangMuat = 0;
             foreach ($uangMuatInputs as $tagihanId => $amount) {
                 $cleanAmount = preg_replace('/[^0-9]/', '', $amount);
                 $cleanAmount = empty($cleanAmount) ? 0 : (float) $cleanAmount;
-                
+
                 $tagihan = TagihanSupirVendor::findOrFail($tagihanId);
                 $tagihan->update(['uang_muat' => $cleanAmount]);
                 $totalNominalUangMuat += $cleanAmount;
             }
-            
+
             $isMAS = strpos($pranota->vendor->nama_vendor ?? '', 'Menara Anugrah Semesta') !== false;
-            
+
             // If it's already has PPH, we need to decide if we recalculate it
             $pph = $pranota->pph;
             $totalNominal = $pranota->total_nominal;
-            
+
             if ($pph > 0) {
                 if ($isMAS) {
                     // Re-calculate everything from gross
@@ -296,26 +304,28 @@ class PranotaInvoiceVendorSupirController extends Controller
                     $totalNominal = $grossInvoice - $newPph;
                     $pph = $newPph;
                 }
-                // If not MAS, the existing logic keeps PPH fixed on invoice only, 
+                // If not MAS, the existing logic keeps PPH fixed on invoice only,
                 // but usually PPH should be recalculated if the base changes if pph is global.
                 // However, user specifically asked MAS for Uang Muat PPH.
             }
-            
+
             $grandTotal = $totalNominal + $totalNominalUangMuat;
-            
+
             $pranota->update([
                 'total_uang_muat' => $totalNominalUangMuat,
                 'total_nominal' => $totalNominal,
                 'pph' => $pph,
                 'grand_total' => $grandTotal,
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
-            
+
             DB::commit();
+
             return redirect()->route('pranota-invoice-vendor-supir.index')->with('success', 'Uang Muat berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 }

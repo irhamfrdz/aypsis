@@ -4,11 +4,11 @@ namespace App\Imports;
 
 use App\Models\Pajak;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Collection;
 
 class PajakImport
 {
     protected $errors = [];
+
     protected $successCount = 0;
 
     public function import($file)
@@ -19,6 +19,7 @@ class PajakImport
 
         if (empty($data)) {
             $this->errors[] = 'File kosong atau tidak dapat dibaca';
+
             return false;
         }
 
@@ -31,7 +32,7 @@ class PajakImport
 
         return [
             'success_count' => $this->successCount,
-            'errors' => $this->errors
+            'errors' => $this->errors,
         ];
     }
 
@@ -51,6 +52,7 @@ class PajakImport
         }
 
         fclose($handle);
+
         return $data;
     }
 
@@ -63,26 +65,27 @@ class PajakImport
         // Validate row data
         $validator = Validator::make([
             'nama_status' => $namaStatus,
-            'keterangan' => $keterangan
+            'keterangan' => $keterangan,
         ], [
             'nama_status' => 'required|string|max:255|unique:pajaks,nama_status',
-            'keterangan' => 'nullable|string|max:500'
+            'keterangan' => 'nullable|string|max:500',
         ]);
 
         if ($validator->fails()) {
-            $this->errors[] = "Baris {$rowNumber}: " . implode(', ', $validator->errors()->all());
+            $this->errors[] = "Baris {$rowNumber}: ".implode(', ', $validator->errors()->all());
+
             return;
         }
 
         try {
             Pajak::create([
                 'nama_status' => $namaStatus,
-                'keterangan' => $keterangan
+                'keterangan' => $keterangan,
             ]);
 
             $this->successCount++;
         } catch (\Exception $e) {
-            $this->errors[] = "Baris {$rowNumber}: Gagal menyimpan data - " . $e->getMessage();
+            $this->errors[] = "Baris {$rowNumber}: Gagal menyimpan data - ".$e->getMessage();
         }
     }
 }

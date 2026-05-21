@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class PembayaranUangMuka extends Model
 {
-    use HasFactory, Auditable;
-
     use Auditable;
+    use Auditable, HasFactory;
+
     protected $table = 'pembayaran_uang_muka';
 
     protected $fillable = [
@@ -43,8 +43,10 @@ class PembayaranUangMuka extends Model
     {
         if (is_string($value)) {
             $decoded = json_decode($value, true);
+
             return is_array($decoded) ? $decoded : [];
         }
+
         return is_array($value) ? $value : [];
     }
 
@@ -53,8 +55,10 @@ class PembayaranUangMuka extends Model
     {
         if (is_string($value)) {
             $decoded = json_decode($value, true);
+
             return is_array($decoded) ? $decoded : [];
         }
+
         return is_array($value) ? $value : [];
     }
 
@@ -126,11 +130,11 @@ class PembayaranUangMuka extends Model
         // Get next running number from existing nomor_pembayaran modul
         $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'nomor_pembayaran')->first();
 
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             // Create if not exists
             $nomorTerakhir = \App\Models\NomorTerakhir::create([
                 'modul' => 'nomor_pembayaran',
-                'nomor_terakhir' => 1
+                'nomor_terakhir' => 1,
             ]);
             $nextNumber = 1;
         } else {
@@ -176,7 +180,7 @@ class PembayaranUangMuka extends Model
     // Status color for UI
     public function getStatusColorAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'uang_muka_belum_terpakai' => 'green',
             'uang_muka_terpakai' => 'gray',
             default => 'blue'
@@ -186,7 +190,7 @@ class PembayaranUangMuka extends Model
     // Status text for UI
     public function getStatusTextAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'uang_muka_belum_terpakai' => 'Belum Terpakai',
             'uang_muka_terpakai' => 'Sudah Terpakai',
             default => 'Unknown'

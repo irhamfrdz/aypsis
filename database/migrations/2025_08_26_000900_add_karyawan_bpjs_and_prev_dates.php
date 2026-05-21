@@ -15,13 +15,13 @@ return new class extends Migration
     public function up()
     {
         Schema::table('karyawans', function (Blueprint $table) {
-            if (!Schema::hasColumn('karyawans', 'bpjs_jamsostek')) {
+            if (! Schema::hasColumn('karyawans', 'bpjs_jamsostek')) {
                 $table->string('bpjs_jamsostek')->nullable()->after('jkn');
             }
-            if (!Schema::hasColumn('karyawans', 'tanggal_masuk_sebelumnya')) {
+            if (! Schema::hasColumn('karyawans', 'tanggal_masuk_sebelumnya')) {
                 $table->date('tanggal_masuk_sebelumnya')->nullable()->after('tanggal_masuk');
             }
-            if (!Schema::hasColumn('karyawans', 'tanggal_berhenti_sebelumnya')) {
+            if (! Schema::hasColumn('karyawans', 'tanggal_berhenti_sebelumnya')) {
                 $table->date('tanggal_berhenti_sebelumnya')->nullable()->after('tanggal_berhenti');
             }
         });

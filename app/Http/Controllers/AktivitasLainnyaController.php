@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\AktivitasLainnya;
-use App\Models\VendorBengkel;
 use App\Models\Coa;
 use App\Models\CoaTransaction;
+use App\Models\VendorBengkel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -41,9 +41,9 @@ class AktivitasLainnyaController extends Controller
 
         // Search
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('nomor_aktivitas', 'like', '%' . $request->search . '%')
-                  ->orWhere('deskripsi_aktivitas', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('nomor_aktivitas', 'like', '%'.$request->search.'%')
+                    ->orWhere('deskripsi_aktivitas', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -62,12 +62,12 @@ class AktivitasLainnyaController extends Controller
         $kategoriOptions = AktivitasLainnya::getKategoriOptions();
 
         // Get Bank/Kas accounts from COA (support multiple formats)
-        $bankAccounts = Coa::where(function($query) {
-                $query->where('tipe_akun', 'Kas/Bank')
-                      ->orWhere('tipe_akun', 'Bank/Kas')
-                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
-                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
-            })
+        $bankAccounts = Coa::where(function ($query) {
+            $query->where('tipe_akun', 'Kas/Bank')
+                ->orWhere('tipe_akun', 'Bank/Kas')
+                ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+        })
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
@@ -87,12 +87,12 @@ class AktivitasLainnyaController extends Controller
             'akun_coa_id' => 'required|exists:akun_coa,id',
             'tipe_transaksi' => 'required|in:debit,kredit',
             'nominal' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ]);
 
         DB::beginTransaction();
         try {
-            $aktivitas = new AktivitasLainnya();
+            $aktivitas = new AktivitasLainnya;
             $aktivitas->nomor_aktivitas = AktivitasLainnya::generateNomorAktivitas();
             $aktivitas->tanggal_aktivitas = $request->tanggal_aktivitas;
             $aktivitas->deskripsi_aktivitas = $request->deskripsi_aktivitas;
@@ -109,13 +109,14 @@ class AktivitasLainnyaController extends Controller
             DB::commit();
 
             return redirect()->route('aktivitas-lainnya.index')
-                ->with('success', 'Aktivitas lainnya berhasil dibuat dengan nomor: ' . $aktivitas->nomor_aktivitas);
+                ->with('success', 'Aktivitas lainnya berhasil dibuat dengan nomor: '.$aktivitas->nomor_aktivitas);
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to create aktivitas lainnya', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal membuat aktivitas lainnya: ' . $e->getMessage())
+                ->with('error', 'Gagal membuat aktivitas lainnya: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -126,6 +127,7 @@ class AktivitasLainnyaController extends Controller
     public function show(AktivitasLainnya $aktivitasLainnya)
     {
         $aktivitasLainnya->load(['creator', 'approver', 'vendor', 'pembayaran']);
+
         return view('aktivitas-lainnya.show', compact('aktivitasLainnya'));
     }
 
@@ -135,9 +137,9 @@ class AktivitasLainnyaController extends Controller
     public function edit(AktivitasLainnya $aktivitasLainnya)
     {
         // Hanya bisa edit jika status draft atau rejected
-        if (!in_array($aktivitasLainnya->status, ['draft', 'rejected'])) {
+        if (! in_array($aktivitasLainnya->status, ['draft', 'rejected'])) {
             return redirect()->route('aktivitas-lainnya.index')
-                ->with('error', 'Aktivitas dengan status ' . $aktivitasLainnya->status . ' tidak dapat diedit');
+                ->with('error', 'Aktivitas dengan status '.$aktivitasLainnya->status.' tidak dapat diedit');
         }
 
         $vendors = VendorBengkel::where('status', 'active')->get();
@@ -145,12 +147,12 @@ class AktivitasLainnyaController extends Controller
         $kategoriOptions = AktivitasLainnya::getKategoriOptions();
 
         // Get Bank/Kas accounts from COA (support multiple formats)
-        $bankAccounts = Coa::where(function($query) {
-                $query->where('tipe_akun', 'Kas/Bank')
-                      ->orWhere('tipe_akun', 'Bank/Kas')
-                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
-                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
-            })
+        $bankAccounts = Coa::where(function ($query) {
+            $query->where('tipe_akun', 'Kas/Bank')
+                ->orWhere('tipe_akun', 'Bank/Kas')
+                ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+        })
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
@@ -163,9 +165,9 @@ class AktivitasLainnyaController extends Controller
     public function update(Request $request, AktivitasLainnya $aktivitasLainnya)
     {
         // Hanya bisa update jika status draft atau rejected
-        if (!in_array($aktivitasLainnya->status, ['draft', 'rejected'])) {
+        if (! in_array($aktivitasLainnya->status, ['draft', 'rejected'])) {
             return redirect()->route('aktivitas-lainnya.index')
-                ->with('error', 'Aktivitas dengan status ' . $aktivitasLainnya->status . ' tidak dapat diupdate');
+                ->with('error', 'Aktivitas dengan status '.$aktivitasLainnya->status.' tidak dapat diupdate');
         }
 
         $request->validate([
@@ -176,7 +178,7 @@ class AktivitasLainnyaController extends Controller
             'akun_coa_id' => 'required|exists:akun_coa,id',
             'tipe_transaksi' => 'required|in:debit,kredit',
             'nominal' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ]);
 
         DB::beginTransaction();
@@ -199,8 +201,9 @@ class AktivitasLainnyaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to update aktivitas lainnya', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal mengupdate aktivitas lainnya: ' . $e->getMessage())
+                ->with('error', 'Gagal mengupdate aktivitas lainnya: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -227,8 +230,9 @@ class AktivitasLainnyaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to delete aktivitas lainnya', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal menghapus aktivitas lainnya: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus aktivitas lainnya: '.$e->getMessage());
         }
     }
 
@@ -255,8 +259,9 @@ class AktivitasLainnyaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to submit aktivitas for approval', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal submit aktivitas untuk approval: ' . $e->getMessage());
+                ->with('error', 'Gagal submit aktivitas untuk approval: '.$e->getMessage());
         }
     }
 
@@ -288,8 +293,9 @@ class AktivitasLainnyaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to approve aktivitas', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal approve aktivitas: ' . $e->getMessage());
+                ->with('error', 'Gagal approve aktivitas: '.$e->getMessage());
         }
     }
 
@@ -304,14 +310,14 @@ class AktivitasLainnyaController extends Controller
         }
 
         $request->validate([
-            'reason' => 'required|string|max:500'
+            'reason' => 'required|string|max:500',
         ]);
 
         DB::beginTransaction();
         try {
             $aktivitasLainnya->status = 'rejected';
-            $aktivitasLainnya->keterangan = ($aktivitasLainnya->keterangan ? $aktivitasLainnya->keterangan . "\n\n" : '') .
-                                          'REJECTED: ' . $request->reason;
+            $aktivitasLainnya->keterangan = ($aktivitasLainnya->keterangan ? $aktivitasLainnya->keterangan."\n\n" : '').
+                                          'REJECTED: '.$request->reason;
             $aktivitasLainnya->approved_by = Auth::id();
             $aktivitasLainnya->approved_at = now();
             $aktivitasLainnya->save();
@@ -324,8 +330,9 @@ class AktivitasLainnyaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to reject aktivitas', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal reject aktivitas: ' . $e->getMessage());
+                ->with('error', 'Gagal reject aktivitas: '.$e->getMessage());
         }
     }
 
@@ -337,8 +344,9 @@ class AktivitasLainnyaController extends Controller
     {
         $coa = Coa::find($aktivitas->akun_coa_id);
 
-        if (!$coa) {
+        if (! $coa) {
             Log::warning("COA tidak ditemukan untuk aktivitas: {$aktivitas->nomor_aktivitas}");
+
             return;
         }
 
@@ -373,7 +381,7 @@ class AktivitasLainnyaController extends Controller
             'debit' => $debit,
             'kredit' => $kredit,
             'saldo' => $saldoBaru,
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
 
         // Update saldo di master COA
@@ -384,7 +392,7 @@ class AktivitasLainnyaController extends Controller
             'coa' => $coa->nama_akun,
             'debit' => $debit,
             'kredit' => $kredit,
-            'saldo_baru' => $saldoBaru
+            'saldo_baru' => $saldoBaru,
         ]);
     }
 }

@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Auditable;
 
 class PembayaranBiayaKapal extends Model
 {
-    use SoftDeletes, Auditable;
+    use Auditable, SoftDeletes;
 
     protected $table = 'pembayaran_biaya_kapals';
 
@@ -51,7 +51,7 @@ class PembayaranBiayaKapal extends Model
     public function biayaKapals()
     {
         return $this->belongsToMany(BiayaKapal::class, 'pembayaran_biaya_kapal_items', 'pembayaran_biaya_kapal_id', 'biaya_kapal_id')
-                    ->withPivot('nominal')
-                    ->withTimestamps();
+            ->withPivot('nominal')
+            ->withTimestamps();
     }
 }

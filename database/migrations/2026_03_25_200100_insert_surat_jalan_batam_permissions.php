@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -17,7 +15,7 @@ return new class extends Migration
             ['name' => 'surat-jalan-batam-create', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'surat-jalan-batam-update', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'surat-jalan-batam-delete', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'surat-jalan-batam-export', 'created_at' => now(), 'updated_at' => now()]
+            ['name' => 'surat-jalan-batam-export', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 
@@ -31,7 +29,7 @@ return new class extends Migration
             'surat-jalan-batam-create',
             'surat-jalan-batam-update',
             'surat-jalan-batam-delete',
-            'surat-jalan-batam-export'
+            'surat-jalan-batam-export',
         ])->delete();
     }
 };

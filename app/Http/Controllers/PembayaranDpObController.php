@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Karyawan;
 use App\Models\Coa;
-use App\Models\PembayaranDpOb;
-use App\Models\NomorTerakhir;
 use App\Models\CoaTransaction;
+use App\Models\Karyawan;
+use App\Models\NomorTerakhir;
+use App\Models\PembayaranDpOb;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PembayaranDpObController extends Controller
 {
@@ -21,11 +20,11 @@ class PembayaranDpObController extends Controller
     {
         // Query pembayaran DP OB dengan relationships
         $query = PembayaranDpOb::with(['kasBankAkun', 'pembuatPembayaran', 'penyetujuPembayaran'])
-                               ->orderBy('tanggal_pembayaran', 'desc');
+            ->orderBy('tanggal_pembayaran', 'desc');
 
         // Filter berdasarkan nomor pembayaran
         if ($request->filled('nomor_pembayaran')) {
-            $query->where('nomor_pembayaran', 'like', '%' . $request->nomor_pembayaran . '%');
+            $query->where('nomor_pembayaran', 'like', '%'.$request->nomor_pembayaran.'%');
         }
 
         // Filter berdasarkan supir (search dalam JSON array)
@@ -48,14 +47,14 @@ class PembayaranDpObController extends Controller
 
         // Ambil data karyawan supir untuk dropdown pencarian
         $supirList = Karyawan::whereRaw('LOWER(divisi) = ?', ['supir'])
-                            ->where('status', 'active')
-                            ->orderBy('nama_lengkap')
-                            ->get();
+            ->where('status', 'active')
+            ->orderBy('nama_lengkap')
+            ->get();
 
         return view('pembayaran-dp-ob.index', [
             'title' => 'Pembayaran DP OB',
             'pembayaranList' => $pembayaranList,
-            'supirList' => $supirList
+            'supirList' => $supirList,
         ]);
     }
 
@@ -66,14 +65,14 @@ class PembayaranDpObController extends Controller
     {
         // Ambil data karyawan yang mempunyai divisi supir
         $supirList = Karyawan::whereRaw('LOWER(divisi) = ?', ['supir'])
-                            ->where('status', 'active') // hanya karyawan aktif
-                            ->orderBy('nama_lengkap')
-                            ->get();
+            ->where('status', 'active') // hanya karyawan aktif
+            ->orderBy('nama_lengkap')
+            ->get();
 
         // Ambil data akun kas/bank dari COA
         $kasBankList = Coa::where('tipe_akun', 'Kas/Bank')
-                          ->orderBy('nomor_akun')
-                          ->get();
+            ->orderBy('nomor_akun')
+            ->get();
 
         // Ambil semua akun COA untuk pilihan Akun Biaya
         $akunBiayaList = Coa::orderBy('kode_nomor')->get();
@@ -82,7 +81,7 @@ class PembayaranDpObController extends Controller
             'title' => 'Create Pembayaran DP OB',
             'supirList' => $supirList,
             'kasBankList' => $kasBankList,
-            'akunBiayaList' => $akunBiayaList
+            'akunBiayaList' => $akunBiayaList,
         ]);
     }
 
@@ -98,10 +97,10 @@ class PembayaranDpObController extends Controller
 
             // Get COA info untuk kode bank
             $coa = \App\Models\Coa::find($request->kas_bank_id);
-            if (!$coa) {
+            if (! $coa) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Bank/Kas tidak ditemukan'
+                    'message' => 'Bank/Kas tidak ditemukan',
                 ], 404);
             }
 
@@ -111,10 +110,10 @@ class PembayaranDpObController extends Controller
             // Get next running number from master nomor terakhir (preview only, don't increment)
             $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'nomor_pembayaran')->first();
 
-            if (!$nomorTerakhir) {
+            if (! $nomorTerakhir) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Modul nomor_pembayaran tidak ditemukan di master nomor terakhir'
+                    'message' => 'Modul nomor_pembayaran tidak ditemukan di master nomor terakhir',
                 ], 404);
             }
 
@@ -126,13 +125,13 @@ class PembayaranDpObController extends Controller
             return response()->json([
                 'success' => true,
                 'nomor_pembayaran' => $nomorPembayaran,
-                'preview' => true
+                'preview' => true,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate nomor: ' . $e->getMessage()
+                'message' => 'Gagal generate nomor: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -150,7 +149,7 @@ class PembayaranDpObController extends Controller
 
         // Pre-process jumlah data to ensure it's clean
         $jumlahData = $request->input('jumlah', []);
-        if (!is_array($jumlahData)) {
+        if (! is_array($jumlahData)) {
             return back()->withErrors(['jumlah' => 'Data jumlah harus berupa array'])->withInput();
         }
 
@@ -174,12 +173,12 @@ class PembayaranDpObController extends Controller
             'supir.*' => 'required|exists:karyawans,id',
             'jumlah' => 'required|array|min:1',
             'jumlah.*' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         // Debug: Log validated data
         logger('Validated data:', $validated);
-        logger('Validated jumlah type: ' . gettype($validated['jumlah']));
+        logger('Validated jumlah type: '.gettype($validated['jumlah']));
         logger('Validated jumlah content:', $validated['jumlah']);
 
         try {
@@ -223,10 +222,10 @@ class PembayaranDpObController extends Controller
             $jumlahSupir = count($validated['supir']);
             $message = "Pembayaran DP OB berhasil dibuat dengan nomor: {$pembayaran->nomor_pembayaran}. ";
             $message .= "Total supir: {$jumlahSupir}. ";
-            $message .= "Total pembayaran: Rp " . number_format($totalPembayaran, 0, ',', '.');
+            $message .= 'Total pembayaran: Rp '.number_format($totalPembayaran, 0, ',', '.');
 
             return redirect()->route('pembayaran-dp-ob.index')
-                            ->with('success', $message);
+                ->with('success', $message);
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -236,12 +235,12 @@ class PembayaranDpObController extends Controller
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Gagal membuat pembayaran DP OB: ' . $e->getMessage());
+                ->withInput()
+                ->with('error', 'Gagal membuat pembayaran DP OB: '.$e->getMessage());
         }
     }
 
@@ -253,7 +252,7 @@ class PembayaranDpObController extends Controller
         // Tampilkan detail pembayaran DP OB
         return view('pembayaran-dp-ob.show', [
             'title' => 'Detail Pembayaran DP OB',
-            'id' => $id
+            'id' => $id,
         ]);
     }
 
@@ -264,14 +263,14 @@ class PembayaranDpObController extends Controller
     {
         // Ambil data karyawan yang mempunyai divisi supir
         $supirList = Karyawan::whereRaw('LOWER(divisi) = ?', ['supir'])
-                            ->where('status', 'active') // hanya karyawan aktif
-                            ->orderBy('nama_lengkap')
-                            ->get();
+            ->where('status', 'active') // hanya karyawan aktif
+            ->orderBy('nama_lengkap')
+            ->get();
 
         // Ambil data akun kas/bank dari COA
         $kasBankList = Coa::where('tipe_akun', 'Kas/Bank')
-                          ->orderBy('nomor_akun')
-                          ->get();
+            ->orderBy('nomor_akun')
+            ->get();
 
         // Ambil semua akun COA untuk pilihan Akun Biaya
         $akunBiayaList = Coa::orderBy('kode_nomor')->get();
@@ -281,7 +280,7 @@ class PembayaranDpObController extends Controller
             'id' => $id,
             'supirList' => $supirList,
             'kasBankList' => $kasBankList,
-            'akunBiayaList' => $akunBiayaList
+            'akunBiayaList' => $akunBiayaList,
         ]);
     }
 
@@ -300,7 +299,7 @@ class PembayaranDpObController extends Controller
             'supir' => 'required|array|min:1',
             'supir.*' => 'required|exists:karyawans,id',
             'jumlah' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         // Update data (nanti akan menggunakan model sebenarnya)
@@ -308,7 +307,7 @@ class PembayaranDpObController extends Controller
         // $pembayaran->update($request->all());
 
         return redirect()->route('pembayaran-dp-ob.index')
-                        ->with('success', 'Pembayaran DP OB berhasil diupdate.');
+            ->with('success', 'Pembayaran DP OB berhasil diupdate.');
     }
 
     /**
@@ -321,7 +320,7 @@ class PembayaranDpObController extends Controller
         // $pembayaran->delete();
 
         return redirect()->route('pembayaran-dp-ob.index')
-                        ->with('success', 'Pembayaran DP OB berhasil dihapus.');
+            ->with('success', 'Pembayaran DP OB berhasil dihapus.');
     }
 
     /**
@@ -335,10 +334,10 @@ class PembayaranDpObController extends Controller
             $kasBankId = $request->input('kas_bank_id');
 
             // Jika tidak ada kas_bank_id, gunakan kas/bank pertama sebagai default
-            if (!$kasBankId) {
+            if (! $kasBankId) {
                 $defaultKasBank = Coa::where('tipe_akun', 'Kas/Bank')
-                                    ->orderBy('nomor_akun')
-                                    ->first();
+                    ->orderBy('nomor_akun')
+                    ->first();
                 $kasBankId = $defaultKasBank ? $defaultKasBank->id : null;
             }
 
@@ -362,11 +361,11 @@ class PembayaranDpObController extends Controller
             $monthYear = $today->format('my'); // m = bulan 2 digit, y = tahun 2 digit
 
             // Ambil nomor terakhir dari master nomor_pembayaran
-            $lastNumber = $this->getLastPaymentNumber('pembayaran_dp_ob', $coaPrefix . $monthYear);
+            $lastNumber = $this->getLastPaymentNumber('pembayaran_dp_ob', $coaPrefix.$monthYear);
             $nextNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
 
             // Format final: KODE_COA + BULAN(2) + TAHUN(2) + NOMOR(6)
-            $nomor = $coaPrefix . $monthYear . $nextNumber;
+            $nomor = $coaPrefix.$monthYear.$nextNumber;
 
             // Update master nomor_terakhir untuk increment selanjutnya
             $nomorTerakhir = NomorTerakhir::where('modul', 'nomor_pembayaran')->first();
@@ -381,13 +380,13 @@ class PembayaranDpObController extends Controller
                     'month_year' => $monthYear,
                     'sequence' => $nextNumber,
                     'full_format' => "{$coaPrefix} + {$monthYear} + {$nextNumber}",
-                    'explanation' => "COA: {$coaPrefix}, Bulan/Tahun: {$monthYear}, Urutan: {$nextNumber}"
-                ]
+                    'explanation' => "COA: {$coaPrefix}, Bulan/Tahun: {$monthYear}, Urutan: {$nextNumber}",
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Gagal generate nomor pembayaran',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -411,7 +410,8 @@ class PembayaranDpObController extends Controller
 
         } catch (\Exception $e) {
             // Fallback: return 0 jika ada error
-            logger('Error getting last payment number: ' . $e->getMessage());
+            logger('Error getting last payment number: '.$e->getMessage());
+
             return 0;
         }
     }
@@ -424,7 +424,7 @@ class PembayaranDpObController extends Controller
         // Get data pembayaran untuk print
         return view('pembayaran-dp-ob.print', [
             'title' => 'Print Pembayaran DP OB',
-            'id' => $id
+            'id' => $id,
         ]);
     }
 
@@ -438,7 +438,7 @@ class PembayaranDpObController extends Controller
         // $pembayaran->update(['status' => 'approved', 'approved_by' => auth()->id()]);
 
         return redirect()->back()
-                        ->with('success', 'Pembayaran DP OB berhasil diapprove.');
+            ->with('success', 'Pembayaran DP OB berhasil diapprove.');
     }
 
     /**
@@ -448,11 +448,11 @@ class PembayaranDpObController extends Controller
     {
         // Reject pembayaran dengan alasan
         $request->validate([
-            'reject_reason' => 'required|string|max:500'
+            'reject_reason' => 'required|string|max:500',
         ]);
 
         return redirect()->back()
-                        ->with('success', 'Pembayaran DP OB berhasil ditolak.');
+            ->with('success', 'Pembayaran DP OB berhasil ditolak.');
     }
 
     /**
@@ -471,12 +471,12 @@ class PembayaranDpObController extends Controller
         // Get account information
         $akunCoa = Coa::find($validated['akun_coa_id']);
         $akunBank = Coa::find($validated['kas_bank']);
-        
+
         $tanggal = $validated['tanggal_pembayaran'];
         $jumlah = $totalPembayaran;
         $jenisTransaksi = $validated['jenis_transaksi'];
         $nomorReferensi = $pembayaran->nomor_pembayaran;
-        $keterangan = "Pembayaran DP OB - " . ($validated['keterangan'] ?? 'Tanpa Keterangan');
+        $keterangan = 'Pembayaran DP OB - '.($validated['keterangan'] ?? 'Tanpa Keterangan');
         $jenisTransaksiDesc = 'Pembayaran DP OB';
 
         // Create journal entries based on debit/credit selection

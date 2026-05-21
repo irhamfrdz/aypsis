@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coa;
 use App\Models\PembayaranPranotaOb;
 use App\Models\PranotaOb;
-use App\Models\Coa;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 
 class PembayaranPranotaObController extends Controller
 {
@@ -43,7 +43,7 @@ class PembayaranPranotaObController extends Controller
     public function selectCriteria()
     {
         // Check permission manually to provide better error message
-        if (!Gate::allows('pembayaran-pranota-ob-create')) {
+        if (! Gate::allows('pembayaran-pranota-ob-create')) {
             return redirect()->route('dashboard')
                 ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota OB. Silakan hubungi administrator.');
         }
@@ -77,14 +77,14 @@ class PembayaranPranotaObController extends Controller
     public function create(Request $request)
     {
         // Check permission manually to provide better error message
-        if (!Gate::allows('pembayaran-pranota-ob-create')) {
+        if (! Gate::allows('pembayaran-pranota-ob-create')) {
             return redirect()->route('dashboard')
                 ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota OB. Silakan hubungi administrator.');
         }
 
         // If no criteria provided, redirect to select criteria page
         // Note: DP is optional, only kapal and voyage are required
-        if (!$request->has('kapal') || !$request->has('voyage')) {
+        if (! $request->has('kapal') || ! $request->has('voyage')) {
             return redirect()->route('pembayaran-pranota-ob.select-criteria')
                 ->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu.');
         }
@@ -99,11 +99,11 @@ class PembayaranPranotaObController extends Controller
         $dpSupirData = [];
         if ($request->filled('dp')) {
             $selectedDp = \App\Models\PembayaranOb::find($request->dp);
-            
+
             // Build dpSupirData array dari jumlah_per_supir
             if ($selectedDp && $selectedDp->jumlah_per_supir) {
                 $jumlahPerSupir = is_array($selectedDp->jumlah_per_supir) ? $selectedDp->jumlah_per_supir : json_decode($selectedDp->jumlah_per_supir, true);
-                
+
                 if (is_array($jumlahPerSupir)) {
                     foreach ($jumlahPerSupir as $supirId => $jumlah) {
                         // Get supir name
@@ -140,12 +140,12 @@ class PembayaranPranotaObController extends Controller
         $akunBiaya = Coa::orderBy('kode_nomor')->get();
 
         // Get Bank/Kas accounts only, sorted by account number
-        $akunBank = Coa::where(function($query) {
-                $query->where('tipe_akun', 'Kas/Bank')
-                      ->orWhere('tipe_akun', 'Bank/Kas')
-                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
-                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
-            })
+        $akunBank = Coa::where(function ($query) {
+            $query->where('tipe_akun', 'Kas/Bank')
+                ->orWhere('tipe_akun', 'Bank/Kas')
+                ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+        })
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
@@ -158,7 +158,7 @@ class PembayaranPranotaObController extends Controller
     public function store(Request $request)
     {
         // Check permission manually to provide better error message
-        if (!Gate::allows('pembayaran-pranota-ob-create')) {
+        if (! Gate::allows('pembayaran-pranota-ob-create')) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota OB. Silakan hubungi administrator.');
@@ -183,7 +183,7 @@ class PembayaranPranotaObController extends Controller
                 'kapal' => 'nullable|string',
                 'voyage' => 'nullable|string',
                 'dp_id' => 'nullable|exists:pembayaran_obs,id',
-                'breakdown_supir' => 'nullable|json'
+                'breakdown_supir' => 'nullable|json',
             ]);
 
             $pranotaIds = $request->input('pranota_ids');
@@ -210,7 +210,7 @@ class PembayaranPranotaObController extends Controller
             $dpId = $request->input('dp_id');
             $dpAmount = 0;
             $selectedDp = null;
-            
+
             if ($dpId) {
                 $selectedDp = \App\Models\PembayaranOb::find($dpId);
                 if ($selectedDp) {
@@ -224,7 +224,7 @@ class PembayaranPranotaObController extends Controller
             Log::info('Calculated total pembayaran (after DP)', [
                 'total_biaya' => $totalBiayaPranota,
                 'dp_amount' => $dpAmount,
-                'total_pembayaran' => $totalPembayaran
+                'total_pembayaran' => $totalPembayaran,
             ]);
 
             // Check for duplicate nomor_pembayaran
@@ -266,7 +266,7 @@ class PembayaranPranotaObController extends Controller
                 'total_biaya_pranota' => $totalBiayaPranota,
                 'breakdown_supir' => $breakdownSupir,
                 'akun_coa_id' => $request->akun_coa_id,
-                'akun_bank_id' => $request->akun_bank_id
+                'akun_bank_id' => $request->akun_bank_id,
             ]);
             Log::info('Pembayaran record created', ['id' => $pembayaran->id]);
 
@@ -280,12 +280,12 @@ class PembayaranPranotaObController extends Controller
             $totalSetelahPenyesuaian = $totalPembayaran + $penyesuaian;
             $tanggalTransaksi = $request->tanggal_kas;
 
-            $keterangan = "Pembayaran Pranota OB - " . $request->nomor_pembayaran;
+            $keterangan = 'Pembayaran Pranota OB - '.$request->nomor_pembayaran;
             if ($request->keterangan) {
-                $keterangan .= " | " . $request->keterangan;
+                $keterangan .= ' | '.$request->keterangan;
             }
             if ($request->alasan_penyesuaian) {
-                $keterangan .= " | Penyesuaian: " . $request->alasan_penyesuaian;
+                $keterangan .= ' | Penyesuaian: '.$request->alasan_penyesuaian;
             }
 
             // Catat transaksi double-entry berdasarkan pilihan Debit/Credit
@@ -315,8 +315,8 @@ class PembayaranPranotaObController extends Controller
             Log::info('Transaction committed successfully');
 
             $message = "Pembayaran pranota OB berhasil dibuat dengan nomor: {$request->nomor_pembayaran}. ";
-            $message .= "Total pranota: " . count($pranotaIds) . ". ";
-            $message .= "Status: Sudah dibayar.";
+            $message .= 'Total pranota: '.count($pranotaIds).'. ';
+            $message .= 'Status: Sudah dibayar.';
 
             return redirect()->route('pembayaran-pranota-ob.index')->with('success', $message);
 
@@ -325,9 +325,10 @@ class PembayaranPranotaObController extends Controller
             Log::error('Error in pembayaran pranota OB store', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
+                'request' => $request->all(),
             ]);
-            return redirect()->back()->withInput()->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage());
+
+            return redirect()->back()->withInput()->with('error', 'Gagal membuat pembayaran: '.$e->getMessage());
         }
     }
 
@@ -346,12 +347,12 @@ class PembayaranPranotaObController extends Controller
         $akunBiaya = Coa::orderBy('kode_nomor')->get();
 
         // Get Bank/Kas accounts only, sorted by account number
-        $akunBank = Coa::where(function($query) {
-                $query->where('tipe_akun', 'Kas/Bank')
-                      ->orWhere('tipe_akun', 'Bank/Kas')
-                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
-                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
-            })
+        $akunBank = Coa::where(function ($query) {
+            $query->where('tipe_akun', 'Kas/Bank')
+                ->orWhere('tipe_akun', 'Bank/Kas')
+                ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+        })
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
@@ -381,21 +382,21 @@ class PembayaranPranotaObController extends Controller
 
             // Parse penyesuaian from formatted string to number
             $penyesuaian = 0;
-            if (!empty($validated['penyesuaian'])) {
+            if (! empty($validated['penyesuaian'])) {
                 $penyesuaian = floatval(str_replace(['.', ','], ['', '.'], $validated['penyesuaian']));
             }
 
             // Parse breakdown_supir to calculate total
             $breakdownSupir = [];
-            if (!empty($validated['breakdown_supir'])) {
+            if (! empty($validated['breakdown_supir'])) {
                 $breakdownSupir = json_decode($validated['breakdown_supir'], true) ?? [];
             }
 
             // Calculate total from breakdown_supir
             $totalPembayaran = 0;
-            if (!empty($breakdownSupir)) {
+            if (! empty($breakdownSupir)) {
                 foreach ($breakdownSupir as $breakdown) {
-                    $totalPembayaran += (float)($breakdown['grand_total'] ?? $breakdown['sisa'] ?? 0);
+                    $totalPembayaran += (float) ($breakdown['grand_total'] ?? $breakdown['sisa'] ?? 0);
                 }
             } else {
                 // If no breakdown, keep original total
@@ -413,7 +414,7 @@ class PembayaranPranotaObController extends Controller
                 'total_setelah_penyesuaian' => $totalPembayaran + $penyesuaian,
                 'alasan_penyesuaian' => $validated['alasan_penyesuaian'] ?? null,
                 'keterangan' => $validated['keterangan'] ?? null,
-                'breakdown_supir' => !empty($breakdownSupir) ? $breakdownSupir : null,
+                'breakdown_supir' => ! empty($breakdownSupir) ? $breakdownSupir : null,
                 'akun_coa_id' => $request->akun_coa_id,
                 'akun_bank_id' => $request->akun_bank_id,
                 'updated_by' => Auth::id(),
@@ -431,18 +432,18 @@ class PembayaranPranotaObController extends Controller
                 ->with('success', 'Pembayaran pranota OB berhasil diupdate.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating pembayaran pranota OB: ' . $e->getMessage());
-            
+            Log::error('Error updating pembayaran pranota OB: '.$e->getMessage());
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat mengupdate pembayaran: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat mengupdate pembayaran: '.$e->getMessage());
         }
     }
 
     public function destroy($id)
     {
         // Check permission
-        if (!Gate::allows('pembayaran-pranota-ob-delete')) {
+        if (! Gate::allows('pembayaran-pranota-ob-delete')) {
             return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk menghapus pembayaran pranota OB.');
         }
 
@@ -453,23 +454,23 @@ class PembayaranPranotaObController extends Controller
 
             // Get associated pranota IDs (model has 'pranota_ob_ids' => 'array' cast)
             $pranotaIds = $pembayaran->pranota_ob_ids;
-            
+
             // Handle double encoded JSON if necessary (workaround for existing data)
             if (is_string($pranotaIds)) {
                 $pranotaIds = json_decode($pranotaIds, true) ?? [];
             }
-            
+
             $pranotaIds = is_array($pranotaIds) ? $pranotaIds : [];
 
             // Restore pranota status to unpaid
-            if (!empty($pranotaIds)) {
+            if (! empty($pranotaIds)) {
                 PranotaOb::whereIn('id', $pranotaIds)->update(['status' => 'unpaid']);
                 Log::info('Restored pranota statuses to unpaid', ['pranota_ids' => $pranotaIds]);
             }
 
             // Delete associated COA transactions
             $success = $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
-            if (!$success) {
+            if (! $success) {
                 Log::warning('Failed to delete some COA transactions or transactions not found', ['nomor_pembayaran' => $pembayaran->nomor_pembayaran]);
             }
 
@@ -485,9 +486,10 @@ class PembayaranPranotaObController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting pembayaran pranota OB: ' . $e->getMessage());
+            Log::error('Error deleting pembayaran pranota OB: '.$e->getMessage());
+
             return redirect()->route('pembayaran-pranota-ob.index')
-                ->with('error', 'Gagal menghapus pembayaran: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus pembayaran: '.$e->getMessage());
         }
     }
 
@@ -508,13 +510,13 @@ class PembayaranPranotaObController extends Controller
             $totalPembayaran = $pembayaranPranotaOb->total_setelah_penyesuaian ?? $pembayaranPranotaOb->total_pembayaran;
             $akunBank = \App\Models\Coa::find($pembayaranPranotaOb->akun_bank_id);
             $akunBiaya = \App\Models\Coa::find($pembayaranPranotaOb->akun_coa_id);
-            
-            if (!$akunBank || !$akunBiaya) {
-                throw new \Exception("Data Akun Bank atau Akun Biaya tidak ditemukan di database.");
+
+            if (! $akunBank || ! $akunBiaya) {
+                throw new \Exception('Data Akun Bank atau Akun Biaya tidak ditemukan di database.');
             }
-            
+
             $debitKredit = strtolower($pembayaranPranotaOb->jenis_transaksi);
-            $keterangan = "Pembayaran Pranota OB - " . $pembayaranPranotaOb->nomor_pembayaran . " (Synced)";
+            $keterangan = 'Pembayaran Pranota OB - '.$pembayaranPranotaOb->nomor_pembayaran.' (Synced)';
 
             // 3. Record Double Entry
             if ($debitKredit == 'debit') {
@@ -542,16 +544,17 @@ class PembayaranPranotaObController extends Controller
             Log::info('Double Entry Accounting RE-SYNCED for Pembayaran Pranota OB', [
                 'nomor_pembayaran' => $pembayaranPranotaOb->nomor_pembayaran,
                 'total_pembayaran' => $totalPembayaran,
-                'synced_by' => $user->name
+                'synced_by' => $user->name,
             ]);
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Transaksi COA untuk ' . $pembayaranPranotaOb->nomor_pembayaran . ' berhasil disinkronisasi.');
+            return redirect()->back()->with('success', 'Transaksi COA untuk '.$pembayaranPranotaOb->nomor_pembayaran.' berhasil disinkronisasi.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error syncing COA for payment: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal sinkronisasi COA: ' . $e->getMessage());
+            Log::error('Error syncing COA for payment: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal sinkronisasi COA: '.$e->getMessage());
         }
     }
 
@@ -566,20 +569,22 @@ class PembayaranPranotaObController extends Controller
         DB::beginTransaction();
         try {
             $pranotaObs = $pembayaranPranotaOb->pranota_obs; // Use accessor
-            
+
             $newTotal = 0;
             $newBreakdownMap = [];
-            
+
             foreach ($pranotaObs as $pranota) {
                 $newTotal += $pranota->calculateTotalAmount();
-                
+
                 // Recalculate breakdown from items
                 $items = $pranota->getEnrichedItems();
                 foreach ($items as $item) {
                     $supir = strtoupper(trim($item['supir'] ?? ''));
-                    if (empty($supir) || $supir === '-') $supir = 'BELUM DITENTUKAN';
-                    
-                    if (!isset($newBreakdownMap[$supir])) {
+                    if (empty($supir) || $supir === '-') {
+                        $supir = 'BELUM DITENTUKAN';
+                    }
+
+                    if (! isset($newBreakdownMap[$supir])) {
                         $newBreakdownMap[$supir] = [
                             'nama_supir' => $supir,
                             'jumlah_item' => 0,
@@ -589,33 +594,33 @@ class PembayaranPranotaObController extends Controller
                             'potongan_utang' => 0,
                             'potongan_tabungan' => 0,
                             'potongan_bpjs' => 0,
-                            'grand_total' => 0
+                            'grand_total' => 0,
                         ];
                     }
-                    
+
                     $newBreakdownMap[$supir]['jumlah_item'] += 1;
-                    $newBreakdownMap[$supir]['total_biaya'] += (float)($item['biaya'] ?? 0);
+                    $newBreakdownMap[$supir]['total_biaya'] += (float) ($item['biaya'] ?? 0);
                 }
             }
 
             // Sync with existing breakdown (preserved DP and deductions)
             $oldBreakdown = $pembayaranPranotaOb->breakdown_supir ?? [];
             $finalBreakdown = [];
-            
+
             foreach ($newBreakdownMap as $supir => $newData) {
                 // Find matching supir in old breakdown to preserve DP, etc.
-                $oldData = collect($oldBreakdown)->first(fn($v) => strtoupper(trim($v['nama_supir'] ?? '')) === $supir);
-                
+                $oldData = collect($oldBreakdown)->first(fn ($v) => strtoupper(trim($v['nama_supir'] ?? '')) === $supir);
+
                 if ($oldData) {
                     $newData['dp'] = $oldData['dp'] ?? 0;
                     $newData['potongan_utang'] = $oldData['potongan_utang'] ?? 0;
                     $newData['potongan_tabungan'] = $oldData['potongan_tabungan'] ?? 0;
                     $newData['potongan_bpjs'] = $oldData['potongan_bpjs'] ?? 0;
                 }
-                
+
                 $newData['sisa'] = $newData['total_biaya'] - $newData['dp'];
                 $newData['grand_total'] = $newData['sisa'] - $newData['potongan_utang'] - $newData['potongan_tabungan'] - $newData['potongan_bpjs'];
-                
+
                 $finalBreakdown[] = $newData;
             }
 
@@ -626,15 +631,17 @@ class PembayaranPranotaObController extends Controller
                 'total_biaya_pranota' => $newTotal,
                 'total_setelah_penyesuaian' => $newTotal + $penyesuaian,
                 'breakdown_supir' => $finalBreakdown,
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
 
             DB::commit();
+
             return redirect()->back()->with('success', 'Total pembayaran dan breakdown supir berhasil diperbarui sesuai data pranota terbaru.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating payment total: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal memperbarui total: ' . $e->getMessage());
+            Log::error('Error updating payment total: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal memperbarui total: '.$e->getMessage());
         }
     }
 }

@@ -4,14 +4,14 @@ namespace App\Exports;
 
 use App\Models\Pengirim;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class PengirimExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class PengirimExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $filters;
 
@@ -25,16 +25,16 @@ class PengirimExport implements FromCollection, WithHeadings, ShouldAutoSize, Wi
         $query = Pengirim::query();
 
         // Apply search filter if provided
-        if (!empty($this->filters['search'])) {
+        if (! empty($this->filters['search'])) {
             $searchTerm = $this->filters['search'];
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('kode', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('nama_pengirim', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('catatan', 'LIKE', '%' . $searchTerm . '%');
+                $q->where('kode', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('nama_pengirim', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('catatan', 'LIKE', '%'.$searchTerm.'%');
             });
         }
 
-        return $query->orderBy('created_at', 'desc')->get()->map(function($pengirim, $index) {
+        return $query->orderBy('created_at', 'desc')->get()->map(function ($pengirim, $index) {
             return [
                 $index + 1,
                 $pengirim->kode,
@@ -61,7 +61,7 @@ class PengirimExport implements FromCollection, WithHeadings, ShouldAutoSize, Wi
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 // Style the header row
                 $event->sheet->getStyle('A1:F1')->applyFromArray([
                     'font' => [
@@ -79,17 +79,17 @@ class PengirimExport implements FromCollection, WithHeadings, ShouldAutoSize, Wi
                 ]);
 
                 // Center align the No column
-                $event->sheet->getStyle('A2:A' . ($event->sheet->getHighestRow()))
+                $event->sheet->getStyle('A2:A'.($event->sheet->getHighestRow()))
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 // Center align the Status column
-                $event->sheet->getStyle('E2:E' . ($event->sheet->getHighestRow()))
+                $event->sheet->getStyle('E2:E'.($event->sheet->getHighestRow()))
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 // Add border to all cells
-                $event->sheet->getStyle('A1:F' . ($event->sheet->getHighestRow()))
+                $event->sheet->getStyle('A1:F'.($event->sheet->getHighestRow()))
                     ->applyFromArray([
                         'borders' => [
                             'allBorders' => [

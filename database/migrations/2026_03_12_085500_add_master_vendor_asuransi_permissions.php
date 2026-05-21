@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -15,19 +13,19 @@ return new class extends Migration
         $permissions = [
             [
                 'name' => 'master-vendor-asuransi-view',
-                'description' => 'Melihat data Master Vendor Asuransi'
+                'description' => 'Melihat data Master Vendor Asuransi',
             ],
             [
                 'name' => 'master-vendor-asuransi-create',
-                'description' => 'Menambah data Master Vendor Asuransi'
+                'description' => 'Menambah data Master Vendor Asuransi',
             ],
             [
                 'name' => 'master-vendor-asuransi-update',
-                'description' => 'Mengubah data Master Vendor Asuransi'
+                'description' => 'Mengubah data Master Vendor Asuransi',
             ],
             [
                 'name' => 'master-vendor-asuransi-delete',
-                'description' => 'Menghapus data Master Vendor Asuransi'
+                'description' => 'Menghapus data Master Vendor Asuransi',
             ],
         ];
 
@@ -37,7 +35,7 @@ return new class extends Migration
                 [
                     'description' => $permission['description'],
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]
             );
 

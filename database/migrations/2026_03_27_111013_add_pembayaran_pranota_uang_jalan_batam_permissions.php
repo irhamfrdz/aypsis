@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -19,7 +17,7 @@ return new class extends Migration
             ['name' => 'pembayaran-pranota-uang-jalan-batam-delete', 'description' => 'Menghapus pembayaran pranota uang jalan batam'],
             ['name' => 'pembayaran-pranota-uang-jalan-batam-approve', 'description' => 'Menyetujui pembayaran pranota uang jalan batam'],
             ['name' => 'pembayaran-pranota-uang-jalan-batam-print', 'description' => 'Mencetak pembayaran pranota uang jalan batam'],
-            ['name' => 'pembayaran-pranota-uang-jalan-batam-export', 'description' => 'Mengexport pembayaran pranota uang jalan batam']
+            ['name' => 'pembayaran-pranota-uang-jalan-batam-export', 'description' => 'Mengexport pembayaran pranota uang jalan batam'],
         ];
 
         // Insert permissions
@@ -29,7 +27,7 @@ return new class extends Migration
                 [
                     'description' => $permission['description'],
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]
             );
         }
@@ -38,7 +36,7 @@ return new class extends Migration
         $adminUsers = DB::table('users')
             ->whereIn('username', ['admin', 'administrator', 'superadmin'])
             ->get();
-        
+
         $permissionIds = DB::table('permissions')
             ->whereIn('name', array_column($permissions, 'name'))
             ->pluck('id');
@@ -65,7 +63,7 @@ return new class extends Migration
             'pembayaran-pranota-uang-jalan-batam-delete',
             'pembayaran-pranota-uang-jalan-batam-approve',
             'pembayaran-pranota-uang-jalan-batam-print',
-            'pembayaran-pranota-uang-jalan-batam-export'
+            'pembayaran-pranota-uang-jalan-batam-export',
         ];
 
         $permissionIds = DB::table('permissions')

@@ -1,10 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use App\Models\Prospek;
 use App\Models\SuratJalan;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -34,9 +32,9 @@ return new class extends Migration
 
         // Ambil semua prospek yang belum ada surat_jalan_id
         $prospeks = Prospek::whereNull('surat_jalan_id')
-                          ->whereNotNull('keterangan')
-                          ->where('keterangan', 'LIKE', '%Surat Jalan:%')
-                          ->get();
+            ->whereNotNull('keterangan')
+            ->where('keterangan', 'LIKE', '%Surat Jalan:%')
+            ->get();
 
         $updated = 0;
         $failed = 0;
@@ -45,21 +43,21 @@ return new class extends Migration
             try {
                 // Parse keterangan untuk mendapatkan nomor surat jalan
                 $keterangan = $prospek->keterangan;
-                
+
                 // Pattern: "Surat Jalan: SJ-2024-001 |" atau similar
                 if (preg_match('/Surat Jalan: ([^\|]+) \|/', $keterangan, $matches)) {
                     $noSuratJalan = trim($matches[1]);
-                    
+
                     // Cari surat jalan berdasarkan nomor
                     $suratJalan = SuratJalan::where('no_surat_jalan', $noSuratJalan)->first();
-                    
+
                     if ($suratJalan) {
                         // Update prospek dengan data surat jalan
                         $prospek->update([
                             'no_surat_jalan' => $suratJalan->no_surat_jalan,
-                            'surat_jalan_id' => $suratJalan->id
+                            'surat_jalan_id' => $suratJalan->id,
                         ]);
-                        
+
                         $updated++;
                         echo "Updated prospek {$prospek->id} with surat jalan {$suratJalan->no_surat_jalan}\n";
                     } else {

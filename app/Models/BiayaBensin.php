@@ -17,7 +17,7 @@ class BiayaBensin extends Model
         'liter',
         'biaya',
         'keterangan',
-        'created_by'
+        'created_by',
     ];
 
     protected $casts = [

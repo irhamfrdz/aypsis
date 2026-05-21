@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::table('tanda_terima_tanpa_surat_jalan', function (Blueprint $table) {
             // Add missing fields only if they don't exist
-            if (!Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'nama_barang')) {
+            if (! Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'nama_barang')) {
                 $table->string('nama_barang')->nullable()->after('jenis_barang');
             }
-            if (!Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'telepon')) {
+            if (! Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'telepon')) {
                 $table->string('telepon', 50)->nullable()->after('pengirim');
             }
-            if (!Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'pic')) {
+            if (! Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'pic')) {
                 $table->string('pic')->nullable()->after('telepon');
             }
         });
@@ -38,13 +38,13 @@ return new class extends Migration
                 $columnsToRemove[] = 'no_plat';
             }
 
-            if (!empty($columnsToRemove)) {
+            if (! empty($columnsToRemove)) {
                 $table->dropColumn($columnsToRemove);
             }
         });
 
         // Create table for dimensi items
-        if (!Schema::hasTable('tanda_terima_dimensi_items')) {
+        if (! Schema::hasTable('tanda_terima_dimensi_items')) {
             Schema::create('tanda_terima_dimensi_items', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tanda_terima_tanpa_surat_jalan_id');
@@ -58,9 +58,9 @@ return new class extends Migration
 
                 // Custom foreign key with shorter name
                 $table->foreign('tanda_terima_tanpa_surat_jalan_id', 'tttsj_dimensi_fk')
-                      ->references('id')
-                      ->on('tanda_terima_tanpa_surat_jalan')
-                      ->onDelete('cascade');
+                    ->references('id')
+                    ->on('tanda_terima_tanpa_surat_jalan')
+                    ->onDelete('cascade');
 
                 $table->index(['tanda_terima_tanpa_surat_jalan_id', 'item_order'], 'tttsj_dimensi_idx');
             });
@@ -76,13 +76,13 @@ return new class extends Migration
 
         Schema::table('tanda_terima_tanpa_surat_jalan', function (Blueprint $table) {
             // Restore removed fields
-            if (!Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'tujuan_pengambilan')) {
+            if (! Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'tujuan_pengambilan')) {
                 $table->string('tujuan_pengambilan')->nullable()->after('tujuan_pengiriman');
             }
-            if (!Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'supir')) {
+            if (! Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'supir')) {
                 $table->string('supir')->nullable();
             }
-            if (!Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'no_plat')) {
+            if (! Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'no_plat')) {
                 $table->string('no_plat')->nullable();
             }
 
@@ -98,7 +98,7 @@ return new class extends Migration
                 $columnsToRemove[] = 'pic';
             }
 
-            if (!empty($columnsToRemove)) {
+            if (! empty($columnsToRemove)) {
                 $table->dropColumn($columnsToRemove);
             }
         });

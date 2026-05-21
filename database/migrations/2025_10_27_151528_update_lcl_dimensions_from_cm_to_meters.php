@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -14,9 +12,9 @@ return new class extends Migration
     {
         // Konversi data LCL items dari cm ke meter
         // Asumsi: data lama disimpan dalam cm, perlu dikonversi ke meter
-        
+
         // Update tanda_terima_lcl_items - konversi dari cm ke meter
-        DB::statement("
+        DB::statement('
             UPDATE tanda_terima_lcl_items 
             SET 
                 panjang = CASE 
@@ -40,7 +38,7 @@ return new class extends Migration
                     THEN panjang * lebar * tinggi
                     ELSE meter_kubik 
                 END
-        ");
+        ');
 
         // Update comments untuk menunjukkan bahwa sekarang dalam meter
         DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN panjang DECIMAL(10,2) NULL COMMENT 'Length in meters'");
@@ -54,7 +52,7 @@ return new class extends Migration
     public function down(): void
     {
         // Kembalikan dari meter ke cm (jika diperlukan rollback)
-        DB::statement("
+        DB::statement('
             UPDATE tanda_terima_lcl_items 
             SET 
                 panjang = CASE 
@@ -69,7 +67,7 @@ return new class extends Migration
                     WHEN tinggi IS NOT NULL AND tinggi <= 10 THEN tinggi * 100 
                     ELSE tinggi 
                 END
-        ");
+        ');
 
         // Kembalikan comment ke cm
         DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN panjang DECIMAL(10,2) NULL COMMENT 'Length in cm'");

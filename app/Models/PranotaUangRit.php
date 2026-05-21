@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class PranotaUangRit extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $fillable = [
         'no_pranota',
@@ -39,7 +38,7 @@ class PranotaUangRit extends Model
         'created_by',
         'updated_by',
         'approved_by',
-        'approved_at'
+        'approved_at',
     ];
 
     protected $casts = [
@@ -61,6 +60,7 @@ class PranotaUangRit extends Model
 
     // Status constants for kenek payment
     const KENEK_UNPAID = 'unpaid';
+
     const KENEK_PAID = 'paid';
 
     public function pembayaranUangRitKeneks(): BelongsToMany
@@ -75,9 +75,13 @@ class PranotaUangRit extends Model
 
     // Status constants
     const STATUS_DRAFT = 'draft';
+
     const STATUS_SUBMITTED = 'submitted';
+
     const STATUS_APPROVED = 'approved';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_CANCELLED = 'cancelled';
 
     public static function getStatusOptions()
@@ -87,13 +91,14 @@ class PranotaUangRit extends Model
             self::STATUS_SUBMITTED => 'Submitted',
             self::STATUS_APPROVED => 'Approved',
             self::STATUS_PAID => 'Paid',
-            self::STATUS_CANCELLED => 'Cancelled'
+            self::STATUS_CANCELLED => 'Cancelled',
         ];
     }
 
     public function getStatusLabelAttribute()
     {
         $statuses = self::getStatusOptions();
+
         return $statuses[$this->status] ?? $this->status;
     }
 
@@ -165,20 +170,20 @@ class PranotaUangRit extends Model
         $prefix = 'PUR'; // Pranota Uang Rit
         $year = date('Y');
         $month = date('m');
-        
+
         // Get the last number for this month
-        $lastPranota = self::where('no_pranota', 'like', $prefix . $year . $month . '%')
+        $lastPranota = self::where('no_pranota', 'like', $prefix.$year.$month.'%')
             ->orderBy('no_pranota', 'desc')
             ->first();
-        
+
         if ($lastPranota) {
             $lastNumber = (int) substr($lastPranota->no_pranota, -4);
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
-        
-        return $prefix . $year . $month . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+        return $prefix.$year.$month.str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 
     // Scopes
@@ -194,7 +199,7 @@ class PranotaUangRit extends Model
 
     public function scopeBySupir($query, $supirNama)
     {
-        return $query->where('supir_nama', 'like', '%' . $supirNama . '%');
+        return $query->where('supir_nama', 'like', '%'.$supirNama.'%');
     }
 
     /**
@@ -226,9 +231,10 @@ class PranotaUangRit extends Model
             ->where('status', PembayaranUangRit::STATUS_PAID)
             ->sum('pembayaran_pranota_uang_rit.uang_jalan_dibayar') +
             $this->pembayaranUangRits()
-            ->where('status', PembayaranUangRit::STATUS_PAID)
-            ->sum('pembayaran_pranota_uang_rit.uang_rit_dibayar');
+                ->where('status', PembayaranUangRit::STATUS_PAID)
+                ->sum('pembayaran_pranota_uang_rit.uang_rit_dibayar');
     }
+
     /**
      * Get the payments (PembayaranPranotaRit) for this pranota
      */

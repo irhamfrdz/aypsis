@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
-use App\Traits\Auditable;
 class Coa extends Model
 {
     use Auditable;
@@ -18,11 +17,11 @@ class Coa extends Model
         'kode_nomor',
         'nama_akun',
         'tipe_akun',
-        'saldo'
+        'saldo',
     ];
 
     protected $casts = [
-        'saldo' => 'decimal:2'
+        'saldo' => 'decimal:2',
     ];
 
     /**

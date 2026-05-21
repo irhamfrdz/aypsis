@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('kontainers', function (Blueprint $table) {
             // Drop foreign key first if it exists
             $table->dropForeign(['gate_in_id']);
-            
+
             // Then drop the column
             $table->dropColumn('gate_in_id');
         });

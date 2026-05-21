@@ -1,12 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\Auth;
+
 use App\Models\Permohonan;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
-
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SupirDashboardController extends Controller
 {
@@ -14,7 +14,7 @@ class SupirDashboardController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
@@ -27,46 +27,47 @@ class SupirDashboardController extends Controller
 
         // Ambil permohonan yang sedang berjalan (menggunakan supir_id)
         $permohonans = Permohonan::where('supir_id', $supirId)
-                     ->whereNotIn('status', ['Selesai', 'Dibatalkan'])
-                     ->latest()
-                     ->get();
+            ->whereNotIn('status', ['Selesai', 'Dibatalkan'])
+            ->latest()
+            ->get();
 
         // Ambil surat jalan yang perlu checkpoint atau sedang berjalan (menggunakan nama_lengkap karyawan)
         // Untuk kegiatan bongkar tidak perlu cek pembayaran uang jalan
         // Exclude surat jalan yang sudah memiliki tanggal_checkpoint
-        $suratJalans = SuratJalan::where(function($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
-                         $query->where('supir', $supirNamaLengkap)
-                               ->orWhere('supir', $supirUsername)
-                               ->orWhere('supir', $supirName);
-                     })
-                     ->whereIn('status', ['belum masuk checkpoint', 'checkpoint_completed'])
-                     ->whereDoesntHave('tandaTerima')
-                     ->where(function($query) {
-                         // Untuk kegiatan bongkar, tidak perlu cek pembayaran
-                         // Untuk kegiatan lain, harus sudah dibayar
-                         $query->where('kegiatan', 'BK')
-                               ->orWhere('status_pembayaran_uang_jalan', 'dibayar');
-                     })
-                     ->whereNull('tanggal_checkpoint') // Belum ada checkpoint
-                     ->latest()
-                     ->get();
+        $suratJalans = SuratJalan::where(function ($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
+            $query->where('supir', $supirNamaLengkap)
+                ->orWhere('supir', $supirUsername)
+                ->orWhere('supir', $supirName);
+        })
+            ->whereIn('status', ['belum masuk checkpoint', 'checkpoint_completed'])
+            ->whereDoesntHave('tandaTerima')
+            ->where(function ($query) {
+                // Untuk kegiatan bongkar, tidak perlu cek pembayaran
+                // Untuk kegiatan lain, harus sudah dibayar
+                $query->where('kegiatan', 'BK')
+                    ->orWhere('status_pembayaran_uang_jalan', 'dibayar');
+            })
+            ->whereNull('tanggal_checkpoint') // Belum ada checkpoint
+            ->latest()
+            ->get();
 
         // Ambil surat jalan bongkaran dari tabel terpisah
         // Untuk surat jalan bongkaran, hanya filter berdasarkan tanggal_checkpoint
-        $suratJalanBongkarans = SuratJalanBongkaran::where(function($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
-                         $query->where('supir', $supirNamaLengkap)
-                               ->orWhere('supir', $supirUsername)
-                               ->orWhere('supir', $supirName);
-                     })
-                     ->whereDoesntHave('tandaTerima')
-                     ->whereNull('tanggal_checkpoint') // Belum ada checkpoint
-                     ->latest()
-                     ->get()
-                     ->map(function($item) {
-                         // Tambahkan identifier untuk membedakan tipe surat jalan
-                         $item->is_bongkaran = true;
-                         return $item;
-                     });
+        $suratJalanBongkarans = SuratJalanBongkaran::where(function ($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
+            $query->where('supir', $supirNamaLengkap)
+                ->orWhere('supir', $supirUsername)
+                ->orWhere('supir', $supirName);
+        })
+            ->whereDoesntHave('tandaTerima')
+            ->whereNull('tanggal_checkpoint') // Belum ada checkpoint
+            ->latest()
+            ->get()
+            ->map(function ($item) {
+                // Tambahkan identifier untuk membedakan tipe surat jalan
+                $item->is_bongkaran = true;
+
+                return $item;
+            });
 
         // Gabungkan kedua collection
         $suratJalans = $suratJalans->merge($suratJalanBongkarans)->sortByDesc('created_at');
@@ -77,7 +78,7 @@ class SupirDashboardController extends Controller
             'user_name' => $supirName,
             'karyawan_nama_lengkap' => $supirNamaLengkap,
             'found_surat_jalans' => $suratJalans->count(),
-            'surat_jalan_ids' => $suratJalans->pluck('id')->toArray()
+            'surat_jalan_ids' => $suratJalans->pluck('id')->toArray(),
         ]);
 
         // Build kegiatan map (kode => nama) so view can display human-friendly names
@@ -91,32 +92,32 @@ class SupirDashboardController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
         // Ambil data kapal dari master kapal yang aktif
         $masterKapals = \App\Models\MasterKapal::where('status', 'aktif')
-                                              ->orderBy('nama_kapal')
-                                              ->get();
+            ->orderBy('nama_kapal')
+            ->get();
 
         // Ambil data voyage dari naik_kapal - lebih akurat karena data real
         // Gunakan raw query untuk normalisasi nama kapal agar tidak double (misal KM. SEKAR vs KM SEKAR)
         $naikKapals = \App\Models\NaikKapal::whereNotNull('no_voyage')
-                                           ->whereNotNull('nama_kapal')
-                                           ->where('no_voyage', '!=', '')
-                                           ->where('nama_kapal', '!=', '')
-                                           ->select(
-                                               \DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) as normalized_nama_kapal"),
-                                               \DB::raw("MAX(TRIM(nama_kapal)) as nama_kapal"), // Ambil satu representasi nama untuk display
-                                               'no_voyage', 
-                                               \DB::raw('MAX(tanggal_muat) as tanggal_muat'),
-                                               \DB::raw('MAX(pelabuhan_tujuan) as pelabuhan_tujuan')
-                                           )
-                                           ->groupBy(\DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')))"), 'no_voyage')
-                                           ->orderBy('normalized_nama_kapal')
-                                           ->orderBy('no_voyage')
-                                           ->get();
+            ->whereNotNull('nama_kapal')
+            ->where('no_voyage', '!=', '')
+            ->where('nama_kapal', '!=', '')
+            ->select(
+                \DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) as normalized_nama_kapal"),
+                \DB::raw('MAX(TRIM(nama_kapal)) as nama_kapal'), // Ambil satu representasi nama untuk display
+                'no_voyage',
+                \DB::raw('MAX(tanggal_muat) as tanggal_muat'),
+                \DB::raw('MAX(pelabuhan_tujuan) as pelabuhan_tujuan')
+            )
+            ->groupBy(\DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')))"), 'no_voyage')
+            ->orderBy('normalized_nama_kapal')
+            ->orderBy('no_voyage')
+            ->get();
 
         // Debug log untuk melihat data yang tersedia
         \Log::info('OB Muat Data Debug (Naik Kapal)', [
@@ -124,30 +125,31 @@ class SupirDashboardController extends Controller
             'naik_kapals_count' => $naikKapals->count(),
             'master_kapal_names' => $masterKapals->pluck('nama_kapal')->toArray(),
             'naik_kapal_names' => $naikKapals->pluck('nama_kapal')->unique()->toArray(),
-            'sample_voyages' => $naikKapals->take(5)->map(function($item) {
-                return $item->nama_kapal . ' - ' . $item->no_voyage . ' (' . $item->tanggal_muat . ')';
+            'sample_voyages' => $naikKapals->take(5)->map(function ($item) {
+                return $item->nama_kapal.' - '.$item->no_voyage.' ('.$item->tanggal_muat.')';
             })->toArray(),
-            'voyage_by_kapal' => $naikKapals->groupBy('nama_kapal')->map(function($group) {
+            'voyage_by_kapal' => $naikKapals->groupBy('nama_kapal')->map(function ($group) {
                 return $group->pluck('no_voyage')->unique()->toArray();
-            })->toArray()
+            })->toArray(),
         ]);
-        
+
         // Check name matching between master and naik_kapal
         $masterNames = $masterKapals->pluck('nama_kapal')->toArray();
         $naikKapalNames = $naikKapals->pluck('nama_kapal')->unique()->toArray();
         $commonNames = array_intersect($masterNames, $naikKapalNames);
-        
+
         \Log::info('Kapal Name Matching (Naik Kapal)', [
             'common_names' => $commonNames,
             'master_only' => array_diff($masterNames, $naikKapalNames),
-            'naik_kapal_only' => array_diff($naikKapalNames, $masterNames)
+            'naik_kapal_only' => array_diff($naikKapalNames, $masterNames),
         ]);
 
         // Prepare voyage data as a plain PHP array for JS injection
         // Gunakan normalized_nama_kapal sebagai key grouping utama agar km. sekar dan km sekar jadi satu
-        $voyageData = $naikKapals->groupBy('normalized_nama_kapal')->mapWithKeys(function($voyages) {
+        $voyageData = $naikKapals->groupBy('normalized_nama_kapal')->mapWithKeys(function ($voyages) {
             $displayName = $voyages->first()->nama_kapal; // Ambil satu representasi nama untuk display
-            return [$displayName => $voyages->map(function($v) {
+
+            return [$displayName => $voyages->map(function ($v) {
                 return [
                     'voyage' => $v->no_voyage,
                     'tanggal_muat' => $v->tanggal_muat ? $v->tanggal_muat->format('d/m/Y') : '-',
@@ -164,7 +166,7 @@ class SupirDashboardController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
@@ -179,12 +181,12 @@ class SupirDashboardController extends Controller
 
         // Verifikasi bahwa voyage exist untuk kapal yang dipilih
         $pergerakanKapal = \App\Models\PergerakanKapal::where('nama_kapal', $request->kapal)
-                                                     ->where('voyage', $request->voyage)
-                                                     ->first();
+            ->where('voyage', $request->voyage)
+            ->first();
 
-        if (!$pergerakanKapal) {
+        if (! $pergerakanKapal) {
             return back()->withErrors(['voyage' => 'Data voyage tidak ditemukan untuk kapal yang dipilih.'])
-                        ->withInput();
+                ->withInput();
         }
 
         // Log activity untuk audit trail
@@ -194,21 +196,21 @@ class SupirDashboardController extends Controller
             'kapal' => $request->kapal,
             'voyage' => $request->voyage,
             'pergerakan_kapal_id' => $pergerakanKapal->id,
-            'timestamp' => now()
+            'timestamp' => now(),
         ]);
 
         // Redirect ke halaman index dengan parameter kapal dan voyage
         return redirect()->route('supir.ob-muat.index', [
             'kapal' => $request->kapal,
-            'voyage' => $request->voyage
-        ])->with('success', 'Data OB Muat berhasil disubmit untuk Kapal: ' . $request->kapal . ', Voyage: ' . $request->voyage);
+            'voyage' => $request->voyage,
+        ])->with('success', 'Data OB Muat berhasil disubmit untuk Kapal: '.$request->kapal.', Voyage: '.$request->voyage);
     }
 
     public function obMuatIndex(Request $request)
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
@@ -224,13 +226,13 @@ class SupirDashboardController extends Controller
         // Ambil data dari tabel naik_kapal berdasarkan kapal dan voyage
         // Gunakan normalisasi nama kapal agar pencarian fleksibel
         $normalizedKapal = $this->normalizeShipName($selectedKapal);
-        
+
         $bls = \App\Models\NaikKapal::whereRaw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) = ?", [$normalizedKapal])
-                             ->where('no_voyage', $selectedVoyage)
-                             ->whereNotNull('nomor_kontainer')
-                             ->where('nomor_kontainer', '!=', '')
-                             ->orderBy('nomor_kontainer')
-                             ->get();
+            ->where('no_voyage', $selectedVoyage)
+            ->whereNotNull('nomor_kontainer')
+            ->where('nomor_kontainer', '!=', '')
+            ->orderBy('nomor_kontainer')
+            ->get();
 
         // Tambahkan field nama_barang untuk view
         $bls->each(function ($naikKapal) {
@@ -243,18 +245,18 @@ class SupirDashboardController extends Controller
             'selected_voyage' => $selectedVoyage,
             'found_containers' => $bls->count(),
             'container_numbers' => $bls->pluck('nomor_kontainer')->toArray(),
-            'sudah_ob_status' => $bls->map(function($item) {
+            'sudah_ob_status' => $bls->map(function ($item) {
                 return [
                     'id' => $item->id,
                     'nomor_kontainer' => $item->nomor_kontainer,
                     'sudah_ob' => $item->sudah_ob,
                     'supir_id' => $item->supir_id,
-                    'tanggal_ob' => $item->tanggal_ob
+                    'tanggal_ob' => $item->tanggal_ob,
                 ];
             })->toArray(),
             'user_id' => $user->id,
             'user_name' => $user->name,
-            'source_table' => 'naik_kapal'
+            'source_table' => 'naik_kapal',
         ]);
 
         return view('supir.ob-muat-index', compact('bls', 'selectedKapal', 'selectedVoyage'));
@@ -264,7 +266,7 @@ class SupirDashboardController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
@@ -280,22 +282,24 @@ class SupirDashboardController extends Controller
         $naikKapalId = $request->get('naik_kapal_id');
 
         // Validasi apakah user memiliki karyawan_id
-        if (!$user->karyawan_id) {
+        if (! $user->karyawan_id) {
             \Log::error('OB Muat Process - No Karyawan ID', [
                 'user_id' => $user->id,
                 'user_name' => $user->name,
-                'karyawan_id' => null
+                'karyawan_id' => null,
             ]);
+
             return back()->with('error', '❌ Akun Anda belum terhubung dengan data karyawan. Silakan hubungi administrator.');
         }
 
         // Validasi apakah karyawan dengan ID tersebut ada
         $karyawan = \App\Models\Karyawan::find($user->karyawan_id);
-        if (!$karyawan) {
+        if (! $karyawan) {
             \Log::error('OB Muat Process - Karyawan Not Found', [
                 'user_id' => $user->id,
-                'karyawan_id' => $user->karyawan_id
+                'karyawan_id' => $user->karyawan_id,
             ]);
+
             return back()->with('error', '❌ Data karyawan tidak ditemukan. Silakan hubungi administrator.');
         }
 
@@ -305,45 +309,45 @@ class SupirDashboardController extends Controller
 
         // Cek apakah kontainer sudah di-OB sebelumnya
         if ($naikKapal->sudah_ob) {
-            return back()->with('error', 'Kontainer ' . $nomorKontainer . ' sudah pernah di-OB sebelumnya.');
+            return back()->with('error', 'Kontainer '.$nomorKontainer.' sudah pernah di-OB sebelumnya.');
         }
 
         try {
             \DB::beginTransaction();
-            
+
             // Log status sebelum update
             \Log::info('OB Muat Process - Before Update', [
                 'naik_kapal_id' => $naikKapal->id,
                 'sudah_ob_before' => $naikKapal->sudah_ob,
-                'nomor_kontainer' => $naikKapal->nomor_kontainer
+                'nomor_kontainer' => $naikKapal->nomor_kontainer,
             ]);
-            
+
             // Update status OB pada tabel naik_kapal dan mark driver & timestamp
             $naikKapal->sudah_ob = true;
             $naikKapal->supir_id = $user->karyawan_id; // Gunakan karyawan_id dari user
             $naikKapal->tanggal_ob = now();
-            $naikKapal->catatan_ob = 'OB Muat - diproses oleh ' . $user->name . ' (Karyawan ID: ' . $user->karyawan_id . ')';
+            $naikKapal->catatan_ob = 'OB Muat - diproses oleh '.$user->name.' (Karyawan ID: '.$user->karyawan_id.')';
             $naikKapal->updated_by = $user->id;
             $saved = $naikKapal->save();
-            
+
             // Verifikasi save berhasil
-            if (!$saved) {
+            if (! $saved) {
                 throw new \Exception('Gagal menyimpan status OB pada naik_kapal');
             }
-            
+
             // Refresh dari database untuk memastikan data tersimpan
             $naikKapal->refresh();
-            
+
             // Log dan verifikasi status setelah save
             \Log::info('OB Muat Process - After Update', [
                 'naik_kapal_id' => $naikKapal->id,
                 'sudah_ob_after' => $naikKapal->sudah_ob,
                 'save_result' => $saved,
-                'nomor_kontainer' => $naikKapal->nomor_kontainer
+                'nomor_kontainer' => $naikKapal->nomor_kontainer,
             ]);
-            
+
             // Double check - jika masih false, throw error
-            if (!$naikKapal->sudah_ob) {
+            if (! $naikKapal->sudah_ob) {
                 throw new \Exception('Status sudah_ob gagal tersimpan - nilai masih false setelah refresh dari database');
             }
 
@@ -351,26 +355,26 @@ class SupirDashboardController extends Controller
             $prospek = null;
             $tandaTerima = null;
             $suratJalan = null;
-            
+
             if ($naikKapal->prospek_id) {
                 $prospek = \App\Models\Prospek::with(['tandaTerima', 'suratJalan'])->find($naikKapal->prospek_id);
-                
+
                 if ($prospek) {
                     // Update status prospek menjadi sudah_muat
                     $prospek->status = 'sudah_muat';
                     $prospek->updated_by = $user->id;
                     $prospek->save();
-                    
+
                     // Ambil data tanda terima jika ada
                     $tandaTerima = $prospek->tandaTerima;
                     $suratJalan = $prospek->suratJalan;
-                    
+
                     \Log::info('OB Muat Process - Prospek Status Updated', [
                         'prospek_id' => $prospek->id,
                         'old_status' => 'aktif',
                         'new_status' => 'sudah_muat',
-                        'has_tanda_terima' => !is_null($tandaTerima),
-                        'has_surat_jalan' => !is_null($suratJalan)
+                        'has_tanda_terima' => ! is_null($tandaTerima),
+                        'has_surat_jalan' => ! is_null($suratJalan),
                     ]);
                 }
             }
@@ -398,7 +402,7 @@ class SupirDashboardController extends Controller
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
             ];
-            
+
             // Tambahkan data dari tanda terima jika ada
             if ($tandaTerima) {
                 $blData['pengirim'] = $tandaTerima->pengirim ?? ($prospek ? $prospek->pt_pengirim : null);
@@ -407,18 +411,18 @@ class SupirDashboardController extends Controller
                 $blData['contact_person'] = $tandaTerima->contact_person;
                 $blData['term'] = $tandaTerima->term;
                 $blData['satuan'] = $tandaTerima->satuan;
-            } else if ($prospek) {
+            } elseif ($prospek) {
                 // Jika tidak ada tanda terima, ambil dari prospek
                 $blData['pengirim'] = $prospek->pt_pengirim;
             }
-            
+
             $bl = \App\Models\Bl::create($blData);
 
             \DB::commit();
-            
+
             // Verifikasi final setelah commit - query langsung dari database
             $verifikasi = \App\Models\NaikKapal::find($naikKapal->id);
-            
+
             // Log activity untuk debugging
             \Log::info('OB Muat Process - Completed', [
                 'naik_kapal_id' => $naikKapal->id,
@@ -431,27 +435,27 @@ class SupirDashboardController extends Controller
                 'sudah_ob_verified' => $verifikasi->sudah_ob,
                 'supir_id_verified' => $verifikasi->supir_id,
                 'tanggal_ob_verified' => $verifikasi->tanggal_ob,
-                'timestamp' => now()
+                'timestamp' => now(),
             ]);
 
             return redirect()->route('supir.ob-muat.index', [
                 'kapal' => $selectedKapal,
-                'voyage' => $selectedVoyage
-            ])->with('success', 'OB Muat berhasil diproses untuk kontainer ' . $nomorKontainer . '! Data BL telah dibuat.');
+                'voyage' => $selectedVoyage,
+            ])->with('success', 'OB Muat berhasil diproses untuk kontainer '.$nomorKontainer.'! Data BL telah dibuat.');
 
         } catch (\Exception $e) {
             \DB::rollBack();
-            
+
             \Log::error('Error processing OB Muat', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'user_id' => $user->id,
                 'naik_kapal_id' => $naikKapalId,
                 'kapal' => $selectedKapal,
-                'voyage' => $selectedVoyage
+                'voyage' => $selectedVoyage,
             ]);
 
-            return back()->with('error', 'Terjadi kesalahan saat memproses OB Muat: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memproses OB Muat: '.$e->getMessage());
         }
     }
 
@@ -459,7 +463,7 @@ class SupirDashboardController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
@@ -486,20 +490,20 @@ class SupirDashboardController extends Controller
 
         // Cek apakah sudah ada tagihan OB untuk kontainer ini
         $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $request->kapal)
-                                                  ->where('voyage', $request->voyage)
-                                                  ->where('nomor_kontainer', $request->nomor_kontainer)
-                                                  ->first();
+            ->where('voyage', $request->voyage)
+            ->where('nomor_kontainer', $request->nomor_kontainer)
+            ->first();
 
         if ($existingTagihanOb) {
             return back()->withErrors(['nomor_kontainer' => 'Tagihan OB untuk kontainer ini sudah ada.'])
-                        ->withInput();
+                ->withInput();
         }
 
         // Ambil data BL untuk referensi
         $bl = \App\Models\Bl::where('nama_kapal', $request->kapal)
-                           ->where('no_voyage', $request->voyage)
-                           ->where('nomor_kontainer', $request->nomor_kontainer)
-                           ->first();
+            ->where('no_voyage', $request->voyage)
+            ->where('nomor_kontainer', $request->nomor_kontainer)
+            ->first();
 
         try {
             // Simpan tagihan OB
@@ -527,24 +531,24 @@ class SupirDashboardController extends Controller
                 'nomor_kontainer' => $request->nomor_kontainer,
                 'status_kontainer' => $request->status_kontainer,
                 'biaya' => $request->biaya,
-                'timestamp' => now()
+                'timestamp' => now(),
             ]);
 
             return redirect()->route('supir.ob-muat.index', [
                 'kapal' => $request->kapal,
-                'voyage' => $request->voyage
-            ])->with('success', 'Data OB Muat berhasil disimpan ke dalam tagihan OB. Kontainer: ' . $request->nomor_kontainer . ', Status: ' . ucfirst($request->status_kontainer) . ', Biaya: Rp ' . number_format($request->biaya, 0, ',', '.'));
+                'voyage' => $request->voyage,
+            ])->with('success', 'Data OB Muat berhasil disimpan ke dalam tagihan OB. Kontainer: '.$request->nomor_kontainer.', Status: '.ucfirst($request->status_kontainer).', Biaya: Rp '.number_format($request->biaya, 0, ',', '.'));
 
         } catch (\Exception $e) {
             \Log::error('Error creating TagihanOb', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'user_id' => $user->id,
-                'request_data' => $request->all()
+                'request_data' => $request->all(),
             ]);
 
             return back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.'])
-                        ->withInput();
+                ->withInput();
         }
     }
 
@@ -555,36 +559,37 @@ class SupirDashboardController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
         // Ambil data master kapal untuk dropdown
         $masterKapals = \App\Models\MasterKapal::orderBy('nama_kapal')->get();
-        
+
         // Ambil data dari BL untuk bongkar kontainer (dikelompokkan berdasarkan kapal dan voyage)
         // Gunakan raw query untuk normalisasi nama kapal agar tidak muncul double (misal KM. SEKAR vs KM SEKAR)
         $blsDataForVoyage = \App\Models\Bl::select(
-                                    \DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) as normalized_nama_kapal"),
-                                    \DB::raw("MAX(TRIM(nama_kapal)) as nama_kapal"), // Ambil satu representasi nama untuk display
-                                    'no_voyage'
-                                  )
-                                  ->whereNotNull('nama_kapal')
-                                  ->whereNotNull('no_voyage')
-                                  ->where('nama_kapal', '!=', '')
-                                  ->where('no_voyage', '!=', '')
-                                  ->groupBy(\DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')))"), 'no_voyage')
-                                  ->orderBy('normalized_nama_kapal')
-                                  ->orderBy('no_voyage')
-                                  ->get();
+            \DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) as normalized_nama_kapal"),
+            \DB::raw('MAX(TRIM(nama_kapal)) as nama_kapal'), // Ambil satu representasi nama untuk display
+            'no_voyage'
+        )
+            ->whereNotNull('nama_kapal')
+            ->whereNotNull('no_voyage')
+            ->where('nama_kapal', '!=', '')
+            ->where('no_voyage', '!=', '')
+            ->groupBy(\DB::raw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')))"), 'no_voyage')
+            ->orderBy('normalized_nama_kapal')
+            ->orderBy('no_voyage')
+            ->get();
 
         // Build voyage data map
         // Gunakan normalized_nama_kapal sebagai key grouping utama agar km. sekar dan km sekar jadi satu
-        $voyageData = $blsDataForVoyage->groupBy('normalized_nama_kapal')->mapWithKeys(function($voyages) {
+        $voyageData = $blsDataForVoyage->groupBy('normalized_nama_kapal')->mapWithKeys(function ($voyages) {
             $displayName = $voyages->first()->nama_kapal; // Ambil satu representasi nama untuk display
-            return [$displayName => $voyages->map(function($v) {
+
+            return [$displayName => $voyages->map(function ($v) {
                 return [
-                    'voyage' => $v->no_voyage
+                    'voyage' => $v->no_voyage,
                 ];
             })->values()->toArray()];
         })->toArray();
@@ -593,7 +598,7 @@ class SupirDashboardController extends Controller
             'user_id' => $user->id,
             'user_name' => $user->name,
             'master_kapals_count' => $masterKapals->count(),
-            'voyage_data_count' => count($voyageData)
+            'voyage_data_count' => count($voyageData),
         ]);
 
         return view('supir.ob-bongkar', compact('masterKapals', 'voyageData'));
@@ -606,7 +611,7 @@ class SupirDashboardController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
@@ -622,14 +627,14 @@ class SupirDashboardController extends Controller
         // Verifikasi bahwa voyage exist untuk kapal yang dipilih di BL
         // Gunakan normalisasi nama kapal
         $normalizedKapal = $this->normalizeShipName($request->kapal);
-        
-        $blExists = \App\Models\Bl::whereRaw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) = ?", [$normalizedKapal])
-                                  ->where('no_voyage', $request->voyage)
-                                  ->exists();
 
-        if (!$blExists) {
+        $blExists = \App\Models\Bl::whereRaw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) = ?", [$normalizedKapal])
+            ->where('no_voyage', $request->voyage)
+            ->exists();
+
+        if (! $blExists) {
             return back()->withErrors(['voyage' => 'Data voyage tidak ditemukan untuk kapal yang dipilih.'])
-                        ->withInput();
+                ->withInput();
         }
 
         // Log activity untuk audit trail
@@ -638,14 +643,14 @@ class SupirDashboardController extends Controller
             'user_name' => $user->name,
             'kapal' => $request->kapal,
             'voyage' => $request->voyage,
-            'timestamp' => now()
+            'timestamp' => now(),
         ]);
 
         // Redirect ke halaman index dengan parameter kapal dan voyage
         return redirect()->route('supir.ob-bongkar.index', [
             'kapal' => $request->kapal,
-            'voyage' => $request->voyage
-        ])->with('success', 'Data OB Bongkar berhasil disubmit untuk Kapal: ' . $request->kapal . ', Voyage: ' . $request->voyage);
+            'voyage' => $request->voyage,
+        ])->with('success', 'Data OB Bongkar berhasil disubmit untuk Kapal: '.$request->kapal.', Voyage: '.$request->voyage);
     }
 
     /**
@@ -655,7 +660,7 @@ class SupirDashboardController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
@@ -673,11 +678,11 @@ class SupirDashboardController extends Controller
         $normalizedKapal = $this->normalizeShipName($selectedKapal);
 
         $bls = \App\Models\Bl::whereRaw("TRIM(UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' '))) = ?", [$normalizedKapal])
-                             ->where('no_voyage', $selectedVoyage)
-                             ->whereNotNull('nomor_kontainer')
-                             ->where('nomor_kontainer', '!=', '')
-                             ->orderBy('nomor_kontainer')
-                             ->get();
+            ->where('no_voyage', $selectedVoyage)
+            ->whereNotNull('nomor_kontainer')
+            ->where('nomor_kontainer', '!=', '')
+            ->orderBy('nomor_kontainer')
+            ->get();
 
         // Log untuk debugging
         \Log::info('OB Bongkar Index Data', [
@@ -686,7 +691,7 @@ class SupirDashboardController extends Controller
             'found_containers' => $bls->count(),
             'container_numbers' => $bls->pluck('nomor_kontainer')->toArray(),
             'user_id' => $user->id,
-            'user_name' => $user->name
+            'user_name' => $user->name,
         ]);
 
         return view('supir.ob-bongkar-index', compact('bls', 'selectedKapal', 'selectedVoyage'));
@@ -699,11 +704,11 @@ class SupirDashboardController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             \Log::warning('OB Bongkar Process - Unauthorized Access', [
                 'user_id' => $user->id ?? null,
                 'user_name' => $user->name ?? null,
-                'is_supir' => false
+                'is_supir' => false,
             ]);
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
@@ -719,8 +724,9 @@ class SupirDashboardController extends Controller
             \Log::error('OB Bongkar Process - Validation Failed', [
                 'errors' => $e->errors(),
                 'request_data' => $request->all(),
-                'user_id' => $user->id
+                'user_id' => $user->id,
             ]);
+
             return back()->with('error', 'Data tidak lengkap. Pastikan kapal, voyage, dan kontainer sudah dipilih.');
         }
 
@@ -729,27 +735,29 @@ class SupirDashboardController extends Controller
         $blId = $request->get('bl_id');
 
         // Validasi apakah user memiliki karyawan_id
-        if (!$user->karyawan_id) {
+        if (! $user->karyawan_id) {
             \Log::error('OB Bongkar Process - No Karyawan ID', [
                 'user_id' => $user->id,
                 'user_name' => $user->name,
                 'karyawan_id' => null,
                 'error' => 'User tidak memiliki karyawan_id',
-                'solution' => 'Set karyawan_id di tabel users untuk user ini'
+                'solution' => 'Set karyawan_id di tabel users untuk user ini',
             ]);
-            return back()->with('error', '❌ Akun Anda (User ID: ' . $user->id . ' - ' . $user->name . ') belum terhubung dengan data karyawan. Silakan hubungi administrator untuk mengatur karyawan_id di akun Anda.');
+
+            return back()->with('error', '❌ Akun Anda (User ID: '.$user->id.' - '.$user->name.') belum terhubung dengan data karyawan. Silakan hubungi administrator untuk mengatur karyawan_id di akun Anda.');
         }
 
         // Validasi apakah karyawan dengan ID tersebut ada
         $karyawan = \App\Models\Karyawan::find($user->karyawan_id);
-        if (!$karyawan) {
+        if (! $karyawan) {
             \Log::error('OB Bongkar Process - Karyawan Not Found', [
                 'user_id' => $user->id,
                 'user_name' => $user->name,
                 'karyawan_id' => $user->karyawan_id,
-                'error' => 'Karyawan dengan ID ' . $user->karyawan_id . ' tidak ditemukan di tabel karyawans'
+                'error' => 'Karyawan dengan ID '.$user->karyawan_id.' tidak ditemukan di tabel karyawans',
             ]);
-            return back()->with('error', '❌ Data karyawan (ID: ' . $user->karyawan_id . ') tidak ditemukan di sistem. Silakan hubungi administrator.');
+
+            return back()->with('error', '❌ Data karyawan (ID: '.$user->karyawan_id.') tidak ditemukan di sistem. Silakan hubungi administrator.');
         }
 
         // Log request awal
@@ -760,7 +768,7 @@ class SupirDashboardController extends Controller
             'user_id' => $user->id,
             'user_name' => $user->name,
             'karyawan_id' => $karyawan->id,
-            'karyawan_nama' => $karyawan->nama_lengkap ?? $karyawan->nama_panggilan
+            'karyawan_nama' => $karyawan->nama_lengkap ?? $karyawan->nama_panggilan,
         ]);
 
         // Ambil data BL dengan detailed logging
@@ -769,8 +777,9 @@ class SupirDashboardController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             \Log::error('OB Bongkar Process - BL Not Found', [
                 'bl_id' => $blId,
-                'error' => 'Data kontainer tidak ditemukan di database'
+                'error' => 'Data kontainer tidak ditemukan di database',
             ]);
+
             return back()->with('error', 'Data kontainer tidak ditemukan. Silakan refresh halaman dan coba lagi.');
         }
 
@@ -783,23 +792,23 @@ class SupirDashboardController extends Controller
             'sudah_ob_before' => $bl->sudah_ob,
             'supir_id_before' => $bl->supir_id,
             'tanggal_ob_before' => $bl->tanggal_ob,
-            'updated_at_before' => $bl->updated_at
+            'updated_at_before' => $bl->updated_at,
         ]);
 
         // Cek apakah kontainer sudah di-OB sebelumnya
         if ($bl->sudah_ob) {
             $supirName = $bl->supir ? $bl->supir->nama_panggilan : 'Unknown';
             $tanggalOb = $bl->tanggal_ob ? $bl->tanggal_ob->format('d-m-Y H:i') : 'Unknown';
-            
+
             \Log::warning('OB Bongkar Process - Already OB', [
                 'bl_id' => $bl->id,
                 'nomor_kontainer' => $nomorKontainer,
                 'sudah_ob' => true,
                 'supir_sebelumnya' => $supirName,
-                'tanggal_ob_sebelumnya' => $tanggalOb
+                'tanggal_ob_sebelumnya' => $tanggalOb,
             ]);
-            
-            return back()->with('error', 'Kontainer ' . $nomorKontainer . ' sudah pernah di-OB oleh ' . $supirName . ' pada ' . $tanggalOb . '. Tidak dapat OB ulang.');
+
+            return back()->with('error', 'Kontainer '.$nomorKontainer.' sudah pernah di-OB oleh '.$supirName.' pada '.$tanggalOb.'. Tidak dapat OB ulang.');
         }
 
         try {
@@ -807,14 +816,14 @@ class SupirDashboardController extends Controller
             $bl->sudah_ob = true;
             $bl->supir_id = $user->karyawan_id; // Gunakan karyawan_id dari user
             $bl->tanggal_ob = now();
-            $bl->catatan_ob = 'OB Bongkar - diproses oleh ' . $user->name . ' (Karyawan ID: ' . $user->karyawan_id . ')';
+            $bl->catatan_ob = 'OB Bongkar - diproses oleh '.$user->name.' (Karyawan ID: '.$user->karyawan_id.')';
             $bl->updated_by = $user->id;
-            
+
             // Attempt to save with detailed error handling
             $saved = $bl->save();
 
             // Verify save was successful
-            if (!$saved) {
+            if (! $saved) {
                 throw new \Exception('Model save() returned false - data gagal tersimpan ke database');
             }
 
@@ -822,7 +831,7 @@ class SupirDashboardController extends Controller
             $bl->refresh();
 
             // Verify data was actually updated in database
-            if (!$bl->sudah_ob) {
+            if (! $bl->sudah_ob) {
                 throw new \Exception('Status sudah_ob gagal tersimpan - nilai masih false setelah refresh dari database');
             }
 
@@ -839,13 +848,13 @@ class SupirDashboardController extends Controller
                 'updated_at_after' => $bl->updated_at,
                 'save_result' => $saved,
                 'verified' => 'Data berhasil tersimpan dan terverifikasi',
-                'timestamp' => now()
+                'timestamp' => now(),
             ]);
 
             return redirect()->route('supir.ob-bongkar.index', [
                 'kapal' => $selectedKapal,
-                'voyage' => $selectedVoyage
-            ])->with('success', '✓ OB Bongkar berhasil! Kontainer ' . $nomorKontainer . ' telah diproses oleh ' . $user->name . ' pada ' . now()->format('d-m-Y H:i'));
+                'voyage' => $selectedVoyage,
+            ])->with('success', '✓ OB Bongkar berhasil! Kontainer '.$nomorKontainer.' telah diproses oleh '.$user->name.' pada '.now()->format('d-m-Y H:i'));
 
         } catch (\Illuminate\Database\QueryException $e) {
             \Log::error('OB Bongkar Process - Database Error', [
@@ -856,10 +865,10 @@ class SupirDashboardController extends Controller
                 'bl_id' => $blId,
                 'nomor_kontainer' => $nomorKontainer,
                 'user_id' => $user->id,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return back()->with('error', '❌ Gagal menyimpan ke database. Error: ' . $e->getMessage() . '. Silakan hubungi administrator atau coba lagi.');
+            return back()->with('error', '❌ Gagal menyimpan ke database. Error: '.$e->getMessage().'. Silakan hubungi administrator atau coba lagi.');
 
         } catch (\Exception $e) {
             \Log::error('OB Bongkar Process - General Error', [
@@ -873,10 +882,10 @@ class SupirDashboardController extends Controller
                 'voyage' => $selectedVoyage,
                 'user_id' => $user->id,
                 'request_data' => $request->all(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
-            return back()->with('error', '❌ Terjadi kesalahan: ' . $e->getMessage() . '. Silakan screenshot error ini dan hubungi administrator.');
+            return back()->with('error', '❌ Terjadi kesalahan: '.$e->getMessage().'. Silakan screenshot error ini dan hubungi administrator.');
         }
     }
 
@@ -885,10 +894,13 @@ class SupirDashboardController extends Controller
      */
     private function normalizeShipName($name)
     {
-        if (!$name) return '';
+        if (! $name) {
+            return '';
+        }
         $name = strtoupper($name);
         $name = str_replace('.', '', $name);
         $name = preg_replace('/\s+/', ' ', $name);
+
         return trim($name);
     }
 }

@@ -18,12 +18,12 @@ class GateInAktivitas extends Model
         'box',
         'itm',
         'tarif',
-        'total'
+        'total',
     ];
 
     protected $casts = [
         'tarif' => 'decimal:2',
-        'total' => 'decimal:2'
+        'total' => 'decimal:2',
     ];
 
     /**

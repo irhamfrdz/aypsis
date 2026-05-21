@@ -30,6 +30,7 @@ trait AsuransiManageable
         if ($hasAsuransi) {
             return $query->whereNotNull('asuransi_path');
         }
+
         return $query->whereNull('asuransi_path');
     }
 

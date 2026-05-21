@@ -19,27 +19,24 @@ class PricelistThcExport implements FromCollection, WithHeadings, WithMapping, W
     }
 
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function collection()
     {
         $query = PricelistThc::query();
 
         if ($this->search) {
             $search = $this->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_barang', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%")
-                  ->orWhere('vendor', 'like', "%{$search}%");
+                    ->orWhere('lokasi', 'like', "%{$search}%")
+                    ->orWhere('vendor', 'like', "%{$search}%");
             });
         }
 
         return $query->latest()->get();
     }
 
-    /**
-     * @return array
-     */
     public function headings(): array
     {
         return [
@@ -53,8 +50,7 @@ class PricelistThcExport implements FromCollection, WithHeadings, WithMapping, W
     }
 
     /**
-     * @param mixed $item
-     * @return array
+     * @param  mixed  $item
      */
     public function map($item): array
     {

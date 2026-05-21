@@ -12,7 +12,7 @@ class PranotaSupirFactory extends Factory
     public function definition()
     {
         return [
-            'nomor_pranota' => 'PR-' . $this->faker->unique()->numerify('#####'),
+            'nomor_pranota' => 'PR-'.$this->faker->unique()->numerify('#####'),
             'tanggal_pranota' => $this->faker->date('Y-m-d'),
             'total_biaya_memo' => $this->faker->randomFloat(2, 50000, 500000),
             'adjustment' => null,

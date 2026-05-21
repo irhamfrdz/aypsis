@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Auditable;
 
 class PembayaranAktivitasLainnya extends Model
 {
-    use HasFactory, SoftDeletes, Auditable;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $table = 'pembayaran_aktivitas_lainnya';
 
@@ -28,13 +28,13 @@ class PembayaranAktivitasLainnya extends Model
         'status',
         'created_by',
         'approved_by',
-        'approved_at'
+        'approved_at',
     ];
 
     protected $casts = [
         'tanggal_pembayaran' => 'date',
         'total_pembayaran' => 'decimal:2',
-        'approved_at' => 'datetime'
+        'approved_at' => 'datetime',
     ];
 
     /**
@@ -95,7 +95,7 @@ class PembayaranAktivitasLainnya extends Model
         $prefix = "PMS{$year}{$month}";
 
         $lastRecord = self::withTrashed()
-            ->where('nomor_pembayaran', 'like', $prefix . '%')
+            ->where('nomor_pembayaran', 'like', $prefix.'%')
             ->lockForUpdate()
             ->orderBy('nomor_pembayaran', 'desc')
             ->first();
@@ -107,7 +107,7 @@ class PembayaranAktivitasLainnya extends Model
             $newNumber = 1;
         }
 
-        return $prefix . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($newNumber, 6, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -139,7 +139,7 @@ class PembayaranAktivitasLainnya extends Model
      */
     public function getStatusColorAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'draft' => 'gray',
             'pending' => 'yellow',
             'approved' => 'blue',

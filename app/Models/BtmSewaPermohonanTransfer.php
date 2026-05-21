@@ -35,7 +35,7 @@ class BtmSewaPermohonanTransfer extends Model
     public function pranotas()
     {
         return $this->belongsToMany(BtmSewaPranota::class, 'btm_sewa_permohonan_transfer_details', 'permohonan_id', 'btm_sewa_pranota_id')
-                    ->withPivot('subtotal');
+            ->withPivot('subtotal');
     }
 
     public function payment()

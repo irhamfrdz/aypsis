@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Models\Tujuan;
 use App\Models\Cabang;
+use App\Models\Tujuan;
 use Illuminate\Http\Request;
 
 class TujuanController extends Controller
@@ -18,8 +19,9 @@ class TujuanController extends Controller
      */
     public function index()
     {
-    $tujuans = Tujuan::paginate(10);
-    return view('master-tujuan.index', compact('tujuans'));
+        $tujuans = Tujuan::paginate(10);
+
+        return view('master-tujuan.index', compact('tujuans'));
     }
 
     /**
@@ -30,13 +32,13 @@ class TujuanController extends Controller
     public function create()
     {
         $cabangs = Cabang::orderBy('nama_cabang')->get();
+
         return view('master-tujuan.create', compact('cabangs'));
     }
 
     /**
      * Simpan tujuan baru ke database.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
@@ -58,10 +60,10 @@ class TujuanController extends Controller
 
         // ensure defaults for numeric fields
         $numericDefaults = [
-            'uang_jalan','uang_jalan_20','ongkos_truk_20','uang_jalan_40','ongkos_truk_40','antar_20','antar_40'
+            'uang_jalan', 'uang_jalan_20', 'ongkos_truk_20', 'uang_jalan_40', 'ongkos_truk_40', 'antar_20', 'antar_40',
         ];
         foreach ($numericDefaults as $nf) {
-            if (!isset($validated[$nf])) {
+            if (! isset($validated[$nf])) {
                 $validated[$nf] = 0;
             }
         }
@@ -74,20 +76,18 @@ class TujuanController extends Controller
     /**
      * Tampilkan form untuk mengedit tujuan yang ada.
      *
-     * @param  \App\Models\Tujuan  $tujuan
      * @return \Illuminate\View\View
      */
     public function edit(Tujuan $tujuan)
     {
         $cabangs = Cabang::orderBy('nama_cabang')->get();
+
         return view('master-tujuan.edit', compact('tujuan', 'cabangs'));
     }
 
     /**
      * Perbarui tujuan yang ada di database.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Tujuan  $tujuan
      * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, Tujuan $tujuan)
@@ -108,10 +108,10 @@ class TujuanController extends Controller
         ]);
 
         $numericDefaults = [
-            'uang_jalan','uang_jalan_20','ongkos_truk_20','uang_jalan_40','ongkos_truk_40','antar_20','antar_40'
+            'uang_jalan', 'uang_jalan_20', 'ongkos_truk_20', 'uang_jalan_40', 'ongkos_truk_40', 'antar_20', 'antar_40',
         ];
         foreach ($numericDefaults as $nf) {
-            if (!isset($validated[$nf])) {
+            if (! isset($validated[$nf])) {
                 $validated[$nf] = 0;
             }
         }
@@ -124,7 +124,6 @@ class TujuanController extends Controller
     /**
      * Hapus tujuan dari database.
      *
-     * @param  \App\Models\Tujuan  $tujuan
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Tujuan $tujuan)

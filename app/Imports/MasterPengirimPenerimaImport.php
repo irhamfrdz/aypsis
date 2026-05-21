@@ -3,13 +3,13 @@
 namespace App\Imports;
 
 use App\Models\MasterPengirimPenerima;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
 
 class MasterPengirimPenerimaImport
 {
     protected $errors = [];
+
     protected $successCount = 0;
 
     public function import($file)
@@ -19,6 +19,7 @@ class MasterPengirimPenerimaImport
 
         if (empty($data)) {
             $this->errors[] = 'File kosong atau tidak dapat dibaca';
+
             return false;
         }
 
@@ -31,7 +32,7 @@ class MasterPengirimPenerimaImport
 
         return [
             'success_count' => $this->successCount,
-            'errors' => $this->errors
+            'errors' => $this->errors,
         ];
     }
 
@@ -51,6 +52,7 @@ class MasterPengirimPenerimaImport
         }
 
         fclose($handle);
+
         return $data;
     }
 
@@ -65,22 +67,23 @@ class MasterPengirimPenerimaImport
         $validator = Validator::make([
             'nama' => $nama,
             'alamat' => $alamat,
-            'npwp' => $npwp
+            'npwp' => $npwp,
         ], [
             'nama' => 'required|string|max:255',
             'alamat' => 'nullable|string',
-            'npwp' => 'nullable|string|max:20'
+            'npwp' => 'nullable|string|max:20',
         ]);
 
         if ($validator->fails()) {
-            $this->errors[] = "Baris {$rowNumber}: " . implode(', ', $validator->errors()->all());
+            $this->errors[] = "Baris {$rowNumber}: ".implode(', ', $validator->errors()->all());
+
             return;
         }
 
         try {
             // Generate kode otomatis
             $kode = MasterPengirimPenerima::generateKode();
-            
+
             MasterPengirimPenerima::create([
                 'kode' => $kode,
                 'nama' => $nama,
@@ -88,12 +91,12 @@ class MasterPengirimPenerimaImport
                 'npwp' => $npwp ?: null,
                 'status' => 'active',
                 'created_by' => Auth::id(),
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
 
             $this->successCount++;
         } catch (\Exception $e) {
-            $this->errors[] = "Baris {$rowNumber}: Gagal menyimpan data - " . $e->getMessage();
+            $this->errors[] = "Baris {$rowNumber}: Gagal menyimpan data - ".$e->getMessage();
         }
     }
 }

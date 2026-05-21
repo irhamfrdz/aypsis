@@ -27,19 +27,19 @@ class CheckDivisiData extends Command
     {
         $divisis = \App\Models\Divisi::with('karyawans')->get();
 
-        $this->info('Total divisis: ' . $divisis->count());
+        $this->info('Total divisis: '.$divisis->count());
         $this->newLine();
 
         $this->info('Divisi details:');
-        foreach($divisis as $divisi) {
-            $this->line($divisi->nama_divisi . ' (' . $divisi->kode_divisi . '): ' . $divisi->karyawans->count() . ' karyawan');
+        foreach ($divisis as $divisi) {
+            $this->line($divisi->nama_divisi.' ('.$divisi->kode_divisi.'): '.$divisi->karyawans->count().' karyawan');
         }
 
-        $totalKaryawan = $divisis->sum(function($divisi) {
+        $totalKaryawan = $divisis->sum(function ($divisi) {
             return $divisi->karyawans->count();
         });
 
         $this->newLine();
-        $this->info('Total karyawan terkait: ' . $totalKaryawan);
+        $this->info('Total karyawan terkait: '.$totalKaryawan);
     }
 }

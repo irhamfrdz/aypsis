@@ -2,28 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TandaTerimaTanpaSuratJalan;
-use App\Models\TandaTerimaDimensiItem;
-use App\Models\TandaTerimaLcl;
-use App\Models\Term;
-use App\Models\Pengirim;
+use App\Exports\TandaTerimaTanpaSuratJalanExport;
 use App\Models\Karyawan;
-use App\Models\MasterTujuanKirim;
+use App\Models\Kontainer;
 use App\Models\MasterKapal;
 use App\Models\MasterPengirimPenerima;
+use App\Models\MasterTujuanKirim;
 use App\Models\Penerima;
+use App\Models\Pengirim;
 use App\Models\Prospek;
-use App\Models\Kontainer;
 use App\Models\StockKontainer;
+use App\Models\TandaTerimaTanpaSuratJalan;
+use App\Models\Term;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\TandaTerimaTanpaSuratJalanExport;
 
 class TandaTerimaTanpaSuratJalanController extends Controller
 {
@@ -34,35 +31,36 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         $this->middleware('permission:tanda-terima-tanpa-surat-jalan-update', ['only' => ['edit', 'update']]);
         $this->middleware('permission:tanda-terima-tanpa-surat-jalan-delete', ['only' => ['destroy']]);
     }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
         $tipe = $request->get('tipe');
-        
+
         // Jika tipe LCL dipilih, ambil data dari tabel tanda_terima_lcl
         if ($tipe == 'lcl') {
             $query = \App\Models\TandaTerimaLcl::query();
-            
+
             // Search functionality untuk LCL
             if ($request->filled('search')) {
                 $searchTerm = $request->search;
-                $query->where(function($q) use ($searchTerm) {
-                    $q->where('nomor_tanda_terima', 'LIKE', '%' . $searchTerm . '%')
-                      ->orWhere('supir', 'LIKE', '%' . $searchTerm . '%')
-                      ->orWhere('no_plat', 'LIKE', '%' . $searchTerm . '%')
-                      ->orWhere('nama_penerima', 'LIKE', '%' . $searchTerm . '%')
-                      ->orWhere('nama_pengirim', 'LIKE', '%' . $searchTerm . '%')
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('nomor_tanda_terima', 'LIKE', '%'.$searchTerm.'%')
+                        ->orWhere('supir', 'LIKE', '%'.$searchTerm.'%')
+                        ->orWhere('no_plat', 'LIKE', '%'.$searchTerm.'%')
+                        ->orWhere('nama_penerima', 'LIKE', '%'.$searchTerm.'%')
+                        ->orWhere('nama_pengirim', 'LIKE', '%'.$searchTerm.'%')
                       // Search di pivot kontainer
-                      ->orWhereHas('kontainerPivot', function($kq) use ($searchTerm) {
-                          $kq->where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                             ->orWhere('nomor_seal', 'LIKE', '%' . $searchTerm . '%');
-                      })
+                        ->orWhereHas('kontainerPivot', function ($kq) use ($searchTerm) {
+                            $kq->where('nomor_kontainer', 'LIKE', '%'.$searchTerm.'%')
+                                ->orWhere('nomor_seal', 'LIKE', '%'.$searchTerm.'%');
+                        })
                       // Search di tabel items (nama barang)
-                      ->orWhereHas('items', function($iq) use ($searchTerm) {
-                          $iq->where('nama_barang', 'LIKE', '%' . $searchTerm . '%');
-                      });
+                        ->orWhereHas('items', function ($iq) use ($searchTerm) {
+                            $iq->where('nama_barang', 'LIKE', '%'.$searchTerm.'%');
+                        });
                 });
             }
 
@@ -74,28 +72,28 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // Seal status filter untuk LCL
             if ($request->filled('seal_status')) {
                 if ($request->seal_status === 'sealed') {
-                    $query->whereHas('kontainerPivot', function($q) {
+                    $query->whereHas('kontainerPivot', function ($q) {
                         $q->whereNotNull('nomor_seal')->where('nomor_seal', '!=', '');
                     });
                 } elseif ($request->seal_status === 'unsealed') {
-                    $query->where(function($q) {
+                    $query->where(function ($q) {
                         $q->whereDoesntHave('kontainerPivot')
-                          ->orWhereHas('kontainerPivot', function($sq) {
-                              $sq->whereNull('nomor_seal')->orWhere('nomor_seal', '');
-                          });
+                            ->orWhereHas('kontainerPivot', function ($sq) {
+                                $sq->whereNull('nomor_seal')->orWhere('nomor_seal', '');
+                            });
                     });
                 }
             }
 
             // Eager load semua relasi
             $tandaTerimas = $query->with([
-                    'term', 
-                    'tujuanPengiriman',
-                    'tujuanKirim', 
-                    'createdBy',
-                    'items',
-                    'kontainerPivot'
-                ])
+                'term',
+                'tujuanPengiriman',
+                'tujuanKirim',
+                'createdBy',
+                'items',
+                'kontainerPivot',
+            ])
                 ->orderBy('created_at', 'desc')
                 ->paginate(request('per_page', 15))
                 ->appends(request()->query());
@@ -107,7 +105,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 'terkirim' => 0,
                 'selesai' => 0,
             ];
-            
+
             // Set flag untuk view bahwa ini data LCL
             $isLclData = true;
         } else {
@@ -124,7 +122,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 if ($request->seal_status === 'sealed') {
                     $query->whereNotNull('no_seal')->where('no_seal', '!=', '');
                 } elseif ($request->seal_status === 'unsealed') {
-                    $query->where(function($q) {
+                    $query->where(function ($q) {
                         $q->whereNull('no_seal')->orWhere('no_seal', '');
                     });
                 }
@@ -151,7 +149,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 'terkirim' => 0,
                 'selesai' => 0,
             ];
-            
+
             $isLclData = false;
         }
 
@@ -161,24 +159,24 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             ->where('nomor_seri_gabungan', '!=', '')
             ->select('nomor_seri_gabungan', 'ukuran')
             ->get()
-            ->map(function($item) {
-                return (object)[
+            ->map(function ($item) {
+                return (object) [
                     'nomor_seri_gabungan' => $item->nomor_seri_gabungan,
-                    'ukuran' => $item->ukuran
+                    'ukuran' => $item->ukuran,
                 ];
             });
-            
+
         $kontainers = Kontainer::whereNotNull('nomor_seri_gabungan')
             ->where('nomor_seri_gabungan', '!=', '')
             ->select('nomor_seri_gabungan', 'ukuran')
             ->get()
-            ->map(function($item) {
-                return (object)[
+            ->map(function ($item) {
+                return (object) [
                     'nomor_seri_gabungan' => $item->nomor_seri_gabungan,
-                    'ukuran' => $item->ukuran
+                    'ukuran' => $item->ukuran,
                 ];
             });
-            
+
         // Gabungkan dengan concat (tidak overwrite key) lalu unique
         $availableKontainers = $stockKontainers->concat($kontainers)
             ->unique('nomor_seri_gabungan')
@@ -203,42 +201,42 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         // Validasi tipe kontainer harus ada
         $tipe = $request->get('tipe');
-        if (!in_array($tipe, ['fcl', 'lcl', 'cargo'])) {
+        if (! in_array($tipe, ['fcl', 'lcl', 'cargo'])) {
             return redirect()->route('tanda-terima-tanpa-surat-jalan.pilih-tipe')
                 ->with('error', 'Silakan pilih tipe kontainer terlebih dahulu.');
         }
 
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
-        $penerimas = Penerima::where('status', 'active')->get()->map(function($item) {
+        $penerimas = Penerima::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama_penerima,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function($item) {
+        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $masterPengirimPenerima = $penerimas->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function($item) {
-            return (object)$item;
+        $masterPengirimPenerima = $penerimas->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function ($item) {
+            return (object) $item;
         });
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
-                          ->orderBy('nama_panggilan')
-                          ->get(['id', 'nama_lengkap', 'nama_panggilan']);
+            ->orderBy('nama_panggilan')
+            ->get(['id', 'nama_lengkap', 'nama_panggilan']);
         $kranis = Karyawan::whereRaw('UPPER(divisi) = ?', ['KRANI'])->get();
-                $tujuan_kirims = MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
-                // Load kegiatan list from master_kegiatans (use same type as surat jalan if available)
-                $kegiatanSuratJalan = \App\Models\MasterKegiatan::where(function($q) {
-                        $q->where('type', 'kegiatan tanda terima')
-                            ->orWhere('type', 'kegiatan surat jalan');
-                })->where('status', 'Aktif')
-                    ->orderBy('nama_kegiatan')
-                    ->get(['id', 'nama_kegiatan']);
+        $tujuan_kirims = MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
+        // Load kegiatan list from master_kegiatans (use same type as surat jalan if available)
+        $kegiatanSuratJalan = \App\Models\MasterKegiatan::where(function ($q) {
+            $q->where('type', 'kegiatan tanda terima')
+                ->orWhere('type', 'kegiatan surat jalan');
+        })->where('status', 'Aktif')
+            ->orderBy('nama_kegiatan')
+            ->get(['id', 'nama_kegiatan']);
         $master_kapals = MasterKapal::where('status', 'aktif')->get();
-        
+
         // Debug: pastikan data tujuan ada
         Log::info('Tujuan Kirims Data:', ['count' => $tujuan_kirims->count(), 'data' => $tujuan_kirims->toArray()]);
 
@@ -252,7 +250,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $nomor = $k->nomor_kontainer;
             $merged[$nomor] = [
                 'value' => $nomor,
-                'label' => $nomor . ' (Kontainer)',
+                'label' => $nomor.' (Kontainer)',
                 'size' => $k->ukuran ?? null,
                 'source' => 'kontainer',
                 'status' => $k->status ?? null,
@@ -261,10 +259,10 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
         foreach ($stockKontainers as $s) {
             $nomor = $s->nomor_kontainer;
-            if (!isset($merged[$nomor])) {
+            if (! isset($merged[$nomor])) {
                 $merged[$nomor] = [
                     'value' => $nomor,
-                    'label' => $nomor . ' (Stock)',
+                    'label' => $nomor.' (Stock)',
                     'size' => $s->ukuran ?? null,
                     'source' => 'stock',
                     'status' => $s->status ?? null,
@@ -286,27 +284,27 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
-        $penerimas = Penerima::where('status', 'active')->get()->map(function($item) {
+        $penerimas = Penerima::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama_penerima,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function($item) {
+        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $masterPengirimPenerima = $penerimas->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function($item) {
-            return (object)$item;
+        $masterPengirimPenerima = $penerimas->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function ($item) {
+            return (object) $item;
         });
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
-                          ->orderBy('nama_panggilan')
-                          ->get(['id', 'nama_lengkap', 'nama_panggilan']);
+            ->orderBy('nama_panggilan')
+            ->get(['id', 'nama_lengkap', 'nama_panggilan']);
         $kranis = Karyawan::whereRaw('UPPER(divisi) = ?', ['KRANI'])->get();
         $tujuanKegiatanUtamas = MasterTujuanKirim::where('status', 'active')->get();
-        
+
         // Get jenis barangs using raw SQL with proper column names
         $jenisBarangs = DB::table('jenis_barangs')
             ->select('id', 'nama_barang', 'kode', 'status')
@@ -322,7 +320,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $nomor = $k->nomor_kontainer;
             $merged[$nomor] = [
                 'value' => $nomor,
-                'label' => $nomor . ' (Kontainer)',
+                'label' => $nomor.' (Kontainer)',
                 'size' => $k->ukuran ?? null,
                 'source' => 'kontainer',
                 'status' => $k->status ?? null,
@@ -330,10 +328,10 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         }
         foreach ($stockKontainers as $s) {
             $nomor = $s->nomor_kontainer;
-            if (!isset($merged[$nomor])) {
+            if (! isset($merged[$nomor])) {
                 $merged[$nomor] = [
                     'value' => $nomor,
-                    'label' => $nomor . ' (Stock)',
+                    'label' => $nomor.' (Stock)',
                     'size' => $s->ukuran ?? null,
                     'source' => 'stock',
                     'status' => $s->status ?? null,
@@ -343,14 +341,13 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         $containerOptions = array_values($merged);
 
         return view('tanda-terima-tanpa-surat-jalan.create-lcl', compact(
-            'terms', 
+            'terms',
             'pengirims',
             'masterPengirimPenerima',
-            'supirs', 
-            'kranis', 
-            'tujuanKegiatanUtamas', 
-            'jenisBarangs'
-        , 'containerOptions'));
+            'supirs',
+            'kranis',
+            'tujuanKegiatanUtamas',
+            'jenisBarangs', 'containerOptions'));
     }
 
     /**
@@ -360,15 +357,16 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         $ids = $request->input('ids', []);
 
-        $fileName = 'tanda_terima_tanpa_surat_jalan_export_' . date('Ymd_His') . '.xlsx';
+        $fileName = 'tanda_terima_tanpa_surat_jalan_export_'.date('Ymd_His').'.xlsx';
 
         // If IDs provided, export selected
-        if (!empty($ids)) {
+        if (! empty($ids)) {
             try {
                 return Excel::download(new TandaTerimaTanpaSuratJalanExport($ids), $fileName);
             } catch (\Exception $e) {
-                Log::error('Error exporting selected Tanda Terima Tanpa Surat Jalan: ' . $e->getMessage());
-                return redirect()->back()->with('error', 'Gagal export tanda terima: ' . $e->getMessage());
+                Log::error('Error exporting selected Tanda Terima Tanpa Surat Jalan: '.$e->getMessage());
+
+                return redirect()->back()->with('error', 'Gagal export tanda terima: '.$e->getMessage());
             }
         }
 
@@ -384,13 +382,13 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         }
 
         $query = TandaTerimaTanpaSuratJalan::query();
-        if (!empty($tipe) && in_array($tipe, ['fcl', 'cargo'])) {
+        if (! empty($tipe) && in_array($tipe, ['fcl', 'cargo'])) {
             $query->where('tipe_kontainer', $tipe);
         }
-        if (!empty($search)) {
+        if (! empty($search)) {
             $query->search($search);
         }
-        if (!empty($start_date) && !empty($end_date)) {
+        if (! empty($start_date) && ! empty($end_date)) {
             $query->byDateRange($start_date, $end_date);
         }
 
@@ -399,8 +397,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         try {
             return Excel::download(new TandaTerimaTanpaSuratJalanExport($items), $fileName);
         } catch (\Exception $e) {
-            Log::error('Error exporting filtered Tanda Terima Tanpa Surat Jalan: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal export tanda terima: ' . $e->getMessage());
+            Log::error('Error exporting filtered Tanda Terima Tanpa Surat Jalan: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal export tanda terima: '.$e->getMessage());
         }
     }
 
@@ -546,12 +545,12 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
             // Set created_by and handle nomor_tanda_terima
             $validated['created_by'] = Auth::user()->name;
-            
+
             // Use manual number or generate if empty
-            $validated['no_tanda_terima'] = !empty($validated['nomor_tanda_terima']) 
-                ? $validated['nomor_tanda_terima'] 
+            $validated['no_tanda_terima'] = ! empty($validated['nomor_tanda_terima'])
+                ? $validated['nomor_tanda_terima']
                 : TandaTerimaTanpaSuratJalan::generateNoTandaTerima();
-            
+
             // Sync nomor_tanda_terima for backward compatibility
             $validated['nomor_tanda_terima'] = $validated['no_tanda_terima'];
 
@@ -575,7 +574,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 count($validated['meter_kubik'] ?? []),
                 count($validated['tonase'] ?? [])
             );
-            
+
             $namaBarangArray = [];
             $jumlahArray = [];
             $satuanArray = [];
@@ -585,17 +584,17 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $ukuranArray = [];
             $meterKubikArray = [];
             $tonaseArray = [];
-            
+
             for ($idx = 0; $idx < $maxCount; $idx++) {
-                $namaBarangArray[$idx] = isset($validated['nama_barang'][$idx]) ? trim((string)$validated['nama_barang'][$idx]) : null;
-                $jumlahArray[$idx] = isset($validated['jumlah'][$idx]) && is_numeric($validated['jumlah'][$idx]) ? (int)$validated['jumlah'][$idx] : null;
-                $satuanArray[$idx] = isset($validated['satuan'][$idx]) ? trim((string)$validated['satuan'][$idx]) : null;
-                $panjangArray[$idx] = isset($validated['panjang'][$idx]) && is_numeric($validated['panjang'][$idx]) ? (float)$validated['panjang'][$idx] : null;
-                $lebarArray[$idx] = isset($validated['lebar'][$idx]) && is_numeric($validated['lebar'][$idx]) ? (float)$validated['lebar'][$idx] : null;
-                $tinggiArray[$idx] = isset($validated['tinggi'][$idx]) && is_numeric($validated['tinggi'][$idx]) ? (float)$validated['tinggi'][$idx] : null;
-                $ukuranArray[$idx] = isset($validated['ukuran'][$idx]) ? trim((string)$validated['ukuran'][$idx]) : null;
-                $meterKubikArray[$idx] = isset($validated['meter_kubik'][$idx]) && is_numeric($validated['meter_kubik'][$idx]) ? (float)$validated['meter_kubik'][$idx] : null;
-                $tonaseArray[$idx] = isset($validated['tonase'][$idx]) && is_numeric($validated['tonase'][$idx]) ? (float)$validated['tonase'][$idx] : null;
+                $namaBarangArray[$idx] = isset($validated['nama_barang'][$idx]) ? trim((string) $validated['nama_barang'][$idx]) : null;
+                $jumlahArray[$idx] = isset($validated['jumlah'][$idx]) && is_numeric($validated['jumlah'][$idx]) ? (int) $validated['jumlah'][$idx] : null;
+                $satuanArray[$idx] = isset($validated['satuan'][$idx]) ? trim((string) $validated['satuan'][$idx]) : null;
+                $panjangArray[$idx] = isset($validated['panjang'][$idx]) && is_numeric($validated['panjang'][$idx]) ? (float) $validated['panjang'][$idx] : null;
+                $lebarArray[$idx] = isset($validated['lebar'][$idx]) && is_numeric($validated['lebar'][$idx]) ? (float) $validated['lebar'][$idx] : null;
+                $tinggiArray[$idx] = isset($validated['tinggi'][$idx]) && is_numeric($validated['tinggi'][$idx]) ? (float) $validated['tinggi'][$idx] : null;
+                $ukuranArray[$idx] = isset($validated['ukuran'][$idx]) ? trim((string) $validated['ukuran'][$idx]) : null;
+                $meterKubikArray[$idx] = isset($validated['meter_kubik'][$idx]) && is_numeric($validated['meter_kubik'][$idx]) ? (float) $validated['meter_kubik'][$idx] : null;
+                $tonaseArray[$idx] = isset($validated['tonase'][$idx]) && is_numeric($validated['tonase'][$idx]) ? (float) $validated['tonase'][$idx] : null;
             }
 
             // Debug: Log extracted arrays (sanitized)
@@ -624,24 +623,24 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             unset($validated['meter_kubik'], $validated['tonase']);
 
             // Set backward compatibility fields from first item or defaults
-            if (!empty($namaBarangArray)) {
+            if (! empty($namaBarangArray)) {
                 $validated['nama_barang'] = $namaBarangArray[0] ?? null;
             }
-            if (!empty($jumlahArray)) {
+            if (! empty($jumlahArray)) {
                 $validated['jumlah_barang'] = $jumlahArray[0] ?? 1;
             }
-            if (!empty($satuanArray)) {
+            if (! empty($satuanArray)) {
                 $validated['satuan_barang'] = $satuanArray[0] ?? 'unit';
             }
-            
+
             // Set total volume and weight from arrays
-            if (!empty($tinggiArray)) {
+            if (! empty($tinggiArray)) {
                 $validated['ukuran'] = $ukuranArray[0] ?? null;
             }
-            if (!empty($meterKubikArray)) {
+            if (! empty($meterKubikArray)) {
                 $validated['meter_kubik'] = array_sum(array_filter($meterKubikArray, 'is_numeric'));
             }
-            if (!empty($tonaseArray)) {
+            if (! empty($tonaseArray)) {
                 $validated['tonase'] = array_sum(array_filter($tonaseArray, 'is_numeric'));
             }
 
@@ -649,9 +648,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $uploadedImages = [];
             if ($request->hasFile('gambar_tanda_terima')) {
                 $uploadedImages = $this->handleImageUpload($request->file('gambar_tanda_terima'), $validated['nomor_tanda_terima'] ?? null);
-                if (!empty($uploadedImages)) {
+                if (! empty($uploadedImages)) {
                     $validated['gambar_tanda_terima'] = json_encode($uploadedImages);
-                    
+
                     Log::info('Images uploaded for tanda terima tanpa surat jalan', [
                         'images_count' => count($uploadedImages),
                         'uploaded_by' => Auth::user() ? Auth::user()->name : null,
@@ -678,7 +677,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $tonase = $tonaseArray[$i] ?? null;
 
                 // Only create if at least one field has meaningful data (not all nulls)
-                if (!is_null($namaBarang) || !is_null($panjang) || !is_null($lebar) || !is_null($tinggi) || !is_null($ukuran) || !is_null($meterKubik) || !is_null($tonase)) {
+                if (! is_null($namaBarang) || ! is_null($panjang) || ! is_null($lebar) || ! is_null($tinggi) || ! is_null($ukuran) || ! is_null($meterKubik) || ! is_null($tonase)) {
                     Log::info('Creating dimensi item', [
                         'index' => $i,
                         'namaBarang' => $namaBarang,
@@ -700,7 +699,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                         'ukuran' => $ukuran,
                         'meter_kubik' => $meterKubik,
                         'tonase' => $tonase,
-                        'item_order' => $i
+                        'item_order' => $i,
                     ]);
                 }
             }
@@ -711,7 +710,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             if ($request->filled('gudang_id') && $request->filled('no_kontainer')) {
                 $gudangId = $request->input('gudang_id');
                 $noKontainer = $request->input('no_kontainer');
-                
+
                 // Update Kontainer
                 $kontainerModel = Kontainer::where('nomor_seri_gabungan', $noKontainer)->first();
                 if ($kontainerModel) {
@@ -726,11 +725,11 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                         'tanggal_kegiatan' => $validated['tanggal_tanda_terima'],
                         'asal_gudang_id' => $asalGudangId,
                         'gudang_id' => $gudangId,
-                        'keterangan' => 'Masuk via Tanda Terima Tanpa Surat Jalan: ' . $validated['no_tanda_terima'],
-                        'created_by' => \Illuminate\Support\Facades\Auth::id()
+                        'keterangan' => 'Masuk via Tanda Terima Tanpa Surat Jalan: '.$validated['no_tanda_terima'],
+                        'created_by' => \Illuminate\Support\Facades\Auth::id(),
                     ]);
                 }
-                    
+
                 // Update StockKontainer
                 $stockKontainerModel = StockKontainer::where('nomor_seri_gabungan', $noKontainer)->first();
                 if ($stockKontainerModel) {
@@ -738,7 +737,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     $stockKontainerModel->update(['gudangs_id' => $gudangId]);
 
                     // Log to HistoryKontainer (only if not already logged by Kontainer model)
-                    if (!$kontainerModel) {
+                    if (! $kontainerModel) {
                         \App\Models\HistoryKontainer::create([
                             'nomor_kontainer' => $noKontainer,
                             'tipe_kontainer' => $stockKontainerModel->tipe_kontainer ?? 'fcl',
@@ -746,8 +745,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                             'tanggal_kegiatan' => $validated['tanggal_tanda_terima'],
                             'asal_gudang_id' => $asalGudangId,
                             'gudang_id' => $gudangId,
-                            'keterangan' => 'Masuk via Tanda Terima Tanpa Surat Jalan (Stock): ' . $validated['no_tanda_terima'],
-                            'created_by' => \Illuminate\Support\Facades\Auth::id()
+                            'keterangan' => 'Masuk via Tanda Terima Tanpa Surat Jalan (Stock): '.$validated['no_tanda_terima'],
+                            'created_by' => \Illuminate\Support\Facades\Auth::id(),
                         ]);
                     }
                 }
@@ -757,7 +756,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             if ($request->filled('simpan_ke_prospek') || true) { // Always create prospek
                 // Extract size from size_kontainer (e.g., "20 ft" -> "20")
                 $ukuran = null;
-                if (!empty($validated['size_kontainer'])) {
+                if (! empty($validated['size_kontainer'])) {
                     $sizeStr = $validated['size_kontainer'];
                     if (strpos($sizeStr, '20') !== false) {
                         $ukuran = '20';
@@ -770,19 +769,19 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     }
                 }
 
-            // Determine tipe based on tipe_kontainer
-            $tipeKontainer = $validated['tipe_kontainer_selected'] ?? $validated['tipe_kontainer'] ?? 'fcl';
-            $tipeProspek = 'FCL'; // Default
-            if ($tipeKontainer === 'lcl') {
-                $tipeProspek = 'LCL';
-            } elseif ($tipeKontainer === 'cargo') {
-                $tipeProspek = 'CARGO';
-            }
-            
-            // Use the selected tipe for the record
-            if (isset($validated['tipe_kontainer_selected'])) {
-                $validated['tipe_kontainer'] = $validated['tipe_kontainer_selected'];
-            }                // Use correct field names based on validation rules
+                // Determine tipe based on tipe_kontainer
+                $tipeKontainer = $validated['tipe_kontainer_selected'] ?? $validated['tipe_kontainer'] ?? 'fcl';
+                $tipeProspek = 'FCL'; // Default
+                if ($tipeKontainer === 'lcl') {
+                    $tipeProspek = 'LCL';
+                } elseif ($tipeKontainer === 'cargo') {
+                    $tipeProspek = 'CARGO';
+                }
+
+                // Use the selected tipe for the record
+                if (isset($validated['tipe_kontainer_selected'])) {
+                    $validated['tipe_kontainer'] = $validated['tipe_kontainer_selected'];
+                }                // Use correct field names based on validation rules
                 $penerima = $validated['penerima'] ?? $validated['nama_penerima'] ?? 'Tidak diketahui';
                 $pengirim = $validated['pengirim'] ?? $validated['nama_pengirim'] ?? 'Tidak diketahui';
 
@@ -801,11 +800,11 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     'total_ton' => $validated['tonase'] ?? null,
                     'total_volume' => $validated['meter_kubik'] ?? null,
                     'kuantitas' => $validated['jumlah_barang'] ?? 1,
-                    'keterangan' => 'Auto-generated from Tanda Terima Tanpa Surat Jalan: ' . $tandaTerima->no_tanda_terima . 
-                                  (isset($validated['catatan']) && $validated['catatan'] ? ' | Catatan: ' . $validated['catatan'] : '') .
-                                  ($penerima !== 'Tidak diketahui' ? ' | Penerima: ' . $penerima : ''),
+                    'keterangan' => 'Auto-generated from Tanda Terima Tanpa Surat Jalan: '.$tandaTerima->no_tanda_terima.
+                                  (isset($validated['catatan']) && $validated['catatan'] ? ' | Catatan: '.$validated['catatan'] : '').
+                                  ($penerima !== 'Tidak diketahui' ? ' | Penerima: '.$penerima : ''),
                     'status' => 'aktif',
-                    'created_by' => Auth::id()
+                    'created_by' => Auth::id(),
                 ]);
 
                 $prospekCreated = true;
@@ -819,11 +818,12 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             }
 
             return redirect()->route('tanda-terima-tanpa-surat-jalan.index')
-                           ->with('success', $message);
+                ->with('success', $message);
         } catch (\Exception $e) {
             DB::rollback();
+
             return back()->withInput()
-                        ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -834,7 +834,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         // Load dimensi items relationship
         $tandaTerimaTanpaSuratJalan->load(['dimensiItems', 'term', 'creator', 'updater']);
-        
+
         return view('tanda-terima-tanpa-surat-jalan.show', compact('tandaTerimaTanpaSuratJalan'));
     }
 
@@ -845,24 +845,24 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
-        $penerimas = Penerima::where('status', 'active')->get()->map(function($item) {
+        $penerimas = Penerima::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama_penerima,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function($item) {
+        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $masterPengirimPenerima = $penerimas->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function($item) {
-            return (object)$item;
+        $masterPengirimPenerima = $penerimas->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function ($item) {
+            return (object) $item;
         });
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
-                          ->orderBy('nama_panggilan')
-                          ->get(['id', 'nama_lengkap', 'nama_panggilan']);
+            ->orderBy('nama_panggilan')
+            ->get(['id', 'nama_lengkap', 'nama_panggilan']);
         $kranis = Karyawan::whereRaw('UPPER(divisi) = ?', ['KRANI'])->get();
         $tujuan_kirims = MasterTujuanKirim::where('status', 'active')->get();
         $master_kapals = MasterKapal::where('status', 'aktif')->get();
@@ -875,7 +875,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $nomor = $k->nomor_kontainer;
             $merged[$nomor] = [
                 'value' => $nomor,
-                'label' => $nomor . ' (Kontainer)',
+                'label' => $nomor.' (Kontainer)',
                 'size' => $k->ukuran ?? null,
                 'source' => 'kontainer',
                 'status' => $k->status ?? null,
@@ -883,10 +883,10 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         }
         foreach ($stockKontainers as $s) {
             $nomor = $s->nomor_kontainer;
-            if (!isset($merged[$nomor])) {
+            if (! isset($merged[$nomor])) {
                 $merged[$nomor] = [
                     'value' => $nomor,
-                    'label' => $nomor . ' (Stock)',
+                    'label' => $nomor.' (Stock)',
                     'size' => $s->ukuran ?? null,
                     'source' => 'stock',
                     'status' => $s->status ?? null,
@@ -897,6 +897,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
         // Eager load dimensiItems for edit view
         $tandaTerimaTanpaSuratJalan->load('dimensiItems');
+
         return view('tanda-terima-tanpa-surat-jalan.edit', compact('tandaTerimaTanpaSuratJalan', 'terms', 'pengirims', 'masterPengirimPenerima', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals', 'containerOptions'));
     }
 
@@ -979,20 +980,20 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $validated['updated_by'] = Auth::user()->name;
 
             // Map edit blade inputs to correct database fields
-            if (!empty($validated['nama_penerima']) && empty($validated['penerima'])) {
+            if (! empty($validated['nama_penerima']) && empty($validated['penerima'])) {
                 $validated['penerima'] = $validated['nama_penerima'];
             }
-            if (!empty($validated['nama_pengirim']) && empty($validated['pengirim'])) {
+            if (! empty($validated['nama_pengirim']) && empty($validated['pengirim'])) {
                 $validated['pengirim'] = $validated['nama_pengirim'];
             }
-            if (!empty($validated['pic_penerima']) && empty($validated['pic'])) {
+            if (! empty($validated['pic_penerima']) && empty($validated['pic'])) {
                 $validated['pic'] = $validated['pic_penerima'];
             }
             // For pic we might prefer pic_pengirim or just use pic_penerima. If edit form uses pic_penerima mostly, this is fine.
-            if (!empty($validated['telepon_penerima']) && empty($validated['telepon'])) {
+            if (! empty($validated['telepon_penerima']) && empty($validated['telepon'])) {
                 $validated['telepon'] = $validated['telepon_penerima'];
             }
-            if (!empty($validated['nomor_tanda_terima'])) {
+            if (! empty($validated['nomor_tanda_terima'])) {
                 $validated['no_tanda_terima'] = $validated['nomor_tanda_terima'];
             }
             // Clean up non-fillable variables
@@ -1011,7 +1012,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     // Normalize storage path (strip possible asset prefix)
                     $normalizedPath = ltrim(preg_replace('#^https?://[^/]+/storage/#', '', $pathToDelete), '/');
                     // Remove from existingImages
-                    $existingImages = array_values(array_filter($existingImages, function($v) use ($normalizedPath) {
+                    $existingImages = array_values(array_filter($existingImages, function ($v) use ($normalizedPath) {
                         return $v !== $normalizedPath && ltrim($v, '/') !== ltrim($normalizedPath, '/');
                     }));
                     // Remove from storage if present
@@ -1025,9 +1026,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $newUploads = [];
             if ($request->hasFile('gambar_tanda_terima')) {
                 $newUploads = $this->handleImageUpload($request->file('gambar_tanda_terima'), $validated['nomor_tanda_terima'] ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima);
-                if (!empty($newUploads)) {
-                    
-                    
+                if (! empty($newUploads)) {
+
                     Log::info('New image uploads during update', ['count' => count($newUploads), 'uploaded_by' => Auth::user() ? Auth::user()->name : null]);
                 }
             }
@@ -1038,7 +1038,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             if (count($mergedImages) > 5) {
                 $mergedImages = array_slice($mergedImages, 0, 5);
             }
-            if (!empty($mergedImages)) {
+            if (! empty($mergedImages)) {
                 $validated['gambar_tanda_terima'] = json_encode($mergedImages);
             } else {
                 $validated['gambar_tanda_terima'] = null;
@@ -1077,14 +1077,14 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $tonaseClean = [];
 
                 for ($i = 0; $i < $maxCount; $i++) {
-                    $namaBarangArray[$i] = isset($namaArray[$i]) ? trim((string)$namaArray[$i]) : null;
-                    $jumlahClean[$i] = isset($jumlahArray[$i]) && is_numeric($jumlahArray[$i]) ? (int)$jumlahArray[$i] : null;
-                    $satuanClean[$i] = isset($satuanArray[$i]) ? trim((string)$satuanArray[$i]) : null;
-                    $panjangClean[$i] = isset($panjangArray[$i]) && is_numeric($panjangArray[$i]) ? (float)$panjangArray[$i] : null;
-                    $lebarClean[$i] = isset($lebarArray[$i]) && is_numeric($lebarArray[$i]) ? (float)$lebarArray[$i] : null;
-                    $tinggiClean[$i] = isset($tinggiArray[$i]) && is_numeric($tinggiArray[$i]) ? (float)$tinggiArray[$i] : null;
-                    $meterClean[$i] = isset($meterArray[$i]) && is_numeric($meterArray[$i]) ? (float)$meterArray[$i] : null;
-                    $tonaseClean[$i] = isset($tonaseArray[$i]) && is_numeric($tonaseArray[$i]) ? (float)$tonaseArray[$i] : null;
+                    $namaBarangArray[$i] = isset($namaArray[$i]) ? trim((string) $namaArray[$i]) : null;
+                    $jumlahClean[$i] = isset($jumlahArray[$i]) && is_numeric($jumlahArray[$i]) ? (int) $jumlahArray[$i] : null;
+                    $satuanClean[$i] = isset($satuanArray[$i]) ? trim((string) $satuanArray[$i]) : null;
+                    $panjangClean[$i] = isset($panjangArray[$i]) && is_numeric($panjangArray[$i]) ? (float) $panjangArray[$i] : null;
+                    $lebarClean[$i] = isset($lebarArray[$i]) && is_numeric($lebarArray[$i]) ? (float) $lebarArray[$i] : null;
+                    $tinggiClean[$i] = isset($tinggiArray[$i]) && is_numeric($tinggiArray[$i]) ? (float) $tinggiArray[$i] : null;
+                    $meterClean[$i] = isset($meterArray[$i]) && is_numeric($meterArray[$i]) ? (float) $meterArray[$i] : null;
+                    $tonaseClean[$i] = isset($tonaseArray[$i]) && is_numeric($tonaseArray[$i]) ? (float) $tonaseArray[$i] : null;
                 }
 
                 // Delete existing items and recreate from arrays
@@ -1104,7 +1104,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     $m = $meterClean[$i] ?? null;
                     $o = $tonaseClean[$i] ?? null;
 
-                    if (!is_null($n) || !is_null($p) || !is_null($l) || !is_null($t) || !is_null($m) || !is_null($o)) {
+                    if (! is_null($n) || ! is_null($p) || ! is_null($l) || ! is_null($t) || ! is_null($m) || ! is_null($o)) {
                         $tandaTerimaTanpaSuratJalan->dimensiItems()->create([
                             'nama_barang' => $n,
                             'jumlah' => $j,
@@ -1120,18 +1120,18 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 }
 
                 // Update scalar fallback values
-                if (!empty($namaBarangArray)) {
+                if (! empty($namaBarangArray)) {
                     $validated['nama_barang'] = $namaBarangArray[0] ?? $validated['nama_barang'] ?? null;
                 } else {
                     unset($validated['nama_barang']); // Remove array field if not used
                 }
 
-                if (!empty($jumlahClean)) {
+                if (! empty($jumlahClean)) {
                     $validated['jumlah_barang'] = array_sum(array_filter($jumlahClean, 'is_numeric')) ?: ($validated['jumlah_barang'] ?? 1);
                 }
                 unset($validated['jumlah']); // Always remove array field
 
-                if (!empty($satuanClean)) {
+                if (! empty($satuanClean)) {
                     $validated['satuan_barang'] = $satuanClean[0] ?? ($validated['satuan_barang'] ?? 'unit');
                 }
                 unset($validated['satuan']); // Always remove array field
@@ -1141,13 +1141,13 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 unset($validated['lebar']);
                 unset($validated['tinggi']);
 
-                if (!empty($meterClean)) {
+                if (! empty($meterClean)) {
                     $validated['meter_kubik'] = array_sum(array_filter($meterClean, 'is_numeric'));
                 } else {
                     unset($validated['meter_kubik']); // Remove if no array input
                 }
 
-                if (!empty($tonaseClean)) {
+                if (! empty($tonaseClean)) {
                     $validated['tonase'] = array_sum(array_filter($tonaseClean, 'is_numeric'));
                 } else {
                     unset($validated['tonase']); // Remove if no array input
@@ -1177,7 +1177,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $prospeks = \App\Models\Prospek::where('no_surat_jalan', $oldNo)
                     ->orWhere('keterangan', 'like', "%Tanda Terima Tanpa Surat Jalan: {$oldNo}%")
                     ->get();
-                
+
                 $prospekIds = $prospeks->pluck('id')->toArray();
 
                 foreach ($prospeks as $prospek) {
@@ -1195,17 +1195,22 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                         'total_ton' => $tandaTerimaTanpaSuratJalan->tonase,
                         'total_volume' => $tandaTerimaTanpaSuratJalan->meter_kubik,
                         'kuantitas' => $tandaTerimaTanpaSuratJalan->jumlah_barang ?? 1,
-                        'updated_by' => Auth::id()
+                        'updated_by' => Auth::id(),
                     ];
-                    
-                    if (!empty($tandaTerimaTanpaSuratJalan->size_kontainer)) {
+
+                    if (! empty($tandaTerimaTanpaSuratJalan->size_kontainer)) {
                         $sizeStr = $tandaTerimaTanpaSuratJalan->size_kontainer;
-                        if (strpos($sizeStr, '20') !== false) $prospekUpdate['ukuran'] = '20';
-                        elseif (strpos($sizeStr, '40') !== false) $prospekUpdate['ukuran'] = '40';
-                        elseif (strpos($sizeStr, '45') !== false) $prospekUpdate['ukuran'] = '45';
-                        elseif (strpos($sizeStr, '53') !== false) $prospekUpdate['ukuran'] = '53';
+                        if (strpos($sizeStr, '20') !== false) {
+                            $prospekUpdate['ukuran'] = '20';
+                        } elseif (strpos($sizeStr, '40') !== false) {
+                            $prospekUpdate['ukuran'] = '40';
+                        } elseif (strpos($sizeStr, '45') !== false) {
+                            $prospekUpdate['ukuran'] = '45';
+                        } elseif (strpos($sizeStr, '53') !== false) {
+                            $prospekUpdate['ukuran'] = '53';
+                        }
                     }
-                    
+
                     $prospek->update($prospekUpdate);
                 }
 
@@ -1217,28 +1222,29 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                         'no_seal' => $tandaTerimaTanpaSuratJalan->no_seal,
                         'pengirim' => $tandaTerimaTanpaSuratJalan->pengirim,
                         'penerima' => $tandaTerimaTanpaSuratJalan->penerima,
-                        'updated_by' => Auth::id()
+                        'updated_by' => Auth::id(),
                     ]);
-                
+
                 // If we have prospek IDs, sync more tables
-                if (!empty($prospekIds)) {
-                     // BLs
-                     DB::table('bls')->whereIn('prospek_id', $prospekIds)->update([
-                         'pengirim' => $tandaTerimaTanpaSuratJalan->pengirim,
-                         'penerima' => $tandaTerimaTanpaSuratJalan->penerima,
-                         'updated_at' => now()
-                     ]);
+                if (! empty($prospekIds)) {
+                    // BLs
+                    DB::table('bls')->whereIn('prospek_id', $prospekIds)->update([
+                        'pengirim' => $tandaTerimaTanpaSuratJalan->pengirim,
+                        'penerima' => $tandaTerimaTanpaSuratJalan->penerima,
+                        'updated_at' => now(),
+                    ]);
                 }
             }
 
             DB::commit();
 
             return redirect()->route('tanda-terima-tanpa-surat-jalan.index')
-                           ->with('success', 'Tanda terima berhasil diupdate.');
+                ->with('success', 'Tanda terima berhasil diupdate.');
         } catch (\Exception $e) {
             DB::rollback();
+
             return back()->withInput()
-                        ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -1251,45 +1257,45 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $tandaTerimaTanpaSuratJalan->delete();
 
             return redirect()->route('tanda-terima-tanpa-surat-jalan.index')
-                           ->with('success', 'Tanda terima berhasil dihapus.');
+                ->with('success', 'Tanda terima berhasil dihapus.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
     /**
      * Handle image upload for tanda terima images
-     * 
-     * @param array $uploadedFiles
-     * @param string $nomorTandaTerima
+     *
+     * @param  array  $uploadedFiles
+     * @param  string  $nomorTandaTerima
      * @return array Array of uploaded image paths
      */
     private function handleImageUpload($uploadedFiles, $nomorTandaTerima = null)
     {
         $imagePaths = [];
-        
+
         try {
             foreach ($uploadedFiles as $index => $file) {
                 if ($file->isValid()) {
                     // Generate filename based on nomor tanda terima
                     $extension = $file->getClientOriginalExtension();
-                    
+
                     if ($nomorTandaTerima) {
                         // Clean nomor tanda terima for filename (remove special characters)
                         $cleanNomor = preg_replace('/[^A-Za-z0-9\-]/', '_', $nomorTandaTerima);
-                        $filename = $cleanNomor . '_gambar_' . ($index + 1) . '.' . $extension;
+                        $filename = $cleanNomor.'_gambar_'.($index + 1).'.'.$extension;
                     } else {
                         // Fallback to timestamp if nomor tanda terima not available
                         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                        $filename = 'tanda_terima_' . time() . '_' . uniqid() . '_' . Str::slug($originalName) . '.' . $extension;
+                        $filename = 'tanda_terima_'.time().'_'.uniqid().'_'.Str::slug($originalName).'.'.$extension;
                     }
-                    
+
                     // Store in public disk under tanda-terima directory
                     $path = $file->storeAs('tanda-terima', $filename, 'public');
-                    
+
                     if ($path) {
                         $imagePaths[] = $path;
-                        
+
                         Log::info('Tanda terima image uploaded successfully', [
                             'original_name' => $file->getClientOriginalName(),
                             'stored_path' => $path,
@@ -1307,12 +1313,12 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            Log::error('Error uploading tanda terima images: ' . $e->getMessage(), [
+            Log::error('Error uploading tanda terima images: '.$e->getMessage(), [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
         }
-        
+
         return $imagePaths;
     }
 
@@ -1323,36 +1329,36 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         try {
             $gambarArray = $tandaTerimaTanpaSuratJalan->gambar_tanda_terima;
-            
+
             // Ensure we have an array
             if (is_string($gambarArray)) {
                 $gambarArray = json_decode($gambarArray, true);
             }
-            if (!is_array($gambarArray)) {
+            if (! is_array($gambarArray)) {
                 $gambarArray = [];
             }
 
             // Check if index exists
-            if (!isset($gambarArray[$imageIndex])) {
+            if (! isset($gambarArray[$imageIndex])) {
                 abort(404, 'Gambar tidak ditemukan');
             }
 
             $imagePath = $gambarArray[$imageIndex];
-            $fullPath = storage_path('app/public/' . ltrim($imagePath, '/'));
+            $fullPath = storage_path('app/public/'.ltrim($imagePath, '/'));
 
             // Check if file exists
-            if (!file_exists($fullPath)) {
+            if (! file_exists($fullPath)) {
                 abort(404, 'File gambar tidak ditemukan');
             }
 
             // Get file extension
             $extension = pathinfo($fullPath, PATHINFO_EXTENSION);
-            
+
             // Create download filename with nomor tanda terima
-            $downloadName = 'tanda_terima_' . 
-                           Str::slug($tandaTerimaTanpaSuratJalan->no_tanda_terima) . 
-                           '_gambar_' . ($imageIndex + 1) . 
-                           '.' . $extension;
+            $downloadName = 'tanda_terima_'.
+                           Str::slug($tandaTerimaTanpaSuratJalan->no_tanda_terima).
+                           '_gambar_'.($imageIndex + 1).
+                           '.'.$extension;
 
             return response()->download($fullPath, $downloadName);
 
@@ -1374,7 +1380,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             if (empty($nomorKontainers) && ($tandaTerimaTanpaSuratJalan->tipe_kontainer ?? 'fcl') !== 'cargo') {
                 return back()->with('error', 'Tidak ada nomor kontainer yang valid.');
             }
-            
+
             // Handle for empty containers (Cargo)
             if (empty($nomorKontainers)) {
                 $nomorKontainers = ['CARGO'];
@@ -1384,18 +1390,23 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
             foreach ($nomorKontainers as $index => $noKontainer) {
                 $noKontainer = trim($noKontainer);
-                
+
                 // Tentukan seal untuk kontainer ini
                 $currentSeal = isset($noSeals[$index]) ? trim($noSeals[$index]) : (isset($noSeals[0]) ? trim($noSeals[0]) : null);
-                
+
                 // Tentukan ukuran untuk kontainer ini
                 $currentSizeRaw = isset($sizes[$index]) ? trim($sizes[$index]) : (isset($sizes[0]) ? trim($sizes[0]) : null);
                 $ukuran = null;
                 if ($currentSizeRaw) {
-                    if (strpos($currentSizeRaw, '20') !== false) $ukuran = '20';
-                    elseif (strpos($currentSizeRaw, '40') !== false) $ukuran = '40';
-                    elseif (strpos($currentSizeRaw, '45') !== false) $ukuran = '45';
-                    elseif (strpos($currentSizeRaw, '53') !== false) $ukuran = '53';
+                    if (strpos($currentSizeRaw, '20') !== false) {
+                        $ukuran = '20';
+                    } elseif (strpos($currentSizeRaw, '40') !== false) {
+                        $ukuran = '40';
+                    } elseif (strpos($currentSizeRaw, '45') !== false) {
+                        $ukuran = '45';
+                    } elseif (strpos($currentSizeRaw, '53') !== false) {
+                        $ukuran = '53';
+                    }
                 }
 
                 $tipeProspek = strtoupper($tandaTerimaTanpaSuratJalan->tipe_kontainer ?: 'CARGO');
@@ -1414,7 +1425,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     'nama_kapal' => $tandaTerimaTanpaSuratJalan->estimasi_naik_kapal ?: 'Tidak ada nama kapal',
                     'total_ton' => $tandaTerimaTanpaSuratJalan->tonase,
                     'total_volume' => $tandaTerimaTanpaSuratJalan->meter_kubik,
-                    'keterangan' => "Data manual transfer TTSJ: " . ($tandaTerimaTanpaSuratJalan->no_tanda_terima ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima) . " Kegiatan: " . ($tandaTerimaTanpaSuratJalan->aktifitas ?? ''),
+                    'keterangan' => 'Data manual transfer TTSJ: '.($tandaTerimaTanpaSuratJalan->no_tanda_terima ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima).' Kegiatan: '.($tandaTerimaTanpaSuratJalan->aktifitas ?? ''),
                     'status' => 'aktif',
                     'created_by' => Auth::id(),
                     'updated_by' => Auth::id(),
@@ -1424,18 +1435,19 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $successCount++;
             }
 
-            $message = "Berhasil memasukkan {$successCount} data " . ($tandaTerimaTanpaSuratJalan->no_tanda_terima ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima) . " ke prospek!";
+            $message = "Berhasil memasukkan {$successCount} data ".($tandaTerimaTanpaSuratJalan->no_tanda_terima ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima).' ke prospek!';
+
             return back()->with('success', $message);
 
         } catch (\Exception $e) {
-            Log::error('Error adding to prospek: ' . $e->getMessage());
-            return back()->with('error', 'Gagal memasukkan data ke prospek: ' . $e->getMessage());
+            Log::error('Error adding to prospek: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal memasukkan data ke prospek: '.$e->getMessage());
         }
     }
 
     /**
      * Sync penerima and pengirim data to related tables.
-
      */
     public function syncPenerimaPengirim($id)
     {
@@ -1448,27 +1460,35 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $updatedCounts = [];
 
             // 1. Prospek
-            $prospeks = \App\Models\Prospek::where('keterangan', 'like', '%Tanda Terima Tanpa Surat Jalan: ' . $tt->no_tanda_terima . '%')->get();
+            $prospeks = \App\Models\Prospek::where('keterangan', 'like', '%Tanda Terima Tanpa Surat Jalan: '.$tt->no_tanda_terima.'%')->get();
             $prospekIds = $prospeks->pluck('id')->toArray();
 
             $prospekCounts = 0;
             foreach ($prospeks as $prospek) {
-                 $updateData = [];
-                 if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'pt_pengirim')) $updateData['pt_pengirim'] = $pengirim;
-                 if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'penerima')) $updateData['penerima'] = $penerima;
-                 if (!empty($updateData)) {
-                      DB::table('prospek')->where('id', $prospek->id)->update($updateData);
-                      $prospekCounts++;
-                 }
+                $updateData = [];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'pt_pengirim')) {
+                    $updateData['pt_pengirim'] = $pengirim;
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'penerima')) {
+                    $updateData['penerima'] = $penerima;
+                }
+                if (! empty($updateData)) {
+                    DB::table('prospek')->where('id', $prospek->id)->update($updateData);
+                    $prospekCounts++;
+                }
             }
 
             // 2. Naik Kapal
             $naikKapalCounts = 0;
-            if (!empty($prospekIds)) {
+            if (! empty($prospekIds)) {
                 $updateData = [];
-                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'penerima')) $updateData['penerima'] = $penerima;
-                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'pengirim')) $updateData['pengirim'] = $pengirim;
-                if (!empty($updateData)) {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'penerima')) {
+                    $updateData['penerima'] = $penerima;
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'pengirim')) {
+                    $updateData['pengirim'] = $pengirim;
+                }
+                if (! empty($updateData)) {
                     $naikKapalCounts = DB::table('naik_kapal')->whereIn('prospek_id', $prospekIds)->update($updateData);
                 }
             }
@@ -1476,11 +1496,15 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // 3. Manifests
             $manifestCounts = 0;
             $updateData = [];
-            if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'penerima')) $updateData['penerima'] = $penerima;
-            if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'pengirim')) $updateData['pengirim'] = $pengirim;
-            if (!empty($updateData)) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'penerima')) {
+                $updateData['penerima'] = $penerima;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'pengirim')) {
+                $updateData['pengirim'] = $pengirim;
+            }
+            if (! empty($updateData)) {
                 $q = DB::table('manifests')->where('nomor_tanda_terima', $tt->no_tanda_terima);
-                if (!empty($prospekIds)) {
+                if (! empty($prospekIds)) {
                     $q->orWhereIn('prospek_id', $prospekIds);
                 }
                 $manifestCounts = $q->update($updateData);
@@ -1489,17 +1513,23 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // 4. BLs
             $blCounts = 0;
             $updateData = [];
-            if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'penerima')) $updateData['penerima'] = $penerima;
-            if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'pengirim')) $updateData['pengirim'] = $pengirim;
-            if (!empty($updateData) && !empty($prospekIds)) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'penerima')) {
+                $updateData['penerima'] = $penerima;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'pengirim')) {
+                $updateData['pengirim'] = $pengirim;
+            }
+            if (! empty($updateData) && ! empty($prospekIds)) {
                 $blCounts = DB::table('bls')->whereIn('prospek_id', $prospekIds)->update($updateData);
             }
 
             DB::commit();
+
             return redirect()->back()->with('success', "Data penerima dan pengirim berhasil disinkronisasi: Prospek ($prospekCounts), Naik Kapal ($naikKapalCounts), Manifest ($manifestCounts), BL ($blCounts).");
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal melakukan sinkronisasi: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal melakukan sinkronisasi: '.$e->getMessage());
         }
     }
 }

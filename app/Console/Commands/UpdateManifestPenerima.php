@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Manifest;
 use App\Models\Prospek;
 use App\Models\TandaTerima;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class UpdateManifestPenerima extends Command
 {
@@ -53,7 +53,7 @@ class UpdateManifestPenerima extends Command
 
             // --- 1. Update Prospek dari Tanda Terima ---
             $this->info('--- Memproses Update Prospek ---');
-            
+
             // Query prospek yang memiliki tanda_terima_id
             $prospeks = Prospek::whereNotNull('tanda_terima_id')->with('tandaTerima')->get();
 
@@ -65,8 +65,9 @@ class UpdateManifestPenerima extends Command
                     $totalProspek++;
                     $tandaTerima = $prospek->tandaTerima;
 
-                    if (!$tandaTerima) {
+                    if (! $tandaTerima) {
                         $bar->advance();
+
                         continue;
                     }
 
@@ -96,7 +97,7 @@ class UpdateManifestPenerima extends Command
                         $prospek->barang = $tandaTerima->jenis_barang;
                         $hasChanges = true;
                     }
-                    
+
                     // nama_kapal / estimasi_nama_kapal
                     if ($tandaTerima->estimasi_nama_kapal && $prospek->nama_kapal != $tandaTerima->estimasi_nama_kapal) {
                         $prospek->nama_kapal = $tandaTerima->estimasi_nama_kapal;
@@ -105,7 +106,7 @@ class UpdateManifestPenerima extends Command
 
                     if ($hasChanges) {
                         $totalProspekWithChanges++;
-                        if (!$dryRun) {
+                        if (! $dryRun) {
                             $prospek->save();
                             $totalProspekUpdated++;
                         }
@@ -122,7 +123,7 @@ class UpdateManifestPenerima extends Command
             // --- 1.1 Update Prospek dari Tanda Terima Tanpa Surat Jalan (using regex matching) ---
             $this->newLine();
             $this->info('--- Memproses Update Prospek (dari Tanda Terima Tanpa Surat Jalan) ---');
-            
+
             $prospeksTttsj = Prospek::whereNull('tanda_terima_id')
                 ->where('keterangan', 'LIKE', '%Tanda Terima Tanpa Surat Jalan:%')
                 ->get();
@@ -133,17 +134,18 @@ class UpdateManifestPenerima extends Command
 
                 foreach ($prospeksTttsj as $prospek) {
                     $totalProspek++;
-                    
+
                     // Extract TTTSJ number from keterangan
                     if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $prospek->keterangan, $matches)) {
                         $noTttsj = trim($matches[1]);
                         if (empty($noTttsj)) {
                             $bar->advance();
+
                             continue;
                         }
-                        
+
                         $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $noTttsj)->first();
-                        
+
                         if ($tttsj) {
                             $hasChanges = false;
 
@@ -171,7 +173,7 @@ class UpdateManifestPenerima extends Command
 
                             if ($hasChanges) {
                                 $totalProspekWithChanges++;
-                                if (!$dryRun) {
+                                if (! $dryRun) {
                                     $prospek->save();
                                     $totalProspekUpdated++;
                                 }
@@ -192,13 +194,13 @@ class UpdateManifestPenerima extends Command
             $this->info('--- Memproses Update Manifest ---');
 
             // Query manifest yang memiliki prospek_id ATAU nomor_tanda_terima ATAU suratJalanBongkaran
-            $query = Manifest::where(function($q) {
+            $query = Manifest::where(function ($q) {
                 $q->whereNotNull('prospek_id')
-                  ->orWhere(function($sq) {
-                      $sq->whereNotNull('nomor_tanda_terima')
-                        ->where('nomor_tanda_terima', '!=', '');
-                  })
-                  ->orWhereHas('suratJalanBongkaran');
+                    ->orWhere(function ($sq) {
+                        $sq->whereNotNull('nomor_tanda_terima')
+                            ->where('nomor_tanda_terima', '!=', '');
+                    })
+                    ->orWhereHas('suratJalanBongkaran');
             })->with(['prospek.tandaTerima', 'suratJalanBongkaran']);
 
             if ($manifestId) {
@@ -215,52 +217,53 @@ class UpdateManifestPenerima extends Command
                 $this->warn('Tidak ada manifest dengan prospek_id yang ditemukan');
             } else {
                 $this->info("Ditemukan {$manifests->count()} manifest dengan prospek_id");
-                
+
                 $bar = $this->output->createProgressBar($manifests->count());
                 $bar->start();
 
                 foreach ($manifests as $manifest) {
                     $totalManifestCount++;
-                    
+
                     // Cek apakah prospek memiliki tanda terima atau merupakan TTTSJ
                     $tandaTerima = $manifest->prospek ? $manifest->prospek->tandaTerima : null;
                     $tttsj = null;
                     $tandaTerimaLcl = null;
                     $sjBongkaran = $manifest->suratJalanBongkaran; // Direct relation for bongkaran
-                    
-                    if (!$tandaTerima && $manifest->prospek && $manifest->prospek->keterangan) {
+
+                    if (! $tandaTerima && $manifest->prospek && $manifest->prospek->keterangan) {
                         if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $manifest->prospek->keterangan, $matches)) {
                             $noTttsj = trim($matches[1]);
-                            if (!empty($noTttsj)) {
+                            if (! empty($noTttsj)) {
                                 $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $noTttsj)->first();
                             }
                         }
                     }
 
                     // Jika masih belum ketemu, coba cari di TandaTerimaLcl berdasarkan nomor_tanda_terima
-                    if (!$tandaTerima && !$tttsj && !$sjBongkaran && $manifest->nomor_tanda_terima) {
+                    if (! $tandaTerima && ! $tttsj && ! $sjBongkaran && $manifest->nomor_tanda_terima) {
                         $tandaTerimaLcl = \App\Models\TandaTerimaLcl::where('nomor_tanda_terima', $manifest->nomor_tanda_terima)->first();
 
                         // Coba hapus prefix jika tidak ketemu (misal: "LS1 0019560" -> "0019560")
-                        if (!$tandaTerimaLcl && strpos($manifest->nomor_tanda_terima, ' ') !== false) {
+                        if (! $tandaTerimaLcl && strpos($manifest->nomor_tanda_terima, ' ') !== false) {
                             $parts = explode(' ', $manifest->nomor_tanda_terima);
                             $lastPart = end($parts);
                             $tandaTerimaLcl = \App\Models\TandaTerimaLcl::where('nomor_tanda_terima', trim($lastPart))->first();
                         }
 
                         // Jika MASIH belum ketemu, cek di table singular (legacy)
-                        if (!$tandaTerimaLcl) {
+                        if (! $tandaTerimaLcl) {
                             $tandaTerimaLcl = DB::table('tanda_terima_lcl')->where('nomor_tanda_terima', $manifest->nomor_tanda_terima)->first();
-                            if (!$tandaTerimaLcl && strpos($manifest->nomor_tanda_terima, ' ') !== false) {
+                            if (! $tandaTerimaLcl && strpos($manifest->nomor_tanda_terima, ' ') !== false) {
                                 $parts = explode(' ', $manifest->nomor_tanda_terima);
                                 $lastPart = end($parts);
                                 $tandaTerimaLcl = DB::table('tanda_terima_lcl')->where('nomor_tanda_terima', trim($lastPart))->first();
                             }
                         }
                     }
-                    
-                    if (!$tandaTerima && !$tttsj && !$tandaTerimaLcl && !$sjBongkaran) {
+
+                    if (! $tandaTerima && ! $tttsj && ! $tandaTerimaLcl && ! $sjBongkaran) {
                         $bar->advance();
+
                         continue;
                     }
 
@@ -305,18 +308,18 @@ class UpdateManifestPenerima extends Command
                     } elseif ($tandaTerimaLcl) {
                         // Handle both Model and stdClass (DB::table)
                         $isModel = $tandaTerimaLcl instanceof \Illuminate\Database\Eloquent\Model;
-                        
+
                         $penerimaName = $isModel ? $tandaTerimaLcl->nama_penerima : ($tandaTerimaLcl->nama_penerima ?? null);
                         $alamatPenerima = $isModel ? $tandaTerimaLcl->alamat_penerima : ($tandaTerimaLcl->alamat_penerima ?? null);
                         $pengirimName = $isModel ? $tandaTerimaLcl->nama_pengirim : ($tandaTerimaLcl->nama_pengirim ?? null);
                         $alamatPengirim = $isModel ? $tandaTerimaLcl->alamat_pengirim : ($tandaTerimaLcl->alamat_pengirim ?? null);
                         $nomorTandaTerima = $isModel ? $tandaTerimaLcl->nomor_tanda_terima : ($tandaTerimaLcl->nomor_tanda_terima ?? null);
-                        
+
                         if ($isModel) {
                             $kuantitasVal = $tandaTerimaLcl->total_koli;
                             $volumeVal = $tandaTerimaLcl->total_volume;
                             $tonnageVal = $tandaTerimaLcl->total_weight;
-                            
+
                             // Determin satuan from items
                             $items = $tandaTerimaLcl->items;
                             if ($items->count() > 0) {
@@ -332,13 +335,13 @@ class UpdateManifestPenerima extends Command
                             $kuantitasVal = DB::table('tanda_terima_lcl_items')->where('tanda_terima_lcl_id', $tandaTerimaLcl->id)->sum('jumlah');
                             $volumeVal = DB::table('tanda_terima_lcl_items')->where('tanda_terima_lcl_id', $tandaTerimaLcl->id)->sum('meter_kubik');
                             $tonnageVal = DB::table('tanda_terima_lcl_items')->where('tanda_terima_lcl_id', $tandaTerimaLcl->id)->sum('tonase');
-                            
+
                             $units = DB::table('tanda_terima_lcl_items')
                                 ->where('tanda_terima_lcl_id', $tandaTerimaLcl->id)
                                 ->whereNotNull('satuan')
                                 ->distinct()
                                 ->pluck('satuan');
-                                
+
                             if ($units->count() === 1) {
                                 $satuanVal = $units->first();
                             } elseif ($units->count() > 1) {
@@ -360,14 +363,14 @@ class UpdateManifestPenerima extends Command
                         $sealTandaTerima = $sjBongkaran->no_seal;
                         $termVal = $sjBongkaran->term;
                     }
-                    
+
                     // Cek apakah ada perubahan
                     $hasChanges = false;
-                    
+
                     if ($penerimaName && $manifest->penerima != $penerimaName) {
                         $hasChanges = true;
                     }
-                    
+
                     if ($alamatPenerima && $manifest->alamat_penerima != $alamatPenerima) {
                         $hasChanges = true;
                     }
@@ -408,15 +411,15 @@ class UpdateManifestPenerima extends Command
                     if ($tonnageVal !== null && $manifest->tonnage != $tonnageVal) {
                         $hasChanges = true;
                     }
-                    
+
                     if ($alamatPenerima && $manifest->alamat_pengiriman != $alamatPenerima) {
                         $hasChanges = true;
                     }
-                    
+
                     if ($hasChanges) {
                         $totalWithChanges++;
-                        
-                        if (!$dryRun) {
+
+                        if (! $dryRun) {
                             // Update manifest
                             if ($penerimaName) {
                                 $manifest->penerima = $penerimaName;
@@ -458,25 +461,25 @@ class UpdateManifestPenerima extends Command
                             $totalUpdated++;
                         }
                     }
-                    
+
                     $bar->advance();
                 }
-                
+
                 $bar->finish();
                 $this->newLine(2);
             }
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 DB::commit();
                 $this->newLine();
                 $this->info('=== SELESAI ===');
                 $this->info("Total Prospek diproses: {$totalProspek}");
                 $this->info("Total Prospek updated: {$totalProspekUpdated}");
-                $this->line("------------------------------------------------");
+                $this->line('------------------------------------------------');
                 $this->info("Total Manifest diproses: {$manifests->count()}");
                 $this->info("Total Manifest dengan perubahan: {$totalWithChanges}");
                 $this->info("Total Manifest berhasil diupdate: {$totalUpdated}");
-                
+
                 // Record last run time
                 Cache::put('last_manifest_update', now(), now()->addDays(7));
             } else {
@@ -485,7 +488,7 @@ class UpdateManifestPenerima extends Command
                 $this->info('=== DRY RUN SELESAI ===');
                 $this->info("Total Prospek diproses: {$totalProspek}");
                 $this->info("Total Prospek changes preview: {$totalProspekWithChanges}");
-                $this->line("------------------------------------------------");
+                $this->line('------------------------------------------------');
                 $this->info("Total Manifest diproses: {$manifests->count()}");
                 $this->info("Total Manifest changes preview: {$totalWithChanges}");
                 $this->newLine();
@@ -500,8 +503,9 @@ class UpdateManifestPenerima extends Command
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error('Error: ' . $e->getMessage());
+            $this->error('Error: '.$e->getMessage());
             $this->error($e->getTraceAsString());
+
             return 1;
         }
     }

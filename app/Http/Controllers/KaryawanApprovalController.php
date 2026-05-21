@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Karyawan;
 use App\Models\KaryawanApprovalRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class KaryawanApprovalController extends Controller
 {
@@ -17,7 +15,7 @@ class KaryawanApprovalController extends Controller
             ->where('status', 'pending')
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         return view('master-karyawan.approval.index', compact('requests'));
     }
 
@@ -41,14 +39,14 @@ class KaryawanApprovalController extends Controller
                 $karyawan->familyMembers()->whereNotIn('id', $existingIds)->delete();
 
                 foreach ($familyMembers as $memberData) {
-                    if (!empty($memberData['hubungan']) && !empty($memberData['nama'])) {
+                    if (! empty($memberData['hubungan']) && ! empty($memberData['nama'])) {
                         foreach ($memberData as $key => $value) {
                             if ($value !== null && $key !== 'tanggal_lahir' && $key !== 'id') {
                                 $memberData[$key] = strtoupper($value);
                             }
                         }
 
-                        if (!empty($memberData['id'])) {
+                        if (! empty($memberData['id'])) {
                             $familyMember = $karyawan->familyMembers()->find($memberData['id']);
                             if ($familyMember) {
                                 unset($memberData['id']);
@@ -65,7 +63,7 @@ class KaryawanApprovalController extends Controller
             $approval->update([
                 'status' => 'approved',
                 'approved_by' => Auth::id(),
-                'approved_at' => now()
+                'approved_at' => now(),
             ]);
         });
 
@@ -75,14 +73,14 @@ class KaryawanApprovalController extends Controller
     public function reject(Request $request, KaryawanApprovalRequest $approval)
     {
         $request->validate([
-            'reason' => 'required|string|max:500'
+            'reason' => 'required|string|max:500',
         ]);
 
         $approval->update([
             'status' => 'rejected',
             'approved_by' => Auth::id(),
             'approved_at' => now(),
-            'reason' => $request->reason
+            'reason' => $request->reason,
         ]);
 
         return redirect()->route('master.karyawan.approval.index')->with('success', 'Perubahan data karyawan berhasil ditolak.');

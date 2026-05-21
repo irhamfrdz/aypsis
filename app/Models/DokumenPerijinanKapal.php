@@ -9,6 +9,6 @@ class DokumenPerijinanKapal extends Model
     protected $fillable = [
         'nama_dokumen',
         'keterangan',
-        'status_aktif'
+        'status_aktif',
     ];
 }

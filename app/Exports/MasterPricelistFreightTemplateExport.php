@@ -18,8 +18,8 @@ class MasterPricelistFreightTemplateExport implements FromArray, WithHeadings, W
                 'Vendor A',
                 '5000000',
                 'Aktif',
-                'Contoh data'
-            ]
+                'Contoh data',
+            ],
         ];
     }
 
@@ -31,7 +31,7 @@ class MasterPricelistFreightTemplateExport implements FromArray, WithHeadings, W
             'Vendor',
             'Tarif',
             'Status',
-            'Keterangan'
+            'Keterangan',
         ];
     }
 

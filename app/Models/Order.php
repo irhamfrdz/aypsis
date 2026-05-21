@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\Auditable;
 
 class Order extends Model
 {
     use Auditable;
+
     protected $fillable = [
         'nomor_order',
         'tanggal_order',
@@ -48,7 +49,7 @@ class Order extends Model
         'tonase',
         'meter_kubik',
         'dimensi_items',
-        'nama_barang'
+        'nama_barang',
     ];
 
     protected $casts = [
@@ -80,6 +81,7 @@ class Order extends Model
         }
 
         $decoded = json_decode($value, true);
+
         return is_array($decoded) ? $decoded : [];
     }
 
@@ -137,12 +139,10 @@ class Order extends Model
 
     public function scopePending($query)
     {
-        return $query->where('outstanding_status', 'pending')->where('sisa', '=', function($query) {
+        return $query->where('outstanding_status', 'pending')->where('sisa', '=', function ($query) {
             $query->selectRaw('units');
         });
     }
-
-
 
     // Outstanding Helper Methods
     public function isOutstanding()
@@ -188,7 +188,7 @@ class Order extends Model
         // Add to processing history
         // Ensure processing_history is always an array
         $history = $this->processing_history;
-        if (!is_array($history)) {
+        if (! is_array($history)) {
             $history = [];
         }
 
@@ -197,7 +197,7 @@ class Order extends Model
             'remaining' => $this->sisa,
             'note' => $note,
             'processed_at' => now()->toISOString(),
-            'processed_by' => \Illuminate\Support\Facades\Auth::id()
+            'processed_by' => \Illuminate\Support\Facades\Auth::id(),
         ];
         $this->processing_history = $history;
 
@@ -210,7 +210,7 @@ class Order extends Model
     public function getOutstandingStatusBadgeAttribute()
     {
         $status = $this->outstanding_status ?? 'pending';
-        
+
         // Map status to Indonesian based on context
         if ($status === 'pending') {
             // Check if order is confirmed and ready to process
@@ -224,10 +224,10 @@ class Order extends Model
         } else {
             $statusMap = [
                 'partial' => 'Sedang Dikerjakan',
-                'completed' => 'Selesai'
+                'completed' => 'Selesai',
             ];
             $text = $statusMap[$status] ?? ucfirst($status);
-            
+
             switch ($status) {
                 case 'partial':
                     $badgeClass = 'badge-primary';
@@ -240,9 +240,6 @@ class Order extends Model
             }
         }
 
-        return '<span class="' . $badgeClass . '">' . $text . '</span>';
+        return '<span class="'.$badgeClass.'">'.$text.'</span>';
     }
-
-
 }
-

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,7 +11,7 @@ class MasterPricelistLabuhTambatController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        if (!($user instanceof \App\Models\User) || !$user->can('master-pricelist-labuh-tambat-view')) {
+        if (! ($user instanceof \App\Models\User) || ! $user->can('master-pricelist-labuh-tambat-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat master pricelist labuh tambat.');
         }
 
@@ -20,11 +19,11 @@ class MasterPricelistLabuhTambatController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nama_agen', 'like', '%' . $search . '%')
-                  ->orWhere('nama_kapal', 'like', '%' . $search . '%')
-                  ->orWhere('lokasi', 'like', '%' . $search . '%')
-                  ->orWhere('keterangan', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_agen', 'like', '%'.$search.'%')
+                    ->orWhere('nama_kapal', 'like', '%'.$search.'%')
+                    ->orWhere('lokasi', 'like', '%'.$search.'%')
+                    ->orWhere('keterangan', 'like', '%'.$search.'%');
             });
         }
 
@@ -42,11 +41,12 @@ class MasterPricelistLabuhTambatController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        if (!$user || !$user->can('master-pricelist-labuh-tambat-create')) {
+        if (! $user || ! $user->can('master-pricelist-labuh-tambat-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat master pricelist labuh tambat.');
         }
 
         $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
+
         return view('master-pricelist-labuh-tambat.create', compact('kapals'));
     }
 
@@ -54,7 +54,7 @@ class MasterPricelistLabuhTambatController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        if (!$user || !$user->can('master-pricelist-labuh-tambat-create')) {
+        if (! $user || ! $user->can('master-pricelist-labuh-tambat-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat master pricelist labuh tambat.');
         }
 
@@ -79,12 +79,13 @@ class MasterPricelistLabuhTambatController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        if (!$user || !$user->can('master-pricelist-labuh-tambat-update')) {
+        if (! $user || ! $user->can('master-pricelist-labuh-tambat-update')) {
             abort(403, 'Anda tidak memiliki akses untuk mengubah master pricelist labuh tambat.');
         }
 
         $pricelist = \App\Models\MasterPricelistLabuhTambat::findOrFail($id);
         $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
+
         return view('master-pricelist-labuh-tambat.edit', compact('pricelist', 'kapals'));
     }
 
@@ -92,7 +93,7 @@ class MasterPricelistLabuhTambatController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        if (!$user || !$user->can('master-pricelist-labuh-tambat-update')) {
+        if (! $user || ! $user->can('master-pricelist-labuh-tambat-update')) {
             abort(403, 'Anda tidak memiliki akses untuk mengubah master pricelist labuh tambat.');
         }
 
@@ -118,7 +119,7 @@ class MasterPricelistLabuhTambatController extends Controller
     public function destroy($id)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('master-pricelist-labuh-tambat-delete')) {
+        if (! $user || ! $user->can('master-pricelist-labuh-tambat-delete')) {
             abort(403, 'Anda tidak memiliki akses untuk menghapus master pricelist labuh tambat.');
         }
 

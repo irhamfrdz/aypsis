@@ -17,9 +17,9 @@ return new class extends Migration
 
             // Add new foreign key to correct table
             $table->foreign('pranota_id')
-                  ->references('id')
-                  ->on('pranota_tagihan_kontainer_sewa')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('pranota_tagihan_kontainer_sewa')
+                ->onDelete('cascade');
         });
     }
 
@@ -34,9 +34,9 @@ return new class extends Migration
 
             // Restore the old foreign key (even though table doesn't exist)
             $table->foreign('pranota_id')
-                  ->references('id')
-                  ->on('pranotalist')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('pranotalist')
+                ->onDelete('cascade');
         });
     }
 };

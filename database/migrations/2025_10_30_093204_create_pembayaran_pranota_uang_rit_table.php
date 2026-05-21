@@ -22,7 +22,7 @@ return new class extends Migration
             // Foreign keys
             $table->foreign('pembayaran_uang_rit_id')->references('id')->on('pembayaran_uang_rits')->onDelete('cascade');
             $table->foreign('pranota_uang_rit_id')->references('id')->on('pranota_uang_rits')->onDelete('cascade');
-            
+
             // Unique constraint to prevent duplicate entries
             $table->unique(['pembayaran_uang_rit_id', 'pranota_uang_rit_id'], 'pembayaran_pranota_unique');
         });

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('tanda_terimas_lcl', function (Blueprint $table) {
             // Drop foreign key constraints first
             $table->dropForeign(['master_tujuan_kirim_id']);
-            
+
             // Drop columns yang tidak digunakan
             $table->dropColumn([
                 'nomor_kontainer',           // Pindah ke pivot kontainer_tanda_terima_lcl
@@ -25,7 +25,7 @@ return new class extends Migration
                 'master_tujuan_kirim_id',    // Duplikat dengan tujuan_pengiriman
                 'kegiatan',                  // Tidak ada di form
             ]);
-            
+
             // Update tujuan_pengiriman dari nullable string menjadi foreign key
             $table->unsignedBigInteger('tujuan_pengiriman')->nullable()->change();
             $table->foreign('tujuan_pengiriman')->references('id')->on('master_tujuan_kirim')->onDelete('set null');
@@ -40,10 +40,10 @@ return new class extends Migration
         Schema::table('tanda_terimas_lcl', function (Blueprint $table) {
             // Drop new foreign key
             $table->dropForeign(['tujuan_pengiriman']);
-            
+
             // Change tujuan_pengiriman back to string
             $table->string('tujuan_pengiriman')->nullable()->change();
-            
+
             // Add back the removed columns
             $table->string('nomor_kontainer')->nullable()->index();
             $table->string('size_kontainer')->nullable();

@@ -3,20 +3,22 @@
 namespace App\Exports;
 
 use App\Models\NaikKapal;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class NaikKapalExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $filters;
+
     protected $kapalNama;
+
     protected $noVoyage;
 
     public function __construct(array $filters = [], $kapalNama = '', $noVoyage = '')
@@ -34,57 +36,57 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             ->where('no_voyage', $this->noVoyage);
 
         // Apply filters from $this->filters
-        if (!empty($this->filters['search'])) {
+        if (! empty($this->filters['search'])) {
             $search = $this->filters['search'];
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('jenis_barang', 'like', "%{$search}%")
-                  ->orWhere('no_seal', 'like', "%{$search}%")
-                  ->orWhere('ukuran_kontainer', 'like', "%{$search}%");
+                    ->orWhere('jenis_barang', 'like', "%{$search}%")
+                    ->orWhere('no_seal', 'like', "%{$search}%")
+                    ->orWhere('ukuran_kontainer', 'like', "%{$search}%");
             });
         }
 
-        if (!empty($this->filters['status_bl'])) {
+        if (! empty($this->filters['status_bl'])) {
             if ($this->filters['status_bl'] === 'sudah_bl') {
                 $query->where('status', 'Moved to BLS');
             } elseif ($this->filters['status_bl'] === 'belum_bl') {
-                $query->where(function($q) {
+                $query->where(function ($q) {
                     $q->where('status', '!=', 'Moved to BLS')
-                      ->orWhereNull('status');
+                        ->orWhereNull('status');
                 });
             }
         }
 
-        if (!empty($this->filters['status_filter'])) {
+        if (! empty($this->filters['status_filter'])) {
             if ($this->filters['status_filter'] === 'sudah_bl') {
                 $query->where('status', 'Moved to BLS');
             } elseif ($this->filters['status_filter'] === 'belum_bl') {
-                $query->where(function($q) {
+                $query->where(function ($q) {
                     $q->where('status', '!=', 'Moved to BLS')
-                      ->orWhereNull('status');
+                        ->orWhereNull('status');
                 });
             }
         }
 
-        if (!empty($this->filters['tipe_kontainer'])) {
+        if (! empty($this->filters['tipe_kontainer'])) {
             $query->where('tipe_kontainer', $this->filters['tipe_kontainer']);
         }
 
-        if (!empty($this->filters['tanpa_size']) && $this->filters['tanpa_size'] == '1') {
-            $query->where(function($q) {
+        if (! empty($this->filters['tanpa_size']) && $this->filters['tanpa_size'] == '1') {
+            $query->where(function ($q) {
                 $q->whereNull('size_kontainer')
-                  ->orWhere('size_kontainer', '');
+                    ->orWhere('size_kontainer', '');
             });
         }
 
         $naikKapals = $query->orderBy('created_at', 'desc')->get();
-        
-        // Debug: log jumlah data yang diambil
-        Log::info('Excel Export - Kapal: ' . $this->kapalNama . ', Voyage: ' . $this->noVoyage . ', Total Data: ' . $naikKapals->count());
 
-        return $naikKapals->map(function($naikKapal, $index) {
+        // Debug: log jumlah data yang diambil
+        Log::info('Excel Export - Kapal: '.$this->kapalNama.', Voyage: '.$this->noVoyage.', Total Data: '.$naikKapals->count());
+
+        return $naikKapals->map(function ($naikKapal, $index) {
             $prospek = $naikKapal->prospek;
-            
+
             // Ambil seal dari naik_kapal, jika kosong ambil dari prospek
             $noSeal = $naikKapal->no_seal;
             if (empty($noSeal) && $prospek) {
@@ -143,7 +145,7 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 // Style header row
                 $event->sheet->getStyle('A1:I1')->applyFromArray([
                     'font' => [
@@ -169,8 +171,8 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 // Add borders to all data cells
                 $highestRow = $event->sheet->getHighestRow();
                 $highestColumn = $event->sheet->getHighestColumn();
-                
-                $event->sheet->getStyle('A1:' . $highestColumn . $highestRow)->applyFromArray([
+
+                $event->sheet->getStyle('A1:'.$highestColumn.$highestRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
@@ -180,18 +182,18 @@ class NaikKapalExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 ]);
 
                 // Center align for specific columns
-                $event->sheet->getStyle('A2:A' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // No
-                $event->sheet->getStyle('C2:C' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Nomor Seal
-                $event->sheet->getStyle('E2:E' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Tipe Kontainer
-                $event->sheet->getStyle('G2:G' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // No. Surat Jalan
-                $event->sheet->getStyle('H2:H' . $highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Tanggal Tanda Terima
+                $event->sheet->getStyle('A2:A'.$highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // No
+                $event->sheet->getStyle('C2:C'.$highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Nomor Seal
+                $event->sheet->getStyle('E2:E'.$highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Tipe Kontainer
+                $event->sheet->getStyle('G2:G'.$highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // No. Surat Jalan
+                $event->sheet->getStyle('H2:H'.$highestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Tanggal Tanda Terima
 
                 // Set row height for header
                 $event->sheet->getRowDimension(1)->setRowHeight(25);
 
                 // Auto-wrap text for jenis barang and PT pengirim columns
-                $event->sheet->getStyle('D2:D' . $highestRow)->getAlignment()->setWrapText(true); // Jenis Barang
-                $event->sheet->getStyle('I2:I' . $highestRow)->getAlignment()->setWrapText(true); // PT Pengirim
+                $event->sheet->getStyle('D2:D'.$highestRow)->getAlignment()->setWrapText(true); // Jenis Barang
+                $event->sheet->getStyle('I2:I'.$highestRow)->getAlignment()->setWrapText(true); // PT Pengirim
             },
         ];
     }

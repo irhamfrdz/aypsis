@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -23,9 +21,9 @@ return new class extends Migration
         // Recreate tarif-batam permissions if needed for rollback
         $permissions = [
             'tarif-batam.view',
-            'tarif-batam.create', 
+            'tarif-batam.create',
             'tarif-batam.edit',
-            'tarif-batam.delete'
+            'tarif-batam.delete',
         ];
 
         foreach ($permissions as $permission) {

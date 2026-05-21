@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 class PembayaranPranotaOb extends Model
 {
@@ -35,7 +34,7 @@ class PembayaranPranotaOb extends Model
         'akun_coa_id',
         'akun_bank_id',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
@@ -46,7 +45,7 @@ class PembayaranPranotaOb extends Model
         'dp_amount' => 'decimal:2',
         'total_biaya_pranota' => 'decimal:2',
         'pranota_ob_ids' => 'array',
-        'breakdown_supir' => 'array'
+        'breakdown_supir' => 'array',
     ];
 
     /**
@@ -56,16 +55,16 @@ class PembayaranPranotaOb extends Model
     public function getPranotaObsAttribute()
     {
         $ids = $this->pranota_ob_ids ?? [];
-        
+
         // Ensure it's an array
         if (is_string($ids)) {
             $ids = json_decode($ids, true) ?? [];
         }
-        
-        if (empty($ids) || !is_array($ids)) {
+
+        if (empty($ids) || ! is_array($ids)) {
             return collect([]);
         }
-        
+
         return PranotaOb::whereIn('id', $ids)->get();
     }
 
@@ -100,12 +99,12 @@ class PembayaranPranotaOb extends Model
     {
         $prefix = 'PY-OB-';
         $date = date('Ym');
-        
+
         // Get the last number for this month
-        $lastNumber = static::where('nomor_pembayaran', 'like', $prefix . $date . '%')
+        $lastNumber = static::where('nomor_pembayaran', 'like', $prefix.$date.'%')
             ->orderBy('nomor_pembayaran', 'desc')
             ->value('nomor_pembayaran');
-        
+
         if ($lastNumber) {
             // Extract the last 4 digits and increment
             $lastSequence = intval(substr($lastNumber, -4));
@@ -113,8 +112,8 @@ class PembayaranPranotaOb extends Model
         } else {
             $newSequence = 1;
         }
-        
-        return $prefix . $date . '-' . str_pad($newSequence, 4, '0', STR_PAD_LEFT);
+
+        return $prefix.$date.'-'.str_pad($newSequence, 4, '0', STR_PAD_LEFT);
     }
 
     /**

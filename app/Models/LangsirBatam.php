@@ -25,7 +25,7 @@ class LangsirBatam extends Model
         'biaya',
         'keterangan',
         'status',
-        'input_by'
+        'input_by',
     ];
 
     protected $casts = [
@@ -46,8 +46,8 @@ class LangsirBatam extends Model
     public static function generateNoTransaksi()
     {
         $date = now()->format('Ymd');
-        $prefix = 'LNG-' . $date . '-';
-        $lastRecord = self::where('no_transaksi', 'like', $prefix . '%')
+        $prefix = 'LNG-'.$date.'-';
+        $lastRecord = self::where('no_transaksi', 'like', $prefix.'%')
             ->orderBy('no_transaksi', 'desc')
             ->first();
 
@@ -58,6 +58,6 @@ class LangsirBatam extends Model
             $newNumber = '0001';
         }
 
-        return $prefix . $newNumber;
+        return $prefix.$newNumber;
     }
 }

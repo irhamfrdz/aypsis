@@ -63,7 +63,7 @@ class BiayaKapalAir extends Model
      */
     public function getFormattedSubTotalAttribute()
     {
-        return 'Rp ' . number_format($this->sub_total, 0, ',', '.');
+        return 'Rp '.number_format($this->sub_total, 0, ',', '.');
     }
 
     /**
@@ -71,7 +71,7 @@ class BiayaKapalAir extends Model
      */
     public function getFormattedGrandTotalAttribute()
     {
-        return 'Rp ' . number_format($this->grand_total, 0, ',', '.');
+        return 'Rp '.number_format($this->grand_total, 0, ',', '.');
     }
 
     /**
@@ -79,6 +79,6 @@ class BiayaKapalAir extends Model
      */
     public function getFormattedPphAttribute()
     {
-        return 'Rp ' . number_format($this->pph, 0, ',', '.');
+        return 'Rp '.number_format($this->pph, 0, ',', '.');
     }
 }

@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\MasterNamaBarangAmprahan;
-use Illuminate\Http\Request;
 use App\Exports\MasterNamaBarangAmprahanExport;
 use App\Imports\MasterNamaBarangAmprahanImport;
+use App\Models\MasterNamaBarangAmprahan;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class MasterNamaBarangAmprahanController extends Controller
@@ -18,9 +17,9 @@ class MasterNamaBarangAmprahanController extends Controller
     {
         $query = MasterNamaBarangAmprahan::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
-            $query->where('nama_barang', 'LIKE', '%' . $searchTerm . '%');
+            $query->where('nama_barang', 'LIKE', '%'.$searchTerm.'%');
         }
 
         $barangAmprahans = $query->latest()->paginate(15);
@@ -34,10 +33,10 @@ class MasterNamaBarangAmprahanController extends Controller
     public function export(Request $request)
     {
         $filters = [
-            'search' => $request->search
+            'search' => $request->search,
         ];
 
-        return Excel::download(new MasterNamaBarangAmprahanExport($filters), 'master_nama_barang_amprahan_' . date('YmdHis') . '.xlsx');
+        return Excel::download(new MasterNamaBarangAmprahanExport($filters), 'master_nama_barang_amprahan_'.date('YmdHis').'.xlsx');
     }
 
     /**
@@ -51,11 +50,12 @@ class MasterNamaBarangAmprahanController extends Controller
 
         try {
             Excel::import(new MasterNamaBarangAmprahanImport, $request->file('file'));
+
             return redirect()->route('master.nama-barang-amprahan.index')
                 ->with('success', 'Data Barang Amprahan berhasil diimport.');
         } catch (\Exception $e) {
             return redirect()->route('master.nama-barang-amprahan.index')
-                ->with('error', 'Terjadi kesalahan saat import data: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat import data: '.$e->getMessage());
         }
     }
 
@@ -72,14 +72,20 @@ class MasterNamaBarangAmprahanController extends Controller
 
         $filename = 'template_import_barang_amprahan.xlsx';
 
-        return Excel::download(new class($headers, $data) implements \Maatwebsite\Excel\Concerns\FromArray {
+        return Excel::download(new class($headers, $data) implements \Maatwebsite\Excel\Concerns\FromArray
+        {
             private $headers;
+
             private $data;
-            public function __construct($headers, $data) {
+
+            public function __construct($headers, $data)
+            {
                 $this->headers = $headers;
                 $this->data = $data;
             }
-            public function array(): array {
+
+            public function array(): array
+            {
                 return array_merge([$this->headers], $this->data);
             }
         }, $filename);
@@ -115,6 +121,7 @@ class MasterNamaBarangAmprahanController extends Controller
     public function edit($id)
     {
         $barangAmprahan = MasterNamaBarangAmprahan::findOrFail($id);
+
         return view('master-nama-barang-amprahan.edit', compact('barangAmprahan'));
     }
 
@@ -126,7 +133,7 @@ class MasterNamaBarangAmprahanController extends Controller
         $barangAmprahan = MasterNamaBarangAmprahan::findOrFail($id);
 
         $request->validate([
-            'nama_barang' => 'required|string|max:255|unique:master_nama_barang_amprahans,nama_barang,' . $id,
+            'nama_barang' => 'required|string|max:255|unique:master_nama_barang_amprahans,nama_barang,'.$id,
             'status' => 'required|in:active,inactive',
         ]);
 

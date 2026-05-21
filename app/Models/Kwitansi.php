@@ -10,11 +10,11 @@ class Kwitansi extends Model
     use HasFactory;
 
     protected $fillable = [
-        'pelanggan_kode', 'pelanggan_nama', 'terima_dari', 'kirim_ke', 'no_po', 
-        'kwt_no', 'tgl_inv', 'tgl_kirim', 'fob', 'syarat_pembayaran', 
-        'pengirim', 'penjual', 'keterangan', 'akun_piutang', 'sub_total', 
+        'pelanggan_kode', 'pelanggan_nama', 'terima_dari', 'kirim_ke', 'no_po',
+        'kwt_no', 'tgl_inv', 'tgl_kirim', 'fob', 'syarat_pembayaran',
+        'pengirim', 'penjual', 'keterangan', 'akun_piutang', 'sub_total',
         'discount_persen', 'discount_nominal', 'biaya_kirim', 'total_invoice',
-        'kena_pajak', 'termasuk_pajak'
+        'kena_pajak', 'termasuk_pajak',
     ];
 
     protected $casts = [

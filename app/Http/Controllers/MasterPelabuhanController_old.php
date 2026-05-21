@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\MasterPelabuhan;
 use Illuminate\Http\Request;
 
@@ -74,7 +73,7 @@ class MasterPelabuhanController extends Controller
         MasterPelabuhan::create($validated);
 
         return redirect()->route('master-pelabuhan.index')
-                        ->with('success', 'Data pelabuhan berhasil ditambahkan.');
+            ->with('success', 'Data pelabuhan berhasil ditambahkan.');
     }
 
     /**
@@ -99,7 +98,7 @@ class MasterPelabuhanController extends Controller
     public function update(Request $request, MasterPelabuhan $masterPelabuhan)
     {
         $validated = $request->validate([
-            'nama_pelabuhan' => 'required|string|max:255|unique:master_pelabuhans,nama_pelabuhan,' . $masterPelabuhan->id,
+            'nama_pelabuhan' => 'required|string|max:255|unique:master_pelabuhans,nama_pelabuhan,'.$masterPelabuhan->id,
             'kota' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
@@ -114,7 +113,7 @@ class MasterPelabuhanController extends Controller
         $masterPelabuhan->update($validated);
 
         return redirect()->route('master-pelabuhan.index')
-                        ->with('success', 'Data pelabuhan berhasil diperbarui.');
+            ->with('success', 'Data pelabuhan berhasil diperbarui.');
     }
 
     /**
@@ -124,12 +123,12 @@ class MasterPelabuhanController extends Controller
     {
         try {
             $masterPelabuhan->delete();
-            
+
             return redirect()->route('master-pelabuhan.index')
-                            ->with('success', 'Data pelabuhan berhasil dihapus.');
+                ->with('success', 'Data pelabuhan berhasil dihapus.');
         } catch (\Exception $e) {
             return redirect()->route('master-pelabuhan.index')
-                            ->with('error', 'Gagal menghapus data pelabuhan. Data mungkin sedang digunakan.');
+                ->with('error', 'Gagal menghapus data pelabuhan. Data mungkin sedang digunakan.');
         }
     }
 

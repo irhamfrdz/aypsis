@@ -11,7 +11,7 @@ class AddCatatanToKaryawans extends Migration
      */
     public function up()
     {
-        if (!Schema::hasColumn('karyawans', 'catatan')) {
+        if (! Schema::hasColumn('karyawans', 'catatan')) {
             Schema::table('karyawans', function (Blueprint $table) {
                 $table->text('catatan')->nullable()->after('tanggal_berhenti_sebelumnya');
             });

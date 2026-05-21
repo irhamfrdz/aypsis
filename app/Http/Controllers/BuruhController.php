@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Buruh;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Exports\BuruhExport;
 use App\Exports\BuruhTemplateExport;
 use App\Imports\BuruhImport;
+use App\Models\Buruh;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class BuruhController extends Controller
@@ -18,22 +17,23 @@ class BuruhController extends Controller
     public function index(Request $request)
     {
         $query = Buruh::query();
-        
+
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama', 'LIKE', "%{$search}%")
-                  ->orWhere('nik', 'LIKE', "%{$search}%");
+                    ->orWhere('nik', 'LIKE', "%{$search}%");
             });
         }
-        
+
         $buruhs = $query->orderBy('nama', 'asc')->paginate(20);
+
         return view('buruh.index', compact('buruhs'));
     }
 
     public function export(Request $request)
     {
-        return Excel::download(new BuruhExport($request->search), 'data_buruh_' . date('YmdHis') . '.xlsx');
+        return Excel::download(new BuruhExport($request->search), 'data_buruh_'.date('YmdHis').'.xlsx');
     }
 
     public function import(Request $request)
@@ -44,9 +44,10 @@ class BuruhController extends Controller
 
         try {
             Excel::import(new BuruhImport, $request->file('file'));
+
             return redirect()->route('master.buruh.index')->with('success', 'Data buruh berhasil diimport');
         } catch (\Exception $e) {
-            return redirect()->route('master.buruh.index')->with('error', 'Terjadi kesalahan saat mengimport data: ' . $e->getMessage());
+            return redirect()->route('master.buruh.index')->with('error', 'Terjadi kesalahan saat mengimport data: '.$e->getMessage());
         }
     }
 
@@ -70,6 +71,7 @@ class BuruhController extends Controller
         ]);
 
         Buruh::create($validated);
+
         return redirect()->route('master.buruh.index')->with('success', 'Buruh berhasil ditambahkan');
     }
 
@@ -93,12 +95,14 @@ class BuruhController extends Controller
         ]);
 
         $buruh->update($validated);
+
         return redirect()->route('master.buruh.index')->with('success', 'Buruh berhasil diperbarui');
     }
 
     public function destroy(Buruh $buruh)
     {
         $buruh->delete();
+
         return redirect()->route('master.buruh.index')->with('success', 'Buruh berhasil dihapus');
     }
 }

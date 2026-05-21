@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('container_trips');
         Schema::enableForeignKeyConstraints();
-        
+
         Schema::create('container_trips', function (Blueprint $table) {
             $table->id();
             // Primary Vendor relationship

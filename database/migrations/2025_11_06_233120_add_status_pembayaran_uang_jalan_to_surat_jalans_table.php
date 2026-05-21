@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::table('surat_jalans', function (Blueprint $table) {
             // Add status_pembayaran_uang_jalan column after status_pembayaran column
             $table->enum('status_pembayaran_uang_jalan', ['belum_ada', 'sudah_masuk_uang_jalan'])
-                  ->default('belum_ada')
-                  ->after('status_pembayaran')
-                  ->comment('Status pembayaran uang jalan: belum_ada = belum dibuat uang jalan, sudah_masuk_uang_jalan = sudah ada record uang jalan');
-            
+                ->default('belum_ada')
+                ->after('status_pembayaran')
+                ->comment('Status pembayaran uang jalan: belum_ada = belum dibuat uang jalan, sudah_masuk_uang_jalan = sudah ada record uang jalan');
+
             // Add index for better performance
             $table->index('status_pembayaran_uang_jalan');
         });

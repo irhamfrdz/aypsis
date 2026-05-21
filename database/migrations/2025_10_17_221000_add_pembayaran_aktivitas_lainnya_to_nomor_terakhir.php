@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
 use App\Models\NomorTerakhir;
+use Illuminate\Database\Migrations\Migration;
 
 class AddPembayaranAktivitasLainnyaToNomorTerakhir extends Migration
 {
@@ -15,12 +15,12 @@ class AddPembayaranAktivitasLainnyaToNomorTerakhir extends Migration
         // Check if module already exists
         $existing = NomorTerakhir::where('modul', 'pembayaran_aktivitas_lainnya')->first();
 
-        if (!$existing) {
+        if (! $existing) {
             NomorTerakhir::create([
                 'modul' => 'pembayaran_aktivitas_lainnya',
                 'nomor_terakhir' => 0,
                 'prefix' => 'PAL',
-                'keterangan' => 'Nomor pembayaran aktivitas lainnya'
+                'keterangan' => 'Nomor pembayaran aktivitas lainnya',
             ]);
         }
     }

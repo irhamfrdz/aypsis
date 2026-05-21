@@ -14,11 +14,11 @@ class PricelistOppOptController extends Controller
     {
         $query = PricelistOppOpt::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_barang', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%");
+                    ->orWhere('lokasi', 'like', "%{$search}%");
             });
         }
 
@@ -59,6 +59,7 @@ class PricelistOppOptController extends Controller
     public function edit($id)
     {
         $pricelistOppOpt = PricelistOppOpt::findOrFail($id);
+
         return view('master.pricelist-opp-opt.edit', compact('pricelistOppOpt'));
     }
 
@@ -68,7 +69,7 @@ class PricelistOppOptController extends Controller
     public function update(Request $request, $id)
     {
         $pricelistOppOpt = PricelistOppOpt::findOrFail($id);
-        
+
         $request->validate([
             'nama_barang' => 'required|string|max:255',
             'lokasi' => 'nullable|in:Jakarta,Batam,Pinang',

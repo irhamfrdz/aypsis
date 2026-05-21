@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Karyawan;
+use App\Models\NomorTerakhir;
 use App\Models\PranotaOngkosTruk;
 use App\Models\PranotaOngkosTrukItem;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
-use App\Models\NomorTerakhir;
-use App\Models\Karyawan;
 use App\Models\VendorSupir;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class PranotaOngkosTrukController extends Controller
@@ -96,16 +95,17 @@ class PranotaOngkosTrukController extends Controller
                 $ongkosTruk = $item->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0;
             }
         }
-        if ($item->tujuan_pengambilan == "PULO GADUNG ( BESI SCRAP )") {
+        if ($item->tujuan_pengambilan == 'PULO GADUNG ( BESI SCRAP )') {
             $ongkosTruk = 1050000;
         }
+
         return $ongkosTruk;
     }
 
     public function store(Request $request)
     {
         \Illuminate\Support\Facades\Log::info('PranotaOngkosTrukController@store started', ['payload' => $request->all()]);
-        
+
         try {
             $request->validate([
                 'tanggal_pranota' => 'required|date',
@@ -119,22 +119,22 @@ class PranotaOngkosTrukController extends Controller
 
             // Generate nomor pranota
             $nomorTerakhir = NomorTerakhir::where('modul', 'POT')->lockForUpdate()->first();
-            if (!$nomorTerakhir) {
+            if (! $nomorTerakhir) {
                 \Illuminate\Support\Facades\Log::info('NomorTerakhir POT not found, creating new');
                 $nomorTerakhir = NomorTerakhir::create(['modul' => 'POT', 'nomor_terakhir' => 0]);
             }
             $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
             $tahun = now()->format('y');
             $bulan = now()->format('m');
-            $no_pranota = "POT{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
-            
-            \Illuminate\Support\Facades\Log::info('Generated no_pranota: ' . $no_pranota);
+            $no_pranota = "POT{$bulan}{$tahun}".str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+
+            \Illuminate\Support\Facades\Log::info('Generated no_pranota: '.$no_pranota);
 
             $nomorTerakhir->nomor_terakhir = $nextNumber;
             $nomorTerakhir->save();
             \Illuminate\Support\Facades\Log::info('NomorTerakhir updated');
 
-            $adjustment = $request->filled('adjustment') ? (float)$request->adjustment : 0;
+            $adjustment = $request->filled('adjustment') ? (float) $request->adjustment : 0;
             $itemsTotal = collect($request->items)->sum('nominal');
             $totalNominal = $itemsTotal + $adjustment;
 
@@ -151,8 +151,9 @@ class PranotaOngkosTrukController extends Controller
 
             foreach ($request->items as $item) {
                 // Skip if item doesn't have required data
-                if (!isset($item['id']) || !isset($item['type'])) {
+                if (! isset($item['id']) || ! isset($item['type'])) {
                     \Illuminate\Support\Facades\Log::warning('Skipping item due to missing id or type', ['item' => $item]);
+
                     continue;
                 }
 
@@ -175,7 +176,7 @@ class PranotaOngkosTrukController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Pranota Ongkos Truk berhasil disimpan.',
-                    'redirect_url' => route('pranota-ongkos-truk.show', $pranota->id)
+                    'redirect_url' => route('pranota-ongkos-truk.show', $pranota->id),
                 ]);
             }
 
@@ -184,32 +185,34 @@ class PranotaOngkosTrukController extends Controller
             if (\Illuminate\Support\Facades\DB::transactionLevel() > 0) {
                 \Illuminate\Support\Facades\DB::rollBack();
             }
+
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal: ' . implode(', ', collect($e->errors())->flatten()->toArray()),
-                'errors' => $e->errors()
+                'message' => 'Validasi gagal: '.implode(', ', collect($e->errors())->flatten()->toArray()),
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             if (\Illuminate\Support\Facades\DB::transactionLevel() > 0) {
                 \Illuminate\Support\Facades\DB::rollBack();
             }
-            \Illuminate\Support\Facades\Log::error('PranotaOngkosTrukController@store error: ' . $e->getMessage(), [
+            \Illuminate\Support\Facades\Log::error('PranotaOngkosTrukController@store error: '.$e->getMessage(), [
                 'exception' => $e,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal menyimpan pranota: ' . $e->getMessage(),
+                    'message' => 'Gagal menyimpan pranota: '.$e->getMessage(),
                     'debug' => [
                         'exception' => get_class($e),
                         'file' => $e->getFile(),
-                        'line' => $e->getLine()
-                    ]
+                        'line' => $e->getLine(),
+                    ],
                 ], 500);
             }
-            return back()->with('error', 'Gagal menyimpan pranota: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menyimpan pranota: '.$e->getMessage());
         }
     }
 
@@ -220,16 +223,16 @@ class PranotaOngkosTrukController extends Controller
             $nextNumber = ($nomorTerakhir ? $nomorTerakhir->nomor_terakhir : 0) + 1;
             $tahun = now()->format('y');
             $bulan = now()->format('m');
-            $no_pranota = "POT{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+            $no_pranota = "POT{$bulan}{$tahun}".str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
             return response()->json([
                 'success' => true,
-                'nomor_pranota' => $no_pranota
+                'nomor_pranota' => $no_pranota,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -248,7 +251,7 @@ class PranotaOngkosTrukController extends Controller
                     if ($sj) {
                         $ongkosTruk = $this->calculateOngkosTruk($sj);
                         $uangJalanNominal = $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0;
-                        $nominalBersih = (float)$ongkosTruk - (float)$uangJalanNominal;
+                        $nominalBersih = (float) $ongkosTruk - (float) $uangJalanNominal;
 
                         $items->push([
                             'id' => $id,
@@ -258,7 +261,7 @@ class PranotaOngkosTrukController extends Controller
                             'type' => $type,
                             'supir' => $sj->supirKaryawan ? ($sj->supirKaryawan->nama_panggilan ?? $sj->supirKaryawan->nama_lengkap) : ($sj->supir ?: '-'),
                             'no_plat' => $sj->no_plat ?: '-',
-                            'tujuan' => $sj->tujuanPengambilanRelation->ke ?? $sj->tujuan_pengambilan ?? '-'
+                            'tujuan' => $sj->tujuanPengambilanRelation->ke ?? $sj->tujuan_pengambilan ?? '-',
                         ]);
                     }
                 } elseif ($type === 'SuratJalanBongkaran') {
@@ -266,7 +269,7 @@ class PranotaOngkosTrukController extends Controller
                     if ($sjb) {
                         $ongkosTruk = $this->calculateOngkosTruk($sjb);
                         $uangJalanNominal = $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0;
-                        $nominalBersih = (float)$ongkosTruk - (float)$uangJalanNominal;
+                        $nominalBersih = (float) $ongkosTruk - (float) $uangJalanNominal;
 
                         $items->push([
                             'id' => $id,
@@ -276,7 +279,7 @@ class PranotaOngkosTrukController extends Controller
                             'type' => $type,
                             'supir' => $sjb->supirKaryawan ? ($sjb->supirKaryawan->nama_panggilan ?? $sjb->supirKaryawan->nama_lengkap) : ($sjb->supir ?: '-'),
                             'no_plat' => $sjb->no_plat ?: '-',
-                            'tujuan' => $sjb->tujuanPengambilanRelation->ke ?? $sjb->tujuan_pengambilan ?? '-'
+                            'tujuan' => $sjb->tujuanPengambilanRelation->ke ?? $sjb->tujuan_pengambilan ?? '-',
                         ]);
                     }
                 }
@@ -284,12 +287,12 @@ class PranotaOngkosTrukController extends Controller
 
             return response()->json([
                 'success' => true,
-                'items' => $items
+                'items' => $items,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat memproses data: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat memproses data: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -297,22 +300,24 @@ class PranotaOngkosTrukController extends Controller
     public function show($id)
     {
         $pranota = PranotaOngkosTruk::with(['items', 'creator'])->findOrFail($id);
+
         return view('pranota-ongkos-truk.show', compact('pranota'));
     }
 
     public function print($id)
     {
         $pranota = PranotaOngkosTruk::with([
-            'items.suratJalan.uangJalan', 
+            'items.suratJalan.uangJalan',
             'items.suratJalan.supirKaryawan',
             'items.suratJalan.supir2Karyawan',
             'items.suratJalan.kenekKaryawan',
-            'items.suratJalanBongkaran.uangJalan', 
+            'items.suratJalanBongkaran.uangJalan',
             'items.suratJalanBongkaran.supirKaryawan',
             'items.suratJalanBongkaran.supir2Karyawan',
             'items.suratJalanBongkaran.kenekKaryawan',
-            'creator'
+            'creator',
         ])->findOrFail($id);
+
         return view('pranota-ongkos-truk.print', compact('pranota'));
     }
 
@@ -320,14 +325,15 @@ class PranotaOngkosTrukController extends Controller
     {
         $pranota = PranotaOngkosTruk::findOrFail($id);
         $pranota->delete();
+
         return redirect()->route('pranota-ongkos-truk.index')->with('success', 'Pranota berhasil dihapus.');
     }
 
     public function export($id)
     {
         $pranota = PranotaOngkosTruk::with(['items.suratJalan.tujuanPengambilanRelation', 'items.suratJalanBongkaran.tujuanPengambilanRelation'])->findOrFail($id);
-        $fileName = 'Pranota_Ongkos_Truk_' . $pranota->no_pranota . '.xlsx';
-        
+        $fileName = 'Pranota_Ongkos_Truk_'.$pranota->no_pranota.'.xlsx';
+
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PranotaOngkosTrukExport($pranota), $fileName);
     }
 }

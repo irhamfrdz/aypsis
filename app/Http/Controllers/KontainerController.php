@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Kontainer;
 use App\Models\BtmSewaTransaction;
+use App\Models\Kontainer;
 use Illuminate\Http\Request;
 
 class KontainerController extends Controller
@@ -19,10 +19,10 @@ class KontainerController extends Controller
 
         // Search functionality
         if ($search = $request->get('search')) {
-            $query->where('nomor_seri_gabungan', 'like', '%' . $search . '%')
-                  ->orWhere('awalan_kontainer', 'like', '%' . $search . '%')
-                  ->orWhere('nomor_seri_kontainer', 'like', '%' . $search . '%')
-                  ->orWhere('akhiran_kontainer', 'like', '%' . $search . '%');
+            $query->where('nomor_seri_gabungan', 'like', '%'.$search.'%')
+                ->orWhere('awalan_kontainer', 'like', '%'.$search.'%')
+                ->orWhere('nomor_seri_kontainer', 'like', '%'.$search.'%')
+                ->orWhere('akhiran_kontainer', 'like', '%'.$search.'%');
         }
 
         // Vendor filter
@@ -45,7 +45,7 @@ class KontainerController extends Controller
             switch ($tanggalSewa) {
                 case 'tanpa_tanggal_akhir':
                     $query->whereNotNull('tanggal_mulai_sewa')
-                          ->whereNull('tanggal_selesai_sewa');
+                        ->whereNull('tanggal_selesai_sewa');
                     break;
                 case 'ada_tanggal_akhir':
                     $query->whereNotNull('tanggal_selesai_sewa');
@@ -55,17 +55,17 @@ class KontainerController extends Controller
                     break;
                 case 'lengkap':
                     $query->whereNotNull('tanggal_mulai_sewa')
-                          ->whereNotNull('tanggal_selesai_sewa');
+                        ->whereNotNull('tanggal_selesai_sewa');
                     break;
             }
         }
 
         // Get distinct vendors for filter dropdown
         $vendors = Kontainer::distinct()
-                           ->whereNotNull('vendor')
-                           ->where('vendor', '!=', '')
-                           ->orderBy('vendor')
-                           ->pluck('vendor');
+            ->whereNotNull('vendor')
+            ->where('vendor', '!=', '')
+            ->orderBy('vendor')
+            ->pluck('vendor');
 
         // Menggunakan paginasi untuk performa yang lebih baik
         $perPage = $request->input('per_page', 15); // Default 15 jika tidak ada parameter
@@ -88,7 +88,6 @@ class KontainerController extends Controller
     /**
      * Menyimpan kontainer baru ke dalam database.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
@@ -103,7 +102,7 @@ class KontainerController extends Controller
                     $indonesianMonths = ['Mei', 'Agu', 'Okt', 'Des'];
                     $englishMonths = ['May', 'Aug', 'Oct', 'Dec'];
                     $translatedDate = str_ireplace($indonesianMonths, $englishMonths, $rawDate);
-                    
+
                     $date = \DateTime::createFromFormat('d/M/Y', $translatedDate);
                     if ($date) {
                         $request->merge([$field => $date->format('Y-m-d')]);
@@ -115,8 +114,8 @@ class KontainerController extends Controller
         }
 
         // Gabungkan awalan, nomor seri, dan akhiran untuk membuat nomor seri gabungan
-        $nomor_seri_gabungan = $request->input('awalan_kontainer') .
-                               $request->input('nomor_seri_kontainer') .
+        $nomor_seri_gabungan = $request->input('awalan_kontainer').
+                               $request->input('nomor_seri_kontainer').
                                $request->input('akhiran_kontainer');
 
         $request->merge(['nomor_seri_gabungan' => $nomor_seri_gabungan]);
@@ -156,9 +155,9 @@ class KontainerController extends Controller
         if ($existingContainer) {
             // Update existing container instead of creating duplicate
             $data = $request->all();
-            
+
             // Set status default jika tidak ada input status, asumsikan aktif/tersedia saat diupdate
-            if (!$request->filled('status')) {
+            if (! $request->filled('status')) {
                 $data['status'] = 'Tersedia'; // Default updated status
             }
 
@@ -179,7 +178,7 @@ class KontainerController extends Controller
             }
 
             return redirect()->route('master.kontainer.index')
-                             ->with('success', 'Kontainer dengan nomor ' . $nomor_seri_gabungan . ' sudah ada. Data berhasil diperbarui!');
+                ->with('success', 'Kontainer dengan nomor '.$nomor_seri_gabungan.' sudah ada. Data berhasil diperbarui!');
         }
 
         $existingWithSameSerialAndSuffix = Kontainer::where('nomor_seri_kontainer', $request->nomor_seri_kontainer)
@@ -201,7 +200,7 @@ class KontainerController extends Controller
         $data = $request->all();
 
         // Set status default jika tidak ada
-        if (!$request->filled('status')) {
+        if (! $request->filled('status')) {
             $data['status'] = 'Tersedia'; // Default active status string
         }
 
@@ -222,13 +221,12 @@ class KontainerController extends Controller
         }
 
         return redirect()->route('master.kontainer.index')
-                         ->with('success', 'Kontainer berhasil ditambahkan!');
+            ->with('success', 'Kontainer berhasil ditambahkan!');
     }
 
     /**
      * Menampilkan formulir untuk mengedit kontainer.
      *
-     * @param  \App\Models\Kontainer  $kontainer
      * @return \Illuminate\View\View
      */
     public function edit(Kontainer $kontainer)
@@ -239,8 +237,6 @@ class KontainerController extends Controller
     /**
      * Memperbarui data kontainer di database.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Kontainer  $kontainer
      * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, Kontainer $kontainer)
@@ -255,7 +251,7 @@ class KontainerController extends Controller
                     $indonesianMonths = ['Mei', 'Agu', 'Okt', 'Des'];
                     $englishMonths = ['May', 'Aug', 'Oct', 'Dec'];
                     $translatedDate = str_ireplace($indonesianMonths, $englishMonths, $rawDate);
-                    
+
                     $date = \DateTime::createFromFormat('d/M/Y', $translatedDate);
                     if ($date) {
                         $request->merge([$field => $date->format('Y-m-d')]);
@@ -267,8 +263,8 @@ class KontainerController extends Controller
         }
 
         // Gabungkan awalan, nomor seri, dan akhiran untuk membuat nomor seri gabungan
-        $nomor_seri_gabungan = $request->input('awalan_kontainer') .
-                               $request->input('nomor_seri_kontainer') .
+        $nomor_seri_gabungan = $request->input('awalan_kontainer').
+                               $request->input('nomor_seri_kontainer').
                                $request->input('akhiran_kontainer');
 
         $request->merge(['nomor_seri_gabungan' => $nomor_seri_gabungan]);
@@ -334,13 +330,12 @@ class KontainerController extends Controller
         }
 
         return redirect()->route('master.kontainer.index')
-                         ->with('success', 'Kontainer berhasil diperbarui!');
+            ->with('success', 'Kontainer berhasil diperbarui!');
     }
 
     /**
      * Menghapus kontainer dari database.
      *
-     * @param  \App\Models\Kontainer  $kontainer
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(Kontainer $kontainer)
@@ -348,7 +343,7 @@ class KontainerController extends Controller
         $kontainer->delete();
 
         return redirect()->route('master.kontainer.index')
-                         ->with('success', 'Kontainer berhasil dihapus!');
+            ->with('success', 'Kontainer berhasil dihapus!');
     }
 
     /**
@@ -363,13 +358,13 @@ class KontainerController extends Controller
         try {
             $file = $request->file('excel_file');
             $fileContent = file_get_contents($file->getRealPath());
-            
+
             // Handle UTF-8 BOM
             $fileContent = str_replace("\xEF\xBB\xBF", '', $fileContent);
-            
+
             // Split into lines
             $lines = array_filter(array_map('trim', explode("\n", $fileContent)));
-            
+
             if (count($lines) < 2) {
                 return redirect()->route('master.kontainer.index')
                     ->with('error', 'File CSV kosong atau tidak valid. Minimal harus ada header dan 1 baris data.');
@@ -377,7 +372,7 @@ class KontainerController extends Controller
 
             // Skip header
             array_shift($lines);
-            
+
             $updated = 0;
             $notFound = [];
             $errors = [];
@@ -385,29 +380,32 @@ class KontainerController extends Controller
 
             foreach ($lines as $lineNumber => $line) {
                 $actualLine = $lineNumber + 2; // +2 karena array index 0 + skip header
-                
+
                 // Parse CSV with semicolon delimiter
                 $data = str_getcsv($line, ';');
-                
+
                 // Skip empty lines
                 if (empty(array_filter($data))) {
                     $skipped++;
+
                     continue;
                 }
 
                 // Minimal harus ada nomor kontainer (kolom 1)
-                if (!isset($data[0]) || empty(trim($data[0]))) {
+                if (! isset($data[0]) || empty(trim($data[0]))) {
                     $errors[] = "Baris {$actualLine}: Nomor kontainer tidak boleh kosong";
+
                     continue;
                 }
 
                 $nomorKontainer = strtoupper(trim($data[0]));
-                
+
                 // Cari kontainer berdasarkan nomor gabungan
                 $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-                
-                if (!$kontainer) {
+
+                if (! $kontainer) {
                     $notFound[] = "Baris {$actualLine}: Kontainer '{$nomorKontainer}' tidak ditemukan";
+
                     continue;
                 }
 
@@ -415,7 +413,7 @@ class KontainerController extends Controller
                 $updateData = [];
 
                 // Parse tanggal mulai sewa (kolom 2)
-                if (isset($data[1]) && !empty(trim($data[1]))) {
+                if (isset($data[1]) && ! empty(trim($data[1]))) {
                     try {
                         $tanggalMulai = trim($data[1]);
                         $date = \DateTime::createFromFormat('d/M/Y', $tanggalMulai);
@@ -423,16 +421,18 @@ class KontainerController extends Controller
                             $updateData['tanggal_mulai_sewa'] = $date->format('Y-m-d');
                         } else {
                             $errors[] = "Baris {$actualLine}: Format tanggal mulai sewa tidak valid (gunakan format dd/Mmm/yyyy, contoh: 01/Jan/2024)";
+
                             continue;
                         }
                     } catch (\Exception $e) {
-                        $errors[] = "Baris {$actualLine}: Error parsing tanggal mulai sewa - " . $e->getMessage();
+                        $errors[] = "Baris {$actualLine}: Error parsing tanggal mulai sewa - ".$e->getMessage();
+
                         continue;
                     }
                 }
 
                 // Parse tanggal selesai sewa (kolom 3)
-                if (isset($data[2]) && !empty(trim($data[2]))) {
+                if (isset($data[2]) && ! empty(trim($data[2]))) {
                     try {
                         $tanggalSelesai = trim($data[2]);
                         $date = \DateTime::createFromFormat('d/M/Y', $tanggalSelesai);
@@ -440,28 +440,31 @@ class KontainerController extends Controller
                             $updateData['tanggal_selesai_sewa'] = $date->format('Y-m-d');
                         } else {
                             $errors[] = "Baris {$actualLine}: Format tanggal selesai sewa tidak valid (gunakan format dd/Mmm/yyyy, contoh: 31/Des/2024)";
+
                             continue;
                         }
                     } catch (\Exception $e) {
-                        $errors[] = "Baris {$actualLine}: Error parsing tanggal selesai sewa - " . $e->getMessage();
+                        $errors[] = "Baris {$actualLine}: Error parsing tanggal selesai sewa - ".$e->getMessage();
+
                         continue;
                     }
                 }
 
                 // Parse status (kolom 4)
-                if (isset($data[3]) && !empty(trim($data[3]))) {
+                if (isset($data[3]) && ! empty(trim($data[3]))) {
                     $status = trim($data[3]);
                     // Accept both \"Tersedia\"/\"Tidak Tersedia\" format
                     if (in_array($status, ['Tersedia', 'Tidak Tersedia'])) {
                         $updateData['status'] = $status;
                     } else {
                         $errors[] = "Baris {$actualLine}: Status harus 'Tersedia' atau 'Tidak Tersedia'";
+
                         continue;
                     }
                 }
 
                 // Update jika ada data yang diubah
-                if (!empty($updateData)) {
+                if (! empty($updateData)) {
                     $kontainer->update($updateData);
                     $updated++;
                 }
@@ -469,34 +472,34 @@ class KontainerController extends Controller
 
             // Build success message
             $message = "Import selesai: {$updated} kontainer berhasil diupdate";
-            
+
             if ($skipped > 0) {
                 $message .= ", {$skipped} baris kosong dilewati";
             }
 
             // Add warnings for not found containers
-            if (!empty($notFound)) {
+            if (! empty($notFound)) {
                 $notFoundMessage = implode('; ', array_slice($notFound, 0, 5));
                 if (count($notFound) > 5) {
-                    $notFoundMessage .= ' dan ' . (count($notFound) - 5) . ' lainnya';
+                    $notFoundMessage .= ' dan '.(count($notFound) - 5).' lainnya';
                 }
-                session()->flash('warning', 'Kontainer tidak ditemukan: ' . $notFoundMessage);
+                session()->flash('warning', 'Kontainer tidak ditemukan: '.$notFoundMessage);
             }
 
             // Add errors if any
-            if (!empty($errors)) {
+            if (! empty($errors)) {
                 $errorMessage = implode('; ', array_slice($errors, 0, 5));
                 if (count($errors) > 5) {
-                    $errorMessage .= ' dan ' . (count($errors) - 5) . ' error lainnya';
+                    $errorMessage .= ' dan '.(count($errors) - 5).' error lainnya';
                 }
-                session()->flash('error', 'Error: ' . $errorMessage);
+                session()->flash('error', 'Error: '.$errorMessage);
             }
 
             return redirect()->route('master.kontainer.index')->with('success', $message);
 
         } catch (\Exception $e) {
             return redirect()->route('master.kontainer.index')
-                ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat import: '.$e->getMessage());
         }
     }
 
@@ -506,7 +509,7 @@ class KontainerController extends Controller
     public function downloadTemplateTanggalSewa()
     {
         $filename = 'template_tanggal_sewa_kontainer.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
@@ -515,42 +518,42 @@ class KontainerController extends Controller
             'Expires' => '0',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
-            
+
             // Add UTF-8 BOM for Excel compatibility
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
+
             // Header
             fputcsv($file, [
                 'nomor_kontainer',
                 'tanggal_mulai_sewa',
                 'tanggal_selesai_sewa',
-                'status'
+                'status',
             ], ';');
-            
+
             // Example data
             fputcsv($file, [
                 'ALLU2202097',
                 '01/Jan/2024',
                 '31/Des/2024',
-                'Tersedia'
+                'Tersedia',
             ], ';');
-            
+
             fputcsv($file, [
                 'AMFU3153692',
                 '15/Feb/2024',
                 '',
-                'Tidak Tersedia'
+                'Tidak Tersedia',
             ], ';');
-            
+
             fputcsv($file, [
                 'DNAU2622206',
                 '',
                 '',
-                'Tersedia'
+                'Tersedia',
             ], ';');
-            
+
             fclose($file);
         };
 

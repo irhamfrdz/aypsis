@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kontainer;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
 use Exception;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 
 class KontainerImportController extends Controller
 {
@@ -18,29 +18,29 @@ class KontainerImportController extends Controller
     public function downloadTemplate()
     {
         try {
-            $fileName = 'template_master_kontainer_' . date('Y-m-d_H-i-s') . '.csv';
+            $fileName = 'template_master_kontainer_'.date('Y-m-d_H-i-s').'.csv';
 
             // Headers for CSV
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ];
 
             // CSV content - template dengan contoh data (basic + extended)
             $csvData = [
                 // Header row with all available fields
                 [
-                    'Awalan Kontainer (4 karakter)', 
-                    'Nomor Seri (maks 6 digit)', 
-                    'Akhiran (1 karakter)', 
-                    'Ukuran (10/20/40)', 
+                    'Awalan Kontainer (4 karakter)',
+                    'Nomor Seri (maks 6 digit)',
+                    'Akhiran (1 karakter)',
+                    'Ukuran (10/20/40)',
                     'Vendor',
                     'Tipe Kontainer (opsional)',
                     'Tanggal Mulai Sewa (dd/mmm/yyyy)',
                     'Tanggal Selesai Sewa (dd/mmm/yyyy)',
                     'Keterangan (opsional)',
                     'Status (Tersedia/Tidak Tersedia)',
-                    'Gudang (nama_gudang, opsional)'
+                    'Gudang (nama_gudang, opsional)',
                 ],
                 // Example row 1 - Basic format
                 ['ALLU', '220209', '7', '20', 'ZONA', '', '', '', '', '', ''],
@@ -57,14 +57,14 @@ class KontainerImportController extends Controller
                 ['Tanggal: format dd/mmm/yyyy (contoh: 15/Jan/2024)'],
                 ['Status default: "Tersedia" jika kosong'],
                 ['Tipe default: "Dry Container" jika kosong'],
-                ['Gudang: isi dengan nama gudang yang terdaftar di sistem (pencocokan sebagian)']
+                ['Gudang: isi dengan nama gudang yang terdaftar di sistem (pencocokan sebagian)'],
             ];
 
-            $callback = function() use ($csvData) {
+            $callback = function () use ($csvData) {
                 $file = fopen('php://output', 'w');
 
                 // Add BOM for proper Excel UTF-8 handling
-                fputs($file, "\xEF\xBB\xBF");
+                fwrite($file, "\xEF\xBB\xBF");
 
                 // Set CSV dengan semicolon delimiter
                 foreach ($csvData as $row) {
@@ -77,7 +77,7 @@ class KontainerImportController extends Controller
             return Response::stream($callback, 200, $headers);
 
         } catch (Exception $e) {
-            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mendownload template: '.$e->getMessage());
         }
     }
 
@@ -88,12 +88,12 @@ class KontainerImportController extends Controller
     public function downloadTemplateNomorGabungan()
     {
         try {
-            $fileName = 'template_kontainer_nomor_gabungan_' . date('Y-m-d_H-i-s') . '.csv';
+            $fileName = 'template_kontainer_nomor_gabungan_'.date('Y-m-d_H-i-s').'.csv';
 
             // Headers for CSV
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ];
 
             // CSV content
@@ -108,7 +108,7 @@ class KontainerImportController extends Controller
                     'Tanggal Selesai Sewa (dd/mmm/yyyy)',
                     'Keterangan (opsional)',
                     'Status (Tersedia/Tidak Tersedia)',
-                    'Gudang (nama_gudang, opsional)'
+                    'Gudang (nama_gudang, opsional)',
                 ],
                 // Contoh data dengan format lengkap
                 ['ALLU2202097', '20', 'ZONA', 'HC', '01/Jan/2024', '31/Des/2024', 'Kontainer sewa tahunan', 'Tersedia', 'Gudang Utama'],
@@ -133,14 +133,14 @@ class KontainerImportController extends Controller
                 [''],
                 ['Sistem akan otomatis memecah Nomor Seri Gabungan menjadi:'],
                 ['  ALLU2202097 → Awalan: ALLU, Nomor Seri: 220209, Akhiran: 7'],
-                ['  AMFU3131327 → Awalan: AMFU, Nomor Seri: 313132, Akhiran: 7']
+                ['  AMFU3131327 → Awalan: AMFU, Nomor Seri: 313132, Akhiran: 7'],
             ];
 
-            $callback = function() use ($csvData) {
+            $callback = function () use ($csvData) {
                 $file = fopen('php://output', 'w');
 
                 // Add BOM for proper Excel UTF-8 handling
-                fputs($file, "\xEF\xBB\xBF");
+                fwrite($file, "\xEF\xBB\xBF");
 
                 // Set CSV dengan semicolon delimiter
                 foreach ($csvData as $row) {
@@ -153,7 +153,7 @@ class KontainerImportController extends Controller
             return Response::stream($callback, 200, $headers);
 
         } catch (Exception $e) {
-            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mendownload template: '.$e->getMessage());
         }
     }
 
@@ -169,12 +169,12 @@ class KontainerImportController extends Controller
                 'required',
                 'file',
                 'mimes:csv,txt',
-                'max:5120' // 5MB
-            ]
+                'max:5120', // 5MB
+            ],
         ], [
             'excel_file.required' => 'File CSV harus dipilih.',
             'excel_file.mimes' => 'File harus berformat .csv',
-            'excel_file.max' => 'Ukuran file maksimal 5MB.'
+            'excel_file.max' => 'Ukuran file maksimal 5MB.',
         ]);
 
         if ($validator->fails()) {
@@ -184,13 +184,13 @@ class KontainerImportController extends Controller
         try {
             $file = $request->file('excel_file');
             $fileContent = file_get_contents($file->getRealPath());
-            
+
             // Handle UTF-8 BOM
             $fileContent = str_replace("\xEF\xBB\xBF", '', $fileContent);
-            
+
             // Split into lines
             $lines = array_filter(array_map('trim', explode("\n", $fileContent)));
-            
+
             if (count($lines) < 2) {
                 return redirect()->route('master.kontainer.index')
                     ->with('error', 'File CSV kosong atau tidak valid. Minimal harus ada header dan 1 baris data.');
@@ -198,7 +198,7 @@ class KontainerImportController extends Controller
 
             // Skip header
             array_shift($lines);
-            
+
             $created = 0;
             $updated = 0;
             $errors = [];
@@ -208,48 +208,52 @@ class KontainerImportController extends Controller
 
             foreach ($lines as $lineNumber => $line) {
                 $actualLine = $lineNumber + 2; // +2 karena array index 0 + skip header
-                
+
                 // Parse CSV with semicolon delimiter
                 $data = str_getcsv($line, ';');
-                
+
                 // Skip empty lines
                 if (empty(array_filter($data))) {
                     $skipped++;
+
                     continue;
                 }
 
                 // Minimal harus ada nomor seri gabungan dan ukuran (kolom 1 & 2)
-                if (!isset($data[0]) || empty(trim($data[0])) || !isset($data[1]) || empty(trim($data[1]))) {
+                if (! isset($data[0]) || empty(trim($data[0])) || ! isset($data[1]) || empty(trim($data[1]))) {
                     $errors[] = "Baris {$actualLine}: Nomor seri gabungan dan ukuran wajib diisi";
+
                     continue;
                 }
 
                 $nomorSeriGabungan = strtoupper(trim($data[0]));
                 $ukuran = trim($data[1]);
-                
+
                 // Validasi panjang nomor seri gabungan (harus 11 karakter)
                 if (strlen($nomorSeriGabungan) != 11) {
-                    $errors[] = "Baris {$actualLine}: Nomor seri gabungan harus 11 karakter (format: ABCD123456X), ditemukan " . strlen($nomorSeriGabungan) . " karakter";
+                    $errors[] = "Baris {$actualLine}: Nomor seri gabungan harus 11 karakter (format: ABCD123456X), ditemukan ".strlen($nomorSeriGabungan).' karakter';
+
                     continue;
                 }
-                
+
                 // Pecah nomor seri gabungan
                 $awalanKontainer = substr($nomorSeriGabungan, 0, 4);      // 4 karakter pertama
                 $nomorSeriKontainer = substr($nomorSeriGabungan, 4, 6);   // 6 karakter berikutnya
                 $akhiranKontainer = substr($nomorSeriGabungan, 10, 1);    // 1 karakter terakhir
-                
+
                 // Validasi ukuran
-                if (!in_array($ukuran, ['10', '20', '40'])) {
+                if (! in_array($ukuran, ['10', '20', '40'])) {
                     $errors[] = "Baris {$actualLine}: Ukuran tidak valid '{$ukuran}'. Gunakan 10, 20, atau 40";
+
                     continue;
                 }
-                
+
                 // Vendor (opsional, default ZONA)
-                $vendor = isset($data[2]) && !empty(trim($data[2])) ? trim($data[2]) : 'ZONA';
-                
+                $vendor = isset($data[2]) && ! empty(trim($data[2])) ? trim($data[2]) : 'ZONA';
+
                 // Cek apakah kontainer sudah ada
                 $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorSeriGabungan)->first();
-                
+
                 if ($kontainer) {
                     // Update data yang ada
                     $kontainer->awalan_kontainer = $awalanKontainer;
@@ -257,14 +261,14 @@ class KontainerImportController extends Controller
                     $kontainer->akhiran_kontainer = $akhiranKontainer;
                     $kontainer->ukuran = $ukuran;
                     $kontainer->vendor = $vendor;
-                    
+
                     // Tipe kontainer (opsional)
-                    if (isset($data[3]) && !empty(trim($data[3]))) {
+                    if (isset($data[3]) && ! empty(trim($data[3]))) {
                         $kontainer->tipe_kontainer = trim($data[3]);
                     }
-                    
+
                     // Tanggal mulai sewa (opsional, kolom 5)
-                    if (isset($data[4]) && !empty(trim($data[4]))) {
+                    if (isset($data[4]) && ! empty(trim($data[4]))) {
                         try {
                             $tanggalMulai = trim($data[4]);
                             $parsedDate = $this->parseDate($tanggalMulai);
@@ -275,9 +279,9 @@ class KontainerImportController extends Controller
                             $errors[] = "Baris {$actualLine}: Format tanggal mulai sewa tidak valid";
                         }
                     }
-                    
+
                     // Tanggal selesai sewa (opsional, kolom 6)
-                    if (isset($data[5]) && !empty(trim($data[5]))) {
+                    if (isset($data[5]) && ! empty(trim($data[5]))) {
                         try {
                             $tanggalSelesai = trim($data[5]);
                             $parsedDate = $this->parseDate($tanggalSelesai);
@@ -288,17 +292,18 @@ class KontainerImportController extends Controller
                             $errors[] = "Baris {$actualLine}: Format tanggal selesai sewa tidak valid";
                         }
                     }
-                    
+
                     // Keterangan (opsional, kolom 7)
-                    if (isset($data[6]) && !empty(trim($data[6]))) {
+                    if (isset($data[6]) && ! empty(trim($data[6]))) {
                         $kontainer->keterangan = trim($data[6]);
                     }
-                    
+
                     // Status (opsional, kolom 8)
-                    if (isset($data[7]) && !empty(trim($data[7]))) {
+                    if (isset($data[7]) && ! empty(trim($data[7]))) {
                         $status = trim($data[7]);
-                        if (!in_array($status, ['Tersedia', 'Tidak Tersedia'])) {
+                        if (! in_array($status, ['Tersedia', 'Tidak Tersedia'])) {
                             $errors[] = "Baris {$actualLine}: Status tidak valid '{$status}'. Gunakan 'Tersedia' atau 'Tidak Tersedia'";
+
                             continue;
                         }
                         $kontainer->status = $status;
@@ -306,13 +311,13 @@ class KontainerImportController extends Controller
 
                     $asalGudangId = $kontainer->gudangs_id;
                     // Gudang (opsional, kolom 9)
-                    if (isset($data[8]) && !empty(trim($data[8]))) {
-                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . trim($data[8]) . '%')->first();
+                    if (isset($data[8]) && ! empty(trim($data[8]))) {
+                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%'.trim($data[8]).'%')->first();
                         if ($gudang) {
                             $kontainer->gudangs_id = $gudang->id;
                         }
                     }
-                    
+
                     $kontainer->save();
                     if ($asalGudangId != $kontainer->gudangs_id) {
                         \App\Models\HistoryKontainer::create([
@@ -329,21 +334,21 @@ class KontainerImportController extends Controller
                     $updated++;
                 } else {
                     // Buat kontainer baru
-                    $newKontainer = new Kontainer();
+                    $newKontainer = new Kontainer;
                     $newKontainer->awalan_kontainer = $awalanKontainer;
                     $newKontainer->nomor_seri_kontainer = $nomorSeriKontainer;
                     $newKontainer->akhiran_kontainer = $akhiranKontainer;
                     $newKontainer->nomor_seri_gabungan = $nomorSeriGabungan;
                     $newKontainer->ukuran = $ukuran;
                     $newKontainer->vendor = $vendor;
-                    
+
                     // Tipe kontainer (opsional, default Dry Container)
-                    $newKontainer->tipe_kontainer = isset($data[3]) && !empty(trim($data[3])) 
-                        ? trim($data[3]) 
+                    $newKontainer->tipe_kontainer = isset($data[3]) && ! empty(trim($data[3]))
+                        ? trim($data[3])
                         : 'Dry Container';
-                    
+
                     // Tanggal mulai sewa (opsional, kolom 5)
-                    if (isset($data[4]) && !empty(trim($data[4]))) {
+                    if (isset($data[4]) && ! empty(trim($data[4]))) {
                         try {
                             $tanggalMulai = trim($data[4]);
                             $parsedDate = $this->parseDate($tanggalMulai);
@@ -354,9 +359,9 @@ class KontainerImportController extends Controller
                             // Ignore date parse errors for new records
                         }
                     }
-                    
+
                     // Tanggal selesai sewa (opsional, kolom 6)
-                    if (isset($data[5]) && !empty(trim($data[5]))) {
+                    if (isset($data[5]) && ! empty(trim($data[5]))) {
                         try {
                             $tanggalSelesai = trim($data[5]);
                             $parsedDate = $this->parseDate($tanggalSelesai);
@@ -367,25 +372,25 @@ class KontainerImportController extends Controller
                             // Ignore date parse errors for new records
                         }
                     }
-                    
+
                     // Keterangan (opsional, kolom 7)
-                    if (isset($data[6]) && !empty(trim($data[6]))) {
+                    if (isset($data[6]) && ! empty(trim($data[6]))) {
                         $newKontainer->keterangan = trim($data[6]);
                     }
-                    
+
                     // Status (opsional, default Tersedia, kolom 8)
-                    $newKontainer->status = isset($data[7]) && !empty(trim($data[7])) 
-                        ? trim($data[7]) 
+                    $newKontainer->status = isset($data[7]) && ! empty(trim($data[7]))
+                        ? trim($data[7])
                         : 'Tersedia';
 
                     // Gudang (opsional, kolom 9)
-                    if (isset($data[8]) && !empty(trim($data[8]))) {
-                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . trim($data[8]) . '%')->first();
+                    if (isset($data[8]) && ! empty(trim($data[8]))) {
+                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%'.trim($data[8]).'%')->first();
                         if ($gudang) {
                             $newKontainer->gudangs_id = $gudang->id;
                         }
                     }
-                    
+
                     $newKontainer->save();
                     if ($newKontainer->gudangs_id) {
                         \App\Models\HistoryKontainer::create([
@@ -407,36 +412,37 @@ class KontainerImportController extends Controller
 
             // Build pesan hasil import
             $messages = [];
-            
+
             if ($created > 0) {
                 $messages[] = "Berhasil menambahkan {$created} kontainer baru";
             }
-            
+
             if ($updated > 0) {
                 $messages[] = "Berhasil update {$updated} kontainer";
             }
-            
-            if (!empty($errors)) {
+
+            if (! empty($errors)) {
                 $errorCount = count($errors);
                 $errorPreview = implode('; ', array_slice($errors, 0, 3));
                 if ($errorCount > 3) {
-                    $errorPreview .= " ... dan " . ($errorCount - 3) . " error lainnya";
+                    $errorPreview .= ' ... dan '.($errorCount - 3).' error lainnya';
                 }
                 $messages[] = "ERROR: {$errorCount} baris gagal - {$errorPreview}";
             }
-            
+
             if ($skipped > 0) {
                 $messages[] = "Dilewati: {$skipped} baris (kosong)";
             }
 
             $finalMessage = implode('. ', $messages);
-            $flashType = (!empty($errors)) ? 'warning' : 'success';
+            $flashType = (! empty($errors)) ? 'warning' : 'success';
 
             return redirect()->route('master.kontainer.index')->with($flashType, $finalMessage);
 
         } catch (Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal mengimpor data: '.$e->getMessage());
         }
     }
 
@@ -464,12 +470,14 @@ class KontainerImportController extends Controller
                 $lineNumber = $index + 1;
                 if (trim($line) === '') {
                     $skipped++;
+
                     continue;
                 }
 
                 $parts = array_map('trim', explode('|', $line));
                 if (count($parts) < 4) {
                     $errors[] = "Baris {$lineNumber}: format harus UNIT|VENDOR|TIPE|SIZE";
+
                     continue;
                 }
 
@@ -482,11 +490,13 @@ class KontainerImportController extends Controller
 
                 if (strlen($unitNumber) !== 11) {
                     $errors[] = "Baris {$lineNumber}: nomor kontainer '{$unitNumber}' harus 11 karakter (format ABCD123456X)";
+
                     continue;
                 }
 
-                if (!in_array($ukuran, ['10', '20', '40'], true)) {
+                if (! in_array($ukuran, ['10', '20', '40'], true)) {
                     $errors[] = "Baris {$lineNumber}: ukuran '{$ukuran}' tidak valid (gunakan 10/20/40)";
+
                     continue;
                 }
 
@@ -505,15 +515,15 @@ class KontainerImportController extends Controller
                 ];
 
                 // Optional: Gudang (Warehouse)
-                if (isset($parts[4]) && !empty($parts[4])) {
-                    $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . $parts[4] . '%')->first();
+                if (isset($parts[4]) && ! empty($parts[4])) {
+                    $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%'.$parts[4].'%')->first();
                     if ($gudang) {
                         $payload['gudangs_id'] = $gudang->id;
                     }
                 }
 
                 // Optional: Tanggal Mulai Sewa
-                if (isset($parts[5]) && !empty($parts[5])) {
+                if (isset($parts[5]) && ! empty($parts[5])) {
                     $parsedDate = $this->parseDate($parts[5]);
                     if ($parsedDate) {
                         $payload['tanggal_mulai_sewa'] = $parsedDate->format('Y-m-d');
@@ -521,7 +531,7 @@ class KontainerImportController extends Controller
                 }
 
                 // Optional: Tanggal Selesai Sewa
-                if (isset($parts[6]) && !empty($parts[6])) {
+                if (isset($parts[6]) && ! empty($parts[6])) {
                     $parsedDate = $this->parseDate($parts[6]);
                     if ($parsedDate) {
                         $payload['tanggal_selesai_sewa'] = $parsedDate->format('Y-m-d');
@@ -529,7 +539,7 @@ class KontainerImportController extends Controller
                 }
 
                 // Optional: Keterangan
-                if (isset($parts[7]) && !empty($parts[7])) {
+                if (isset($parts[7]) && ! empty($parts[7])) {
                     $payload['keterangan'] = $parts[7];
                 }
 
@@ -538,12 +548,12 @@ class KontainerImportController extends Controller
                     $asalGudangId = $existing->gudangs_id;
                     $existing->fill($payload);
                     // Preserve existing status if already set by business process.
-                    if (!empty($existing->status)) {
+                    if (! empty($existing->status)) {
                         unset($payload['status']);
                         $existing->fill($payload);
                     }
                     $existing->save();
-                    
+
                     if ($asalGudangId != $existing->gudangs_id) {
                         \App\Models\HistoryKontainer::create([
                             'nomor_kontainer' => $unitNumber,
@@ -561,7 +571,7 @@ class KontainerImportController extends Controller
                     $newKontainer = Kontainer::create(array_merge($payload, [
                         'nomor_seri_gabungan' => $unitNumber,
                     ]));
-                    
+
                     if ($newKontainer->gudangs_id) {
                         \App\Models\HistoryKontainer::create([
                             'nomor_kontainer' => $unitNumber,
@@ -590,12 +600,13 @@ class KontainerImportController extends Controller
             if ($skipped > 0) {
                 $messages[] = "{$skipped} baris kosong dilewati";
             }
-            if (!empty($errors)) {
+            if (! empty($errors)) {
                 $preview = implode('; ', array_slice($errors, 0, 3));
                 if (count($errors) > 3) {
                     $preview .= ' ...';
                 }
-                $messages[] = count($errors) . " baris gagal ({$preview})";
+                $messages[] = count($errors)." baris gagal ({$preview})";
+
                 return redirect()->route('master.kontainer.index')->with('warning', implode('. ', $messages));
             }
 
@@ -606,7 +617,8 @@ class KontainerImportController extends Controller
             return redirect()->route('master.kontainer.index')->with('success', implode('. ', $messages));
         } catch (\Throwable $e) {
             DB::rollBack();
-            return redirect()->route('master.kontainer.index')->with('error', 'Import Master Unit gagal: ' . $e->getMessage());
+
+            return redirect()->route('master.kontainer.index')->with('error', 'Import Master Unit gagal: '.$e->getMessage());
         }
     }
 
@@ -625,7 +637,7 @@ class KontainerImportController extends Controller
             'd-M-y',   // 01-Jan-25
             'Y-m-d',   // 2025-01-01
         ];
-        
+
         foreach ($formats as $format) {
             try {
                 $parsedDate = \Carbon\Carbon::createFromFormat($format, $dateString);
@@ -636,7 +648,7 @@ class KontainerImportController extends Controller
                 continue;
             }
         }
-        
+
         return null;
     }
 
@@ -651,12 +663,12 @@ class KontainerImportController extends Controller
                 'required',
                 'file',
                 'mimes:csv,txt',
-                'max:5120' // 5MB
-            ]
+                'max:5120', // 5MB
+            ],
         ], [
             'excel_file.required' => 'File CSV harus dipilih.',
             'excel_file.mimes' => 'File harus berformat .csv',
-            'excel_file.max' => 'Ukuran file maksimal 5MB.'
+            'excel_file.max' => 'Ukuran file maksimal 5MB.',
         ]);
 
         if ($validator->fails()) {
@@ -669,31 +681,32 @@ class KontainerImportController extends Controller
 
             // Read CSV file with semicolon delimiter and proper encoding
             $csvData = [];
-            if (($handle = fopen($path, 'r')) !== FALSE) {
+            if (($handle = fopen($path, 'r')) !== false) {
                 // Set UTF-8 encoding untuk handle karakter khusus
                 stream_filter_append($handle, 'convert.iconv.UTF-8/UTF-8//IGNORE');
-                
-                while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
+
+                while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                     // Clean up each field dari whitespace dan karakter tersembunyi
-                    $cleanData = array_map(function($field) {
+                    $cleanData = array_map(function ($field) {
                         return trim($field, " \t\n\r\0\x0B\xEF\xBB\xBF");
                     }, $data);
                     $csvData[] = $cleanData;
                 }
                 fclose($handle);
             }
-            
+
             // Log total baris yang dibaca
-            \Log::info("CSV Import: Total rows read", ['total_rows' => count($csvData)]);
+            \Log::info('CSV Import: Total rows read', ['total_rows' => count($csvData)]);
 
             $header = array_shift($csvData); // Remove header row
 
             // Validate header format - cukup cek minimal 5 kolom dan kolom pertama berisi "Awalan"
             if (count($header) < 5 || stripos($header[0], 'Awalan') === false) {
                 $headerReceived = implode(', ', $header);
-                return back()->with('error', 
-                    'Format header CSV tidak sesuai template.' . "\n" .
-                    'Header yang diterima: ' . $headerReceived . "\n" .
+
+                return back()->with('error',
+                    'Format header CSV tidak sesuai template.'."\n".
+                    'Header yang diterima: '.$headerReceived."\n".
                     'Silakan download template terbaru dan pastikan format header sesuai.'
                 );
             }
@@ -704,7 +717,7 @@ class KontainerImportController extends Controller
                 'errors' => 0,
                 'skipped' => 0,
                 'error_details' => [],
-                'warnings' => []
+                'warnings' => [],
             ];
 
             DB::beginTransaction();
@@ -721,6 +734,7 @@ class KontainerImportController extends Controller
                 if (count($row) < 5) {
                     $stats['errors']++;
                     $stats['error_details'][] = "Baris {$rowNumber}: Data tidak lengkap";
+
                     continue;
                 }
 
@@ -731,7 +745,7 @@ class KontainerImportController extends Controller
                     $akhiranKontainer = isset($row[2]) ? trim($row[2]) : '';
                     $ukuran = isset($row[3]) ? trim($row[3]) : '';
                     $vendor = isset($row[4]) ? trim($row[4]) : '';
-                    
+
                     // Additional optional fields
                     $tipeKontainer = isset($row[5]) ? trim($row[5]) : 'Dry Container';
                     $tanggalMulaiSewa = isset($row[6]) ? trim($row[6]) : '';
@@ -739,7 +753,7 @@ class KontainerImportController extends Controller
                     $keterangan = isset($row[8]) ? trim($row[8]) : '';
                     $status = isset($row[9]) ? trim($row[9]) : 'Tersedia';
                     $gudangNama = isset($row[10]) ? trim($row[10]) : '';
-                    
+
                     // Debug logging untuk troubleshooting
                     \Log::info("Processing CSV row {$rowNumber}", [
                         'raw_row' => $row,
@@ -757,18 +771,27 @@ class KontainerImportController extends Controller
 
                     // Validation dengan pesan error yang lebih spesifik
                     $emptyFields = [];
-                    if (empty($awalanKontainer)) $emptyFields[] = 'Awalan Kontainer';
-                    if (empty($nomorSeri)) $emptyFields[] = 'Nomor Seri';
+                    if (empty($awalanKontainer)) {
+                        $emptyFields[] = 'Awalan Kontainer';
+                    }
+                    if (empty($nomorSeri)) {
+                        $emptyFields[] = 'Nomor Seri';
+                    }
                     // Akhiran bisa kosong, akan diset default '0'
                     if ($akhiranKontainer === '') {
                         $akhiranKontainer = '0';
                     }
-                    if (empty($ukuran)) $emptyFields[] = 'Ukuran';
-                    if (empty($vendor)) $emptyFields[] = 'Vendor';
-                    
-                    if (!empty($emptyFields)) {
+                    if (empty($ukuran)) {
+                        $emptyFields[] = 'Ukuran';
+                    }
+                    if (empty($vendor)) {
+                        $emptyFields[] = 'Vendor';
+                    }
+
+                    if (! empty($emptyFields)) {
                         $stats['errors']++;
-                        $stats['error_details'][] = "Baris {$rowNumber}: Kolom kosong - " . implode(', ', $emptyFields);
+                        $stats['error_details'][] = "Baris {$rowNumber}: Kolom kosong - ".implode(', ', $emptyFields);
+
                         continue;
                     }
 
@@ -776,6 +799,7 @@ class KontainerImportController extends Controller
                     if (strlen($awalanKontainer) !== 4) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Awalan kontainer harus 4 karakter";
+
                         continue;
                     }
 
@@ -783,6 +807,7 @@ class KontainerImportController extends Controller
                     if (strlen($nomorSeri) > 6) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Nomor seri terlalu panjang (maksimal 6 karakter)";
+
                         continue;
                     }
                     $nomorSeri = str_pad($nomorSeri, 6, '0', STR_PAD_LEFT);
@@ -790,80 +815,88 @@ class KontainerImportController extends Controller
                     if (strlen($akhiranKontainer) !== 1) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Akhiran kontainer harus 1 karakter";
+
                         continue;
                     }
 
                     // Validate ukuran
-                    if (!in_array($ukuran, ['10', '20', '40'])) {
+                    if (! in_array($ukuran, ['10', '20', '40'])) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Ukuran harus 10, 20, atau 40";
+
                         continue;
                     }
 
                     // Validate vendor
-                    if (!in_array($vendor, ['ZONA', 'DPE'])) {
+                    if (! in_array($vendor, ['ZONA', 'DPE'])) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Vendor harus ZONA atau DPE";
+
                         continue;
                     }
 
                     // Process optional date fields
                     $tanggalMulaiSewaConverted = null;
                     $tanggalSelesaiSewaConverted = null;
-                    
-                    if (!empty($tanggalMulaiSewa)) {
+
+                    if (! empty($tanggalMulaiSewa)) {
                         try {
                             $indonesianMonths = ['Mei', 'Agu', 'Okt', 'Des'];
                             $englishMonths = ['May', 'Aug', 'Oct', 'Dec'];
                             $translatedMulai = str_ireplace($indonesianMonths, $englishMonths, $tanggalMulaiSewa);
-                            
+
                             $date = \DateTime::createFromFormat('d/M/Y', $translatedMulai);
                             if ($date) {
                                 $tanggalMulaiSewaConverted = $date->format('Y-m-d');
                             } else {
                                 $stats['errors']++;
                                 $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal mulai sewa tidak valid (gunakan dd/mmm/yyyy)";
+
                                 continue;
                             }
                         } catch (\Exception $e) {
                             $stats['errors']++;
                             $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal mulai sewa tidak valid";
+
                             continue;
                         }
                     }
-                    
-                    if (!empty($tanggalSelesaiSewa)) {
+
+                    if (! empty($tanggalSelesaiSewa)) {
                         try {
                             $indonesianMonths = ['Mei', 'Agu', 'Okt', 'Des'];
                             $englishMonths = ['May', 'Aug', 'Oct', 'Dec'];
                             $translatedSelesai = str_ireplace($indonesianMonths, $englishMonths, $tanggalSelesaiSewa);
-                            
+
                             $date = \DateTime::createFromFormat('d/M/Y', $translatedSelesai);
                             if ($date) {
                                 $tanggalSelesaiSewaConverted = $date->format('Y-m-d');
                             } else {
                                 $stats['errors']++;
                                 $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal selesai sewa tidak valid (gunakan dd/mmm/yyyy)";
+
                                 continue;
                             }
                         } catch (\Exception $e) {
                             $stats['errors']++;
                             $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal selesai sewa tidak valid";
+
                             continue;
                         }
                     }
 
                     // Validate status if provided
-                    if (!empty($status) && !in_array($status, ['Tersedia', 'Tidak Tersedia', 'Disewa'])) {
+                    if (! empty($status) && ! in_array($status, ['Tersedia', 'Tidak Tersedia', 'Disewa'])) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Status harus 'Tersedia' atau 'Tidak Tersedia'";
+
                         continue;
                     }
 
                     // Resolve gudang
                     $gudangsId = null;
-                    if (!empty($gudangNama)) {
-                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . $gudangNama . '%')->first();
+                    if (! empty($gudangNama)) {
+                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%'.$gudangNama.'%')->first();
                         if ($gudang) {
                             $gudangsId = $gudang->id;
                         } else {
@@ -872,7 +905,7 @@ class KontainerImportController extends Controller
                     }
 
                     // Generate nomor seri gabungan
-                    $nomorSeriGabungan = $awalanKontainer . $nomorSeri . $akhiranKontainer;
+                    $nomorSeriGabungan = $awalanKontainer.$nomorSeri.$akhiranKontainer;
 
                     // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer
                     $existingWithSameSerialAndSuffix = Kontainer::where('nomor_seri_kontainer', $nomorSeri)
@@ -901,9 +934,9 @@ class KontainerImportController extends Controller
                             'vendor' => $vendor,
                             'tipe_kontainer' => $tipeKontainer,
                             'status' => $status,
-                            'updated_at' => now()
+                            'updated_at' => now(),
                         ];
-                        
+
                         // Add optional fields if provided
                         if ($tanggalMulaiSewaConverted) {
                             $updateData['tanggal_mulai_sewa'] = $tanggalMulaiSewaConverted;
@@ -911,16 +944,16 @@ class KontainerImportController extends Controller
                         if ($tanggalSelesaiSewaConverted) {
                             $updateData['tanggal_selesai_sewa'] = $tanggalSelesaiSewaConverted;
                         }
-                        if (!empty($keterangan)) {
+                        if (! empty($keterangan)) {
                             $updateData['keterangan'] = $keterangan;
                         }
                         if ($gudangsId !== null) {
                             $updateData['gudangs_id'] = $gudangsId;
                         }
-                        
+
                         $asalGudangId = $existingKontainer->gudangs_id;
                         $existingKontainer->update($updateData);
-                        
+
                         if (isset($updateData['gudangs_id']) && $asalGudangId != $updateData['gudangs_id']) {
                             \App\Models\HistoryKontainer::create([
                                 'nomor_kontainer' => $nomorSeriGabungan,
@@ -946,9 +979,9 @@ class KontainerImportController extends Controller
                             'tipe_kontainer' => $tipeKontainer,
                             'status' => $status,
                             'created_at' => now(),
-                            'updated_at' => now()
+                            'updated_at' => now(),
                         ];
-                        
+
                         // Add optional fields if provided
                         if ($tanggalMulaiSewaConverted) {
                             $createData['tanggal_mulai_sewa'] = $tanggalMulaiSewaConverted;
@@ -956,15 +989,15 @@ class KontainerImportController extends Controller
                         if ($tanggalSelesaiSewaConverted) {
                             $createData['tanggal_selesai_sewa'] = $tanggalSelesaiSewaConverted;
                         }
-                        if (!empty($keterangan)) {
+                        if (! empty($keterangan)) {
                             $createData['keterangan'] = $keterangan;
                         }
                         if ($gudangsId !== null) {
                             $createData['gudangs_id'] = $gudangsId;
                         }
-                        
+
                         $newKontainer = Kontainer::create($createData);
-                        
+
                         if (isset($createData['gudangs_id'])) {
                             \App\Models\HistoryKontainer::create([
                                 'nomor_kontainer' => $nomorSeriGabungan,
@@ -982,14 +1015,14 @@ class KontainerImportController extends Controller
 
                 } catch (Exception $e) {
                     $stats['errors']++;
-                    $stats['error_details'][] = "Baris {$rowNumber}: " . $e->getMessage();
+                    $stats['error_details'][] = "Baris {$rowNumber}: ".$e->getMessage();
                 }
             }
 
             DB::commit();
 
             // Build success message
-            $message = "Import berhasil! ";
+            $message = 'Import berhasil! ';
             $message .= "Ditambahkan: {$stats['success']} kontainer, ";
             $message .= "Diperbarui: {$stats['updated']} kontainer";
 
@@ -998,16 +1031,16 @@ class KontainerImportController extends Controller
             }
 
             // Show detailed errors if any
-            if (!empty($stats['error_details'])) {
+            if (! empty($stats['error_details'])) {
                 $errorDetails = implode(', ', array_slice($stats['error_details'], 0, 3));
                 if (count($stats['error_details']) > 3) {
-                    $errorDetails .= ' dan ' . (count($stats['error_details']) - 3) . ' error lainnya';
+                    $errorDetails .= ' dan '.(count($stats['error_details']) - 3).' error lainnya';
                 }
-                $message .= ". Error detail: " . $errorDetails;
+                $message .= '. Error detail: '.$errorDetails;
             }
 
             // Show warnings for duplicate serial+suffix
-            if (!empty($stats['warnings'])) {
+            if (! empty($stats['warnings'])) {
                 session()->flash('warning', implode(' ', $stats['warnings']));
             }
 
@@ -1015,7 +1048,8 @@ class KontainerImportController extends Controller
 
         } catch (Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal mengimpor data: '.$e->getMessage());
         }
     }
 
@@ -1030,7 +1064,7 @@ class KontainerImportController extends Controller
 
             // Apply filters
             if ($request->filled('search')) {
-                $query->where('nomor_seri_gabungan', 'like', '%' . $request->search . '%');
+                $query->where('nomor_seri_gabungan', 'like', '%'.$request->search.'%');
             }
 
             if ($request->filled('vendor')) {
@@ -1050,7 +1084,7 @@ class KontainerImportController extends Controller
                 switch ($request->tanggal_sewa) {
                     case 'tanpa_tanggal_akhir':
                         $query->whereNotNull('tanggal_mulai_sewa')
-                              ->whereNull('tanggal_selesai_sewa');
+                            ->whereNull('tanggal_selesai_sewa');
                         break;
                     case 'ada_tanggal_akhir':
                         $query->whereNotNull('tanggal_selesai_sewa');
@@ -1060,7 +1094,7 @@ class KontainerImportController extends Controller
                         break;
                     case 'lengkap':
                         $query->whereNotNull('tanggal_mulai_sewa')
-                              ->whereNotNull('tanggal_selesai_sewa');
+                            ->whereNotNull('tanggal_selesai_sewa');
                         break;
                 }
             }
@@ -1069,21 +1103,21 @@ class KontainerImportController extends Controller
             $kontainers = $query->orderBy('nomor_seri_gabungan')->get();
 
             // Generate filename with timestamp and filter info
-            $filename = 'export_master_kontainer_' . date('Y-m-d_H-i-s');
-            
+            $filename = 'export_master_kontainer_'.date('Y-m-d_H-i-s');
+
             // Add filter info to filename
             $filterInfo = [];
             if ($request->filled('search')) {
-                $filterInfo[] = 'search-' . str_replace(' ', '-', substr($request->search, 0, 10));
+                $filterInfo[] = 'search-'.str_replace(' ', '-', substr($request->search, 0, 10));
             }
             if ($request->filled('vendor')) {
-                $filterInfo[] = 'vendor-' . str_replace([' ', '.'], '-', substr($request->vendor, 0, 15));
+                $filterInfo[] = 'vendor-'.str_replace([' ', '.'], '-', substr($request->vendor, 0, 15));
             }
             if ($request->filled('ukuran')) {
-                $filterInfo[] = 'ukuran-' . $request->ukuran . 'ft';
+                $filterInfo[] = 'ukuran-'.$request->ukuran.'ft';
             }
             if ($request->filled('status')) {
-                $filterInfo[] = 'status-' . strtolower($request->status);
+                $filterInfo[] = 'status-'.strtolower($request->status);
             }
             if ($request->filled('tanggal_sewa')) {
                 switch ($request->tanggal_sewa) {
@@ -1102,8 +1136,8 @@ class KontainerImportController extends Controller
                 }
             }
 
-            if (!empty($filterInfo)) {
-                $filename .= '_' . implode('_', $filterInfo);
+            if (! empty($filterInfo)) {
+                $filename .= '_'.implode('_', $filterInfo);
             }
 
             $filename .= '.csv';
@@ -1111,17 +1145,17 @@ class KontainerImportController extends Controller
             // Headers for CSV download
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Content-Disposition' => 'attachment; filename="'.$filename.'"',
                 'Pragma' => 'no-cache',
                 'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-                'Expires' => '0'
+                'Expires' => '0',
             ];
 
-            $callback = function() use ($kontainers, $request) {
+            $callback = function () use ($kontainers, $request) {
                 $file = fopen('php://output', 'w');
 
                 // Add BOM for proper Excel UTF-8 handling
-                fputs($file, "\xEF\xBB\xBF");
+                fwrite($file, "\xEF\xBB\xBF");
 
                 // CSV Headers
                 $csvHeaders = [
@@ -1137,7 +1171,7 @@ class KontainerImportController extends Controller
                     'Tanggal Mulai Sewa',
                     'Tanggal Selesai Sewa',
                     'Tanggal Dibuat',
-                    'Tanggal Diperbarui'
+                    'Tanggal Diperbarui',
                 ];
 
                 // Write headers
@@ -1147,7 +1181,7 @@ class KontainerImportController extends Controller
                 foreach ($kontainers as $index => $kontainer) {
                     // Format status untuk display - exactly match database values
                     $displayStatus = $kontainer->status; // Use actual database value
-                    
+
                     // Ensure we handle all possible status values correctly
                     if ($kontainer->status === 'Tersedia') {
                         $displayStatus = 'Tersedia';
@@ -1163,9 +1197,9 @@ class KontainerImportController extends Controller
                     }
 
                     // Format tanggal sewa untuk display
-                    $tanggalMulaiSewa = $kontainer->tanggal_mulai_sewa ? 
+                    $tanggalMulaiSewa = $kontainer->tanggal_mulai_sewa ?
                         \Carbon\Carbon::parse($kontainer->tanggal_mulai_sewa)->format('d/M/Y') : '-';
-                    $tanggalSelesaiSewa = $kontainer->tanggal_selesai_sewa ? 
+                    $tanggalSelesaiSewa = $kontainer->tanggal_selesai_sewa ?
                         \Carbon\Carbon::parse($kontainer->tanggal_selesai_sewa)->format('d/M/Y') : '-';
 
                     $rowData = [
@@ -1181,7 +1215,7 @@ class KontainerImportController extends Controller
                         $tanggalMulaiSewa,
                         $tanggalSelesaiSewa,
                         $kontainer->created_at ? $kontainer->created_at->format('d-m-Y H:i:s') : '-',
-                        $kontainer->updated_at ? $kontainer->updated_at->format('d-m-Y H:i:s') : '-'
+                        $kontainer->updated_at ? $kontainer->updated_at->format('d-m-Y H:i:s') : '-',
                     ];
 
                     fputcsv($file, $rowData, '\\');
@@ -1190,17 +1224,17 @@ class KontainerImportController extends Controller
                 // Add export summary at the end
                 fputcsv($file, [], '\\'); // Empty row
                 fputcsv($file, ['=== INFORMASI EXPORT ==='], '\\');
-                fputcsv($file, ['Total Data', count($kontainers) . ' kontainer'], '\\');
+                fputcsv($file, ['Total Data', count($kontainers).' kontainer'], '\\');
                 fputcsv($file, ['Tanggal Export', date('d-m-Y H:i:s')], '\\');
                 fputcsv($file, ['Exported By', auth()->user()->username ?? 'System'], '\\');
 
                 // Add filter information if any
-                if ($request->filled('search') || $request->filled('vendor') || 
+                if ($request->filled('search') || $request->filled('vendor') ||
                     $request->filled('ukuran') || $request->filled('status')) {
-                    
+
                     fputcsv($file, [], '\\'); // Empty row
                     fputcsv($file, ['=== FILTER YANG DITERAPKAN ==='], '\\');
-                    
+
                     if ($request->filled('search')) {
                         fputcsv($file, ['Pencarian', $request->search], '\\');
                     }
@@ -1208,7 +1242,7 @@ class KontainerImportController extends Controller
                         fputcsv($file, ['Vendor', $request->vendor], '\\');
                     }
                     if ($request->filled('ukuran')) {
-                        fputcsv($file, ['Ukuran', $request->ukuran . ' ft'], '\\');
+                        fputcsv($file, ['Ukuran', $request->ukuran.' ft'], '\\');
                     }
                     if ($request->filled('status')) {
                         fputcsv($file, ['Status', $request->status], '\\');
@@ -1221,7 +1255,7 @@ class KontainerImportController extends Controller
             return Response::stream($callback, 200, $headers);
 
         } catch (Exception $e) {
-            return back()->with('error', 'Gagal mengekspor data: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengekspor data: '.$e->getMessage());
         }
     }
 
@@ -1231,12 +1265,12 @@ class KontainerImportController extends Controller
     public function downloadTemplateTanggalSewa()
     {
         try {
-            $fileName = 'template_tanggal_sewa_kontainer_' . date('Y-m-d_H-i-s') . '.csv';
+            $fileName = 'template_tanggal_sewa_kontainer_'.date('Y-m-d_H-i-s').'.csv';
 
             // Headers for CSV
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ];
 
             // CSV content - template dengan contoh data
@@ -1244,10 +1278,10 @@ class KontainerImportController extends Controller
                 ['Nomor Kontainer', 'Tanggal Mulai Sewa (dd/mmm/yyyy)', 'Tanggal Selesai Sewa (dd/mmm/yyyy)', 'Status'],
                 ['ALLU2202097', '01/Jan/2024', '31/Des/2024', 'Tersedia'],
                 ['AMFU3131327', '15/Feb/2024', '14/Feb/2025', 'Tidak Tersedia'],
-                ['AMFU3153692', '01/Mar/2024', '', 'Tersedia']
+                ['AMFU3153692', '01/Mar/2024', '', 'Tersedia'],
             ];
 
-            $callback = function() use ($csvData) {
+            $callback = function () use ($csvData) {
                 $file = fopen('php://output', 'w');
 
                 // Set CSV dengan semicolon delimiter
@@ -1261,7 +1295,7 @@ class KontainerImportController extends Controller
             return Response::stream($callback, 200, $headers);
 
         } catch (Exception $e) {
-            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mendownload template: '.$e->getMessage());
         }
     }
 
@@ -1276,12 +1310,12 @@ class KontainerImportController extends Controller
                 'required',
                 'file',
                 'mimes:csv,txt',
-                'max:5120' // 5MB
-            ]
+                'max:5120', // 5MB
+            ],
         ], [
             'excel_file.required' => 'File CSV harus dipilih.',
             'excel_file.mimes' => 'File harus berformat .csv',
-            'excel_file.max' => 'Ukuran file maksimal 5MB.'
+            'excel_file.max' => 'Ukuran file maksimal 5MB.',
         ]);
 
         if ($validator->fails()) {
@@ -1291,13 +1325,13 @@ class KontainerImportController extends Controller
         try {
             $file = $request->file('excel_file');
             $fileContent = file_get_contents($file->getRealPath());
-            
+
             // Handle UTF-8 BOM
             $fileContent = str_replace("\xEF\xBB\xBF", '', $fileContent);
-            
+
             // Split into lines
             $lines = array_filter(array_map('trim', explode("\n", $fileContent)));
-            
+
             if (count($lines) < 2) {
                 return redirect()->route('master.kontainer.index')
                     ->with('error', 'File CSV kosong atau tidak valid. Minimal harus ada header dan 1 baris data.');
@@ -1305,7 +1339,7 @@ class KontainerImportController extends Controller
 
             // Skip header
             array_shift($lines);
-            
+
             $updated = 0;
             $notFound = [];
             $errors = [];
@@ -1315,41 +1349,44 @@ class KontainerImportController extends Controller
 
             foreach ($lines as $lineNumber => $line) {
                 $actualLine = $lineNumber + 2; // +2 karena array index 0 + skip header
-                
+
                 // Parse CSV with semicolon delimiter
                 $data = str_getcsv($line, ';');
-                
+
                 // Skip empty lines
                 if (empty(array_filter($data))) {
                     $skipped++;
+
                     continue;
                 }
 
                 // Minimal harus ada nomor kontainer (kolom 1)
-                if (!isset($data[0]) || empty(trim($data[0]))) {
+                if (! isset($data[0]) || empty(trim($data[0]))) {
                     $errors[] = "Baris {$actualLine}: Nomor kontainer tidak boleh kosong";
+
                     continue;
                 }
 
                 $nomorKontainer = strtoupper(trim($data[0]));
-                
+
                 // Cari kontainer berdasarkan nomor gabungan
                 $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-                
+
                 // HANYA UPDATE - JANGAN CREATE BARU
-                if (!$kontainer) {
+                if (! $kontainer) {
                     $notFound[] = "Baris {$actualLine}: Kontainer '{$nomorKontainer}' tidak ditemukan";
+
                     continue;
                 }
 
                 // Data yang akan diupdate
                 $updateData = [];
-                
+
                 // Parse tanggal mulai sewa (kolom 2)
-                if (isset($data[1]) && !empty(trim($data[1]))) {
+                if (isset($data[1]) && ! empty(trim($data[1]))) {
                     $tanggalMulai = trim($data[1]);
                     $parsedDate = null;
-                    
+
                     // Coba berbagai format tanggal
                     $formats = [
                         'd/M/Y',   // 01/Jan/2025
@@ -1360,7 +1397,7 @@ class KontainerImportController extends Controller
                         'd-M-y',   // 01-Jan-25
                         'Y-m-d',   // 2025-01-01
                     ];
-                    
+
                     foreach ($formats as $format) {
                         try {
                             $parsedDate = \Carbon\Carbon::createFromFormat($format, $tanggalMulai);
@@ -1372,18 +1409,19 @@ class KontainerImportController extends Controller
                             continue;
                         }
                     }
-                    
-                    if (!$parsedDate) {
+
+                    if (! $parsedDate) {
                         $errors[] = "Baris {$actualLine}: Format tanggal mulai sewa tidak valid '{$tanggalMulai}'. Gunakan format dd/mmm/yyyy, dd mmm yy, atau dd/mmm/yy";
+
                         continue;
                     }
                 }
-                
+
                 // Parse tanggal selesai sewa (kolom 3)
-                if (isset($data[2]) && !empty(trim($data[2]))) {
+                if (isset($data[2]) && ! empty(trim($data[2]))) {
                     $tanggalSelesai = trim($data[2]);
                     $parsedDate = null;
-                    
+
                     // Coba berbagai format tanggal
                     $formats = [
                         'd/M/Y',   // 31/Dec/2025
@@ -1394,7 +1432,7 @@ class KontainerImportController extends Controller
                         'd-M-y',   // 31-Dec-25
                         'Y-m-d',   // 2025-12-31
                     ];
-                    
+
                     foreach ($formats as $format) {
                         try {
                             $parsedDate = \Carbon\Carbon::createFromFormat($format, $tanggalSelesai);
@@ -1406,29 +1444,32 @@ class KontainerImportController extends Controller
                             continue;
                         }
                     }
-                    
-                    if (!$parsedDate) {
+
+                    if (! $parsedDate) {
                         $errors[] = "Baris {$actualLine}: Format tanggal selesai sewa tidak valid '{$tanggalSelesai}'. Gunakan format dd/mmm/yyyy, dd mmm yy, atau dd/mmm/yy";
+
                         continue;
                     }
                 }
-                
+
                 // Parse status (kolom 4) - opsional
-                if (isset($data[3]) && !empty(trim($data[3]))) {
+                if (isset($data[3]) && ! empty(trim($data[3]))) {
                     $status = trim($data[3]);
-                    
+
                     // Validasi status hanya boleh Tersedia atau Tidak Tersedia
-                    if (!in_array($status, ['Tersedia', 'Tidak Tersedia'])) {
+                    if (! in_array($status, ['Tersedia', 'Tidak Tersedia'])) {
                         $errors[] = "Baris {$actualLine}: Status tidak valid '{$status}'. Gunakan 'Tersedia' atau 'Tidak Tersedia'";
+
                         continue;
                     }
-                    
+
                     $updateData['status'] = $status;
                 }
 
                 // Skip jika tidak ada data untuk diupdate
                 if (empty($updateData)) {
                     $skipped++;
+
                     continue;
                 }
 
@@ -1437,7 +1478,7 @@ class KontainerImportController extends Controller
                     $kontainer->$field = $value;
                 }
                 $kontainer->save();
-                
+
                 $updated++;
             }
 
@@ -1445,41 +1486,42 @@ class KontainerImportController extends Controller
 
             // Build pesan hasil import
             $messages = [];
-            
+
             if ($updated > 0) {
                 $messages[] = "Berhasil update {$updated} kontainer";
             }
-            
-            if (!empty($notFound)) {
+
+            if (! empty($notFound)) {
                 $notFoundCount = count($notFound);
                 $notFoundPreview = implode('; ', array_slice($notFound, 0, 3));
                 if ($notFoundCount > 3) {
-                    $notFoundPreview .= " ... dan " . ($notFoundCount - 3) . " kontainer lainnya";
+                    $notFoundPreview .= ' ... dan '.($notFoundCount - 3).' kontainer lainnya';
                 }
                 $messages[] = "WARNING: {$notFoundCount} kontainer tidak ditemukan - {$notFoundPreview}";
             }
-            
-            if (!empty($errors)) {
+
+            if (! empty($errors)) {
                 $errorCount = count($errors);
                 $errorPreview = implode('; ', array_slice($errors, 0, 3));
                 if ($errorCount > 3) {
-                    $errorPreview .= " ... dan " . ($errorCount - 3) . " error lainnya";
+                    $errorPreview .= ' ... dan '.($errorCount - 3).' error lainnya';
                 }
                 $messages[] = "ERROR: {$errorCount} baris gagal - {$errorPreview}";
             }
-            
+
             if ($skipped > 0) {
                 $messages[] = "Dilewati: {$skipped} baris (kosong/tidak ada data update)";
             }
 
             $finalMessage = implode('. ', $messages);
-            $flashType = (!empty($errors) || !empty($notFound)) ? 'warning' : 'success';
+            $flashType = (! empty($errors) || ! empty($notFound)) ? 'warning' : 'success';
 
             return redirect()->route('master.kontainer.index')->with($flashType, $finalMessage);
 
         } catch (Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Gagal mengimpor data tanggal sewa: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal mengimpor data tanggal sewa: '.$e->getMessage());
         }
     }
 
@@ -1489,12 +1531,12 @@ class KontainerImportController extends Controller
     public function exportKontainerTanpaTanggalSewa()
     {
         try {
-            $fileName = 'kontainer_tanpa_tanggal_sewa_' . date('Y-m-d_H-i-s') . '.csv';
+            $fileName = 'kontainer_tanpa_tanggal_sewa_'.date('Y-m-d_H-i-s').'.csv';
 
             // Headers for CSV
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ];
 
             // Query kontainer yang BELUM memiliki kedua tanggal sewa (both null)
@@ -1503,7 +1545,7 @@ class KontainerImportController extends Controller
                 ->orderBy('nomor_seri_gabungan', 'asc')
                 ->get();
 
-            $callback = function() use ($kontainers) {
+            $callback = function () use ($kontainers) {
                 $file = fopen('php://output', 'w');
 
                 // Write header
@@ -1514,7 +1556,7 @@ class KontainerImportController extends Controller
                     'Vendor',
                     'Status',
                     'Tanggal Mulai Sewa',
-                    'Tanggal Selesai Sewa'
+                    'Tanggal Selesai Sewa',
                 ], ';');
 
                 // Write data
@@ -1526,7 +1568,7 @@ class KontainerImportController extends Controller
                         $kontainer->vendor ?? '',
                         $kontainer->status,
                         $kontainer->tanggal_mulai_sewa ? $kontainer->tanggal_mulai_sewa->format('d-M-y') : '',
-                        $kontainer->tanggal_selesai_sewa ? $kontainer->tanggal_selesai_sewa->format('d-M-y') : ''
+                        $kontainer->tanggal_selesai_sewa ? $kontainer->tanggal_selesai_sewa->format('d-M-y') : '',
                     ], ';');
                 }
 
@@ -1536,7 +1578,7 @@ class KontainerImportController extends Controller
             return Response::stream($callback, 200, $headers);
 
         } catch (Exception $e) {
-            return back()->with('error', 'Gagal export data: ' . $e->getMessage());
+            return back()->with('error', 'Gagal export data: '.$e->getMessage());
         }
     }
 
@@ -1546,18 +1588,18 @@ class KontainerImportController extends Controller
     public function exportKontainerTidakTersedia()
     {
         try {
-            $fileName = 'kontainer_tidak_tersedia_' . date('Y-m-d_H-i-s') . '.csv';
+            $fileName = 'kontainer_tidak_tersedia_'.date('Y-m-d_H-i-s').'.csv';
 
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ];
 
             $kontainers = Kontainer::where('status', 'Tidak Tersedia')
                 ->orderBy('nomor_seri_gabungan', 'asc')
                 ->get();
 
-            $callback = function() use ($kontainers) {
+            $callback = function () use ($kontainers) {
                 $file = fopen('php://output', 'w');
 
                 fputcsv($file, [
@@ -1567,7 +1609,7 @@ class KontainerImportController extends Controller
                     'Vendor',
                     'Status',
                     'Tanggal Mulai Sewa',
-                    'Tanggal Selesai Sewa'
+                    'Tanggal Selesai Sewa',
                 ], ';');
 
                 foreach ($kontainers as $kontainer) {
@@ -1578,7 +1620,7 @@ class KontainerImportController extends Controller
                         $kontainer->vendor ?? '',
                         $kontainer->status,
                         $kontainer->tanggal_mulai_sewa ? $kontainer->tanggal_mulai_sewa->format('d-M-y') : '',
-                        $kontainer->tanggal_selesai_sewa ? $kontainer->tanggal_selesai_sewa->format('d-M-y') : ''
+                        $kontainer->tanggal_selesai_sewa ? $kontainer->tanggal_selesai_sewa->format('d-M-y') : '',
                     ], ';');
                 }
 
@@ -1587,7 +1629,7 @@ class KontainerImportController extends Controller
 
             return Response::stream($callback, 200, $headers);
         } catch (Exception $e) {
-            return back()->with('error', 'Gagal export data: ' . $e->getMessage());
+            return back()->with('error', 'Gagal export data: '.$e->getMessage());
         }
     }
 
@@ -1597,22 +1639,22 @@ class KontainerImportController extends Controller
     public function downloadTemplateGudang()
     {
         try {
-            $fileName = 'template_update_gudang_kontainer_' . date('Y-m-d_H-i-s') . '.csv';
+            $fileName = 'template_update_gudang_kontainer_'.date('Y-m-d_H-i-s').'.csv';
 
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ];
 
             $csvData = [
                 ['Nomor Kontainer', 'Nama Gudang'],
                 ['ABCD1234567', 'Gudang Utama'],
-                ['EFGH7654321', 'Gudang Pelabuhan']
+                ['EFGH7654321', 'Gudang Pelabuhan'],
             ];
 
-            $callback = function() use ($csvData) {
+            $callback = function () use ($csvData) {
                 $file = fopen('php://output', 'w');
-                fputs($file, "\xEF\xBB\xBF"); // BOM
+                fwrite($file, "\xEF\xBB\xBF"); // BOM
                 foreach ($csvData as $row) {
                     fputcsv($file, $row, ';');
                 }
@@ -1622,7 +1664,7 @@ class KontainerImportController extends Controller
             return Response::stream($callback, 200, $headers);
 
         } catch (Exception $e) {
-            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mendownload template: '.$e->getMessage());
         }
     }
 
@@ -1632,7 +1674,7 @@ class KontainerImportController extends Controller
     public function updateGudang(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'gudang_file' => 'required|file|mimes:csv,txt|max:5120'
+            'gudang_file' => 'required|file|mimes:csv,txt|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -1642,12 +1684,12 @@ class KontainerImportController extends Controller
         try {
             $file = $request->file('gudang_file');
             $path = $file->getRealPath();
-            
+
             $csvData = [];
-            if (($handle = fopen($path, 'r')) !== FALSE) {
+            if (($handle = fopen($path, 'r')) !== false) {
                 stream_filter_append($handle, 'convert.iconv.UTF-8/UTF-8//IGNORE');
-                while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
-                    $csvData[] = array_map(function($field) {
+                while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                    $csvData[] = array_map(function ($field) {
                         return trim($field, " \t\n\r\0\x0B\xEF\xBB\xBF");
                     }, $data);
                 }
@@ -1670,35 +1712,42 @@ class KontainerImportController extends Controller
 
             foreach ($csvData as $row) {
                 $rowNumber++;
-                if (empty(array_filter($row))) continue;
+                if (empty(array_filter($row))) {
+                    continue;
+                }
 
                 if (count($row) < 2) {
                     $errors[] = "Baris $rowNumber: Format salah (harus ada Nomor Kontainer dan Nama Gudang)";
+
                     continue;
                 }
 
                 $nomorKontainer = trim($row[0]);
                 $namaGudang = trim($row[1]);
 
-                if (empty($nomorKontainer)) continue;
+                if (empty($nomorKontainer)) {
+                    continue;
+                }
 
                 $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
 
-                if (!$kontainer) {
+                if (! $kontainer) {
                     $notFound++;
+
                     continue;
                 }
 
                 $gudangId = null;
-                if (!empty($namaGudang)) {
-                    $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . $namaGudang . '%')->first();
+                if (! empty($namaGudang)) {
+                    $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%'.$namaGudang.'%')->first();
                     if ($gudang) {
                         $gudangId = $gudang->id;
                     } else {
-                        if (!in_array($namaGudang, $gudangNotFound)) {
+                        if (! in_array($namaGudang, $gudangNotFound)) {
                             $gudangNotFound[] = $namaGudang;
                         }
                         $errors[] = "Baris $rowNumber: Gudang '$namaGudang' tidak ditemukan";
+
                         continue;
                     }
                 }
@@ -1710,16 +1759,24 @@ class KontainerImportController extends Controller
             DB::commit();
 
             $message = "Update selesai: $updated kontainer diperbarui. ";
-            if ($notFound > 0) $message .= "$notFound kontainer tidak ditemukan. ";
-            if (!empty($gudangNotFound)) $message .= "Gudang tidak ditemukan: " . implode(', ', $gudangNotFound) . ". ";
-            if (!empty($errors)) $message .= count($errors) . " error terjadi.";
+            if ($notFound > 0) {
+                $message .= "$notFound kontainer tidak ditemukan. ";
+            }
+            if (! empty($gudangNotFound)) {
+                $message .= 'Gudang tidak ditemukan: '.implode(', ', $gudangNotFound).'. ';
+            }
+            if (! empty($errors)) {
+                $message .= count($errors).' error terjadi.';
+            }
 
-            $type = (!empty($errors) || !empty($gudangNotFound)) ? 'warning' : 'success';
+            $type = (! empty($errors) || ! empty($gudangNotFound)) ? 'warning' : 'success';
+
             return back()->with($type, $message);
 
         } catch (Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Error: ' . $e->getMessage());
+
+            return back()->with('error', 'Error: '.$e->getMessage());
         }
     }
 }

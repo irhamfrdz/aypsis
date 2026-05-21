@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PerbaikanKontainer;
 use App\Models\Kontainer;
-use App\Models\TagihanCat;
+use App\Models\PerbaikanKontainer;
 use App\Models\PricelistCat;
+use App\Models\TagihanCat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,22 +35,22 @@ class PerbaikanKontainerController extends Controller
         // Search across all relevant fields
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('deskripsi_perbaikan', 'like', "%{$search}%")
-                  ->orWhere('nomor_tagihan', 'like', "%{$search}%")
-                  ->orWhere('estimasi_kerusakan_kontainer', 'like', "%{$search}%")
-                  ->orWhere('realisasi_kerusakan', 'like', "%{$search}%")
-                  ->orWhere('catatan', 'like', "%{$search}%")
-                  ->orWhere('status_perbaikan', 'like', "%{$search}%")
-                  ->orWhereHas('vendorBengkel', function($vendorQuery) use ($search) {
-                      $vendorQuery->where('nama_bengkel', 'like', "%{$search}%");
-                  });
+                    ->orWhere('deskripsi_perbaikan', 'like', "%{$search}%")
+                    ->orWhere('nomor_tagihan', 'like', "%{$search}%")
+                    ->orWhere('estimasi_kerusakan_kontainer', 'like', "%{$search}%")
+                    ->orWhere('realisasi_kerusakan', 'like', "%{$search}%")
+                    ->orWhere('catatan', 'like', "%{$search}%")
+                    ->orWhere('status_perbaikan', 'like', "%{$search}%")
+                    ->orWhereHas('vendorBengkel', function ($vendorQuery) use ($search) {
+                        $vendorQuery->where('nama_bengkel', 'like', "%{$search}%");
+                    });
             });
         }
 
         $perbaikanKontainers = $query->orderBy('tanggal_perbaikan', 'desc')
-                                   ->paginate(15);
+            ->paginate(15);
 
         $stats = [
             'total' => PerbaikanKontainer::count(),
@@ -61,28 +61,28 @@ class PerbaikanKontainerController extends Controller
 
         // Get vendors from pricelist cat for the cat modal
         $pricelistVendors = PricelistCat::select('vendor')
-                                      ->whereNotNull('vendor')
-                                      ->where('vendor', '!=', '')
-                                      ->distinct()
-                                      ->orderBy('vendor')
-                                      ->pluck('vendor')
-                                      ->toArray();
+            ->whereNotNull('vendor')
+            ->where('vendor', '!=', '')
+            ->distinct()
+            ->orderBy('vendor')
+            ->pluck('vendor')
+            ->toArray();
 
         // Get jenis_cat from pricelist cat for status cat dropdown
         $pricelistJenisCat = PricelistCat::select('jenis_cat')
-                                       ->whereNotNull('jenis_cat')
-                                       ->distinct()
-                                       ->orderBy('jenis_cat')
-                                       ->pluck('jenis_cat')
-                                       ->toArray();
+            ->whereNotNull('jenis_cat')
+            ->distinct()
+            ->orderBy('jenis_cat')
+            ->pluck('jenis_cat')
+            ->toArray();
 
         // Get all pricelist data for auto-fill functionality
         $pricelistData = PricelistCat::select('vendor', 'jenis_cat', 'tarif', 'ukuran_kontainer')
-                                   ->whereNotNull('vendor')
-                                   ->whereNotNull('jenis_cat')
-                                   ->whereNotNull('tarif')
-                                   ->get()
-                                   ->toArray();
+            ->whereNotNull('vendor')
+            ->whereNotNull('jenis_cat')
+            ->whereNotNull('tarif')
+            ->get()
+            ->toArray();
 
         return view('perbaikan-kontainer.index', compact('perbaikanKontainers', 'stats', 'pricelistVendors', 'pricelistJenisCat', 'pricelistData'));
     }
@@ -92,7 +92,7 @@ class PerbaikanKontainerController extends Controller
      */
     public function create()
     {
-        $perbaikan = new PerbaikanKontainer();
+        $perbaikan = new PerbaikanKontainer;
         $vendorBengkels = \App\Models\VendorBengkel::select('id', 'nama_bengkel')->orderBy('nama_bengkel')->get();
 
         return view('perbaikan-kontainer.create', compact('perbaikan', 'vendorBengkels'));
@@ -135,7 +135,7 @@ class PerbaikanKontainerController extends Controller
         PerbaikanKontainer::create($validated);
 
         return redirect()->route('perbaikan-kontainer.index')
-                        ->with('success', 'Perbaikan kontainer berhasil dibuat.');
+            ->with('success', 'Perbaikan kontainer berhasil dibuat.');
     }
 
     /**
@@ -213,14 +213,14 @@ class PerbaikanKontainerController extends Controller
         $validated['updated_by'] = Auth::id();
 
         // Set tanggal selesai jika status sudah_dibayar
-        if ($validated['status_perbaikan'] === 'sudah_dibayar' && !$perbaikanKontainer->tanggal_selesai) {
+        if ($validated['status_perbaikan'] === 'sudah_dibayar' && ! $perbaikanKontainer->tanggal_selesai) {
             $validated['tanggal_selesai'] = now();
         }
 
         $perbaikanKontainer->update($validated);
 
         return redirect()->route('perbaikan-kontainer.index')
-                        ->with('success', 'Perbaikan kontainer berhasil diperbarui.');
+            ->with('success', 'Perbaikan kontainer berhasil diperbarui.');
     }
 
     /**
@@ -231,7 +231,7 @@ class PerbaikanKontainerController extends Controller
         $perbaikanKontainer->delete();
 
         return redirect()->route('perbaikan-kontainer.index')
-                        ->with('success', 'Perbaikan kontainer berhasil dihapus.');
+            ->with('success', 'Perbaikan kontainer berhasil dihapus.');
     }
 
     /**
@@ -260,7 +260,7 @@ class PerbaikanKontainerController extends Controller
         $perbaikanKontainer->update($updateData);
 
         return redirect()->back()
-                        ->with('success', 'Status perbaikan berhasil diperbarui.');
+            ->with('success', 'Status perbaikan berhasil diperbarui.');
     }
 
     /**
@@ -270,13 +270,13 @@ class PerbaikanKontainerController extends Controller
     {
         $request->validate([
             'ids' => 'required|array|min:1',
-            'ids.*' => 'required|integer|exists:perbaikan_kontainers,id'
+            'ids.*' => 'required|integer|exists:perbaikan_kontainers,id',
         ]);
 
         $count = PerbaikanKontainer::whereIn('id', $request->ids)->delete();
 
         return redirect()->back()
-                        ->with('success', "{$count} data perbaikan berhasil dihapus.");
+            ->with('success', "{$count} data perbaikan berhasil dihapus.");
     }
 
     /**
@@ -287,14 +287,14 @@ class PerbaikanKontainerController extends Controller
         $request->validate([
             'ids' => 'required|array|min:1',
             'ids.*' => 'required|integer|exists:perbaikan_kontainers,id',
-            'status' => 'required|in:belum_masuk_pranota,sudah_masuk_pranota,sudah_dibayar'
+            'status' => 'required|in:belum_masuk_pranota,sudah_masuk_pranota,sudah_dibayar',
         ]);
 
         $count = PerbaikanKontainer::whereIn('id', $request->ids)
-                                  ->update(['status_perbaikan' => $request->status]);
+            ->update(['status_perbaikan' => $request->status]);
 
         return redirect()->back()
-                        ->with('success', "Status {$count} data perbaikan berhasil diperbarui.");
+            ->with('success', "Status {$count} data perbaikan berhasil diperbarui.");
     }
 
     /**
@@ -304,15 +304,15 @@ class PerbaikanKontainerController extends Controller
     {
         $request->validate([
             'ids' => 'required|array|min:1',
-            'ids.*' => 'required|integer|exists:perbaikan_kontainers,id'
+            'ids.*' => 'required|integer|exists:perbaikan_kontainers,id',
         ]);
 
         $count = PerbaikanKontainer::whereIn('id', $request->ids)
-                                  ->where('status_perbaikan', 'belum_masuk_pranota')
-                                  ->update(['status_perbaikan' => 'sudah_masuk_pranota']);
+            ->where('status_perbaikan', 'belum_masuk_pranota')
+            ->update(['status_perbaikan' => 'sudah_masuk_pranota']);
 
         return redirect()->back()
-                        ->with('success', "{$count} data perbaikan berhasil dimasukkan ke pranota.");
+            ->with('success', "{$count} data perbaikan berhasil dimasukkan ke pranota.");
     }
 
     /**
@@ -359,6 +359,6 @@ class PerbaikanKontainerController extends Controller
         ]);
 
         return redirect()->back()
-                        ->with('success', 'Catatan perbaikan berhasil ditambahkan dan tagihan CAT telah dibuat.');
+            ->with('success', 'Catatan perbaikan berhasil ditambahkan dan tagihan CAT telah dibuat.');
     }
 }

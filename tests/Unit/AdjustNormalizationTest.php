@@ -15,9 +15,13 @@ class AdjustNormalizationTest extends TestCase
      */
     private static function normalizeForSubmit(?string $val)
     {
-        if ($val === null) return null;
+        if ($val === null) {
+            return null;
+        }
         $s = trim($val);
-        if ($s === '') return $s;
+        if ($s === '') {
+            return $s;
+        }
         // strip leading +, keep leading -
         if (strpos($s, '+') === 0) {
             $s = substr($s, 1);
@@ -27,12 +31,15 @@ class AdjustNormalizationTest extends TestCase
         if ($hasDot && $hasComma) {
             $s = str_replace('.', '', $s);
             $s = str_replace(',', '.', $s);
+
             return $s;
         }
-        if (!$hasDot && $hasComma) {
+        if (! $hasDot && $hasComma) {
             $s = str_replace(',', '.', $s);
+
             return $s;
         }
+
         return $s;
     }
 

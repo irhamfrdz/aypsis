@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Exports\PricelistUangJalanBatamExport;
+use App\Exports\PricelistUangJalanBatamTemplateExport;
+use App\Imports\PricelistUangJalanBatamImport;
 use App\Models\PricelistUangJalanBatam;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\PricelistUangJalanBatamTemplateExport;
-use App\Exports\PricelistUangJalanBatamExport;
-use App\Imports\PricelistUangJalanBatamImport;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PricelistUangJalanBatamController extends Controller
 {
@@ -19,21 +18,21 @@ class PricelistUangJalanBatamController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search', '');
-        
+
         $query = PricelistUangJalanBatam::query();
-        
+
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('expedisi', 'like', "%{$search}%")
-                  ->orWhere('ring', 'like', "%{$search}%")
-                  ->orWhere('status', 'like', "%{$search}%");
+                    ->orWhere('ring', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
             });
         }
-        
+
         $pricelists = $query->orderBy('expedisi')
-                           ->orderBy('ring')
-                           ->paginate($request->get('per_page', 15));
-        
+            ->orderBy('ring')
+            ->paginate($request->get('per_page', 15));
+
         return view('pricelist-uang-jalan-batam.index', compact('pricelists', 'search'));
     }
 
@@ -140,8 +139,8 @@ class PricelistUangJalanBatamController extends Controller
     public function downloadTemplate()
     {
         return Excel::download(
-            new PricelistUangJalanBatamTemplateExport(), 
-            'template_pricelist_uang_jalan_batam_' . date('YmdHis') . '.xlsx'
+            new PricelistUangJalanBatamTemplateExport,
+            'template_pricelist_uang_jalan_batam_'.date('YmdHis').'.xlsx'
         );
     }
 
@@ -159,19 +158,19 @@ class PricelistUangJalanBatamController extends Controller
         ]);
 
         try {
-            $import = new PricelistUangJalanBatamImport();
+            $import = new PricelistUangJalanBatamImport;
             Excel::import($import, $request->file('file'));
 
             $addedCount = $import->getAddedCount();
             $updatedCount = $import->getUpdatedCount();
             $errorCount = $import->getErrorCount();
             $errors = $import->getErrors();
-            
-            $message = "Import selesai! Total Berhasil: " . ($addedCount + $updatedCount) . " (Baru: {$addedCount}, Update: {$updatedCount})";
-            
+
+            $message = 'Import selesai! Total Berhasil: '.($addedCount + $updatedCount)." (Baru: {$addedCount}, Update: {$updatedCount})";
+
             if ($errorCount > 0) {
                 $message .= ", Gagal: {$errorCount} data";
-                
+
                 return redirect()->route('pricelist-uang-jalan-batam.index')
                     ->with('warning', $message)
                     ->with('import_errors', $errors);
@@ -179,13 +178,13 @@ class PricelistUangJalanBatamController extends Controller
 
             return redirect()->route('pricelist-uang-jalan-batam.index')
                 ->with('success', $message);
-                
+
         } catch (\Exception $e) {
-            Log::error('Import error: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
-            
+            Log::error('Import error: '.$e->getMessage());
+            Log::error('Stack trace: '.$e->getTraceAsString());
+
             return redirect()->route('pricelist-uang-jalan-batam.index')
-                ->with('error', 'Import gagal! Error: ' . $e->getMessage() . ' (Cek log untuk detail)');
+                ->with('error', 'Import gagal! Error: '.$e->getMessage().' (Cek log untuk detail)');
         }
     }
 
@@ -195,10 +194,10 @@ class PricelistUangJalanBatamController extends Controller
     public function export(Request $request)
     {
         $search = $request->get('search', '');
-        
+
         return Excel::download(
-            new PricelistUangJalanBatamExport($search), 
-            'pricelist_uang_jalan_batam_' . date('YmdHis') . '.xlsx'
+            new PricelistUangJalanBatamExport($search),
+            'pricelist_uang_jalan_batam_'.date('YmdHis').'.xlsx'
         );
     }
 }

@@ -53,7 +53,7 @@ return new class extends Migration
                 'ongkos_truk_20ft',
                 'ongkos_truk_40ft',
                 'antar_lokasi_20ft',
-                'antar_lokasi_40ft'
+                'antar_lokasi_40ft',
             ]);
         });
     }

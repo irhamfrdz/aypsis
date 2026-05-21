@@ -4,26 +4,33 @@ namespace App\Imports;
 
 use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\MasterPricelistSewaKontainer;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
-use Illuminate\Validation\Rule;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, WithValidation, WithBatchInserts, WithChunkReading
+class DaftarTagihanKontainerSewaImport implements ToCollection, WithBatchInserts, WithChunkReading, WithHeadingRow, WithValidation
 {
     private $importResults = [];
+
     private $errors = [];
+
     private $warnings = [];
+
     private $imported_count = 0;
+
     private $updated_count = 0;
+
     private $skipped_count = 0;
+
     private $validate_only = false;
+
     private $skip_duplicates = true;
+
     private $update_existing = false;
 
     public function __construct($options = [])
@@ -34,7 +41,7 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
     }
 
     /**
-     * @param Collection $collection
+     * @param  Collection  $collection
      */
     public function collection(Collection $rows)
     {
@@ -54,12 +61,14 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
                 $existing = $this->findExistingRecord($cleanedData);
 
                 if ($existing) {
-                    if ($this->skip_duplicates && !$this->update_existing) {
+                    if ($this->skip_duplicates && ! $this->update_existing) {
                         $this->skipped_count++;
                         $this->warnings[] = "Baris {$rowNumber}: Data sudah ada (Kontainer: {$cleanedData['nomor_kontainer']}, Periode: {$cleanedData['periode']}) - diskip";
+
                         continue;
                     } elseif ($this->update_existing) {
                         $this->updateRecord($existing, $cleanedData, $rowNumber);
+
                         continue;
                     }
                 }
@@ -74,6 +83,7 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
                 // If validation only, don't save
                 if ($this->validate_only) {
                     $this->imported_count++;
+
                     continue;
                 }
 
@@ -81,21 +91,21 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
                 $tagihan = DaftarTagihanKontainerSewa::create($cleanedData);
                 $this->imported_count++;
 
-                Log::info("Import: Created tagihan", [
+                Log::info('Import: Created tagihan', [
                     'id' => $tagihan->id,
                     'nomor_kontainer' => $tagihan->nomor_kontainer,
-                    'periode' => $tagihan->periode
+                    'periode' => $tagihan->periode,
                 ]);
 
             } catch (\Exception $e) {
                 $this->errors[] = [
                     'row' => $rowNumber,
                     'message' => $e->getMessage(),
-                    'data' => $row->toArray()
+                    'data' => $row->toArray(),
                 ];
-                Log::error("Import error on row {$rowNumber}: " . $e->getMessage(), [
+                Log::error("Import error on row {$rowNumber}: ".$e->getMessage(), [
                     'row_data' => $row->toArray(),
-                    'exception' => $e
+                    'exception' => $e,
                 ]);
             }
         }
@@ -109,7 +119,7 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
         $requiredFields = ['vendor', 'nomor_kontainer', 'size', 'tanggal_awal', 'tanggal_akhir'];
 
         foreach ($requiredFields as $field) {
-            if (!empty($row[$field])) {
+            if (! empty($row[$field])) {
                 return false;
             }
         }
@@ -141,9 +151,9 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
         if ($cleaned['tanggal_awal'] && $cleaned['tanggal_akhir']) {
             $startDate = Carbon::parse($cleaned['tanggal_awal']);
             $endDate = Carbon::parse($cleaned['tanggal_akhir']);
-            
+
             // Format masa as "DD MMM YYYY - DD MMM YYYY"
-            $cleaned['masa'] = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
+            $cleaned['masa'] = $startDate->format('d M Y').' - '.$endDate->format('d M Y');
         }
 
         // Remove empty group
@@ -276,16 +286,17 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
     {
         if ($this->validate_only) {
             $this->updated_count++;
+
             return;
         }
 
         $existing->update($data);
         $this->updated_count++;
 
-        Log::info("Import: Updated tagihan", [
+        Log::info('Import: Updated tagihan', [
             'id' => $existing->id,
             'nomor_kontainer' => $existing->nomor_kontainer,
-            'periode' => $existing->periode
+            'periode' => $existing->periode,
         ]);
     }
 
@@ -356,6 +367,7 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
             try {
                 $startDate = Carbon::parse($data['tanggal_awal']);
                 $endDate = Carbon::parse($data['tanggal_akhir']);
+
                 return $startDate->diffInDays($endDate) + 1; // +1 karena termasuk hari pertama
             } catch (\Exception $e) {
                 // If parsing fails, fall back to masa calculation
@@ -369,6 +381,7 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
                 if (count($parts) === 2) {
                     $startDate = Carbon::parse($parts[0]);
                     $endDate = Carbon::parse($parts[1]);
+
                     return $startDate->diffInDays($endDate) + 1; // +1 karena termasuk hari pertama
                 }
             } catch (\Exception $e) {
@@ -387,12 +400,12 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
     private function validateBusinessRules(array $data, int $rowNumber)
     {
         // Check if vendor is supported
-        if (!in_array($data['vendor'], ['ZONA', 'DPE'])) {
+        if (! in_array($data['vendor'], ['ZONA', 'DPE'])) {
             throw new \Exception("Vendor tidak didukung: {$data['vendor']}. Harus ZONA atau DPE");
         }
 
         // Check if size is valid
-        if (!in_array($data['size'], ['20', '40'])) {
+        if (! in_array($data['size'], ['20', '40'])) {
             throw new \Exception("Ukuran kontainer tidak valid: {$data['size']}. Harus 20 atau 40");
         }
 
@@ -402,7 +415,7 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
             $endDate = Carbon::parse($data['tanggal_akhir']);
 
             if ($endDate->lt($startDate)) {
-                throw new \Exception("Tanggal akhir tidak boleh lebih awal dari tanggal awal");
+                throw new \Exception('Tanggal akhir tidak boleh lebih awal dari tanggal awal');
             }
 
             // Check if periode is reasonable (not more than 1 year)
@@ -413,7 +426,7 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
 
         // Check tarif
         if ($data['tarif'] <= 0) {
-            throw new \Exception("Tarif harus lebih besar dari 0");
+            throw new \Exception('Tarif harus lebih besar dari 0');
         }
 
         // Check container number format

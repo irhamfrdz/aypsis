@@ -4,16 +4,16 @@ namespace App\Exports;
 
 use App\Models\PricelistUangJalanBatam;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class PricelistUangJalanBatamExport implements FromCollection, WithColumnWidths, WithHeadings, WithMapping, WithStyles
 {
     protected $search;
 
@@ -30,20 +30,20 @@ class PricelistUangJalanBatamExport implements FromCollection, WithHeadings, Wit
         $query = PricelistUangJalanBatam::query();
 
         if ($this->search) {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->where('expedisi', 'like', "%{$this->search}%")
-                  ->orWhere('ring', 'like', "%{$this->search}%")
-                  ->orWhere('status', 'like', "%{$this->search}%");
+                    ->orWhere('ring', 'like', "%{$this->search}%")
+                    ->orWhere('status', 'like', "%{$this->search}%");
             });
         }
 
         return $query->orderBy('expedisi')
-                     ->orderBy('ring')
-                     ->get();
+            ->orderBy('ring')
+            ->get();
     }
 
     /**
-     * @var PricelistUangJalanBatam $pricelist
+     * @var PricelistUangJalanBatam
      */
     public function map($pricelist): array
     {

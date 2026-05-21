@@ -33,7 +33,7 @@ return new class extends Migration
                 'outstanding_status',
                 'completion_percentage',
                 'completed_at',
-                'processing_history'
+                'processing_history',
             ]);
         });
     }

@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AlatBeratTemplateExport;
+use App\Imports\AlatBeratImport;
 use App\Models\AlatBerat;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\AlatBeratImport;
-use App\Exports\AlatBeratTemplateExport;
 
 class AlatBeratController extends Controller
 {
@@ -16,18 +16,18 @@ class AlatBeratController extends Controller
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('nickname', 'like', "%{$search}%")
-                  ->orWhere('kode_alat', 'like', "%{$search}%")
-                  ->orWhere('merk', 'like', "%{$search}%")
-                  ->orWhere('tipe', 'like', "%{$search}%")
-                  ->orWhere('kapasitas', 'like', "%{$search}%");
+                    ->orWhere('nickname', 'like', "%{$search}%")
+                    ->orWhere('kode_alat', 'like', "%{$search}%")
+                    ->orWhere('merk', 'like', "%{$search}%")
+                    ->orWhere('tipe', 'like', "%{$search}%")
+                    ->orWhere('kapasitas', 'like', "%{$search}%");
             });
         }
 
         $alatBerats = $query->orderBy('created_at', 'desc')->paginate(10);
-        
+
         return view('master-alat-berat.index', compact('alatBerats'));
     }
 
@@ -36,14 +36,14 @@ class AlatBeratController extends Controller
         // Simple manual generation logic
         // In a real scenario you might want to lock this or use a DB sequence
         $lastAlat = AlatBerat::orderBy('id', 'desc')->first();
-        if (!$lastAlat) {
+        if (! $lastAlat) {
             $nextKode = 'AB001';
         } else {
             // Extract number from ABxxx
             $lastCode = $lastAlat->kode_alat;
             $number = intval(substr($lastCode, 2));
             $nextNumber = $number + 1;
-            $nextKode = 'AB' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            $nextKode = 'AB'.str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
         }
 
         return view('master-alat-berat.create', compact('nextKode'));
@@ -69,18 +69,18 @@ class AlatBeratController extends Controller
         ]);
 
         $data = $request->all();
-        
+
         // Ensure kode_alat is set
         if (empty($data['kode_alat'])) {
             // Re-generate if not provided (though form should have it)
             $lastAlat = AlatBerat::orderBy('id', 'desc')->first();
-            if (!$lastAlat) {
+            if (! $lastAlat) {
                 $nextKode = 'AB001';
             } else {
                 $lastCode = $lastAlat->kode_alat;
                 $number = intval(substr($lastCode, 2));
                 $nextNumber = $number + 1;
-                $nextKode = 'AB' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+                $nextKode = 'AB'.str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
             }
             $data['kode_alat'] = $nextKode;
         }
@@ -109,7 +109,7 @@ class AlatBeratController extends Controller
             'merk' => 'nullable|string|max:255',
             'tipe' => 'nullable|string|max:255',
             'kapasitas' => 'nullable|string|max:255',
-            'nomor_seri' => 'nullable|string|max:255|unique:alat_berats,nomor_seri,' . $alatBerat->id,
+            'nomor_seri' => 'nullable|string|max:255|unique:alat_berats,nomor_seri,'.$alatBerat->id,
             'tahun_pembuatan' => 'nullable|integer',
             'lokasi' => 'nullable|string|max:255',
             'warna' => 'nullable|string|max:255',
@@ -127,27 +127,30 @@ class AlatBeratController extends Controller
     public function destroy(AlatBerat $alatBerat)
     {
         $alatBerat->delete();
+
         return redirect()->route('master.alat-berat.index')->with('success', 'Data Alat Berat berhasil dihapus');
     }
 
-    public function import(Request $request) 
+    public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls'
+            'file' => 'required|mimes:xlsx,xls',
         ]);
 
         try {
             Excel::import(new AlatBeratImport, $request->file('file'));
+
             return redirect()->route('master.alat-berat.index')->with('success', 'Data Alat Berat berhasil diimport');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-             $failures = $e->failures();
-             $messages = [];
-             foreach ($failures as $failure) {
-                 $messages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
-             }
-             return redirect()->route('master.alat-berat.index')->withErrors($messages);
+            $failures = $e->failures();
+            $messages = [];
+            foreach ($failures as $failure) {
+                $messages[] = 'Baris '.$failure->row().': '.implode(', ', $failure->errors());
+            }
+
+            return redirect()->route('master.alat-berat.index')->withErrors($messages);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 

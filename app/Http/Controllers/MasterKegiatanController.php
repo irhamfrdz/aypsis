@@ -10,6 +10,7 @@ class MasterKegiatanController extends Controller
     public function index()
     {
         $items = MasterKegiatan::orderBy('kode_kegiatan')->paginate(15);
+
         return view('master-kegiatan.index', compact('items'));
     }
 
@@ -26,13 +27,15 @@ class MasterKegiatanController extends Controller
             'type' => 'required|string|max:50|in:kegiatan memo supir,uang muka,kegiatan surat jalan',
             'status' => 'required|in:aktif,nonaktif',
         ]);
-        MasterKegiatan::create($request->only(['kode_kegiatan','nama_kegiatan','type','keterangan','status']));
+        MasterKegiatan::create($request->only(['kode_kegiatan', 'nama_kegiatan', 'type', 'keterangan', 'status']));
+
         return redirect()->route('master.kegiatan.index')->with('success', 'Master kegiatan dibuat');
     }
 
     public function edit($id)
     {
         $item = MasterKegiatan::findOrFail($id);
+
         return view('master-kegiatan.edit', compact('item'));
     }
 
@@ -40,12 +43,13 @@ class MasterKegiatanController extends Controller
     {
         $item = MasterKegiatan::findOrFail($id);
         $request->validate([
-            'kode_kegiatan' => 'required|unique:master_kegiatans,kode_kegiatan,' . $id,
+            'kode_kegiatan' => 'required|unique:master_kegiatans,kode_kegiatan,'.$id,
             'nama_kegiatan' => 'required',
             'type' => 'required|string|max:50|in:kegiatan memo supir,uang muka,kegiatan surat jalan',
             'status' => 'required|in:aktif,nonaktif',
         ]);
-        $item->update($request->only(['kode_kegiatan','nama_kegiatan','type','keterangan','status']));
+        $item->update($request->only(['kode_kegiatan', 'nama_kegiatan', 'type', 'keterangan', 'status']));
+
         return redirect()->route('master.kegiatan.index')->with('success', 'Master kegiatan diupdate');
     }
 
@@ -53,6 +57,7 @@ class MasterKegiatanController extends Controller
     {
         $item = MasterKegiatan::findOrFail($id);
         $item->delete();
+
         return redirect()->route('master.kegiatan.index')->with('success', 'Master kegiatan dihapus');
     }
 
@@ -66,10 +71,10 @@ class MasterKegiatanController extends Controller
             'Content-Disposition' => 'attachment; filename="master_kegiatan_template.csv"',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $handle = fopen('php://output', 'w');
             // Write UTF-8 BOM so Excel recognizes encoding
-            fwrite($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fwrite($handle, chr(0xEF).chr(0xBB).chr(0xBF));
             // Use semicolon as delimiter for Excel regional compatibility
             $delimiter = ';';
             // template columns: kode_kegiatan;nama_kegiatan;type;keterangan;status
@@ -108,20 +113,23 @@ class MasterKegiatanController extends Controller
         $header = fgetcsv($handle, 0, $delimiter);
 
         // Remove BOM from first header if present
-        if (!empty($header[0])) {
+        if (! empty($header[0])) {
             $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
             $header[0] = preg_replace('/^[\x{FEFF}]/u', '', $header[0]);
         }
 
         $expected = ['kode_kegiatan', 'nama_kegiatan', 'type', 'keterangan', 'status'];
         // normalize header lower-case and trim
-        $norm = array_map(function($v){ return strtolower(trim($v)); }, (array)$header);
+        $norm = array_map(function ($v) {
+            return strtolower(trim($v));
+        }, (array) $header);
 
         // Check if header contains required columns (more flexible)
         $hasRequiredColumns = in_array('kode_kegiatan', $norm) && in_array('nama_kegiatan', $norm);
 
-        if (!$hasRequiredColumns) {
+        if (! $hasRequiredColumns) {
             fclose($handle);
+
             return redirect()->back()->with('error', 'Format CSV tidak sesuai. Minimal harus ada kolom: kode_kegiatan dan nama_kegiatan.');
         }
 
@@ -134,7 +142,9 @@ class MasterKegiatanController extends Controller
             $row = array_map('trim', $row);
 
             // skip empty rows
-            if (count($row) < 2 || (empty($row[0]) && empty($row[1]))) continue;
+            if (count($row) < 2 || (empty($row[0]) && empty($row[1]))) {
+                continue;
+            }
 
             // Map row to associative array
             $data = [];
@@ -145,18 +155,20 @@ class MasterKegiatanController extends Controller
             // validate minimal fields
             if (empty($data['kode_kegiatan']) || empty($data['nama_kegiatan'])) {
                 $errors[] = "Baris {$line}: kode_kegiatan dan nama_kegiatan wajib.";
+
                 continue;
             }
 
             // skip if kode already exists
             if (MasterKegiatan::where('kode_kegiatan', $data['kode_kegiatan'])->exists()) {
                 $errors[] = "Baris {$line}: kode_kegiatan {$data['kode_kegiatan']} sudah ada, dilewati.";
+
                 continue;
             }
 
             // ensure status valid
             $status = strtolower($data['status'] ?? '');
-            if (!in_array($status, ['aktif','nonaktif'])) {
+            if (! in_array($status, ['aktif', 'nonaktif'])) {
                 $status = 'aktif'; // default aktif instead of nonaktif
             }
 
@@ -170,14 +182,14 @@ class MasterKegiatanController extends Controller
                 ]);
                 $created++;
             } catch (\Exception $e) {
-                $errors[] = "Baris {$line}: " . $e->getMessage();
+                $errors[] = "Baris {$line}: ".$e->getMessage();
             }
         }
 
         fclose($handle);
 
         $msg = "Import selesai. Berhasil dibuat: {$created} data.";
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             session()->flash('import_errors', $errors);
         }
 
@@ -193,13 +205,13 @@ class MasterKegiatanController extends Controller
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="master_kegiatan_export_' . date('Y-m-d_H-i-s') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="master_kegiatan_export_'.date('Y-m-d_H-i-s').'.csv"',
         ];
 
-        $callback = function() use ($items) {
+        $callback = function () use ($items) {
             $handle = fopen('php://output', 'w');
             // Write UTF-8 BOM so Excel recognizes encoding
-            fwrite($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fwrite($handle, chr(0xEF).chr(0xBB).chr(0xBF));
             // Use semicolon as delimiter for Excel regional compatibility
             $delimiter = ';';
             // Write header

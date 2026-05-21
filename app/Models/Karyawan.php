@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
 
 class Karyawan extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'karyawans';
 
@@ -20,12 +20,12 @@ class Karyawan extends Model
         'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak',
         'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'status_jkn', 'no_ketenagakerjaan', 'status_bp_jamsostek', 'cabang_bpjs', 'no_sim',
         'sim_berlaku_mulai', 'sim_berlaku_sampai',
-        'cabang', 'nik_supervisor', 'supervisor', 'verification_status', 'verified_by', 'verified_at'
+        'cabang', 'nik_supervisor', 'supervisor', 'verification_status', 'verified_by', 'verified_at',
     ];
 
     protected $dates = [
         'tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya',
-        'sim_berlaku_mulai', 'sim_berlaku_sampai', 'verified_at'
+        'sim_berlaku_mulai', 'sim_berlaku_sampai', 'verified_at',
     ];
 
     protected $casts = [
@@ -57,21 +57,17 @@ class Karyawan extends Model
 
     public function isAbk(): bool
     {
-        return strtolower((string)($this->divisi ?? '')) === 'abk' || strtolower((string)($this->pekerjaan ?? '')) === 'abk';
+        return strtolower((string) ($this->divisi ?? '')) === 'abk' || strtolower((string) ($this->pekerjaan ?? '')) === 'abk';
     }
 
     /**
      * Format date attribute to specified format
-     *
-     * @param string $attribute
-     * @param string $format
-     * @return string|null
      */
     public function formatAsDate(string $attribute, string $format = 'Y-m-d'): ?string
     {
         $value = $this->getAttribute($attribute);
 
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 
@@ -93,8 +89,6 @@ class Karyawan extends Model
      * Generate the next available NIK starting from 1514
      * This will use a specific range (1514-9999) for new employees,
      * ignoring any existing higher NIKs from the old system
-     *
-     * @return string
      */
     public static function generateNextNik(): string
     {
@@ -107,15 +101,15 @@ class Karyawan extends Model
         $nextNikNumber = $minNik;
 
         // Find the next available NIK starting from 1514
-        while ($nextNikNumber <= $maxNik && self::where('nik', (string)$nextNikNumber)->exists()) {
+        while ($nextNikNumber <= $maxNik && self::where('nik', (string) $nextNikNumber)->exists()) {
             $nextNikNumber++;
         }
 
         // If we've exceeded our range, throw an exception
         if ($nextNikNumber > $maxNik) {
-            throw new \Exception("NIK range (1514-9999) is exhausted. Please contact system administrator.");
+            throw new \Exception('NIK range (1514-9999) is exhausted. Please contact system administrator.');
         }
 
-        return (string)$nextNikNumber;
+        return (string) $nextNikNumber;
     }
 }

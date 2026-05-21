@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
@@ -7,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 class CleanTagihanPranota extends Command
 {
     protected $signature = 'clean:tagihan-pranota {--yes : Actually perform deletions} {--export-path= : Export CSV path (storage/app/...)}';
+
     protected $description = 'Export and safely clean tagihan_kontainer_sewa rows and related pranota/pivot rows';
 
     public function handle()
@@ -17,22 +19,23 @@ class CleanTagihanPranota extends Command
         $pivot = DB::table('tagihan_kontainer_sewa_kontainers')->select('*')->get();
 
         $timestamp = date('Ymd_His');
-        $exportPath = $this->option('export-path') ?: storage_path('app/backup-tagihan-pranota-' . $timestamp . '.csv');
+        $exportPath = $this->option('export-path') ?: storage_path('app/backup-tagihan-pranota-'.$timestamp.'.csv');
 
         // write a combined CSV: first header for tagihan, then a separator line, then pivots
         $fh = fopen($exportPath, 'w');
-        if (!$fh) {
-            $this->error('Failed to open export path: ' . $exportPath);
+        if (! $fh) {
+            $this->error('Failed to open export path: '.$exportPath);
+
             return 1;
         }
 
         // export tagihan rows
         if ($rows->count() > 0) {
-            $this->line('Exporting ' . $rows->count() . ' tagihan rows...');
+            $this->line('Exporting '.$rows->count().' tagihan rows...');
             // write header
-            fputcsv($fh, array_keys((array)$rows->first()));
+            fputcsv($fh, array_keys((array) $rows->first()));
             foreach ($rows as $r) {
-                fputcsv($fh, (array)$r);
+                fputcsv($fh, (array) $r);
             }
         } else {
             $this->line('No tagihan rows found.');
@@ -42,10 +45,10 @@ class CleanTagihanPranota extends Command
         fputcsv($fh, ['--pivot--']);
 
         if ($pivot->count() > 0) {
-            $this->line('Exporting ' . $pivot->count() . ' pivot rows...');
-            fputcsv($fh, array_keys((array)$pivot->first()));
+            $this->line('Exporting '.$pivot->count().' pivot rows...');
+            fputcsv($fh, array_keys((array) $pivot->first()));
             foreach ($pivot as $p) {
-                fputcsv($fh, (array)$p);
+                fputcsv($fh, (array) $p);
             }
         } else {
             $this->line('No pivot rows found.');
@@ -53,10 +56,11 @@ class CleanTagihanPranota extends Command
 
         fclose($fh);
 
-        $this->info('Exported backup to: ' . $exportPath);
+        $this->info('Exported backup to: '.$exportPath);
 
-        if (!$this->option('yes')) {
+        if (! $this->option('yes')) {
             $this->warn('Dry run complete. No deletions performed. Re-run with --yes to delete.');
+
             return 0;
         }
 
@@ -75,7 +79,8 @@ class CleanTagihanPranota extends Command
             $this->info('All tagihan_kontainer_sewa and pivot rows deleted.');
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error('Deletion failed: ' . $e->getMessage());
+            $this->error('Deletion failed: '.$e->getMessage());
+
             return 2;
         }
 

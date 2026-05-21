@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('mobil_id')->constrained('mobils')->onDelete('cascade');
             $table->date('tanggal');
             $table->time('jam');
-            
+
             // Checklist Items
             $table->string('oli_mesin')->default('baik'); // baik, perlu_cek, buruk
             $table->string('air_radiator')->default('baik');
@@ -34,14 +34,14 @@ return new class extends Migration
             $table->string('fungsi_kopling')->default('baik');
             $table->string('kebersihan_interior')->default('baik');
             $table->string('kebersihan_eksterior')->default('baik');
-            
+
             $table->integer('bahan_bakar')->default(0); // percecntage or level
             $table->integer('odometer')->nullable();
-            
+
             $table->text('catatan')->nullable();
             $table->string('foto_sebelum')->nullable();
             $table->string('foto_sesudah')->nullable();
-            
+
             $table->timestamps();
         });
     }

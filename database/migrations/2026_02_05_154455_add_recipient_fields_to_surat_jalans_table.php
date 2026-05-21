@@ -15,7 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('penerima_id')->nullable()->after('order_id');
             $table->unsignedBigInteger('notify_party_id')->nullable()->after('penerima_id');
             $table->text('alamat_penerima')->nullable()->after('notify_party_id');
-            
+
             $table->foreign('penerima_id')->references('id')->on('penerimas')->onDelete('set null');
             $table->foreign('notify_party_id')->references('id')->on('penerimas')->onDelete('set null');
         });

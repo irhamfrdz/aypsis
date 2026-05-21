@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -20,12 +20,12 @@ return new class extends Migration
     public function up(): void
     {
         // add columns only if they don't already exist (idempotent)
-        if (!Schema::hasColumn('tagihan_kontainer_sewa', 'periode_raw')) {
+        if (! Schema::hasColumn('tagihan_kontainer_sewa', 'periode_raw')) {
             Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
                 $table->string('periode_raw')->nullable()->after('tanggal_harga_awal');
             });
         }
-        if (!Schema::hasColumn('tagihan_kontainer_sewa', 'periode_int')) {
+        if (! Schema::hasColumn('tagihan_kontainer_sewa', 'periode_int')) {
             Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
                 $table->integer('periode_int')->default(1)->after('periode_raw');
             });
@@ -39,14 +39,16 @@ return new class extends Migration
             ->update(['periode_raw' => DB::raw('COALESCE(periode, "")')]);
 
         // Populate periode_int with a safe PHP-driven conversion (handles '2025-07', numeric floats, etc.)
-    $rows = DB::table('tagihan_kontainer_sewa')->select('id', 'periode')->get();
+        $rows = DB::table('tagihan_kontainer_sewa')->select('id', 'periode')->get();
         foreach ($rows as $row) {
             $dest = 1;
-            if (!is_null($row->periode) && $row->periode !== '') {
+            if (! is_null($row->periode) && $row->periode !== '') {
                 // numeric-like (integer or float) -> floor
                 if (is_numeric($row->periode)) {
                     $dest = (int) floor((float) $row->periode);
-                    if ($dest < 1) $dest = 1;
+                    if ($dest < 1) {
+                        $dest = 1;
+                    }
                 } else {
                     // Pattern YYYY-MM or others -> default 1
                     $dest = 1;
@@ -61,7 +63,7 @@ return new class extends Migration
                 $table->dropColumn('periode');
             });
         }
-        if (Schema::hasColumn('tagihan_kontainer_sewa', 'periode_int') && !Schema::hasColumn('tagihan_kontainer_sewa', 'periode')) {
+        if (Schema::hasColumn('tagihan_kontainer_sewa', 'periode_int') && ! Schema::hasColumn('tagihan_kontainer_sewa', 'periode')) {
             Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
                 $table->renameColumn('periode_int', 'periode');
             });
@@ -80,7 +82,7 @@ return new class extends Migration
 
         // prefer periode_raw, else cast integer periode to string
         DB::table('tagihan_kontainer_sewa')->update([
-            'periode_old' => DB::raw("COALESCE(periode_raw, CAST(periode AS CHAR))"),
+            'periode_old' => DB::raw('COALESCE(periode_raw, CAST(periode AS CHAR))'),
         ]);
 
         Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {

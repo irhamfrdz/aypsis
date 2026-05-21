@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Manifest;
+use Illuminate\Console\Command;
 
 class DeleteManifestByVoyage extends Command
 {
@@ -27,21 +27,24 @@ class DeleteManifestByVoyage extends Command
     public function handle()
     {
         $voyage = $this->argument('voyage');
-        
+
         $count = Manifest::where('no_voyage', $voyage)->count();
 
         if ($count == 0) {
             $this->error("Tidak ada data manifest dengan nomor voyage: {$voyage}");
+
             return Command::FAILURE;
         }
 
         if ($this->confirm("Apakah Anda yakin ingin menghapus {$count} data manifest untuk voyage {$voyage}?")) {
             Manifest::where('no_voyage', $voyage)->delete();
             $this->info("Berhasil menghapus {$count} data manifest untuk voyage {$voyage}.");
+
             return Command::SUCCESS;
         }
 
-        $this->warn("Operasi dibatalkan.");
+        $this->warn('Operasi dibatalkan.');
+
         return Command::SUCCESS;
     }
 }

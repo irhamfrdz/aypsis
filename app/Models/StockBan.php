@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-use App\Traits\Auditable;
-
 class StockBan extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'stock_bans';
 
@@ -92,19 +91,19 @@ class StockBan extends Model
     public static function generateNextInvoice()
     {
         $yearMonth = date('Ym');
-        $prefix = 'INV-KS-' . $yearMonth . '-';
-        
-        $lastInvoice = self::where('nomor_bukti', 'like', $prefix . '%')
+        $prefix = 'INV-KS-'.$yearMonth.'-';
+
+        $lastInvoice = self::where('nomor_bukti', 'like', $prefix.'%')
             ->orderBy('nomor_bukti', 'desc')
             ->first();
 
-        if (!$lastInvoice) {
-            return $prefix . '001';
+        if (! $lastInvoice) {
+            return $prefix.'001';
         }
 
         $lastNumber = intval(substr($lastInvoice->nomor_bukti, -3));
         $nextNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
 
-        return $prefix . $nextNumber;
+        return $prefix.$nextNumber;
     }
 }

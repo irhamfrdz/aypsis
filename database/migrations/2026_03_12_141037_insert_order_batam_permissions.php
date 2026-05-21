@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -36,7 +34,7 @@ return new class extends Migration
                 'description' => 'Menghapus data Order Batam',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ];
 
         DB::table('permissions')->insertOrIgnore($permissions);
@@ -51,7 +49,7 @@ return new class extends Migration
             'order-batam-view',
             'order-batam-create',
             'order-batam-update',
-            'order-batam-delete'
+            'order-batam-delete',
         ])->delete();
     }
 };

@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,7 +14,7 @@ return new class extends Migration
     {
         // 1. Update Tanda Terima Bongkaran Batam to point to the new table
         $existingFkTt = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tanda_terima_bongkaran_batams' AND CONSTRAINT_NAME = 'ttbb_sj_bongkaran_foreign'");
-        if (!empty($existingFkTt)) {
+        if (! empty($existingFkTt)) {
             DB::statement('ALTER TABLE tanda_terima_bongkaran_batams DROP FOREIGN KEY ttbb_sj_bongkaran_foreign');
         }
 
@@ -29,7 +29,7 @@ return new class extends Migration
         }
 
         // 2. Add column to Uang Jalans to link to the new table
-        if (!Schema::hasColumn('uang_jalans', 'surat_jalan_bongkaran_batam_id')) {
+        if (! Schema::hasColumn('uang_jalans', 'surat_jalan_bongkaran_batam_id')) {
             Schema::table('uang_jalans', function (Blueprint $table) {
                 $table->unsignedBigInteger('surat_jalan_bongkaran_batam_id')->nullable()->after('surat_jalan_bongkaran_id');
             });

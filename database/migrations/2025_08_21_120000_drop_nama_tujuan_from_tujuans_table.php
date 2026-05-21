@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -29,7 +29,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasTable('tujuans') && !Schema::hasColumn('tujuans', 'nama_tujuan')) {
+        if (Schema::hasTable('tujuans') && ! Schema::hasColumn('tujuans', 'nama_tujuan')) {
             Schema::table('tujuans', function (Blueprint $table) {
                 $table->string('nama_tujuan')->nullable();
             });

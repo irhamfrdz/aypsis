@@ -3,16 +3,19 @@
 namespace App\Imports;
 
 use App\Models\Manifest;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ManifestImport
 {
     protected $errors = [];
+
     protected $successCount = 0;
+
     protected $namaKapal;
+
     protected $noVoyage;
 
     public function __construct($namaKapal, $noVoyage)
@@ -28,6 +31,7 @@ class ManifestImport
 
         if (empty($data)) {
             $this->errors[] = 'File kosong atau tidak dapat dibaca';
+
             return false;
         }
 
@@ -40,7 +44,7 @@ class ManifestImport
 
         return [
             'success_count' => $this->successCount,
-            'errors' => $this->errors
+            'errors' => $this->errors,
         ];
     }
 
@@ -65,7 +69,8 @@ class ManifestImport
 
             return $data;
         } catch (\Exception $e) {
-            $this->errors[] = 'Error membaca file Excel: ' . $e->getMessage();
+            $this->errors[] = 'Error membaca file Excel: '.$e->getMessage();
+
             return [];
         }
     }
@@ -112,7 +117,8 @@ class ManifestImport
         ]);
 
         if ($validator->fails()) {
-            $this->errors[] = "Baris {$rowNumber}: " . implode(', ', $validator->errors()->all());
+            $this->errors[] = "Baris {$rowNumber}: ".implode(', ', $validator->errors()->all());
+
             return;
         }
 
@@ -159,7 +165,7 @@ class ManifestImport
 
             $this->successCount++;
         } catch (\Exception $e) {
-            $this->errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+            $this->errors[] = "Baris {$rowNumber}: ".$e->getMessage();
         }
     }
 

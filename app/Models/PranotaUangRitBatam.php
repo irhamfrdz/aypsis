@@ -22,7 +22,7 @@ class PranotaUangRitBatam extends Model
         'status_pembayaran',
         'catatan',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
@@ -33,7 +33,9 @@ class PranotaUangRitBatam extends Model
     ];
 
     const STATUS_UNPAID = 'unpaid';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_CANCELLED = 'cancelled';
 
     public function items()
@@ -44,22 +46,22 @@ class PranotaUangRitBatam extends Model
     public function suratJalanBatams()
     {
         return $this->belongsToMany(SuratJalanBatam::class, 'pranota_uang_rit_batam_items', 'pranota_uang_rit_batam_id', 'surat_jalan_batam_id')
-                    ->withPivot('uang_rit')
-                    ->withTimestamps();
+            ->withPivot('uang_rit')
+            ->withTimestamps();
     }
 
     public function suratJalanBongkaranBatams()
     {
         return $this->belongsToMany(SuratJalanBongkaranBatam::class, 'pranota_uang_rit_batam_items', 'pranota_uang_rit_batam_id', 'surat_jalan_bongkaran_batam_id')
-                    ->withPivot('uang_rit')
-                    ->withTimestamps();
+            ->withPivot('uang_rit')
+            ->withTimestamps();
     }
 
     public function suratJalanTarikKosongBatams()
     {
         return $this->belongsToMany(SuratJalanTarikKosongBatam::class, 'pranota_uang_rit_batam_items', 'pranota_uang_rit_batam_id', 'surat_jalan_tarik_kosong_batam_id')
-                    ->withPivot('uang_rit')
-                    ->withTimestamps();
+            ->withPivot('uang_rit')
+            ->withTimestamps();
     }
 
     public function creator()
@@ -75,19 +77,19 @@ class PranotaUangRitBatam extends Model
     public static function generateNomorPranota()
     {
         $date = now()->format('Ymd');
-        $prefix = 'PRN-URBTM-' . $date . '-';
-        
-        $lastRecord = static::withTrashed()->where('nomor_pranota', 'LIKE', $prefix . '%')
-                           ->orderBy('nomor_pranota', 'desc')
-                           ->first();
-        
+        $prefix = 'PRN-URBTM-'.$date.'-';
+
+        $lastRecord = static::withTrashed()->where('nomor_pranota', 'LIKE', $prefix.'%')
+            ->orderBy('nomor_pranota', 'desc')
+            ->first();
+
         $runningNumber = 1;
-        
+
         if ($lastRecord) {
             $lastNumber = str_replace($prefix, '', $lastRecord->nomor_pranota);
             $runningNumber = intval($lastNumber) + 1;
         }
-        
-        return $prefix . str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
+
+        return $prefix.str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
     }
 }

@@ -13,7 +13,7 @@ class PranotaUangRitKenekDetail extends Model
         'hutang',
         'tabungan',
         'bpjs',
-        'grand_total'
+        'grand_total',
     ];
 
     protected $casts = [
@@ -66,7 +66,7 @@ class PranotaUangRitKenekDetail extends Model
 
         // Fallback: search by nama_panggilan if nama_lengkap doesn't match
         return Karyawan::where('nama_panggilan', $this->kenek_nama)
-            ->orWhere('nama_lengkap', 'LIKE', '%' . $this->kenek_nama . '%')
+            ->orWhere('nama_lengkap', 'LIKE', '%'.$this->kenek_nama.'%')
             ->first();
     }
 }

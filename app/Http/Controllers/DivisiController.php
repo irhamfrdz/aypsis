@@ -17,7 +17,7 @@ class DivisiController extends Controller
         $query = Divisi::query();
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $query->search($request->search);
         }
 
@@ -48,7 +48,7 @@ class DivisiController extends Controller
             'nama_divisi' => 'required|string|max:100|unique:divisis,nama_divisi',
             'kode_divisi' => 'required|string|max:20|unique:divisis,kode_divisi',
             'deskripsi' => 'nullable|string|max:500',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
         ]);
 
         try {
@@ -56,14 +56,14 @@ class DivisiController extends Controller
                 'nama_divisi' => $request->nama_divisi,
                 'kode_divisi' => strtoupper($request->kode_divisi),
                 'deskripsi' => $request->deskripsi,
-                'is_active' => $request->has('is_active')
+                'is_active' => $request->has('is_active'),
             ]);
 
             return redirect()->route('master.divisi.index')
-                           ->with('success', 'Divisi berhasil ditambahkan!');
+                ->with('success', 'Divisi berhasil ditambahkan!');
         } catch (\Exception $e) {
             return back()->withInput()
-                        ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -73,6 +73,7 @@ class DivisiController extends Controller
     public function show(string $id)
     {
         $divisi = Divisi::with('karyawans')->findOrFail($id);
+
         return view('master-divisi.show', compact('divisi'));
     }
 
@@ -82,6 +83,7 @@ class DivisiController extends Controller
     public function edit(string $id)
     {
         $divisi = Divisi::findOrFail($id);
+
         return view('master-divisi.edit', compact('divisi'));
     }
 
@@ -96,7 +98,7 @@ class DivisiController extends Controller
             'nama_divisi' => ['required', 'string', 'max:100', Rule::unique('divisis')->ignore($divisi->id)],
             'kode_divisi' => ['required', 'string', 'max:20', Rule::unique('divisis')->ignore($divisi->id)],
             'deskripsi' => 'nullable|string|max:500',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
         ]);
 
         try {
@@ -104,14 +106,14 @@ class DivisiController extends Controller
                 'nama_divisi' => $request->nama_divisi,
                 'kode_divisi' => strtoupper($request->kode_divisi),
                 'deskripsi' => $request->deskripsi,
-                'is_active' => $request->has('is_active')
+                'is_active' => $request->has('is_active'),
             ]);
 
             return redirect()->route('master.divisi.index')
-                           ->with('success', 'Divisi berhasil diperbarui!');
+                ->with('success', 'Divisi berhasil diperbarui!');
         } catch (\Exception $e) {
             return back()->withInput()
-                        ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -131,9 +133,9 @@ class DivisiController extends Controller
             $divisi->delete();
 
             return redirect()->route('master.divisi.index')
-                           ->with('success', 'Divisi berhasil dihapus!');
+                ->with('success', 'Divisi berhasil dihapus!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -144,14 +146,14 @@ class DivisiController extends Controller
     {
         try {
             $divisi = Divisi::findOrFail($id);
-            $divisi->update(['is_active' => !$divisi->is_active]);
+            $divisi->update(['is_active' => ! $divisi->is_active]);
 
             $status = $divisi->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
             return redirect()->route('master.divisi.index')
-                           ->with('success', 'Divisi berhasil ' . $status . '!');
+                ->with('success', 'Divisi berhasil '.$status.'!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -164,7 +166,7 @@ class DivisiController extends Controller
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
             'Pragma' => 'no-cache',
             'Expires' => '0',
@@ -174,7 +176,7 @@ class DivisiController extends Controller
             ['nama_divisi', 'deskripsi', 'is_active'],
         ];
 
-        $callback = function() use ($templateData) {
+        $callback = function () use ($templateData) {
             $file = fopen('php://output', 'w');
 
             // Add UTF-8 BOM for proper Excel recognition
@@ -207,10 +209,11 @@ class DivisiController extends Controller
 
         return $xml;
     }
+
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:5120'
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:5120',
         ]);
 
         try {
@@ -235,7 +238,7 @@ class DivisiController extends Controller
             }
 
             // Parse CSV with detected delimiter
-            $data = array_map(function($line) use ($delimiter) {
+            $data = array_map(function ($line) use ($delimiter) {
                 return str_getcsv($line, $delimiter);
             }, file($path));
 
@@ -260,7 +263,8 @@ class DivisiController extends Controller
                     $isActive = trim($row[2] ?? '1');
 
                     if (empty($namaDivisi)) {
-                        $errors[] = "Baris " . ($rowIndex + 2) . ": Nama divisi wajib diisi";
+                        $errors[] = 'Baris '.($rowIndex + 2).': Nama divisi wajib diisi';
+
                         continue;
                     }
 
@@ -268,38 +272,42 @@ class DivisiController extends Controller
                     $existing = Divisi::where('nama_divisi', $namaDivisi)->first();
 
                     if ($existing) {
-                        $errors[] = "Baris " . ($rowIndex + 2) . ": Divisi '{$namaDivisi}' sudah ada";
+                        $errors[] = 'Baris '.($rowIndex + 2).": Divisi '{$namaDivisi}' sudah ada";
+
                         continue;
                     }
 
                     Divisi::create([
                         'nama_divisi' => $namaDivisi,
                         'deskripsi' => $deskripsi,
-                        'is_active' => filter_var($isActive, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true
+                        'is_active' => filter_var($isActive, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
                     ]);
 
                     $imported++;
 
                 } catch (\Exception $e) {
-                    $errors[] = "Baris " . ($rowIndex + 2) . ": " . $e->getMessage();
+                    $errors[] = 'Baris '.($rowIndex + 2).': '.$e->getMessage();
                 }
             }
 
             if ($imported > 0) {
                 DB::commit();
                 $message = "Berhasil mengimport {$imported} divisi!";
-                if (!empty($errors)) {
-                    $message .= " Namun ada " . count($errors) . " error(s).";
+                if (! empty($errors)) {
+                    $message .= ' Namun ada '.count($errors).' error(s).';
                 }
+
                 return redirect()->route('master.divisi.index')->with('success', $message);
             } else {
                 DB::rollBack();
-                return back()->with('error', 'Tidak ada data yang berhasil diimport. Errors: ' . implode(', ', $errors));
+
+                return back()->with('error', 'Tidak ada data yang berhasil diimport. Errors: '.implode(', ', $errors));
             }
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan saat import: '.$e->getMessage());
         }
     }
 }

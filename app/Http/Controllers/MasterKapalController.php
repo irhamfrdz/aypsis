@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasterKapal;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -20,12 +19,12 @@ class MasterKapalController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('kode', 'like', "%{$search}%")
-                  ->orWhere('kode_kapal', 'like', "%{$search}%")
-                  ->orWhere('nama_kapal', 'like', "%{$search}%")
-                  ->orWhere('nickname', 'like', "%{$search}%")
-                  ->orWhere('pelayaran', 'like', "%{$search}%");
+                    ->orWhere('kode_kapal', 'like', "%{$search}%")
+                    ->orWhere('nama_kapal', 'like', "%{$search}%")
+                    ->orWhere('nickname', 'like', "%{$search}%")
+                    ->orWhere('pelayaran', 'like', "%{$search}%");
             });
         }
 
@@ -96,7 +95,7 @@ class MasterKapalController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Gagal menambahkan data kapal: ' . $e->getMessage());
+                ->with('error', 'Gagal menambahkan data kapal: '.$e->getMessage());
         }
     }
 
@@ -122,7 +121,7 @@ class MasterKapalController extends Controller
     public function update(Request $request, MasterKapal $masterKapal)
     {
         $validated = $request->validate([
-            'kode' => 'required|string|max:50|unique:master_kapals,kode,' . $masterKapal->id,
+            'kode' => 'required|string|max:50|unique:master_kapals,kode,'.$masterKapal->id,
             'kode_kapal' => 'nullable|string|max:100',
             'nama_kapal' => 'required|string|max:255',
             'nickname' => 'nullable|string|max:255',
@@ -144,7 +143,7 @@ class MasterKapalController extends Controller
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Gagal memperbarui data kapal: ' . $e->getMessage());
+                ->with('error', 'Gagal memperbarui data kapal: '.$e->getMessage());
         }
     }
 
@@ -162,7 +161,7 @@ class MasterKapalController extends Controller
         } catch (\Exception $e) {
             return redirect()
                 ->back()
-                ->with('error', 'Gagal menghapus data kapal: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus data kapal: '.$e->getMessage());
         }
     }
 
@@ -179,7 +178,7 @@ class MasterKapalController extends Controller
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
 
             // Add BOM for UTF-8
@@ -222,13 +221,13 @@ class MasterKapalController extends Controller
             $path = $file->getRealPath();
 
             // Open and read CSV
-            $csvData = array_map(function($line) {
+            $csvData = array_map(function ($line) {
                 return str_getcsv($line, ';');
             }, file($path));
 
             // If semicolon delimiter doesn't work, try comma
             if (count($csvData[0]) === 1) {
-                $csvData = array_map(function($line) {
+                $csvData = array_map(function ($line) {
                     return str_getcsv($line, ',');
                 }, file($path));
             }
@@ -237,9 +236,10 @@ class MasterKapalController extends Controller
             $header = array_shift($csvData);
 
             // Remove UTF-8 BOM if present and trim whitespace
-            $header = array_map(function($value) {
+            $header = array_map(function ($value) {
                 // Remove BOM (﻿) from UTF-8 encoded files
                 $value = str_replace("\xEF\xBB\xBF", '', $value);
+
                 return trim($value, '"');
             }, $header);
 
@@ -247,19 +247,19 @@ class MasterKapalController extends Controller
             $expectedImportHeader = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'kapasitas_kontainer_palka', 'kapasitas_kontainer_deck', 'gross_tonnage', 'catatan', 'status'];
             $expectedImportHeaderOld = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'catatan', 'status']; // Legacy format
             $expectedExportHeader = ['No', 'Kode', 'Kode Kapal', 'Nama Kapal', 'Nickname', 'Pelayaran (Pemilik)', 'Kapasitas Palka', 'Kapasitas Deck', 'Gross Tonnage', 'Total Kapasitas', 'Catatan', 'Status', 'Tanggal Dibuat', 'Tanggal Diperbarui'];
-            
+
             $isImportFormat = ($header === $expectedImportHeader);
             $isImportFormatOld = ($header === $expectedImportHeaderOld);
             $isExportFormat = ($header === $expectedExportHeader);
-            
-            if (!$isImportFormat && !$isImportFormatOld && !$isExportFormat) {
+
+            if (! $isImportFormat && ! $isImportFormatOld && ! $isExportFormat) {
                 return redirect()
                     ->back()
                     ->with('error', 'Format header CSV tidak sesuai. 
-                    Format Import Baru: ' . implode(';', $expectedImportHeader) . ' 
-                    Format Import Lama: ' . implode(';', $expectedImportHeaderOld) . ' 
-                    Format Export: ' . implode(',', $expectedExportHeader) . ' 
-                    | Got: ' . implode(',', $header));
+                    Format Import Baru: '.implode(';', $expectedImportHeader).' 
+                    Format Import Lama: '.implode(';', $expectedImportHeaderOld).' 
+                    Format Export: '.implode(',', $expectedExportHeader).' 
+                    | Got: '.implode(',', $header));
             }
 
             $imported = 0;
@@ -281,23 +281,23 @@ class MasterKapalController extends Controller
                 if ($isImportFormat) {
                     // New Import template format: kode;kode_kapal;nama_kapal;nickname;pelayaran;kapasitas_kontainer_palka;kapasitas_kontainer_deck;gross_tonnage;catatan;status
                     $kode = trim($row[0]);
-                    $kode_kapal = !empty(trim($row[1])) ? trim($row[1]) : null;
+                    $kode_kapal = ! empty(trim($row[1])) ? trim($row[1]) : null;
                     $nama_kapal = trim($row[2]);
-                    $nickname = !empty(trim($row[3])) ? trim($row[3]) : null;
-                    $pelayaran = !empty(trim($row[4])) ? trim($row[4]) : null;
-                    $kapasitas_palka = isset($row[5]) && !empty(trim($row[5])) ? (float)trim($row[5]) : null;
-                    $kapasitas_deck = isset($row[6]) && !empty(trim($row[6])) ? (float)trim($row[6]) : null;
-                    $gross_tonnage = isset($row[7]) && !empty(trim($row[7])) ? (float)trim($row[7]) : null;
-                    $catatan = !empty(trim($row[8])) ? trim($row[8]) : null;
+                    $nickname = ! empty(trim($row[3])) ? trim($row[3]) : null;
+                    $pelayaran = ! empty(trim($row[4])) ? trim($row[4]) : null;
+                    $kapasitas_palka = isset($row[5]) && ! empty(trim($row[5])) ? (float) trim($row[5]) : null;
+                    $kapasitas_deck = isset($row[6]) && ! empty(trim($row[6])) ? (float) trim($row[6]) : null;
+                    $gross_tonnage = isset($row[7]) && ! empty(trim($row[7])) ? (float) trim($row[7]) : null;
+                    $catatan = ! empty(trim($row[8])) ? trim($row[8]) : null;
                     $status = trim($row[9]);
                 } elseif ($isImportFormatOld) {
                     // Old Import template format: kode;kode_kapal;nama_kapal;nickname;pelayaran;catatan;status
                     $kode = trim($row[0]);
-                    $kode_kapal = !empty(trim($row[1])) ? trim($row[1]) : null;
+                    $kode_kapal = ! empty(trim($row[1])) ? trim($row[1]) : null;
                     $nama_kapal = trim($row[2]);
-                    $nickname = !empty(trim($row[3])) ? trim($row[3]) : null;
-                    $pelayaran = !empty(trim($row[4])) ? trim($row[4]) : null;
-                    $catatan = !empty(trim($row[5])) ? trim($row[5]) : null;
+                    $nickname = ! empty(trim($row[3])) ? trim($row[3]) : null;
+                    $pelayaran = ! empty(trim($row[4])) ? trim($row[4]) : null;
+                    $catatan = ! empty(trim($row[5])) ? trim($row[5]) : null;
                     $status = trim($row[6]);
                     // Old template doesn't include capacity fields
                     $kapasitas_palka = null;
@@ -309,18 +309,19 @@ class MasterKapalController extends Controller
                     if (count($row) < 12) {
                         $errors[] = "Baris {$rowNumber}: Format export tidak lengkap, minimal 12 kolom diperlukan";
                         $skipped++;
+
                         continue;
                     }
-                    
+
                     $kode = trim($row[1]); // Column B: Kode
-                    $kode_kapal = !empty(trim($row[2])) ? trim($row[2]) : null; // Column C: Kode Kapal
+                    $kode_kapal = ! empty(trim($row[2])) ? trim($row[2]) : null; // Column C: Kode Kapal
                     $nama_kapal = trim($row[3]); // Column D: Nama Kapal
-                    $nickname = !empty(trim($row[4])) ? trim($row[4]) : null; // Column E: Nickname
-                    $pelayaran = !empty(trim($row[5])) ? trim($row[5]) : null; // Column F: Pelayaran (Pemilik)
-                    $kapasitas_palka = isset($row[6]) && !empty(trim($row[6])) ? (float)trim($row[6]) : null; // Column G: Kapasitas Palka
-                    $kapasitas_deck = isset($row[7]) && !empty(trim($row[7])) ? (float)trim($row[7]) : null; // Column H: Kapasitas Deck
-                    $gross_tonnage = isset($row[8]) && !empty(trim($row[8])) ? (float)trim($row[8]) : null; // Column I: Gross Tonnage
-                    $catatan = isset($row[10]) && !empty(trim($row[10])) ? trim($row[10]) : null; // Column K: Catatan
+                    $nickname = ! empty(trim($row[4])) ? trim($row[4]) : null; // Column E: Nickname
+                    $pelayaran = ! empty(trim($row[5])) ? trim($row[5]) : null; // Column F: Pelayaran (Pemilik)
+                    $kapasitas_palka = isset($row[6]) && ! empty(trim($row[6])) ? (float) trim($row[6]) : null; // Column G: Kapasitas Palka
+                    $kapasitas_deck = isset($row[7]) && ! empty(trim($row[7])) ? (float) trim($row[7]) : null; // Column H: Kapasitas Deck
+                    $gross_tonnage = isset($row[8]) && ! empty(trim($row[8])) ? (float) trim($row[8]) : null; // Column I: Gross Tonnage
+                    $catatan = isset($row[10]) && ! empty(trim($row[10])) ? trim($row[10]) : null; // Column K: Catatan
                     $status = trim($row[11]); // Column L: Status
                 }
 
@@ -328,6 +329,7 @@ class MasterKapalController extends Controller
                 if (empty($kode)) {
                     $errors[] = "Baris {$rowNumber}: Kode tidak boleh kosong";
                     $skipped++;
+
                     continue;
                 }
 
@@ -335,13 +337,15 @@ class MasterKapalController extends Controller
                 if (empty($nama_kapal)) {
                     $errors[] = "Baris {$rowNumber}: Nama kapal tidak boleh kosong";
                     $skipped++;
+
                     continue;
                 }
 
                 // Validate status - accept both Indonesian and English
-                if (!in_array(strtolower($status), ['aktif', 'nonaktif', 'active', 'inactive'])) {
+                if (! in_array(strtolower($status), ['aktif', 'nonaktif', 'active', 'inactive'])) {
                     $errors[] = "Baris {$rowNumber}: Status harus 'aktif'/'active' atau 'nonaktif'/'inactive'";
                     $skipped++;
+
                     continue;
                 }
 
@@ -361,7 +365,7 @@ class MasterKapalController extends Controller
                         'catatan' => $catatan,
                         'status' => $normalizedStatus,
                     ];
-                    
+
                     // Only update capacity fields if they have values (to preserve existing data)
                     if ($kapasitas_palka !== null) {
                         $updateData['kapasitas_kontainer_palka'] = $kapasitas_palka;
@@ -372,7 +376,7 @@ class MasterKapalController extends Controller
                     if ($gross_tonnage !== null) {
                         $updateData['gross_tonnage'] = $gross_tonnage;
                     }
-                    
+
                     $existing->update($updateData);
                     $updated++;
                 } else {
@@ -401,10 +405,10 @@ class MasterKapalController extends Controller
                 $message .= ", {$skipped} data dilewati";
             }
 
-            $message .= ".";
+            $message .= '.';
 
-            if (!empty($errors)) {
-                $message .= " Detail error: " . count($errors) . " baris bermasalah.";
+            if (! empty($errors)) {
+                $message .= ' Detail error: '.count($errors).' baris bermasalah.';
             }
 
             return redirect()
@@ -417,7 +421,7 @@ class MasterKapalController extends Controller
 
             return redirect()
                 ->back()
-                ->with('error', 'Gagal mengimport data: ' . $e->getMessage());
+                ->with('error', 'Gagal mengimport data: '.$e->getMessage());
         }
     }
 
@@ -433,12 +437,12 @@ class MasterKapalController extends Controller
         // Apply same filters as index method
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('kode', 'like', "%{$search}%")
-                  ->orWhere('kode_kapal', 'like', "%{$search}%")
-                  ->orWhere('nama_kapal', 'like', "%{$search}%")
-                  ->orWhere('nickname', 'like', "%{$search}%")
-                  ->orWhere('pelayaran', 'like', "%{$search}%");
+                    ->orWhere('kode_kapal', 'like', "%{$search}%")
+                    ->orWhere('nama_kapal', 'like', "%{$search}%")
+                    ->orWhere('nickname', 'like', "%{$search}%")
+                    ->orWhere('pelayaran', 'like', "%{$search}%");
             });
         }
 
@@ -455,7 +459,8 @@ class MasterKapalController extends Controller
 
         switch ($format) {
             case 'excel':
-                $fileName = 'master-kapal-' . date('Y-m-d-H-i-s') . '.xlsx';
+                $fileName = 'master-kapal-'.date('Y-m-d-H-i-s').'.xlsx';
+
                 return Excel::download(new \App\Exports\KapalExport($kapals), $fileName);
             case 'csv':
             default:
@@ -468,14 +473,14 @@ class MasterKapalController extends Controller
      */
     private function exportToCsv($kapals)
     {
-        $filename = 'master-kapal-' . date('Y-m-d-H-i-s') . '.csv';
+        $filename = 'master-kapal-'.date('Y-m-d-H-i-s').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($kapals) {
+        $callback = function () use ($kapals) {
             $file = fopen('php://output', 'w');
 
             // Add BOM for UTF-8
@@ -496,7 +501,7 @@ class MasterKapalController extends Controller
                 'Catatan',
                 'Status',
                 'Tanggal Dibuat',
-                'Tanggal Diperbarui'
+                'Tanggal Diperbarui',
             ]);
 
             // Data rows
@@ -517,7 +522,7 @@ class MasterKapalController extends Controller
                     $kapal->catatan ?? '',
                     ucfirst($kapal->status),
                     $kapal->created_at ? $kapal->created_at->format('Y-m-d H:i:s') : '',
-                    $kapal->updated_at ? $kapal->updated_at->format('Y-m-d H:i:s') : ''
+                    $kapal->updated_at ? $kapal->updated_at->format('Y-m-d H:i:s') : '',
                 ]);
             }
 

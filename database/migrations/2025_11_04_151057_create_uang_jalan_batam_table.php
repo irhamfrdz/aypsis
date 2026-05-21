@@ -23,7 +23,7 @@ return new class extends Migration
             $table->enum('status', ['aqua', 'chasis PB'])->nullable(); // status bisa aqua, chasis PB, atau null
             $table->date('tanggal_berlaku');
             $table->timestamps();
-            
+
             // Index untuk pencarian yang sering dilakukan
             $table->index(['wilayah', 'rute']);
             $table->index(['expedisi', 'ring']);

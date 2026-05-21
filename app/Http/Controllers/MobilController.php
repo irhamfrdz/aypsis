@@ -33,11 +33,11 @@ class MobilController extends Controller
                 'asuransi' => 'tanggal_jatuh_tempo_asuransi',
                 'pajak_stnk' => 'pajak_stnk',
                 'pajak_kir' => 'pajak_kir',
-                'pajak_plat' => 'pajak_plat'
+                'pajak_plat' => 'pajak_plat',
             ];
-            
+
             $field = $fieldMap[$request->jenis_tanggal] ?? null;
-            
+
             if ($field) {
                 if ($request->filled('tanggal_dari') && $request->filled('tanggal_sampai')) {
                     $query->whereBetween($field, [$request->tanggal_dari, $request->tanggal_sampai]);
@@ -52,41 +52,41 @@ class MobilController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('kode_no', 'like', "%{$search}%")
-                  ->orWhere('nomor_polisi', 'like', "%{$search}%")
-                  ->orWhere('nickname', 'like', "%{$search}%")
-                  ->orWhere('no_kir', 'like', "%{$search}%")
-                  ->orWhere('merek', 'like', "%{$search}%")
-                  ->orWhere('jenis', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%")
-                  ->orWhere('no_mesin', 'like', "%{$search}%")
-                  ->orWhere('nomor_rangka', 'like', "%{$search}%")
-                  ->orWhere('bpkb', 'like', "%{$search}%")
-                  ->orWhere('atas_nama', 'like', "%{$search}%")
-                  ->orWhere('pemakai', 'like', "%{$search}%")
-                  ->orWhereHas('karyawan', function($subQ) use ($search) {
-                      $subQ->where('nama_lengkap', 'like', "%{$search}%")
-                           ->orWhere('nik', 'like', "%{$search}%");
-                  });
+                    ->orWhere('nomor_polisi', 'like', "%{$search}%")
+                    ->orWhere('nickname', 'like', "%{$search}%")
+                    ->orWhere('no_kir', 'like', "%{$search}%")
+                    ->orWhere('merek', 'like', "%{$search}%")
+                    ->orWhere('jenis', 'like', "%{$search}%")
+                    ->orWhere('lokasi', 'like', "%{$search}%")
+                    ->orWhere('no_mesin', 'like', "%{$search}%")
+                    ->orWhere('nomor_rangka', 'like', "%{$search}%")
+                    ->orWhere('bpkb', 'like', "%{$search}%")
+                    ->orWhere('atas_nama', 'like', "%{$search}%")
+                    ->orWhere('pemakai', 'like', "%{$search}%")
+                    ->orWhereHas('karyawan', function ($subQ) use ($search) {
+                        $subQ->where('nama_lengkap', 'like', "%{$search}%")
+                            ->orWhere('nik', 'like', "%{$search}%");
+                    });
             });
         }
 
         // Get per_page from request, default to 15
         $perPage = $request->get('per_page', 15);
         $perPage = in_array($perPage, [15, 50, 100]) ? $perPage : 15;
-        
+
         $mobils = $query->latest()->paginate($perPage);
-        
+
         // Preserve all query parameters in pagination links
         $mobils->appends($request->query());
 
         // Get distinct locations for filter dropdown
         $locations = Mobil::whereNotNull('lokasi')
-                          ->where('lokasi', '!=', '')
-                          ->distinct()
-                          ->orderBy('lokasi')
-                          ->pluck('lokasi');
+            ->where('lokasi', '!=', '')
+            ->distinct()
+            ->orderBy('lokasi')
+            ->pluck('lokasi');
 
         return view('master-mobil.index', compact('mobils', 'locations'));
     }
@@ -97,18 +97,18 @@ class MobilController extends Controller
     public function create()
     {
         $karyawansQuery = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi', 'cabang');
-            
+
         // Filter karyawan berdasarkan cabang user yang login - HANYA untuk user cabang BTM
         $currentUser = auth()->user();
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
             $karyawansQuery->where('cabang', 'BTM');
         }
-        
+
         $karyawans = $karyawansQuery->orderBy('nama_panggilan')->get();
-        
+
         // Generate kode nomor otomatis untuk ditampilkan di form
         $nextKodeNomor = $this->generateKodeNomor();
-            
+
         return view('master-mobil.create', compact('karyawans', 'nextKodeNomor'));
     }
 
@@ -129,7 +129,7 @@ class MobilController extends Controller
             'lokasi' => 'nullable|string|max:100',
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
-            'tahun_pembuatan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
+            'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
             'bpkb' => 'nullable|string|max:50',
             'no_mesin' => 'nullable|string|max:50',
             'nomor_rangka' => 'nullable|string|max:50',
@@ -149,7 +149,7 @@ class MobilController extends Controller
         $mobil = Mobil::create($validated);
 
         // Update nomor polisi pada karyawan jika ada karyawan dan nomor polisi diisi
-        if ($validated['karyawan_id'] && !empty($validated['nomor_polisi'])) {
+        if ($validated['karyawan_id'] && ! empty($validated['nomor_polisi'])) {
             \App\Models\Karyawan::where('id', $validated['karyawan_id'])
                 ->update(['plat' => $validated['nomor_polisi']]);
         }
@@ -166,18 +166,18 @@ class MobilController extends Controller
         $prefix = 'AT1';
         $month = date('m'); // 2 digit bulan
         $year = date('y');  // 2 digit tahun
-        
+
         // Format pattern untuk bulan dan tahun saat ini
-        $pattern = $prefix . $month . $year;
-        
+        $pattern = $prefix.$month.$year;
+
         // Cari nomor terakhir yang paling besar dari SELURUH database
         // Ambil semua kode yang sesuai format AT1
         $maxRunningNumber = 0;
-        
+
         $allRecords = Mobil::where('kode_no', 'like', 'AT1%')
             ->whereNotNull('kode_no')
             ->get();
-        
+
         foreach ($allRecords as $record) {
             $kode = $record->kode_no;
             // Extract running number (5 digit terakhir)
@@ -188,14 +188,14 @@ class MobilController extends Controller
                 }
             }
         }
-        
+
         // Running number berikutnya
         $runningNumber = $maxRunningNumber + 1;
-        
+
         // Format running number menjadi 5 digit dengan leading zeros
         $formattedRunning = str_pad($runningNumber, 5, '0', STR_PAD_LEFT);
-        
-        return $pattern . $formattedRunning;
+
+        return $pattern.$formattedRunning;
     }
 
     /**
@@ -204,7 +204,7 @@ class MobilController extends Controller
     public function show($id)
     {
         $mobil = Mobil::with('karyawan')->findOrFail($id);
-        
+
         // Verifikasi akses berdasarkan lokasi mobil - HANYA untuk user cabang BTM
         $currentUser = auth()->user();
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
@@ -213,7 +213,7 @@ class MobilController extends Controller
                 abort(404, 'Data mobil tidak ditemukan.');
             }
         }
-        
+
         return view('master-mobil.show', compact('mobil'));
     }
 
@@ -223,7 +223,7 @@ class MobilController extends Controller
     public function edit($id)
     {
         $mobil = Mobil::with('karyawan')->findOrFail($id);
-        
+
         // Verifikasi akses berdasarkan lokasi mobil - HANYA untuk user cabang BTM
         $currentUser = auth()->user();
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
@@ -232,16 +232,16 @@ class MobilController extends Controller
                 abort(404, 'Data mobil tidak ditemukan.');
             }
         }
-        
+
         $karyawansQuery = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi', 'cabang');
-            
+
         // Filter karyawan berdasarkan cabang user yang login - HANYA untuk user cabang BTM
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
             $karyawansQuery->where('cabang', 'BTM');
         }
-        
+
         $karyawans = $karyawansQuery->orderBy('nama_panggilan')->get();
-            
+
         return view('master-mobil.edit', compact('mobil', 'karyawans'));
     }
 
@@ -251,20 +251,20 @@ class MobilController extends Controller
     public function update(Request $request, $id)
     {
         $mobil = Mobil::findOrFail($id);
-        
+
         // Jika kode_no kosong pada form edit, generate otomatis
         if (empty($request->kode_no)) {
             $request->merge(['kode_no' => $this->generateKodeNomor()]);
         }
-        
+
         $validated = $request->validate([
-            'kode_no' => 'required|string|max:50|unique:mobils,kode_no,' . $id,
-            'nomor_polisi' => 'nullable|string|max:20|unique:mobils,nomor_polisi,' . $id,
+            'kode_no' => 'required|string|max:50|unique:mobils,kode_no,'.$id,
+            'nomor_polisi' => 'nullable|string|max:20|unique:mobils,nomor_polisi,'.$id,
             'nickname' => 'nullable|string|max:50',
             'lokasi' => 'nullable|string|max:100',
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
-            'tahun_pembuatan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
+            'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
             'bpkb' => 'nullable|string|max:50',
             'no_mesin' => 'nullable|string|max:50',
             'nomor_rangka' => 'nullable|string|max:50',
@@ -291,7 +291,7 @@ class MobilController extends Controller
         $mobil->update($validated);
 
         // Update nomor polisi pada karyawan baru jika ada karyawan dan nomor polisi diisi
-        if ($validated['karyawan_id'] && !empty($validated['nomor_polisi'])) {
+        if ($validated['karyawan_id'] && ! empty($validated['nomor_polisi'])) {
             \App\Models\Karyawan::where('id', $validated['karyawan_id'])
                 ->update(['plat' => $validated['nomor_polisi']]);
         }
@@ -308,18 +308,18 @@ class MobilController extends Controller
         $currentUser = auth()->user();
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang) {
             $userCabang = $currentUser->karyawan->cabang;
-            
+
             // Load relationship jika belum ter-load
-            if (!$mobil->relationLoaded('karyawan')) {
+            if (! $mobil->relationLoaded('karyawan')) {
                 $mobil->load('karyawan');
             }
-            
+
             // Cek apakah mobil ini memiliki karyawan dengan cabang yang sama
-            if (!$mobil->karyawan || $mobil->karyawan->cabang !== $userCabang) {
+            if (! $mobil->karyawan || $mobil->karyawan->cabang !== $userCabang) {
                 abort(404, 'Data mobil tidak ditemukan.');
             }
         }
-        
+
         // Hapus nomor plat dari karyawan jika ada
         if ($mobil->karyawan_id) {
             \App\Models\Karyawan::where('id', $mobil->karyawan_id)
@@ -329,7 +329,7 @@ class MobilController extends Controller
         $mobil->delete();
 
         return redirect()->route('master.mobil.index')
-                         ->with('success', 'Mobil berhasil dihapus.');
+            ->with('success', 'Mobil berhasil dihapus.');
     }
 
     /**
@@ -342,118 +342,119 @@ class MobilController extends Controller
         ]);
 
         $file = $request->file('excel_file');
-        
+
         try {
             $spreadsheet = IOFactory::load($file->getRealPath());
             $worksheet = $spreadsheet->getActiveSheet();
             $data = $worksheet->toArray();
-            
+
             // Remove header row
             $header = array_shift($data);
-            
+
             $imported = 0;
             $skipped = 0;
             $errors = [];
             $warnings = [];
 
             foreach ($data as $index => $row) {
-            $rowNumber = $index + 2; // +2 because index starts at 0 and we removed header
-            
-            // Skip empty rows
-            if (empty(array_filter($row))) {
-                continue;
-            }
+                $rowNumber = $index + 2; // +2 because index starts at 0 and we removed header
 
-            try {
-                // Map CSV columns to database fields
-                $kodeAktiva = trim($row[0] ?? '');
-                $nomorPolisi = trim($row[1] ?? '');
-                $nik = trim($row[2] ?? '');
-                $namaLengkap = trim($row[3] ?? '');
-                $lokasi = trim($row[4] ?? '');
-                $merek = trim($row[5] ?? '');
-                $jenis = trim($row[6] ?? '');
-                $tahunPembuatan = trim($row[7] ?? '');
-                $bpkb = trim($row[8] ?? '');
-                $noMesin = trim($row[9] ?? '');
-                $noRangka = trim($row[10] ?? '');
-                $pajakStnk = trim($row[11] ?? '');
-                $pajakPlat = trim($row[12] ?? '');
-                $noKir = trim($row[13] ?? '');
-                $pajakKir = trim($row[14] ?? '');
-                $atasNama = trim($row[15] ?? '');
-                $pemakai = trim($row[16] ?? '');
-                $asuransi = trim($row[17] ?? '');
-                $jteAsuransi = trim($row[18] ?? '');
-                $warnaPlat = trim($row[19] ?? '');
-                $catatan = trim($row[20] ?? '');
-
-                // Check if nomor polisi already exists (hanya jika nomor polisi diisi)
-                if (!empty($nomorPolisi) && Mobil::where('nomor_polisi', $nomorPolisi)->exists()) {
-                    $warnings[] = "Baris $rowNumber: Nomor polisi $nomorPolisi sudah ada, dilewati.";
-                    $skipped++;
+                // Skip empty rows
+                if (empty(array_filter($row))) {
                     continue;
                 }
 
-                // Find karyawan by NIK if provided
-                $karyawanId = null;
-                if (!empty($nik)) {
-                    $karyawan = \App\Models\Karyawan::where('nik', $nik)->first();
-                    if ($karyawan) {
-                        $karyawanId = $karyawan->id;
-                    } else {
-                        $warnings[] = "Baris $rowNumber: NIK $nik tidak ditemukan di database karyawan.";
+                try {
+                    // Map CSV columns to database fields
+                    $kodeAktiva = trim($row[0] ?? '');
+                    $nomorPolisi = trim($row[1] ?? '');
+                    $nik = trim($row[2] ?? '');
+                    $namaLengkap = trim($row[3] ?? '');
+                    $lokasi = trim($row[4] ?? '');
+                    $merek = trim($row[5] ?? '');
+                    $jenis = trim($row[6] ?? '');
+                    $tahunPembuatan = trim($row[7] ?? '');
+                    $bpkb = trim($row[8] ?? '');
+                    $noMesin = trim($row[9] ?? '');
+                    $noRangka = trim($row[10] ?? '');
+                    $pajakStnk = trim($row[11] ?? '');
+                    $pajakPlat = trim($row[12] ?? '');
+                    $noKir = trim($row[13] ?? '');
+                    $pajakKir = trim($row[14] ?? '');
+                    $atasNama = trim($row[15] ?? '');
+                    $pemakai = trim($row[16] ?? '');
+                    $asuransi = trim($row[17] ?? '');
+                    $jteAsuransi = trim($row[18] ?? '');
+                    $warnaPlat = trim($row[19] ?? '');
+                    $catatan = trim($row[20] ?? '');
+
+                    // Check if nomor polisi already exists (hanya jika nomor polisi diisi)
+                    if (! empty($nomorPolisi) && Mobil::where('nomor_polisi', $nomorPolisi)->exists()) {
+                        $warnings[] = "Baris $rowNumber: Nomor polisi $nomorPolisi sudah ada, dilewati.";
+                        $skipped++;
+
+                        continue;
                     }
+
+                    // Find karyawan by NIK if provided
+                    $karyawanId = null;
+                    if (! empty($nik)) {
+                        $karyawan = \App\Models\Karyawan::where('nik', $nik)->first();
+                        if ($karyawan) {
+                            $karyawanId = $karyawan->id;
+                        } else {
+                            $warnings[] = "Baris $rowNumber: NIK $nik tidak ditemukan di database karyawan.";
+                        }
+                    }
+
+                    // Parse dates
+                    $pajakStnkDate = $this->parseDate($pajakStnk);
+                    $pajakPlatDate = $this->parseDate($pajakPlat);
+                    $pajakKirDate = $this->parseDate($pajakKir);
+                    $jteAsuransiDate = $this->parseDate($jteAsuransi);
+
+                    // Create mobil record
+                    Mobil::create([
+                        'kode_no' => $kodeAktiva ?: null,
+                        'nomor_polisi' => $nomorPolisi,
+                        'lokasi' => $lokasi ?: null,
+                        'merek' => $merek ?: null,
+                        'jenis' => $jenis ?: null,
+                        'tahun_pembuatan' => is_numeric($tahunPembuatan) ? (int) $tahunPembuatan : null,
+                        'bpkb' => $bpkb ?: null,
+                        'no_mesin' => $noMesin ?: null,
+                        'nomor_rangka' => $noRangka ?: null,
+                        'pajak_stnk' => $pajakStnkDate,
+                        'pajak_plat' => $pajakPlatDate,
+                        'no_kir' => $noKir ?: null,
+                        'pajak_kir' => $pajakKirDate,
+                        'atas_nama' => $atasNama ?: null,
+                        'pemakai' => $pemakai ?: null,
+                        'asuransi' => $asuransi ?: null,
+                        'jatuh_tempo_asuransi' => $jteAsuransiDate,
+                        'warna_plat' => $warnaPlat ?: null,
+                        'catatan' => $catatan ?: null,
+                        'karyawan_id' => $karyawanId,
+                    ]);
+
+                    $imported++;
+
+                } catch (\Exception $e) {
+                    $errors[] = "Baris $rowNumber: ".$e->getMessage();
+                    $skipped++;
                 }
-
-                // Parse dates
-                $pajakStnkDate = $this->parseDate($pajakStnk);
-                $pajakPlatDate = $this->parseDate($pajakPlat);
-                $pajakKirDate = $this->parseDate($pajakKir);
-                $jteAsuransiDate = $this->parseDate($jteAsuransi);
-
-                // Create mobil record
-                Mobil::create([
-                    'kode_no' => $kodeAktiva ?: null,
-                    'nomor_polisi' => $nomorPolisi,
-                    'lokasi' => $lokasi ?: null,
-                    'merek' => $merek ?: null,
-                    'jenis' => $jenis ?: null,
-                    'tahun_pembuatan' => is_numeric($tahunPembuatan) ? (int)$tahunPembuatan : null,
-                    'bpkb' => $bpkb ?: null,
-                    'no_mesin' => $noMesin ?: null,
-                    'nomor_rangka' => $noRangka ?: null,
-                    'pajak_stnk' => $pajakStnkDate,
-                    'pajak_plat' => $pajakPlatDate,
-                    'no_kir' => $noKir ?: null,
-                    'pajak_kir' => $pajakKirDate,
-                    'atas_nama' => $atasNama ?: null,
-                    'pemakai' => $pemakai ?: null,
-                    'asuransi' => $asuransi ?: null,
-                    'jatuh_tempo_asuransi' => $jteAsuransiDate,
-                    'warna_plat' => $warnaPlat ?: null,
-                    'catatan' => $catatan ?: null,
-                    'karyawan_id' => $karyawanId,
-                ]);
-
-                $imported++;
-
-            } catch (\Exception $e) {
-                $errors[] = "Baris $rowNumber: " . $e->getMessage();
-                $skipped++;
             }
-        }
 
             $message = "Import selesai. $imported data berhasil diimport, $skipped data dilewati.";
 
             return redirect()->route('master.mobil.index')
-                             ->with('success', $message)
-                             ->with('import_errors', count($errors) > 0 ? $errors : null)
-                             ->with('import_warnings', count($warnings) > 0 ? $warnings : null);
-                             
+                ->with('success', $message)
+                ->with('import_errors', count($errors) > 0 ? $errors : null)
+                ->with('import_warnings', count($warnings) > 0 ? $warnings : null);
+
         } catch (\Exception $e) {
             return redirect()->route('master.mobil.index')
-                             ->with('error', 'Error saat membaca file Excel: ' . $e->getMessage());
+                ->with('error', 'Error saat membaca file Excel: '.$e->getMessage());
         }
     }
 
@@ -482,11 +483,12 @@ class MobilController extends Controller
                 if (strlen($dateString) <= 9 && strpos($format, 'y') !== false) {
                     $year = $date->format('y');
                     if ($year < 50) {
-                        $date->setDate(2000 + (int)$year, $date->format('m'), $date->format('d'));
+                        $date->setDate(2000 + (int) $year, $date->format('m'), $date->format('d'));
                     } else {
-                        $date->setDate(1900 + (int)$year, $date->format('m'), $date->format('d'));
+                        $date->setDate(1900 + (int) $year, $date->format('m'), $date->format('d'));
                     }
                 }
+
                 return $date->format('Y-m-d');
             }
         }
@@ -499,7 +501,7 @@ class MobilController extends Controller
      */
     public function downloadTemplateAsuransi()
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set header
@@ -528,16 +530,16 @@ class MobilController extends Controller
 
         // Add instruction comment
         $sheet->getComment('B1')->getText()->createTextRun(
-            "Format tanggal: dd/mm/yyyy (contoh: 15/12/2025)\n" .
-            "Atau: dd/mmm/yyyy (contoh: 15/Des/2025)"
+            "Format tanggal: dd/mm/yyyy (contoh: 15/12/2025)\n".
+            'Atau: dd/mmm/yyyy (contoh: 15/Des/2025)'
         );
 
         // Download
         $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
-        $filename = 'Template_Import_Asuransi_' . date('YmdHis') . '.xlsx';
+        $filename = 'Template_Import_Asuransi_'.date('YmdHis').'.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');
@@ -583,38 +585,41 @@ class MobilController extends Controller
                     if (empty($kodeNo)) {
                         $errors[] = "Baris $rowNumber: Kode No tidak boleh kosong";
                         $skipped++;
+
                         continue;
                     }
 
                     // Cari mobil berdasarkan kode_no
                     $mobil = Mobil::where('kode_no', $kodeNo)->first();
 
-                    if (!$mobil) {
+                    if (! $mobil) {
                         $notFound[] = "Baris $rowNumber: Kode No '$kodeNo' tidak ditemukan di database";
                         $skipped++;
+
                         continue;
                     }
 
                     // Parse tanggal jika ada
                     $parsedDate = null;
-                    if (!empty($tanggalAsuransi)) {
+                    if (! empty($tanggalAsuransi)) {
                         $parsedDate = $this->parseDate($tanggalAsuransi);
-                        if (!$parsedDate) {
+                        if (! $parsedDate) {
                             $errors[] = "Baris $rowNumber: Format tanggal '$tanggalAsuransi' tidak valid. Gunakan format dd/mm/yyyy atau dd/mmm/yyyy";
                             $skipped++;
+
                             continue;
                         }
                     }
 
                     // Update tanggal jatuh tempo asuransi
                     $mobil->update([
-                        'tanggal_jatuh_tempo_asuransi' => $parsedDate
+                        'tanggal_jatuh_tempo_asuransi' => $parsedDate,
                     ]);
 
                     $updated++;
 
                 } catch (\Exception $e) {
-                    $errors[] = "Baris $rowNumber: " . $e->getMessage();
+                    $errors[] = "Baris $rowNumber: ".$e->getMessage();
                     $skipped++;
                 }
             }
@@ -622,13 +627,13 @@ class MobilController extends Controller
             $message = "Import selesai. $updated data berhasil diupdate, $skipped data dilewati.";
 
             return redirect()->route('master.mobil.index')
-                             ->with('success', $message)
-                             ->with('import_errors', count($errors) > 0 ? $errors : null)
-                             ->with('import_warnings', count($notFound) > 0 ? $notFound : null);
+                ->with('success', $message)
+                ->with('import_errors', count($errors) > 0 ? $errors : null)
+                ->with('import_warnings', count($notFound) > 0 ? $notFound : null);
 
         } catch (\Exception $e) {
             return redirect()->route('master.mobil.index')
-                             ->with('error', 'Error saat membaca file Excel: ' . $e->getMessage());
+                ->with('error', 'Error saat membaca file Excel: '.$e->getMessage());
         }
     }
 
@@ -639,16 +644,16 @@ class MobilController extends Controller
     {
         try {
             $nextKode = $this->generateKodeNomor();
-            
+
             return response()->json([
                 'success' => true,
                 'kode_no' => $nextKode,
-                'message' => 'Kode nomor berhasil diperbarui'
+                'message' => 'Kode nomor berhasil diperbarui',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil kode nomor: ' . $e->getMessage()
+                'message' => 'Gagal mengambil kode nomor: '.$e->getMessage(),
             ], 500);
         }
     }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PembayaranPranotaRit;
-use App\Models\PranotaUangRit;
 use App\Models\Coa;
 use App\Models\NomorTerakhir;
+use App\Models\PembayaranPranotaRit;
+use App\Models\PranotaUangRit;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,13 +39,13 @@ class PembayaranPranotaRitController extends Controller
         // Search by no_pranota or supir/kenek name
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_pranota', 'like', "%{$search}%")
-                  ->orWhere('supir_nama', 'like', "%{$search}%")
-                  ->orWhere('kenek_nama', 'like', "%{$search}%")
-                  ->orWhereHas('pembayaranPranotaRits', function($pq) use ($search) {
-                      $pq->where('nomor_accurate', 'like', "%{$search}%");
-                  });
+                    ->orWhere('supir_nama', 'like', "%{$search}%")
+                    ->orWhere('kenek_nama', 'like', "%{$search}%")
+                    ->orWhereHas('pembayaranPranotaRits', function ($pq) use ($search) {
+                        $pq->where('nomor_accurate', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -54,7 +54,7 @@ class PembayaranPranotaRitController extends Controller
         $statuses = [
             'approved' => 'Approved',
             'paid' => 'Sudah Dibayar',
-            'cancelled' => 'Dibatalkan'
+            'cancelled' => 'Dibatalkan',
         ];
 
         return view('pembayaran-pranota-rit.index', compact('pranotaList', 'statuses'));
@@ -110,13 +110,13 @@ class PembayaranPranotaRitController extends Controller
                 ['modul' => 'SIS'],
                 ['nomor_terakhir' => 0, 'keterangan' => 'SIS Modul']
             );
-            
+
             $nomorPembayaran = $this->generateNomorPembayaranSIS();
             $modulSis->increment('nomor_terakhir');
 
             $paymentData = $validated;
             unset($paymentData['pranota_uang_rit_ids']);
-            
+
             $paymentData['nomor_pembayaran'] = $nomorPembayaran;
             $paymentData['status_pembayaran'] = 'paid';
             $paymentData['created_by'] = Auth::id();
@@ -126,7 +126,7 @@ class PembayaranPranotaRitController extends Controller
 
             foreach ($validated['pranota_uang_rit_ids'] as $pranotaId) {
                 $pranota = PranotaUangRit::findOrFail($pranotaId);
-                
+
                 $subtotal = $pranota->grand_total_bersih;
 
                 $pembayaran->pranotaUangRits()->attach($pranotaId, [
@@ -137,7 +137,7 @@ class PembayaranPranotaRitController extends Controller
 
                 $pranota->update([
                     'status' => 'paid',
-                    'tanggal_bayar' => $validated['tanggal_pembayaran']
+                    'tanggal_bayar' => $validated['tanggal_pembayaran'],
                 ]);
             }
 
@@ -145,12 +145,12 @@ class PembayaranPranotaRitController extends Controller
             $totalFinal = $validated['total_tagihan_setelah_penyesuaian'];
             $bankName = $validated['bank'];
             $jenisTransaksi = $validated['jenis_transaksi'];
-            $desc = "Pembayaran Pranota Rit - " . $nomorPembayaran;
+            $desc = 'Pembayaran Pranota Rit - '.$nomorPembayaran;
 
             // Typically for "Rit", it might go to "Biaya Ritasi" or similar COA
             // Let's check if 'Biaya Ritasi' exists or use a generic one
             $costAccount = 'Biaya Ritasi';
-            
+
             if ($jenisTransaksi == 'Debit') {
                 $this->coaTransactionService->recordDoubleEntry(
                     ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
@@ -174,32 +174,34 @@ class PembayaranPranotaRitController extends Controller
             DB::commit();
 
             return redirect()->route('pembayaran-pranota-rit.index')
-                           ->with('success', 'Pembayaran berhasil disimpan.');
+                ->with('success', 'Pembayaran berhasil disimpan.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error creating Pembayaran Pranota Rit: ' . $e->getMessage());
-            return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
+            Log::error('Error creating Pembayaran Pranota Rit: '.$e->getMessage());
+
+            return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: '.$e->getMessage());
         }
     }
 
     public function show($id)
     {
         $item = PembayaranPranotaRit::with(['pranotaUangRits.creator', 'createdBy'])->findOrFail($id);
+
         return view('pembayaran-pranota-rit.show', compact('item'));
     }
 
     public function destroy($id)
     {
         $item = PembayaranPranotaRit::findOrFail($id);
-        
+
         DB::beginTransaction();
         try {
             // Restore pranota status
-            foreach($item->pranotaUangRits as $pranota) {
+            foreach ($item->pranotaUangRits as $pranota) {
                 $pranota->update([
                     'status' => 'approved',
-                    'tanggal_bayar' => null
+                    'tanggal_bayar' => null,
                 ]);
             }
 
@@ -208,17 +210,19 @@ class PembayaranPranotaRitController extends Controller
 
             $item->delete();
             DB::commit();
+
             return redirect()->route('pembayaran-pranota-rit.index')->with('success', 'Pembayaran berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menghapus: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menghapus: '.$e->getMessage());
         }
     }
 
     private function generateNomorPembayaranSIS()
     {
         $modulSis = NomorTerakhir::where('modul', 'SIS')->first();
-        if (!$modulSis) {
+        if (! $modulSis) {
             $modulSis = NomorTerakhir::create(['modul' => 'SIS', 'nomor_terakhir' => 0]);
         }
 
@@ -226,7 +230,7 @@ class PembayaranPranotaRitController extends Controller
         $bulan = $now->format('m');
         $tahun = $now->format('y');
         $runningNumber = str_pad($modulSis->nomor_terakhir + 1, 6, '0', STR_PAD_LEFT);
-        
+
         return "SIS-{$bulan}-{$tahun}-{$runningNumber}";
     }
 
@@ -234,7 +238,7 @@ class PembayaranPranotaRitController extends Controller
     {
         return response()->json([
             'success' => true,
-            'nomor_pembayaran' => $this->generateNomorPembayaranSIS()
+            'nomor_pembayaran' => $this->generateNomorPembayaranSIS(),
         ]);
     }
 }

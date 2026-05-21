@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Imports\MasterPricelistAirTawarImport;
 use App\Models\MasterPricelistAirTawar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\MasterPricelistAirTawarImport;
-use Illuminate\Support\Facades\Log;
 
 class MasterPricelistAirTawarController extends Controller
 {
@@ -24,15 +22,15 @@ class MasterPricelistAirTawarController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_agen', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
         // Pagination
         $perPage = $request->get('per_page', 15);
         $pricelistAirTawar = $query->orderBy('nama_agen')
-                                  ->paginate($perPage)
-                                  ->withQueryString();
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('master.pricelist-air-tawar.index', compact('pricelistAirTawar'));
     }
@@ -54,7 +52,7 @@ class MasterPricelistAirTawarController extends Controller
             'nama_agen' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
             'lokasi' => 'required|in:Jakarta,Batam,Pinang',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ], [
             'nama_agen.required' => 'Nama agen harus diisi',
             'nama_agen.max' => 'Nama agen maksimal 255 karakter',
@@ -63,7 +61,7 @@ class MasterPricelistAirTawarController extends Controller
             'harga.min' => 'Harga tidak boleh negatif',
             'lokasi.required' => 'Lokasi harus dipilih',
             'lokasi.in' => 'Lokasi tidak valid',
-            'keterangan.max' => 'Keterangan maksimal 1000 karakter'
+            'keterangan.max' => 'Keterangan maksimal 1000 karakter',
         ]);
 
         if ($validator->fails()) {
@@ -72,12 +70,12 @@ class MasterPricelistAirTawarController extends Controller
 
         try {
             MasterPricelistAirTawar::create($request->all());
-            
+
             return redirect()->route('master.pricelist-air-tawar.index')
-                           ->with('success', 'Master Pricelist Air Tawar berhasil ditambahkan.');
+                ->with('success', 'Master Pricelist Air Tawar berhasil ditambahkan.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menambahkan data: ' . $e->getMessage())
-                        ->withInput();
+            return back()->with('error', 'Gagal menambahkan data: '.$e->getMessage())
+                ->withInput();
         }
     }
 
@@ -106,7 +104,7 @@ class MasterPricelistAirTawarController extends Controller
             'nama_agen' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
             'lokasi' => 'required|in:Jakarta,Batam,Pinang',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ], [
             'nama_agen.required' => 'Nama agen harus diisi',
             'nama_agen.max' => 'Nama agen maksimal 255 karakter',
@@ -115,7 +113,7 @@ class MasterPricelistAirTawarController extends Controller
             'harga.min' => 'Harga tidak boleh negatif',
             'lokasi.required' => 'Lokasi harus dipilih',
             'lokasi.in' => 'Lokasi tidak valid',
-            'keterangan.max' => 'Keterangan maksimal 1000 karakter'
+            'keterangan.max' => 'Keterangan maksimal 1000 karakter',
         ]);
 
         if ($validator->fails()) {
@@ -124,12 +122,12 @@ class MasterPricelistAirTawarController extends Controller
 
         try {
             $pricelistAirTawar->update($request->all());
-            
+
             return redirect()->route('master.pricelist-air-tawar.index')
-                           ->with('success', 'Master Pricelist Air Tawar berhasil diperbarui.');
+                ->with('success', 'Master Pricelist Air Tawar berhasil diperbarui.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage())
-                        ->withInput();
+            return back()->with('error', 'Gagal memperbarui data: '.$e->getMessage())
+                ->withInput();
         }
     }
 
@@ -140,11 +138,11 @@ class MasterPricelistAirTawarController extends Controller
     {
         try {
             $pricelistAirTawar->delete();
-            
+
             return redirect()->route('master.pricelist-air-tawar.index')
-                           ->with('success', 'Master Pricelist Air Tawar berhasil dihapus.');
+                ->with('success', 'Master Pricelist Air Tawar berhasil dihapus.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus data: '.$e->getMessage());
         }
     }
 
@@ -153,14 +151,14 @@ class MasterPricelistAirTawarController extends Controller
      */
     public function exportTemplate()
     {
-        $filename = 'template_pricelist_air_tawar_' . date('Y-m-d') . '.csv';
+        $filename = 'template_pricelist_air_tawar_'.date('Y-m-d').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
             'Pragma' => 'no-cache',
-            'Expires' => '0'
+            'Expires' => '0',
         ];
 
         $callback = function () {
@@ -179,11 +177,11 @@ class MasterPricelistAirTawarController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:csv,txt,xlsx,xls|max:5120'
+            'file' => 'required|mimes:csv,txt,xlsx,xls|max:5120',
         ]);
 
         $file = $request->file('file');
-        $import = new MasterPricelistAirTawarImport();
+        $import = new MasterPricelistAirTawarImport;
 
         try {
             Excel::import($import, $file);
@@ -193,10 +191,10 @@ class MasterPricelistAirTawarController extends Controller
             $errors = $import->getErrors();
 
             $message = "Import selesai. {$successCount} data berhasil diimpor.";
-            if (!empty($errors)) {
-                $message .= ' Error: ' . implode('; ', array_slice($errors, 0, 5));
+            if (! empty($errors)) {
+                $message .= ' Error: '.implode('; ', array_slice($errors, 0, 5));
                 if (count($errors) > 5) {
-                    $message .= " (dan " . (count($errors) - 5) . " error lainnya)";
+                    $message .= ' (dan '.(count($errors) - 5).' error lainnya)';
                 }
             }
 
@@ -207,13 +205,14 @@ class MasterPricelistAirTawarController extends Controller
             $failures = [];
             if (method_exists($e, 'failures')) {
                 foreach ($e->failures() as $failure) {
-                    $failures[] = "Baris " . $failure->row() . ': ' . implode(', ', $failure->errors());
+                    $failures[] = 'Baris '.$failure->row().': '.implode(', ', $failure->errors());
                 }
             }
-            $message = "Import gagal: " . implode('; ', $failures);
+            $message = 'Import gagal: '.implode('; ', $failures);
+
             return redirect()->route('master.pricelist-air-tawar.index')->with('error', $message);
         } catch (\Exception $e) {
-            return redirect()->route('master.pricelist-air-tawar.index')->with('error', 'Import gagal: ' . $e->getMessage());
+            return redirect()->route('master.pricelist-air-tawar.index')->with('error', 'Import gagal: '.$e->getMessage());
         }
     }
 }

@@ -28,7 +28,7 @@ return new class extends Migration
             // Indexes
             $table->index('pranota_uang_kenek_id');
             $table->index('kenek_nama');
-            
+
             // Unique constraint to prevent duplicate kenek in same pranota
             $table->unique(['pranota_uang_kenek_id', 'kenek_nama'], 'uk_pranota_kenek_nama');
         });

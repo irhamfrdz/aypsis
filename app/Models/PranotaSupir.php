@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
 
 class PranotaSupir extends Model
 {
-    use HasFactory, Auditable;
-
     use Auditable;
+    use Auditable, HasFactory;
+
     protected $table = 'pranota_supirs';
 
     protected $fillable = [
@@ -42,8 +42,8 @@ class PranotaSupir extends Model
     /**
      * Pembayaran yang melunasi pranota ini.
      */
-        public function pembayarans()
-        {
-            return $this->belongsToMany(PembayaranPranotaSupir::class, 'pembayaran_pranota_supir_pranota_supir', 'pranota_supir_id', 'pembayaran_pranota_supir_id');
-        }
+    public function pembayarans()
+    {
+        return $this->belongsToMany(PembayaranPranotaSupir::class, 'pembayaran_pranota_supir_pranota_supir', 'pranota_supir_id', 'pembayaran_pranota_supir_id');
+    }
 }

@@ -35,7 +35,7 @@ return new class extends Migration
                 'grand_total',
                 'penerima',
                 'nomor_rekening',
-                'tanggal_invoice_vendor'
+                'tanggal_invoice_vendor',
             ]);
         });
     }

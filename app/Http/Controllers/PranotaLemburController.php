@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MasterPricelistLembur;
+use App\Models\NomorTerakhir;
 use App\Models\PranotaLembur;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
-use App\Models\NomorTerakhir;
-use App\Models\MasterPricelistLembur;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PranotaLemburController extends Controller
 {
@@ -21,7 +21,7 @@ class PranotaLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('pranota-lembur-view')) {
+        if (! $user->can('pranota-lembur-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -35,7 +35,7 @@ class PranotaLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('pranota-lembur-create')) {
+        if (! $user->can('pranota-lembur-create')) {
             abort(403, 'Unauthorized');
         }
 
@@ -43,7 +43,7 @@ class PranotaLemburController extends Controller
         $hasSelection = count($selectedItems) > 0;
 
         // Validasi required tanggal jika tidak ada selection
-        if (!$hasSelection && (!$request->has('start_date') || !$request->has('end_date'))) {
+        if (! $hasSelection && (! $request->has('start_date') || ! $request->has('end_date'))) {
             return redirect()->route('pranota-lembur.index')
                 ->with('error', 'Tanggal mulai dan tanggal akhir harus diisi atau pilih item dari Report Lembur');
         }
@@ -54,18 +54,18 @@ class PranotaLemburController extends Controller
         // Get surat jalan yang belum punya pranota lembur
         $suratJalanQuery = SuratJalan::query()
             ->with('tandaTerima')
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('lembur', true)
-                  ->orWhere('nginap', true);
+                    ->orWhere('nginap', true);
             })
             ->whereDoesntHave('pranotaLemburs');
 
         // Get surat jalan bongkaran yang belum punya pranota lembur
         $bongkaranQuery = SuratJalanBongkaran::query()
             ->with('tandaTerima')
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('lembur', true)
-                  ->orWhere('nginap', true);
+                    ->orWhere('nginap', true);
             })
             ->whereDoesntHave('pranotaLemburs');
 
@@ -85,13 +85,13 @@ class PranotaLemburController extends Controller
             $suratJalanQuery->whereIn('id', $muatIds);
             $bongkaranQuery->whereIn('id', $bongkaranIds);
         } else {
-            $suratJalanQuery->whereHas('tandaTerima', function($q) use ($startDate, $endDate) {
+            $suratJalanQuery->whereHas('tandaTerima', function ($q) use ($startDate, $endDate) {
                 $q->whereDate('tanggal', '>=', $startDate)
-                  ->whereDate('tanggal', '<=', $endDate);
+                    ->whereDate('tanggal', '<=', $endDate);
             });
-            $bongkaranQuery->whereHas('tandaTerima', function($q) use ($startDate, $endDate) {
+            $bongkaranQuery->whereHas('tandaTerima', function ($q) use ($startDate, $endDate) {
                 $q->whereDate('tanggal_tanda_terima', '>=', $startDate)
-                  ->whereDate('tanggal_tanda_terima', '<=', $endDate);
+                    ->whereDate('tanggal_tanda_terima', '<=', $endDate);
             });
         }
 
@@ -99,12 +99,12 @@ class PranotaLemburController extends Controller
         $bongkarans = $bongkaranQuery->get();
 
         // Standardize properties
-        $suratJalans->each(function($item) {
+        $suratJalans->each(function ($item) {
             $item->type_surat = 'Muat';
             $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal : null;
         });
 
-        $bongkarans->each(function($item) {
+        $bongkarans->each(function ($item) {
             $item->type_surat = 'Bongkaran';
             $item->no_surat_jalan = $item->nomor_surat_jalan;
             $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal_tanda_terima : null;
@@ -122,7 +122,7 @@ class PranotaLemburController extends Controller
         $tahun = now()->format('y');
         $bulan = now()->format('m');
         $nomorCetakan = $request->input('nomor_cetakan', 1);
-        $nomorPranotaDisplay = "PML{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+        $nomorPranotaDisplay = "PML{$nomorCetakan}{$bulan}{$tahun}".str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
         return view('pranota-lembur.create', [
             'suratJalans' => $allSuratJalans,
@@ -142,7 +142,7 @@ class PranotaLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('pranota-lembur-create')) {
+        if (! $user->can('pranota-lembur-create')) {
             abort(403, 'Unauthorized');
         }
 
@@ -168,10 +168,10 @@ class PranotaLemburController extends Controller
 
             // Generate nomor pranota
             $nomorTerakhir = NomorTerakhir::where('modul', 'PML')->first();
-            if (!$nomorTerakhir) {
+            if (! $nomorTerakhir) {
                 $nomorTerakhir = NomorTerakhir::create([
                     'modul' => 'PML',
-                    'nomor_terakhir' => 0
+                    'nomor_terakhir' => 0,
                 ]);
             }
 
@@ -179,7 +179,7 @@ class PranotaLemburController extends Controller
             $tahun = now()->format('y');
             $bulan = now()->format('m');
             $nomorCetakan = $validated['nomor_cetakan'];
-            $nomorPranota = "PML{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+            $nomorPranota = "PML{$nomorCetakan}{$bulan}{$tahun}".str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
             // Calculate total biaya
             $totalBiaya = 0;
@@ -246,12 +246,13 @@ class PranotaLemburController extends Controller
             DB::commit();
 
             return redirect()->route('pranota-lembur.show', $pranota->id)
-                ->with('success', 'Pranota Lembur berhasil dibuat dengan nomor: ' . $nomorPranota);
+                ->with('success', 'Pranota Lembur berhasil dibuat dengan nomor: '.$nomorPranota);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()
-                ->with('error', 'Gagal membuat Pranota Lembur: ' . $e->getMessage())
+                ->with('error', 'Gagal membuat Pranota Lembur: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -263,7 +264,7 @@ class PranotaLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('pranota-lembur-view')) {
+        if (! $user->can('pranota-lembur-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -273,9 +274,9 @@ class PranotaLemburController extends Controller
         // Filter by search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_pranota', 'like', "%{$search}%")
-                  ->orWhere('catatan', 'like', "%{$search}%");
+                    ->orWhere('catatan', 'like', "%{$search}%");
             });
         }
 
@@ -310,7 +311,7 @@ class PranotaLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('pranota-lembur-view')) {
+        if (! $user->can('pranota-lembur-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -319,7 +320,7 @@ class PranotaLemburController extends Controller
             'updater',
             'approver',
             'suratJalans.tandaTerima',
-            'suratJalanBongkarans.tandaTerima'
+            'suratJalanBongkarans.tandaTerima',
         ]);
 
         return view('pranota-lembur.show', compact('pranotaLembur'));
@@ -332,7 +333,7 @@ class PranotaLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('pranota-lembur-print')) {
+        if (! $user->can('pranota-lembur-print')) {
             abort(403, 'Unauthorized');
         }
 
@@ -340,7 +341,7 @@ class PranotaLemburController extends Controller
             'creator',
             'approver',
             'suratJalans.tandaTerima',
-            'suratJalanBongkarans.tandaTerima'
+            'suratJalanBongkarans.tandaTerima',
         ]);
 
         return view('pranota-lembur.print', compact('pranotaLembur'));
@@ -353,7 +354,7 @@ class PranotaLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('pranota-lembur-update')) {
+        if (! $user->can('pranota-lembur-update')) {
             abort(403, 'Unauthorized');
         }
 
@@ -376,7 +377,7 @@ class PranotaLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('pranota-lembur-approve')) {
+        if (! $user->can('pranota-lembur-approve')) {
             abort(403, 'Unauthorized');
         }
 
@@ -401,7 +402,7 @@ class PranotaLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('pranota-lembur-delete')) {
+        if (! $user->can('pranota-lembur-delete')) {
             abort(403, 'Unauthorized');
         }
 
@@ -423,7 +424,8 @@ class PranotaLemburController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal membatalkan Pranota Lembur: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal membatalkan Pranota Lembur: '.$e->getMessage());
         }
     }
 
@@ -434,7 +436,7 @@ class PranotaLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('pranota-lembur-delete')) {
+        if (! $user->can('pranota-lembur-delete')) {
             abort(403, 'Unauthorized');
         }
 
@@ -459,7 +461,8 @@ class PranotaLemburController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menghapus Pranota Lembur: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menghapus Pranota Lembur: '.$e->getMessage());
         }
     }
 
@@ -470,13 +473,13 @@ class PranotaLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('pranota-lembur-view')) {
+        if (! $user->can('pranota-lembur-view')) {
             abort(403, 'Unauthorized');
         }
 
         $pranotaLembur->load(['suratJalans.tandaTerima', 'suratJalanBongkarans.tandaTerima']);
 
-        $fileName = 'Pranota_Lembur_' . $pranotaLembur->nomor_pranota . '.xlsx';
+        $fileName = 'Pranota_Lembur_'.$pranotaLembur->nomor_pranota.'.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\PranotaLemburSingleExport($pranotaLembur),

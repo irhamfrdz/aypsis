@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PembayaranPranotaStock;
-use App\Models\PranotaStock;
 use App\Models\Coa;
 use App\Models\NomorTerakhir;
+use App\Models\PembayaranPranotaStock;
+use App\Models\PranotaStock;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +21,7 @@ class PembayaranPranotaStockController extends Controller
     {
         $this->coaTransactionService = $coaTransactionService;
         $this->middleware('auth');
-        // We'll use the same permissions or define new ones if needed, 
+        // We'll use the same permissions or define new ones if needed,
         // but for now let's assume standard names for stock payments
         $this->middleware('can:pembayaran-pranota-stock-view')->only(['index', 'show']);
         $this->middleware('can:pembayaran-pranota-stock-create')->only(['create', 'store']);
@@ -35,13 +35,14 @@ class PembayaranPranotaStockController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_pembayaran', 'like', "%{$search}%")
-                  ->orWhere('nomor_accurate', 'like', "%{$search}%");
+                    ->orWhere('nomor_accurate', 'like', "%{$search}%");
             });
         }
 
         $items = $query->orderBy('tanggal_pembayaran', 'desc')->paginate(20);
+
         return view('pembayaran-pranota-stock.index', compact('items'));
     }
 
@@ -91,13 +92,13 @@ class PembayaranPranotaStockController extends Controller
                 ['modul' => 'SIS'],
                 ['nomor_terakhir' => 0, 'keterangan' => 'SIS Modul']
             );
-            
+
             $nomorPembayaran = $this->generateNomorPembayaranSIS();
             $modulSis->increment('nomor_terakhir');
 
             $paymentData = $validated;
             unset($paymentData['pranota_stock_ids']);
-            
+
             $paymentData['nomor_pembayaran'] = $nomorPembayaran;
             $paymentData['status_pembayaran'] = 'paid';
             $paymentData['created_by'] = Auth::id();
@@ -107,7 +108,7 @@ class PembayaranPranotaStockController extends Controller
 
             foreach ($validated['pranota_stock_ids'] as $pranotaId) {
                 $pranota = PranotaStock::findOrFail($pranotaId);
-                
+
                 // Calculate subtotal for this pranota
                 $subtotal = 0;
                 if (is_array($pranota->items)) {
@@ -132,7 +133,7 @@ class PembayaranPranotaStockController extends Controller
             $totalFinal = $validated['total_tagihan_setelah_penyesuaian'];
             $bankName = $validated['bank'];
             $jenisTransaksi = $validated['jenis_transaksi'];
-            $desc = "Pembayaran Pranota Stock - " . $nomorPembayaran;
+            $desc = 'Pembayaran Pranota Stock - '.$nomorPembayaran;
 
             if ($jenisTransaksi == 'Debit') {
                 $this->coaTransactionService->recordDoubleEntry(
@@ -157,27 +158,28 @@ class PembayaranPranotaStockController extends Controller
             DB::commit();
 
             return redirect()->route('pembayaran-pranota-stock.index')
-                           ->with('success', 'Pembayaran berhasil disimpan.');
+                ->with('success', 'Pembayaran berhasil disimpan.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error creating Pembayaran Pranota Stock: ' . $e->getMessage());
-            return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
+            Log::error('Error creating Pembayaran Pranota Stock: '.$e->getMessage());
+
+            return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: '.$e->getMessage());
         }
     }
 
     public function edit($id)
     {
         $item = PembayaranPranotaStock::with('pranotaStocks')->findOrFail($id);
-        
+
         // Items currently in this payment
         $selectedPranotaIds = $item->pranotaStocks->pluck('id')->toArray();
-        
+
         // Available items (approved and not paid, or already in this payment)
-        $pranotaStocks = PranotaStock::where(function($query) use ($selectedPranotaIds) {
-                $query->where('status', 'approved')
-                      ->whereDoesntHave('pembayaranPranotaStocks');
-            })
+        $pranotaStocks = PranotaStock::where(function ($query) {
+            $query->where('status', 'approved')
+                ->whereDoesntHave('pembayaranPranotaStocks');
+        })
             ->orWhereIn('id', $selectedPranotaIds)
             ->orderBy('tanggal_pranota', 'desc')
             ->get();
@@ -194,7 +196,7 @@ class PembayaranPranotaStockController extends Controller
     public function update(Request $request, $id)
     {
         $pembayaran = PembayaranPranotaStock::findOrFail($id);
-        
+
         $validated = $request->validate([
             'pranota_stock_ids' => ['required', 'array', 'min:1'],
             'pranota_stock_ids.*' => ['exists:pranota_stocks,id'],
@@ -214,10 +216,10 @@ class PembayaranPranotaStockController extends Controller
 
         try {
             // Restore old pranota statuses
-            foreach($pembayaran->pranotaStocks as $oldPranota) {
+            foreach ($pembayaran->pranotaStocks as $oldPranota) {
                 $oldPranota->update(['status' => 'approved']);
             }
-            
+
             // Revert accounting
             $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
 
@@ -232,7 +234,7 @@ class PembayaranPranotaStockController extends Controller
             $syncData = [];
             foreach ($validated['pranota_stock_ids'] as $pranotaId) {
                 $pranota = PranotaStock::findOrFail($pranotaId);
-                
+
                 $subtotal = 0;
                 if (is_array($pranota->items)) {
                     foreach ($pranota->items as $i) {
@@ -248,14 +250,14 @@ class PembayaranPranotaStockController extends Controller
 
                 $pranota->update(['status' => 'paid']);
             }
-            
+
             $pembayaran->pranotaStocks()->sync($syncData);
 
             // Accounting Entry (Double Book)
             $totalFinal = $validated['total_tagihan_setelah_penyesuaian'];
             $bankName = $validated['bank'];
             $jenisTransaksi = $validated['jenis_transaksi'];
-            $desc = "Update Pembayaran Pranota Stock - " . $pembayaran->nomor_pembayaran;
+            $desc = 'Update Pembayaran Pranota Stock - '.$pembayaran->nomor_pembayaran;
 
             if ($jenisTransaksi == 'Debit') {
                 $this->coaTransactionService->recordDoubleEntry(
@@ -280,29 +282,31 @@ class PembayaranPranotaStockController extends Controller
             DB::commit();
 
             return redirect()->route('pembayaran-pranota-stock.index')
-                           ->with('success', 'Pembayaran berhasil diupdate.');
+                ->with('success', 'Pembayaran berhasil diupdate.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error updating Pembayaran Pranota Stock: ' . $e->getMessage());
-            return back()->withInput()->with('error', 'Gagal update pembayaran: ' . $e->getMessage());
+            Log::error('Error updating Pembayaran Pranota Stock: '.$e->getMessage());
+
+            return back()->withInput()->with('error', 'Gagal update pembayaran: '.$e->getMessage());
         }
     }
 
     public function show($id)
     {
         $item = PembayaranPranotaStock::with(['pranotaStocks.creator', 'createdBy'])->findOrFail($id);
+
         return view('pembayaran-pranota-stock.show', compact('item'));
     }
 
     public function destroy($id)
     {
         $item = PembayaranPranotaStock::findOrFail($id);
-        
+
         DB::beginTransaction();
         try {
             // Restore pranota status
-            foreach($item->pranotaStocks as $pranota) {
+            foreach ($item->pranotaStocks as $pranota) {
                 $pranota->update(['status' => 'approved']);
             }
 
@@ -311,10 +315,12 @@ class PembayaranPranotaStockController extends Controller
 
             $item->delete();
             DB::commit();
+
             return redirect()->route('pembayaran-pranota-stock.index')->with('success', 'Pembayaran berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menghapus: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menghapus: '.$e->getMessage());
         }
     }
 
@@ -329,7 +335,7 @@ class PembayaranPranotaStockController extends Controller
         $bulan = $now->format('m');
         $tahun = $now->format('y');
         $runningNumber = str_pad($modulSis->nomor_terakhir + 1, 6, '0', STR_PAD_LEFT);
-        
+
         return "SIS-{$bulan}-{$tahun}-{$runningNumber}";
     }
 
@@ -337,7 +343,7 @@ class PembayaranPranotaStockController extends Controller
     {
         return response()->json([
             'success' => true,
-            'nomor_pembayaran' => $this->generateNomorPembayaranSIS()
+            'nomor_pembayaran' => $this->generateNomorPembayaranSIS(),
         ]);
     }
 }

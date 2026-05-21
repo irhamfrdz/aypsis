@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\TandaTerima;
-use App\Models\TandaTerimaTanpaSuratJalan;
 use App\Models\TandaTerimaLcl;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
+use App\Models\TandaTerimaTanpaSuratJalan;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class TandaTerimaApprovalController extends Controller
 {
@@ -23,30 +23,30 @@ class TandaTerimaApprovalController extends Controller
         $lclQuery = TandaTerimaLcl::query();
 
         if ($search) {
-            $tandaTerimaQuery->where(function($q) use ($search) {
+            $tandaTerimaQuery->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('penerima', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%");
+                    ->orWhere('penerima', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
+                    ->orWhere('no_kontainer', 'like', "%{$search}%");
             });
-            $ttsjQuery->where(function($q) use ($search) {
+            $ttsjQuery->where(function ($q) use ($search) {
                 $q->where('no_tanda_terima', 'like', "%{$search}%")
-                  ->orWhere('penerima', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%");
+                    ->orWhere('penerima', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
+                    ->orWhere('no_kontainer', 'like', "%{$search}%");
             });
-            $lclQuery->where(function($q) use ($search) {
+            $lclQuery->where(function ($q) use ($search) {
                 $q->where('nomor_tanda_terima', 'like', "%{$search}%")
-                  ->orWhere('nama_penerima', 'like', "%{$search}%")
-                  ->orWhere('nama_pengirim', 'like', "%{$search}%")
-                  ->orWhereHas('tujuanPengiriman', function($q) use ($search) {
-                      $q->where('nama_tujuan', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('kontainerPivot', function($q) use ($search) {
-                      $q->where('nomor_kontainer', 'like', "%{$search}%");
-                  });
+                    ->orWhere('nama_penerima', 'like', "%{$search}%")
+                    ->orWhere('nama_pengirim', 'like', "%{$search}%")
+                    ->orWhereHas('tujuanPengiriman', function ($q) use ($search) {
+                        $q->where('nama_tujuan', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('kontainerPivot', function ($q) use ($search) {
+                        $q->where('nomor_kontainer', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -60,18 +60,19 @@ class TandaTerimaApprovalController extends Controller
         $results = collect();
 
         if ($type === 'all' || $type === 'fcl') {
-            $tandaTerimaQuery->with(['prospeks'])->latest()->limit(100)->get()->each(function($item) use ($results) {
+            $tandaTerimaQuery->with(['prospeks'])->latest()->limit(100)->get()->each(function ($item) use ($results) {
                 // Get kapal from prospek or manifests or bls
                 $kapal = '-';
                 if ($item->prospeks->isNotEmpty()) {
-                    $kapal = $item->prospeks->map(function($p) {
+                    $kapal = $item->prospeks->map(function ($p) {
                         $vessel = $p->nama_kapal;
-                        if (!$vessel) {
+                        if (! $vessel) {
                             $vessel = \App\Models\Bl::where('prospek_id', $p->id)->value('nama_kapal');
                         }
-                        if (!$vessel) {
+                        if (! $vessel) {
                             $vessel = \App\Models\Manifest::where('prospek_id', $p->id)->value('nama_kapal');
                         }
+
                         return $vessel;
                     })->filter()->first() ?? '-';
                 }
@@ -80,7 +81,7 @@ class TandaTerimaApprovalController extends Controller
                     'id' => $item->id,
                     'type' => 'FCL',
                     'source_type' => 'fcl',
-                    'number' => $item->no_surat_jalan ?: ('TT-' . $item->id),
+                    'number' => $item->no_surat_jalan ?: ('TT-'.$item->id),
                     'date' => $item->tanggal ?: $item->tanggal_surat_jalan,
                     'penerima' => $item->penerima,
                     'pengirim' => $item->pengirim,
@@ -96,17 +97,17 @@ class TandaTerimaApprovalController extends Controller
         }
 
         if ($type === 'all' || $type === 'ttsj') {
-            $ttsjQuery->latest()->limit(100)->get()->each(function($item) use ($results) {
+            $ttsjQuery->latest()->limit(100)->get()->each(function ($item) use ($results) {
                 // Get kapal from manifest or bl matching this TTSJ number
-                $kapal = \App\Models\Manifest::where('nomor_tanda_terima', $item->no_tanda_terima)->value('nama_kapal') 
-                    ?? \App\Models\Bl::where('nomor_bl', $item->no_tanda_terima)->value('nama_kapal') 
+                $kapal = \App\Models\Manifest::where('nomor_tanda_terima', $item->no_tanda_terima)->value('nama_kapal')
+                    ?? \App\Models\Bl::where('nomor_bl', $item->no_tanda_terima)->value('nama_kapal')
                     ?? '-';
 
                 $results->push([
                     'id' => $item->id,
                     'type' => 'TTSJ',
                     'source_type' => 'ttsj',
-                    'number' => $item->no_tanda_terima ?: $item->nomor_tanda_terima ?: ('TTSJ-' . $item->id),
+                    'number' => $item->no_tanda_terima ?: $item->nomor_tanda_terima ?: ('TTSJ-'.$item->id),
                     'date' => $item->tanggal_tanda_terima,
                     'penerima' => $item->penerima,
                     'pengirim' => $item->pengirim,
@@ -122,12 +123,12 @@ class TandaTerimaApprovalController extends Controller
         }
 
         if ($type === 'all' || $type === 'lcl') {
-            $lclQuery->latest()->limit(100)->get()->each(function($item) use ($results) {
+            $lclQuery->latest()->limit(100)->get()->each(function ($item) use ($results) {
                 // Get kapal from manifest or bl matching this container number
                 $kapal = '-';
                 if ($item->nomor_kontainer) {
-                    $kapal = \App\Models\Manifest::where('nomor_kontainer', $item->nomor_kontainer)->value('nama_kapal') 
-                        ?? \App\Models\Bl::where('nomor_kontainer', $item->nomor_kontainer)->value('nama_kapal') 
+                    $kapal = \App\Models\Manifest::where('nomor_kontainer', $item->nomor_kontainer)->value('nama_kapal')
+                        ?? \App\Models\Bl::where('nomor_kontainer', $item->nomor_kontainer)->value('nama_kapal')
                         ?? '-';
                 }
 
@@ -135,7 +136,7 @@ class TandaTerimaApprovalController extends Controller
                     'id' => $item->id,
                     'type' => 'LCL',
                     'source_type' => 'lcl',
-                    'number' => $item->nomor_tanda_terima ?: ('LCL-' . $item->id),
+                    'number' => $item->nomor_tanda_terima ?: ('LCL-'.$item->id),
                     'date' => $item->tanggal_tanda_terima,
                     'penerima' => $item->nama_penerima,
                     'pengirim' => $item->nama_pengirim,
@@ -150,7 +151,7 @@ class TandaTerimaApprovalController extends Controller
             });
         }
 
-        $data = $results->sortByDesc(function($item) {
+        $data = $results->sortByDesc(function ($item) {
             return $item['date'] ? Carbon::parse($item['date'])->timestamp : 0;
         });
 
@@ -173,13 +174,13 @@ class TandaTerimaApprovalController extends Controller
         ]);
 
         $model = $this->getModel($sourceType, $id);
-        
+
         $documentColumns = [
-            'file_ppbj' => 'dokumen_ppbj', 
-            'file_packing_list' => 'dokumen_packing_list', 
-            'file_invoice' => 'dokumen_invoice', 
+            'file_ppbj' => 'dokumen_ppbj',
+            'file_packing_list' => 'dokumen_packing_list',
+            'file_invoice' => 'dokumen_invoice',
             'file_faktur_pajak' => 'dokumen_faktur_pajak',
-            'file_si' => 'dokumen_si'
+            'file_si' => 'dokumen_si',
         ];
 
         $uploaded = false;
@@ -189,10 +190,10 @@ class TandaTerimaApprovalController extends Controller
             if ($request->hasFile($inputName)) {
                 $rawExisting = $model->{$column};
                 $existingFiles = [];
-                
+
                 if (is_array($rawExisting)) {
                     $existingFiles = $rawExisting;
-                } elseif (is_string($rawExisting) && !empty($rawExisting)) {
+                } elseif (is_string($rawExisting) && ! empty($rawExisting)) {
                     $existingFiles = json_decode($rawExisting, true) ?? [];
                 }
 
@@ -216,14 +217,14 @@ class TandaTerimaApprovalController extends Controller
     public function deleteDocument($sourceType, $id, $column, $index)
     {
         $model = $this->getModel($sourceType, $id);
-        
+
         $existingPathArray = [];
         if ($model->{$column}) {
             if (is_array($model->{$column})) {
                 $existingPathArray = $model->{$column};
             } elseif (is_string($model->{$column}) && str_starts_with($model->{$column}, '[')) {
                 $existingPathArray = json_decode($model->{$column}, true) ?? [];
-            } elseif (!empty($model->{$column})) {
+            } elseif (! empty($model->{$column})) {
                 $existingPathArray = [$model->{$column}];
             }
         }
@@ -231,12 +232,12 @@ class TandaTerimaApprovalController extends Controller
         if (isset($existingPathArray[$index])) {
             $pathData = $existingPathArray[$index];
             $pathToDelete = is_array($pathData) ? ($pathData['path'] ?? $pathData) : $pathData;
-            
+
             if (Storage::disk('public')->exists($pathToDelete)) {
                 Storage::disk('public')->delete($pathToDelete);
             }
             array_splice($existingPathArray, $index, 1);
-            
+
             $model->update([
                 $column => count($existingPathArray) > 0 ? json_encode($existingPathArray) : null,
             ]);
@@ -250,7 +251,7 @@ class TandaTerimaApprovalController extends Controller
     public function approve(Request $request, $sourceType, $id)
     {
         $model = $this->getModel($sourceType, $id);
-        
+
         $model->update([
             'is_asuransi_approved' => true,
             'asuransi_approved_at' => now(),
@@ -264,7 +265,7 @@ class TandaTerimaApprovalController extends Controller
     public function reject(Request $request, $sourceType, $id)
     {
         $model = $this->getModel($sourceType, $id);
-        
+
         $model->update([
             'is_asuransi_approved' => false,
             'asuransi_approved_at' => null,
@@ -287,7 +288,7 @@ class TandaTerimaApprovalController extends Controller
                     'type' => is_array($p) && isset($p['type']) ? $p['type'] : 'Lainnya',
                     'path' => is_array($p) && isset($p['path']) ? $p['path'] : $p,
                     'column' => 'asuransi_path',
-                    'original_index' => $idx
+                    'original_index' => $idx,
                 ];
             }
         }
@@ -298,7 +299,7 @@ class TandaTerimaApprovalController extends Controller
             'dokumen_packing_list' => 'Packing List',
             'dokumen_invoice' => 'Invoice',
             'dokumen_faktur_pajak' => 'Faktur Pajak',
-            'dokumen_si' => 'SI (Shipping Instruction)'
+            'dokumen_si' => 'SI (Shipping Instruction)',
         ];
 
         foreach ($cols as $col => $typeName) {
@@ -309,7 +310,7 @@ class TandaTerimaApprovalController extends Controller
                         'type' => $typeName,
                         'path' => $p,
                         'column' => $col,
-                        'original_index' => $idx
+                        'original_index' => $idx,
                     ];
                 }
             }

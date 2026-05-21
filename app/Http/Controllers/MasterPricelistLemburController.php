@@ -19,11 +19,11 @@ class MasterPricelistLemburController extends Controller
         }
 
         if ($request->filled('nama')) {
-            $query->where('nama', 'like', '%' . $request->nama . '%');
+            $query->where('nama', 'like', '%'.$request->nama.'%');
         }
 
         $pricelists = $query->orderBy('created_at', 'desc')->paginate(20);
-        
+
         return view('master.pricelist-lembur.index', compact('pricelists'));
     }
 

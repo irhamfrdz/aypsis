@@ -34,8 +34,8 @@ class KontainerObserver
     {
         // When kontainer is deleted, reactivate stock kontainer if exists
         $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $kontainer->nomor_seri_gabungan)
-                                       ->where('status', 'inactive')
-                                       ->first();
+            ->where('status', 'inactive')
+            ->first();
 
         if ($stockKontainer) {
             $stockKontainer->update(['status' => 'available']);
@@ -50,8 +50,8 @@ class KontainerObserver
     {
         // Find any stock kontainer with same nomor_seri_gabungan
         $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $kontainer->nomor_seri_gabungan)
-                                       ->where('status', '!=', 'inactive')
-                                       ->first();
+            ->where('status', '!=', 'inactive')
+            ->first();
 
         if ($stockKontainer) {
             $stockKontainer->update(['status' => 'inactive']);

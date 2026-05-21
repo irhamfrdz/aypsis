@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
 
 class PranotaStatusTest extends TestCase
 {
@@ -13,8 +13,8 @@ class PranotaStatusTest extends TestCase
     /** @test */
     public function creating_pranota_marks_source_tagihan_as_sudah_masuk_pranota()
     {
-    // avoid gate middleware in test environment
-    $this->withoutMiddleware();
+        // avoid gate middleware in test environment
+        $this->withoutMiddleware();
         // Create a sample tagihan and kontainer then link via pivot
         $kontainerId = DB::table('kontainers')->insertGetId([
             'awalan_kontainer' => 'K',
@@ -49,7 +49,7 @@ class PranotaStatusTest extends TestCase
 
         // POST to the pranota creation route with kontainer_ids
         $response = $this->post(route('pranota-tagihan-kontainer.store'), [
-            'kontainer_ids' => (string)$kontainerId,
+            'kontainer_ids' => (string) $kontainerId,
             'vendor' => 'TESTVENDOR',
         ]);
 

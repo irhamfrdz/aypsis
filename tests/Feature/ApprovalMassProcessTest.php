@@ -1,10 +1,11 @@
 <?php
+
 namespace Tests\Feature;
 
+use App\Models\Permohonan;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\User;
-use App\Models\Permohonan;
 
 class ApprovalMassProcessTest extends TestCase
 {

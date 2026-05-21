@@ -4,15 +4,15 @@ namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents, WithColumnFormatting
+class PranotaOngkosTrukExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithEvents, WithHeadings
 {
     protected $pranota;
 
@@ -23,7 +23,7 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
 
     public function collection()
     {
-        return $this->pranota->items->map(function($item, $index) {
+        return $this->pranota->items->map(function ($item, $index) {
             $rit_supir = 0;
             $rit_kenek = 0;
 
@@ -33,7 +33,7 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $size = $sj->size ?? '-';
                 $no_plat = $sj->no_plat ?? '-';
                 $tgl_sj = $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/M/Y') : $tgl_sj;
-                
+
                 // Rit Logic
                 $rit_supir = ($sj->supir || $sj->supir2 || $sj->supirKaryawan) ? 1 : 0;
                 $rit_kenek = ($sj->kenek || $sj->kenekKaryawan) ? 1 : 0;
@@ -41,11 +41,11 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 // Ongkos Truck Logic
                 if ($sj->tujuanPengambilanRelation) {
                     $sz = strtolower($sj->size ?? '');
-                    $ongkos_truk = str_contains($sz, '40') 
+                    $ongkos_truk = str_contains($sz, '40')
                         ? ($sj->tujuanPengambilanRelation->ongkos_truk_40ft ?? 0)
                         : ($sj->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0);
                 }
-                if ($sj->tujuan_pengambilan == "PULO GADUNG ( BESI SCRAP )") {
+                if ($sj->tujuan_pengambilan == 'PULO GADUNG ( BESI SCRAP )') {
                     $ongkos_truk = 1050000;
                 }
 
@@ -74,7 +74,7 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $size = $sjb->size ?? '-';
                 $no_plat = $sjb->no_plat ?? '-';
                 $tgl_sj = $sjb->tanggal_surat_jalan ? $sjb->tanggal_surat_jalan->format('d/M/Y') : $tgl_sj;
-                
+
                 // Rit Logic
                 $rit_supir = ($sjb->supir || $sjb->supir2 || $sjb->supirKaryawan) ? 1 : 0;
                 $rit_kenek = ($sjb->kenek || $sjb->kenekKaryawan) ? 1 : 0;
@@ -82,11 +82,11 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 // Ongkos Truck Logic
                 if ($sjb->tujuanPengambilanRelation) {
                     $sz = strtolower($sjb->size ?? '');
-                    $ongkos_truk = str_contains($sz, '40') 
+                    $ongkos_truk = str_contains($sz, '40')
                         ? ($sjb->tujuanPengambilanRelation->ongkos_truk_40ft ?? 0)
                         : ($sjb->tujuanPengambilanRelation->ongkos_truk_20ft ?? 0);
                 }
-                if ($sjb->tujuan_pengambilan == "PULO GADUNG ( BESI SCRAP )") {
+                if ($sjb->tujuan_pengambilan == 'PULO GADUNG ( BESI SCRAP )') {
                     $ongkos_truk = 1050000;
                 }
 
@@ -120,9 +120,9 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 $size,
                 $rit_supir,
                 $rit_kenek,
-                (float)$ongkos_truk,
-                (float)$uang_jalan,
-                (float)$item->nominal,
+                (float) $ongkos_truk,
+                (float) $uang_jalan,
+                (float) $item->nominal,
             ];
         });
     }
@@ -158,29 +158,29 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                
+
                 // Insert title rows
                 $sheet->insertNewRowBefore(1, 5);
                 $sheet->setCellValue('A1', 'PRANOTA ONGKOS TRUK');
-                $sheet->setCellValue('A2', 'Nomor: ' . $this->pranota->no_pranota);
-                $sheet->setCellValue('A3', 'Tanggal: ' . $this->pranota->tanggal_pranota->format('d/m/Y'));
+                $sheet->setCellValue('A2', 'Nomor: '.$this->pranota->no_pranota);
+                $sheet->setCellValue('A3', 'Tanggal: '.$this->pranota->tanggal_pranota->format('d/m/Y'));
                 if ($this->pranota->keterangan) {
-                    $sheet->setCellValue('A4', 'Keterangan: ' . $this->pranota->keterangan);
-                    $sheet->getStyle("A4")->getFont()->setBold(true);
+                    $sheet->setCellValue('A4', 'Keterangan: '.$this->pranota->keterangan);
+                    $sheet->getStyle('A4')->getFont()->setBold(true);
                 }
-                
+
                 $lastCol = 'M';
                 $headerRow = 6;
                 $dataStartRow = 7;
-                
+
                 // Merge and style titles
                 $sheet->mergeCells("A1:{$lastCol}1");
-                $sheet->getStyle("A1")->getFont()->setBold(true)->setSize(14);
-                $sheet->getStyle("A1")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                
-                $sheet->getStyle("A2:A3")->getFont()->setBold(true);
+                $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                $sheet->getStyle('A2:A3')->getFont()->setBold(true);
 
                 // Style Header
                 $sheet->getStyle("A{$headerRow}:{$lastCol}{$headerRow}")->applyFromArray([
@@ -213,9 +213,9 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
                 // Adjustment
                 if ($this->pranota->adjustment != 0) {
                     $sheet->setCellValue("L{$currentRow}", 'Adjustment');
-                    $sheet->setCellValue("M{$currentRow}", (float)$this->pranota->adjustment);
+                    $sheet->setCellValue("M{$currentRow}", (float) $this->pranota->adjustment);
                     if ($this->pranota->keterangan) {
-                        $sheet->setCellValue("N{$currentRow}", "(" . $this->pranota->keterangan . ")");
+                        $sheet->setCellValue("N{$currentRow}", '('.$this->pranota->keterangan.')');
                     }
                     $sheet->getStyle("L{$currentRow}:M{$currentRow}")->getFont()->setBold(true);
                     $currentRow++;
@@ -223,7 +223,7 @@ class PranotaOngkosTrukExport implements FromCollection, WithHeadings, ShouldAut
 
                 // Total
                 $sheet->setCellValue("L{$currentRow}", 'TOTAL');
-                $sheet->setCellValue("M{$currentRow}", (float)$this->pranota->total_nominal);
+                $sheet->setCellValue("M{$currentRow}", (float) $this->pranota->total_nominal);
                 $sheet->getStyle("L{$currentRow}:M{$currentRow}")->applyFromArray([
                     'font' => ['bold' => true, 'size' => 12],
                     'fill' => [

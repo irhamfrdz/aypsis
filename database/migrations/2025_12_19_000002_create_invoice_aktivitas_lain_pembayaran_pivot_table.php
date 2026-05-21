@@ -20,14 +20,14 @@ return new class extends Migration
 
             // Foreign keys
             $table->foreign('invoice_aktivitas_lain_id', 'fk_invoice_pembayaran')
-                  ->references('id')
-                  ->on('invoice_aktivitas_lain')
-                  ->onDelete('cascade');
-            
+                ->references('id')
+                ->on('invoice_aktivitas_lain')
+                ->onDelete('cascade');
+
             $table->foreign('pembayaran_invoice_aktivitas_lain_id', 'fk_pembayaran_invoice')
-                  ->references('id')
-                  ->on('pembayaran_invoice_aktivitas_lain')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('pembayaran_invoice_aktivitas_lain')
+                ->onDelete('cascade');
 
             // Unique constraint to prevent duplicate payment for same invoice in same pembayaran
             $table->unique(['invoice_aktivitas_lain_id', 'pembayaran_invoice_aktivitas_lain_id'], 'unique_invoice_pembayaran');

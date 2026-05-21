@@ -1,4 +1,5 @@
 <?php
+
 // Backup tagihan_kontainer_sewa and pivot table to backups/ with timestamped CSV files
 // Does not perform deletion. Run separately if you want to delete after verifying backups.
 
@@ -7,15 +8,16 @@ echo "tagihan scripts disabled: tagihan_kontainer_sewa feature removed.\n";
 exit(0);
 
 // Dead code below - keeping for reference but unreachable due to exit(0) above
-function setupDatabase() {
+function setupDatabase()
+{
     // Load environment variables
-    $envFile = __DIR__ . '/../.env';
+    $envFile = __DIR__.'/../.env';
     $env = [];
     if (file_exists($envFile)) {
         $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         foreach ($lines as $line) {
-            if (strpos($line, '=') !== false && !str_starts_with(trim($line), '#')) {
-                list($key, $value) = explode('=', $line, 2);
+            if (strpos($line, '=') !== false && ! str_starts_with(trim($line), '#')) {
+                [$key, $value] = explode('=', $line, 2);
                 $env[trim($key)] = trim($value);
             }
         }
@@ -31,13 +33,14 @@ function setupDatabase() {
     return new PDO($dsn, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 }
 
-function backupTables() {
+function backupTables()
+{
     $pdo = setupDatabase();
 
     // Create backup directory with timestamp
     $timestamp = date('Ymd_His');
-    $backupDir = __DIR__ . '/../backups';
-    if (!is_dir($backupDir)) {
+    $backupDir = __DIR__.'/../backups';
+    if (! is_dir($backupDir)) {
         mkdir($backupDir, 0755, true);
     }
 
@@ -47,7 +50,7 @@ function backupTables() {
     echo "Backing up tables to: {$backupDir}\n";
 
     // Backup tagihan_kontainer_sewa
-    $stmt = $pdo->query("SELECT * FROM tagihan_kontainer_sewa ORDER BY id");
+    $stmt = $pdo->query('SELECT * FROM tagihan_kontainer_sewa ORDER BY id');
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     $fp = fopen($tagihanFile, 'w');
     if ($fp === false) {
@@ -61,14 +64,16 @@ function backupTables() {
         foreach ($rows as $r) {
             // Ensure string values
             $row = [];
-            foreach ($r as $v) $row[] = $v;
+            foreach ($r as $v) {
+                $row[] = $v;
+            }
             fputcsv($fp, $row, ';');
         }
     }
     fclose($fp);
 
     // Backup pivot
-    $stmt2 = $pdo->query("SELECT * FROM tagihan_kontainer_sewa_kontainers ORDER BY tagihan_id, kontainer_id");
+    $stmt2 = $pdo->query('SELECT * FROM tagihan_kontainer_sewa_kontainers ORDER BY tagihan_id, kontainer_id');
     $rows2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
     $fp2 = fopen($pivotFile, 'w');
     if ($fp2 === false) {
@@ -80,13 +85,15 @@ function backupTables() {
         fputcsv($fp2, array_keys($rows2[0]), ';');
         foreach ($rows2 as $r) {
             $row = [];
-            foreach ($r as $v) $row[] = $v;
+            foreach ($r as $v) {
+                $row[] = $v;
+            }
             fputcsv($fp2, $row, ';');
         }
     }
     fclose($fp2);
 
-    echo "Counts: tagihan_kontainer_sewa=" . count($rows) . ", pivots=" . count($rows2) . "\n";
+    echo 'Counts: tagihan_kontainer_sewa='.count($rows).', pivots='.count($rows2)."\n";
     echo "Backups written:\n - $tagihanFile\n - $pivotFile\n";
     echo "Next: to delete data, confirm and run scripts/clean_tagihan_kontainer_sewa.php --hard (for permanent delete) or --soft (for soft-delete).\n";
 }

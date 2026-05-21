@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('stock_amprahan_usages', 'kilometer')) {
+        if (! Schema::hasColumn('stock_amprahan_usages', 'kilometer')) {
             Schema::table('stock_amprahan_usages', function (Blueprint $table) {
                 $table->decimal('kilometer', 15, 2)->nullable()->after('alat_berat_id');
             });

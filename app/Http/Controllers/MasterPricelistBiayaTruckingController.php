@@ -21,16 +21,16 @@ class MasterPricelistBiayaTruckingController extends Controller
 
         // Filter berdasarkan nama_vendor
         if ($request->filled('nama_vendor')) {
-            $query->where('nama_vendor', 'like', '%' . $request->nama_vendor . '%');
+            $query->where('nama_vendor', 'like', '%'.$request->nama_vendor.'%');
         }
 
         // Filter berdasarkan size
         if ($request->filled('size')) {
-            $query->where('size', 'like', '%' . $request->size . '%');
+            $query->where('size', 'like', '%'.$request->size.'%');
         }
 
         $pricelists = $query->orderBy('created_at', 'desc')->paginate(20);
-        
+
         return view('master.pricelist-biaya-trucking.index', compact('pricelists'));
     }
 

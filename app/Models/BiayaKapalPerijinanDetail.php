@@ -12,7 +12,7 @@ class BiayaKapalPerijinanDetail extends Model
         'biaya_kapal_perijinan_id',
         'pricelist_perijinan_id',
         'nama_perijinan',
-        'tarif'
+        'tarif',
     ];
 
     public function perijinan()

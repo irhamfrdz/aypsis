@@ -40,30 +40,30 @@ class SyncNaikKapalToManifest extends Command
         $all = $this->option('all');
 
         $this->info('=== Sync NaikKapal to Manifest ===');
-        $this->info('Voyage: ' . ($voyage ?: 'All'));
-        $this->info('Kapal: ' . ($kapal ?: 'All'));
-        $this->info('Filter: ' . ($all ? 'ALL records' : 'Only sudah_ob=true'));
-        $this->info('Mode: ' . ($dryRun ? 'DRY RUN (no changes)' : 'LIVE'));
+        $this->info('Voyage: '.($voyage ?: 'All'));
+        $this->info('Kapal: '.($kapal ?: 'All'));
+        $this->info('Filter: '.($all ? 'ALL records' : 'Only sudah_ob=true'));
+        $this->info('Mode: '.($dryRun ? 'DRY RUN (no changes)' : 'LIVE'));
         $this->newLine();
 
         // Build query for naik_kapal
         $query = NaikKapal::query();
-        
+
         // By default, only sync records that have sudah_ob = true
-        if (!$all) {
+        if (! $all) {
             $query->where('sudah_ob', true);
         }
-        
+
         if ($voyage) {
             $query->where('no_voyage', $voyage);
         }
-        
+
         if ($kapal) {
-            $query->where('nama_kapal', 'like', '%' . $kapal . '%');
+            $query->where('nama_kapal', 'like', '%'.$kapal.'%');
         }
 
         $naikKapals = $query->get();
-        
+
         $this->info("Found {$naikKapals->count()} records in naik_kapal");
 
         // Check existing manifests
@@ -72,10 +72,10 @@ class SyncNaikKapalToManifest extends Command
             $existingManifests->where('no_voyage', $voyage);
         }
         if ($kapal) {
-            $existingManifests->where('nama_kapal', 'like', '%' . $kapal . '%');
+            $existingManifests->where('nama_kapal', 'like', '%'.$kapal.'%');
         }
         $manifestCount = $existingManifests->count();
-        
+
         $this->info("Found {$manifestCount} existing records in manifests");
         $this->newLine();
 
@@ -94,8 +94,9 @@ class SyncNaikKapalToManifest extends Command
                 ->where('nama_kapal', $nk->nama_kapal)
                 ->first();
 
-            if ($existingManifest && !$force) {
+            if ($existingManifest && ! $force) {
                 $skipped++;
+
                 continue;
             }
 
@@ -103,6 +104,7 @@ class SyncNaikKapalToManifest extends Command
                 $this->newLine();
                 $this->line("  Would create manifest for: {$nk->nomor_kontainer} ({$nk->nama_kapal} - {$nk->no_voyage})");
                 $created++;
+
                 continue;
             }
 
@@ -143,25 +145,29 @@ class SyncNaikKapalToManifest extends Command
                     if ($prospek->tandaTerima) {
                         $tt = $prospek->tandaTerima;
                         $manifestData['nomor_tanda_terima'] = $tt->nomor_tanda_terima ?? $tt->no_surat_jalan;
-                        
+
                         $itemNames = [];
-                        if (!empty($tt->dimensi_items) && is_array($tt->dimensi_items)) {
+                        if (! empty($tt->dimensi_items) && is_array($tt->dimensi_items)) {
                             foreach ($tt->dimensi_items as $item) {
-                                if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                                if (! empty($item['nama_barang'])) {
+                                    $itemNames[] = $item['nama_barang'];
+                                }
                             }
-                        } elseif (!empty($tt->dimensi_details) && is_array($tt->dimensi_details)) {
+                        } elseif (! empty($tt->dimensi_details) && is_array($tt->dimensi_details)) {
                             foreach ($tt->dimensi_details as $item) {
-                                if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                                if (! empty($item['nama_barang'])) {
+                                    $itemNames[] = $item['nama_barang'];
+                                }
                             }
-                        } elseif (!empty($tt->nama_barang)) {
+                        } elseif (! empty($tt->nama_barang)) {
                             if (is_array($tt->nama_barang)) {
                                 $itemNames = $tt->nama_barang;
                             } elseif (is_string($tt->nama_barang) && $tt->nama_barang !== 'null') {
                                 $itemNames[] = $tt->nama_barang;
                             }
                         }
-                        
-                        if (!empty($itemNames)) {
+
+                        if (! empty($itemNames)) {
                             $manifestData['nama_barang'] = implode(', ', $itemNames);
                         }
                     }
@@ -182,7 +188,7 @@ class SyncNaikKapalToManifest extends Command
                 DB::rollBack();
                 $errors++;
                 $this->newLine();
-                $this->error("  Error for {$nk->nomor_kontainer}: " . $e->getMessage());
+                $this->error("  Error for {$nk->nomor_kontainer}: ".$e->getMessage());
             }
         }
 

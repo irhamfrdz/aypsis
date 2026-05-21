@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PembatalanSuratJalan;
 use App\Models\Coa;
 use App\Models\CoaTransaction;
-use App\Http\Controllers\Controller;
+use App\Models\PembatalanSuratJalan;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,22 +18,23 @@ class PembatalanSuratJalanController extends Controller
     {
         $this->coaTransactionService = $coaTransactionService;
     }
+
     public function index(Request $request)
     {
         $query = PembatalanSuratJalan::with(['suratJalan', 'suratJalanBongkaran']);
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('alasan_batal', 'like', "%{$search}%")
-                  ->orWhere('nomor_pembayaran', 'like', "%{$search}%");
+                    ->orWhere('alasan_batal', 'like', "%{$search}%")
+                    ->orWhere('nomor_pembayaran', 'like', "%{$search}%");
             });
         }
 
         $pembatalans = $query->orderBy('created_at', 'desc')
-                            ->paginate(15)
-                            ->withQueryString();
+            ->paginate(15)
+            ->withQueryString();
 
         // Check which cancellations are already in COA
         $syncedReferences = \App\Models\CoaTransaction::whereIn('nomor_referensi', $pembatalans->pluck('nomor_pembayaran'))
@@ -58,7 +58,7 @@ class PembatalanSuratJalanController extends Controller
         // 1. Reguler SJ Query
         $queryReguler = \App\Models\SuratJalan::with(['supirKaryawan', 'uangJalan'])
             ->where('status', '!=', 'cancelled');
-        
+
         // 2. Bongkaran SJ Query
         $queryBongkaran = \App\Models\SuratJalanBongkaran::with(['uangJalan'])
             ->where('status', '!=', 'cancelled');
@@ -66,32 +66,34 @@ class PembatalanSuratJalanController extends Controller
         if ($request->filled('search_sj')) {
             $queryReguler->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhereHas('supirKaryawan', function ($sq) use ($search) {
-                      $sq->where('nama_panggilan', 'like', "%{$search}%")
-                         ->orWhere('nama_lengkap', 'like', "%{$search}%");
-                  });
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhereHas('supirKaryawan', function ($sq) use ($search) {
+                        $sq->where('nama_panggilan', 'like', "%{$search}%")
+                            ->orWhere('nama_lengkap', 'like', "%{$search}%");
+                    });
             });
 
             $queryBongkaran->where(function ($q) use ($search) {
                 $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%");
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%");
             });
         }
 
         // Get both and tag them
-        $reguler = $queryReguler->get()->map(function($sj) {
+        $reguler = $queryReguler->get()->map(function ($sj) {
             $sj->tipe_sj = 'reguler';
+
             return $sj;
         });
 
-        $bongkaran = $queryBongkaran->get()->map(function($sj) {
+        $bongkaran = $queryBongkaran->get()->map(function ($sj) {
             $sj->tipe_sj = 'bongkaran';
             // Alias for consistency with Regulr
             $sj->no_surat_jalan = $sj->nomor_surat_jalan;
+
             return $sj;
         });
 
@@ -102,7 +104,7 @@ class PembatalanSuratJalanController extends Controller
         $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
         $perPage = 10;
         $currentItems = $combined->slice(($currentPage - 1) * $perPage, $perPage)->values();
-        
+
         $suratJalans = new \Illuminate\Pagination\LengthAwarePaginator(
             $currentItems,
             $combined->count(),
@@ -113,10 +115,10 @@ class PembatalanSuratJalanController extends Controller
 
         // Bank options for searchable dropdown (same source as payment forms)
         $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%kas%')
-                      ->orderBy('nama_akun')
-                      ->get();
+            ->orWhere('nama_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%kas%')
+            ->orderBy('nama_akun')
+            ->get();
 
         return view('pembatalan-surat-jalan.create', compact('suratJalans', 'akunCoa'));
     }
@@ -167,7 +169,7 @@ class PembatalanSuratJalanController extends Controller
             return redirect()->back()->with('error', 'Surat Jalan sudah dibatalkan.');
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function() use ($validated, $suratJalan, $noSuratJalan, $tipeSj) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $suratJalan, $noSuratJalan, $tipeSj) {
             // Create Cancel Record data
             $pblData = [
                 'no_surat_jalan' => $noSuratJalan,
@@ -210,7 +212,7 @@ class PembatalanSuratJalanController extends Controller
                 }
             } else {
                 $pblData['surat_jalan_bongkaran_id'] = $suratJalan->id;
-                
+
                 // Hapus data uang jalan yang terkait (bongkaran)
                 $uangJalan = \App\Models\UangJalan::where('surat_jalan_bongkaran_id', $suratJalan->id)->first();
                 if ($uangJalan) {
@@ -231,9 +233,9 @@ class PembatalanSuratJalanController extends Controller
             $bankName = $validated['bank'];
             $jenisTransaksi = $validated['jenis_transaksi'] ?? 'Debit';
             $noPbl = $validated['nomor_pembayaran'];
-            $keterangan = "Pembatalan SJ " . $noSuratJalan . " - " . $noPbl;
-            if (!empty($validated['keterangan'])) {
-                $keterangan .= " | " . $validated['keterangan'];
+            $keterangan = 'Pembatalan SJ '.$noSuratJalan.' - '.$noPbl;
+            if (! empty($validated['keterangan'])) {
+                $keterangan .= ' | '.$validated['keterangan'];
             }
 
             // Tentukan apakah bank di-debit atau di-kredit berdasarkan jenis transaksi
@@ -263,7 +265,7 @@ class PembatalanSuratJalanController extends Controller
                 'nomor_pembayaran' => $noPbl,
                 'no_surat_jalan' => $noSuratJalan,
                 'total' => $totalPembayaran,
-                'bank' => $bankName
+                'bank' => $bankName,
             ]);
         });
 
@@ -276,6 +278,7 @@ class PembatalanSuratJalanController extends Controller
     public function show(PembatalanSuratJalan $pembatalanSuratJalan)
     {
         $pembatalanSuratJalan->load(['suratJalan', 'suratJalanBongkaran']);
+
         return view('pembatalan-surat-jalan.show', compact('pembatalanSuratJalan'));
     }
 
@@ -285,10 +288,10 @@ class PembatalanSuratJalanController extends Controller
     public function edit(PembatalanSuratJalan $pembatalanSuratJalan)
     {
         $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%kas%')
-                      ->orderBy('nama_akun')
-                      ->get();
+            ->orWhere('nama_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%kas%')
+            ->orderBy('nama_akun')
+            ->get();
 
         return view('pembatalan-surat-jalan.edit', compact('pembatalanSuratJalan', 'akunCoa'));
     }
@@ -310,9 +313,9 @@ class PembatalanSuratJalanController extends Controller
             $bankName = $pembatalan->bank;
             $jenisTransaksi = $pembatalan->jenis_transaksi ?? 'Debit';
             $noPbl = $pembatalan->nomor_pembayaran;
-            $keterangan = "Pembatalan SJ " . $pembatalan->no_surat_jalan . " - " . $noPbl;
-            if (!empty($pembatalan->keterangan)) {
-                $keterangan .= " | " . $pembatalan->keterangan;
+            $keterangan = 'Pembatalan SJ '.$pembatalan->no_surat_jalan.' - '.$noPbl;
+            if (! empty($pembatalan->keterangan)) {
+                $keterangan .= ' | '.$pembatalan->keterangan;
             }
 
             // Tentukan apakah bank di-debit atau di-kredit berdasarkan jenis transaksi
@@ -337,11 +340,13 @@ class PembatalanSuratJalanController extends Controller
             }
 
             DB::commit();
+
             return back()->with('success', 'Data berhasil disinkronkan ke jurnal COA.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error syncToCoa Pembatalan: ' . $e->getMessage());
-            return back()->with('error', 'Gagal sinkronisasi: ' . $e->getMessage());
+            Log::error('Error syncToCoa Pembatalan: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal sinkronisasi: '.$e->getMessage());
         }
     }
 
@@ -381,7 +386,7 @@ class PembatalanSuratJalanController extends Controller
                 'alasan_penyesuaian' => $validated['alasan_penyesuaian'] ?? null,
                 'keterangan' => $validated['keterangan'] ?? null,
                 'alasan_batal' => $validated['alasan_batal'],
-                'updated_by' => auth()->id()
+                'updated_by' => auth()->id(),
             ]);
 
             // Sync with CoaTransactions (Update date and reference if needed, though usually just date)
@@ -391,11 +396,13 @@ class PembatalanSuratJalanController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('pembatalan-surat-jalan.index')->with('success', 'Catatan pembatalan dan jurnal COA berhasil diperbarui.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating Pembatalan SJ: ' . $e->getMessage());
-            return back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage())->withInput();
+            Log::error('Error updating Pembatalan SJ: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal memperbarui data: '.$e->getMessage())->withInput();
         }
     }
 

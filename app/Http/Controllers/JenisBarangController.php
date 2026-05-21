@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\JenisBarang;
 use App\Models\NomorTerakhir;
 use Illuminate\Http\Request;
@@ -17,12 +16,12 @@ class JenisBarangController extends Controller
         $query = JenisBarang::query();
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('kode', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('nama_barang', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('catatan', 'LIKE', '%' . $searchTerm . '%');
+                $q->where('kode', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('nama_barang', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('catatan', 'LIKE', '%'.$searchTerm.'%');
             });
         }
 
@@ -83,6 +82,7 @@ class JenisBarangController extends Controller
     public function show(string $id)
     {
         $jenisBarang = JenisBarang::findOrFail($id);
+
         return view('master-jenis-barang.show', compact('jenisBarang'));
     }
 
@@ -92,6 +92,7 @@ class JenisBarangController extends Controller
     public function edit(string $id)
     {
         $jenisBarang = JenisBarang::findOrFail($id);
+
         return view('master-jenis-barang.edit', compact('jenisBarang'));
     }
 
@@ -103,7 +104,7 @@ class JenisBarangController extends Controller
         $jenisBarang = JenisBarang::findOrFail($id);
 
         $request->validate([
-            'kode' => 'required|string|unique:jenis_barangs,kode,' . $id,
+            'kode' => 'required|string|unique:jenis_barangs,kode,'.$id,
             'nama_barang' => 'required|string|max:255',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
@@ -135,7 +136,7 @@ class JenisBarangController extends Controller
             'Content-Disposition' => 'attachment; filename="template_jenis_barang.csv"',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
 
             // Write UTF-8 BOM
@@ -169,7 +170,7 @@ class JenisBarangController extends Controller
     public function import(Request $request)
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'csv_file' => 'required|file|mimes:csv,txt|max:2048'
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -183,7 +184,7 @@ class JenisBarangController extends Controller
             $path = $file->getRealPath();
 
             // Read CSV file
-            $csv = array_map(function($line) {
+            $csv = array_map(function ($line) {
                 return str_getcsv($line, ';');
             }, file($path));
 
@@ -233,6 +234,7 @@ class JenisBarangController extends Controller
                 // Validate required field (hanya nama_barang yang wajib)
                 if (empty($data['nama_barang'])) {
                     $errors[] = "Baris {$rowNumber}: Nama barang wajib diisi";
+
                     continue;
                 }
 
@@ -244,28 +246,33 @@ class JenisBarangController extends Controller
                 // Check for duplicates in database (untuk kode yang diinput manual)
                 if (JenisBarang::where('kode', $data['kode'])->exists()) {
                     $duplicates[] = "Baris {$rowNumber}: Kode '{$data['kode']}' sudah ada dalam database";
+
                     continue;
                 }
 
                 // Validate status
-                if (!in_array($data['status'], ['active', 'inactive'])) {
+                if (! in_array($data['status'], ['active', 'inactive'])) {
                     $errors[] = "Baris {$rowNumber}: Status harus 'active' atau 'inactive'";
+
                     continue;
                 }
 
                 // Validate length
                 if (strlen($data['kode']) > 50) {
                     $errors[] = "Baris {$rowNumber}: Kode maksimal 50 karakter";
+
                     continue;
                 }
 
                 if (strlen($data['nama_barang']) > 255) {
                     $errors[] = "Baris {$rowNumber}: Nama barang maksimal 255 karakter";
+
                     continue;
                 }
 
                 if (strlen($data['catatan']) > 1000) {
                     $errors[] = "Baris {$rowNumber}: Catatan maksimal 1000 karakter";
+
                     continue;
                 }
 
@@ -275,32 +282,32 @@ class JenisBarangController extends Controller
                         'kode' => $data['kode'],
                         'nama_barang' => $data['nama_barang'],
                         'catatan' => $data['catatan'] ?: null,
-                        'status' => $data['status']
+                        'status' => $data['status'],
                     ]);
                     $imported++;
                 } catch (\Exception $e) {
-                    $errors[] = "Baris {$rowNumber}: Gagal menyimpan data - " . $e->getMessage();
+                    $errors[] = "Baris {$rowNumber}: Gagal menyimpan data - ".$e->getMessage();
                 }
             }
 
             // Prepare result message
             $message = "Import selesai. {$imported} data berhasil diimport.";
 
-            if (!empty($errors)) {
-                $message .= " " . count($errors) . " data gagal diimport.";
+            if (! empty($errors)) {
+                $message .= ' '.count($errors).' data gagal diimport.';
             }
 
-            if (!empty($duplicates)) {
-                $message .= " " . count($duplicates) . " data duplikat dilewati.";
+            if (! empty($duplicates)) {
+                $message .= ' '.count($duplicates).' data duplikat dilewati.';
             }
 
             $sessionData = ['success' => $message];
 
-            if (!empty($errors)) {
+            if (! empty($errors)) {
                 $sessionData['import_errors'] = $errors;
             }
 
-            if (!empty($duplicates)) {
+            if (! empty($duplicates)) {
                 $sessionData['import_duplicates'] = $duplicates;
             }
 
@@ -308,7 +315,7 @@ class JenisBarangController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->withErrors(['csv_file' => 'Terjadi kesalahan saat memproses file: ' . $e->getMessage()])
+                ->withErrors(['csv_file' => 'Terjadi kesalahan saat memproses file: '.$e->getMessage()])
                 ->withInput();
         }
     }
@@ -321,12 +328,12 @@ class JenisBarangController extends Controller
         // Get or create nomor terakhir for JB module
         $nomorTerakhir = NomorTerakhir::where('modul', 'JB')->first();
 
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             // Create JB entry if not exists
             $nomorTerakhir = NomorTerakhir::create([
                 'modul' => 'JB',
                 'nomor_terakhir' => 0,
-                'keterangan' => 'Nomor terakhir untuk kode jenis barang'
+                'keterangan' => 'Nomor terakhir untuk kode jenis barang',
             ]);
         }
 
@@ -337,7 +344,7 @@ class JenisBarangController extends Controller
         $nomorTerakhir->update(['nomor_terakhir' => $runningNumber]);
 
         // Format: JB + 5 digit running number
-        return 'JB' . str_pad($runningNumber, 5, '0', STR_PAD_LEFT);
+        return 'JB'.str_pad($runningNumber, 5, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -348,7 +355,7 @@ class JenisBarangController extends Controller
     {
         $searchValue = $request->query('search', '');
         $nextCode = $this->generateJenisBarangCode();
-        
+
         return view('master-jenis-barang.create-for-order', compact('searchValue', 'nextCode'));
     }
 
@@ -361,6 +368,7 @@ class JenisBarangController extends Controller
         // Handle code generation request
         if ($request->has('_generate_code_only')) {
             $code = $this->generateJenisBarangCode();
+
             return response()->json(['code' => $code]);
         }
 

@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Model;
 
 class CrewEquipment extends Model
 {
@@ -18,12 +18,12 @@ class CrewEquipment extends Model
         'nomor_sertifikat',
         'issued_date',
         'expired_date',
-        'catatan'
+        'catatan',
     ];
 
     protected $casts = [
         'issued_date' => 'date',
-        'expired_date' => 'date'
+        'expired_date' => 'date',
     ];
 
     public function karyawan()
@@ -54,7 +54,7 @@ class CrewEquipment extends Model
             'SDSD (Seafarer with Designated Security Duties)',
             'ERM (Engine Room Resource Management)',
             'BRM (Bridge Resource Management)',
-            'MC (Medical Care)'
+            'MC (Medical Care)',
         ];
     }
 
@@ -70,7 +70,7 @@ class CrewEquipment extends Model
                 'nomor_sertifikat' => null,
                 'issued_date' => null,
                 'expired_date' => null,
-                'catatan' => null
+                'catatan' => null,
             ]);
         }
     }

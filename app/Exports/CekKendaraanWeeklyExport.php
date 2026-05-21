@@ -3,17 +3,18 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Carbon\Carbon;
 
-class CekKendaraanWeeklyExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class CekKendaraanWeeklyExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     protected $drivers;
+
     protected $checksForWeek;
+
     protected $weekStart;
 
     public function __construct($drivers, $checksForWeek, $weekStart)
@@ -31,9 +32,10 @@ class CekKendaraanWeeklyExport implements FromCollection, WithHeadings, WithMapp
     public function headings(): array
     {
         $weekEnd = $this->weekStart->copy()->addDays(6);
+
         return [
             ['LAPORAN CEK KENDARAAN MINGGUAN'],
-            ['Periode: ' . $this->weekStart->format('d F Y') . ' - ' . $weekEnd->format('d F Y')],
+            ['Periode: '.$this->weekStart->format('d F Y').' - '.$weekEnd->format('d F Y')],
             [''],
             [
                 'No',
@@ -47,8 +49,8 @@ class CekKendaraanWeeklyExport implements FromCollection, WithHeadings, WithMapp
                 'Jumat',
                 'Sabtu',
                 'Minggu',
-                'Total Cek'
-            ]
+                'Total Cek',
+            ],
         ];
     }
 
@@ -61,7 +63,7 @@ class CekKendaraanWeeklyExport implements FromCollection, WithHeadings, WithMapp
             $no,
             $driver->nama_lengkap,
             $driver->nik ?? '-',
-            $driver->pekerjaan ?? '-'
+            $driver->pekerjaan ?? '-',
         ];
 
         $totalCek = 0;
@@ -70,7 +72,7 @@ class CekKendaraanWeeklyExport implements FromCollection, WithHeadings, WithMapp
         for ($i = 0; $i < 7; $i++) {
             $dateKey = $this->weekStart->copy()->addDays($i)->format('Y-m-d');
             $hasCheck = $driverChecks && $driverChecks->has($dateKey);
-            
+
             if ($hasCheck) {
                 $row[] = 'V';
                 $totalCek++;
@@ -79,7 +81,7 @@ class CekKendaraanWeeklyExport implements FromCollection, WithHeadings, WithMapp
             }
         }
 
-        $row[] = $totalCek . '/7';
+        $row[] = $totalCek.'/7';
 
         return $row;
     }
@@ -91,7 +93,7 @@ class CekKendaraanWeeklyExport implements FromCollection, WithHeadings, WithMapp
             2 => ['font' => ['bold' => true]],
             4 => ['font' => ['bold' => true], 'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => ['rgb' => 'E2E8F0']
+                'startColor' => ['rgb' => 'E2E8F0'],
             ]],
         ];
     }

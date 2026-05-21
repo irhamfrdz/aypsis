@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\NamaStockBan;
 use Illuminate\Http\Request;
 
@@ -15,9 +14,9 @@ class NamaStockBanController extends Controller
     {
         $query = NamaStockBan::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
-            $query->where('nama', 'LIKE', '%' . $searchTerm . '%');
+            $query->where('nama', 'LIKE', '%'.$searchTerm.'%');
         }
 
         $namaStockBans = $query->paginate(15);
@@ -54,6 +53,7 @@ class NamaStockBanController extends Controller
     public function show(string $id)
     {
         $namaStockBan = NamaStockBan::findOrFail($id);
+
         return view('master-nama-stock-ban.show', compact('namaStockBan'));
     }
 
@@ -63,6 +63,7 @@ class NamaStockBanController extends Controller
     public function edit(string $id)
     {
         $namaStockBan = NamaStockBan::findOrFail($id);
+
         return view('master-nama-stock-ban.edit', compact('namaStockBan'));
     }
 

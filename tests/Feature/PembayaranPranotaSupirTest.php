@@ -1,11 +1,11 @@
 <?php
+
 namespace Tests\Feature;
 
+use App\Models\PranotaSupir;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\PranotaSupir;
-use App\Models\PembayaranPranotaSupir;
-use App\Models\User;
 
 class PembayaranPranotaSupirTest extends TestCase
 {

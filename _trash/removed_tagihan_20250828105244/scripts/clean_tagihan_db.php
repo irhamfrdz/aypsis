@@ -1,7 +1,8 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
+
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
@@ -16,7 +17,9 @@ try {
 
     // Orphan pivots: pivot.tagihan_id not in tagihan table
     $orphanPivots = \DB::table('tagihan_kontainer_sewa_kontainers')
-        ->whereNotIn('tagihan_id', function($q){ $q->select('id')->from('tagihan_kontainer_sewa'); })
+        ->whereNotIn('tagihan_id', function ($q) {
+            $q->select('id')->from('tagihan_kontainer_sewa');
+        })
         ->get();
     $orphanCount = $orphanPivots->count();
 
@@ -24,14 +27,14 @@ try {
     $invalidKontainers = \DB::table('tagihan_kontainer_sewa_kontainers as t')
         ->leftJoin('kontainers as k', 't.kontainer_id', '=', 'k.id')
         ->whereNull('k.id')
-        ->select('t.id','t.tagihan_id','t.kontainer_id')
+        ->select('t.id', 't.tagihan_id', 't.kontainer_id')
         ->get();
     $invalidKontainersCount = $invalidKontainers->count();
 
     // Duplicate pivots (same tagihan_id + kontainer_id more than once)
     $dupeRows = \DB::table('tagihan_kontainer_sewa_kontainers')
         ->select('tagihan_id', 'kontainer_id', \DB::raw('COUNT(*) as cnt'), \DB::raw('MIN(id) as keep_id'))
-        ->groupBy('tagihan_id','kontainer_id')
+        ->groupBy('tagihan_id', 'kontainer_id')
         ->having('cnt', '>', 1)
         ->get();
     $dupeCount = $dupeRows->count();
@@ -88,18 +91,22 @@ try {
                 echo sprintf("    pivot id=%d tagihan_id=%s kontainer_id=%s\n", $r->id, $r->tagihan_id, $r->kontainer_id);
             }
             if ($apply) {
-                $idsToDelete = collect($dups)->pluck('id')->filter(function($id) use ($keepId){ return $id != $keepId; })->toArray();
-                if (!empty($idsToDelete)) {
+                $idsToDelete = collect($dups)->pluck('id')->filter(function ($id) use ($keepId) {
+                    return $id != $keepId;
+                })->toArray();
+                if (! empty($idsToDelete)) {
                     $deleted = \DB::table('tagihan_kontainer_sewa_kontainers')->whereIn('id', $idsToDelete)->delete();
                     echo "    deleted $deleted duplicate pivot(s) for this group\n";
                 }
             }
         }
-        if (!$apply) echo "(dry-run) to remove duplicates run with --apply\n";
+        if (! $apply) {
+            echo "(dry-run) to remove duplicates run with --apply\n";
+        }
     }
 
     echo "\nDone.\n";
 
 } catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
+    echo 'Error: '.$e->getMessage()."\n";
 }

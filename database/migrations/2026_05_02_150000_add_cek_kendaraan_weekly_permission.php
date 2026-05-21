@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -15,8 +13,8 @@ return new class extends Migration
         $permissions = [
             [
                 'name' => 'monitoring-cek-kendaraan-weekly-view',
-                'description' => 'Melihat dashboard cek mingguan kendaraan'
-            ]
+                'description' => 'Melihat dashboard cek mingguan kendaraan',
+            ],
         ];
 
         foreach ($permissions as $permission) {
@@ -25,7 +23,7 @@ return new class extends Migration
                 [
                     'description' => $permission['description'],
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]
             );
         }
@@ -38,7 +36,7 @@ return new class extends Migration
     {
         DB::table('permissions')
             ->whereIn('name', [
-                'monitoring-cek-kendaraan-weekly-view'
+                'monitoring-cek-kendaraan-weekly-view',
             ])->delete();
     }
 };

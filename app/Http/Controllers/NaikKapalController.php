@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Exports\NaikKapalExport;
+use App\Models\Kontainer;
 use App\Models\NaikKapal;
 use App\Models\Prospek;
 use App\Models\StockKontainer;
-use App\Models\Kontainer;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Exports\NaikKapalExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class NaikKapalController extends Controller
@@ -23,47 +22,47 @@ class NaikKapalController extends Controller
     {
         // Allow show_all parameter to view all data without filtering
         $showAll = $request->filled('show_all') && $request->show_all == 1;
-        
+
         // Redirect to select page if required parameters are missing (unless show_all is set)
-        if (!$showAll && (!$request->filled('kapal_id') || !$request->filled('no_voyage'))) {
+        if (! $showAll && (! $request->filled('kapal_id') || ! $request->filled('no_voyage'))) {
             return redirect()->route('naik-kapal.select')
                 ->with('info', 'Silakan pilih kapal dan voyage terlebih dahulu.');
         }
-        
+
         $query = NaikKapal::with(['prospek', 'createdBy']);
-        
+
         // Filter by kapal and voyage only if not showing all
-        if (!$showAll) {
+        if (! $showAll) {
             $kapal = \App\Models\MasterKapal::find($request->kapal_id);
             if ($kapal) {
                 $query->where('nama_kapal', $kapal->nama_kapal)
-                      ->where('no_voyage', $request->no_voyage);
+                    ->where('no_voyage', $request->no_voyage);
             }
         }
-        
+
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('jenis_barang', 'like', "%{$search}%")
-                  ->orWhere('no_seal', 'like', "%{$search}%")
-                  ->orWhere('ukuran_kontainer', 'like', "%{$search}%");
+                    ->orWhere('jenis_barang', 'like', "%{$search}%")
+                    ->orWhere('no_seal', 'like', "%{$search}%")
+                    ->orWhere('ukuran_kontainer', 'like', "%{$search}%");
             });
         }
-        
+
         // Filter by status BL
         if ($request->filled('status_bl')) {
             if ($request->status_bl === 'sudah_bl') {
                 $query->where('status', 'Moved to BLS');
             } elseif ($request->status_bl === 'belum_bl') {
-                $query->where(function($q) {
+                $query->where(function ($q) {
                     $q->where('status', '!=', 'Moved to BLS')
-                      ->orWhereNull('status');
+                        ->orWhereNull('status');
                 });
             }
         }
-        
+
         // Filter by tipe kontainer
         if ($request->filled('tipe_kontainer')) {
             $query->where('tipe_kontainer', $request->tipe_kontainer);
@@ -71,37 +70,37 @@ class NaikKapalController extends Controller
 
         // Filter by size (tanpa size)
         if ($request->filled('tanpa_size') && $request->tanpa_size == '1') {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->whereNull('size_kontainer')
-                  ->orWhere('size_kontainer', '');
+                    ->orWhere('size_kontainer', '');
             });
         }
-        
+
         // Additional filters
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         // Filter by status BL (legacy support)
         if ($request->filled('status_filter')) {
             if ($request->status_filter === 'sudah_bl') {
                 $query->where('status', 'Moved to BLS');
             } elseif ($request->status_filter === 'belum_bl') {
-                $query->where(function($q) {
+                $query->where(function ($q) {
                     $q->where('status', '!=', 'Moved to BLS')
-                      ->orWhereNull('status');
+                        ->orWhereNull('status');
                 });
             }
         }
-        
+
         if ($request->filled('tanggal_muat')) {
             $query->whereDate('tanggal_muat', $request->tanggal_muat);
         }
-        
+
         $naikKapals = $query->orderBy('created_at', 'desc')
             ->paginate(15)
             ->appends($request->query());
-        
+
         // Get selected kapal info for display
         $selectedKapal = null;
         if ($request->filled('kapal_id')) {
@@ -119,7 +118,7 @@ class NaikKapalController extends Controller
         $kapals = \App\Models\MasterKapal::where('status', 'aktif')
             ->orderBy('nama_kapal')
             ->get();
-            
+
         return view('naik-kapal.select', compact('kapals'));
     }
 
@@ -130,7 +129,7 @@ class NaikKapalController extends Controller
     {
         // Support both kapal_id and nama_kapal for backward compatibility
         $namaKapal = null;
-        
+
         if ($request->filled('kapal_id')) {
             // Get nama_kapal from MasterKapal by ID
             $kapal = \App\Models\MasterKapal::find($request->kapal_id);
@@ -141,14 +140,14 @@ class NaikKapalController extends Controller
             // Direct nama_kapal (legacy support)
             $namaKapal = $request->nama_kapal;
         }
-        
-        if (!$namaKapal) {
+
+        if (! $namaKapal) {
             return response()->json([
                 'success' => false,
-                'message' => 'Kapal tidak ditemukan'
+                'message' => 'Kapal tidak ditemukan',
             ], 400);
         }
-        
+
         // Get distinct voyages from naik_kapal table for this kapal
         $voyages = NaikKapal::where('nama_kapal', $namaKapal)
             ->whereNotNull('no_voyage')
@@ -157,13 +156,13 @@ class NaikKapalController extends Controller
             ->orderBy('no_voyage', 'desc')
             ->pluck('no_voyage')
             ->toArray();
-        
+
         return response()->json([
             'success' => true,
             'voyages' => $voyages,
             'kapal' => [
-                'nama' => $namaKapal
-            ]
+                'nama' => $namaKapal,
+            ],
         ]);
     }
 
@@ -173,50 +172,50 @@ class NaikKapalController extends Controller
     public function print(Request $request)
     {
         // Validate required parameters
-        if (!$request->has('kapal_id') || !$request->has('no_voyage')) {
+        if (! $request->has('kapal_id') || ! $request->has('no_voyage')) {
             return redirect()->route('naik-kapal.select')
                 ->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu.');
         }
-        
+
         $kapal = \App\Models\MasterKapal::find($request->kapal_id);
-        
-        if (!$kapal) {
+
+        if (! $kapal) {
             return redirect()->route('naik-kapal.select')
                 ->with('error', 'Kapal tidak ditemukan. Silakan pilih kapal terlebih dahulu.');
         }
-        
+
         if (empty($request->no_voyage)) {
             return redirect()->route('naik-kapal.select')
                 ->with('error', 'Nomor voyage tidak valid. Silakan pilih voyage terlebih dahulu.');
         }
-        
+
         $query = NaikKapal::with(['prospek.tandaTerima', 'createdBy'])
             ->where('nama_kapal', $kapal->nama_kapal)
             ->where('no_voyage', $request->no_voyage);
-        
+
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('jenis_barang', 'like', "%{$search}%")
-                  ->orWhere('no_seal', 'like', "%{$search}%")
-                  ->orWhere('ukuran_kontainer', 'like', "%{$search}%");
+                    ->orWhere('jenis_barang', 'like', "%{$search}%")
+                    ->orWhere('no_seal', 'like', "%{$search}%")
+                    ->orWhere('ukuran_kontainer', 'like', "%{$search}%");
             });
         }
-        
+
         // Filter by status BL
         if ($request->filled('status_bl')) {
             if ($request->status_bl === 'sudah_bl') {
                 $query->where('status', 'Moved to BLS');
             } elseif ($request->status_bl === 'belum_bl') {
-                $query->where(function($q) {
+                $query->where(function ($q) {
                     $q->where('status', '!=', 'Moved to BLS')
-                      ->orWhereNull('status');
+                        ->orWhereNull('status');
                 });
             }
         }
-        
+
         // Filter by tipe kontainer
         if ($request->filled('tipe_kontainer')) {
             $query->where('tipe_kontainer', $request->tipe_kontainer);
@@ -224,59 +223,65 @@ class NaikKapalController extends Controller
 
         // Filter by size (tanpa size)
         if ($request->filled('tanpa_size') && $request->tanpa_size == '1') {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->whereNull('size_kontainer')
-                  ->orWhere('size_kontainer', '');
+                    ->orWhere('size_kontainer', '');
             });
         }
-        
+
         // Filter by status BL if provided (legacy support)
         if ($request->filled('status_filter')) {
             if ($request->status_filter === 'sudah_bl') {
                 $query->where('status', 'Moved to BLS');
             } elseif ($request->status_filter === 'belum_bl') {
-                $query->where(function($q) {
+                $query->where(function ($q) {
                     $q->where('status', '!=', 'Moved to BLS')
-                      ->orWhereNull('status');
+                        ->orWhereNull('status');
                 });
             }
         }
-        
+
         // Get data and sort by nomor_kontainer (ignoring first 4 digits) and tanggal_tanda_terima
         $naikKapals = $query->get()->sort(function ($a, $b) {
             // Sort by nomor_kontainer, ignoring first 4 characters
             $kontainerA = substr($a->nomor_kontainer ?? '', 4);
             $kontainerB = substr($b->nomor_kontainer ?? '', 4);
-            
+
             $kontainerCompare = $kontainerA <=> $kontainerB;
-            
+
             // If container numbers are different, return the comparison
             if ($kontainerCompare !== 0) {
                 return $kontainerCompare;
             }
-            
+
             // If container numbers are the same, sort by tanggal_tanda_terima
             // Use tanggal or fallback to tanggal_checkpoint_supir
-            $dateA = $a->prospek?->tandaTerima?->tanggal 
-                     ?? $a->prospek?->tandaTerima?->tanggal_checkpoint_supir 
+            $dateA = $a->prospek?->tandaTerima?->tanggal
+                     ?? $a->prospek?->tandaTerima?->tanggal_checkpoint_supir
                      ?? null;
-            $dateB = $b->prospek?->tandaTerima?->tanggal 
-                     ?? $b->prospek?->tandaTerima?->tanggal_checkpoint_supir 
+            $dateB = $b->prospek?->tandaTerima?->tanggal
+                     ?? $b->prospek?->tandaTerima?->tanggal_checkpoint_supir
                      ?? null;
-            
+
             // Handle null dates - put them at the end
-            if ($dateA === null && $dateB === null) return 0;
-            if ($dateA === null) return 1;
-            if ($dateB === null) return -1;
-            
+            if ($dateA === null && $dateB === null) {
+                return 0;
+            }
+            if ($dateA === null) {
+                return 1;
+            }
+            if ($dateB === null) {
+                return -1;
+            }
+
             return $dateA <=> $dateB;
         })->values();
-        
+
         return view('naik-kapal.print', [
             'naikKapals' => $naikKapals,
             'kapal' => $kapal,
             'voyage' => $request->no_voyage,
-            'statusFilter' => $request->status_filter
+            'statusFilter' => $request->status_filter,
         ]);
     }
 
@@ -306,6 +311,7 @@ class NaikKapalController extends Controller
     public function show(string $id)
     {
         $naikKapal = NaikKapal::with(['prospek', 'createdBy', 'updatedBy'])->findOrFail($id);
+
         return view('naik-kapal.show', compact('naikKapal'));
     }
 
@@ -319,11 +325,11 @@ class NaikKapalController extends Controller
             ->orWhere('id', $naikKapal->prospek_id)
             ->orderBy('tanggal', 'desc')
             ->get();
-            
+
         $kapals = \App\Models\MasterKapal::where('status', 'aktif')
             ->orderBy('nama_kapal')
             ->get();
-            
+
         return view('naik-kapal.edit', compact('naikKapal', 'prospeks', 'kapals'));
     }
 
@@ -333,21 +339,21 @@ class NaikKapalController extends Controller
     public function update(Request $request, string $id)
     {
         $naikKapal = NaikKapal::findOrFail($id);
-        
+
         $request->validate([
             'prospek_id' => 'required|exists:prospek,id',
             'nomor_kontainer' => 'required|string|max:255',
             'tanggal_muat' => 'required|date',
             'jam_muat' => 'nullable|date_format:H:i',
             'nama_kapal' => 'required|string|max:255',
-            'status' => 'required|in:menunggu,dimuat,selesai,batal'
+            'status' => 'required|in:menunggu,dimuat,selesai,batal',
         ]);
 
         DB::beginTransaction();
         try {
             // Get prospek data
             $prospek = Prospek::findOrFail($request->prospek_id);
-            
+
             $naikKapal->update([
                 'prospek_id' => $request->prospek_id,
                 'nomor_kontainer' => $request->nomor_kontainer,
@@ -365,7 +371,7 @@ class NaikKapalController extends Controller
                 'kuantitas' => $prospek->kuantitas ?? 0,
                 'status' => $request->status,
                 'keterangan' => $request->keterangan,
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
 
             // Update prospek status if naik kapal is completed
@@ -376,15 +382,16 @@ class NaikKapalController extends Controller
             }
 
             DB::commit();
-            
+
             return redirect()->route('naik-kapal.index')
                 ->with('success', 'Data naik kapal berhasil diperbarui.');
-                
+
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -394,18 +401,18 @@ class NaikKapalController extends Controller
     public function updateSize(Request $request, $id)
     {
         $naikKapal = NaikKapal::findOrFail($id);
-        
+
         $request->validate([
-            'size_kontainer' => 'nullable|string|max:50'
+            'size_kontainer' => 'nullable|string|max:50',
         ]);
 
         $naikKapal->update([
-            'size_kontainer' => $request->size_kontainer
+            'size_kontainer' => $request->size_kontainer,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Size kontainer berhasil diperbarui'
+            'message' => 'Size kontainer berhasil diperbarui',
         ]);
     }
 
@@ -416,25 +423,26 @@ class NaikKapalController extends Controller
     {
         try {
             $naikKapal = NaikKapal::findOrFail($id);
-            
+
             DB::beginTransaction();
-            
+
             // Reset prospek status if naik kapal was completed
             if ($naikKapal->status == 'selesai') {
                 $naikKapal->prospek->update(['status' => 'aktif']);
             }
-            
+
             $naikKapal->delete();
-            
+
             DB::commit();
-            
+
             return redirect()->route('naik-kapal.index')
                 ->with('success', 'Data naik kapal berhasil dihapus.');
-                
+
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -443,19 +451,19 @@ class NaikKapalController extends Controller
      */
     public function downloadTemplate()
     {
-        $filename = 'template_naik_kapal_' . date('Y-m-d') . '.csv';
-        
+        $filename = 'template_naik_kapal_'.date('Y-m-d').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
-            
+
             // Write BOM for UTF-8
             fwrite($file, "\xEF\xBB\xBF");
-            
+
             // Header columns
             $header = [
                 'nomor_kontainer',
@@ -474,15 +482,15 @@ class NaikKapalController extends Controller
                 'jam_muat',
                 'prospek_id',
                 'nama_supir',
-                'keterangan'
+                'keterangan',
             ];
-            
+
             fputcsv($file, $header);
-            
+
             // Example data rows
             $exampleData = [
                 [
-                    'CONT' . date('Ymd') . '001',
+                    'CONT'.date('Ymd').'001',
                     '20x8x8.6',
                     'SEAL001',
                     'KM SINAR HARAPAN',
@@ -498,10 +506,10 @@ class NaikKapalController extends Controller
                     '08:00',
                     '1',
                     'SUPIR A',
-                    'Contoh data naik kapal untuk import'
+                    'Contoh data naik kapal untuk import',
                 ],
                 [
-                    'CONT' . date('Ymd') . '002',
+                    'CONT'.date('Ymd').'002',
                     '40x8x8.6',
                     'SEAL002',
                     'KM CAHAYA LAUT',
@@ -517,14 +525,14 @@ class NaikKapalController extends Controller
                     '14:30',
                     '2',
                     'SUPIR B',
-                    'Contoh data naik kapal kedua'
-                ]
+                    'Contoh data naik kapal kedua',
+                ],
             ];
-            
+
             foreach ($exampleData as $row) {
                 fputcsv($file, $row);
             }
-            
+
             fclose($file);
         };
 
@@ -538,25 +546,25 @@ class NaikKapalController extends Controller
     {
         $request->validate([
             'action' => 'required|in:masukkan_ke_bls,tidak_naik_kapal',
-            'selected_ids' => 'required|string'
+            'selected_ids' => 'required|string',
         ]);
 
         try {
             $selectedIds = json_decode($request->selected_ids, true);
-            
+
             if (empty($selectedIds)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada data yang dipilih'
+                    'message' => 'Tidak ada data yang dipilih',
                 ]);
             }
 
             $naikKapals = NaikKapal::with(['prospek.tandaTerima'])->whereIn('id', $selectedIds)->get();
-            
+
             if ($naikKapals->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data tidak ditemukan'
+                    'message' => 'Data tidak ditemukan',
                 ]);
             }
 
@@ -564,26 +572,26 @@ class NaikKapalController extends Controller
 
             if ($request->action === 'masukkan_ke_bls') {
                 $this->processToBlsAction($naikKapals);
-                $message = count($selectedIds) . ' data berhasil dimasukkan ke BLS';
+                $message = count($selectedIds).' data berhasil dimasukkan ke BLS';
             } elseif ($request->action === 'tidak_naik_kapal') {
                 $this->processTidakNaikKapalAction($naikKapals);
-                $message = count($selectedIds) . ' data berhasil ditandai sebagai tidak naik kapal';
+                $message = count($selectedIds).' data berhasil ditandai sebagai tidak naik kapal';
             }
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => $message
+                'message' => $message,
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Bulk action error: ' . $e->getMessage());
-            
+            Log::error('Bulk action error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ]);
         }
     }
@@ -598,14 +606,14 @@ class NaikKapalController extends Controller
             $naikKapal->load(['prospek.tandaTerima']);
             $prospek = $naikKapal->prospek;
             $tandaTerima = $prospek ? $prospek->tandaTerima : null;
-            
+
             // Fallback for CARGO / Tanda Terima Tanpa Surat Jalan
             $tttsj = null;
-            if (!$tandaTerima && $prospek && $prospek->no_surat_jalan) {
+            if (! $tandaTerima && $prospek && $prospek->no_surat_jalan) {
                 // For TTTSJ, the no_surat_jalan in prospek stores the no_tanda_terima
                 $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $prospek->no_surat_jalan)->first();
             }
-            
+
             // Prepare BL data with complete information from prospek and tanda terima
             $blData = [
                 'prospek_id' => $naikKapal->prospek_id,
@@ -618,31 +626,31 @@ class NaikKapalController extends Controller
                 'pelabuhan_asal' => $naikKapal->pelabuhan_asal,
                 'pelabuhan_tujuan' => $naikKapal->pelabuhan_tujuan,
                 'nama_barang' => $naikKapal->jenis_barang,
-                'tonnage' => (float)$naikKapal->total_tonase != 0 ? $naikKapal->total_tonase : ($prospek ? $prospek->total_ton : null),
-                'volume' => (float)$naikKapal->total_volume != 0 ? $naikKapal->total_volume : ($prospek ? $prospek->total_volume : null),
-                'kuantitas' => (int)$naikKapal->kuantitas != 0 ? $naikKapal->kuantitas : ($prospek ? $prospek->kuantitas : null),
+                'tonnage' => (float) $naikKapal->total_tonase != 0 ? $naikKapal->total_tonase : ($prospek ? $prospek->total_ton : null),
+                'volume' => (float) $naikKapal->total_volume != 0 ? $naikKapal->total_volume : ($prospek ? $prospek->total_volume : null),
+                'kuantitas' => (int) $naikKapal->kuantitas != 0 ? $naikKapal->kuantitas : ($prospek ? $prospek->kuantitas : null),
                 'term' => null, // Will be set from tanda terima if available
                 'status_bongkar' => 'Belum Bongkar',
                 'sudah_ob' => false,
                 'supir_ob' => $prospek ? $prospek->supir_ob : null,
-                'created_by' => Auth::id()
+                'created_by' => Auth::id(),
             ];
 
             // Get comprehensive data from prospek if available
             if ($prospek) {
                 $blData['pengirim'] = $prospek->pt_pengirim;
-                
+
                 // Use prospek data as fallback if naik kapal data is empty
-                if (!$blData['nama_barang'] && $prospek->barang) {
+                if (! $blData['nama_barang'] && $prospek->barang) {
                     $blData['nama_barang'] = $prospek->barang;
                 }
-                if (!$blData['pelabuhan_asal'] && $prospek->pelabuhan_asal) {
+                if (! $blData['pelabuhan_asal'] && $prospek->pelabuhan_asal) {
                     $blData['pelabuhan_asal'] = $prospek->pelabuhan_asal;
                 }
-                if (!$blData['size_kontainer'] && $prospek->ukuran) {
+                if (! $blData['size_kontainer'] && $prospek->ukuran) {
                     $blData['size_kontainer'] = $prospek->ukuran;
                 }
-                if (!$blData['tipe_kontainer'] && $prospek->tipe) {
+                if (! $blData['tipe_kontainer'] && $prospek->tipe) {
                     $blData['tipe_kontainer'] = $prospek->tipe;
                 }
             }
@@ -652,109 +660,109 @@ class NaikKapalController extends Controller
                 $blData['penerima'] = $tandaTerima->penerima;
                 $blData['alamat_pengiriman'] = $tandaTerima->alamat_penerima ?: $tandaTerima->tujuan_pengiriman;
                 $blData['contact_person'] = $tandaTerima->pic ?? null;
-                
+
                 // Get term from tanda terima
                 $blData['term'] = $tandaTerima->term;
-                
+
                 // Override with more accurate data from tanda terima if available
-                if (!$blData['nama_barang'] && $tandaTerima->jenis_barang) {
+                if (! $blData['nama_barang'] && $tandaTerima->jenis_barang) {
                     $blData['nama_barang'] = $tandaTerima->jenis_barang;
                 }
-                
+
                 // Handle nama_barang as array if needed
-                if (!$blData['nama_barang'] && $tandaTerima->nama_barang) {
+                if (! $blData['nama_barang'] && $tandaTerima->nama_barang) {
                     if (is_array($tandaTerima->nama_barang)) {
                         $blData['nama_barang'] = implode(', ', $tandaTerima->nama_barang);
                     } else {
                         $blData['nama_barang'] = $tandaTerima->nama_barang;
                     }
                 }
-                
+
                 // Use tanda terima measurements with proper fallbacks
-                if (!$blData['tonnage'] && $tandaTerima->tonase) {
+                if (! $blData['tonnage'] && $tandaTerima->tonase) {
                     $blData['tonnage'] = $tandaTerima->tonase;
                 }
-                if (!$blData['volume'] && $tandaTerima->meter_kubik) {
+                if (! $blData['volume'] && $tandaTerima->meter_kubik) {
                     $blData['volume'] = $tandaTerima->meter_kubik;
                 }
-                if (!$blData['kuantitas'] && $tandaTerima->jumlah) {
+                if (! $blData['kuantitas'] && $tandaTerima->jumlah) {
                     $blData['kuantitas'] = $tandaTerima->jumlah;
                 }
-                
+
                 // Additional fields from tanda terima
                 if ($tandaTerima->satuan) {
                     $blData['satuan'] = $tandaTerima->satuan;
                 }
-                if ($tandaTerima->no_kontainer && !$blData['nomor_kontainer']) {
+                if ($tandaTerima->no_kontainer && ! $blData['nomor_kontainer']) {
                     $blData['nomor_kontainer'] = $tandaTerima->no_kontainer;
                 }
-                if ($tandaTerima->no_seal && !$blData['no_seal']) {
+                if ($tandaTerima->no_seal && ! $blData['no_seal']) {
                     $blData['no_seal'] = $tandaTerima->no_seal;
                 }
-                if ($tandaTerima->size && !$blData['size_kontainer']) {
+                if ($tandaTerima->size && ! $blData['size_kontainer']) {
                     $blData['size_kontainer'] = $tandaTerima->size;
                 }
-                if ($tandaTerima->tipe_kontainer && !$blData['tipe_kontainer']) {
+                if ($tandaTerima->tipe_kontainer && ! $blData['tipe_kontainer']) {
                     $blData['tipe_kontainer'] = $tandaTerima->tipe_kontainer;
                 }
-                if ($tandaTerima->pengirim && !$blData['pengirim']) {
+                if ($tandaTerima->pengirim && ! $blData['pengirim']) {
                     $blData['pengirim'] = $tandaTerima->pengirim;
                 }
-                if ($tandaTerima->estimasi_nama_kapal && !$blData['nama_kapal']) {
+                if ($tandaTerima->estimasi_nama_kapal && ! $blData['nama_kapal']) {
                     $blData['nama_kapal'] = $tandaTerima->estimasi_nama_kapal;
                 }
             } elseif ($tttsj) {
                 $blData['penerima'] = $tttsj->penerima;
                 $blData['alamat_pengiriman'] = $tttsj->alamat_penerima ?: $tttsj->tujuan_pengiriman;
                 $blData['contact_person'] = $tttsj->pic ?? null;
-                
+
                 // Get term from TTTSJ
                 $blData['term'] = $tttsj->term;
-                
-                if (!$blData['nama_barang'] && $tttsj->jenis_barang) {
+
+                if (! $blData['nama_barang'] && $tttsj->jenis_barang) {
                     $blData['nama_barang'] = $tttsj->jenis_barang;
                 }
-                
+
                 // Handle nama_barang as array if needed
-                if (!$blData['nama_barang'] && $tttsj->nama_barang) {
+                if (! $blData['nama_barang'] && $tttsj->nama_barang) {
                     if (is_array($tttsj->nama_barang)) {
                         $blData['nama_barang'] = implode(', ', $tttsj->nama_barang);
                     } else {
                         $blData['nama_barang'] = $tttsj->nama_barang;
                     }
                 }
-                
+
                 // Use TTTSJ measurements with proper fallbacks
-                if (!$blData['tonnage'] && $tttsj->total_tonase) {
+                if (! $blData['tonnage'] && $tttsj->total_tonase) {
                     $blData['tonnage'] = $tttsj->total_tonase;
                 }
-                if (!$blData['volume'] && $tttsj->total_volume) {
+                if (! $blData['volume'] && $tttsj->total_volume) {
                     $blData['volume'] = $tttsj->total_volume;
                 }
-                if (!$blData['kuantitas'] && $tttsj->jumlah_barang) {
+                if (! $blData['kuantitas'] && $tttsj->jumlah_barang) {
                     $blData['kuantitas'] = $tttsj->jumlah_barang;
                 }
-                
+
                 // Additional fields from TTTSJ
                 if ($tttsj->satuan_barang) {
                     $blData['satuan'] = $tttsj->satuan_barang;
                 }
-                if ($tttsj->no_kontainer && !$blData['nomor_kontainer']) {
+                if ($tttsj->no_kontainer && ! $blData['nomor_kontainer']) {
                     $blData['nomor_kontainer'] = $tttsj->no_kontainer;
                 }
-                if ($tttsj->no_seal && !$blData['no_seal']) {
+                if ($tttsj->no_seal && ! $blData['no_seal']) {
                     $blData['no_seal'] = $tttsj->no_seal;
                 }
-                if ($tttsj->size_kontainer && !$blData['size_kontainer']) {
+                if ($tttsj->size_kontainer && ! $blData['size_kontainer']) {
                     $blData['size_kontainer'] = $tttsj->size_kontainer;
                 }
-                if ($tttsj->tipe_kontainer && !$blData['tipe_kontainer']) {
+                if ($tttsj->tipe_kontainer && ! $blData['tipe_kontainer']) {
                     $blData['tipe_kontainer'] = $tttsj->tipe_kontainer;
                 }
-                if ($tttsj->pengirim && !$blData['pengirim']) {
+                if ($tttsj->pengirim && ! $blData['pengirim']) {
                     $blData['pengirim'] = $tttsj->pengirim;
                 }
-                if ($tttsj->estimasi_naik_kapal && !$blData['nama_kapal']) {
+                if ($tttsj->estimasi_naik_kapal && ! $blData['nama_kapal']) {
                     $blData['nama_kapal'] = $tttsj->estimasi_naik_kapal;
                 }
             }
@@ -770,7 +778,7 @@ class NaikKapalController extends Controller
             // Update prospek status if needed
             if ($prospek) {
                 $prospek->update([
-                    'status' => 'sudah_muat'
+                    'status' => 'sudah_muat',
                 ]);
             }
 
@@ -788,10 +796,10 @@ class NaikKapalController extends Controller
             // Update prospek status to 'batal' before deleting naik kapal record
             if ($naikKapal->prospek) {
                 $naikKapal->prospek->update([
-                    'status' => 'batal'
+                    'status' => 'batal',
                 ]);
             }
-            
+
             // Delete the naik kapal record completely
             $naikKapal->delete();
         }
@@ -804,14 +812,14 @@ class NaikKapalController extends Controller
     {
         $request->validate([
             'kapal_id' => 'required|exists:master_kapals,id',
-            'no_voyage' => 'required|string'
+            'no_voyage' => 'required|string',
         ]);
 
         $kapal = \App\Models\MasterKapal::find($request->kapal_id);
         $noVoyage = $request->no_voyage;
 
         // Generate filename
-        $filename = 'Naik_Kapal_' . str_replace(' ', '_', $kapal->nama_kapal) . '_' . str_replace('/', '-', $noVoyage) . '_' . date('YmdHis') . '.xlsx';
+        $filename = 'Naik_Kapal_'.str_replace(' ', '_', $kapal->nama_kapal).'_'.str_replace('/', '-', $noVoyage).'_'.date('YmdHis').'.xlsx';
 
         // Get all filters from request
         $filters = $request->only(['search', 'status_bl', 'tipe_kontainer', 'status_filter', 'tanpa_size']);
@@ -834,28 +842,28 @@ class NaikKapalController extends Controller
             $nama_kapal = $request->nama_kapal;
             $no_voyage = $request->no_voyage;
 
-            Log::info("NaikKapal BulkUpdateSize start", ['nama_kapal' => $nama_kapal, 'no_voyage' => $no_voyage]);
+            Log::info('NaikKapal BulkUpdateSize start', ['nama_kapal' => $nama_kapal, 'no_voyage' => $no_voyage]);
 
             // Filter by ship and voyage
             $naikKapals = NaikKapal::where('nama_kapal', $nama_kapal)
                 ->where('no_voyage', $no_voyage)
                 ->get();
 
-            Log::info("NaikKapal BulkUpdateSize: Found " . $naikKapals->count() . " records");
+            Log::info('NaikKapal BulkUpdateSize: Found '.$naikKapals->count().' records');
 
             $updatedCount = 0;
             $alreadyMatchCount = 0;
             $notFoundCount = 0;
 
             foreach ($naikKapals as $naikKapal) {
-                if (!$naikKapal->nomor_kontainer) {
+                if (! $naikKapal->nomor_kontainer) {
                     continue;
                 }
-                
+
                 $nomorKontainer = trim($naikKapal->nomor_kontainer);
                 $ukuran = null;
                 $source = '';
-                
+
                 // Seek in StockKontainer
                 $stock = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
                 if ($stock) {
@@ -863,7 +871,7 @@ class NaikKapalController extends Controller
                     $source = 'Stock';
                 }
 
-                if (!$ukuran) {
+                if (! $ukuran) {
                     // Seek in Kontainer
                     $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
                     if ($kontainer) {
@@ -875,7 +883,7 @@ class NaikKapalController extends Controller
                 if ($ukuran) {
                     // Normalize: remove 'ft', 'feet', and whitespace
                     $normalizedUkuran = trim(str_ireplace(['ft', 'feet', ' '], '', $ukuran));
-                    
+
                     if ($naikKapal->size_kontainer != $normalizedUkuran) {
                         Log::info("Updating NaikKapal ID {$naikKapal->id} container {$nomorKontainer}: {$naikKapal->size_kontainer} -> {$normalizedUkuran} (from {$source})");
                         $naikKapal->update(['size_kontainer' => $normalizedUkuran]);
@@ -888,23 +896,24 @@ class NaikKapalController extends Controller
                 }
             }
 
-            Log::info("NaikKapal BulkUpdateSize finished", [
-                'updated' => $updatedCount, 
-                'already_match' => $alreadyMatchCount, 
-                'not_found' => $notFoundCount
+            Log::info('NaikKapal BulkUpdateSize finished', [
+                'updated' => $updatedCount,
+                'already_match' => $alreadyMatchCount,
+                'not_found' => $notFoundCount,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => "Selesai. {$updatedCount} size diperbarui, {$alreadyMatchCount} sudah sesuai, {$notFoundCount} tidak ditemukan di master.",
-                'updated_count' => $updatedCount
+                'updated_count' => $updatedCount,
             ]);
 
         } catch (\Exception $e) {
-            Log::error('BulkUpdateSize NaikKapal error: ' . $e->getMessage());
+            Log::error('BulkUpdateSize NaikKapal error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }

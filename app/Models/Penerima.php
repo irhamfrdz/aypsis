@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Model;
 
 class Penerima extends Model
 {
@@ -17,6 +17,6 @@ class Penerima extends Model
         'nitku',
         'catatan',
         'status',
-        'iu_bp_kawasan'
+        'iu_bp_kawasan',
     ];
 }

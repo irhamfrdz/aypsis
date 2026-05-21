@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -17,7 +15,7 @@ return new class extends Migration
             ['name' => 'tanda-terima-tanpa-surat-jalan-batam-create', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'tanda-terima-tanpa-surat-jalan-batam-update', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'tanda-terima-tanpa-surat-jalan-batam-delete', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'tanda-terima-tanpa-surat-jalan-batam-export', 'created_at' => now(), 'updated_at' => now()]
+            ['name' => 'tanda-terima-tanpa-surat-jalan-batam-export', 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 
@@ -31,7 +29,7 @@ return new class extends Migration
             'tanda-terima-tanpa-surat-jalan-batam-create',
             'tanda-terima-tanpa-surat-jalan-batam-update',
             'tanda-terima-tanpa-surat-jalan-batam-delete',
-            'tanda-terima-tanpa-surat-jalan-batam-export'
+            'tanda-terima-tanpa-surat-jalan-batam-export',
         ])->delete();
     }
 };

@@ -1,9 +1,7 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use App\Models\NamaStockBan;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -12,13 +10,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Ensure the model knows the table even during migration if needed, 
+        // Ensure the model knows the table even during migration if needed,
         // but here we just use Eloquent or DB to insert.
         // Check if 'Velg' exists, if not create it.
-        if (!NamaStockBan::where('nama', 'Velg')->exists()) {
+        if (! NamaStockBan::where('nama', 'Velg')->exists()) {
             NamaStockBan::create([
                 'nama' => 'Velg',
-                'status' => 'active' // Assuming 'active' is default or required, checking usage
+                'status' => 'active', // Assuming 'active' is default or required, checking usage
             ]);
         }
     }
@@ -29,7 +27,7 @@ return new class extends Migration
     public function down(): void
     {
         // Optional: delete matches
-        // NamaStockBan::where('nama', 'Velg')->delete(); 
+        // NamaStockBan::where('nama', 'Velg')->delete();
         // Better not to delete in down() to avoid data loss if manually added
     }
 };

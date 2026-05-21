@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-use App\Traits\Auditable;
 class NomorTerakhir extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $table = 'nomor_terakhir';
 
     protected $fillable = [
@@ -19,7 +19,7 @@ class NomorTerakhir extends Model
         'nomor_terakhir',
         'keterangan',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
     protected $casts = [
@@ -37,11 +37,11 @@ class NomorTerakhir extends Model
             // Lock record untuk mencegah race condition
             $nomorTerakhir = self::where('modul', 'nomor_pembayaran')->lockForUpdate()->first();
 
-            if (!$nomorTerakhir) {
+            if (! $nomorTerakhir) {
                 $nomorTerakhir = self::create([
                     'modul' => 'nomor_pembayaran',
                     'nomor_terakhir' => 1,
-                    'keterangan' => 'Auto generated payment number'
+                    'keterangan' => 'Auto generated payment number',
                 ]);
                 $nomorBaru = 1;
             } else {
@@ -65,6 +65,7 @@ class NomorTerakhir extends Model
     public static function getCurrentNumber($modul)
     {
         $record = self::where('modul', $modul)->first();
+
         return $record ? $record->nomor_terakhir : 0;
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Penerima;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 // use Maatwebsite\Excel\Facades\Excel; // Commented out until Export class is created
 // use App\Exports\PenerimaExport; // Commented out until Export class is created
 
@@ -19,12 +19,12 @@ class PenerimaController extends Controller
         $query = Penerima::query();
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('nama_penerima', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('contact_person', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('catatan', 'LIKE', '%' . $searchTerm . '%');
+                $q->where('nama_penerima', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('contact_person', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('catatan', 'LIKE', '%'.$searchTerm.'%');
             });
         }
 
@@ -68,6 +68,7 @@ class PenerimaController extends Controller
     public function show(string $id)
     {
         $penerima = Penerima::findOrFail($id);
+
         return view('master-penerima.show', compact('penerima'));
     }
 
@@ -77,6 +78,7 @@ class PenerimaController extends Controller
     public function edit(string $id)
     {
         $penerima = Penerima::findOrFail($id);
+
         return view('master-penerima.edit', compact('penerima'));
     }
 
@@ -120,31 +122,34 @@ class PenerimaController extends Controller
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PenerimaTemplateExport, 'template_penerima.xlsx');
     }
 
-    public function importExcel(Request $request) 
+    public function importExcel(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048'
+            'file' => 'required|mimes:csv,txt,xlsx,xls|max:2048',
         ]);
-        
+
         try {
             DB::beginTransaction();
-            
+
             \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\PenerimaImport, $request->file('file'));
-            
+
             DB::commit();
+
             return back()->with('success', 'Berhasil mengimport data penerima.');
-            
+
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             DB::rollBack();
             $failures = $e->failures();
             $errorMessages = [];
             foreach ($failures as $failure) {
-                $errorMessages[] = "Baris " . $failure->row() . ": " . implode(', ', $failure->errors());
+                $errorMessages[] = 'Baris '.$failure->row().': '.implode(', ', $failure->errors());
             }
-            return back()->with('error', 'Validasi gagal: ' . implode('<br>', $errorMessages));
+
+            return back()->with('error', 'Validasi gagal: '.implode('<br>', $errorMessages));
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan saat import: '.$e->getMessage());
         }
     }
 
@@ -157,7 +162,7 @@ class PenerimaController extends Controller
         $lastId = Penerima::max('id') ?: 0;
         $nextNumber = $lastId + 1;
 
-        return 'MR' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+        return 'MR'.str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -168,7 +173,7 @@ class PenerimaController extends Controller
         $nextKode = $this->generateCode();
         $search = $request->get('search', '');
         $isPopup = $request->has('popup');
-        
+
         return view('master-penerima.create-for-order', compact('nextKode', 'search', 'isPopup'));
     }
 
@@ -189,7 +194,7 @@ class PenerimaController extends Controller
         ]);
 
         $kode = $this->generateCode();
-        
+
         $penerima = Penerima::create($request->all());
         $penerima->kode = $kode; // Add virtual property for the success view
 
@@ -197,7 +202,7 @@ class PenerimaController extends Controller
             // Return HTML with postMessage script for popup mode
             return view('master-penerima.popup-success', [
                 'penerima' => $penerima,
-                'message' => 'Penerima berhasil ditambahkan!'
+                'message' => 'Penerima berhasil ditambahkan!',
             ]);
         }
 
@@ -230,7 +235,7 @@ class PenerimaController extends Controller
             $penerima = Penerima::create($validated);
 
             DB::commit();
-            
+
             // Store penerima data in session for popup to send to parent
             session([
                 'penerima_nama' => $penerima->nama_penerima,
@@ -238,12 +243,13 @@ class PenerimaController extends Controller
             ]);
 
             return redirect()->back()
-                           ->with('success', 'Penerima berhasil ditambahkan')
-                           ->with('popup', true);
+                ->with('success', 'Penerima berhasil ditambahkan')
+                ->with('popup', true);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()->withInput()
-                           ->with('error', 'Gagal menambahkan penerima: ' . $e->getMessage());
+                ->with('error', 'Gagal menambahkan penerima: '.$e->getMessage());
         }
     }
 
@@ -276,7 +282,7 @@ class PenerimaController extends Controller
             $penerima->update($validated);
 
             DB::commit();
-            
+
             // Store updated data in session for popup message
             session([
                 'penerima_nama' => $penerima->nama_penerima,
@@ -284,12 +290,13 @@ class PenerimaController extends Controller
             ]);
 
             return redirect()->back()
-                           ->with('success', 'Penerima berhasil diperbarui')
-                           ->with('popup', true);
+                ->with('success', 'Penerima berhasil diperbarui')
+                ->with('popup', true);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()->withInput()
-                           ->with('error', 'Gagal memperbarui penerima: ' . $e->getMessage());
+                ->with('error', 'Gagal memperbarui penerima: '.$e->getMessage());
         }
     }
 }

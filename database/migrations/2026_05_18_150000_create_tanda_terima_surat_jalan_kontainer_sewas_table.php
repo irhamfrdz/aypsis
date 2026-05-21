@@ -16,11 +16,11 @@ return new class extends Migration
             $table->string('nomor_tanda_terima');
             $table->unique('nomor_tanda_terima', 'tt_sj_ks_no_unique');
             $table->date('tanggal_tanda_terima');
-            
+
             // Specify custom foreign key name to avoid length limits
             $table->foreignId('surat_jalan_kontainer_sewa_id')
-                  ->constrained('surat_jalan_kontainer_sewas', 'id', 'tt_sj_ks_sj_ks_id_fk')
-                  ->onDelete('cascade');
+                ->constrained('surat_jalan_kontainer_sewas', 'id', 'tt_sj_ks_sj_ks_id_fk')
+                ->onDelete('cascade');
 
             $table->string('nomor_surat_jalan')->nullable();
             $table->string('nomor_kontainer')->nullable();

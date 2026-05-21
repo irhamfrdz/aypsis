@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Auditable;
 
 class PranotaLembur extends Model
 {
-    use HasFactory, SoftDeletes, Auditable;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $table = 'pranota_lemburs';
 
@@ -39,9 +39,13 @@ class PranotaLembur extends Model
 
     // Status constants
     const STATUS_DRAFT = 'draft';
+
     const STATUS_SUBMITTED = 'submitted';
+
     const STATUS_APPROVED = 'approved';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_CANCELLED = 'cancelled';
 
     public static function getStatusOptions()
@@ -99,6 +103,7 @@ class PranotaLembur extends Model
     public function getStatusLabelAttribute()
     {
         $statuses = self::getStatusOptions();
+
         return $statuses[$this->status] ?? $this->status;
     }
 
@@ -117,11 +122,11 @@ class PranotaLembur extends Model
 
     public function getFormattedTotalBiayaAttribute()
     {
-        return 'Rp ' . number_format($this->total_biaya, 0, ',', '.');
+        return 'Rp '.number_format($this->total_biaya, 0, ',', '.');
     }
 
     public function getFormattedTotalSetelahAdjustmentAttribute()
     {
-        return 'Rp ' . number_format($this->total_setelah_adjustment, 0, ',', '.');
+        return 'Rp '.number_format($this->total_setelah_adjustment, 0, ',', '.');
     }
 }

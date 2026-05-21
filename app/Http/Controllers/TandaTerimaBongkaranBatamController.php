@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\TandaTerimaBongkaranBatam;
-use App\Models\SuratJalanBongkaranBatam;
 use App\Models\Gudang;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Models\SuratJalanBongkaranBatam;
+use App\Models\TandaTerimaBongkaranBatam;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TandaTerimaBongkaranBatamController extends Controller
 {
@@ -28,23 +26,23 @@ class TandaTerimaBongkaranBatamController extends Controller
     public function index(Request $request)
     {
         $tipe = $request->get('tipe', 'surat_jalan'); // default: surat_jalan
-        
+
         if ($tipe === 'tanda_terima') {
             $query = TandaTerimaBongkaranBatam::with(['suratJalanBongkaran', 'gudang', 'creator']);
 
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor_tanda_terima', 'LIKE', "%{$search}%")
-                      ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
-                      ->orWhereHas('suratJalanBongkaran', function($q) use ($search) {
-                          $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%");
-                      });
+                        ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
+                        ->orWhereHas('suratJalanBongkaran', function ($q) use ($search) {
+                            $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%");
+                        });
                 });
             }
 
             $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(20);
-            
+
             return view('tanda-terima-bongkaran-batam.index', compact('tandaTerimas'));
         } else {
             // Query for Surat Jalan Bongkaran with lokasi = 'batam'
@@ -53,10 +51,10 @@ class TandaTerimaBongkaranBatamController extends Controller
 
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%")
-                      ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
-                      ->orWhere('no_bl', 'LIKE', "%{$search}%");
+                        ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
+                        ->orWhere('no_bl', 'LIKE', "%{$search}%");
                 });
             }
 
@@ -72,7 +70,7 @@ class TandaTerimaBongkaranBatamController extends Controller
             $suratJalans = $query->orderBy('created_at', 'desc')->paginate(20);
 
             $gudangs = Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
-            
+
             return view('tanda-terima-bongkaran-batam.index', compact('suratJalans', 'gudangs'));
         }
     }
@@ -96,14 +94,14 @@ class TandaTerimaBongkaranBatamController extends Controller
             DB::beginTransaction();
 
             $suratJalan = SuratJalanBongkaranBatam::findOrFail($validated['surat_jalan_bongkaran_id']);
-            
+
             $validated['nomor_tanda_terima'] = TandaTerimaBongkaranBatam::generateNoTandaTerima();
             $validated['no_kontainer'] = $suratJalan->no_kontainer;
             $validated['no_seal'] = $suratJalan->no_seal;
             $validated['kegiatan'] = $suratJalan->kegiatan;
             $validated['status'] = 'active';
             $validated['created_by'] = Auth::id();
-            
+
             $validated['lembur'] = $request->boolean('lembur');
             $validated['nginap'] = $request->boolean('nginap');
             $validated['tidak_lembur_nginap'] = $request->boolean('tidak_lembur_nginap');
@@ -112,7 +110,7 @@ class TandaTerimaBongkaranBatamController extends Controller
 
             // Update status surat jalan
             $suratJalan->update([
-                'status' => 'completed'
+                'status' => 'completed',
             ]);
 
             DB::commit();
@@ -123,9 +121,10 @@ class TandaTerimaBongkaranBatamController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -144,7 +143,7 @@ class TandaTerimaBongkaranBatamController extends Controller
 
         } catch (\Exception $e) {
             return back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 }

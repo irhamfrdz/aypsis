@@ -2,11 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Permohonan;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\User;
-use App\Models\Permohonan;
-use App\Models\Checkpoint;
 
 class CheckpointTest extends TestCase
 {
@@ -15,8 +14,8 @@ class CheckpointTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function supir_can_submit_checkpoint_form()
     {
-    $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
-    $this->withSession(['_token' => csrf_token()]);
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+        $this->withSession(['_token' => csrf_token()]);
         $user = User::factory()->create();
         $permohonan = Permohonan::factory()->create([
             'jumlah_kontainer' => 1,

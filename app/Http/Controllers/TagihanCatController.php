@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TagihanCat;
-use App\Models\PerbaikanKontainer;
-use App\Models\VendorBengkel;
 use App\Models\PricelistCat;
+use App\Models\TagihanCat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,18 +24,18 @@ class TagihanCatController extends Controller
         // Search across all relevant fields
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('id', 'like', "%{$search}%")
-                  ->orWhere('nomor_tagihan_cat', 'like', "%{$search}%")
-                  ->orWhere('nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('vendor', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%")
-                  ->orWhere('status', 'like', "%{$search}%");
+                    ->orWhere('nomor_tagihan_cat', 'like', "%{$search}%")
+                    ->orWhere('nomor_kontainer', 'like', "%{$search}%")
+                    ->orWhere('vendor', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
             });
         }
 
         $tagihanCats = $query->orderBy('tanggal_cat', 'desc')
-                            ->paginate(15);
+            ->paginate(15);
 
         return view('tagihan-cat.index', compact('tagihanCats'));
     }
@@ -47,7 +45,7 @@ class TagihanCatController extends Controller
      */
     public function create()
     {
-        $tagihanCat = new TagihanCat();
+        $tagihanCat = new TagihanCat;
         $vendors = PricelistCat::select('vendor')->distinct()->orderBy('vendor')->get();
 
         return view('tagihan-cat.create', compact('tagihanCat', 'vendors'));
@@ -85,7 +83,7 @@ class TagihanCatController extends Controller
         TagihanCat::create($validated);
 
         return redirect()->route('tagihan-cat.index')
-                        ->with('success', 'Tagihan CAT berhasil dibuat.');
+            ->with('success', 'Tagihan CAT berhasil dibuat.');
     }
 
     /**
@@ -136,7 +134,7 @@ class TagihanCatController extends Controller
         $tagihanCat->update($validated);
 
         return redirect()->route('tagihan-cat.index')
-                        ->with('success', 'Tagihan CAT berhasil diperbarui.');
+            ->with('success', 'Tagihan CAT berhasil diperbarui.');
     }
 
     /**
@@ -147,7 +145,7 @@ class TagihanCatController extends Controller
         $tagihanCat->delete();
 
         return redirect()->route('tagihan-cat.index')
-                        ->with('success', 'Tagihan CAT berhasil dihapus.');
+            ->with('success', 'Tagihan CAT berhasil dihapus.');
     }
 
     /**
@@ -157,13 +155,13 @@ class TagihanCatController extends Controller
     {
         $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'integer|exists:tagihan_cats,id'
+            'ids.*' => 'integer|exists:tagihan_cats,id',
         ]);
 
         $count = TagihanCat::whereIn('id', $request->ids)->delete();
 
         return redirect()->route('tagihan-cat.index')
-                        ->with('success', "{$count} tagihan CAT berhasil dihapus.");
+            ->with('success', "{$count} tagihan CAT berhasil dihapus.");
     }
 
     /**
@@ -174,24 +172,24 @@ class TagihanCatController extends Controller
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'integer|exists:tagihan_cats,id',
-            'status' => 'required|in:pending,masuk pranota,paid,cancelled'
+            'status' => 'required|in:pending,masuk pranota,paid,cancelled',
         ]);
 
         $count = TagihanCat::whereIn('id', $request->ids)
-                          ->update([
-                              'status' => $request->status,
-                              'updated_by' => Auth::id()
-                          ]);
+            ->update([
+                'status' => $request->status,
+                'updated_by' => Auth::id(),
+            ]);
 
         $statusLabels = [
             'pending' => 'Pending',
             'masuk pranota' => 'Masuk Pranota',
             'paid' => 'Sudah Dibayar',
-            'cancelled' => 'Dibatalkan'
+            'cancelled' => 'Dibatalkan',
         ];
 
         return redirect()->route('tagihan-cat.index')
-                        ->with('success', "{$count} tagihan CAT berhasil diubah status menjadi {$statusLabels[$request->status]}.");
+            ->with('success', "{$count} tagihan CAT berhasil diubah status menjadi {$statusLabels[$request->status]}.");
     }
 
     /**
@@ -201,16 +199,16 @@ class TagihanCatController extends Controller
     {
         $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'integer|exists:tagihan_cats,id'
+            'ids.*' => 'integer|exists:tagihan_cats,id',
         ]);
 
         $count = TagihanCat::whereIn('id', $request->ids)
-                          ->update([
-                              'status' => 'paid',
-                              'updated_by' => Auth::id()
-                          ]);
+            ->update([
+                'status' => 'paid',
+                'updated_by' => Auth::id(),
+            ]);
 
         return redirect()->route('tagihan-cat.index')
-                        ->with('success', "{$count} tagihan CAT berhasil diproses pembayarannya.");
+            ->with('success', "{$count} tagihan CAT berhasil diproses pembayarannya.");
     }
 }

@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class MasterPricelistBiayaTrucking extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'master_pricelist_biaya_trucking';
 
@@ -16,7 +16,7 @@ class MasterPricelistBiayaTrucking extends Model
         'nama_vendor',
         'size',
         'biaya',
-        'status'
+        'status',
     ];
 
     protected $casts = [
@@ -28,7 +28,7 @@ class MasterPricelistBiayaTrucking extends Model
      */
     public function getFormattedBiayaAttribute()
     {
-        return 'Rp ' . number_format($this->biaya, 0, ',', '.');
+        return 'Rp '.number_format($this->biaya, 0, ',', '.');
     }
 
     /**
@@ -44,6 +44,6 @@ class MasterPricelistBiayaTrucking extends Model
      */
     public function scopeNamaVendor($query, $nama_vendor)
     {
-        return $query->where('nama_vendor', 'like', '%' . $nama_vendor . '%');
+        return $query->where('nama_vendor', 'like', '%'.$nama_vendor.'%');
     }
 }

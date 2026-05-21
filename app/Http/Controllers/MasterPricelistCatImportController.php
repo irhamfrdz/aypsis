@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\PricelistCat;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class MasterPricelistCatImportController extends Controller
 {
@@ -17,12 +17,12 @@ class MasterPricelistCatImportController extends Controller
     public function downloadTemplate()
     {
         try {
-            $fileName = 'template_master_pricelist_cat_' . date('Y-m-d_H-i-s') . '.csv';
+            $fileName = 'template_master_pricelist_cat_'.date('Y-m-d_H-i-s').'.csv';
 
             // Headers for CSV
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ];
 
             // CSV content dengan header dan contoh data
@@ -32,14 +32,14 @@ class MasterPricelistCatImportController extends Controller
                 ['CV ABC Workshop', 'cat_full', '20ft', '800000'],
                 ['PT XYZ Paint Service', 'cat_sebagian', '40ft', '750000'],
                 ['PT XYZ Paint Service', 'cat_full', '40ft', '1200000'],
-                ['Bengkel DEF', 'cat_sebagian', '40ft HC', '800000']
+                ['Bengkel DEF', 'cat_sebagian', '40ft HC', '800000'],
             ];
 
-            $callback = function() use ($csvData) {
+            $callback = function () use ($csvData) {
                 $file = fopen('php://output', 'w');
 
                 // Add BOM for UTF-8
-                fputs($file, "\xEF\xBB\xBF");
+                fwrite($file, "\xEF\xBB\xBF");
 
                 // Set CSV dengan semicolon delimiter
                 foreach ($csvData as $row) {
@@ -52,7 +52,7 @@ class MasterPricelistCatImportController extends Controller
             return Response::stream($callback, 200, $headers);
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mendownload template: '.$e->getMessage());
         }
     }
 
@@ -67,12 +67,12 @@ class MasterPricelistCatImportController extends Controller
                 'required',
                 'file',
                 'mimes:csv,txt',
-                'max:5120' // 5MB
-            ]
+                'max:5120', // 5MB
+            ],
         ], [
             'csv_file.required' => 'File CSV harus dipilih.',
             'csv_file.mimes' => 'File harus berformat .csv',
-            'csv_file.max' => 'Ukuran file maksimal 5MB.'
+            'csv_file.max' => 'Ukuran file maksimal 5MB.',
         ]);
 
         if ($validator->fails()) {
@@ -85,8 +85,8 @@ class MasterPricelistCatImportController extends Controller
 
             // Read CSV file with semicolon delimiter
             $csvData = [];
-            if (($handle = fopen($path, 'r')) !== FALSE) {
-                while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
+            if (($handle = fopen($path, 'r')) !== false) {
+                while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                     $csvData[] = $data;
                 }
                 fclose($handle);
@@ -106,7 +106,7 @@ class MasterPricelistCatImportController extends Controller
                 'errors' => 0,
                 'skipped' => 0,
                 'error_details' => [],
-                'warnings' => []
+                'warnings' => [],
             ];
 
             DB::beginTransaction();
@@ -123,6 +123,7 @@ class MasterPricelistCatImportController extends Controller
                 if (count($row) < 4) {
                     $stats['errors']++;
                     $stats['error_details'][] = "Baris {$rowNumber}: Data tidak lengkap";
+
                     continue;
                 }
 
@@ -136,34 +137,38 @@ class MasterPricelistCatImportController extends Controller
                     if (empty($vendor) || empty($jenisCat)) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Vendor dan Jenis CAT tidak boleh kosong";
+
                         continue;
                     }
 
                     // Validate jenis CAT
                     $validJenisCat = ['cat_sebagian', 'cat_full'];
-                    if (!in_array(strtolower($jenisCat), $validJenisCat)) {
+                    if (! in_array(strtolower($jenisCat), $validJenisCat)) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Jenis CAT harus 'cat_sebagian' atau 'cat_full'";
+
                         continue;
                     }
 
                     // Validate ukuran kontainer
                     $validUkuran = ['20ft', '40ft', '40ft HC'];
-                    if (!empty($ukuranKontainer) && !in_array($ukuranKontainer, $validUkuran)) {
+                    if (! empty($ukuranKontainer) && ! in_array($ukuranKontainer, $validUkuran)) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Ukuran kontainer harus '20ft', '40ft', atau '40ft HC'";
+
                         continue;
                     }
 
                     // Validate tarif
-                    if (!empty($tarif) && !is_numeric(str_replace(',', '', $tarif))) {
+                    if (! empty($tarif) && ! is_numeric(str_replace(',', '', $tarif))) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Tarif harus berupa angka";
+
                         continue;
                     }
 
                     // Clean tarif value
-                    $tarif = !empty($tarif) ? (float)str_replace(',', '', $tarif) : 0;
+                    $tarif = ! empty($tarif) ? (float) str_replace(',', '', $tarif) : 0;
 
                     // Check if pricelist already exists (based on vendor, jenis_cat, ukuran_kontainer)
                     $existingPricelist = PricelistCat::where('vendor', $vendor)
@@ -177,7 +182,7 @@ class MasterPricelistCatImportController extends Controller
                         'ukuran_kontainer' => $ukuranKontainer,
                         'tarif' => $tarif,
                         'updated_by' => Auth::id(),
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ];
 
                     if ($existingPricelist) {
@@ -194,14 +199,14 @@ class MasterPricelistCatImportController extends Controller
 
                 } catch (\Exception $e) {
                     $stats['errors']++;
-                    $stats['error_details'][] = "Baris {$rowNumber}: " . $e->getMessage();
+                    $stats['error_details'][] = "Baris {$rowNumber}: ".$e->getMessage();
                 }
             }
 
             DB::commit();
 
             // Build success message
-            $message = "Import berhasil! ";
+            $message = 'Import berhasil! ';
             if ($stats['success'] > 0) {
                 $message .= "Ditambahkan: {$stats['success']} pricelist, ";
             }
@@ -210,10 +215,10 @@ class MasterPricelistCatImportController extends Controller
             }
             if ($stats['errors'] > 0) {
                 $message .= "Error: {$stats['errors']} baris. ";
-                if (!empty($stats['error_details'])) {
-                    $message .= "Error detail: " . implode(', ', array_slice($stats['error_details'], 0, 5));
+                if (! empty($stats['error_details'])) {
+                    $message .= 'Error detail: '.implode(', ', array_slice($stats['error_details'], 0, 5));
                     if (count($stats['error_details']) > 5) {
-                        $message .= " (dan " . (count($stats['error_details']) - 5) . " error lainnya)";
+                        $message .= ' (dan '.(count($stats['error_details']) - 5).' error lainnya)';
                     }
                 }
             }
@@ -222,7 +227,8 @@ class MasterPricelistCatImportController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan saat import: '.$e->getMessage());
         }
     }
 }

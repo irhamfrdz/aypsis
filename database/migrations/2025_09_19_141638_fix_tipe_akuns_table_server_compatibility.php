@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -28,15 +27,15 @@ return new class extends Migration
             }
 
             // Add correct columns if they don't exist
-            if (!in_array('tipe_akun', $columns)) {
+            if (! in_array('tipe_akun', $columns)) {
                 $table->string('tipe_akun')->nullable()->after('id');
             }
-            if (!in_array('catatan', $columns)) {
+            if (! in_array('catatan', $columns)) {
                 $table->text('catatan')->nullable()->after('tipe_akun');
             }
 
             // Ensure timestamps exist
-            if (!in_array('created_at', $columns)) {
+            if (! in_array('created_at', $columns)) {
                 $table->timestamps();
             }
         });
@@ -60,13 +59,13 @@ return new class extends Migration
             }
 
             // Restore old columns if they don't exist
-            if (!in_array('kode_tipe', $columns)) {
+            if (! in_array('kode_tipe', $columns)) {
                 $table->string('kode_tipe')->nullable()->after('id');
             }
-            if (!in_array('nama_tipe', $columns)) {
+            if (! in_array('nama_tipe', $columns)) {
                 $table->string('nama_tipe')->nullable()->after('kode_tipe');
             }
-            if (!in_array('keterangan', $columns)) {
+            if (! in_array('keterangan', $columns)) {
                 $table->text('keterangan')->nullable()->after('nama_tipe');
             }
         });

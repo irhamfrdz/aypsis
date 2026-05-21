@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PembayaranAktivitasLainnya;
 use App\Models\Coa;
-use App\Models\TagihanOb;
+use App\Models\PembayaranAktivitasLainnya;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class PembayaranAktivitasLainnyaController extends Controller
 {
@@ -36,10 +35,10 @@ class PembayaranAktivitasLainnyaController extends Controller
 
         // Search
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('nomor_pembayaran', 'like', '%' . $request->search . '%')
-                  ->orWhere('aktivitas_pembayaran', 'like', '%' . $request->search . '%')
-                  ->orWhere('nomor_voyage', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('nomor_pembayaran', 'like', '%'.$request->search.'%')
+                    ->orWhere('aktivitas_pembayaran', 'like', '%'.$request->search.'%')
+                    ->orWhere('nomor_voyage', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -75,13 +74,13 @@ class PembayaranAktivitasLainnyaController extends Controller
         // Fetch master supir (karyawan) untuk dropdown nama supir - hanya yang divisi supir
         $masterSupir = \App\Models\Karyawan::whereNotNull('nama_lengkap')
             ->where('nama_lengkap', '!=', '')
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('divisi', 'LIKE', '%supir%')
-                      ->orWhere('divisi', 'LIKE', '%Supir%')
-                      ->orWhere('divisi', 'LIKE', '%SUPIR%')
-                      ->orWhere('pekerjaan', 'LIKE', '%supir%')
-                      ->orWhere('pekerjaan', 'LIKE', '%Supir%')
-                      ->orWhere('pekerjaan', 'LIKE', '%SUPIR%');
+                    ->orWhere('divisi', 'LIKE', '%Supir%')
+                    ->orWhere('divisi', 'LIKE', '%SUPIR%')
+                    ->orWhere('pekerjaan', 'LIKE', '%supir%')
+                    ->orWhere('pekerjaan', 'LIKE', '%Supir%')
+                    ->orWhere('pekerjaan', 'LIKE', '%SUPIR%');
             })
             ->orderBy('nama_lengkap')
             ->get();
@@ -138,7 +137,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             'pilih_bank.required' => 'Pilihan bank wajib dipilih.',
             'akun_biaya_id.required' => 'Akun biaya wajib dipilih.',
             'total_pembayaran.required' => 'Total pembayaran wajib diisi.',
-            'total_pembayaran.min' => 'Total pembayaran harus lebih dari 0.'
+            'total_pembayaran.min' => 'Total pembayaran harus lebih dari 0.',
         ]);
 
         // Log semua data request untuk debugging DP update
@@ -148,7 +147,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             'nomor_voyage' => $request->nomor_voyage,
             'nama_supir' => $request->nama_supir,
             'jumlah_uang_muka' => $request->jumlah_uang_muka,
-            'all_request' => $request->except(['_token'])
+            'all_request' => $request->except(['_token']),
         ]);
 
         try {
@@ -190,13 +189,13 @@ class PembayaranAktivitasLainnyaController extends Controller
             $jumlahPerSupir = [];
             if ($request->has('supir_id') && is_array($request->supir_id)) {
                 foreach ($request->supir_id as $index => $supirId) {
-                    if (!empty($supirId)) {
+                    if (! empty($supirId)) {
                         // Cast supir ID to integer
                         $supirId = (int) $supirId;
-                        
+
                         // Get supir data from Karyawan model
                         $supir = \App\Models\Karyawan::find($supirId);
-                        if (!$supir) {
+                        if (! $supir) {
                             continue; // Skip if supir not found
                         }
 
@@ -223,7 +222,7 @@ class PembayaranAktivitasLainnyaController extends Controller
 
             // Jika ini pembayaran DP (is_dp = 1), simpan juga ke tabel pembayaran_uang_muka
             // agar bisa muncul di dropdown Realisasi Uang Muka
-            if ($request->has('is_dp') && !empty($supirIds)) {
+            if ($request->has('is_dp') && ! empty($supirIds)) {
                 \App\Models\PembayaranUangMuka::create([
                     'nomor_pembayaran' => $nomorPembayaran,
                     'tanggal_pembayaran' => $request->tanggal_pembayaran,
@@ -242,7 +241,7 @@ class PembayaranAktivitasLainnyaController extends Controller
                     'supir_ids' => $supirIds,
                     'jumlah_per_supir' => $jumlahPerSupir,
                     'total' => $totalPembayaran,
-                    'keterangan' => $request->aktivitas_pembayaran
+                    'keterangan' => $request->aktivitas_pembayaran,
                 ]);
             }
 
@@ -259,19 +258,20 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'bank_account' => $bankCoa->nama_akun,
                 'amount' => $totalPembayaran,
                 'jenis_transaksi' => $request->jenis_transaksi,
-                'is_dp' => $request->has('is_dp')
+                'is_dp' => $request->has('is_dp'),
             ]);
 
             DB::commit();
 
             return redirect()->route('pembayaran-aktivitas-lainnya.index')
-                ->with('success', 'Pembayaran berhasil disimpan dengan nomor: ' . $pembayaran->nomor_pembayaran);
+                ->with('success', 'Pembayaran berhasil disimpan dengan nomor: '.$pembayaran->nomor_pembayaran);
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to create pembayaran aktivitas lainnya', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage())
+                ->with('error', 'Gagal membuat pembayaran: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -282,7 +282,7 @@ class PembayaranAktivitasLainnyaController extends Controller
     public function show(PembayaranAktivitasLainnya $pembayaranAktivitasLainnya)
     {
         return view('pembayaran-aktivitas-lainnya.show', [
-            'pembayaran' => $pembayaranAktivitasLainnya
+            'pembayaran' => $pembayaranAktivitasLainnya,
         ]);
     }
 
@@ -331,7 +331,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             'jenis_transaksi' => 'required|string|in:debit,kredit',
             'aktivitas_pembayaran' => 'required|string|min:5|max:1000',
             'total_pembayaran' => 'required|numeric|min:0',
-            'is_dp' => 'nullable|boolean'
+            'is_dp' => 'nullable|boolean',
         ], [
             'aktivitas_pembayaran.required' => 'Aktivitas pembayaran wajib diisi.',
             'aktivitas_pembayaran.min' => 'Aktivitas pembayaran minimal 5 karakter.',
@@ -340,7 +340,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             'pilih_bank.required' => 'Pilihan bank wajib dipilih.',
             'akun_biaya_id.required' => 'Akun biaya wajib dipilih.',
             'total_pembayaran.required' => 'Total pembayaran wajib diisi.',
-            'total_pembayaran.min' => 'Total pembayaran harus lebih dari 0.'
+            'total_pembayaran.min' => 'Total pembayaran harus lebih dari 0.',
         ]);
 
         try {
@@ -387,7 +387,7 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'new_bank' => $newBankCoa->nama_akun,
                 'old_amount' => $oldTotalPembayaran,
                 'new_amount' => $totalPembayaran,
-                'bank_changed' => $oldBankCoa->id !== $newBankCoa->id
+                'bank_changed' => $oldBankCoa->id !== $newBankCoa->id,
             ]);
 
             DB::commit();
@@ -398,8 +398,9 @@ class PembayaranAktivitasLainnyaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to update pembayaran aktivitas lainnya', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal mengupdate pembayaran: ' . $e->getMessage())
+                ->with('error', 'Gagal mengupdate pembayaran: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -426,7 +427,7 @@ class PembayaranAktivitasLainnyaController extends Controller
                     'nomor_pembayaran' => $nomorPembayaran,
                     'bank_account' => $bankCoa->nama_akun,
                     'amount_restored' => $totalPembayaran,
-                    'saldo_after' => $bankCoa->saldo
+                    'saldo_after' => $bankCoa->saldo,
                 ]);
             }
 
@@ -436,19 +437,16 @@ class PembayaranAktivitasLainnyaController extends Controller
             DB::commit();
 
             return redirect()->route('pembayaran-aktivitas-lainnya.index')
-                ->with('success', 'Pembayaran berhasil dihapus dan saldo ' . ($bankCoa->nama_akun ?? 'bank') . ' telah dikembalikan sebesar Rp ' . number_format($totalPembayaran, 0, ',', '.'));
+                ->with('success', 'Pembayaran berhasil dihapus dan saldo '.($bankCoa->nama_akun ?? 'bank').' telah dikembalikan sebesar Rp '.number_format($totalPembayaran, 0, ',', '.'));
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to delete pembayaran aktivitas lainnya', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal menghapus pembayaran: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus pembayaran: '.$e->getMessage());
         }
     }
-
-
-
-
 
     /**
      * Generate nomor pembayaran preview (API endpoint)
@@ -458,19 +456,19 @@ class PembayaranAktivitasLainnyaController extends Controller
         try {
             $coaId = $request->get('coa_id');
 
-            if (!$coaId) {
+            if (! $coaId) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'COA ID is required'
+                    'message' => 'COA ID is required',
                 ], 400);
             }
 
             $coa = Coa::find($coaId);
 
-            if (!$coa) {
+            if (! $coa) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'COA not found'
+                    'message' => 'COA not found',
                 ], 404);
             }
 
@@ -484,10 +482,10 @@ class PembayaranAktivitasLainnyaController extends Controller
             // Get next running number from master nomor terakhir untuk modul PMS (preview only, don't increment)
             $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'pembayaran_aktivitas_lainnya_pms')->first();
 
-            if (!$nomorTerakhir) {
+            if (! $nomorTerakhir) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Module pembayaran_aktivitas_lainnya_pms tidak ditemukan di master nomor terakhir'
+                    'message' => 'Module pembayaran_aktivitas_lainnya_pms tidak ditemukan di master nomor terakhir',
                 ], 404);
             }
 
@@ -504,14 +502,14 @@ class PembayaranAktivitasLainnyaController extends Controller
                     'kode_bank' => $kodeBank,
                     'bulan' => $bulan,
                     'tahun' => $tahun,
-                    'running_number' => $sequence
-                ]
+                    'running_number' => $sequence,
+                ],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -534,13 +532,11 @@ class PembayaranAktivitasLainnyaController extends Controller
         // Apply filters
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_pembayaran', 'like', "%{$search}%")
-                  ->orWhere('aktivitas_pembayaran', 'like', "%{$search}%");
+                    ->orWhere('aktivitas_pembayaran', 'like', "%{$search}%");
             });
         }
-
-
 
         if ($request->filled('date_from')) {
             $query->whereDate('tanggal_pembayaran', '>=', $request->date_from);
@@ -553,14 +549,14 @@ class PembayaranAktivitasLainnyaController extends Controller
         $pembayaran = $query->with(['bank', 'creator'])->orderBy('created_at', 'desc')->get();
 
         // Simple CSV export
-        $filename = 'pembayaran_aktivitas_lainnya_' . date('Y-m-d_His') . '.csv';
+        $filename = 'pembayaran_aktivitas_lainnya_'.date('Y-m-d_His').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
         ];
 
-        $callback = function() use ($pembayaran) {
+        $callback = function () use ($pembayaran) {
             $file = fopen('php://output', 'w');
 
             // Header
@@ -571,7 +567,7 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'Total Pembayaran',
                 'Bank/Kas',
                 'Dibuat Oleh',
-                'Aktivitas Pembayaran'
+                'Aktivitas Pembayaran',
             ]);
 
             // Data
@@ -583,7 +579,7 @@ class PembayaranAktivitasLainnyaController extends Controller
                     number_format((float) $item->total_pembayaran, 0, ',', '.'),
                     $item->bank->nama_akun ?? '-',
                     $item->creator->username ?? '-',
-                    $item->aktivitas_pembayaran ?? '-'
+                    $item->aktivitas_pembayaran ?? '-',
                 ]);
             }
 
@@ -609,12 +605,12 @@ class PembayaranAktivitasLainnyaController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $kapalList
+                'data' => $kapalList,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error loading kapal data: ' . $e->getMessage()
+                'message' => 'Error loading kapal data: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -646,12 +642,12 @@ class PembayaranAktivitasLainnyaController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $voyageList
+                'data' => $voyageList,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error loading voyage data: ' . $e->getMessage()
+                'message' => 'Error loading voyage data: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -666,10 +662,10 @@ class PembayaranAktivitasLainnyaController extends Controller
             $voyage = $request->input('voyage');
             $kegiatan = $request->input('kegiatan'); // Optional: 'muat' or 'bongkar'
 
-            if (!$voyage) {
+            if (! $voyage) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Voyage parameter is required'
+                    'message' => 'Voyage parameter is required',
                 ], 400);
             }
 
@@ -686,24 +682,24 @@ class PembayaranAktivitasLainnyaController extends Controller
             }
 
             $supirData = $query->select(
-                    'supir_id', 
-                    'nama_supir', 
-                    DB::raw('SUM(biaya) as total_tagihan'), 
-                    DB::raw('SUM(COALESCE(dp, 0)) as total_dp'),
-                    DB::raw('COUNT(*) as jumlah_kontainer')
-                )
+                'supir_id',
+                'nama_supir',
+                DB::raw('SUM(biaya) as total_tagihan'),
+                DB::raw('SUM(COALESCE(dp, 0)) as total_dp'),
+                DB::raw('COUNT(*) as jumlah_kontainer')
+            )
                 ->groupBy('supir_id', 'nama_supir')
                 ->orderBy('nama_supir')
                 ->get();
 
             // Format response
-            $supirList = $supirData->map(function($supir) {
+            $supirList = $supirData->map(function ($supir) {
                 return [
                     'supir_id' => (int) $supir->supir_id,
                     'nama_supir' => $supir->nama_supir,
                     'total_tagihan' => (float) $supir->total_tagihan,
                     'jumlah_kontainer' => (int) $supir->jumlah_kontainer,
-                    'dp_dibayar' => (float) $supir->total_dp
+                    'dp_dibayar' => (float) $supir->total_dp,
                 ];
             });
 
@@ -712,16 +708,14 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'data' => $supirList,
                 'filter' => [
                     'voyage' => $voyage,
-                    'kegiatan' => $kegiatan
-                ]
+                    'kegiatan' => $kegiatan,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error loading supir data: ' . $e->getMessage()
+                'message' => 'Error loading supir data: '.$e->getMessage(),
             ], 500);
         }
     }
 }
-
-

@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class MasterPricelistAirTawar extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'master_pricelist_air_tawar';
 
@@ -16,7 +16,7 @@ class MasterPricelistAirTawar extends Model
         'nama_agen',
         'harga',
         'keterangan',
-        'lokasi'
+        'lokasi',
     ];
 
     protected $casts = [
@@ -28,6 +28,6 @@ class MasterPricelistAirTawar extends Model
      */
     public function getFormattedHargaAttribute()
     {
-        return 'Rp ' . number_format($this->harga, 0, ',', '.');
+        return 'Rp '.number_format($this->harga, 0, ',', '.');
     }
 }

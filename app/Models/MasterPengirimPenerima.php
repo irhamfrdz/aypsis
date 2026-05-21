@@ -60,7 +60,7 @@ class MasterPengirimPenerima extends Model
         $lastRecord = self::withTrashed()->orderBy('id', 'desc')->first();
         $lastNumber = $lastRecord ? intval(substr($lastRecord->kode, 3)) : 0;
         $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        
-        return 'PP-' . $newNumber;
+
+        return 'PP-'.$newNumber;
     }
 }

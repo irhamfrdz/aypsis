@@ -1,9 +1,11 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
+
+require __DIR__.'/../vendor/autoload.php';
 
 use Illuminate\Support\Facades\DB;
+
 \Illuminate\Foundation\Bootstrap\BootProviders::start(
-    require __DIR__ . '/../bootstrap/app.php'
+    require __DIR__.'/../bootstrap/app.php'
 );
 
 $rows = DB::table('tagihan_kontainer_sewa')->get();

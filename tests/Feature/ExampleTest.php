@@ -12,9 +12,9 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-    $response = $this->get('/');
+        $response = $this->get('/');
 
-    // Homepage may redirect to login in test environments; accept 200 or 302
-    $this->assertContains($response->getStatusCode(), [200, 302]);
+        // Homepage may redirect to login in test environments; accept 200 or 302
+        $this->assertContains($response->getStatusCode(), [200, 302]);
     }
 }

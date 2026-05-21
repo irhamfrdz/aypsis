@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class PricelistPerijinan extends Model
 {
@@ -18,6 +18,6 @@ class PricelistPerijinan extends Model
 
     public function getFormattedTarifAttribute()
     {
-        return 'Rp ' . number_format($this->tarif, 0, ',', '.');
+        return 'Rp '.number_format($this->tarif, 0, ',', '.');
     }
 }

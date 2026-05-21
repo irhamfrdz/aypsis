@@ -2,23 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Model;
 
 class KontainerSewa extends Model
 {
-    
     use Auditable;
 
-protected $fillable = [
+    protected $fillable = [
         'kode',
         'nama_vendor',
         'catatan',
-        'status'
+        'status',
     ];
 
     protected $casts = [
-        'status' => 'string'
+        'status' => 'string',
     ];
 
     public function getStatusBadgeAttribute()

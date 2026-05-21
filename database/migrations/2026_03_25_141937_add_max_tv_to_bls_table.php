@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('bls', 'max_tv')) {
+        if (! Schema::hasColumn('bls', 'max_tv')) {
             Schema::table('bls', function (Blueprint $table) {
                 $table->decimal('max_tv', 15, 3)->nullable()->after('volume')->comment('Maximum of tonnage and volume');
             });
@@ -20,7 +20,7 @@ return new class extends Migration
         // Backfill existing data
         \App\Models\Bl::all()->each(function ($bl) {
             $bl->update([
-                'max_tv' => max((float)$bl->tonnage, (float)$bl->volume)
+                'max_tv' => max((float) $bl->tonnage, (float) $bl->volume),
             ]);
         });
     }

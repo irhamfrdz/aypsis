@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Carbon\Carbon;
 use App\Traits\Auditable;
-use App\Models\MasterKapal;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class SuratJalanBongkaran extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'surat_jalan_bongkarans';
 
@@ -75,7 +74,7 @@ class SuratJalanBongkaran extends Model
         'jenis_pengiriman',
         'tanggal_ambil_barang',
         'lokasi',
-        'f_e'
+        'f_e',
     ];
 
     protected $casts = [
@@ -241,12 +240,12 @@ class SuratJalanBongkaran extends Model
         $class = $statusClasses[$this->status] ?? 'bg-gray-100 text-gray-800';
         $text = ucfirst(str_replace('_', ' ', $this->status));
 
-        return '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' . $class . '">' . $text . '</span>';
+        return '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full '.$class.'">'.$text.'</span>';
     }
 
     public function getStatusPembayaranBadgeAttribute()
     {
-        if (!$this->status_pembayaran) {
+        if (! $this->status_pembayaran) {
             return '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">-</span>';
         }
 
@@ -265,7 +264,7 @@ class SuratJalanBongkaran extends Model
         $class = $statusClasses[$this->status_pembayaran] ?? 'bg-gray-100 text-gray-800';
         $text = $statusTexts[$this->status_pembayaran] ?? ucfirst($this->status_pembayaran);
 
-        return '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ' . $class . '">' . $text . '</span>';
+        return '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full '.$class.'">'.$text.'</span>';
     }
 
     // Helper methods
@@ -294,12 +293,15 @@ class SuratJalanBongkaran extends Model
      */
     public function getSupirNikAttribute()
     {
-        if (!$this->supir) return null;
-        
+        if (! $this->supir) {
+            return null;
+        }
+
         $karyawan = Karyawan::where('nama_panggilan', $this->supir)->first();
-        if (!$karyawan) {
+        if (! $karyawan) {
             $karyawan = Karyawan::where('nama_lengkap', $this->supir)->first();
         }
+
         return $karyawan ? $karyawan->nik : null;
     }
 
@@ -308,12 +310,15 @@ class SuratJalanBongkaran extends Model
      */
     public function getKenekNikAttribute()
     {
-        if (!$this->kenek) return null;
+        if (! $this->kenek) {
+            return null;
+        }
 
         $karyawan = Karyawan::where('nama_panggilan', $this->kenek)->first();
-        if (!$karyawan) {
+        if (! $karyawan) {
             $karyawan = Karyawan::where('nama_lengkap', $this->kenek)->first();
         }
+
         return $karyawan ? $karyawan->nik : null;
     }
 
@@ -322,12 +327,15 @@ class SuratJalanBongkaran extends Model
      */
     public function getSupirDisplayNameAttribute()
     {
-        if (!$this->supir) return '-';
-        
+        if (! $this->supir) {
+            return '-';
+        }
+
         $karyawan = Karyawan::where('nama_panggilan', $this->supir)->first();
-        if (!$karyawan) {
+        if (! $karyawan) {
             $karyawan = Karyawan::where('nama_lengkap', $this->supir)->first();
         }
+
         return $karyawan ? ($karyawan->nama_panggilan ?: $karyawan->nama_lengkap) : $this->supir;
     }
 

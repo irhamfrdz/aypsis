@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\PembayaranAktivitasLain;
-use App\Models\PembayaranInvoiceAktivitasLain;
-use App\Models\InvoiceAktivitasLain;
 use App\Models\Coa;
 use App\Models\CoaTransaction;
+use App\Models\InvoiceAktivitasLain;
+use App\Models\PembayaranAktivitasLain;
+use App\Models\PembayaranInvoiceAktivitasLain;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,11 +16,11 @@ class PembayaranAktivitasLainController extends Controller
     public function index(Request $request)
     {
         $tipePembayaran = $request->get('tipe_pembayaran', 'semua');
-        
+
         if ($tipePembayaran === 'invoice') {
             // Only show invoice payments
             $query = PembayaranInvoiceAktivitasLain::with(['creator', 'approver']);
-            
+
             // Filter by date range
             if ($request->filled('tanggal_dari')) {
                 $query->whereDate('tanggal', '>=', $request->tanggal_dari);
@@ -33,19 +32,20 @@ class PembayaranAktivitasLainController extends Controller
             // Search
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor', 'like', "%{$search}%")
-                      ->orWhere('nomor_accurate', 'like', "%{$search}%")
-                      ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
-                      ->orWhere('keterangan', 'like', "%{$search}%");
+                        ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                        ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
+                        ->orWhere('keterangan', 'like', "%{$search}%");
                 });
             }
 
-            $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20)->through(function($item) {
+            $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20)->through(function ($item) {
                 $item->tipe_pembayaran = 'invoice';
+
                 return $item;
             });
-            
+
         } elseif ($tipePembayaran === 'langsung') {
             // Only show direct payments
             $query = PembayaranAktivitasLain::with(['creator', 'approver']);
@@ -61,16 +61,17 @@ class PembayaranAktivitasLainController extends Controller
             // Search
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor', 'like', "%{$search}%")
-                      ->orWhere('nomor_accurate', 'like', "%{$search}%")
-                      ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
-                      ->orWhere('keterangan', 'like', "%{$search}%");
+                        ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                        ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
+                        ->orWhere('keterangan', 'like', "%{$search}%");
                 });
             }
 
-            $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20)->through(function($item) {
+            $pembayarans = $query->orderBy('created_at', 'desc')->paginate(20)->through(function ($item) {
                 $item->tipe_pembayaran = 'langsung';
+
                 return $item;
             });
         } else {
@@ -90,28 +91,30 @@ class PembayaranAktivitasLainController extends Controller
 
             if ($request->filled('search')) {
                 $search = $request->search;
-                $directQuery->where(function($q) use ($search) {
+                $directQuery->where(function ($q) use ($search) {
                     $q->where('nomor', 'like', "%{$search}%")
-                      ->orWhere('nomor_accurate', 'like', "%{$search}%")
-                      ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
-                      ->orWhere('keterangan', 'like', "%{$search}%");
+                        ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                        ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
+                        ->orWhere('keterangan', 'like', "%{$search}%");
                 });
-                $invoiceQuery->where(function($q) use ($search) {
+                $invoiceQuery->where(function ($q) use ($search) {
                     $q->where('nomor', 'like', "%{$search}%")
-                      ->orWhere('nomor_accurate', 'like', "%{$search}%")
-                      ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
-                      ->orWhere('keterangan', 'like', "%{$search}%");
+                        ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                        ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
+                        ->orWhere('keterangan', 'like', "%{$search}%");
                 });
             }
 
-            $directPayments = $directQuery->get()->map(function($item) {
+            $directPayments = $directQuery->get()->map(function ($item) {
                 $item->tipe_pembayaran = 'langsung';
+
                 return $item;
             });
-            
-            $invoicePayments = $invoiceQuery->get()->map(function($item) {
+
+            $invoicePayments = $invoiceQuery->get()->map(function ($item) {
                 $item->tipe_pembayaran = 'invoice';
                 $item->jumlah = $item->jumlah_dibayar; // Normalize field name
+
                 return $item;
             });
 
@@ -123,9 +126,9 @@ class PembayaranAktivitasLainController extends Controller
             $perPage = 20;
             $currentPage = $request->get('page', 1);
             $offset = ($currentPage - 1) * $perPage;
-            
+
             $paginatedItems = $allPayments->slice($offset, $perPage)->values();
-            
+
             $pembayarans = new \Illuminate\Pagination\LengthAwarePaginator(
                 $paginatedItems,
                 $allPayments->count(),
@@ -139,7 +142,7 @@ class PembayaranAktivitasLainController extends Controller
         $akunCoaIds = $pembayarans->pluck('akun_coa_id')->filter()->unique();
         $akunBankIds = $pembayarans->pluck('akun_bank_id')->filter()->unique();
         $allAkunIds = $akunCoaIds->merge($akunBankIds)->unique();
-        
+
         $akunCoas = DB::table('akun_coa')
             ->whereIn('id', $allAkunIds)
             ->get()
@@ -164,7 +167,7 @@ class PembayaranAktivitasLainController extends Controller
             ->select('id', 'nomor_polisi', 'merek', 'jenis', 'no_kir')
             ->orderBy('nomor_polisi')
             ->get();
-        
+
         // Get voyages from both bls and pergerakan_kapal tables
         $voyagesBl = DB::table('bls')
             ->select('no_voyage as voyage', 'nama_kapal')
@@ -173,7 +176,7 @@ class PembayaranAktivitasLainController extends Controller
             ->distinct()
             ->orderBy('no_voyage')
             ->get();
-            
+
         $voyagesPergerakan = DB::table('pergerakan_kapal')
             ->select('voyage', 'nama_kapal')
             ->whereNotNull('voyage')
@@ -181,47 +184,47 @@ class PembayaranAktivitasLainController extends Controller
             ->distinct()
             ->orderBy('voyage')
             ->get();
-            
+
         // Combine and deduplicate voyages
         $allVoyages = collect();
-        
+
         foreach ($voyagesBl as $voyage) {
-            $allVoyages->push((object)[
+            $allVoyages->push((object) [
                 'voyage' => $voyage->voyage,
                 'nama_kapal' => $voyage->nama_kapal,
-                'source' => 'BL'
+                'source' => 'BL',
             ]);
         }
-        
+
         foreach ($voyagesPergerakan as $voyage) {
             // Only add if not already exists
             $exists = $allVoyages->where('voyage', $voyage->voyage)
-                                ->where('nama_kapal', $voyage->nama_kapal)
-                                ->first();
-            if (!$exists) {
-                $allVoyages->push((object)[
+                ->where('nama_kapal', $voyage->nama_kapal)
+                ->first();
+            if (! $exists) {
+                $allVoyages->push((object) [
                     'voyage' => $voyage->voyage,
                     'nama_kapal' => $voyage->nama_kapal,
-                    'source' => 'Pergerakan Kapal'
+                    'source' => 'Pergerakan Kapal',
                 ]);
             }
         }
-        
+
         $voyages = $allVoyages->sortBy('voyage')->values();
-        
+
         $akunBank = DB::table('akun_coa')
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('tipe_akun', 'like', '%kas%')
-                  ->orWhere('tipe_akun', 'like', '%bank%');
+                    ->orWhere('tipe_akun', 'like', '%bank%');
             })
             ->orderBy('kode_nomor')
             ->get();
-            
+
         $karyawans = DB::table('karyawans')
             ->select('id', 'nama_lengkap', 'pekerjaan')
             ->orderBy('nama_lengkap')
             ->get();
-        
+
         // Get surat jalans for adjustment payments from surat_jalans table
         $suratJalansRegular = DB::table('surat_jalans')
             ->leftJoin('uang_jalans', 'surat_jalans.id', '=', 'uang_jalans.surat_jalan_id')
@@ -235,7 +238,7 @@ class PembayaranAktivitasLainController extends Controller
             ->whereNotNull('surat_jalans.no_surat_jalan')
             ->where('surat_jalans.no_surat_jalan', '!=', '')
             ->get();
-        
+
         // Get surat jalans for adjustment payments from surat_jalan_bongkarans table
         $suratJalansBongkar = DB::table('surat_jalan_bongkarans')
             ->leftJoin('uang_jalans', 'surat_jalan_bongkarans.id', '=', 'uang_jalans.surat_jalan_bongkaran_id')
@@ -249,12 +252,12 @@ class PembayaranAktivitasLainController extends Controller
             ->whereNotNull('surat_jalan_bongkarans.nomor_surat_jalan')
             ->where('surat_jalan_bongkarans.nomor_surat_jalan', '!=', '')
             ->get();
-        
+
         // Combine both surat jalans
         $suratJalans = $suratJalansRegular->merge($suratJalansBongkar)
             ->sortBy('no_surat_jalan')
             ->values();
-        
+
         return view('pembayaran-aktivitas-lain.create', compact('nomor', 'akunBiaya', 'akunBank', 'mobils', 'voyages', 'karyawans', 'suratJalans'));
     }
 
@@ -275,9 +278,9 @@ class PembayaranAktivitasLainController extends Controller
 
         // Get bank accounts
         $akunBanks = DB::table('akun_coa')
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('tipe_akun', 'like', '%kas%')
-                  ->orWhere('tipe_akun', 'like', '%bank%');
+                    ->orWhere('tipe_akun', 'like', '%bank%');
             })
             ->orderBy('kode_nomor')
             ->get();
@@ -316,7 +319,7 @@ class PembayaranAktivitasLainController extends Controller
                 // Get selected invoices
                 $invoiceIds = $request->selected_invoices;
                 $invoices = InvoiceAktivitasLain::whereIn('id', $invoiceIds)->get();
-                
+
                 // Calculate total from selected invoices
                 $totalInvoice = $invoices->sum('total');
 
@@ -331,7 +334,7 @@ class PembayaranAktivitasLainController extends Controller
                     'debit_kredit' => $validated['debit_kredit'],
                     'akun_coa_id' => $validated['akun_coa_id'],
                     'akun_bank_id' => $validated['akun_bank_id'],
-                    'keterangan' => $validated['keterangan'] ?? 'Pembayaran dari ' . count($invoiceIds) . ' invoice',
+                    'keterangan' => $validated['keterangan'] ?? 'Pembayaran dari '.count($invoiceIds).' invoice',
                     'invoice_ids' => $validated['invoice_ids'],
                     'created_by' => Auth::id(),
                 ]);
@@ -354,7 +357,7 @@ class PembayaranAktivitasLainController extends Controller
                 DB::commit();
 
                 return redirect()->route('pembayaran-aktivitas-lain.index')
-                    ->with('success', 'Pembayaran dari ' . count($invoiceIds) . ' invoice berhasil disimpan');
+                    ->with('success', 'Pembayaran dari '.count($invoiceIds).' invoice berhasil disimpan');
 
             } catch (\Illuminate\Database\QueryException $e) {
                 DB::rollBack();
@@ -362,10 +365,12 @@ class PembayaranAktivitasLainController extends Controller
                 if ($e->errorInfo[1] === 1062 && $attempt < $maxAttempts) {
                     continue;
                 }
-                return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
+
+                return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: '.$e->getMessage());
             } catch (\Exception $e) {
                 DB::rollBack();
-                return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
+
+                return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: '.$e->getMessage());
             }
         }
 
@@ -412,10 +417,10 @@ class PembayaranAktivitasLainController extends Controller
                 $this->createDoubleBookJournal($pembayaran, $validated);
 
                 // Logic to delete Prospek record if "Pembayaran Adjusment Uang Jalan" and "pengembalian penuh"
-                if ($validated['jenis_aktivitas'] === 'Pembayaran Adjusment Uang Jalan' && 
+                if ($validated['jenis_aktivitas'] === 'Pembayaran Adjusment Uang Jalan' &&
                     ($validated['jenis_penyesuaian'] ?? null) === 'pengembalian penuh') {
-                    
-                    if (!empty($validated['no_surat_jalan'])) {
+
+                    if (! empty($validated['no_surat_jalan'])) {
                         \App\Models\Prospek::where('no_surat_jalan', $validated['no_surat_jalan'])->delete();
                     }
                 }
@@ -423,7 +428,7 @@ class PembayaranAktivitasLainController extends Controller
                 DB::commit();
 
                 return redirect()->route('pembayaran-aktivitas-lain.index')
-                    ->with('success', 'Data pembayaran berhasil disimpan dengan jurnal double book accounting' . 
+                    ->with('success', 'Data pembayaran berhasil disimpan dengan jurnal double book accounting'.
                         (($validated['jenis_aktivitas'] === 'Pembayaran Adjusment Uang Jalan' && ($validated['jenis_penyesuaian'] ?? null) === 'pengembalian penuh') ? ' dan Data Prospek dihapus' : ''));
 
             } catch (\Illuminate\Database\QueryException $e) {
@@ -432,15 +437,17 @@ class PembayaranAktivitasLainController extends Controller
                 if ($e->errorInfo[1] === 1062 && $attempt < $maxAttempts) {
                     continue;
                 }
-                return back()->withInput()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
+
+                return back()->withInput()->with('error', 'Gagal menyimpan data: '.$e->getMessage());
             } catch (\Exception $e) {
                 DB::rollBack();
-                return back()->withInput()->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
+
+                return back()->withInput()->with('error', 'Gagal menyimpan data: '.$e->getMessage());
             }
         }
 
         return back()->withInput()->with('error', 'Gagal menyimpan data: tidak dapat menghasilkan nomor unik setelah beberapa percobaan.');
-}
+    }
 
     /**
      * Create Double Book Accounting Journal Entries for Invoice Payment
@@ -450,7 +457,7 @@ class PembayaranAktivitasLainController extends Controller
         // Get account information
         $akunCoa = Coa::find($validated['akun_coa_id']);
         $akunBank = Coa::find($validated['akun_bank_id']);
-        
+
         $tanggal = $validated['tanggal'];
         $jumlah = $validated['jumlah'];
         $jenisTransaksi = $validated['debit_kredit'];
@@ -467,7 +474,7 @@ class PembayaranAktivitasLainController extends Controller
                 'tanggal_transaksi' => $tanggal,
                 'nomor_referensi' => $nomorReferensi,
                 'jenis_transaksi' => $jenisTransaksiDesc,
-                'keterangan' => $keterangan . ' - ' . ($validated['keterangan'] ?? ''),
+                'keterangan' => $keterangan.' - '.($validated['keterangan'] ?? ''),
                 'debit' => $jumlah,
                 'kredit' => 0,
                 'saldo' => $akunCoa->saldo + $jumlah,
@@ -483,7 +490,7 @@ class PembayaranAktivitasLainController extends Controller
                 'tanggal_transaksi' => $tanggal,
                 'nomor_referensi' => $nomorReferensi,
                 'jenis_transaksi' => $jenisTransaksiDesc,
-                'keterangan' => $keterangan . ' - ' . ($validated['keterangan'] ?? ''),
+                'keterangan' => $keterangan.' - '.($validated['keterangan'] ?? ''),
                 'debit' => 0,
                 'kredit' => $jumlah,
                 'saldo' => $akunBank->saldo - $jumlah,
@@ -500,7 +507,7 @@ class PembayaranAktivitasLainController extends Controller
                 'tanggal_transaksi' => $tanggal,
                 'nomor_referensi' => $nomorReferensi,
                 'jenis_transaksi' => $jenisTransaksiDesc,
-                'keterangan' => $keterangan . ' - ' . ($validated['keterangan'] ?? ''),
+                'keterangan' => $keterangan.' - '.($validated['keterangan'] ?? ''),
                 'debit' => $jumlah,
                 'kredit' => 0,
                 'saldo' => $akunBank->saldo + $jumlah,
@@ -516,7 +523,7 @@ class PembayaranAktivitasLainController extends Controller
                 'tanggal_transaksi' => $tanggal,
                 'nomor_referensi' => $nomorReferensi,
                 'jenis_transaksi' => $jenisTransaksiDesc,
-                'keterangan' => $keterangan . ' - ' . ($validated['keterangan'] ?? ''),
+                'keterangan' => $keterangan.' - '.($validated['keterangan'] ?? ''),
                 'debit' => 0,
                 'kredit' => $jumlah,
                 'saldo' => $akunCoa->saldo - $jumlah,
@@ -536,7 +543,7 @@ class PembayaranAktivitasLainController extends Controller
         // Get account information
         $akunCoa = Coa::find($validated['akun_coa_id']);
         $akunBank = Coa::find($validated['akun_bank_id']);
-        
+
         $tanggal = $validated['tanggal'];
         $jumlah = $validated['jumlah'];
         $jenisTransaksi = $validated['debit_kredit'];
@@ -553,7 +560,7 @@ class PembayaranAktivitasLainController extends Controller
                 'tanggal_transaksi' => $tanggal,
                 'nomor_referensi' => $nomorReferensi,
                 'jenis_transaksi' => $jenisTransaksiDesc,
-                'keterangan' => $keterangan . ' - ' . $validated['keterangan'],
+                'keterangan' => $keterangan.' - '.$validated['keterangan'],
                 'debit' => $jumlah,
                 'kredit' => 0,
                 'saldo' => $akunCoa->saldo + $jumlah,
@@ -569,7 +576,7 @@ class PembayaranAktivitasLainController extends Controller
                 'tanggal_transaksi' => $tanggal,
                 'nomor_referensi' => $nomorReferensi,
                 'jenis_transaksi' => $jenisTransaksiDesc,
-                'keterangan' => $keterangan . ' - ' . $validated['keterangan'],
+                'keterangan' => $keterangan.' - '.$validated['keterangan'],
                 'debit' => 0,
                 'kredit' => $jumlah,
                 'saldo' => $akunBank->saldo - $jumlah,
@@ -586,7 +593,7 @@ class PembayaranAktivitasLainController extends Controller
                 'tanggal_transaksi' => $tanggal,
                 'nomor_referensi' => $nomorReferensi,
                 'jenis_transaksi' => $jenisTransaksiDesc,
-                'keterangan' => $keterangan . ' - ' . $validated['keterangan'],
+                'keterangan' => $keterangan.' - '.$validated['keterangan'],
                 'debit' => $jumlah,
                 'kredit' => 0,
                 'saldo' => $akunBank->saldo + $jumlah,
@@ -602,7 +609,7 @@ class PembayaranAktivitasLainController extends Controller
                 'tanggal_transaksi' => $tanggal,
                 'nomor_referensi' => $nomorReferensi,
                 'jenis_transaksi' => $jenisTransaksiDesc,
-                'keterangan' => $keterangan . ' - ' . $validated['keterangan'],
+                'keterangan' => $keterangan.' - '.$validated['keterangan'],
                 'debit' => 0,
                 'kredit' => $jumlah,
                 'saldo' => $akunCoa->saldo - $jumlah,
@@ -625,6 +632,7 @@ class PembayaranAktivitasLainController extends Controller
     public function show(PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
         $pembayaranAktivitasLain->load(['creator', 'approver']);
+
         return view('pembayaran-aktivitas-lain.show', compact('pembayaranAktivitasLain'));
     }
 
@@ -638,7 +646,7 @@ class PembayaranAktivitasLainController extends Controller
             ->select('id', 'nomor_polisi', 'merek', 'jenis', 'no_kir')
             ->orderBy('nomor_polisi')
             ->get();
-        
+
         // Get voyages from both bls and pergerakan_kapal tables
         $voyagesBl = DB::table('bls')
             ->select('no_voyage as voyage', 'nama_kapal')
@@ -647,7 +655,7 @@ class PembayaranAktivitasLainController extends Controller
             ->distinct()
             ->orderBy('no_voyage')
             ->get();
-            
+
         $voyagesPergerakan = DB::table('pergerakan_kapal')
             ->select('voyage', 'nama_kapal')
             ->whereNotNull('voyage')
@@ -655,47 +663,47 @@ class PembayaranAktivitasLainController extends Controller
             ->distinct()
             ->orderBy('voyage')
             ->get();
-            
+
         // Combine and deduplicate voyages
         $allVoyages = collect();
-        
+
         foreach ($voyagesBl as $voyage) {
-            $allVoyages->push((object)[
+            $allVoyages->push((object) [
                 'voyage' => $voyage->voyage,
                 'nama_kapal' => $voyage->nama_kapal,
-                'source' => 'BL'
+                'source' => 'BL',
             ]);
         }
-        
+
         foreach ($voyagesPergerakan as $voyage) {
             // Only add if not already exists
             $exists = $allVoyages->where('voyage', $voyage->voyage)
-                                ->where('nama_kapal', $voyage->nama_kapal)
-                                ->first();
-            if (!$exists) {
-                $allVoyages->push((object)[
+                ->where('nama_kapal', $voyage->nama_kapal)
+                ->first();
+            if (! $exists) {
+                $allVoyages->push((object) [
                     'voyage' => $voyage->voyage,
                     'nama_kapal' => $voyage->nama_kapal,
-                    'source' => 'Pergerakan Kapal'
+                    'source' => 'Pergerakan Kapal',
                 ]);
             }
         }
-        
+
         $voyages = $allVoyages->sortBy('voyage')->values();
-        
+
         $akunBank = DB::table('akun_coa')
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('tipe_akun', 'like', '%kas%')
-                  ->orWhere('tipe_akun', 'like', '%bank%');
+                    ->orWhere('tipe_akun', 'like', '%bank%');
             })
             ->orderBy('kode_nomor')
             ->get();
-            
+
         $karyawans = DB::table('karyawans')
             ->select('id', 'nama_lengkap', 'pekerjaan')
             ->orderBy('nama_lengkap')
             ->get();
-        
+
         // Get surat jalans for adjustment payments from surat_jalans table
         $suratJalansRegular = DB::table('surat_jalans')
             ->leftJoin('uang_jalans', 'surat_jalans.id', '=', 'uang_jalans.surat_jalan_id')
@@ -709,7 +717,7 @@ class PembayaranAktivitasLainController extends Controller
             ->whereNotNull('surat_jalans.no_surat_jalan')
             ->where('surat_jalans.no_surat_jalan', '!=', '')
             ->get();
-        
+
         // Get surat jalans for adjustment payments from surat_jalan_bongkarans table
         $suratJalansBongkar = DB::table('surat_jalan_bongkarans')
             ->leftJoin('uang_jalans', 'surat_jalan_bongkarans.id', '=', 'uang_jalans.surat_jalan_bongkaran_id')
@@ -723,19 +731,19 @@ class PembayaranAktivitasLainController extends Controller
             ->whereNotNull('surat_jalan_bongkarans.nomor_surat_jalan')
             ->where('surat_jalan_bongkarans.nomor_surat_jalan', '!=', '')
             ->get();
-        
+
         // Combine both surat jalans
         $suratJalans = $suratJalansRegular->merge($suratJalansBongkar)
             ->sortBy('no_surat_jalan')
             ->values();
 
         return view('pembayaran-aktivitas-lain.edit', compact(
-            'pembayaranAktivitasLain', 
-            'akunBiaya', 
-            'akunBank', 
-            'mobils', 
-            'voyages', 
-            'karyawans', 
+            'pembayaranAktivitasLain',
+            'akunBiaya',
+            'akunBank',
+            'mobils',
+            'voyages',
+            'karyawans',
             'suratJalans'
         ));
     }
@@ -774,7 +782,7 @@ class PembayaranAktivitasLainController extends Controller
                 if ($account) {
                     if ($transaction->debit > 0) {
                         $account->update(['saldo' => $account->saldo - $transaction->debit]);
-                    } else if ($transaction->kredit > 0) {
+                    } elseif ($transaction->kredit > 0) {
                         $account->update(['saldo' => $account->saldo + $transaction->kredit]);
                     }
                 }
@@ -793,7 +801,7 @@ class PembayaranAktivitasLainController extends Controller
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Data pembayaran berhasil diupdate',
-                    'redirect' => route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain)
+                    'redirect' => route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain),
                 ]);
             }
 
@@ -801,15 +809,15 @@ class PembayaranAktivitasLainController extends Controller
                 ->with('success', 'Data pembayaran berhasil diupdate');
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Gagal update data: ' . $e->getMessage()
+                    'message' => 'Gagal update data: '.$e->getMessage(),
                 ], 500);
             }
-            
-            return back()->withInput()->with('error', 'Gagal update data: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'Gagal update data: '.$e->getMessage());
         }
     }
 
@@ -829,8 +837,8 @@ class PembayaranAktivitasLainController extends Controller
         try {
             DB::beginTransaction();
 
-            $oldJumlah = (int)$pembayaranAktivitasLain->jumlah;
-            $newJumlah = (int)$request->jumlah;
+            $oldJumlah = (int) $pembayaranAktivitasLain->jumlah;
+            $newJumlah = (int) $request->jumlah;
             $selisih = $newJumlah - $oldJumlah;
 
             if ($selisih === 0) {
@@ -842,16 +850,16 @@ class PembayaranAktivitasLainController extends Controller
 
             // Update related CoaTransactions and Coa balances
             $transactions = CoaTransaction::where('nomor_referensi', $pembayaranAktivitasLain->nomor)->get();
-            
+
             foreach ($transactions as $transaction) {
                 $affectedAccount = Coa::find($transaction->coa_id);
-                
+
                 if ($transaction->debit > 0) {
                     $transaction->update([
                         'debit' => $newJumlah,
-                        'saldo' => $transaction->saldo + $selisih
+                        'saldo' => $transaction->saldo + $selisih,
                     ]);
-                    
+
                     // Adjust Coa balance if it was Dr+
                     if ($affectedAccount) {
                         if ($transaction->coa_id == $pembayaranAktivitasLain->akun_coa_id) {
@@ -862,7 +870,7 @@ class PembayaranAktivitasLainController extends Controller
                                 // Dr. Bank (+)
                                 $affectedAccount->update(['saldo' => $affectedAccount->saldo + $selisih]);
                             }
-                        } else if ($transaction->coa_id == $pembayaranAktivitasLain->akun_bank_id) {
+                        } elseif ($transaction->coa_id == $pembayaranAktivitasLain->akun_bank_id) {
                             if ($pembayaranAktivitasLain->debit_kredit === 'debit') {
                                 // Dr. Bank (+)
                                 $affectedAccount->update(['saldo' => $affectedAccount->saldo + $selisih]);
@@ -871,12 +879,12 @@ class PembayaranAktivitasLainController extends Controller
                             }
                         }
                     }
-                } else if ($transaction->kredit > 0) {
+                } elseif ($transaction->kredit > 0) {
                     $transaction->update([
                         'kredit' => $newJumlah,
-                        'saldo' => $transaction->saldo - $selisih
+                        'saldo' => $transaction->saldo - $selisih,
                     ]);
-                    
+
                     // Adjust Coa balance if it was Cr+
                     if ($affectedAccount) {
                         if ($transaction->coa_id == $pembayaranAktivitasLain->akun_coa_id) {
@@ -884,7 +892,7 @@ class PembayaranAktivitasLainController extends Controller
                                 // Cr. Expense (-)
                                 $affectedAccount->update(['saldo' => $affectedAccount->saldo - $selisih]);
                             }
-                        } else if ($transaction->coa_id == $pembayaranAktivitasLain->akun_bank_id) {
+                        } elseif ($transaction->coa_id == $pembayaranAktivitasLain->akun_bank_id) {
                             if ($pembayaranAktivitasLain->debit_kredit === 'kredit') {
                                 // Cr. Bank (-)
                                 $affectedAccount->update(['saldo' => $affectedAccount->saldo - $selisih]);
@@ -900,7 +908,8 @@ class PembayaranAktivitasLainController extends Controller
                 ->with('success', 'Jumlah berhasil diperbarui dan jurnal telah disesuaikan');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal memperbarui jumlah: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal memperbarui jumlah: '.$e->getMessage());
         }
     }
 
@@ -915,13 +924,13 @@ class PembayaranAktivitasLainController extends Controller
 
         try {
             $pembayaranAktivitasLain->update([
-                'nomor_accurate' => $request->nomor_accurate
+                'nomor_accurate' => $request->nomor_accurate,
             ]);
 
             return redirect()->route('pembayaran-aktivitas-lain.show', $pembayaranAktivitasLain)
                 ->with('success', 'Nomor Accurate berhasil diperbarui');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal memperbarui Nomor Accurate: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui Nomor Accurate: '.$e->getMessage());
         }
     }
 
@@ -930,12 +939,13 @@ class PembayaranAktivitasLainController extends Controller
         try {
             // Delete associated COA transactions
             \App\Models\CoaTransaction::where('nomor_referensi', $pembayaranAktivitasLain->nomor)->delete();
-            
+
             $pembayaranAktivitasLain->delete();
+
             return redirect()->route('pembayaran-aktivitas-lain.index')
                 ->with('success', 'Data berhasil dihapus');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus data: '.$e->getMessage());
         }
     }
 
@@ -954,11 +964,11 @@ class PembayaranAktivitasLainController extends Controller
         }
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor', 'like', "%{$search}%")
-                  ->orWhere('nomor_accurate', 'like', "%{$search}%")
-                  ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                    ->orWhere('jenis_aktivitas', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
@@ -981,8 +991,8 @@ class PembayaranAktivitasLainController extends Controller
         // Jika direct payment (ada no_surat_jalan tapi tidak ada invoice), cari detail surat jalan manual
         if ($pembayaranAktivitasLain->no_surat_jalan && $pembayaranAktivitasLain->invoices->isEmpty()) {
             $sj = \App\Models\SuratJalan::where('no_surat_jalan', $pembayaranAktivitasLain->no_surat_jalan)->first();
-            if (!$sj) {
-                 $sj = \App\Models\SuratJalanBongkaran::where('nomor_surat_jalan', $pembayaranAktivitasLain->no_surat_jalan)->first();
+            if (! $sj) {
+                $sj = \App\Models\SuratJalanBongkaran::where('nomor_surat_jalan', $pembayaranAktivitasLain->no_surat_jalan)->first();
             }
             $pembayaranAktivitasLain->suratJalanDetail = $sj;
         }
@@ -1004,7 +1014,7 @@ class PembayaranAktivitasLainController extends Controller
             'debit' => $validated['debit_kredit'] === 'kredit' ? $validated['jumlah'] : 0,
             'kredit' => $validated['debit_kredit'] === 'debit' ? $validated['jumlah'] : 0,
             'saldo' => 0, // Will be calculated by observer
-            'keterangan' => $validated['keterangan'] ?? 'Pembayaran invoice: ' . $pembayaran->nomor,
+            'keterangan' => $validated['keterangan'] ?? 'Pembayaran invoice: '.$pembayaran->nomor,
             'nomor_referensi' => $pembayaran->nomor,
             'jenis_transaksi' => 'Pembayaran Aktivitas Lain - Invoice',
             'created_by' => Auth::id(),
@@ -1017,7 +1027,7 @@ class PembayaranAktivitasLainController extends Controller
             'debit' => $validated['debit_kredit'] === 'debit' ? $validated['jumlah'] : 0,
             'kredit' => $validated['debit_kredit'] === 'kredit' ? $validated['jumlah'] : 0,
             'saldo' => 0, // Will be calculated by observer
-            'keterangan' => $validated['keterangan'] ?? 'Pembayaran invoice: ' . $pembayaran->nomor,
+            'keterangan' => $validated['keterangan'] ?? 'Pembayaran invoice: '.$pembayaran->nomor,
             'nomor_referensi' => $pembayaran->nomor,
             'jenis_transaksi' => 'Pembayaran Aktivitas Lain - Invoice',
             'created_by' => Auth::id(),

@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Auditable;
 
 class PembayaranInvoiceAktivitasLain extends Model
 {
-    use SoftDeletes, Auditable;
+    use Auditable, SoftDeletes;
 
     protected $table = 'pembayaran_invoice_aktivitas_lain';
 
@@ -80,7 +80,7 @@ class PembayaranInvoiceAktivitasLain extends Model
             'pembayaran_invoice_aktivitas_lain_id',
             'invoice_aktivitas_lain_id'
         )->withPivot('jumlah_dibayar')
-          ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -99,9 +99,9 @@ class PembayaranInvoiceAktivitasLain extends Model
         $year = date('Y');
         $month = date('m');
         $prefix = "PIAL/{$year}/{$month}/";
-        
+
         $lastRecord = self::withTrashed()
-            ->where('nomor', 'like', $prefix . '%')
+            ->where('nomor', 'like', $prefix.'%')
             ->lockForUpdate()
             ->orderBy('nomor', 'desc')
             ->first();
@@ -113,7 +113,7 @@ class PembayaranInvoiceAktivitasLain extends Model
             $newNumber = 1;
         }
 
-        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 
     /**

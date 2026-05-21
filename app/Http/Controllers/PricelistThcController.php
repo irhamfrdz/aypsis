@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PricelistThc;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Exports\PricelistThcExport;
+use App\Models\PricelistThc;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PricelistThcController extends Controller
@@ -17,12 +16,12 @@ class PricelistThcController extends Controller
     {
         $query = PricelistThc::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_barang', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%")
-                  ->orWhere('vendor', 'like', "%{$search}%");
+                    ->orWhere('lokasi', 'like', "%{$search}%")
+                    ->orWhere('vendor', 'like', "%{$search}%");
             });
         }
 
@@ -72,6 +71,7 @@ class PricelistThcController extends Controller
     public function edit($id)
     {
         $pricelistThc = PricelistThc::findOrFail($id);
+
         return view('master.pricelist-thc.edit', compact('pricelistThc'));
     }
 
@@ -81,7 +81,7 @@ class PricelistThcController extends Controller
     public function update(Request $request, $id)
     {
         $pricelistThc = PricelistThc::findOrFail($id);
-        
+
         $request->validate([
             'nama_barang' => 'required|string|max:255',
             'lokasi' => 'nullable|in:Jakarta,Batam,Pinang',

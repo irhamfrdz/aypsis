@@ -23,7 +23,7 @@ return new class extends Migration
 
             $table->foreign('surat_jalan_id')->references('id')->on('surat_jalans')->onDelete('cascade');
             $table->foreign('approved_by')->references('id')->on('users')->onDelete('set null');
-            
+
             // Unique constraint untuk mencegah duplikasi approval per level
             $table->unique(['surat_jalan_id', 'approval_level']);
         });

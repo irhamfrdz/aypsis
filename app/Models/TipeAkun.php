@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class TipeAkun extends Model
 {
     use Auditable;
@@ -14,6 +13,6 @@ class TipeAkun extends Model
 
     protected $fillable = [
         'tipe_akun',
-        'catatan'
+        'catatan',
     ];
 }

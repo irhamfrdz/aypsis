@@ -2,21 +2,22 @@
 
 namespace App\Exports;
 
-use Illuminate\Support\Collection;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class ReportRitExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $suratJalans;
+
     protected $startDate;
+
     protected $endDate;
 
     public function __construct($suratJalans, $startDate, $endDate)
@@ -28,11 +29,16 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
 
     public function collection()
     {
-        return $this->suratJalans->map(function($sj, $index) {
+        return $this->suratJalans->map(function ($sj, $index) {
             // helper to access both array and object
-            $get = function($key, $default = null) use ($sj) {
-                if (is_array($sj)) return $sj[$key] ?? $default;
-                if (is_object($sj)) return $sj->$key ?? $default;
+            $get = function ($key, $default = null) use ($sj) {
+                if (is_array($sj)) {
+                    return $sj[$key] ?? $default;
+                }
+                if (is_object($sj)) {
+                    return $sj->$key ?? $default;
+                }
+
                 return $default;
             };
 
@@ -53,17 +59,15 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             // Kegiatan
             $kegiatan = ucfirst(strtolower($get('kegiatan') ? $get('kegiatan') : 'tarik isi'));
 
-
             // Supir - menggunakan nama panggilan dari field 'supir'
             $supir = $get('supir') ? $get('supir') : '-';
             // Format NIK as text by adding a single quote prefix for Excel
-            $nikSupir = $get('nik_supir') ? "'" . $get('nik_supir') : '-';
+            $nikSupir = $get('nik_supir') ? "'".$get('nik_supir') : '-';
 
             // Kenek
             $kenek = $get('kenek') ? $get('kenek') : '-';
             // Format NIK as text by adding a single quote prefix for Excel
-            $nikKenek = $get('nik_kenek') ? "'" . $get('nik_kenek') : '-';
-
+            $nikKenek = $get('nik_kenek') ? "'".$get('nik_kenek') : '-';
 
             // Pengirim, Penerima, Jenis Barang
             $pengirim = $get('pengirim') ? $get('pengirim') : '-';
@@ -82,7 +86,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             $hasCek = false;
             $rawSupirNik = $get('nik_supir');
             $rawTanggalSj = $get('tanggal_surat_jalan');
-            
+
             $tanggalDisplay = ($tanggal != '-') ? Carbon::createFromFormat('d/m/Y', $tanggal)->format('Y-m-d') : null;
             $tanggalSjFormat = $rawTanggalSj ? (is_string($rawTanggalSj) ? Carbon::parse($rawTanggalSj)->format('Y-m-d') : $rawTanggalSj->format('Y-m-d')) : null;
 
@@ -90,9 +94,9 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
             if ($rawSupirNik) {
                 $karyawanId = \App\Models\Karyawan::where('nik', $rawSupirNik)->value('id');
             }
-            
+
             $supirName = $get('supir');
-            if (!$karyawanId && $supirName && $supirName != '-') {
+            if (! $karyawanId && $supirName && $supirName != '-') {
                 $karyawanId = \App\Models\Karyawan::where('nama_panggilan', $supirName)
                     ->orWhere('nama_lengkap', $supirName)
                     ->value('id');
@@ -100,7 +104,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
 
             if ($karyawanId) {
                 $queryDates = array_filter(array_unique([$tanggalDisplay, $tanggalSjFormat]));
-                if (!empty($queryDates)) {
+                if (! empty($queryDates)) {
                     $hasCek = \App\Models\CekKendaraan::where('karyawan_id', $karyawanId)
                         ->whereIn('tanggal', $queryDates)
                         ->exists();
@@ -152,7 +156,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 // Style header
                 $event->sheet->getStyle('A1:O1')->applyFromArray([
                     'font' => [
@@ -177,7 +181,7 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
 
                 // Add borders to all cells with data
                 $lastRow = $event->sheet->getHighestRow();
-                $event->sheet->getStyle('A1:O' . $lastRow)->applyFromArray([
+                $event->sheet->getStyle('A1:O'.$lastRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
@@ -187,16 +191,16 @@ class ReportRitExport implements FromCollection, WithHeadings, ShouldAutoSize, W
                 ]);
 
                 // Center align nomor column
-                $event->sheet->getStyle('A2:A' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $event->sheet->getStyle('A2:A'.$lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 // Add title
                 $event->sheet->insertNewRowBefore(1, 2);
                 $event->sheet->setCellValue('A1', 'REPORT RIT');
-                $event->sheet->setCellValue('A2', 'Periode: ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
-                
+                $event->sheet->setCellValue('A2', 'Periode: '.$this->startDate->format('d/m/Y').' - '.$this->endDate->format('d/m/Y'));
+
                 $event->sheet->mergeCells('A1:O1');
                 $event->sheet->mergeCells('A2:O2');
-                
+
                 $event->sheet->getStyle('A1:O1')->applyFromArray([
                     'font' => [
                         'bold' => true,

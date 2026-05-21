@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -32,7 +32,7 @@ return new class extends Migration
                     });
                     echo "Dropped foreign key constraints from: $tableName\n";
                 } catch (Exception $e) {
-                    echo "Warning: Could not drop foreign key from $tableName - " . $e->getMessage() . "\n";
+                    echo "Warning: Could not drop foreign key from $tableName - ".$e->getMessage()."\n";
                 }
             }
 

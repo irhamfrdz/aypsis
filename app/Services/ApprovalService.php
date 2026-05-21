@@ -3,10 +3,9 @@
 namespace App\Services;
 
 use App\Models\Permohonan;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
-use Carbon\Carbon;
 
 class ApprovalService
 {
@@ -28,7 +27,7 @@ class ApprovalService
             || ($kegiatanLower === 'pengambilan');
 
         // determine done date (earliest checkpoint) if not supplied
-        if (!$dateForTagihan) {
+        if (! $dateForTagihan) {
             if ($permohonan->checkpoints && $permohonan->checkpoints->count()) {
                 $dateForTagihan = $permohonan->checkpoints->min('tanggal_checkpoint');
                 $dateForTagihan = Carbon::parse($dateForTagihan)->toDateString();
@@ -45,7 +44,7 @@ class ApprovalService
                     $kontainer->status = 'dikembalikan';
                 } else {
                     // if incoming delivery with sewa dates set, mark Disewa
-                    if ($permohonan->kegiatan == 'pengiriman' && !empty($permohonan->tanggal_masuk_sewa)) {
+                    if ($permohonan->kegiatan == 'pengiriman' && ! empty($permohonan->tanggal_masuk_sewa)) {
                         $kontainer->status = 'Disewa';
                         $kontainer->tanggal_masuk_sewa = $permohonan->tanggal_masuk_sewa;
                         $kontainer->tanggal_selesai_sewa = $permohonan->tanggal_selesai_sewa ?? null;
@@ -57,10 +56,11 @@ class ApprovalService
             }
         }
 
-    // Tagihan creation removed: approval processing no longer auto-creates/merges tagihan rows.
-    // Keep a placeholder variable for compatibility with callers.
-    $tagihanId = null;
+        // Tagihan creation removed: approval processing no longer auto-creates/merges tagihan rows.
+        // Keep a placeholder variable for compatibility with callers.
+        $tagihanId = null;
         $permohonan->save();
+
         return $tagihanId;
     }
 
@@ -69,13 +69,19 @@ class ApprovalService
      */
     public function processBulk(array $permohonanIds)
     {
-        $processed = 0; $inserted = 0; $updated = 0; $skipped = 0; $errors = 0;
+        $processed = 0;
+        $inserted = 0;
+        $updated = 0;
+        $skipped = 0;
+        $errors = 0;
         DB::beginTransaction();
         try {
-            $rows = Permohonan::whereIn('id', $permohonanIds)->with(['kontainers','checkpoints'])->get();
+            $rows = Permohonan::whereIn('id', $permohonanIds)->with(['kontainers', 'checkpoints'])->get();
             foreach ($rows as $p) {
                 $pid = $this->processPermohonan($p);
-                if ($pid) $processed++;
+                if ($pid) {
+                    $processed++;
+                }
             }
             DB::commit();
         } catch (\Exception $e) {
@@ -83,7 +89,8 @@ class ApprovalService
             Log::error('ApprovalService: processBulk failed', ['error' => $e->getMessage()]);
             $errors++;
         }
-        return compact('processed','inserted','updated','skipped','errors');
+
+        return compact('processed', 'inserted', 'updated', 'skipped', 'errors');
     }
 
     /**
@@ -97,6 +104,7 @@ class ApprovalService
             'permohonan_id' => $permohonan->id ?? null,
             'dateForTagihan' => $dateForTagihan,
         ]);
+
         return null;
     }
 }

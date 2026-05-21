@@ -9,19 +9,19 @@ class AddPriceFieldsToTagihanKontainerSewaKontainers extends Migration
     public function up()
     {
         Schema::table('tagihan_kontainer_sewa_kontainers', function (Blueprint $table) {
-            if (!Schema::hasColumn('tagihan_kontainer_sewa_kontainers', 'harga')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa_kontainers', 'harga')) {
                 $table->decimal('harga', 15, 2)->nullable()->after('kontainer_id');
             }
-            if (!Schema::hasColumn('tagihan_kontainer_sewa_kontainers', 'dpp')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa_kontainers', 'dpp')) {
                 $table->decimal('dpp', 15, 2)->nullable()->after('harga');
             }
-            if (!Schema::hasColumn('tagihan_kontainer_sewa_kontainers', 'ppn')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa_kontainers', 'ppn')) {
                 $table->decimal('ppn', 15, 2)->nullable()->after('dpp');
             }
-            if (!Schema::hasColumn('tagihan_kontainer_sewa_kontainers', 'pph')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa_kontainers', 'pph')) {
                 $table->decimal('pph', 15, 2)->nullable()->after('ppn');
             }
-            if (!Schema::hasColumn('tagihan_kontainer_sewa_kontainers', 'grand_total')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa_kontainers', 'grand_total')) {
                 $table->decimal('grand_total', 15, 2)->nullable()->after('pph');
             }
         });
@@ -31,7 +31,7 @@ class AddPriceFieldsToTagihanKontainerSewaKontainers extends Migration
     {
         Schema::table('tagihan_kontainer_sewa_kontainers', function (Blueprint $table) {
             if (Schema::hasColumn('tagihan_kontainer_sewa_kontainers', 'grand_total')) {
-                $table->dropColumn(['grand_total','pph','ppn','dpp','harga']);
+                $table->dropColumn(['grand_total', 'pph', 'ppn', 'dpp', 'harga']);
             }
         });
     }

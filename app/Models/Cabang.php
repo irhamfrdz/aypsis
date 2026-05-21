@@ -2,19 +2,18 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class Cabang extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $fillable = [
         'nama_cabang',
-        'keterangan'
+        'keterangan',
     ];
 
     protected $table = 'cabangs';

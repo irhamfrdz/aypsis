@@ -16,14 +16,14 @@ return new class extends Migration
             $table->dropForeign(['surat_jalan_id']);
             $table->dropColumn([
                 'surat_jalan_id',
-                'no_surat_jalan', 
+                'no_surat_jalan',
                 'supir_nama',
                 'kenek_nama',
                 'no_plat',
                 'uang_rit_kenek',
-                'total_rit'
+                'total_rit',
             ]);
-            
+
             // Add new fields for summary data
             $table->integer('jumlah_surat_jalan')->default(0)->after('tanggal');
             $table->integer('jumlah_kenek')->default(0)->after('jumlah_surat_jalan');
@@ -43,13 +43,13 @@ return new class extends Migration
             // Remove new fields
             $table->dropColumn([
                 'jumlah_surat_jalan',
-                'jumlah_kenek', 
+                'jumlah_kenek',
                 'total_uang_kenek',
                 'total_hutang',
                 'total_tabungan',
-                'grand_total'
+                'grand_total',
             ]);
-            
+
             // Add back original fields
             $table->unsignedBigInteger('surat_jalan_id')->after('tanggal');
             $table->string('no_surat_jalan')->after('surat_jalan_id');
@@ -58,7 +58,7 @@ return new class extends Migration
             $table->string('no_plat')->after('kenek_nama');
             $table->decimal('uang_rit_kenek', 15, 2)->default(50000)->after('no_plat');
             $table->decimal('total_rit', 15, 2)->default(0)->after('uang_rit_kenek');
-            
+
             // Add back foreign key
             $table->foreign('surat_jalan_id')->references('id')->on('surat_jalans')->onDelete('cascade');
         });

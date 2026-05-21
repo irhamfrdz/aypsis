@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Karyawan;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
-use App\Models\User;
-use App\Models\Karyawan;
 
 class ProfileController extends Controller
 {
@@ -78,12 +77,12 @@ class ProfileController extends Controller
         $user = Auth::user();
         $user = User::with('karyawan')->find($user->id);
 
-        if (!$user->karyawan) {
+        if (! $user->karyawan) {
             return back()->withErrors(['error' => 'Data karyawan tidak ditemukan.']);
         }
 
         $request->validate([
-            'nik' => 'nullable|string|max:20|unique:karyawan,nik,' . $user->karyawan->id,
+            'nik' => 'nullable|string|max:20|unique:karyawan,nik,'.$user->karyawan->id,
             'nama_lengkap' => 'required|string|max:255',
             'nama_panggilan' => 'nullable|string|max:100',
             'email' => 'nullable|email|max:255',
@@ -115,7 +114,7 @@ class ProfileController extends Controller
             'tanggal_masuk',
             'divisi',
             'pekerjaan',
-            'no_ketenagakerjaan'
+            'no_ketenagakerjaan',
         ]));
 
         return back()->with('success', 'Data pribadi berhasil diperbarui.');

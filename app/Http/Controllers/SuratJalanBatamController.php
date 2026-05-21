@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\SuratJalanBatam;
-use App\Models\OrderBatam;
-use App\Models\Karyawan;
-use App\Models\StockKontainer;
 use App\Models\Kontainer;
 use App\Models\PricelistUangJalanBatam;
+use App\Models\StockKontainer;
+use App\Models\SuratJalanBatam;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SuratJalanBatamController extends Controller
 {
@@ -24,16 +21,16 @@ class SuratJalanBatamController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('alamat', 'like', "%{$search}%")
-                  ->orWhere('jenis_barang', 'like', "%{$search}%")
-                  ->orWhere('tipe_kontainer', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('f_e', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%");
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%")
+                    ->orWhere('jenis_barang', 'like', "%{$search}%")
+                    ->orWhere('tipe_kontainer', 'like', "%{$search}%")
+                    ->orWhere('no_kontainer', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('f_e', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%");
             });
         }
 
@@ -45,16 +42,16 @@ class SuratJalanBatamController extends Controller
         // Filter by status pembayaran
         if ($request->filled('status_pembayaran') && $request->status_pembayaran !== 'all') {
             $statusPembayaran = $request->status_pembayaran;
-            $query->where(function($q) use ($statusPembayaran) {
+            $query->where(function ($q) use ($statusPembayaran) {
                 if ($statusPembayaran === 'sudah_dibayar') {
                     $q->where('status_pembayaran', 'sudah_dibayar')
-                      ->orWhere('status_pembayaran_uang_jalan', 'dibayar');
+                        ->orWhere('status_pembayaran_uang_jalan', 'dibayar');
                 } elseif ($statusPembayaran === 'belum_dibayar') {
                     $q->where('status_pembayaran_uang_jalan', 'sudah_masuk_uang_jalan')
-                      ->where('status_pembayaran', '!=', 'sudah_dibayar');
+                        ->where('status_pembayaran', '!=', 'sudah_dibayar');
                 } else { // belum_masuk_pranota
                     $q->where('status_pembayaran_uang_jalan', 'belum_ada')
-                      ->where('status_pembayaran', '!=', 'sudah_dibayar');
+                        ->where('status_pembayaran', '!=', 'sudah_dibayar');
                 }
             });
         }
@@ -69,8 +66,8 @@ class SuratJalanBatamController extends Controller
         }
 
         $suratJalans = $query->with('orderBatam')
-                             ->orderBy('created_at', 'desc')
-                             ->paginate(15);
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
         return view('surat-jalan-batam.index', compact('suratJalans'));
     }
@@ -84,16 +81,16 @@ class SuratJalanBatamController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_order', 'like', "%{$search}%")
-                  ->orWhere('tujuan_kirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_ambil', 'like', "%{$search}%");
+                    ->orWhere('tujuan_kirim', 'like', "%{$search}%")
+                    ->orWhere('tujuan_ambil', 'like', "%{$search}%");
             });
         }
 
         $orders = $query->orderBy('tanggal_order', 'desc')
-                       ->orderBy('created_at', 'desc')
-                       ->paginate(15);
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
         return view('surat-jalan-batam.select-order', compact('orders'));
     }
@@ -106,7 +103,7 @@ class SuratJalanBatamController extends Controller
         $selectedOrder = null;
         if ($request->filled('order_id')) {
             $selectedOrder = \App\Models\OrderBatam::with(['pengirim', 'jenisBarang', 'tujuanAmbil', 'term'])
-                                  ->find($request->order_id);
+                ->find($request->order_id);
         }
 
         $supirs = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->get();
@@ -114,16 +111,16 @@ class SuratJalanBatamController extends Controller
         $kranis = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'KRANI')->get();
         $terms = \App\Models\Term::orderBy('kode')->get();
         $masterKegiatans = \App\Models\MasterKegiatan::where('type', 'kegiatan surat jalan')
-                                         ->where('status', 'aktif')
-                                         ->orderBy('nama_kegiatan')
-                                         ->get();
+            ->where('status', 'aktif')
+            ->orderBy('nama_kegiatan')
+            ->get();
         $jenisBarangs = \App\Models\JenisBarang::orderBy('nama_barang')->get();
-        
+
         // Calculate default uang jalan from pricelist
         $defaultUangJalan = 0;
         if ($selectedOrder) {
             $pricelist = null; // Removed rute lookup
-            
+
             if ($pricelist) {
                 $defaultUangJalan = $pricelist->tarif;
             }
@@ -134,9 +131,10 @@ class SuratJalanBatamController extends Controller
             ->distinct()
             ->whereNotNull('ukuran')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 $val = strtoupper(str_replace(['ft', 'FT', ' '], '', $item->ukuran));
-                return $val ? $val . 'FT' : null;
+
+                return $val ? $val.'FT' : null;
             })
             ->filter()
             ->unique()
@@ -153,13 +151,14 @@ class SuratJalanBatamController extends Controller
 
         $daftarKontainers = $stockContainers->concat($sewaContainers)
             ->unique('nomor_seri_gabungan')
-            ->map(function($item) {
+            ->map(function ($item) {
                 $val = strtoupper(str_replace(['ft', 'FT', ' '], '', $item->ukuran));
-                $size = $val ? $val . 'FT' : '';
+                $size = $val ? $val.'FT' : '';
+
                 return [
                     'no' => $item->nomor_seri_gabungan,
                     'size' => $size,
-                    'tipe' => $item->tipe_kontainer ?? ''
+                    'tipe' => $item->tipe_kontainer ?? '',
                 ];
             })
             ->sortBy('no')
@@ -168,25 +167,25 @@ class SuratJalanBatamController extends Controller
 
         $pricelistRings = PricelistUangJalanBatam::select('ring', 'expedisi', 'status', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
-                    'value' => 'Ring ' . $item->ring . ' ' . $item->expedisi,
-                    'label' => 'Ring ' . $item->ring . ' ' . $item->expedisi,
+                    'value' => 'Ring '.$item->ring.' '.$item->expedisi,
+                    'label' => 'Ring '.$item->ring.' '.$item->expedisi,
                     'rates' => [
                         '20_Full' => $item->tarif_20ft_full,
                         '20_Empty' => $item->tarif_20ft_empty,
                         '40_Full' => $item->tarif_40ft_full,
                         '40_Empty' => $item->tarif_40ft_empty,
-                    ]
+                    ],
                 ];
             })
             ->unique('value')
             ->values();
-        
+
         $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
-        
+
         $allPenerimas = \App\Models\Penerima::orderBy('nama_penerima')->get();
-        
+
         return view('surat-jalan-batam.create', compact('selectedOrder', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'jenisBarangs', 'defaultUangJalan', 'ukuranKontainers', 'daftarKontainers', 'pricelistRings', 'masterTujuanKirims', 'allPenerimas'));
     }
 
@@ -243,7 +242,7 @@ class SuratJalanBatamController extends Controller
         if ($suratJalan->order_batam_id) {
             $order = $suratJalan->orderBatam;
             if ($order && $order->isOutstanding()) {
-                $order->processUnits(1, 'Dibuat Surat Jalan Batam: ' . $suratJalan->no_surat_jalan);
+                $order->processUnits(1, 'Dibuat Surat Jalan Batam: '.$suratJalan->no_surat_jalan);
             }
         }
 
@@ -256,6 +255,7 @@ class SuratJalanBatamController extends Controller
     public function show(string $id)
     {
         $suratJalan = SuratJalanBatam::with('orderBatam')->findOrFail($id);
+
         return view('surat-jalan-batam.show', compact('suratJalan'));
     }
 
@@ -270,19 +270,19 @@ class SuratJalanBatamController extends Controller
         $kranis = \App\Models\Karyawan::where('status', 'active')->where('divisi', 'KRANI')->get();
         $terms = \App\Models\Term::orderBy('kode')->get();
         $masterKegiatans = \App\Models\MasterKegiatan::where('type', 'kegiatan surat jalan')
-                                         ->where('status', 'aktif')
-                                         ->orderBy('nama_kegiatan')
-                                         ->get();
+            ->where('status', 'aktif')
+            ->orderBy('nama_kegiatan')
+            ->get();
         $jenisBarangs = \App\Models\JenisBarang::orderBy('nama_barang')->get();
 
-        
         $ukuranKontainers = StockKontainer::select('ukuran')
             ->distinct()
             ->whereNotNull('ukuran')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 $val = strtoupper(str_replace(['ft', 'FT', ' '], '', $item->ukuran));
-                return $val ? $val . 'FT' : null;
+
+                return $val ? $val.'FT' : null;
             })
             ->filter()
             ->unique()
@@ -299,13 +299,14 @@ class SuratJalanBatamController extends Controller
 
         $daftarKontainers = $stockContainers->concat($sewaContainers)
             ->unique('nomor_seri_gabungan')
-            ->map(function($item) {
+            ->map(function ($item) {
                 $val = strtoupper(str_replace(['ft', 'FT', ' '], '', $item->ukuran));
-                $size = $val ? $val . 'FT' : '';
+                $size = $val ? $val.'FT' : '';
+
                 return [
                     'no' => $item->nomor_seri_gabungan,
                     'size' => $size,
-                    'tipe' => $item->tipe_kontainer ?? ''
+                    'tipe' => $item->tipe_kontainer ?? '',
                 ];
             })
             ->sortBy('no')
@@ -314,16 +315,16 @@ class SuratJalanBatamController extends Controller
 
         $pricelistRings = PricelistUangJalanBatam::select('ring', 'expedisi', 'status', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
-                    'value' => 'Ring ' . $item->ring . ' ' . $item->expedisi,
-                    'label' => 'Ring ' . $item->ring . ' ' . $item->expedisi,
+                    'value' => 'Ring '.$item->ring.' '.$item->expedisi,
+                    'label' => 'Ring '.$item->ring.' '.$item->expedisi,
                     'rates' => [
                         '20_Full' => $item->tarif_20ft_full,
                         '20_Empty' => $item->tarif_20ft_empty,
                         '40_Full' => $item->tarif_40ft_full,
                         '40_Empty' => $item->tarif_40ft_empty,
-                    ]
+                    ],
                 ];
             })
             ->unique('value')
@@ -342,9 +343,9 @@ class SuratJalanBatamController extends Controller
     public function update(Request $request, string $id)
     {
         $suratJalan = SuratJalanBatam::findOrFail($id);
-        
+
         $validated = $request->validate([
-            'no_surat_jalan' => 'required|unique:surat_jalan_batams,no_surat_jalan,' . $id,
+            'no_surat_jalan' => 'required|unique:surat_jalan_batams,no_surat_jalan,'.$id,
             'tanggal_surat_jalan' => 'required|date',
             'term' => 'nullable|string',
             'aktifitas' => 'nullable|string',
@@ -399,7 +400,7 @@ class SuratJalanBatamController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        if (!Auth::user()->can('surat-jalan-batam-approve')) {
+        if (! Auth::user()->can('surat-jalan-batam-approve')) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -413,6 +414,7 @@ class SuratJalanBatamController extends Controller
     public function print($id)
     {
         $suratJalan = SuratJalanBatam::with('orderBatam')->findOrFail($id);
+
         // This would normally return a PDF or a print view
         return view('surat-jalan-batam.print', compact('suratJalan'));
     }
@@ -420,12 +422,14 @@ class SuratJalanBatamController extends Controller
     public function printMemo($id)
     {
         $suratJalan = SuratJalanBatam::findOrFail($id);
+
         return view('surat-jalan-batam.print-memo', compact('suratJalan'));
     }
 
     public function printPreprinted($id)
     {
         $suratJalan = SuratJalanBatam::findOrFail($id);
+
         return view('surat-jalan-batam.print-preprinted', compact('suratJalan'));
     }
 
@@ -434,11 +438,11 @@ class SuratJalanBatamController extends Controller
         $date = $request->date ? \Carbon\Carbon::parse($request->date) : now();
         $year = $date->format('Y');
         $month = $date->format('m');
-        
+
         $lastSj = SuratJalanBatam::whereYear('tanggal_surat_jalan', $year)
-                                 ->whereMonth('tanggal_surat_jalan', $month)
-                                 ->orderBy('no_surat_jalan', 'desc')
-                                 ->first();
+            ->whereMonth('tanggal_surat_jalan', $month)
+            ->orderBy('no_surat_jalan', 'desc')
+            ->first();
 
         $nextNumber = 1;
         if ($lastSj) {
@@ -447,7 +451,7 @@ class SuratJalanBatamController extends Controller
             $nextNumber = $lastNum + 1;
         }
 
-        $formattedNumber = "SJB/{$year}/{$month}/" . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        $formattedNumber = "SJB/{$year}/{$month}/".str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
         return response()->json(['number' => $formattedNumber]);
     }

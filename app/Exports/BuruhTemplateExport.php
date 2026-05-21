@@ -2,13 +2,13 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class BuruhTemplateExport implements FromArray, WithHeadings, ShouldAutoSize, WithStyles
+class BuruhTemplateExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyles
 {
     public function headings(): array
     {
@@ -34,7 +34,7 @@ class BuruhTemplateExport implements FromArray, WithHeadings, ShouldAutoSize, Wi
                 '0987654321',
                 'non-aktif',
                 'tidak aktif',
-            ]
+            ],
         ];
     }
 

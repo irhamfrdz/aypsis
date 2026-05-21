@@ -23,8 +23,8 @@ return new class extends Migration
     {
         Schema::table('pranota_surat_jalans', function (Blueprint $table) {
             $table->enum('status_pranota', ['pending', 'paid', 'cancelled'])
-                  ->default('pending')
-                  ->after('total_amount');
+                ->default('pending')
+                ->after('total_amount');
         });
     }
 };

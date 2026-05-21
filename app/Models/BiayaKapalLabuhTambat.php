@@ -53,7 +53,7 @@ class BiayaKapalLabuhTambat extends Model
      */
     public function getFormattedSubTotalAttribute()
     {
-        return 'Rp ' . number_format($this->sub_total, 0, ',', '.');
+        return 'Rp '.number_format($this->sub_total, 0, ',', '.');
     }
 
     /**
@@ -61,7 +61,7 @@ class BiayaKapalLabuhTambat extends Model
      */
     public function getFormattedGrandTotalAttribute()
     {
-        return 'Rp ' . number_format($this->grand_total, 0, ',', '.');
+        return 'Rp '.number_format($this->grand_total, 0, ',', '.');
     }
 
     /**
@@ -69,7 +69,7 @@ class BiayaKapalLabuhTambat extends Model
      */
     public function getFormattedPpnAttribute()
     {
-        return 'Rp ' . number_format($this->ppn, 0, ',', '.');
+        return 'Rp '.number_format($this->ppn, 0, ',', '.');
     }
 
     /**
@@ -77,6 +77,6 @@ class BiayaKapalLabuhTambat extends Model
      */
     public function getFormattedBiayaMateraiAttribute()
     {
-        return 'Rp ' . number_format($this->biaya_materai, 0, ',', '.');
+        return 'Rp '.number_format($this->biaya_materai, 0, ',', '.');
     }
 }

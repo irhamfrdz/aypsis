@@ -30,7 +30,7 @@ return new class extends Migration
             $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
-            
+
             // Indexes
             $table->index(['status_pembayaran', 'tanggal_pembayaran'], 'idx_btm_status_tanggal');
             $table->index(['jenis_transaksi'], 'idx_btm_jenis_transaksi');

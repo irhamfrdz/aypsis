@@ -2,18 +2,18 @@
 
 namespace App\Providers;
 
-use App\Models\Permission;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Pagination\Paginator;
-use App\Models\User;
 use App\Models\Kontainer;
+use App\Models\Permission;
 use App\Models\StockKontainer;
 use App\Models\UangJalan;
+use App\Models\User;
 use App\Observers\KontainerObserver;
 use App\Observers\StockKontainerObserver;
 use App\Observers\UangJalanObserver;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {

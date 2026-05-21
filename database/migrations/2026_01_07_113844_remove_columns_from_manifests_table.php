@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('manifests', function (Blueprint $table) {
             // Drop foreign key first
             $table->dropForeign(['supir_id']);
-            
+
             // Drop columns
             $table->dropColumn([
                 'status_bongkar',
@@ -41,7 +41,7 @@ return new class extends Migration
             $table->unsignedBigInteger('supir_id')->nullable()->after('updated_at')->index();
             $table->timestamp('tanggal_ob')->nullable()->after('supir_id');
             $table->text('catatan_ob')->nullable()->after('tanggal_ob');
-            
+
             $table->foreign('supir_id')->references('id')->on('karyawans')->onDelete('set null');
         });
     }

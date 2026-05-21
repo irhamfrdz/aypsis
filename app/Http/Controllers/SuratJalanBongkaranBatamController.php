@@ -2,19 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SuratJalanBongkaranBatam;
+use App\Exports\SuratJalanBongkaranTableExport;
 use App\Models\Manifest;
 use App\Models\MasterKapal;
-use App\Models\User;
-use App\Models\TujuanKegiatanUtama;
 use App\Models\MasterKegiatan;
+use App\Models\SuratJalanBongkaranBatam;
+use App\Models\TujuanKegiatanUtama;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Pagination\LengthAwarePaginator;
-use App\Exports\SuratJalanBongkaranTableExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class SuratJalanBongkaranBatamController extends Controller
@@ -35,27 +32,27 @@ class SuratJalanBongkaranBatamController extends Controller
     {
         // Get unique kapal names from Manifest table with normalization
         $kapals = Manifest::select('nama_kapal')
-                    ->whereNotNull('nama_kapal')
-                    ->where('nama_kapal', '!=', '')
-                    ->get()
-                    ->map(function($item) {
-                        // Normalize: remove dots after KM/KMP, trim spaces, uppercase
-                        return trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
-                    })
-                    ->unique()
-                    ->sort()
-                    ->values();
+            ->whereNotNull('nama_kapal')
+            ->where('nama_kapal', '!=', '')
+            ->get()
+            ->map(function ($item) {
+                // Normalize: remove dots after KM/KMP, trim spaces, uppercase
+                return trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
+            })
+            ->unique()
+            ->sort()
+            ->values();
 
         // Get voyages for selected kapal
         $voyages = collect();
         if ($request->filled('nama_kapal')) {
-            $voyages = Manifest::where('nama_kapal', 'LIKE', '%' . str_replace(['KM ', 'KMP '], ['%', '%'], $request->nama_kapal) . '%')
-                        ->select('no_voyage')
-                        ->whereNotNull('no_voyage')
-                        ->distinct()
-                        ->orderBy('no_voyage')
-                        ->get()
-                        ->pluck('no_voyage');
+            $voyages = Manifest::where('nama_kapal', 'LIKE', '%'.str_replace(['KM ', 'KMP '], ['%', '%'], $request->nama_kapal).'%')
+                ->select('no_voyage')
+                ->whereNotNull('no_voyage')
+                ->distinct()
+                ->orderBy('no_voyage')
+                ->get()
+                ->pluck('no_voyage');
         }
 
         return view('surat-jalan-bongkaran-batam.select-ship', compact('kapals', 'voyages'));
@@ -68,7 +65,7 @@ class SuratJalanBongkaranBatamController extends Controller
     {
         $nama_kapal = $request->query('nama_kapal');
 
-        if (!$nama_kapal) {
+        if (! $nama_kapal) {
             return response()->json(['success' => false, 'message' => 'Nama kapal is required'], 400);
         }
 
@@ -76,18 +73,18 @@ class SuratJalanBongkaranBatamController extends Controller
         $kapalClean = strtolower(str_replace('.', '', $nama_kapal));
 
         $voyages = Manifest::select('no_voyage')
-                    ->where(function($q) use ($nama_kapal, $kapalClean) {
-                        $q->where('nama_kapal', $nama_kapal)
-                          ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
-                    })
-                    ->whereNotNull('no_voyage')
-                    ->distinct()
-                    ->orderBy('no_voyage', 'desc')
-                    ->pluck('no_voyage');
+            ->where(function ($q) use ($nama_kapal, $kapalClean) {
+                $q->where('nama_kapal', $nama_kapal)
+                    ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+            })
+            ->whereNotNull('no_voyage')
+            ->distinct()
+            ->orderBy('no_voyage', 'desc')
+            ->pluck('no_voyage');
 
         return response()->json([
             'success' => true,
-            'voyages' => $voyages
+            'voyages' => $voyages,
         ]);
     }
 
@@ -111,9 +108,9 @@ class SuratJalanBongkaranBatamController extends Controller
             // Filter by selected kapal and voyage if provided
             if ($selectedKapal) {
                 $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
-                $query->where(function($q) use ($selectedKapal, $kapalClean) {
+                $query->where(function ($q) use ($selectedKapal, $kapalClean) {
                     $q->where('nama_kapal', $selectedKapal)
-                      ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                        ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
                 });
             }
             if ($selectedVoyage) {
@@ -123,9 +120,9 @@ class SuratJalanBongkaranBatamController extends Controller
             // Filter by types (FCL, LCL, Cargo)
             if ($request->filled('types')) {
                 $types = (array) $request->types;
-                $query->where(function($q) use ($types) {
+                $query->where(function ($q) use ($types) {
                     $q->whereIn('jenis_pengiriman', $types)
-                      ->orWhereIn('tipe_kontainer', $types);
+                        ->orWhereIn('tipe_kontainer', $types);
                 });
             }
 
@@ -134,23 +131,23 @@ class SuratJalanBongkaranBatamController extends Controller
                 $search = $request->search;
                 // Remove all punctuation from search term
                 $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
-                
-                $query->where(function($q) use ($search, $searchClean) {
+
+                $query->where(function ($q) use ($search, $searchClean) {
                     // Normal search (with punctuation)
                     $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                      ->orWhere('no_kontainer', 'like', "%{$search}%")
-                      ->orWhere('no_seal', 'like', "%{$search}%")
-                      ->orWhere('term', 'like', "%{$search}%")
-                      ->orWhere('jenis_barang', 'like', "%{$search}%")
-                      ->orWhere('supir', 'like', "%{$search}%")
-                      ->orWhere('no_plat', 'like', "%{$search}%")
-                      ->orWhere('tipe_kontainer', 'like', "%{$search}%")
-                      ->orWhere('jenis_pengiriman', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%")
+                        ->orWhere('no_seal', 'like', "%{$search}%")
+                        ->orWhere('term', 'like', "%{$search}%")
+                        ->orWhere('jenis_barang', 'like', "%{$search}%")
+                        ->orWhere('supir', 'like', "%{$search}%")
+                        ->orWhere('no_plat', 'like', "%{$search}%")
+                        ->orWhere('tipe_kontainer', 'like', "%{$search}%")
+                        ->orWhere('jenis_pengiriman', 'like', "%{$search}%")
                       // Search without punctuation
-                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_surat_jalan, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_plat, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
+                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_surat_jalan, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_plat, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
                 });
             }
 
@@ -167,9 +164,9 @@ class SuratJalanBongkaranBatamController extends Controller
             // Filter by selected kapal and voyage if provided
             if ($selectedKapal) {
                 $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
-                $query->where(function($q) use ($selectedKapal, $kapalClean) {
+                $query->where(function ($q) use ($selectedKapal, $kapalClean) {
                     $q->where('manifests.nama_kapal', $selectedKapal)
-                      ->orWhereRaw("LOWER(REPLACE(manifests.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                        ->orWhereRaw("LOWER(REPLACE(manifests.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
                 });
             }
             if ($selectedVoyage) {
@@ -187,23 +184,23 @@ class SuratJalanBongkaranBatamController extends Controller
                 $search = $request->search;
                 // Remove all punctuation from search term
                 $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
-                
-                $query->where(function($q) use ($search, $searchClean) {
+
+                $query->where(function ($q) use ($search, $searchClean) {
                     // Normal search (with punctuation)
                     $q->where('nomor_bl', 'like', "%{$search}%")
-                      ->orWhere('nomor_kontainer', 'like', "%{$search}%")
-                      ->orWhere('no_seal', 'like', "%{$search}%")
-                      ->orWhere('term', 'like', "%{$search}%")
-                      ->orWhere('nama_barang', 'like', "%{$search}%")
-                      ->orWhere('penerima', 'like', "%{$search}%")
-                      ->orWhere('tipe_kontainer', 'like', "%{$search}%")
-                      ->orWhereHas('suratJalanBongkaranBatam', function($sq) use ($search) {
-                          $sq->where('nomor_surat_jalan', 'like', "%{$search}%");
-                      })
+                        ->orWhere('nomor_kontainer', 'like', "%{$search}%")
+                        ->orWhere('no_seal', 'like', "%{$search}%")
+                        ->orWhere('term', 'like', "%{$search}%")
+                        ->orWhere('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('penerima', 'like', "%{$search}%")
+                        ->orWhere('tipe_kontainer', 'like', "%{$search}%")
+                        ->orWhereHas('suratJalanBongkaranBatam', function ($sq) use ($search) {
+                            $sq->where('nomor_surat_jalan', 'like', "%{$search}%");
+                        })
                       // Search without punctuation
-                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_bl, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                      ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
+                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_bl, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
                 });
             }
 
@@ -213,25 +210,25 @@ class SuratJalanBongkaranBatamController extends Controller
 
         // Get data for modal form
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
-                                                ->whereNull('tanggal_berhenti')
-                                                ->orderBy('nama_panggilan')
-                                                ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
+            ->whereNull('tanggal_berhenti')
+            ->orderBy('nama_panggilan')
+            ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
         $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
-                                              ->whereNull('tanggal_berhenti')
-                                              ->orderBy('nama_panggilan')
-                                              ->get(['id', 'nama_lengkap', 'nama_panggilan']);
+            ->whereNull('tanggal_berhenti')
+            ->orderBy('nama_panggilan')
+            ->get(['id', 'nama_lengkap', 'nama_panggilan']);
 
         $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
-                                                               ->orderBy('ke')
-                                                               ->get();
+            ->orderBy('ke')
+            ->get();
 
         $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::orderBy('expedisi')->orderBy('ring')->get();
 
         $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')
-                                         ->where('status', 'aktif')
-                                         ->orderBy('nama_kegiatan')
-                                         ->get();
+            ->where('status', 'aktif')
+            ->orderBy('nama_kegiatan')
+            ->get();
 
         $terms = \App\Models\Term::orderBy('kode')->get();
 
@@ -252,9 +249,9 @@ class SuratJalanBongkaranBatamController extends Controller
                 ->where('lokasi', 'batam');
             if ($selectedKapal) {
                 $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
-                $query->where(function($q) use ($selectedKapal, $kapalClean) {
+                $query->where(function ($q) use ($selectedKapal, $kapalClean) {
                     $q->where('nama_kapal', $selectedKapal)
-                      ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                        ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
                 });
             }
             if ($selectedVoyage) {
@@ -262,35 +259,35 @@ class SuratJalanBongkaranBatamController extends Controller
             }
             if ($request->filled('types')) {
                 $types = (array) $request->types;
-                $query->where(function($q) use ($types) {
+                $query->where(function ($q) use ($types) {
                     $q->whereIn('jenis_pengiriman', $types)
-                      ->orWhereIn('tipe_kontainer', $types);
+                        ->orWhereIn('tipe_kontainer', $types);
                 });
             }
             if ($request->filled('search')) {
                 $search = $request->search;
                 $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
-                $query->where(function($q) use ($search, $searchClean) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                      ->orWhere('no_kontainer', 'like', "%{$search}%")
-                      ->orWhere('no_seal', 'like', "%{$search}%")
-                      ->orWhere('term', 'like', "%{$search}%")
-                      ->orWhere('jenis_barang', 'like', "%{$search}%")
-                      ->orWhere('supir', 'like', "%{$search}%")
-                      ->orWhere('no_plat', 'like', "%{$search}%");
+                        ->orWhere('no_kontainer', 'like', "%{$search}%")
+                        ->orWhere('no_seal', 'like', "%{$search}%")
+                        ->orWhere('term', 'like', "%{$search}%")
+                        ->orWhere('jenis_barang', 'like', "%{$search}%")
+                        ->orWhere('supir', 'like', "%{$search}%")
+                        ->orWhere('no_plat', 'like', "%{$search}%");
                 });
             }
             $data = $query->orderBy('created_at', 'desc')->get();
-            $filename = 'Surat_Jalan_Bongkaran_Batam_' . str_replace(' ', '_', $selectedKapal) . '_' . str_replace('/', '-', $selectedVoyage) . '.xlsx';
+            $filename = 'Surat_Jalan_Bongkaran_Batam_'.str_replace(' ', '_', $selectedKapal).'_'.str_replace('/', '-', $selectedVoyage).'.xlsx';
         } else {
             $query = Manifest::query();
             $query->leftJoin('terms as t', 'manifests.term', '=', 't.kode')
                 ->select('manifests.*', 't.nama_status as term_nama');
             if ($selectedKapal) {
                 $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
-                $query->where(function($q) use ($selectedKapal, $kapalClean) {
+                $query->where(function ($q) use ($selectedKapal, $kapalClean) {
                     $q->where('manifests.nama_kapal', $selectedKapal)
-                      ->orWhereRaw("LOWER(REPLACE(manifests.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                        ->orWhereRaw("LOWER(REPLACE(manifests.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
                 });
             }
             if ($selectedVoyage) {
@@ -302,17 +299,17 @@ class SuratJalanBongkaranBatamController extends Controller
             }
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor_bl', 'like', "%{$search}%")
-                      ->orWhere('nomor_kontainer', 'like', "%{$search}%")
-                      ->orWhere('no_seal', 'like', "%{$search}%")
-                      ->orWhere('term', 'like', "%{$search}%")
-                      ->orWhere('nama_barang', 'like', "%{$search}%")
-                      ->orWhere('penerima', 'like', "%{$search}%");
+                        ->orWhere('nomor_kontainer', 'like', "%{$search}%")
+                        ->orWhere('no_seal', 'like', "%{$search}%")
+                        ->orWhere('term', 'like', "%{$search}%")
+                        ->orWhere('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('penerima', 'like', "%{$search}%");
                 });
             }
             $data = $query->orderBy('manifests.created_at', 'desc')->get();
-            $filename = 'Manifest_Bongkaran_Batam_' . str_replace(' ', '_', $selectedKapal) . '_' . str_replace('/', '-', $selectedVoyage) . '.xlsx';
+            $filename = 'Manifest_Bongkaran_Batam_'.str_replace(' ', '_', $selectedKapal).'_'.str_replace('/', '-', $selectedVoyage).'.xlsx';
         }
 
         return Excel::download(new SuratJalanBongkaranTableExport($data, $mode, $selectedKapal, $selectedVoyage), $filename);
@@ -325,17 +322,17 @@ class SuratJalanBongkaranBatamController extends Controller
     {
         // Get unique kapal names from BLs table
         $kapals = Manifest::select('nama_kapal')
-                    ->whereNotNull('nama_kapal')
-                    ->distinct()
-                    ->orderBy('nama_kapal')
-                    ->get()
-                    ->map(function($bl, $index) {
-                        return (object)[
-                            'id' => $index + 1, // Use incremental ID
-                            'nama_kapal' => $bl->nama_kapal
-                        ];
-                    });
-        
+            ->whereNotNull('nama_kapal')
+            ->distinct()
+            ->orderBy('nama_kapal')
+            ->get()
+            ->map(function ($bl, $index) {
+                return (object) [
+                    'id' => $index + 1, // Use incremental ID
+                    'nama_kapal' => $bl->nama_kapal,
+                ];
+            });
+
         // Get BL data based on selected kapal
         $bls = collect();
         if ($request->filled('nama_kapal')) {
@@ -348,7 +345,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 ->get(['no_voyage', 'nomor_bl'])
                 ->groupBy('no_voyage');
         }
-        
+
         return view('surat-jalan-bongkaran-batam.select-kapal', compact('kapals', 'bls'));
     }
 
@@ -357,43 +354,44 @@ class SuratJalanBongkaranBatamController extends Controller
      */
     public function getBlData(Request $request)
     {
-        if (!$request->filled('nama_kapal')) {
+        if (! $request->filled('nama_kapal')) {
             return response()->json(['voyages' => [], 'bls' => []]);
         }
 
         // Find selected kapal by nama_kapal
         $selectedKapalName = $request->nama_kapal;
-        if (!$selectedKapalName) {
+        if (! $selectedKapalName) {
             return response()->json(['voyages' => [], 'bls' => []]);
         }
 
         // Get BL data for this kapal with container information
-          $bls = Manifest::where('nama_kapal', $selectedKapalName)
-              ->whereNotNull('no_voyage')
-              ->whereNotNull('nomor_kontainer')
-              // Exclude BLs with nama_barang indicating empty values
-              ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%empty%'])
-              ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%kosong%'])
-              ->whereRaw("TRIM(COALESCE(nama_barang, '')) NOT IN ('-', '')")
-              ->get(['no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer', 'size_kontainer', 'no_seal', 'nama_barang']);
+        $bls = Manifest::where('nama_kapal', $selectedKapalName)
+            ->whereNotNull('no_voyage')
+            ->whereNotNull('nomor_kontainer')
+            // Exclude BLs with nama_barang indicating empty values
+            ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%empty%'])
+            ->whereRaw("LOWER(COALESCE(nama_barang, '')) NOT LIKE ?", ['%kosong%'])
+            ->whereRaw("TRIM(COALESCE(nama_barang, '')) NOT IN ('-', '')")
+            ->get(['no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer', 'size_kontainer', 'no_seal', 'nama_barang']);
 
         // Group by voyage and get unique voyages
         $voyages = $bls->pluck('no_voyage')->unique()->values();
-        
+
         // Get container data grouped by voyage
-        $blsByVoyage = $bls->groupBy('no_voyage')->map(function($items) {
-            return $items->map(function($item) {
+        $blsByVoyage = $bls->groupBy('no_voyage')->map(function ($items) {
+            return $items->map(function ($item) {
                 // Format: "nomor_bl - nomor_kontainer (tipe_kontainer)"
                 $display = '';
                 if ($item->nomor_bl) {
-                    $display = $item->nomor_bl . ' - ';
+                    $display = $item->nomor_bl.' - ';
                 }
                 $display .= $item->nomor_kontainer;
                 if ($item->size_kontainer) {
-                    $display .= ' (' . strtoupper($item->size_kontainer) . ')';
+                    $display .= ' ('.strtoupper($item->size_kontainer).')';
                 } elseif ($item->tipe_kontainer) {
-                    $display .= ' (' . strtoupper($item->tipe_kontainer) . ')';
+                    $display .= ' ('.strtoupper($item->tipe_kontainer).')';
                 }
+
                 return [
                     'id' => $item->id,
                     'value' => $item->nomor_kontainer,
@@ -402,14 +400,14 @@ class SuratJalanBongkaranBatamController extends Controller
                     'nomor_kontainer' => $item->nomor_kontainer,
                     'no_seal' => $item->no_seal,
                     'size' => $item->size_kontainer ?: $item->tipe_kontainer,
-                    'nama_barang' => $item->nama_barang
+                    'nama_barang' => $item->nama_barang,
                 ];
             })->values();
         });
 
         return response()->json([
             'voyages' => $voyages,
-            'bls' => $blsByVoyage
+            'bls' => $blsByVoyage,
         ]);
     }
 
@@ -426,43 +424,43 @@ class SuratJalanBongkaranBatamController extends Controller
 
         // Get unique kapal names from BLs table
         $kapals = Manifest::select('nama_kapal')
-                    ->whereNotNull('nama_kapal')
-                    ->distinct()
-                    ->orderBy('nama_kapal')
-                    ->get()
-                    ->map(function($bl, $index) {
-                        return (object)[
-                            'id' => $index + 1,
-                            'nama_kapal' => $bl->nama_kapal
-                        ];
-                    });
-        
+            ->whereNotNull('nama_kapal')
+            ->distinct()
+            ->orderBy('nama_kapal')
+            ->get()
+            ->map(function ($bl, $index) {
+                return (object) [
+                    'id' => $index + 1,
+                    'nama_kapal' => $bl->nama_kapal,
+                ];
+            });
+
         // Get karyawan dengan divisi supir untuk dropdown supir
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
-                                                ->whereNull('tanggal_berhenti')
-                                                ->orderBy('nama_panggilan')
-                                                ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
-        
+            ->whereNull('tanggal_berhenti')
+            ->orderBy('nama_panggilan')
+            ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
+
         // Get karyawan dengan divisi krani untuk dropdown kenek
         $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
-                                              ->whereNull('tanggal_berhenti')
-                                              ->orderBy('nama_panggilan')
-                                              ->get(['id', 'nama_lengkap', 'nama_panggilan']);
-        
+            ->whereNull('tanggal_berhenti')
+            ->orderBy('nama_panggilan')
+            ->get(['id', 'nama_lengkap', 'nama_panggilan']);
+
         // Get tujuan kegiatan utama untuk dropdown tujuan pengambilan
         $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
-                                                               ->orderBy('ke')
-                                                               ->get();
-        
+            ->orderBy('ke')
+            ->get();
+
         // Get master kegiatans dengan type kegiatan surat jalan untuk dropdown aktifitas
         $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')
-                                         ->where('status', 'aktif')
-                                         ->orderBy('nama_kegiatan')
-                                         ->get();
+            ->where('status', 'aktif')
+            ->orderBy('nama_kegiatan')
+            ->get();
 
-        // Get terms untuk dropdown term pembayaran  
+        // Get terms untuk dropdown term pembayaran
         $terms = \App\Models\Term::orderBy('kode')->get();
-        
+
         // Get selected kapal name and voyage from request
         $selectedKapalName = $request->nama_kapal;
         $noVoyage = $request->no_voyage;
@@ -473,7 +471,7 @@ class SuratJalanBongkaranBatamController extends Controller
         $selectedKapal = null;
         $kapalId = null;
         if ($selectedKapalName) {
-            $selectedKapal = (object)['nama_kapal' => $selectedKapalName];
+            $selectedKapal = (object) ['nama_kapal' => $selectedKapalName];
             // Find kapal_id from master_kapals table
             $masterKapal = MasterKapal::where('nama_kapal', $selectedKapalName)->first();
             if ($masterKapal) {
@@ -484,9 +482,9 @@ class SuratJalanBongkaranBatamController extends Controller
         // If bl_id is passed, use it directly to fetch selectedBl and container data
         if ($request->filled('bl_id') && $selectedKapalName) {
             $selectedBl = Manifest::where('nama_kapal', $selectedKapalName)
-                              ->where('no_voyage', $noVoyage)
-                              ->where('id', $request->bl_id)
-                              ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
+                ->where('no_voyage', $noVoyage)
+                ->where('id', $request->bl_id)
+                ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
             if ($selectedBl) {
                 $selectedContainer = (object) [
                     'id' => $selectedBl->id,
@@ -510,21 +508,21 @@ class SuratJalanBongkaranBatamController extends Controller
 
             // Try to find by container number first
             $selectedContainer = Manifest::where('nama_kapal', $selectedKapalName)
-                                   ->where('no_voyage', $noVoyage)
-                                   ->where('nomor_kontainer', $rawNoBlInput)
-                                   ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
+                ->where('no_voyage', $noVoyage)
+                ->where('nomor_kontainer', $rawNoBlInput)
+                ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
 
             if ($selectedContainer) {
                 $selectedBl = Manifest::where('nama_kapal', $selectedKapalName)
-                                 ->where('no_voyage', $noVoyage)
-                                 ->where('nomor_kontainer', $rawNoBlInput)
-                                 ->first(['id', 'nomor_bl']);
+                    ->where('no_voyage', $noVoyage)
+                    ->where('nomor_kontainer', $rawNoBlInput)
+                    ->first(['id', 'nomor_bl']);
             } else {
                 // Fallback: try to find by BL number (nomor_bl)
                 $selectedBl = Manifest::where('nama_kapal', $selectedKapalName)
-                                 ->where('no_voyage', $noVoyage)
-                                 ->where('nomor_bl', $rawNoBlInput)
-                                 ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
+                    ->where('no_voyage', $noVoyage)
+                    ->where('nomor_bl', $rawNoBlInput)
+                    ->first(['id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan', 'nama_barang']);
 
                 if ($selectedBl) {
                     $selectedContainer = (object) [
@@ -543,7 +541,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 }
             }
         }
-        
+
         return view('surat-jalan-bongkaran-batam.create', compact(
             'kapals', 'selectedKapal', 'noVoyage', 'selectedContainer', 'selectedBl', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'kapalId'
         ));
@@ -599,7 +597,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Validasi gagal.',
-                    'errors' => $e->errors()
+                    'errors' => $e->errors(),
                 ], 422);
             }
             throw $e;
@@ -609,7 +607,7 @@ class SuratJalanBongkaranBatamController extends Controller
         $validatedData['lokasi'] = 'batam';
         $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
 
-        if (!isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
+        if (! isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
             $validatedData['uang_jalan_nominal'] = 0;
         }
 
@@ -628,14 +626,14 @@ class SuratJalanBongkaranBatamController extends Controller
                     'message' => 'Surat Jalan Bongkaran Batam berhasil dibuat.',
                     'redirect' => route('surat-jalan-bongkaran-batam.list', [
                         'nama_kapal' => $request->nama_kapal,
-                        'no_voyage' => $request->no_voyage
-                    ])
+                        'no_voyage' => $request->no_voyage,
+                    ]),
                 ]);
             }
 
             return redirect()->route('surat-jalan-bongkaran-batam.list', [
                 'nama_kapal' => $request->nama_kapal,
-                'no_voyage' => $request->no_voyage
+                'no_voyage' => $request->no_voyage,
             ])->with('success', 'Surat Jalan Bongkaran Batam berhasil dibuat.');
 
         } catch (\Exception $e) {
@@ -643,10 +641,11 @@ class SuratJalanBongkaranBatamController extends Controller
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                    'message' => 'Terjadi kesalahan: '.$e->getMessage(),
                 ], 500);
             }
-            return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -656,7 +655,7 @@ class SuratJalanBongkaranBatamController extends Controller
     public function show(SuratJalanBongkaranBatam $suratJalanBongkaran)
     {
         $suratJalanBongkaran->load(['inputBy', 'bl']);
-        
+
         return view('surat-jalan-bongkaran-batam.show', compact('suratJalanBongkaran'));
     }
 
@@ -669,24 +668,24 @@ class SuratJalanBongkaranBatamController extends Controller
         $terms = \App\Models\Term::orderBy('kode')->get();
         $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')->where('status', 'aktif')->orderBy('nama_kegiatan')->get();
         $tujuanKegiatanUtamas = TujuanKegiatanUtama::orderBy('ke')->get();
-        
+
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
-                              ->whereNull('tanggal_berhenti')
-                              ->orderBy('nama_panggilan')
-                              ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
-        
+            ->whereNull('tanggal_berhenti')
+            ->orderBy('nama_panggilan')
+            ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
+
         $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
-                              ->whereNull('tanggal_berhenti')
-                              ->orderBy('nama_panggilan')
-                              ->get(['id', 'nama_panggilan', 'nama_lengkap']);
+            ->whereNull('tanggal_berhenti')
+            ->orderBy('nama_panggilan')
+            ->get(['id', 'nama_panggilan', 'nama_lengkap']);
 
         return view('surat-jalan-bongkaran-batam.edit', compact(
-            'suratJalanBongkaran', 
-            'kapals', 
-            'terms', 
-            'masterKegiatans', 
-            'tujuanKegiatanUtamas', 
-            'karyawanSupirs', 
+            'suratJalanBongkaran',
+            'kapals',
+            'terms',
+            'masterKegiatans',
+            'tujuanKegiatanUtamas',
+            'karyawanSupirs',
             'karyawanKranis'
         ));
     }
@@ -702,7 +701,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'nama_kapal' => 'nullable|string|max:255',
                 'no_voyage' => 'nullable|string|max:255',
                 'no_bl' => 'nullable|string|max:255',
-                'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkaran_batams,nomor_surat_jalan,' . $suratJalanBongkaran->id,
+                'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkaran_batams,nomor_surat_jalan,'.$suratJalanBongkaran->id,
                 'tanggal_surat_jalan' => 'required|date',
                 'lanjut_muat' => 'nullable|string|in:ya,tidak',
                 'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
@@ -741,8 +740,8 @@ class SuratJalanBongkaranBatamController extends Controller
 
         try {
             $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
-            
-            if (!isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
+
+            if (! isset($validatedData['uang_jalan_nominal']) || $validatedData['uang_jalan_nominal'] === null) {
                 $validatedData['uang_jalan_nominal'] = 0;
             }
 
@@ -756,12 +755,13 @@ class SuratJalanBongkaranBatamController extends Controller
 
             return redirect()->route('surat-jalan-bongkaran-batam.list', [
                 'nama_kapal' => $request->nama_kapal,
-                'no_voyage' => $request->no_voyage
+                'no_voyage' => $request->no_voyage,
             ])->with('success', 'Surat Jalan Bongkaran Batam berhasil diperbarui.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->withInput()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -772,17 +772,18 @@ class SuratJalanBongkaranBatamController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $suratJalanBongkaran->delete();
-            
+
             DB::commit();
-            
+
             return redirect()->route('surat-jalan-bongkaran-batam.list')
-                           ->with('success', 'Surat Jalan Bongkaran Batam berhasil dihapus.');
-                           
+                ->with('success', 'Surat Jalan Bongkaran Batam berhasil dihapus.');
+
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -792,15 +793,15 @@ class SuratJalanBongkaranBatamController extends Controller
 
         $pageNumber = 1;
         $totalPages = 1;
-        
+
         if ($suratJalanBongkaran->bl_id) {
             $suratJalansForSameBl = SuratJalanBongkaranBatam::where('bl_id', $suratJalanBongkaran->bl_id)
                 ->orderBy('created_at', 'asc')
                 ->orderBy('id', 'asc')
                 ->get();
-            
+
             $totalPages = $suratJalansForSameBl->count();
-            
+
             foreach ($suratJalansForSameBl as $index => $sj) {
                 if ($sj->id == $suratJalanBongkaran->id) {
                     $pageNumber = $index + 1;
@@ -815,11 +816,11 @@ class SuratJalanBongkaranBatamController extends Controller
     public function printFromBl($bl)
     {
         $manifest = Manifest::findOrFail($bl);
-        
-        $printData = new \stdClass();
+
+        $printData = new \stdClass;
         $printData->tanggal_berangkat = $manifest->tanggal_berangkat ?? now()->format('Y-m-d');
         $printData->tanggal_surat_jalan = now()->format('Y-m-d');
-        
+
         $printData->no_voyage = $manifest->no_voyage ?? '';
         $printData->nama_kapal = $manifest->nama_kapal ?? '';
         $printData->no_plat = '';
@@ -837,7 +838,7 @@ class SuratJalanBongkaranBatamController extends Controller
         $printData->kuantitas = $manifest->kuantitas ?? '';
         $printData->satuan = $manifest->satuan ?? '';
         $printData->nomor_urut = $manifest->nomor_urut ?? '';
-        
+
         $printData->bl = $manifest;
         $printData->kapal = null;
 
@@ -847,23 +848,23 @@ class SuratJalanBongkaranBatamController extends Controller
     public function printBa($bl)
     {
         $manifest = Manifest::findOrFail($bl);
-        
-        $baData = new \stdClass();
+
+        $baData = new \stdClass;
         $baData->id = $manifest->id;
-        $baData->nomor_ba = 'BA/' . date('Y/m/d') . '/' . str_pad($manifest->id, 4, '0', STR_PAD_LEFT);
+        $baData->nomor_ba = 'BA/'.date('Y/m/d').'/'.str_pad($manifest->id, 4, '0', STR_PAD_LEFT);
         $baData->tanggal_ba = $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('Y-m-d') : now()->format('Y-m-d');
         $baData->manifest = $manifest;
-        
+
         return view('surat-jalan-bongkaran-batam.print-ba', compact('baData'));
     }
 
     public function downloadPdf(SuratJalanBongkaranBatam $suratJalanBongkaran)
     {
         $suratJalanBongkaran->load(['inputBy', 'bl']);
-        
+
         $pageNumber = 1;
         $totalPages = 1;
-        
+
         if ($suratJalanBongkaran->bl_id) {
             $suratJalansForSameBl = SuratJalanBongkaranBatam::where('bl_id', $suratJalanBongkaran->bl_id)
                 ->orderBy('created_at', 'asc')
@@ -880,15 +881,15 @@ class SuratJalanBongkaranBatamController extends Controller
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('surat-jalan-bongkaran-batam.print', compact('suratJalanBongkaran', 'pageNumber', 'totalPages'));
         $pdf->setPaper([0, 0, 609.4488, 396.8504], 'portrait');
-        
-        return $pdf->download('Surat_Jalan_Bongkaran_' . $suratJalanBongkaran->nomor_surat_jalan . '.pdf');
+
+        return $pdf->download('Surat_Jalan_Bongkaran_'.$suratJalanBongkaran->nomor_surat_jalan.'.pdf');
     }
 
     public function getSuratJalanById($id)
     {
         try {
             $suratJalan = SuratJalanBongkaranBatam::with('manifest')->find($id);
-            if (!$suratJalan) {
+            if (! $suratJalan) {
                 return response()->json(['error' => 'Surat Jalan not found'], 404);
             }
 
@@ -937,7 +938,7 @@ class SuratJalanBongkaranBatamController extends Controller
     {
         try {
             $manifest = Manifest::find($id);
-            if (!$manifest) {
+            if (! $manifest) {
                 return response()->json(['error' => 'Manifest not found'], 404);
             }
 

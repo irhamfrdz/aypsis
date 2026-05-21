@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\DaftarTagihanKontainerSewa;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class CleanTagihanKontainerSewa extends Command
@@ -37,6 +37,7 @@ class CleanTagihanKontainerSewa extends Command
 
         if ($currentCount == 0) {
             $this->info('Database is already empty. Nothing to clean.');
+
             return 0;
         }
 
@@ -46,9 +47,10 @@ class CleanTagihanKontainerSewa extends Command
         }
 
         // Confirmation
-        if (!$this->option('force')) {
-            if (!$this->confirm('Are you sure you want to delete all tagihan kontainer sewa data? This action cannot be undone!')) {
+        if (! $this->option('force')) {
+            if (! $this->confirm('Are you sure you want to delete all tagihan kontainer sewa data? This action cannot be undone!')) {
                 $this->info('Operation cancelled.');
+
                 return 0;
             }
         }
@@ -73,7 +75,7 @@ class CleanTagihanKontainerSewa extends Command
             DB::commit();
 
             $this->info("✅ Successfully deleted {$deletedCount} records");
-            $this->info("🔄 Auto increment ID reset to 1");
+            $this->info('🔄 Auto increment ID reset to 1');
 
             // Verify cleanup
             $finalCount = DaftarTagihanKontainerSewa::count();
@@ -83,7 +85,8 @@ class CleanTagihanKontainerSewa extends Command
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error('❌ Error during cleanup: ' . $e->getMessage());
+            $this->error('❌ Error during cleanup: '.$e->getMessage());
+
             return 1;
         }
     }
@@ -100,7 +103,7 @@ class CleanTagihanKontainerSewa extends Command
         $backupPath = storage_path("backups/{$filename}");
 
         // Create backups directory if it doesn't exist
-        if (!is_dir(storage_path('backups'))) {
+        if (! is_dir(storage_path('backups'))) {
             mkdir(storage_path('backups'), 0755, true);
         }
 
@@ -124,7 +127,7 @@ class CleanTagihanKontainerSewa extends Command
         if ($returnCode === 0) {
             $this->info("✅ Backup created: {$backupPath}");
         } else {
-            $this->warn("⚠️ Backup failed, but continuing with cleanup...");
+            $this->warn('⚠️ Backup failed, but continuing with cleanup...');
         }
     }
 }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('daftar_tagihan_kontainer_sewa', function (Blueprint $table) {
             // Tambahkan kembali kolom status setelah kolom tarif
-            if (!Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'status')) {
+            if (! Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'status')) {
                 $table->string('status')->nullable()->after('tarif');
             }
         });

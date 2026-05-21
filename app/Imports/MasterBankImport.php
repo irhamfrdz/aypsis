@@ -4,11 +4,11 @@ namespace App\Imports;
 
 use App\Models\Bank;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Collection;
 
 class MasterBankImport
 {
     protected $errors = [];
+
     protected $successCount = 0;
 
     public function import($file)
@@ -19,6 +19,7 @@ class MasterBankImport
 
         if (empty($data)) {
             $this->errors[] = 'File kosong atau tidak dapat dibaca';
+
             return false;
         }
 
@@ -31,7 +32,7 @@ class MasterBankImport
 
         return [
             'success_count' => $this->successCount,
-            'errors' => $this->errors
+            'errors' => $this->errors,
         ];
     }
 
@@ -51,6 +52,7 @@ class MasterBankImport
         }
 
         fclose($handle);
+
         return $data;
     }
 
@@ -65,15 +67,16 @@ class MasterBankImport
         $validator = Validator::make([
             'name' => $name,
             'code' => $code,
-            'keterangan' => $keterangan
+            'keterangan' => $keterangan,
         ], [
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10|unique:banks,code',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ]);
 
         if ($validator->fails()) {
-            $this->errors[] = "Baris {$rowNumber}: " . implode(', ', $validator->errors()->all());
+            $this->errors[] = "Baris {$rowNumber}: ".implode(', ', $validator->errors()->all());
+
             return;
         }
 
@@ -81,12 +84,12 @@ class MasterBankImport
             Bank::create([
                 'name' => $name,
                 'code' => $code,
-                'keterangan' => $keterangan
+                'keterangan' => $keterangan,
             ]);
 
             $this->successCount++;
         } catch (\Exception $e) {
-            $this->errors[] = "Baris {$rowNumber}: Gagal menyimpan data - " . $e->getMessage();
+            $this->errors[] = "Baris {$rowNumber}: Gagal menyimpan data - ".$e->getMessage();
         }
     }
 }

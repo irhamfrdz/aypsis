@@ -37,7 +37,7 @@ class ValidateDuplicateKontainersJob implements ShouldQueue
                 AND sk.status != 'inactive'
             ");
 
-            if (!empty($duplicates)) {
+            if (! empty($duplicates)) {
                 $fixed = 0;
 
                 foreach ($duplicates as $duplicate) {
@@ -55,7 +55,7 @@ class ValidateDuplicateKontainersJob implements ShouldQueue
             }
 
         } catch (\Exception $e) {
-            Log::error('Duplicate validation job failed: ' . $e->getMessage());
+            Log::error('Duplicate validation job failed: '.$e->getMessage());
             throw $e;
         }
     }

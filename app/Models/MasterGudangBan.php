@@ -15,7 +15,7 @@ class MasterGudangBan extends Model
         'keterangan',
         'status',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [

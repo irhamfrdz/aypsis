@@ -60,9 +60,9 @@ return new class extends Migration
 
             $table->unsignedBigInteger('surat_jalan_kontainer_sewa_id');
             $table->foreign('surat_jalan_kontainer_sewa_id', 'sj_kontainer_sewa_id_fk')
-                  ->references('id')
-                  ->on('surat_jalan_kontainer_sewas')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('surat_jalan_kontainer_sewas')
+                ->onDelete('cascade');
 
             // Kontainer info
             $table->string('nomor_kontainer');

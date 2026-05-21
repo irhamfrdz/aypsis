@@ -22,10 +22,10 @@ class MasterGudangAmprahanController extends Controller
     {
         $query = MasterGudangAmprahan::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('nama_gudang', 'LIKE', '%' . $searchTerm . '%');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('nama_gudang', 'LIKE', '%'.$searchTerm.'%');
             });
         }
 
@@ -65,6 +65,7 @@ class MasterGudangAmprahanController extends Controller
     public function show($id)
     {
         $gudangAmprahan = MasterGudangAmprahan::findOrFail($id);
+
         return view('master-gudang-amprahan.show', compact('gudangAmprahan'));
     }
 
@@ -74,6 +75,7 @@ class MasterGudangAmprahanController extends Controller
     public function edit($id)
     {
         $gudangAmprahan = MasterGudangAmprahan::findOrFail($id);
+
         return view('master-gudang-amprahan.edit', compact('gudangAmprahan'));
     }
 
@@ -85,7 +87,7 @@ class MasterGudangAmprahanController extends Controller
         $gudangAmprahan = MasterGudangAmprahan::findOrFail($id);
 
         $request->validate([
-            'nama_gudang' => 'required|string|max:255|unique:master_gudang_amprahans,nama_gudang,' . $id,
+            'nama_gudang' => 'required|string|max:255|unique:master_gudang_amprahans,nama_gudang,'.$id,
             'keterangan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);

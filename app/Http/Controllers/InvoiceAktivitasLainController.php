@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\InvoiceAktivitasLain;
 use App\Models\Karyawan;
 use App\Models\Mobil;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceAktivitasLainController extends Controller
 {
@@ -19,12 +19,12 @@ class InvoiceAktivitasLainController extends Controller
 
         // Filter by nomor_invoice
         if ($request->filled('nomor_invoice')) {
-            $query->where('nomor_invoice', 'like', '%' . $request->nomor_invoice . '%');
+            $query->where('nomor_invoice', 'like', '%'.$request->nomor_invoice.'%');
         }
 
         // Filter by jenis_aktivitas
         if ($request->filled('jenis_aktivitas')) {
-            $query->where('jenis_aktivitas', 'like', '%' . $request->jenis_aktivitas . '%');
+            $query->where('jenis_aktivitas', 'like', '%'.$request->jenis_aktivitas.'%');
         }
 
         // Filter by status
@@ -48,7 +48,7 @@ class InvoiceAktivitasLainController extends Controller
     {
         $karyawans = Karyawan::orderBy('nama_lengkap', 'asc')->get();
         $mobils = Mobil::orderBy('nomor_polisi', 'asc')->get();
-        
+
         // Get voyages from both bls and pergerakan_kapal tables
         $voyagesBl = DB::table('bls')
             ->select('no_voyage as voyage', 'nama_kapal')
@@ -57,7 +57,7 @@ class InvoiceAktivitasLainController extends Controller
             ->distinct()
             ->orderBy('no_voyage')
             ->get();
-            
+
         $voyagesPergerakan = DB::table('pergerakan_kapal')
             ->select('voyage', 'nama_kapal')
             ->whereNotNull('voyage')
@@ -65,34 +65,34 @@ class InvoiceAktivitasLainController extends Controller
             ->distinct()
             ->orderBy('voyage')
             ->get();
-            
+
         // Combine and deduplicate voyages
         $allVoyages = collect();
-        
+
         foreach ($voyagesBl as $voyage) {
-            $allVoyages->push((object)[
+            $allVoyages->push((object) [
                 'voyage' => $voyage->voyage,
                 'nama_kapal' => $voyage->nama_kapal,
-                'source' => 'BL'
+                'source' => 'BL',
             ]);
         }
-        
+
         foreach ($voyagesPergerakan as $voyage) {
             // Only add if not already exists
             $exists = $allVoyages->where('voyage', $voyage->voyage)
-                                ->where('nama_kapal', $voyage->nama_kapal)
-                                ->first();
-            if (!$exists) {
-                $allVoyages->push((object)[
+                ->where('nama_kapal', $voyage->nama_kapal)
+                ->first();
+            if (! $exists) {
+                $allVoyages->push((object) [
                     'voyage' => $voyage->voyage,
                     'nama_kapal' => $voyage->nama_kapal,
-                    'source' => 'Pergerakan Kapal'
+                    'source' => 'Pergerakan Kapal',
                 ]);
             }
         }
-        
+
         $voyages = $allVoyages->sortBy('voyage')->values();
-        
+
         // Get surat jalans for adjustment payments from surat_jalans table
         $suratJalansRegular = DB::table('surat_jalans')
             ->select(
@@ -105,7 +105,7 @@ class InvoiceAktivitasLainController extends Controller
             ->whereNotNull('no_surat_jalan')
             ->where('no_surat_jalan', '!=', '')
             ->get();
-        
+
         // Get surat jalans for adjustment payments from surat_jalan_bongkarans table
         $suratJalansBongkar = DB::table('surat_jalan_bongkarans')
             ->select(
@@ -118,12 +118,12 @@ class InvoiceAktivitasLainController extends Controller
             ->whereNotNull('nomor_surat_jalan')
             ->where('nomor_surat_jalan', '!=', '')
             ->get();
-        
+
         // Combine both surat jalans
         $suratJalans = $suratJalansRegular->merge($suratJalansBongkar)
             ->sortBy('no_surat_jalan')
             ->values();
-        
+
         // Get BLs for pembayaran kapal
         $bls = DB::table('bls')
             ->select('id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'no_voyage', 'pengirim')
@@ -131,41 +131,41 @@ class InvoiceAktivitasLainController extends Controller
             ->where('nomor_bl', '!=', '')
             ->orderBy('nomor_bl')
             ->get();
-        
+
         // Get klasifikasi biaya for pembayaran kapal
         $klasifikasiBiayas = DB::table('klasifikasi_biayas')
             ->select('id', 'nama')
             ->where('is_active', true)
             ->orderBy('nama')
             ->get();
-        
+
         // Get pricelist buruh for pembayaran kapal with klasifikasi biaya "buruh"
         $pricelistBuruh = DB::table('pricelist_buruh')
             ->select('id', 'barang', 'size', 'tipe', 'tarif')
             ->where('is_active', true)
             ->orderBy('barang')
             ->get();
-        
+
         // Get pricelist biaya dokumen for klasifikasi biaya "biaya dokumen"
         $pricelistBiayaDokumen = DB::table('pricelist_biaya_dokumen')
             ->select('id', 'nama_vendor', 'biaya')
             ->where('status', 'aktif')
             ->orderBy('nama_vendor')
             ->get();
-        
+
         // Get list of penerima from karyawan for detail pembayaran dropdown
         $penerimaList = Karyawan::orderBy('nama_lengkap', 'asc')
             ->pluck('nama_lengkap')
             ->unique()
             ->values()
             ->toArray();
-        
+
         // Get akun COA for biaya listrik
         $akunCoas = DB::table('akun_coa')
             ->select('id', 'nomor_akun', 'nama_akun')
             ->orderBy('nomor_akun')
             ->get();
-        
+
         // Get latest LWBP Lama value
         $latestLwbpLama = \App\Models\MasterLwbpLama::where('status', 'active')->orderBy('created_at', 'desc')->first();
         $latestLwbpValue = $latestLwbpLama ? $latestLwbpLama->biaya : 0;
@@ -186,31 +186,31 @@ class InvoiceAktivitasLainController extends Controller
             $month = $now->format('m');
             $year = $now->format('y');
             $prefix = "IAL-{$month}-{$year}-";
-            
+
             // Get last invoice number for current month and year
-            $lastInvoice = InvoiceAktivitasLain::where('nomor_invoice', 'like', $prefix . '%')
+            $lastInvoice = InvoiceAktivitasLain::where('nomor_invoice', 'like', $prefix.'%')
                 ->orderBy('nomor_invoice', 'desc')
                 ->first();
-            
+
             if ($lastInvoice) {
                 // Extract running number from last invoice
                 $lastNumber = substr($lastInvoice->nomor_invoice, -6);
-                $nextNumber = str_pad((int)$lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                $nextNumber = str_pad((int) $lastNumber + 1, 6, '0', STR_PAD_LEFT);
             } else {
                 // First invoice of the month
                 $nextNumber = '000001';
             }
-            
-            $invoiceNumber = $prefix . $nextNumber;
-            
+
+            $invoiceNumber = $prefix.$nextNumber;
+
             return response()->json([
                 'success' => true,
-                'invoice_number' => $invoiceNumber
+                'invoice_number' => $invoiceNumber,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate nomor invoice: ' . $e->getMessage()
+                'message' => 'Gagal generate nomor invoice: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -223,10 +223,10 @@ class InvoiceAktivitasLainController extends Controller
         // Clean up numeric fields - remove currency formatting
         $inputs = $request->all();
         $fieldsToClean = [
-            'sub_total_labuh', 
-            'pph_labuh', 
-            'total', 
-            'pph', 
+            'sub_total_labuh',
+            'pph_labuh',
+            'total',
+            'pph',
             'ppn',
             'grand_total',
             'subtotal',
@@ -246,9 +246,9 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_materai',
             'biaya_adjustment',
             'nominal_bayar',
-            'biaya_admin'
+            'biaya_admin',
         ];
-        
+
         foreach ($fieldsToClean as $field) {
             if (isset($inputs[$field]) && is_string($inputs[$field])) {
                 $inputs[$field] = str_replace(['.', ','], '', $inputs[$field]);
@@ -295,10 +295,10 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
         }
-        
+
         // Conditional validation rules
         $totalValidation = ($isBiayaListrik || $isUtilities || $isPBM) ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
-        
+
         $isLabuhTambat = false;
         if ($request->has('klasifikasi_biaya_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_id);
@@ -306,14 +306,14 @@ class InvoiceAktivitasLainController extends Controller
                 $isLabuhTambat = true;
             }
         }
-        if (!$isLabuhTambat && $request->has('klasifikasi_biaya_umum_id')) {
+        if (! $isLabuhTambat && $request->has('klasifikasi_biaya_umum_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
             if ($klasifikasiBiaya && (stripos($klasifikasiBiaya->nama, 'labuh tambat') !== false || stripos($klasifikasiBiaya->nama, 'labuh tambah') !== false)) {
                 $isLabuhTambat = true;
             }
         }
         $vendorLabuhTambatValidation = $isLabuhTambat ? 'required|string|max:255' : 'nullable|string|max:255';
-        
+
         $validated = $request->validate([
             'nomor_invoice' => 'required|string|max:255|unique:invoice_aktivitas_lain,nomor_invoice',
             'tanggal_invoice' => 'required|date',
@@ -408,23 +408,23 @@ class InvoiceAktivitasLainController extends Controller
             'pbm_detail.*.grand_total' => 'nullable|string',
             'pbm_detail.*.catatan' => 'nullable|string',
         ]);
-        
+
         // Convert bl_details array to JSON for storage
         if (isset($validated['bl_details'])) {
             $validated['bl_details'] = json_encode($validated['bl_details']);
         }
-        
+
         // Convert barang_detail array to JSON for storage
         if (isset($validated['barang_detail'])) {
             $validated['barang_detail'] = json_encode($validated['barang_detail']);
         }
-        
+
         // Convert tipe_penyesuaian_detail array to JSON for storage
         if (isset($validated['tipe_penyesuaian_detail'])) {
             $validated['tipe_penyesuaian'] = json_encode($validated['tipe_penyesuaian_detail']);
             unset($validated['tipe_penyesuaian_detail']);
         }
-        
+
         // Convert detail_pembayaran array to JSON for storage
         if (isset($validated['detail_pembayaran'])) {
             // Clean up biaya values - remove currency formatting
@@ -454,10 +454,16 @@ class InvoiceAktivitasLainController extends Controller
 
             // Sync first PBM row to main columns if not already set
             $pbmData = json_decode($validated['pbm_detail'], true);
-            if (!empty($pbmData) && isset($pbmData[0])) {
-                if (empty($validated['penerima'])) $validated['penerima'] = $pbmData[0]['penerima'] ?? null;
-                if (empty($validated['nomor_bank'])) $validated['nomor_bank'] = $pbmData[0]['nomor_bank'] ?? null;
-                if (empty($validated['nama_bank'])) $validated['nama_bank'] = $pbmData[0]['nama_bank'] ?? null;
+            if (! empty($pbmData) && isset($pbmData[0])) {
+                if (empty($validated['penerima'])) {
+                    $validated['penerima'] = $pbmData[0]['penerima'] ?? null;
+                }
+                if (empty($validated['nomor_bank'])) {
+                    $validated['nomor_bank'] = $pbmData[0]['nomor_bank'] ?? null;
+                }
+                if (empty($validated['nama_bank'])) {
+                    $validated['nama_bank'] = $pbmData[0]['nama_bank'] ?? null;
+                }
             }
         }
 
@@ -466,7 +472,7 @@ class InvoiceAktivitasLainController extends Controller
             $validated['subtotal'] = $request->sub_total_labuh;
             $validated['pph'] = $request->pph_labuh;
             $validated['grand_total'] = $request->total;
-            
+
             // Remove request-only fields
             unset($validated['sub_total_labuh']);
             unset($validated['pph_labuh']);
@@ -480,9 +486,9 @@ class InvoiceAktivitasLainController extends Controller
         if (isset($validated['biaya_listrik']) && is_array($validated['biaya_listrik'])) {
             $biayaListrikEntries = $validated['biaya_listrik'];
             unset($validated['biaya_listrik']);
-            
+
             // Set main penerima from the first entry for display in index/header
-            if (empty($validated['penerima']) && !empty($biayaListrikEntries)) {
+            if (empty($validated['penerima']) && ! empty($biayaListrikEntries)) {
                 $firstEntry = reset($biayaListrikEntries);
                 $validated['penerima'] = $firstEntry['penerima'] ?? null;
             }
@@ -493,49 +499,53 @@ class InvoiceAktivitasLainController extends Controller
         if (isset($validated['biaya_utilities_detail'])) {
             $biayaUtilitiesEntries = $validated['biaya_utilities_detail'];
             unset($validated['biaya_utilities_detail']);
-            
+
             // Set main penerima and referensi if not set
-            if (!empty($biayaUtilitiesEntries)) {
+            if (! empty($biayaUtilitiesEntries)) {
                 $firstEntry = reset($biayaUtilitiesEntries);
-                if (empty($validated['penerima'])) $validated['penerima'] = $firstEntry['penerima'] ?? null;
-                if (empty($validated['referensi'])) $validated['referensi'] = $firstEntry['referensi'] ?? null;
+                if (empty($validated['penerima'])) {
+                    $validated['penerima'] = $firstEntry['penerima'] ?? null;
+                }
+                if (empty($validated['referensi'])) {
+                    $validated['referensi'] = $firstEntry['referensi'] ?? null;
+                }
             }
         }
 
         $invoice = InvoiceAktivitasLain::create($validated);
 
         // Create multiple biaya listrik records if data exists
-        if (!empty($biayaListrikEntries)) {
+        if (! empty($biayaListrikEntries)) {
             foreach ($biayaListrikEntries as $biayaListrikData) {
                 // Add invoice_aktivitas_lain_id to each entry
                 $biayaListrikData['invoice_aktivitas_lain_id'] = $invoice->id;
                 \App\Models\InvoiceAktivitasLainListrik::create($biayaListrikData);
             }
-        
+
             // NEW: Create MasterLwbpLama record based on the first entry's lwbp_baru
             if ($isBiayaListrik) {
                 // Use the first entry as reference for the new master record
                 $firstEntry = reset($biayaListrikEntries);
-                
+
                 if (isset($firstEntry['lwbp_baru']) && is_numeric($firstEntry['lwbp_baru'])) {
                     \App\Models\MasterLwbpLama::create([
                         'tahun' => \Carbon\Carbon::parse($request->tanggal_invoice)->format('Y'),
                         'bulan' => \Carbon\Carbon::parse($request->tanggal_invoice)->format('m'),
                         'biaya' => $firstEntry['lwbp_baru'],
-                        'status' => 'active'
+                        'status' => 'active',
                     ]);
                 }
             }
         }
 
         // Create multiple utilities records if data exists
-        if (!empty($biayaUtilitiesEntries)) {
+        if (! empty($biayaUtilitiesEntries)) {
             foreach ($biayaUtilitiesEntries as $utilityData) {
                 $utilityData['invoice_aktivitas_lain_id'] = $invoice->id;
                 \App\Models\InvoiceAktivitasLainUtility::create($utilityData);
             }
         }
-        
+
         // Addition logic for "Pembayaran Adjustment Uang Jalan"
         if ($invoice->jenis_aktivitas === 'Pembayaran Adjustment Uang Jalan' && $request->jenis_penyesuaian === 'penambahan' && $request->surat_jalan_id) {
             $source = $request->input('surat_jalan_source', 'regular');
@@ -550,8 +560,8 @@ class InvoiceAktivitasLainController extends Controller
                     foreach ($tipeDetails as $detail) {
                         $tipe = strtolower($detail['tipe'] ?? '');
                         if ($tipe !== 'krani') {
-                            $nominalStr = isset($detail['nominal']) ? (string)$detail['nominal'] : '0';
-                            $nominal = (float)str_replace(['.', ','], '', $nominalStr);
+                            $nominalStr = isset($detail['nominal']) ? (string) $detail['nominal'] : '0';
+                            $nominal = (float) str_replace(['.', ','], '', $nominalStr);
                             $nonKraniAmount += $nominal;
                         }
                     }
@@ -574,11 +584,13 @@ class InvoiceAktivitasLainController extends Controller
                         if ($uangJalan) {
                             foreach ($tipeDetails as $detail) {
                                 $tipe = strtolower($detail['tipe'] ?? '');
-                                if ($tipe === 'krani') continue; // Skip krani
+                                if ($tipe === 'krani') {
+                                    continue;
+                                } // Skip krani
 
-                                $nominalStr = isset($detail['nominal']) ? (string)$detail['nominal'] : '0';
-                                $nominal = (float)str_replace(['.', ','], '', $nominalStr);
-                                
+                                $nominalStr = isset($detail['nominal']) ? (string) $detail['nominal'] : '0';
+                                $nominal = (float) str_replace(['.', ','], '', $nominalStr);
+
                                 if ($tipe === 'mel') {
                                     $uangJalan->increment('jumlah_mel', $nominal);
                                 } elseif ($tipe === 'parkir') {
@@ -609,7 +621,7 @@ class InvoiceAktivitasLainController extends Controller
                 // Default to regular
                 $suratJalan = \App\Models\SuratJalan::find($request->surat_jalan_id);
             }
-            
+
             if ($suratJalan) {
                 // Determine Surat Jalan Number
                 $noSuratJalan = null;
@@ -618,24 +630,26 @@ class InvoiceAktivitasLainController extends Controller
                 } else {
                     $noSuratJalan = $suratJalan->no_surat_jalan;
                 }
-                
+
                 // Get Nomor Accurate if available
                 $noAccurate = null;
                 // Use snake_case for accessor
                 if (isset($suratJalan->pembayaran_pranota_uang_jalan)) {
                     $noAccurate = $suratJalan->pembayaran_pranota_uang_jalan->nomor_accurate;
                 } elseif (method_exists($suratJalan, 'getPembayaranPranotaUangJalanAttribute')) {
-                     // Fallback
-                     $payment = $suratJalan->getPembayaranPranotaUangJalanAttribute();
-                     if ($payment) $noAccurate = $payment->nomor_accurate;
+                    // Fallback
+                    $payment = $suratJalan->getPembayaranPranotaUangJalanAttribute();
+                    if ($payment) {
+                        $noAccurate = $payment->nomor_accurate;
+                    }
                 }
 
                 // Snapshot data to invoice description/keterangan before deleting
                 $invoice->update([
                     'keterangan' => json_encode([
                         'snapshot_no_surat_jalan' => $noSuratJalan,
-                        'snapshot_no_accurate' => $noAccurate
-                    ])
+                        'snapshot_no_accurate' => $noAccurate,
+                    ]),
                 ]);
 
                 // Update related Prospeks
@@ -643,12 +657,12 @@ class InvoiceAktivitasLainController extends Controller
                 if ($noSuratJalan) {
                     $query->orWhere('no_surat_jalan', $noSuratJalan);
                 }
-                
+
                 $prospeks = $query->get();
                 foreach ($prospeks as $prospek) {
                     $prospek->update([
                         'surat_jalan_id' => null,
-                        'no_surat_jalan' => null
+                        'no_surat_jalan' => null,
                     ]);
                 }
 
@@ -668,7 +682,7 @@ class InvoiceAktivitasLainController extends Controller
     {
         $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'klasifikasiBiayaUmum', 'pembayarans', 'creator', 'biayaListrik', 'biayaUtility'])
             ->findOrFail($id);
-        
+
         return view('invoice-aktivitas-lain.show', compact('invoice'));
     }
 
@@ -678,10 +692,10 @@ class InvoiceAktivitasLainController extends Controller
     public function edit(string $id)
     {
         $invoice = InvoiceAktivitasLain::with(['klasifikasiBiaya', 'suratJalan', 'biayaListrik', 'biayaUtility'])->findOrFail($id);
-        
+
         $karyawans = Karyawan::orderBy('nama_lengkap', 'asc')->get();
         $mobils = Mobil::orderBy('nomor_polisi', 'asc')->get();
-        
+
         // Get voyages from both bls and pergerakan_kapal tables
         $voyagesBl = DB::table('bls')
             ->select('no_voyage as voyage', 'nama_kapal')
@@ -690,7 +704,7 @@ class InvoiceAktivitasLainController extends Controller
             ->distinct()
             ->orderBy('no_voyage')
             ->get();
-            
+
         $voyagesPergerakan = DB::table('pergerakan_kapal')
             ->select('voyage', 'nama_kapal')
             ->whereNotNull('voyage')
@@ -698,34 +712,34 @@ class InvoiceAktivitasLainController extends Controller
             ->distinct()
             ->orderBy('voyage')
             ->get();
-            
+
         // Combine and deduplicate voyages
         $allVoyages = collect();
-        
+
         foreach ($voyagesBl as $voyage) {
-            $allVoyages->push((object)[
+            $allVoyages->push((object) [
                 'voyage' => $voyage->voyage,
                 'nama_kapal' => $voyage->nama_kapal,
-                'source' => 'BL'
+                'source' => 'BL',
             ]);
         }
-        
+
         foreach ($voyagesPergerakan as $voyage) {
             // Only add if not already exists
             $exists = $allVoyages->where('voyage', $voyage->voyage)
-                                ->where('nama_kapal', $voyage->nama_kapal)
-                                ->first();
-            if (!$exists) {
-                $allVoyages->push((object)[
+                ->where('nama_kapal', $voyage->nama_kapal)
+                ->first();
+            if (! $exists) {
+                $allVoyages->push((object) [
                     'voyage' => $voyage->voyage,
                     'nama_kapal' => $voyage->nama_kapal,
-                    'source' => 'Pergerakan Kapal'
+                    'source' => 'Pergerakan Kapal',
                 ]);
             }
         }
-        
+
         $voyages = $allVoyages->sortBy('voyage')->values();
-        
+
         // Get surat jalans for adjustment payments from surat_jalans table
         $suratJalansRegular = DB::table('surat_jalans')
             ->select(
@@ -738,7 +752,7 @@ class InvoiceAktivitasLainController extends Controller
             ->whereNotNull('no_surat_jalan')
             ->where('no_surat_jalan', '!=', '')
             ->get();
-        
+
         // Get surat jalans for adjustment payments from surat_jalan_bongkarans table
         $suratJalansBongkar = DB::table('surat_jalan_bongkarans')
             ->select(
@@ -751,12 +765,12 @@ class InvoiceAktivitasLainController extends Controller
             ->whereNotNull('nomor_surat_jalan')
             ->where('nomor_surat_jalan', '!=', '')
             ->get();
-        
+
         // Combine both surat jalans
         $suratJalans = $suratJalansRegular->merge($suratJalansBongkar)
             ->sortBy('no_surat_jalan')
             ->values();
-        
+
         // Get BLs for pembayaran kapal
         $bls = DB::table('bls')
             ->select('id', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'no_voyage', 'pengirim')
@@ -764,48 +778,48 @@ class InvoiceAktivitasLainController extends Controller
             ->where('nomor_bl', '!=', '')
             ->orderBy('nomor_bl')
             ->get();
-        
+
         // Get klasifikasi biaya for pembayaran kapal
         $klasifikasiBiayas = DB::table('klasifikasi_biayas')
             ->select('id', 'nama')
             ->where('is_active', true)
             ->orderBy('nama')
             ->get();
-        
+
         // Get pricelist buruh for pembayaran kapal with klasifikasi biaya "buruh"
         $pricelistBuruh = DB::table('pricelist_buruh')
             ->select('id', 'barang', 'size', 'tipe', 'tarif')
             ->where('is_active', true)
             ->orderBy('barang')
             ->get();
-        
+
         // Get pricelist biaya dokumen for klasifikasi biaya "biaya dokumen"
         $pricelistBiayaDokumen = DB::table('pricelist_biaya_dokumen')
             ->select('id', 'nama_vendor', 'biaya')
             ->where('status', 'aktif')
             ->orderBy('nama_vendor')
             ->get();
-        
+
         // Get list of penerima from karyawan for detail pembayaran dropdown
         $penerimaList = Karyawan::orderBy('nama_lengkap', 'asc')
             ->pluck('nama_lengkap')
             ->unique()
             ->values()
             ->toArray();
-        
+
         // Get akun COA for biaya listrik
         $akunCoas = DB::table('akun_coa')
             ->select('id', 'nomor_akun', 'nama_akun')
             ->orderBy('nomor_akun')
             ->get();
-        
+
         // Get latest LWBP Lama value
         $latestLwbpLama = \App\Models\MasterLwbpLama::where('status', 'active')->orderBy('created_at', 'desc')->first();
         $latestLwbpValue = $latestLwbpLama ? $latestLwbpLama->biaya : 0;
 
         // Get alat berat for utilities
         $alatBerats = \App\Models\AlatBerat::where('status', 'active')->orderBy('nama')->get();
-        
+
         return view('invoice-aktivitas-lain.edit', compact('invoice', 'karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas', 'latestLwbpValue', 'alatBerats'));
     }
 
@@ -815,14 +829,14 @@ class InvoiceAktivitasLainController extends Controller
     public function update(Request $request, string $id)
     {
         $invoice = InvoiceAktivitasLain::findOrFail($id);
-        
+
         // Clean up numeric fields - remove currency formatting
         $inputs = $request->all();
         $fieldsToClean = [
-            'sub_total_labuh', 
-            'pph_labuh', 
-            'total', 
-            'pph', 
+            'sub_total_labuh',
+            'pph_labuh',
+            'total',
+            'pph',
             'ppn',
             'grand_total',
             'subtotal',
@@ -841,9 +855,9 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_materai',
             'biaya_adjustment',
             'nominal_bayar',
-            'biaya_admin'
+            'biaya_admin',
         ];
-        
+
         foreach ($fieldsToClean as $field) {
             if (isset($inputs[$field]) && is_string($inputs[$field])) {
                 $inputs[$field] = str_replace(['.', ','], '', $inputs[$field]);
@@ -870,7 +884,7 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
         }
-        
+
         $request->merge($inputs);
 
         // Check if this is utilities or listrik or PBM invoice
@@ -891,10 +905,10 @@ class InvoiceAktivitasLainController extends Controller
                 }
             }
         }
-        
+
         // Conditional validation rules
         $totalValidation = ($isBiayaListrik || $isUtilities || $isPBM) ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
-        
+
         $isLabuhTambat = false;
         if ($request->has('klasifikasi_biaya_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_id);
@@ -902,7 +916,7 @@ class InvoiceAktivitasLainController extends Controller
                 $isLabuhTambat = true;
             }
         }
-        if (!$isLabuhTambat && $request->has('klasifikasi_biaya_umum_id')) {
+        if (! $isLabuhTambat && $request->has('klasifikasi_biaya_umum_id')) {
             $klasifikasiBiaya = \App\Models\KlasifikasiBiaya::find($request->klasifikasi_biaya_umum_id);
             if ($klasifikasiBiaya && (stripos($klasifikasiBiaya->nama, 'labuh tambat') !== false || stripos($klasifikasiBiaya->nama, 'labuh tambah') !== false)) {
                 $isLabuhTambat = true;
@@ -911,7 +925,7 @@ class InvoiceAktivitasLainController extends Controller
         $vendorLabuhTambatValidation = $isLabuhTambat ? 'required|string|max:255' : 'nullable|string|max:255';
 
         $validated = $request->validate([
-            'nomor_invoice' => 'required|string|max:255|unique:invoice_aktivitas_lain,nomor_invoice,' . $id,
+            'nomor_invoice' => 'required|string|max:255|unique:invoice_aktivitas_lain,nomor_invoice,'.$id,
             'tanggal_invoice' => 'required|date',
             'jenis_aktivitas' => 'required|string',
             'klasifikasi_biaya_umum_id' => 'nullable|integer|exists:klasifikasi_biayas,id',
@@ -1002,21 +1016,21 @@ class InvoiceAktivitasLainController extends Controller
             'pbm_detail.*.grand_total' => 'nullable|string',
             'pbm_detail.*.catatan' => 'nullable|string',
         ]);
-        
+
         // Convert arrays to JSON
         if (isset($validated['bl_details'])) {
             $validated['bl_details'] = json_encode($validated['bl_details']);
         }
-        
+
         if (isset($validated['barang_detail'])) {
             $validated['barang_detail'] = json_encode($validated['barang_detail']);
         }
-        
+
         if (isset($validated['tipe_penyesuaian_detail'])) {
             $validated['tipe_penyesuaian'] = json_encode($validated['tipe_penyesuaian_detail']);
             unset($validated['tipe_penyesuaian_detail']);
         }
-        
+
         if (isset($validated['detail_pembayaran'])) {
             // Clean up biaya values - remove currency formatting
             foreach ($validated['detail_pembayaran'] as &$detail) {
@@ -1030,18 +1044,30 @@ class InvoiceAktivitasLainController extends Controller
         // Convert pbm_detail array to JSON for storage
         if (isset($validated['pbm_detail'])) {
             foreach ($validated['pbm_detail'] as &$pbm) {
-                if (isset($pbm['nominal_bayar'])) $pbm['nominal_bayar'] = str_replace(['.', ','], '', $pbm['nominal_bayar']);
-                if (isset($pbm['biaya_admin'])) $pbm['biaya_admin'] = str_replace(['.', ','], '', $pbm['biaya_admin']);
-                if (isset($pbm['grand_total'])) $pbm['grand_total'] = str_replace(['.', ','], '', $pbm['grand_total']);
+                if (isset($pbm['nominal_bayar'])) {
+                    $pbm['nominal_bayar'] = str_replace(['.', ','], '', $pbm['nominal_bayar']);
+                }
+                if (isset($pbm['biaya_admin'])) {
+                    $pbm['biaya_admin'] = str_replace(['.', ','], '', $pbm['biaya_admin']);
+                }
+                if (isset($pbm['grand_total'])) {
+                    $pbm['grand_total'] = str_replace(['.', ','], '', $pbm['grand_total']);
+                }
             }
             $validated['pbm_detail'] = json_encode($validated['pbm_detail']);
 
             // Sync first PBM row to main columns if not already set
             $pbmData = json_decode($validated['pbm_detail'], true);
-            if (!empty($pbmData) && isset($pbmData[0])) {
-                if (empty($validated['penerima'])) $validated['penerima'] = $pbmData[0]['penerima'] ?? null;
-                if (empty($validated['nomor_bank'])) $validated['nomor_bank'] = $pbmData[0]['nomor_bank'] ?? null;
-                if (empty($validated['nama_bank'])) $validated['nama_bank'] = $pbmData[0]['nama_bank'] ?? null;
+            if (! empty($pbmData) && isset($pbmData[0])) {
+                if (empty($validated['penerima'])) {
+                    $validated['penerima'] = $pbmData[0]['penerima'] ?? null;
+                }
+                if (empty($validated['nomor_bank'])) {
+                    $validated['nomor_bank'] = $pbmData[0]['nomor_bank'] ?? null;
+                }
+                if (empty($validated['nama_bank'])) {
+                    $validated['nama_bank'] = $pbmData[0]['nama_bank'] ?? null;
+                }
             }
         }
 
@@ -1050,7 +1076,7 @@ class InvoiceAktivitasLainController extends Controller
             $validated['subtotal'] = $request->sub_total_labuh;
             $validated['pph'] = $request->pph_labuh;
             $validated['grand_total'] = $request->total;
-            
+
             unset($validated['sub_total_labuh']);
             unset($validated['pph_labuh']);
         }
@@ -1062,7 +1088,7 @@ class InvoiceAktivitasLainController extends Controller
             unset($validated['biaya_listrik']);
 
             // Set main penerima from the first entry for display in index/header
-            if (empty($validated['penerima']) && !empty($biayaListrikEntries)) {
+            if (empty($validated['penerima']) && ! empty($biayaListrikEntries)) {
                 $firstEntry = reset($biayaListrikEntries);
                 $validated['penerima'] = $firstEntry['penerima'] ?? null;
             }
@@ -1075,25 +1101,29 @@ class InvoiceAktivitasLainController extends Controller
             unset($validated['biaya_utilities_detail']);
 
             // Set main penerima and referensi from the first entry if empty
-            if (!empty($utilityEntries)) {
+            if (! empty($utilityEntries)) {
                 $firstEntry = reset($utilityEntries);
-                if (empty($validated['penerima'])) $validated['penerima'] = $firstEntry['penerima'] ?? null;
-                if (empty($validated['referensi'])) $validated['referensi'] = $firstEntry['referensi'] ?? null;
+                if (empty($validated['penerima'])) {
+                    $validated['penerima'] = $firstEntry['penerima'] ?? null;
+                }
+                if (empty($validated['referensi'])) {
+                    $validated['referensi'] = $firstEntry['referensi'] ?? null;
+                }
             }
         }
 
         $invoice->update($validated);
 
         // Update biaya listrik records
-        if (!empty($biayaListrikEntries)) {
+        if (! empty($biayaListrikEntries)) {
             // Remove existing entries first
             $invoice->biayaListrik()->delete();
-            
+
             foreach ($biayaListrikEntries as $biayaListrikData) {
                 $biayaListrikData['invoice_aktivitas_lain_id'] = $invoice->id;
                 \App\Models\InvoiceAktivitasLainListrik::create($biayaListrikData);
             }
-        
+
             // Update MasterLwbpLama record based on the first entry's lwbp_baru
             if ($isBiayaListrik) {
                 $firstEntry = reset($biayaListrikEntries);
@@ -1102,17 +1132,17 @@ class InvoiceAktivitasLainController extends Controller
                         'tahun' => \Carbon\Carbon::parse($request->tanggal_invoice)->format('Y'),
                         'bulan' => \Carbon\Carbon::parse($request->tanggal_invoice)->format('m'),
                         'biaya' => $firstEntry['lwbp_baru'],
-                        'status' => 'active'
+                        'status' => 'active',
                     ]);
                 }
             }
         }
 
         // Update utilities records
-        if (!empty($utilityEntries)) {
+        if (! empty($utilityEntries)) {
             // Remove existing entries first
             $invoice->biayaUtility()->delete();
-            
+
             foreach ($utilityEntries as $utilityData) {
                 $utilityData['invoice_aktivitas_lain_id'] = $invoice->id;
                 \App\Models\InvoiceAktivitasLainUtility::create($utilityData);
@@ -1129,11 +1159,11 @@ class InvoiceAktivitasLainController extends Controller
             } else {
                 $suratJalan = \App\Models\SuratJalan::find($request->surat_jalan_id);
             }
-            
+
             if ($suratJalan) {
                 // Determine Surat Jalan Number
                 $noSuratJalan = ($source == 'bongkar') ? $suratJalan->nomor_surat_jalan : $suratJalan->no_surat_jalan;
-                
+
                 // Snapshot data
                 $noAccurate = null;
                 if (isset($suratJalan->pembayaran_pranota_uang_jalan)) {
@@ -1143,8 +1173,8 @@ class InvoiceAktivitasLainController extends Controller
                 $invoice->update([
                     'keterangan' => json_encode([
                         'snapshot_no_surat_jalan' => $noSuratJalan,
-                        'snapshot_no_accurate' => $noAccurate
-                    ])
+                        'snapshot_no_accurate' => $noAccurate,
+                    ]),
                 ]);
 
                 // Update related Prospeks
@@ -1152,7 +1182,7 @@ class InvoiceAktivitasLainController extends Controller
                     ->orWhere('no_surat_jalan', $noSuratJalan)
                     ->update([
                         'surat_jalan_id' => null,
-                        'no_surat_jalan' => null
+                        'no_surat_jalan' => null,
                     ]);
 
                 // Delete the Surat Jalan record
@@ -1172,12 +1202,12 @@ class InvoiceAktivitasLainController extends Controller
         try {
             $invoice = InvoiceAktivitasLain::findOrFail($id);
             $invoice->delete();
-            
+
             return redirect()->route('invoice-aktivitas-lain.index')
                 ->with('success', 'Invoice berhasil dihapus.');
         } catch (\Exception $e) {
             return redirect()->route('invoice-aktivitas-lain.index')
-                ->with('error', 'Gagal menghapus invoice: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus invoice: '.$e->getMessage());
         }
     }
 
@@ -1188,21 +1218,21 @@ class InvoiceAktivitasLainController extends Controller
     {
         try {
             $ids = $request->input('ids', []);
-            
+
             if (empty($ids)) {
                 return response()->json(['success' => false, 'message' => 'Tidak ada invoice yang dipilih.'], 400);
             }
-            
+
             $deleted = InvoiceAktivitasLain::whereIn('id', $ids)->delete();
-            
+
             return response()->json([
-                'success' => true, 
-                'message' => $deleted . ' invoice berhasil dihapus.'
+                'success' => true,
+                'message' => $deleted.' invoice berhasil dihapus.',
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false, 
-                'message' => 'Gagal menghapus invoice: ' . $e->getMessage()
+                'success' => false,
+                'message' => 'Gagal menghapus invoice: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1219,11 +1249,11 @@ class InvoiceAktivitasLainController extends Controller
         if ($invoice->klasifikasiBiaya && (stripos($invoice->klasifikasiBiaya->nama, 'labuh tambat') !== false || stripos($invoice->klasifikasiBiaya->nama, 'labuh tambah') !== false)) {
             $isLabuhTambat = true;
         }
-        if (!$isLabuhTambat && $invoice->klasifikasiBiayaUmum && (stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambat') !== false || stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambah') !== false)) {
+        if (! $isLabuhTambat && $invoice->klasifikasiBiayaUmum && (stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambat') !== false || stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambah') !== false)) {
             $isLabuhTambat = true;
         }
 
-        if($isLabuhTambat){
+        if ($isLabuhTambat) {
             return view('invoice-aktivitas-lain.print-labuh-tambat', compact('invoice'));
         }
 
@@ -1234,6 +1264,7 @@ class InvoiceAktivitasLainController extends Controller
                 return redirect()->route('invoice-aktivitas-lain.show', $id)
                     ->with('error', 'Data biaya listrik tidak ditemukan untuk invoice ini.');
             }
+
             return view('invoice-aktivitas-lain.print-listrik', compact('invoice', 'biayaListrikEntries'));
         }
 
@@ -1243,9 +1274,10 @@ class InvoiceAktivitasLainController extends Controller
                 return redirect()->route('invoice-aktivitas-lain.show', $id)
                     ->with('error', 'Data biaya utilities tidak ditemukan untuk invoice ini.');
             }
+
             return view('invoice-aktivitas-lain.print-utilities', compact('invoice'));
         }
-        
+
         return view('invoice-aktivitas-lain.print', compact('invoice'));
     }
 
@@ -1255,22 +1287,22 @@ class InvoiceAktivitasLainController extends Controller
     public function printListrik(string $id)
     {
         $invoice = InvoiceAktivitasLain::with(['creator', 'approver', 'klasifikasiBiayaUmum', 'biayaListrik', 'biayaUtility'])->findOrFail($id);
-        
+
         // Pastikan ini invoice biaya listrik
-        if ($invoice->klasifikasiBiayaUmum && !str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama), 'listrik')) {
+        if ($invoice->klasifikasiBiayaUmum && ! str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama), 'listrik')) {
             return redirect()->route('invoice-aktivitas-lain.print', $id)
                 ->with('warning', 'Print khusus listrik hanya untuk invoice biaya listrik.');
         }
-        
+
         // Pastikan ada data biaya listrik
         // Get all biaya listrik entries for this invoice
         $biayaListrikEntries = $invoice->biayaListrik;
-        
+
         if ($biayaListrikEntries->isEmpty()) {
             return redirect()->route('invoice-aktivitas-lain.show', $id)
                 ->with('error', 'Data biaya listrik tidak ditemukan untuk invoice ini.');
         }
-        
+
         return view('invoice-aktivitas-lain.print-listrik', compact('invoice', 'biayaListrikEntries'));
     }
 
@@ -1280,21 +1312,21 @@ class InvoiceAktivitasLainController extends Controller
     public function printLabuhTambat(string $id)
     {
         $invoice = InvoiceAktivitasLain::with(['creator', 'approver', 'klasifikasiBiaya', 'klasifikasiBiayaUmum'])->findOrFail($id);
-        
+
         // Pastikan ini invoice labuh tambat
         $isLabuhTambat = false;
         if ($invoice->klasifikasiBiaya && (stripos($invoice->klasifikasiBiaya->nama, 'labuh tambat') !== false || stripos($invoice->klasifikasiBiaya->nama, 'labuh tambah') !== false)) {
             $isLabuhTambat = true;
         }
-        if (!$isLabuhTambat && $invoice->klasifikasiBiayaUmum && (stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambat') !== false || stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambah') !== false)) {
+        if (! $isLabuhTambat && $invoice->klasifikasiBiayaUmum && (stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambat') !== false || stripos($invoice->klasifikasiBiayaUmum->nama, 'labuh tambah') !== false)) {
             $isLabuhTambat = true;
         }
-        
-        if (!$isLabuhTambat) {
+
+        if (! $isLabuhTambat) {
             return redirect()->route('invoice-aktivitas-lain.print', $id)
                 ->with('warning', 'Print khusus labuh tambat hanya untuk invoice labuh tambat.');
         }
-        
+
         return view('invoice-aktivitas-lain.print-labuh-tambat', compact('invoice'));
     }
 
@@ -1304,26 +1336,26 @@ class InvoiceAktivitasLainController extends Controller
     public function printPbm(string $id)
     {
         $invoice = InvoiceAktivitasLain::with(['createdBy', 'approvedBy', 'klasifikasiBiaya', 'klasifikasiBiayaUmum'])->findOrFail($id);
-        
+
         // Pastikan ini invoice Biaya PBM
         $isPbm = false;
         if ($invoice->klasifikasiBiaya && stripos($invoice->klasifikasiBiaya->nama, 'PBM') !== false) {
             $isPbm = true;
         }
-        
+
         // Cek juga jika ada data pbm_detail (JSON)
-        if (!$isPbm && !empty($invoice->pbm_detail)) {
+        if (! $isPbm && ! empty($invoice->pbm_detail)) {
             $pbmArray = json_decode($invoice->pbm_detail, true);
             if (is_array($pbmArray) && count($pbmArray) > 0) {
                 $isPbm = true;
             }
         }
-        
-        if (!$isPbm) {
+
+        if (! $isPbm) {
             return redirect()->route('invoice-aktivitas-lain.print', $id)
                 ->with('warning', 'Print khusus PBM hanya untuk invoice Biaya PBM.');
         }
-        
+
         return view('invoice-aktivitas-lain.print-pbm', compact('invoice'));
     }
 }

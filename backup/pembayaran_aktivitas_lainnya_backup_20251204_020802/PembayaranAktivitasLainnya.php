@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Auditable;
 
 class PembayaranAktivitasLainnya extends Model
 {
-    use HasFactory, SoftDeletes, Auditable;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $table = 'pembayaran_aktivitas_lainnya';
 
@@ -29,14 +29,14 @@ class PembayaranAktivitasLainnya extends Model
         'status',
         'created_by',
         'approved_by',
-        'approved_at'
+        'approved_at',
     ];
 
     protected $casts = [
         'tanggal_pembayaran' => 'date',
         'total_pembayaran' => 'decimal:2',
         'is_dp' => 'boolean',
-        'approved_at' => 'datetime'
+        'approved_at' => 'datetime',
     ];
 
     /**
@@ -92,7 +92,7 @@ class PembayaranAktivitasLainnya extends Model
      */
     public function getBankAccountAttribute()
     {
-        return $this->bank ? $this->bank->nomor_akun . ' - ' . $this->bank->nama_akun : null;
+        return $this->bank ? $this->bank->nomor_akun.' - '.$this->bank->nama_akun : null;
     }
 
     /**
@@ -109,11 +109,11 @@ class PembayaranAktivitasLainnya extends Model
         $defaultBank = \App\Models\Coa::where('tipe_akun', 'LIKE', '%Kas%')
             ->orWhere('tipe_akun', 'LIKE', '%Bank%')
             ->first();
-        
-        if (!$defaultBank) {
+
+        if (! $defaultBank) {
             throw new \Exception('Tidak ada akun bank/kas tersedia. Silakan gunakan generateNomorPembayaranCoa() dengan COA ID yang valid.');
         }
-        
+
         return self::generateNomorPembayaranCoa($defaultBank->id);
     }
 
@@ -130,7 +130,7 @@ class PembayaranAktivitasLainnya extends Model
 
         // Get COA info untuk kode bank
         $coa = \App\Models\Coa::find($coaId);
-        if (!$coa) {
+        if (! $coa) {
             throw new \Exception('COA tidak ditemukan.');
         }
 
@@ -142,7 +142,7 @@ class PembayaranAktivitasLainnya extends Model
             ->lockForUpdate()
             ->first();
 
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             throw new \Exception('Modul pembayaran_aktivitas_lainnya_pms tidak ditemukan di master nomor terakhir.');
         }
 

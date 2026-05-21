@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\PelamarKaryawan;
+use Illuminate\Http\Request;
 
 class PelamarKaryawanController extends Controller
 {
@@ -19,7 +18,7 @@ class PelamarKaryawanController extends Controller
         $registeredNiks = \App\Models\Karyawan::pluck('ktp')->filter()->toArray();
 
         $query = PelamarKaryawan::latest();
-        
+
         if ($filter === 'sudah') {
             $query->whereIn('no_nik', $registeredNiks);
         } else {
@@ -27,7 +26,7 @@ class PelamarKaryawanController extends Controller
         }
 
         $pelamars = $query->paginate(10)->appends(['filter' => $filter]);
-        
+
         return view('pelamar-karyawan.index', compact('pelamars', 'filter'));
     }
 

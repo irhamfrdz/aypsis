@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('pembayaran_pranota_uang_jalan_batam_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pembayaran_pranota_uang_jalan_btm_id')
-                  ->constrained('pembayaran_pranota_uang_jalan_batams', 'id')
-                  ->onDelete('cascade')
-                  ->name('puj_btm_items_puj_btm_id_foreign');
+                ->constrained('pembayaran_pranota_uang_jalan_batams', 'id')
+                ->onDelete('cascade')
+                ->name('puj_btm_items_puj_btm_id_foreign');
             $table->foreignId('pranota_uang_jalan_batam_id')
-                  ->constrained('pranota_uang_jalan_batams')
-                  ->onDelete('cascade')
-                  ->name('puj_btm_items_puj_btm_pranota_id_foreign');
+                ->constrained('pranota_uang_jalan_batams')
+                ->onDelete('cascade')
+                ->name('puj_btm_items_puj_btm_pranota_id_foreign');
             $table->decimal('subtotal', 15, 2);
             $table->timestamps();
         });

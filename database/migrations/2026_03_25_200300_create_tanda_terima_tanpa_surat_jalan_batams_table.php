@@ -17,7 +17,7 @@ return new class extends Migration
             $table->date('tanggal_tanda_terima');
             $table->string('nomor_surat_jalan_customer')->nullable();
             $table->string('nomor_tanda_terima')->nullable();
-            $table->string('term_id')->nullable(); 
+            $table->string('term_id')->nullable();
             $table->string('aktifitas')->nullable();
             $table->string('tipe_kontainer')->nullable();
             $table->string('no_kontainer')->nullable();
@@ -52,7 +52,7 @@ return new class extends Migration
             $table->text('gambar_tanda_terima')->nullable(); // Cast to array in model
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
-            
+
             // Asuransi fields from AsuransiManageable trait
             $table->string('asuransi_path')->nullable();
             $table->timestamp('asuransi_uploaded_at')->nullable();
@@ -61,13 +61,13 @@ return new class extends Migration
             $table->timestamp('asuransi_approved_at')->nullable();
             $table->string('asuransi_approved_by')->nullable();
             $table->text('asuransi_keterangan')->nullable();
-            
+
             // Dokumen fields
             $table->text('dokumen_ppbj')->nullable();
             $table->text('dokumen_packing_list')->nullable();
             $table->text('dokumen_invoice')->nullable();
             $table->text('dokumen_faktur_pajak')->nullable();
-            
+
             $table->timestamps();
 
             // Indexes for better performance

@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
-            if (!Schema::hasColumn('invoice_aktivitas_lain', 'nomor_bank')) {
+            if (! Schema::hasColumn('invoice_aktivitas_lain', 'nomor_bank')) {
                 $table->string('nomor_bank')->nullable()->after('total');
             }
-            if (!Schema::hasColumn('invoice_aktivitas_lain', 'nominal_bayar')) {
+            if (! Schema::hasColumn('invoice_aktivitas_lain', 'nominal_bayar')) {
                 $table->decimal('nominal_bayar', 15, 2)->default(0)->after('nomor_bank');
             }
-            if (!Schema::hasColumn('invoice_aktivitas_lain', 'biaya_admin')) {
+            if (! Schema::hasColumn('invoice_aktivitas_lain', 'biaya_admin')) {
                 $table->decimal('biaya_admin', 15, 2)->default(0)->after('nominal_bayar');
             }
             $table->longText('pbm_detail')->nullable()->after('total');

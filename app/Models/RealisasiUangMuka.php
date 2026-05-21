@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-
-
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
 class RealisasiUangMuka extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $table = 'realisasi_uang_muka';
 
     protected $fillable = [
@@ -82,6 +81,7 @@ class RealisasiUangMuka extends Model
         if (is_array($this->jumlah_per_supir)) {
             return array_sum($this->jumlah_per_supir);
         }
+
         return 0;
     }
 
@@ -96,7 +96,7 @@ class RealisasiUangMuka extends Model
 
         // Get COA info untuk kode bank
         $coa = \App\Models\Coa::find($coaId);
-        if (!$coa) {
+        if (! $coa) {
             throw new \Exception('COA tidak ditemukan.');
         }
 
@@ -108,12 +108,12 @@ class RealisasiUangMuka extends Model
             ->lockForUpdate()
             ->first();
 
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             // Create new entry if not exists
             $nomorTerakhir = \App\Models\NomorTerakhir::create([
                 'modul' => 'nomor_pembayaran',
                 'nomor_terakhir' => 0,
-                'keterangan' => 'Nomor terakhir untuk pembayaran'
+                'keterangan' => 'Nomor terakhir untuk pembayaran',
             ]);
         }
 

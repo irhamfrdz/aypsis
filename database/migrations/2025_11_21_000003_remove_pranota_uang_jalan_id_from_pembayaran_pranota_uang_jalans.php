@@ -26,9 +26,9 @@ return new class extends Migration
     {
         Schema::table('pembayaran_pranota_uang_jalans', function (Blueprint $table) {
             $table->foreignId('pranota_uang_jalan_id')
-                  ->after('id')
-                  ->constrained('pranota_uang_jalans')
-                  ->onDelete('cascade');
+                ->after('id')
+                ->constrained('pranota_uang_jalans')
+                ->onDelete('cascade');
         });
     }
 };

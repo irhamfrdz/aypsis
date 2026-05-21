@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class AuditLogController extends Controller
 {
@@ -55,10 +54,10 @@ class AuditLogController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
-                  ->orWhere('user_name', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('username', 'like', "%{$search}%");
-                  });
+                    ->orWhere('user_name', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('username', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -95,7 +94,7 @@ class AuditLogController extends Controller
             'user_name' => \Illuminate\Support\Facades\Auth::user()->username ?? 'not_logged_in',
             'model_type' => $request->model_type,
             'model_id' => $request->model_id,
-            'has_permission' => \Illuminate\Support\Facades\Auth::user() ? \Illuminate\Support\Facades\Auth::user()->hasPermissionTo('audit-log-view') : false
+            'has_permission' => \Illuminate\Support\Facades\Auth::user() ? \Illuminate\Support\Facades\Auth::user()->hasPermissionTo('audit-log-view') : false,
         ]);
 
         $this->authorize('audit-log-view');
@@ -111,7 +110,7 @@ class AuditLogController extends Controller
             ->get();
 
         \Illuminate\Support\Facades\Log::info('getModelAuditLogs result', [
-            'count' => $auditLogs->count()
+            'count' => $auditLogs->count(),
         ]);
 
         return response()->json([
@@ -123,9 +122,9 @@ class AuditLogController extends Controller
                     'description' => $log->description,
                     'user_name' => $log->getUserDisplayName(),
                     'created_at' => $log->created_at->format('d/m/Y H:i:s'),
-                    'changes' => $log->getFormattedChanges()
+                    'changes' => $log->getFormattedChanges(),
                 ];
-            })
+            }),
         ]);
     }
 
@@ -159,7 +158,7 @@ class AuditLogController extends Controller
 
         $auditLogs = $query->get();
 
-        $filename = 'audit_logs_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $filename = 'audit_logs_'.now()->format('Y-m-d_H-i-s').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv; charset=utf-8',
@@ -175,7 +174,7 @@ class AuditLogController extends Controller
             // Header
             fputcsv($file, [
                 'ID', 'User', 'Module', 'Action', 'Description',
-                'Model Type', 'Model ID', 'IP Address', 'Timestamp'
+                'Model Type', 'Model ID', 'IP Address', 'Timestamp',
             ], ';');
 
             // Data
@@ -189,7 +188,7 @@ class AuditLogController extends Controller
                     class_basename($log->auditable_type),
                     $log->auditable_id,
                     $log->ip_address,
-                    $log->created_at->format('Y-m-d H:i:s')
+                    $log->created_at->format('Y-m-d H:i:s'),
                 ], ';');
             }
 

@@ -2,26 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
+use App\Models\Gudang;
+use App\Models\HistoryKontainer;
+use App\Models\Karyawan;
+use App\Models\Kontainer;
+use App\Models\MasterPengirimPenerima;
+use App\Models\MasterTujuanKirim;
+use App\Models\Penerima;
+use App\Models\Pengirim;
+use App\Models\Prospek;
+use App\Models\StockKontainer;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaLclItem;
 use App\Models\TandaTerimaLclKontainerPivot;
 use App\Models\Term;
-use App\Models\Kontainer;
-use App\Models\StockKontainer;
-use App\Models\MasterTujuanKirim;
-use App\Models\MasterPengirimPenerima;
-use App\Models\Penerima;
-use App\Models\Pengirim;
-use App\Models\Karyawan;
-use App\Models\Prospek;
-use App\Models\Gudang;
-use App\Models\HistoryKontainer;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class TandaTerimaLclController extends Controller
 {
@@ -41,32 +40,32 @@ class TandaTerimaLclController extends Controller
     {
         $terms = Term::all();
         $masterTujuanKirims = MasterTujuanKirim::all();
-        $penerimas = Penerima::where('status', 'active')->get()->map(function($item) {
+        $penerimas = Penerima::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama_penerima,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $pengirims = Pengirim::where('status', 'active')->get()->map(function($item) {
+        $pengirims = Pengirim::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama_pengirim,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function($item) {
+        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $masterPengirimPenerima = $penerimas->concat($pengirims)->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function($item) {
-            return (object)$item;
+        $masterPengirimPenerima = $penerimas->concat($pengirims)->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function ($item) {
+            return (object) $item;
         });
         // Ambil karyawan yang memiliki divisi 'supir'
         $supirs = Karyawan::where('divisi', 'supir')
             ->select('nama_lengkap as nama_supir', 'plat as no_plat')
             ->get();
-        
+
         // Include all non-inactive containers (many records use 'available'/'rented' etc.)
         $kontainers = Kontainer::where('status', '!=', 'inactive')->get();
         $stockKontainers = StockKontainer::active()->get();
@@ -75,7 +74,7 @@ class TandaTerimaLclController extends Controller
             $nomor = $k->nomor_kontainer;
             $merged[$nomor] = [
                 'value' => $nomor,
-                'label' => $nomor . ' (Kontainer)',
+                'label' => $nomor.' (Kontainer)',
                 'size' => $k->ukuran ?? null,
                 'source' => 'kontainer',
                 'status' => $k->status ?? null,
@@ -83,10 +82,10 @@ class TandaTerimaLclController extends Controller
         }
         foreach ($stockKontainers as $s) {
             $nomor = $s->nomor_kontainer;
-            if (!isset($merged[$nomor])) {
+            if (! isset($merged[$nomor])) {
                 $merged[$nomor] = [
                     'value' => $nomor,
-                    'label' => $nomor . ' (Stock)',
+                    'label' => $nomor.' (Stock)',
                     'size' => $s->ukuran ?? null,
                     'source' => 'stock',
                     'status' => $s->status ?? null,
@@ -96,7 +95,7 @@ class TandaTerimaLclController extends Controller
         $containerOptions = array_values($merged);
 
         return view('tanda-terima-tanpa-surat-jalan.create-lcl', compact(
-            'terms', 
+            'terms',
             'masterTujuanKirims',
             'masterPengirimPenerima',
             'supirs',
@@ -149,7 +148,7 @@ class TandaTerimaLclController extends Controller
             'meter_kubik' => 'nullable|array',
             'meter_kubik.*' => 'nullable|numeric|min:0',
             'tonase' => 'nullable|array',
-            'tonase.*' => 'nullable|numeric|min:0'
+            'tonase.*' => 'nullable|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -158,7 +157,7 @@ class TandaTerimaLclController extends Controller
             if ($request->hasFile('gambar_surat_jalan')) {
                 foreach ($request->file('gambar_surat_jalan') as $file) {
                     if ($file && $file->isValid()) {
-                        $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $fileName = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
                         $path = $file->storeAs('tanda-terima-lcl/gambar-surat-jalan', $fileName, 'public');
                         $gambarPaths[] = $path;
                     }
@@ -183,7 +182,7 @@ class TandaTerimaLclController extends Controller
                 'pic_pengirim' => $request->pic_pengirim,
                 'telepon_pengirim' => $request->telepon_pengirim,
                 'alamat_pengirim' => $request->alamat_pengirim,
-                'gambar_surat_jalan' => !empty($gambarPaths) ? $gambarPaths : null,
+                'gambar_surat_jalan' => ! empty($gambarPaths) ? $gambarPaths : null,
                 'supir' => $request->supir,
                 'no_plat' => $request->no_plat,
                 'tujuan_pengiriman_id' => $request->tujuan_pengiriman,
@@ -246,7 +245,7 @@ class TandaTerimaLclController extends Controller
         });
 
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
-                        ->with('success', 'Tanda Terima LCL berhasil dibuat. Silakan assign barang ke kontainer dan input nomor seal.');
+            ->with('success', 'Tanda Terima LCL berhasil dibuat. Silakan assign barang ke kontainer dan input nomor seal.');
     }
 
     /**
@@ -256,13 +255,13 @@ class TandaTerimaLclController extends Controller
     {
         $tandaTerima = TandaTerimaLcl::with([
             'term',
-            'tujuanPengiriman', 
+            'tujuanPengiriman',
             'items',
             'createdBy',
             'updatedBy',
-            'kontainerPivot'
+            'kontainerPivot',
         ])->findOrFail($id);
-        
+
         return view('tanda-terima-tanpa-surat-jalan.show-lcl', compact('tandaTerima'));
     }
 
@@ -274,32 +273,32 @@ class TandaTerimaLclController extends Controller
         $tandaTerima = TandaTerimaLcl::with('items')->findOrFail($id);
         $terms = Term::all();
         $masterTujuanKirims = MasterTujuanKirim::all();
-        $penerimas = Penerima::where('status', 'active')->get()->map(function($item) {
+        $penerimas = Penerima::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama_penerima,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $pengirims = Pengirim::where('status', 'active')->get()->map(function($item) {
+        $pengirims = Pengirim::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama_pengirim,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function($item) {
+        $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function ($item) {
             return [
                 'nama' => $item->nama,
-                'alamat' => $item->alamat
+                'alamat' => $item->alamat,
             ];
         });
-        $masterPengirimPenerima = $penerimas->concat($pengirims)->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function($item) {
-            return (object)$item;
+        $masterPengirimPenerima = $penerimas->concat($pengirims)->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function ($item) {
+            return (object) $item;
         });
         // Ambil karyawan yang memiliki divisi 'supir'
         $supirs = Karyawan::where('divisi', 'supir')
             ->select('nama_lengkap as nama_supir', 'plat as no_plat')
             ->get();
-        
+
         $kontainers = Kontainer::where('status', 'active')->get();
         $stockKontainers = StockKontainer::active()->get();
         $merged = [];
@@ -307,7 +306,7 @@ class TandaTerimaLclController extends Controller
             $nomor = $k->nomor_kontainer;
             $merged[$nomor] = [
                 'value' => $nomor,
-                'label' => $nomor . ' (Kontainer)',
+                'label' => $nomor.' (Kontainer)',
                 'size' => $k->ukuran ?? null,
                 'source' => 'kontainer',
                 'status' => $k->status ?? null,
@@ -315,10 +314,10 @@ class TandaTerimaLclController extends Controller
         }
         foreach ($stockKontainers as $s) {
             $nomor = $s->nomor_kontainer;
-            if (!isset($merged[$nomor])) {
+            if (! isset($merged[$nomor])) {
                 $merged[$nomor] = [
                     'value' => $nomor,
-                    'label' => $nomor . ' (Stock)',
+                    'label' => $nomor.' (Stock)',
                     'size' => $s->ukuran ?? null,
                     'source' => 'stock',
                     'status' => $s->status ?? null,
@@ -336,9 +335,9 @@ class TandaTerimaLclController extends Controller
     public function update(Request $request, string $id)
     {
         $tandaTerima = TandaTerimaLcl::findOrFail($id);
-        
+
         $request->validate([
-            'nomor_tanda_terima' => 'nullable|string|max:255|unique:tanda_terima_lcl,nomor_tanda_terima,' . $id,
+            'nomor_tanda_terima' => 'nullable|string|max:255|unique:tanda_terima_lcl,nomor_tanda_terima,'.$id,
             'tanggal_tanda_terima' => 'required|date',
             'no_surat_jalan_customer' => 'nullable|string|max:255',
             'surat_jalan_pabrik' => 'nullable|string|max:255',
@@ -418,21 +417,21 @@ class TandaTerimaLclController extends Controller
                 $tinggis = $request->tinggi ?? [];
                 $tonases = $request->tonase ?? [];
                 $itemIds = $request->item_ids ?? [];
-                
+
                 $existingIds = [];
-                
+
                 foreach ($namaBarangs as $index => $namaBarang) {
                     // Check if at least one field has value
-                    $hasData = !empty($namaBarang) || !empty($jumlahs[$index]) || !empty($satuans[$index]) 
-                            || !empty($panjangs[$index]) || !empty($lebars[$index]) || !empty($tinggis[$index]) || !empty($tonases[$index]);
-                    
+                    $hasData = ! empty($namaBarang) || ! empty($jumlahs[$index]) || ! empty($satuans[$index])
+                            || ! empty($panjangs[$index]) || ! empty($lebars[$index]) || ! empty($tinggis[$index]) || ! empty($tonases[$index]);
+
                     if ($hasData) {
                         // Calculate volume if dimensions are provided
                         $volume = null;
-                        if (!empty($panjangs[$index]) && !empty($lebars[$index]) && !empty($tinggis[$index])) {
+                        if (! empty($panjangs[$index]) && ! empty($lebars[$index]) && ! empty($tinggis[$index])) {
                             $volume = $panjangs[$index] * $lebars[$index] * $tinggis[$index];
                         }
-                        
+
                         if (isset($itemIds[$index]) && $itemIds[$index]) {
                             // Update existing item
                             $existingItem = TandaTerimaLclItem::find($itemIds[$index]);
@@ -467,9 +466,9 @@ class TandaTerimaLclController extends Controller
                         }
                     }
                 }
-                
+
                 // Delete items that are no longer present
-                if (!empty($existingIds)) {
+                if (! empty($existingIds)) {
                     $tandaTerima->items()->whereNotIn('id', $existingIds)->delete();
                 } else {
                     // If no items, delete all
@@ -479,7 +478,7 @@ class TandaTerimaLclController extends Controller
         });
 
         return redirect()->route('tanda-terima-lcl.show', $tandaTerima->id)
-                        ->with('success', 'Tanda Terima LCL berhasil diperbarui.');
+            ->with('success', 'Tanda Terima LCL berhasil diperbarui.');
     }
 
     /**
@@ -488,14 +487,14 @@ class TandaTerimaLclController extends Controller
     public function destroy(string $id)
     {
         $tandaTerima = TandaTerimaLcl::findOrFail($id);
-        
+
         DB::transaction(function () use ($tandaTerima) {
             $tandaTerima->items()->delete();
             $tandaTerima->delete();
         });
-        
+
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
-                        ->with('success', 'Tanda Terima LCL berhasil dihapus.');
+            ->with('success', 'Tanda Terima LCL berhasil dihapus.');
     }
 
     /**
@@ -504,7 +503,7 @@ class TandaTerimaLclController extends Controller
     public function bulkExport(Request $request)
     {
         $ids = $request->input('ids', []);
-        
+
         if (empty($ids)) {
             return redirect()->back()->with('error', 'Tidak ada item yang dipilih untuk export.');
         }
@@ -512,28 +511,28 @@ class TandaTerimaLclController extends Controller
         $tandaTerimas = TandaTerimaLcl::with([
             'term',
             'tujuanPengiriman',
-            'items'
+            'items',
         ])->whereIn('id', $ids)->get();
 
         // Generate CSV export
-        $filename = 'tanda_terima_lcl_export_' . date('Y-m-d_H-i-s') . '.csv';
-        
+        $filename = 'tanda_terima_lcl_export_'.date('Y-m-d_H-i-s').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0'
+            'Expires' => '0',
         ];
 
-        $callback = function() use ($tandaTerimas) {
+        $callback = function () use ($tandaTerimas) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV Headers
             fputcsv($file, [
                 'No. Tanda Terima',
                 'Tanggal',
-                'No. Surat Jalan Customer', 
+                'No. Surat Jalan Customer',
                 'Term',
                 'Nama Penerima',
                 'Alamat Penerima',
@@ -548,13 +547,13 @@ class TandaTerimaLclController extends Controller
                 'Size Kontainer',
                 'Total Volume (m³)',
                 'Total Berat (Ton)',
-                'Status'
+                'Status',
             ]);
 
             foreach ($tandaTerimas as $tandaTerima) {
                 $totalVolume = $tandaTerima->items->sum('meter_kubik');
                 $totalBerat = $tandaTerima->items->sum('tonase');
-                
+
                 fputcsv($file, [
                     $tandaTerima->nomor_tanda_terima,
                     $tandaTerima->tanggal_tanda_terima->format('d/M/Y'),
@@ -573,7 +572,7 @@ class TandaTerimaLclController extends Controller
                     $tandaTerima->size_kontainer,
                     number_format($totalVolume, 6),
                     number_format($totalBerat, 2),
-                    $tandaTerima->status
+                    $tandaTerima->status,
                 ]);
             }
 
@@ -589,17 +588,17 @@ class TandaTerimaLclController extends Controller
     public function validateContainers(Request $request)
     {
         $ids = $request->input('ids', []);
-        
+
         if (empty($ids)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tidak ada item yang dipilih.'
+                'message' => 'Tidak ada item yang dipilih.',
             ]);
         }
 
         $tandaTerimas = TandaTerimaLcl::whereIn('id', $ids)
-                                    ->select('id', 'nomor_kontainer', 'nomor_tanda_terima')
-                                    ->get();
+            ->select('id', 'nomor_kontainer', 'nomor_tanda_terima')
+            ->get();
 
         // Check for items without container numbers
         $itemsWithoutContainer = $tandaTerimas->whereNull('nomor_kontainer')->where('nomor_kontainer', '');
@@ -607,10 +606,10 @@ class TandaTerimaLclController extends Controller
 
         // Check for different container numbers
         $uniqueContainers = $tandaTerimas->whereNotNull('nomor_kontainer')
-                                        ->where('nomor_kontainer', '!=', '')
-                                        ->pluck('nomor_kontainer')
-                                        ->unique();
-        
+            ->where('nomor_kontainer', '!=', '')
+            ->pluck('nomor_kontainer')
+            ->unique();
+
         $hasDifferentContainers = $uniqueContainers->count() > 1;
 
         $containerInfo = '';
@@ -618,7 +617,7 @@ class TandaTerimaLclController extends Controller
             $containerInfo = "Nomor kontainer yang berbeda ditemukan:\n";
             foreach ($uniqueContainers as $container) {
                 $items = $tandaTerimas->where('nomor_kontainer', $container);
-                $containerInfo .= "- {$container}: " . $items->pluck('nomor_tanda_terima')->join(', ') . "\n";
+                $containerInfo .= "- {$container}: ".$items->pluck('nomor_tanda_terima')->join(', ')."\n";
             }
         }
 
@@ -632,7 +631,7 @@ class TandaTerimaLclController extends Controller
             'has_different_containers' => $hasDifferentContainers,
             'has_no_container' => $hasNoContainer,
             'container_info' => $containerInfo,
-            'unique_containers' => $uniqueContainers->values()
+            'unique_containers' => $uniqueContainers->values(),
         ]);
     }
 
@@ -650,14 +649,14 @@ class TandaTerimaLclController extends Controller
         ]);
 
         $ids = json_decode($request->input('selected_ids'), true);
-        
+
         if (empty($ids)) {
             return redirect()->back()->with('error', 'Tidak ada item yang dipilih.');
         }
 
         $prospekCreated = false;
         $prospekMessage = '';
-        $shouldCreateProspek = !empty($request->nomor_seal);
+        $shouldCreateProspek = ! empty($request->nomor_seal);
         $nomorSeal = $request->nomor_seal;
 
         DB::transaction(function () use ($ids, $request, $shouldCreateProspek, $nomorSeal, &$prospekCreated, &$prospekMessage) {
@@ -667,12 +666,14 @@ class TandaTerimaLclController extends Controller
 
             foreach ($ids as $index => $id) {
                 $tandaTerima = TandaTerimaLcl::find($id);
-                
-                if (!$tandaTerima) continue;
+
+                if (! $tandaTerima) {
+                    continue;
+                }
 
                 // Check if already has container assignment
                 $existingKontainer = $tandaTerima->kontainerPivot()->first();
-                
+
                 if ($existingKontainer) {
                     // Update existing container pivot
                     $existingKontainer->update([
@@ -694,7 +695,7 @@ class TandaTerimaLclController extends Controller
                 // Update main tanda terima record
                 $tandaTerima->update([
                     'updated_by' => Auth::id(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]);
             }
 
@@ -706,13 +707,13 @@ class TandaTerimaLclController extends Controller
 
         $count = count($ids);
         $successMessage = "{$count} item berhasil dimasukkan ke kontainer {$request->nomor_kontainer}.";
-        
+
         if ($prospekCreated) {
-            $successMessage .= " " . $prospekMessage;
+            $successMessage .= ' '.$prospekMessage;
         }
-        
+
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
-                        ->with('success', $successMessage);
+            ->with('success', $successMessage);
     }
 
     /**
@@ -724,23 +725,23 @@ class TandaTerimaLclController extends Controller
             'nomor_seal' => 'required|string|max:255',
             'tanggal_seal' => 'required|date',
             'ids' => 'required|string',
-            'kirim_ke_prospek' => 'nullable|boolean'
+            'kirim_ke_prospek' => 'nullable|boolean',
         ]);
 
         $ids = json_decode($request->input('ids'), true);
-        
+
         if (empty($ids)) {
             return redirect()->back()->with('error', 'Tidak ada item yang dipilih.');
         }
 
         // Validate again to make sure containers are still consistent
         $tandaTerimas = TandaTerimaLcl::whereIn('id', $ids)->get();
-        
+
         $uniqueContainers = $tandaTerimas->whereNotNull('nomor_kontainer')
-                                        ->where('nomor_kontainer', '!=', '')
-                                        ->pluck('nomor_kontainer')
-                                        ->unique();
-        
+            ->where('nomor_kontainer', '!=', '')
+            ->pluck('nomor_kontainer')
+            ->unique();
+
         if ($uniqueContainers->count() > 1) {
             return redirect()->back()->with('error', 'Item yang dipilih memiliki nomor kontainer yang berbeda.');
         }
@@ -758,13 +759,13 @@ class TandaTerimaLclController extends Controller
             \App\Models\TandaTerimaLclKontainerPivot::whereIn('tanda_terima_lcl_id', $ids)->update([
                 'nomor_seal' => $request->nomor_seal,
                 'tanggal_seal' => $request->tanggal_seal,
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
 
             // Update main tanda terima records audit trail
             TandaTerimaLcl::whereIn('id', $ids)->update([
                 'updated_by' => Auth::id(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
 
             // If kirim_ke_prospek is checked, create prospek entry
@@ -775,13 +776,13 @@ class TandaTerimaLclController extends Controller
 
         $count = count($ids);
         $successMessage = "Nomor seal dan tanggal seal berhasil ditambahkan ke {$count} tanda terima LCL.";
-        
+
         if ($prospekCreated) {
-            $successMessage .= " " . $prospekMessage;
+            $successMessage .= ' '.$prospekMessage;
         }
-        
+
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
-                        ->with('success', $successMessage);
+            ->with('success', $successMessage);
     }
 
     /**
@@ -790,24 +791,25 @@ class TandaTerimaLclController extends Controller
     public function bulkDelete(Request $request)
     {
         $ids = $request->input('ids', []);
-        
+
         if (empty($ids)) {
             return redirect()->back()->with('error', 'Tidak ada item yang dipilih untuk dihapus.');
         }
 
         DB::transaction(function () use ($ids) {
             // Delete all items first
-            TandaTerimaLclItem::whereHas('tandaTerima', function($query) use ($ids) {
+            TandaTerimaLclItem::whereHas('tandaTerima', function ($query) use ($ids) {
                 $query->whereIn('id', $ids);
             })->delete();
-            
+
             // Then delete main records
             TandaTerimaLcl::whereIn('id', $ids)->delete();
         });
 
         $count = count($ids);
+
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
-                        ->with('success', "{$count} Tanda Terima LCL berhasil dihapus.");
+            ->with('success', "{$count} Tanda Terima LCL berhasil dihapus.");
     }
 
     /**
@@ -829,59 +831,61 @@ class TandaTerimaLclController extends Controller
             'tinggi' => 'required|numeric|min:0',
             'volume' => 'required|numeric|min:0',
             'berat' => 'required|numeric|min:0',
-            'keterangan' => 'required|string|max:1000'
+            'keterangan' => 'required|string|max:1000',
         ]);
 
         $containerNumbers = json_decode($request->input('ids'), true);
-        
+
         if (empty($containerNumbers)) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada kontainer yang dipilih.'
+                    'message' => 'Tidak ada kontainer yang dipilih.',
                 ], 400);
             }
+
             return redirect()->back()->with('error', 'Tidak ada kontainer yang dipilih.');
         }
 
         \Log::info('Bulk Split Request', [
             'container_numbers' => $containerNumbers,
-            'request_data' => $request->all()
+            'request_data' => $request->all(),
         ]);
 
         // Get the specific item to split
         $itemId = $request->input('item_id');
         $specificItem = TandaTerimaLclItem::with('tandaTerima')->find($itemId);
-        
-        if (!$specificItem || !$specificItem->tandaTerima) {
+
+        if (! $specificItem || ! $specificItem->tandaTerima) {
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Item barang yang dipilih tidak ditemukan.'
+                    'message' => 'Item barang yang dipilih tidak ditemukan.',
                 ], 404);
             }
+
             return redirect()->back()->with('error', 'Item barang yang dipilih tidak ditemukan.');
         }
-        
+
         // Only process the tanda terima that contains this specific item
         $tandaTerimaIds = [$specificItem->tanda_terima_lcl_id];
 
         \Log::info('Processing specific item split', [
             'item_id' => $itemId,
             'tanda_terima_id' => $specificItem->tanda_terima_lcl_id,
-            'nama_barang' => $request->input('nama_barang')
+            'nama_barang' => $request->input('nama_barang'),
         ]);
 
         // Handle locale-specific decimal formatting (comma vs dot)
         $rawVolume = $request->input('volume');
         $rawBerat = $request->input('berat');
-        
+
         // Convert comma to dot for proper numeric parsing
         $splitVolume = floatval(str_replace(',', '.', $rawVolume));
         $splitBeratTon = floatval(str_replace(',', '.', $rawBerat));
         $splitKuantitas = $request->jumlah ?? 1; // Use jumlah from form
         $processedCount = 0;
-        
+
         \Log::info('Split values after conversion', [
             'raw_volume' => $rawVolume,
             'raw_berat' => $rawBerat,
@@ -889,24 +893,25 @@ class TandaTerimaLclController extends Controller
             'split_kuantitas' => $splitKuantitas,
             'parsed_berat' => $splitBeratTon,
         ]);
-        
+
         DB::transaction(function () use ($tandaTerimaIds, $request, $splitVolume, $splitBeratTon, $splitKuantitas, &$processedCount) {
-            
+
             foreach ($tandaTerimaIds as $originalId) {
-                
+
                 // Use find() instead of findOrFail() to handle orphaned pivot records
                 $originalTandaTerima = TandaTerimaLcl::with('items')->find($originalId);
-                
+
                 // Skip if tanda terima doesn't exist (orphaned pivot record)
-                if (!$originalTandaTerima) {
+                if (! $originalTandaTerima) {
                     \Log::warning("TandaTerimaLcl ID {$originalId} not found - skipping orphaned pivot record");
+
                     continue;
                 }
-                
+
                 // Calculate current totals
                 $currentVolume = $originalTandaTerima->items->sum('meter_kubik');
                 $currentBeratTon = $originalTandaTerima->items->sum('tonase');
-                
+
                 \Log::info("Checking split eligibility for ID {$originalId}", [
                     'current_volume' => $currentVolume,
                     'current_berat' => $currentBeratTon,
@@ -915,32 +920,34 @@ class TandaTerimaLclController extends Controller
                     'volume_sufficient' => $currentVolume >= $splitVolume,
                     'berat_sufficient' => $currentBeratTon >= $splitBeratTon || $currentBeratTon == 0,
                 ]);
-                
+
                 // Check if we have enough volume to split (required)
                 if ($currentVolume < $splitVolume) {
                     \Log::info("Skipping ID {$originalId} - insufficient volume: {$currentVolume} < {$splitVolume}");
+
                     continue; // Skip this item if not enough volume
                 }
-                
+
                 // For berat: if original has no berat data (0), proceed anyway
                 // Only skip if original has berat data but it's less than requested
                 if ($currentBeratTon > 0 && $currentBeratTon < $splitBeratTon) {
                     \Log::info("Skipping ID {$originalId} - insufficient berat: {$currentBeratTon} < {$splitBeratTon}");
+
                     continue; // Skip this item if not enough weight (in ton)
                 }
-                
+
                 // If original has no berat, use the requested berat for the new split
                 // If original has berat, use the minimum of requested and available
                 $actualSplitBerat = $currentBeratTon > 0 ? min($splitBeratTon, $currentBeratTon) : $splitBeratTon;
-                
+
                 \Log::info("Proceeding with split for ID {$originalId}", [
-                    'actual_split_berat' => $actualSplitBerat
+                    'actual_split_berat' => $actualSplitBerat,
                 ]);
-                
+
                 // Generate new tanda terima number with suffix and timestamp for uniqueness
                 $timestamp = now()->format('YmdHis'); // Format: 20251226163049
-                $newNomorTandaTerima = $originalTandaTerima->nomor_tanda_terima . '-SPLIT-' . $timestamp;
-                
+                $newNomorTandaTerima = $originalTandaTerima->nomor_tanda_terima.'-SPLIT-'.$timestamp;
+
                 // Create new LCL record for split container
                 $newTandaTerima = TandaTerimaLcl::create([
                     'nomor_tanda_terima' => $newNomorTandaTerima,
@@ -976,8 +983,8 @@ class TandaTerimaLclController extends Controller
                         'size_kontainer' => $request->size_kontainer,
                         'tipe_kontainer' => $request->tipe_kontainer ?? 'lcl',
                     ]);
-                    
-                    \Log::info("Added new tanda terima to pivot table", [
+
+                    \Log::info('Added new tanda terima to pivot table', [
                         'tanda_terima_lcl_id' => $newTandaTerima->id,
                         'nomor_kontainer' => $request->nomor_kontainer,
                     ]);
@@ -995,24 +1002,24 @@ class TandaTerimaLclController extends Controller
                     'meter_kubik' => $splitVolume,
                     'tonase' => $splitBeratTon,
                 ]);
-                
+
                 // Update original tanda terima - reduce volume and weight
                 $remainingVolume = $currentVolume - $splitVolume;
                 $remainingBeratTon = $currentBeratTon - $splitBeratTon;
                 $remainingKuantitas = $splitKuantitas > 0 ? max(0, $originalTandaTerima->kuantitas - $splitKuantitas) : $originalTandaTerima->kuantitas;
-                
+
                 // Update original items - jika hanya ada satu item, langsung kurangi
                 $itemCount = $originalTandaTerima->items->count();
-                
+
                 if ($itemCount == 1) {
                     // Jika hanya satu item, langsung kurangi volume dan berat
                     $singleItem = $originalTandaTerima->items->first();
-                    
+
                     // Pastikan remaining volume dan berat tidak negatif
                     $newVolume = max(0, round($remainingVolume, 3));
                     $newTonase = max(0, round($remainingBeratTon, 3));
-                    
-                    \Log::info("Single Item Direct Update", [
+
+                    \Log::info('Single Item Direct Update', [
                         'item_id' => $singleItem->id,
                         'old_volume' => $singleItem->meter_kubik,
                         'new_volume' => $newVolume,
@@ -1021,74 +1028,74 @@ class TandaTerimaLclController extends Controller
                         'calculation_check' => [
                             'current_volume' => $currentVolume,
                             'split_volume' => $splitVolume,
-                            'remaining_volume' => $remainingVolume
-                        ]
+                            'remaining_volume' => $remainingVolume,
+                        ],
                     ]);
-                    
+
                     // Use updateOrFail untuk memastikan update berhasil
                     $updateResult = $singleItem->updateOrFail([
                         'meter_kubik' => $newVolume,
                         'tonase' => $newTonase,
                     ]);
-                    
-                    \Log::info("Update Result", ['success' => $updateResult]);
+
+                    \Log::info('Update Result', ['success' => $updateResult]);
                 } else {
                     // Jika multiple items, update secara proporsional
                     $volumeRatio = $remainingVolume > 0 ? $remainingVolume / $currentVolume : 0;
                     $beratRatio = $remainingBeratTon > 0 ? $remainingBeratTon / $currentBeratTon : 0;
-                    
-                    \Log::info("Multiple Items Proportional Update", [
+
+                    \Log::info('Multiple Items Proportional Update', [
                         'items_count' => $itemCount,
                         'volume_ratio' => $volumeRatio,
-                        'berat_ratio' => $beratRatio
+                        'berat_ratio' => $beratRatio,
                     ]);
-                    
+
                     foreach ($originalTandaTerima->items as $item) {
                         $newVolume = round($item->meter_kubik * $volumeRatio, 3);
                         $newTonase = round($item->tonase * $beratRatio, 3);
-                        
+
                         $item->update([
                             'meter_kubik' => $newVolume,
                             'tonase' => $newTonase,
                         ]);
                     }
                 }
-                
+
                 // Update original tanda terima quantities
                 $originalTandaTerima->update([
                     'kuantitas' => $remainingKuantitas,
-                    'keterangan_barang' => ($originalTandaTerima->keterangan_barang ?? '') . ' [SEBAGIAN DIPINDAH KE: ' . $newNomorTandaTerima . ']',
+                    'keterangan_barang' => ($originalTandaTerima->keterangan_barang ?? '').' [SEBAGIAN DIPINDAH KE: '.$newNomorTandaTerima.']',
                     'updated_by' => Auth::id(),
                 ]);
-                
+
                 // Force refresh the relationship and verify the update
                 $originalTandaTerima->unsetRelation('items');
                 $originalTandaTerima->load('items');
                 $updatedTotalVolume = $originalTandaTerima->items->sum('meter_kubik');
                 $updatedTotalBerat = $originalTandaTerima->items->sum('tonase');
-                
-                \Log::info("After Update Verification", [
+
+                \Log::info('After Update Verification', [
                     'original_id' => $originalId,
                     'updated_total_volume' => $updatedTotalVolume,
                     'expected_remaining_volume' => $remainingVolume,
                     'updated_total_berat' => $updatedTotalBerat,
                     'expected_remaining_berat' => $remainingBeratTon,
                     'volume_difference' => abs($updatedTotalVolume - $remainingVolume),
-                    'is_volume_correct' => abs($updatedTotalVolume - $remainingVolume) < 0.001
+                    'is_volume_correct' => abs($updatedTotalVolume - $remainingVolume) < 0.001,
                 ]);
-                
+
                 // Additional check: Direct database query to verify
                 $dbTotalVolume = DB::table('tanda_terima_lcl_items')
                     ->where('tanda_terima_lcl_id', $originalId)
                     ->sum('meter_kubik');
-                
-                \Log::info("Direct DB Verification", [
+
+                \Log::info('Direct DB Verification', [
                     'original_id' => $originalId,
                     'db_total_volume' => $dbTotalVolume,
                     'eloquent_total_volume' => $updatedTotalVolume,
-                    'volumes_match' => abs($dbTotalVolume - $updatedTotalVolume) < 0.001
+                    'volumes_match' => abs($dbTotalVolume - $updatedTotalVolume) < 0.001,
                 ]);
-                
+
                 $processedCount++;
             }
         });
@@ -1108,28 +1115,29 @@ class TandaTerimaLclController extends Controller
             } else {
                 $message = 'Tidak ada tanda terima yang dapat dipecah. Pastikan volume dan berat yang diminta tidak melebihi kapasitas yang tersedia.';
             }
-            
+
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $message
+                    'message' => $message,
                 ], 400);
             }
+
             return redirect()->back()->with('error', $message);
         }
-        
+
         $successMessage = "Berhasil memecah {$processedCount} tanda terima. Kontainer baru telah dibuat dengan volume {$splitVolume} m³ dan berat {$splitBeratTon} ton.";
-        
+
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'message' => $successMessage,
-                'processed_count' => $processedCount
+                'processed_count' => $processedCount,
             ]);
         }
-        
+
         return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
-                        ->with('success', $successMessage);
+            ->with('success', $successMessage);
     }
 
     /**
@@ -1138,18 +1146,19 @@ class TandaTerimaLclController extends Controller
     public function downloadImage(TandaTerimaLcl $tandaTerimaTanpaSuratJalan, $imageIndex)
     {
         $gambarArray = $tandaTerimaTanpaSuratJalan->gambar_surat_jalan;
-        
-        if (!is_array($gambarArray) || !isset($gambarArray[$imageIndex])) {
+
+        if (! is_array($gambarArray) || ! isset($gambarArray[$imageIndex])) {
             return abort(404, 'Gambar tidak ditemukan');
         }
-        
+
         $imagePath = $gambarArray[$imageIndex];
-        
-        if (!Storage::disk('public')->exists($imagePath)) {
+
+        if (! Storage::disk('public')->exists($imagePath)) {
             return abort(404, 'File gambar tidak ditemukan');
         }
-        
+
         $fileName = basename($imagePath);
+
         return Storage::disk('public')->download($imagePath, $fileName);
     }
 
@@ -1161,7 +1170,7 @@ class TandaTerimaLclController extends Controller
         try {
             // Load related data
             $tandaTerima->load(['tujuanPengiriman']);
-            
+
             // Prepare data for prospek
             $prospekData = [
                 'tanggal' => $tandaTerima->tanggal_tanda_terima->format('Y-m-d'),
@@ -1175,24 +1184,24 @@ class TandaTerimaLclController extends Controller
                 'no_seal' => $tandaTerima->nomor_seal ?? '',
                 'tujuan_pengiriman' => $tandaTerima->tujuanPengiriman->nama_tujuan ?? $tandaTerima->alamat_penerima ?? '',
                 'nama_kapal' => '', // Will be filled later in prospek
-                'keterangan' => 'Auto-created from Tanda Terima LCL: ' . $tandaTerima->nomor_tanda_terima,
+                'keterangan' => 'Auto-created from Tanda Terima LCL: '.$tandaTerima->nomor_tanda_terima,
                 'status' => 'aktif',
                 'created_by' => Auth::id(),
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ];
 
             // Create prospek entry
             $prospek = Prospek::create($prospekData);
-            
+
             \Log::info('Auto-created prospek from LCL', [
                 'lcl_id' => $tandaTerima->id,
                 'prospek_id' => $prospek->id,
-                'nomor_seal' => $tandaTerima->nomor_seal
+                'nomor_seal' => $tandaTerima->nomor_seal,
             ]);
-            
+
         } catch (\Exception $e) {
-            \Log::error('Error auto-creating prospek from new LCL: ' . $e->getMessage(), [
-                'lcl_id' => $tandaTerima->id
+            \Log::error('Error auto-creating prospek from new LCL: '.$e->getMessage(), [
+                'lcl_id' => $tandaTerima->id,
             ]);
         }
     }
@@ -1204,9 +1213,9 @@ class TandaTerimaLclController extends Controller
     {
         try {
             $tandaTerimaLcl->load(['tujuanPengiriman', 'items', 'pengirimPivot', 'penerimaPivot', 'kontainerPivot']);
-            
+
             $kontainerPivots = $tandaTerimaLcl->kontainerPivot;
-            
+
             if ($kontainerPivots->isEmpty()) {
                 return back()->with('error', 'Tidak ada kontainer yang di-assign ke LCL ini.');
             }
@@ -1214,27 +1223,34 @@ class TandaTerimaLclController extends Controller
             $successCount = 0;
 
             foreach ($kontainerPivots as $pivot) {
-                if (!$pivot->nomor_kontainer) continue;
-                
+                if (! $pivot->nomor_kontainer) {
+                    continue;
+                }
+
                 $nomorKontainer = $pivot->nomor_kontainer;
                 $currentSeal = $pivot->nomor_seal ?? null;
-                
+
                 $sizeKontainer = '20';
                 if ($pivot->catatan && preg_match('/Size:\s*(\d+)/', $pivot->catatan, $matches)) {
                     $sizeKontainer = $matches[1];
                 } elseif ($pivot->size_kontainer) {
-                    if (strpos($pivot->size_kontainer, '20') !== false) $sizeKontainer = '20';
-                    elseif (strpos($pivot->size_kontainer, '40') !== false) $sizeKontainer = '40';
-                    elseif (strpos($pivot->size_kontainer, '45') !== false) $sizeKontainer = '45';
-                    elseif (strpos($pivot->size_kontainer, '53') !== false) $sizeKontainer = '53';
+                    if (strpos($pivot->size_kontainer, '20') !== false) {
+                        $sizeKontainer = '20';
+                    } elseif (strpos($pivot->size_kontainer, '40') !== false) {
+                        $sizeKontainer = '40';
+                    } elseif (strpos($pivot->size_kontainer, '45') !== false) {
+                        $sizeKontainer = '45';
+                    } elseif (strpos($pivot->size_kontainer, '53') !== false) {
+                        $sizeKontainer = '53';
+                    }
                 }
 
                 $allBarang = collect();
                 $allBarang = $allBarang->merge($tandaTerimaLcl->items->pluck('nama_barang'));
-                
+
                 $allPengirim = collect();
                 $allPengirim = $allPengirim->merge($tandaTerimaLcl->pengirimPivot->pluck('nama_pengirim'));
-                
+
                 $allPenerima = collect();
                 $allPenerima = $allPenerima->merge($tandaTerimaLcl->penerimaPivot->pluck('nama_penerima'));
 
@@ -1252,7 +1268,7 @@ class TandaTerimaLclController extends Controller
                     'nama_kapal' => '',
                     'total_ton' => $tandaTerimaLcl->items->sum('tonase'),
                     'total_volume' => $tandaTerimaLcl->items->sum('meter_kubik'),
-                    'keterangan' => 'Manual Transfer LCL ID: ' . $tandaTerimaLcl->nomor_tanda_terima,
+                    'keterangan' => 'Manual Transfer LCL ID: '.$tandaTerimaLcl->nomor_tanda_terima,
                     'status' => 'aktif',
                     'created_by' => Auth::id(),
                     'updated_by' => Auth::id(),
@@ -1263,14 +1279,15 @@ class TandaTerimaLclController extends Controller
             }
 
             if ($successCount > 0) {
-                return back()->with('success', "Berhasil memasukkan data " . $tandaTerimaLcl->nomor_tanda_terima . " ke prospek!");
+                return back()->with('success', 'Berhasil memasukkan data '.$tandaTerimaLcl->nomor_tanda_terima.' ke prospek!');
             } else {
                 return back()->with('error', 'Gagal memproses data kontainer.');
             }
 
         } catch (\Exception $e) {
-            Log::error('Error adding LCL to prospek: ' . $e->getMessage());
-            return back()->with('error', 'Gagal memasukkan data LCL ke prospek: ' . $e->getMessage());
+            Log::error('Error adding LCL to prospek: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal memasukkan data LCL ke prospek: '.$e->getMessage());
         }
     }
 
@@ -1282,29 +1299,31 @@ class TandaTerimaLclController extends Controller
         try {
             // Get the LCL data with all pivot relationships
             $tandaTerimas = TandaTerimaLcl::with([
-                'tujuanPengiriman', 
-                'items', 
-                'pengirimPivot', 
-                'penerimaPivot', 
-                'kontainerPivot'
+                'tujuanPengiriman',
+                'items',
+                'pengirimPivot',
+                'penerimaPivot',
+                'kontainerPivot',
             ])->whereIn('id', $ids)->get();
-            
+
             if ($tandaTerimas->isEmpty()) {
-                $prospekMessage = "Tidak ada data LCL yang ditemukan.";
+                $prospekMessage = 'Tidak ada data LCL yang ditemukan.';
+
                 return;
             }
 
             // Get container information from pivot table (should be same for all items)
             $firstTandaTerima = $tandaTerimas->first();
             $kontainerPivot = $firstTandaTerima->kontainerPivot()->first();
-            
-            if (!$kontainerPivot || !$kontainerPivot->nomor_kontainer) {
-                $prospekMessage = "Nomor kontainer tidak ditemukan. Pastikan sudah assign kontainer terlebih dahulu.";
+
+            if (! $kontainerPivot || ! $kontainerPivot->nomor_kontainer) {
+                $prospekMessage = 'Nomor kontainer tidak ditemukan. Pastikan sudah assign kontainer terlebih dahulu.';
+
                 return;
             }
-            
+
             $nomorKontainer = $kontainerPivot->nomor_kontainer;
-            
+
             // Extract size from catatan in kontainer pivot (format: "Size: 20ft" or "Tipe: HC, Size: 40ft")
             $sizeKontainer = '20'; // default
             if ($kontainerPivot->catatan) {
@@ -1312,28 +1331,28 @@ class TandaTerimaLclController extends Controller
                     $sizeKontainer = $matches[1];
                 }
             }
-            
+
             // Collect all barang names from items pivot
             $allBarang = collect();
             foreach ($tandaTerimas as $tt) {
                 $barangNames = $tt->items->pluck('nama_barang');
                 $allBarang = $allBarang->merge($barangNames);
             }
-            
+
             // Collect all pengirim names from pengirim pivot
             $allPengirim = collect();
             foreach ($tandaTerimas as $tt) {
                 $pengirimNames = $tt->pengirimPivot->pluck('nama_pengirim');
                 $allPengirim = $allPengirim->merge($pengirimNames);
             }
-            
+
             // Collect all penerima for tujuan
             $allPenerima = collect();
             foreach ($tandaTerimas as $tt) {
                 $penerimaNames = $tt->penerimaPivot->pluck('nama_penerima');
                 $allPenerima = $allPenerima->merge($penerimaNames);
             }
-            
+
             // Prepare data for prospek
             $prospekData = [
                 'tanggal' => now()->format('Y-m-d'),
@@ -1344,28 +1363,28 @@ class TandaTerimaLclController extends Controller
                 'ukuran' => $sizeKontainer,
                 'tipe' => 'LCL',
                 'nomor_kontainer' => $nomorKontainer,
-                'no_seal' => $nomorSeal ?: ($kontainerPivot->nomor_seal ?? ''), 
+                'no_seal' => $nomorSeal ?: ($kontainerPivot->nomor_seal ?? ''),
                 'tanggal' => $tanggalSeal ?: ($kontainerPivot->tanggal_seal ?? now()->format('Y-m-d')),
                 'tujuan_pengiriman' => $firstTandaTerima->tujuanPengiriman->nama_tujuan ?? $allPenerima->first() ?? '',
                 'nama_kapal' => '', // Will be filled later in prospek
-                'keterangan' => 'Transfer dari Tanda Terima LCL - Total: ' . $tandaTerimas->count() . ' items',
+                'keterangan' => 'Transfer dari Tanda Terima LCL - Total: '.$tandaTerimas->count().' items',
                 'status' => 'aktif',
                 'created_by' => Auth::id(),
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ];
 
             // Create prospek entry
             $prospek = Prospek::create($prospekData);
-            
+
             $prospekCreated = true;
             $prospekMessage = "Data kontainer berhasil ditambahkan ke menu prospek dengan ID #{$prospek->id}.";
-            
+
         } catch (\Exception $e) {
-            \Log::error('Error creating prospek from LCL: ' . $e->getMessage());
-            $prospekMessage = "Terjadi error saat menambahkan ke prospek: " . $e->getMessage();
+            \Log::error('Error creating prospek from LCL: '.$e->getMessage());
+            $prospekMessage = 'Terjadi error saat menambahkan ke prospek: '.$e->getMessage();
         }
     }
-    
+
     /**
      * Show stuffing page for LCL - Display pivot table data grouped by container
      */
@@ -1373,49 +1392,49 @@ class TandaTerimaLclController extends Controller
     {
         // Query pivot table with relationships
         $query = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser']);
-        
+
         // Filter pencarian
         if ($request->filled('search')) {
             $searchTerm = $request->search;
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhereHas('tandaTerima', function($sq) use ($searchTerm) {
-                      $sq->where('nomor_tanda_terima', 'LIKE', '%' . $searchTerm . '%')
-                        ->orWhere('nama_penerima', 'LIKE', '%' . $searchTerm . '%')
-                        ->orWhere('nama_pengirim', 'LIKE', '%' . $searchTerm . '%');
-                  });
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('nomor_kontainer', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhereHas('tandaTerima', function ($sq) use ($searchTerm) {
+                        $sq->where('nomor_tanda_terima', 'LIKE', '%'.$searchTerm.'%')
+                            ->orWhere('nama_penerima', 'LIKE', '%'.$searchTerm.'%')
+                            ->orWhere('nama_pengirim', 'LIKE', '%'.$searchTerm.'%');
+                    });
             });
         }
-        
+
         // Filter by container
         if ($request->filled('kontainer')) {
             $query->where('nomor_kontainer', $request->kontainer);
         }
-        
+
         $pivotData = $query->orderBy('nomor_kontainer')->orderBy('assigned_at', 'desc')->paginate(20);
-        
+
         // Group data by container AND seal status for display
         // This allows same container number to be used multiple times (different batches)
         $groupedQuery = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser']);
-        
+
         // Apply search filter to grouped query
         if ($request->filled('search')) {
             $searchTerm = $request->search;
-            $groupedQuery->where(function($q) use ($searchTerm) {
-                $q->where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhereHas('tandaTerima', function($sq) use ($searchTerm) {
-                      $sq->where('nomor_tanda_terima', 'LIKE', '%' . $searchTerm . '%')
-                        ->orWhere('nama_penerima', 'LIKE', '%' . $searchTerm . '%')
-                        ->orWhere('nama_pengirim', 'LIKE', '%' . $searchTerm . '%');
-                  });
+            $groupedQuery->where(function ($q) use ($searchTerm) {
+                $q->where('nomor_kontainer', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhereHas('tandaTerima', function ($sq) use ($searchTerm) {
+                        $sq->where('nomor_tanda_terima', 'LIKE', '%'.$searchTerm.'%')
+                            ->orWhere('nama_penerima', 'LIKE', '%'.$searchTerm.'%')
+                            ->orWhere('nama_pengirim', 'LIKE', '%'.$searchTerm.'%');
+                    });
             });
         }
-        
+
         // Apply container filter to grouped query
         if ($request->filled('kontainer')) {
             $groupedQuery->where('nomor_kontainer', $request->kontainer);
         }
-        
+
         // Apply seal status filter before grouping
         if ($request->filled('seal_status')) {
             if ($request->seal_status === 'sealed') {
@@ -1424,24 +1443,24 @@ class TandaTerimaLclController extends Controller
                 $groupedQuery->whereNull('nomor_seal');
             }
         }
-        
+
         $groupedByContainer = $groupedQuery->get()
-            ->groupBy(function($item) {
+            ->groupBy(function ($item) {
                 // Group by container number and seal status
                 // Sealed containers are grouped separately from unsealed ones with same number
-                return $item->nomor_kontainer . '|' . ($item->nomor_seal ?? 'unsealed');
+                return $item->nomor_kontainer.'|'.($item->nomor_seal ?? 'unsealed');
             })
-            ->map(function($items) {
+            ->map(function ($items) {
                 // Fetch Prospek status
                 $firstItem = $items->first();
                 $nomorKontainer = $firstItem->nomor_kontainer;
                 $nomorSeal = $firstItem->nomor_seal;
-                
+
                 $prospek = \App\Models\Prospek::where('nomor_kontainer', $nomorKontainer)
-                    ->when($nomorSeal, function($q) use ($nomorSeal) {
+                    ->when($nomorSeal, function ($q) use ($nomorSeal) {
                         return $q->where('no_seal', $nomorSeal);
                     })
-                    ->when(!$nomorSeal, function($q) {
+                    ->when(! $nomorSeal, function ($q) {
                         // If current group is unsealed, do not match with old 'shipped' prospeks
                         return $q->where('status', '!=', 'sudah_muat');
                     })
@@ -1453,75 +1472,75 @@ class TandaTerimaLclController extends Controller
                     'size_kontainer' => $items->first()->size_kontainer,
                     'tipe_kontainer' => $items->first()->tipe_kontainer,
                     'total_lcl' => $items->count(),
-                    'total_volume' => $items->sum(function($item) {
+                    'total_volume' => $items->sum(function ($item) {
                         return $item->tandaTerima ? $item->tandaTerima->items->sum('meter_kubik') : 0;
                     }),
-                    'total_berat' => $items->sum(function($item) {
+                    'total_berat' => $items->sum(function ($item) {
                         return $item->tandaTerima ? $item->tandaTerima->items->sum('tonase') : 0;
                     }),
                     'items' => $items, // Add the actual pivot items
                     'prospek' => $prospek, // Pass the whole prospek object
                 ];
             });
-        
+
         // Get available containers for new stuffing (include all containers, sealed or not)
         // Containers can be reused - if sealed, new stuffing will create new batch
         $kontainers = Kontainer::where('status', '!=', 'inactive')->get();
         $stockKontainers = StockKontainer::active()->get();
-        
+
         $availableKontainers = collect();
-        
+
         // Merge all kontainers (don't exclude sealed ones - they can be reused)
         foreach ($kontainers as $k) {
             if ($k->nomor_kontainer) {
                 $availableKontainers->push([
                     'nomor_kontainer' => $k->nomor_kontainer,
                     'ukuran' => $k->ukuran ?? $k->size ?? null,
-                    'source' => 'kontainer'
+                    'source' => 'kontainer',
                 ]);
             }
         }
-        
+
         foreach ($stockKontainers as $s) {
-            if ($s->nomor_kontainer 
-                && !$availableKontainers->contains('nomor_kontainer', $s->nomor_kontainer)) {
+            if ($s->nomor_kontainer
+                && ! $availableKontainers->contains('nomor_kontainer', $s->nomor_kontainer)) {
                 $availableKontainers->push([
                     'nomor_kontainer' => $s->nomor_kontainer,
                     'ukuran' => $s->ukuran ?? null,
-                    'source' => 'stock'
+                    'source' => 'stock',
                 ]);
             }
         }
-        
+
         // Get LCL yang belum di-stuffing untuk add new functionality
         $unstuffedLcl = TandaTerimaLcl::with('items')
             ->doesntHave('kontainerPivot')
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // Get unique containers for filter
         $uniqueContainers = TandaTerimaLclKontainerPivot::select('nomor_kontainer')
             ->distinct()
             ->orderBy('nomor_kontainer')
             ->pluck('nomor_kontainer');
-        
+
         // Get statistics
         $stats = [
             'total_containers' => $groupedByContainer->count(),
             'total_lcl_stuffed' => TandaTerimaLclKontainerPivot::count(),
             'total_lcl_unstuffed' => $unstuffedLcl->count(),
         ];
-        
+
         // Get master tujuan kirim for dropdown
         $masterTujuanKirim = MasterTujuanKirim::active()->orderBy('nama_tujuan')->get();
-        
+
         // Get all warehouses for selection
         $gudangs = Gudang::orderBy('nama_gudang')->get();
-        
+
         return view('tanda-terima-lcl.stuffing', compact(
-            'pivotData', 
-            'groupedByContainer', 
-            'availableKontainers', 
+            'pivotData',
+            'groupedByContainer',
+            'availableKontainers',
             'unstuffedLcl',
             'uniqueContainers',
             'stats',
@@ -1529,7 +1548,7 @@ class TandaTerimaLclController extends Controller
             'gudangs'
         ));
     }
-    
+
     /**
      * Process stuffing - assign containers to LCL tanda terima
      */
@@ -1554,41 +1573,43 @@ class TandaTerimaLclController extends Controller
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()
-                           ->withErrors($e->errors())
-                           ->withInput()
-                           ->with('error', 'Validasi gagal: ' . implode(', ', array_map(fn($errors) => implode(', ', $errors), $e->errors())));
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('error', 'Validasi gagal: '.implode(', ', array_map(fn ($errors) => implode(', ', $errors), $e->errors())));
         }
-        
+
         // Validasi nomor kontainer tidak kosong
         if (empty(trim($request->nomor_kontainer))) {
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Nomor kontainer tidak boleh kosong. Silakan pilih atau input nomor kontainer.');
+                ->withInput()
+                ->with('error', 'Nomor kontainer tidak boleh kosong. Silakan pilih atau input nomor kontainer.');
         }
-        
+
         $tandaTerimaIds = $request->tanda_terima_ids;
-        
+
         DB::beginTransaction();
         try {
             $stuffedCount = 0;
             $alreadyStuffed = [];
             $notFound = [];
-            
+
             foreach ($tandaTerimaIds as $id) {
                 $tandaTerima = TandaTerimaLcl::find($id);
-                
-                if (!$tandaTerima) {
+
+                if (! $tandaTerima) {
                     $notFound[] = "ID-{$id}";
+
                     continue;
                 }
-                
+
                 // Cek apakah LCL sudah di-stuffing sebelumnya
                 $existingPivot = $tandaTerima->kontainerPivot()->first();
                 if ($existingPivot) {
-                    $alreadyStuffed[] = ($tandaTerima->nomor_tanda_terima ?? "TT-LCL-{$id}") . " (sudah di kontainer {$existingPivot->nomor_kontainer})";
+                    $alreadyStuffed[] = ($tandaTerima->nomor_tanda_terima ?? "TT-LCL-{$id}")." (sudah di kontainer {$existingPivot->nomor_kontainer})";
+
                     continue;
                 }
-                
+
                 // Create pivot entry
                 $tandaTerima->kontainerPivot()->create([
                     'nomor_kontainer' => $request->nomor_kontainer,
@@ -1597,49 +1618,49 @@ class TandaTerimaLclController extends Controller
                     'assigned_at' => now(),
                     'assigned_by' => Auth::id(),
                 ]);
-                
+
                 $stuffedCount++;
             }
-            
+
             DB::commit();
-            
+
             // Build response message
             $messages = [];
-            
+
             if ($stuffedCount > 0) {
                 $messages[] = "✓ Berhasil stuffing {$stuffedCount} tanda terima LCL ke kontainer {$request->nomor_kontainer}";
             }
-            
+
             if (count($alreadyStuffed) > 0) {
-                $messages[] = "⚠ " . count($alreadyStuffed) . " tanda terima sudah di-stuffing sebelumnya: " . implode(', ', array_slice($alreadyStuffed, 0, 3)) . (count($alreadyStuffed) > 3 ? '...' : '');
+                $messages[] = '⚠ '.count($alreadyStuffed).' tanda terima sudah di-stuffing sebelumnya: '.implode(', ', array_slice($alreadyStuffed, 0, 3)).(count($alreadyStuffed) > 3 ? '...' : '');
             }
-            
+
             if (count($notFound) > 0) {
-                $messages[] = "⚠ " . count($notFound) . " tanda terima tidak ditemukan: " . implode(', ', $notFound);
+                $messages[] = '⚠ '.count($notFound).' tanda terima tidak ditemukan: '.implode(', ', $notFound);
             }
-            
+
             if ($stuffedCount === 0) {
                 return redirect()->route('tanda-terima-lcl.stuffing')
-                               ->with('error', 'Tidak ada tanda terima yang berhasil di-stuffing. ' . implode(' ', $messages));
+                    ->with('error', 'Tidak ada tanda terima yang berhasil di-stuffing. '.implode(' ', $messages));
             }
-            
+
             $messageType = (count($alreadyStuffed) > 0 || count($notFound) > 0) ? 'warning' : 'success';
-            
+
             return redirect()->route('tanda-terima-lcl.stuffing')
-                           ->with($messageType, implode(' | ', $messages));
-            
+                ->with($messageType, implode(' | ', $messages));
+
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error processing stuffing: ' . $e->getMessage(), [
+            \Log::error('Error processing stuffing: '.$e->getMessage(), [
                 'tanda_terima_ids' => $tandaTerimaIds,
                 'nomor_kontainer' => $request->nomor_kontainer,
                 'user_id' => Auth::id(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Provide more specific error messages
-            $errorMessage = 'Gagal melakukan proses stuffing ke kontainer ' . $request->nomor_kontainer . '. ';
-            
+            $errorMessage = 'Gagal melakukan proses stuffing ke kontainer '.$request->nomor_kontainer.'. ';
+
             if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
                 $errorMessage .= 'Terdapat data duplikat. Beberapa LCL mungkin sudah di-stuffing ke kontainer ini.';
             } elseif (strpos($e->getMessage(), 'foreign key constraint') !== false) {
@@ -1647,12 +1668,12 @@ class TandaTerimaLclController extends Controller
             } elseif (strpos($e->getMessage(), 'Connection') !== false) {
                 $errorMessage .= 'Koneksi database bermasalah. Silakan coba lagi.';
             } else {
-                $errorMessage .= 'Detail error: ' . $e->getMessage();
+                $errorMessage .= 'Detail error: '.$e->getMessage();
             }
-            
+
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', $errorMessage);
+                ->withInput()
+                ->with('error', $errorMessage);
         }
     }
 
@@ -1679,9 +1700,9 @@ class TandaTerimaLclController extends Controller
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()
-                           ->withErrors($e->errors())
-                           ->withInput()
-                           ->with('error', 'Validasi gagal: ' . implode(', ', array_map(fn($errors) => implode(', ', $errors), $e->errors())));
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('error', 'Validasi gagal: '.implode(', ', array_map(fn ($errors) => implode(', ', $errors), $e->errors())));
         }
 
         DB::beginTransaction();
@@ -1698,16 +1719,18 @@ class TandaTerimaLclController extends Controller
                 $existingSeal = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
                     ->whereNotNull('nomor_seal')
                     ->first();
-                
+
                 if ($existingSeal) {
                     DB::rollBack();
+
                     return redirect()->back()
-                                   ->with('error', "Tidak ada LCL yang belum di-seal untuk kontainer {$request->nomor_kontainer}. Semua LCL sudah di-seal dengan nomor seal: {$existingSeal->nomor_seal}. Jika ingin menambah LCL baru ke kontainer ini, silakan lakukan stuffing terlebih dahulu.");
+                        ->with('error', "Tidak ada LCL yang belum di-seal untuk kontainer {$request->nomor_kontainer}. Semua LCL sudah di-seal dengan nomor seal: {$existingSeal->nomor_seal}. Jika ingin menambah LCL baru ke kontainer ini, silakan lakukan stuffing terlebih dahulu.");
                 }
-                
+
                 DB::rollBack();
+
                 return redirect()->back()
-                               ->with('error', "Kontainer {$request->nomor_kontainer} tidak ditemukan atau belum ada LCL yang di-stuffing.");
+                    ->with('error', "Kontainer {$request->nomor_kontainer} tidak ditemukan atau belum ada LCL yang di-stuffing.");
             }
 
             // Update HANYA pivot records yang BELUM DI-SEAL untuk kontainer ini
@@ -1723,34 +1746,37 @@ class TandaTerimaLclController extends Controller
 
             // Ambil data pertama untuk informasi kontainer
             $firstPivot = $pivotRecords->first();
-            
+
             // Hitung total volume dan berat
-            $totalVolume = $pivotRecords->sum(function($pivot) {
+            $totalVolume = $pivotRecords->sum(function ($pivot) {
                 return $pivot->tandaTerima ? $pivot->tandaTerima->items->sum('meter_kubik') : 0;
             });
-            
-            $totalTon = $pivotRecords->sum(function($pivot) {
+
+            $totalTon = $pivotRecords->sum(function ($pivot) {
                 return $pivot->tandaTerima ? $pivot->tandaTerima->items->sum('tonase') : 0;
             });
 
             // Kumpulkan informasi PT Pengirim dan barang
-            $ptPengirimList = $pivotRecords->map(function($pivot) {
+            $ptPengirimList = $pivotRecords->map(function ($pivot) {
                 return $pivot->tandaTerima ? $pivot->tandaTerima->nama_pengirim : null;
             })->filter()->unique()->implode(', ');
 
             // Limit to 180 characters to avoid database truncation error
             if (strlen($ptPengirimList) > 180) {
-                $ptPengirimList = substr($ptPengirimList, 0, 177) . '...';
+                $ptPengirimList = substr($ptPengirimList, 0, 177).'...';
             }
 
-            $barangList = $pivotRecords->map(function($pivot) {
-                if (!$pivot->tandaTerima || !$pivot->tandaTerima->items) return null;
+            $barangList = $pivotRecords->map(function ($pivot) {
+                if (! $pivot->tandaTerima || ! $pivot->tandaTerima->items) {
+                    return null;
+                }
+
                 return $pivot->tandaTerima->items->pluck('nama_barang')->filter()->unique()->implode(', ');
             })->filter()->unique()->implode(', ');
 
             // Limit barang to 180 characters to avoid database truncation error
             if (strlen($barangList) > 180) {
-                $barangList = substr($barangList, 0, 177) . '...';
+                $barangList = substr($barangList, 0, 177).'...';
             }
 
             // Insert ke tabel prospek
@@ -1775,12 +1801,12 @@ class TandaTerimaLclController extends Controller
             $kontainerUpdateData = [
                 'status' => 'selesai',
                 'gudangs_id' => $request->gudang_id,
-                'updated_at' => now()
+                'updated_at' => now(),
             ];
 
             Kontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)
                 ->update($kontainerUpdateData);
-            
+
             // Also update StockKontainer if exists
             StockKontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)
                 ->update(['gudangs_id' => $request->gudang_id]);
@@ -1792,27 +1818,27 @@ class TandaTerimaLclController extends Controller
                 'jenis_kegiatan' => 'Masuk',
                 'tanggal_kegiatan' => $request->tanggal_seal,
                 'gudang_id' => $request->gudang_id,
-                'keterangan' => 'Update lokasi saat seal kontainer LCL. Seal: ' . $request->nomor_seal . '. Tujuan: ' . $request->tujuan,
+                'keterangan' => 'Update lokasi saat seal kontainer LCL. Seal: '.$request->nomor_seal.'. Tujuan: '.$request->tujuan,
                 'created_by' => Auth::id(),
             ]);
 
             DB::commit();
 
             return redirect()->route('tanda-terima-lcl.stuffing')
-                           ->with('success', "✓ Berhasil seal kontainer {$request->nomor_kontainer} dengan nomor seal: {$request->nomor_seal}. Total {$updated} LCL telah di-seal dan data telah dikirim ke prospek (ID: {$prospek->id}).");
+                ->with('success', "✓ Berhasil seal kontainer {$request->nomor_kontainer} dengan nomor seal: {$request->nomor_seal}. Total {$updated} LCL telah di-seal dan data telah dikirim ke prospek (ID: {$prospek->id}).");
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error sealing container: ' . $e->getMessage(), [
+            \Log::error('Error sealing container: '.$e->getMessage(), [
                 'nomor_kontainer' => $request->nomor_kontainer,
                 'nomor_seal' => $request->nomor_seal,
                 'user_id' => Auth::id(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Gagal melakukan seal kontainer: ' . $e->getMessage());
+                ->withInput()
+                ->with('error', 'Gagal melakukan seal kontainer: '.$e->getMessage());
         }
     }
 
@@ -1832,9 +1858,9 @@ class TandaTerimaLclController extends Controller
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()
-                           ->withErrors($e->errors())
-                           ->withInput()
-                           ->with('error', 'Validasi gagal: ' . implode(', ', array_map(fn($errors) => implode(', ', $errors), $e->errors())));
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('error', 'Validasi gagal: '.implode(', ', array_map(fn ($errors) => implode(', ', $errors), $e->errors())));
         }
 
         DB::beginTransaction();
@@ -1844,10 +1870,11 @@ class TandaTerimaLclController extends Controller
                 ->whereNotNull('nomor_seal')
                 ->first();
 
-            if (!$existingSeal) {
+            if (! $existingSeal) {
                 DB::rollBack();
+
                 return redirect()->back()
-                               ->with('error', "Kontainer {$request->nomor_kontainer} belum di-seal atau sudah dilepas sealnya.");
+                    ->with('error', "Kontainer {$request->nomor_kontainer} belum di-seal atau sudah dilepas sealnya.");
             }
 
             $oldSealNumber = $existingSeal->nomor_seal;
@@ -1864,7 +1891,7 @@ class TandaTerimaLclController extends Controller
             Kontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)
                 ->update([
                     'status' => 'active',
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]);
 
             // Hapus prospek terkait
@@ -1880,26 +1907,26 @@ class TandaTerimaLclController extends Controller
                 'alasan' => $request->alasan_unseal,
                 'user_id' => Auth::id(),
                 'user_name' => Auth::user()->name,
-                'lcl_count' => $updated
+                'lcl_count' => $updated,
             ]);
 
             DB::commit();
 
             return redirect()->route('tanda-terima-lcl.stuffing')
-                           ->with('success', "✓ Berhasil melepas seal kontainer {$request->nomor_kontainer}. Nomor seal {$oldSealNumber} telah dihapus. Total {$updated} LCL telah dilepas sealnya.");
+                ->with('success', "✓ Berhasil melepas seal kontainer {$request->nomor_kontainer}. Nomor seal {$oldSealNumber} telah dihapus. Total {$updated} LCL telah dilepas sealnya.");
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error unsealing container: ' . $e->getMessage(), [
+            \Log::error('Error unsealing container: '.$e->getMessage(), [
                 'nomor_kontainer' => $request->nomor_kontainer,
                 'alasan' => $request->alasan_unseal,
                 'user_id' => Auth::id(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Gagal melepas seal kontainer: ' . $e->getMessage());
+                ->withInput()
+                ->with('error', 'Gagal melepas seal kontainer: '.$e->getMessage());
         }
     }
 
@@ -1918,7 +1945,7 @@ class TandaTerimaLclController extends Controller
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()
-                           ->with('error', 'Validasi gagal: ' . implode(', ', array_map(fn($errors) => implode(', ', $errors), $e->errors())));
+                ->with('error', 'Validasi gagal: '.implode(', ', array_map(fn ($errors) => implode(', ', $errors), $e->errors())));
         }
 
         DB::beginTransaction();
@@ -1928,8 +1955,9 @@ class TandaTerimaLclController extends Controller
                 ->where('nomor_seal', $request->target_seal)
                 ->first();
 
-            if (!$sealedBatch) {
+            if (! $sealedBatch) {
                 DB::rollBack();
+
                 return redirect()->back()
                     ->with('error', "Batch seal dengan nomor {$request->target_seal} tidak ditemukan untuk kontainer {$request->nomor_kontainer}.");
             }
@@ -1942,6 +1970,7 @@ class TandaTerimaLclController extends Controller
 
             if ($unsealedRecords->isEmpty()) {
                 DB::rollBack();
+
                 return redirect()->back()
                     ->with('error', "Tidak ada LCL yang Belum Seal untuk digabungkan pada kontainer {$request->nomor_kontainer}.");
             }
@@ -1990,35 +2019,55 @@ class TandaTerimaLclController extends Controller
                     'tujuan_pengiriman' => $allPenerima->unique()->implode(', '),
                     'no_surat_jalan' => $mergedSuratJalan,
                     'updated_by' => Auth::id(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]);
 
                 // Sync to related documents
                 $syncDataNaikKapal = [];
-                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'pengirim')) $syncDataNaikKapal['pengirim'] = \Illuminate\Support\Str::limit($prospek->pt_pengirim, 255, '');
-                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'penerima')) $syncDataNaikKapal['penerima'] = \Illuminate\Support\Str::limit($prospek->tujuan_pengiriman, 255, '');
-                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'nama_barang')) $syncDataNaikKapal['nama_barang'] = \Illuminate\Support\Str::limit($prospek->barang, 255, '');
-                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'jenis_barang')) $syncDataNaikKapal['jenis_barang'] = \Illuminate\Support\Str::limit($prospek->barang, 255, '');
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'pengirim')) {
+                    $syncDataNaikKapal['pengirim'] = \Illuminate\Support\Str::limit($prospek->pt_pengirim, 255, '');
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'penerima')) {
+                    $syncDataNaikKapal['penerima'] = \Illuminate\Support\Str::limit($prospek->tujuan_pengiriman, 255, '');
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'nama_barang')) {
+                    $syncDataNaikKapal['nama_barang'] = \Illuminate\Support\Str::limit($prospek->barang, 255, '');
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'jenis_barang')) {
+                    $syncDataNaikKapal['jenis_barang'] = \Illuminate\Support\Str::limit($prospek->barang, 255, '');
+                }
 
-                if (!empty($syncDataNaikKapal) && \Illuminate\Support\Facades\Schema::hasTable('naik_kapal')) {
+                if (! empty($syncDataNaikKapal) && \Illuminate\Support\Facades\Schema::hasTable('naik_kapal')) {
                     \DB::table('naik_kapal')->where('prospek_id', $prospek->id)->update($syncDataNaikKapal);
                 }
-                
-                $syncDataManifest = [];
-                if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'pengirim')) $syncDataManifest['pengirim'] = \Illuminate\Support\Str::limit($prospek->pt_pengirim, 255, '');
-                if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'penerima')) $syncDataManifest['penerima'] = \Illuminate\Support\Str::limit($prospek->tujuan_pengiriman, 255, '');
-                if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'nama_barang')) $syncDataManifest['nama_barang'] = $prospek->barang; // manifests.nama_barang is TEXT
 
-                if (!empty($syncDataManifest) && \Illuminate\Support\Facades\Schema::hasTable('manifests')) {
+                $syncDataManifest = [];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'pengirim')) {
+                    $syncDataManifest['pengirim'] = \Illuminate\Support\Str::limit($prospek->pt_pengirim, 255, '');
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'penerima')) {
+                    $syncDataManifest['penerima'] = \Illuminate\Support\Str::limit($prospek->tujuan_pengiriman, 255, '');
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'nama_barang')) {
+                    $syncDataManifest['nama_barang'] = $prospek->barang;
+                } // manifests.nama_barang is TEXT
+
+                if (! empty($syncDataManifest) && \Illuminate\Support\Facades\Schema::hasTable('manifests')) {
                     \DB::table('manifests')->where('prospek_id', $prospek->id)->update($syncDataManifest);
                 }
-                
-                $syncDataBl = [];
-                if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'pengirim')) $syncDataBl['pengirim'] = \Illuminate\Support\Str::limit($prospek->pt_pengirim, 255, '');
-                if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'penerima')) $syncDataBl['penerima'] = \Illuminate\Support\Str::limit($prospek->tujuan_pengiriman, 255, '');
-                if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'nama_barang')) $syncDataBl['nama_barang'] = $prospek->barang; // bls.nama_barang is TEXT
 
-                if (!empty($syncDataBl) && \Illuminate\Support\Facades\Schema::hasTable('bls')) {
+                $syncDataBl = [];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'pengirim')) {
+                    $syncDataBl['pengirim'] = \Illuminate\Support\Str::limit($prospek->pt_pengirim, 255, '');
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'penerima')) {
+                    $syncDataBl['penerima'] = \Illuminate\Support\Str::limit($prospek->tujuan_pengiriman, 255, '');
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'nama_barang')) {
+                    $syncDataBl['nama_barang'] = $prospek->barang;
+                } // bls.nama_barang is TEXT
+
+                if (! empty($syncDataBl) && \Illuminate\Support\Facades\Schema::hasTable('bls')) {
                     \DB::table('bls')->where('prospek_id', $prospek->id)->update($syncDataBl);
                 }
             }
@@ -2027,7 +2076,7 @@ class TandaTerimaLclController extends Controller
                 'nomor_kontainer' => $request->nomor_kontainer,
                 'target_seal' => $sealedBatch->nomor_seal,
                 'merged_count' => $unsealedRecords->count(),
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
 
             DB::commit();
@@ -2037,17 +2086,17 @@ class TandaTerimaLclController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error merging batch: ' . $e->getMessage(), [
+            \Log::error('Error merging batch: '.$e->getMessage(), [
                 'nomor_kontainer' => $request->nomor_kontainer,
                 'target_seal' => $request->target_seal,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return redirect()->back()
-                ->with('error', 'Gagal menggabungkan batch: ' . $e->getMessage());
+                ->with('error', 'Gagal menggabungkan batch: '.$e->getMessage());
         }
     }
-    
+
     /**
      * Get barang data from selected containers for split modal
      */
@@ -2055,34 +2104,34 @@ class TandaTerimaLclController extends Controller
     {
         try {
             $ids = $request->ids;
-            
+
             if (empty($ids)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada kontainer yang dipilih'
+                    'message' => 'Tidak ada kontainer yang dipilih',
                 ]);
             }
-            
+
             // Get all TandaTerimaLcl records with their items
             $tandaTerimas = TandaTerimaLcl::whereIn('id', $ids)
                 ->with('items')
                 ->get();
-            
+
             // Collect all unique barang from items
             $barangData = [];
             $barangNames = [];
-            
+
             foreach ($tandaTerimas as $tandaTerima) {
                 foreach ($tandaTerima->items as $item) {
                     $namaBarang = $item->nama_barang;
-                    
+
                     // Skip if we already have this barang
                     if (in_array($namaBarang, $barangNames)) {
                         continue;
                     }
-                    
+
                     $barangNames[] = $namaBarang;
-                    
+
                     $barangData[] = [
                         'nama_barang' => $namaBarang,
                         'satuan' => $item->satuan,
@@ -2091,30 +2140,30 @@ class TandaTerimaLclController extends Controller
                         'tinggi' => $item->tinggi,
                         'jumlah' => $item->jumlah,
                         'meter_kubik' => $item->meter_kubik,
-                        'tonase' => $item->tonase
+                        'tonase' => $item->tonase,
                     ];
                 }
             }
-            
+
             return response()->json([
                 'success' => true,
                 'barang' => $barangData,
-                'message' => 'Data barang berhasil dimuat'
+                'message' => 'Data barang berhasil dimuat',
             ]);
-            
+
         } catch (\Exception $e) {
-            \Log::error('Error getting barang from containers: ' . $e->getMessage(), [
+            \Log::error('Error getting barang from containers: '.$e->getMessage(), [
                 'ids' => $request->ids ?? null,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi error: ' . $e->getMessage()
+                'message' => 'Terjadi error: '.$e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Show detail of a specific container with all its LCL items
      */
@@ -2136,26 +2185,26 @@ class TandaTerimaLclController extends Controller
             }
 
             $pivots = $query->get();
-            
+
             if ($pivots->isEmpty()) {
                 return redirect()->route('tanda-terima-lcl.stuffing')
                     ->with('error', 'Kontainer tidak ditemukan atau belum ada data stuffing.');
             }
-            
+
             // Get first pivot for container info
             $firstPivot = $pivots->first();
-            
+
             // Calculate totals
             $totalVolume = 0;
             $totalBerat = 0;
-            
+
             foreach ($pivots as $pivot) {
                 if ($pivot->tandaTerima && $pivot->tandaTerima->items) {
                     $totalVolume += $pivot->tandaTerima->items->sum('meter_kubik');
                     $totalBerat += $pivot->tandaTerima->items->sum('tonase');
                 }
             }
-            
+
             $containerData = [
                 'nomor_kontainer' => $nomor_kontainer,
                 'size_kontainer' => $firstPivot->size_kontainer,
@@ -2163,22 +2212,22 @@ class TandaTerimaLclController extends Controller
                 'total_lcl' => $pivots->count(),
                 'total_volume' => $totalVolume,
                 'total_berat' => $totalBerat,
-                'items' => $pivots
+                'items' => $pivots,
             ];
-            
+
             return view('tanda-terima-lcl.show-container', compact('containerData'));
-            
+
         } catch (\Exception $e) {
-            \Log::error('Error showing container detail: ' . $e->getMessage(), [
+            \Log::error('Error showing container detail: '.$e->getMessage(), [
                 'nomor_kontainer' => $nomor_kontainer,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return redirect()->route('tanda-terima-lcl.stuffing')
-                ->with('error', 'Terjadi error saat memuat detail kontainer: ' . $e->getMessage());
+                ->with('error', 'Terjadi error saat memuat detail kontainer: '.$e->getMessage());
         }
     }
-    
+
     /**
      * Remove LCL from container (unstuffing)
      */
@@ -2187,43 +2236,43 @@ class TandaTerimaLclController extends Controller
         try {
             $tandaTerima = TandaTerimaLcl::findOrFail($id);
             $nomorKontainer = $request->nomor_kontainer;
-            
+
             // Find and delete the pivot record
             $deleted = TandaTerimaLclKontainerPivot::where('tanda_terima_lcl_id', $id)
                 ->where('nomor_kontainer', $nomorKontainer)
                 ->delete();
-            
+
             if ($deleted) {
                 \Log::info('LCL removed from container', [
                     'lcl_id' => $id,
                     'nomor_kontainer' => $nomorKontainer,
-                    'user_id' => auth()->id()
+                    'user_id' => auth()->id(),
                 ]);
-                
+
                 return response()->json([
                     'success' => true,
-                    'message' => 'Tanda terima berhasil dikeluarkan dari kontainer ' . $nomorKontainer
+                    'message' => 'Tanda terima berhasil dikeluarkan dari kontainer '.$nomorKontainer,
                 ]);
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data tidak ditemukan atau sudah dihapus'
+                    'message' => 'Data tidak ditemukan atau sudah dihapus',
                 ], 404);
             }
-            
+
         } catch (\Exception $e) {
-            \Log::error('Error removing LCL from container: ' . $e->getMessage(), [
+            \Log::error('Error removing LCL from container: '.$e->getMessage(), [
                 'lcl_id' => $id,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi error: ' . $e->getMessage()
+                'message' => 'Terjadi error: '.$e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Get barang data from selected containers by nomor kontainer
      */
@@ -2231,58 +2280,60 @@ class TandaTerimaLclController extends Controller
     {
         try {
             $containers = $request->containers;
-            
+
             if (empty($containers)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada kontainer yang dipilih'
+                    'message' => 'Tidak ada kontainer yang dipilih',
                 ]);
             }
-            
+
             \Log::info('Getting barang for containers:', ['containers' => $containers]);
-            
+
             // Get pivot records for these containers
             $pivotRecords = TandaTerimaLclKontainerPivot::with(['tandaTerima.items'])
                 ->whereIn('nomor_kontainer', $containers)
                 ->get();
-            
+
             if ($pivotRecords->isEmpty()) {
                 \Log::warning('No pivot records found for containers:', ['containers' => $containers]);
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada data kontainer ditemukan'
+                    'message' => 'Tidak ada data kontainer ditemukan',
                 ]);
             }
-            
+
             \Log::info('Found pivot records:', ['count' => $pivotRecords->count()]);
-            
+
             // Collect all barang from items (including duplicates with different dimensions)
             $barangData = [];
             $seenItems = []; // Track unique items to avoid duplicates
-            
+
             foreach ($pivotRecords as $pivot) {
-                if (!$pivot->tandaTerima) {
+                if (! $pivot->tandaTerima) {
                     \Log::warning('Pivot without tanda_terima:', ['pivot_id' => $pivot->id]);
+
                     continue;
                 }
-                
+
                 $tandaTerima = $pivot->tandaTerima;
-                
+
                 if ($tandaTerima->items && $tandaTerima->items->count() > 0) {
                     foreach ($tandaTerima->items as $item) {
                         // Create unique key based on item attributes
                         $itemKey = $item->id;
-                        
-                        if (!isset($seenItems[$itemKey])) {
+
+                        if (! isset($seenItems[$itemKey])) {
                             $seenItems[$itemKey] = true;
-                            
+
                             // Use nama_barang from item, fallback to tanda_terima if needed
                             $namaBarang = $item->nama_barang ?? $tandaTerima->nama_barang ?? 'N/A';
                             $satuan = $item->satuan ?? $item->keterangan_barang ?? $tandaTerima->keterangan_barang ?? '';
-                            
+
                             // Get jumlah from item first, fallback to tanda_terima->kuantitas
                             $jumlah = $item->jumlah ?? $tandaTerima->kuantitas ?? 1;
-                            
+
                             $barangData[] = [
                                 'id' => $item->id,
                                 'nama_barang' => $namaBarang,
@@ -2293,37 +2344,38 @@ class TandaTerimaLclController extends Controller
                                 'jumlah' => $jumlah,
                                 'meter_kubik' => $item->meter_kubik,
                                 'tonase' => $item->tonase,
-                                'display_label' => $namaBarang . 
-                                                 ($jumlah > 1 ? ' (' . $jumlah . ' pcs)' : '') .
-                                                 ($item->panjang && $item->lebar && $item->tinggi ? 
-                                                     ' - ' . $item->panjang . 'x' . $item->lebar . 'x' . $item->tinggi . 'm' : '') .
-                                                 ($item->meter_kubik ? ' - ' . number_format($item->meter_kubik, 3) . 'm³' : '')
+                                'display_label' => $namaBarang.
+                                                 ($jumlah > 1 ? ' ('.$jumlah.' pcs)' : '').
+                                                 ($item->panjang && $item->lebar && $item->tinggi ?
+                                                     ' - '.$item->panjang.'x'.$item->lebar.'x'.$item->tinggi.'m' : '').
+                                                 ($item->meter_kubik ? ' - '.number_format($item->meter_kubik, 3).'m³' : ''),
                             ];
                         }
                     }
                 }
             }
-            
+
             \Log::info('Collected barang data:', ['count' => count($barangData)]);
-            
+
             return response()->json([
                 'success' => true,
                 'barang' => $barangData,
-                'message' => 'Data barang berhasil dimuat (' . count($barangData) . ' items)'
+                'message' => 'Data barang berhasil dimuat ('.count($barangData).' items)',
             ]);
-            
+
         } catch (\Exception $e) {
-            \Log::error('Error getting barang from containers by nomor: ' . $e->getMessage(), [
+            \Log::error('Error getting barang from containers by nomor: '.$e->getMessage(), [
                 'containers' => $request->containers ?? null,
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi error: ' . $e->getMessage()
+                'message' => 'Terjadi error: '.$e->getMessage(),
             ], 500);
         }
     }
+
     /**
      * Sync penerima and pengirim data to related tables.
      */
@@ -2338,27 +2390,35 @@ class TandaTerimaLclController extends Controller
             $updatedCounts = [];
 
             // 1. Prospek
-            $prospeks = \App\Models\Prospek::where('keterangan', 'like', '%Tanda Terima Tanpa Surat Jalan: ' . $tt->nomor_tanda_terima . '%')->get();
+            $prospeks = \App\Models\Prospek::where('keterangan', 'like', '%Tanda Terima Tanpa Surat Jalan: '.$tt->nomor_tanda_terima.'%')->get();
             $prospekIds = $prospeks->pluck('id')->toArray();
 
             $prospekCounts = 0;
             foreach ($prospeks as $prospek) {
-                 $updateData = [];
-                 if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'pt_pengirim')) $updateData['pt_pengirim'] = $pengirim;
-                 if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'penerima')) $updateData['penerima'] = $penerima;
-                 if (!empty($updateData)) {
-                      \DB::table('prospek')->where('id', $prospek->id)->update($updateData);
-                      $prospekCounts++;
-                 }
+                $updateData = [];
+                if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'pt_pengirim')) {
+                    $updateData['pt_pengirim'] = $pengirim;
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('prospek', 'penerima')) {
+                    $updateData['penerima'] = $penerima;
+                }
+                if (! empty($updateData)) {
+                    \DB::table('prospek')->where('id', $prospek->id)->update($updateData);
+                    $prospekCounts++;
+                }
             }
 
             // 2. Naik Kapal
             $naikKapalCounts = 0;
-            if (!empty($prospekIds)) {
+            if (! empty($prospekIds)) {
                 $updateData = [];
-                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'penerima')) $updateData['penerima'] = $penerima;
-                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'pengirim')) $updateData['pengirim'] = $pengirim;
-                if (!empty($updateData)) {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'penerima')) {
+                    $updateData['penerima'] = $penerima;
+                }
+                if (\Illuminate\Support\Facades\Schema::hasColumn('naik_kapal', 'pengirim')) {
+                    $updateData['pengirim'] = $pengirim;
+                }
+                if (! empty($updateData)) {
                     $naikKapalCounts = \DB::table('naik_kapal')->whereIn('prospek_id', $prospekIds)->update($updateData);
                 }
             }
@@ -2366,11 +2426,15 @@ class TandaTerimaLclController extends Controller
             // 3. Manifests
             $manifestCounts = 0;
             $updateData = [];
-            if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'penerima')) $updateData['penerima'] = $penerima;
-            if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'pengirim')) $updateData['pengirim'] = $pengirim;
-            if (!empty($updateData)) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'penerima')) {
+                $updateData['penerima'] = $penerima;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('manifests', 'pengirim')) {
+                $updateData['pengirim'] = $pengirim;
+            }
+            if (! empty($updateData)) {
                 $q = \DB::table('manifests')->where('nomor_tanda_terima', $tt->nomor_tanda_terima);
-                if (!empty($prospekIds)) {
+                if (! empty($prospekIds)) {
                     $q->orWhereIn('prospek_id', $prospekIds);
                 }
                 $manifestCounts = $q->update($updateData);
@@ -2379,17 +2443,23 @@ class TandaTerimaLclController extends Controller
             // 4. BLs
             $blCounts = 0;
             $updateData = [];
-            if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'penerima')) $updateData['penerima'] = $penerima;
-            if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'pengirim')) $updateData['pengirim'] = $pengirim;
-            if (!empty($updateData) && !empty($prospekIds)) {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'penerima')) {
+                $updateData['penerima'] = $penerima;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('bls', 'pengirim')) {
+                $updateData['pengirim'] = $pengirim;
+            }
+            if (! empty($updateData) && ! empty($prospekIds)) {
                 $blCounts = \DB::table('bls')->whereIn('prospek_id', $prospekIds)->update($updateData);
             }
 
             \DB::commit();
+
             return redirect()->back()->with('success', "Data penerima dan pengirim berhasil disinkronisasi: Prospek ($prospekCounts), Naik Kapal ($naikKapalCounts), Manifest ($manifestCounts), BL ($blCounts).");
         } catch (\Exception $e) {
             \DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal melakukan sinkronisasi: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal melakukan sinkronisasi: '.$e->getMessage());
         }
     }
 
@@ -2431,34 +2501,37 @@ class TandaTerimaLclController extends Controller
             $tanggal = $request->tanggal_seal ?? $firstPivot->tanggal_seal ?? now();
 
             // Hitung total
-            $totalVolume = $pivotRecords->sum(function($pivot) {
+            $totalVolume = $pivotRecords->sum(function ($pivot) {
                 return $pivot->tandaTerima ? $pivot->tandaTerima->items->sum('meter_kubik') : 0;
             });
-            
-            $totalTon = $pivotRecords->sum(function($pivot) {
+
+            $totalTon = $pivotRecords->sum(function ($pivot) {
                 return $pivot->tandaTerima ? $pivot->tandaTerima->items->sum('tonase') : 0;
             });
 
             // Kumpulkan info
-            $ptPengirimList = $pivotRecords->map(function($pivot) {
+            $ptPengirimList = $pivotRecords->map(function ($pivot) {
                 return $pivot->tandaTerima ? $pivot->tandaTerima->nama_pengirim : null;
             })->filter()->unique()->implode(', ');
 
             if (strlen($ptPengirimList) > 2000) {
-                $ptPengirimList = substr($ptPengirimList, 0, 1997) . '...';
+                $ptPengirimList = substr($ptPengirimList, 0, 1997).'...';
             }
 
-            $barangList = $pivotRecords->map(function($pivot) {
-                if (!$pivot->tandaTerima || !$pivot->tandaTerima->items) return null;
+            $barangList = $pivotRecords->map(function ($pivot) {
+                if (! $pivot->tandaTerima || ! $pivot->tandaTerima->items) {
+                    return null;
+                }
+
                 return $pivot->tandaTerima->items->pluck('nama_barang')->filter()->unique()->implode(', ');
             })->filter()->unique()->implode(', ');
 
             if (strlen($barangList) > 2000) {
-                $barangList = substr($barangList, 0, 1997) . '...';
+                $barangList = substr($barangList, 0, 1997).'...';
             }
 
             // Cari tujuan terbanyak atau pertama
-            $tujuan = $pivotRecords->map(function($pivot) {
+            $tujuan = $pivotRecords->map(function ($pivot) {
                 return $pivot->tandaTerima && $pivot->tandaTerima->tujuanPengiriman ? $pivot->tandaTerima->tujuanPengiriman->nama_tujuan : null;
             })->filter()->mode()[0] ?? ($pivotRecords->first()->tandaTerima->tujuanPengiriman->nama_tujuan ?? '-');
 
@@ -2476,7 +2549,7 @@ class TandaTerimaLclController extends Controller
                 'kuantitas' => $pivotRecords->count(),
                 'tujuan_pengiriman' => $tujuan,
                 'status' => Prospek::STATUS_AKTIF,
-                'keterangan' => "Synced from LCL Stuffing",
+                'keterangan' => 'Synced from LCL Stuffing',
                 'created_by' => Auth::id(),
             ]);
 
@@ -2484,9 +2557,10 @@ class TandaTerimaLclController extends Controller
                 ->with('success', "✓ Berhasil sinkronisasi Prospek untuk kontainer {$request->nomor_kontainer} (ID: {$prospek->id}).");
 
         } catch (\Exception $e) {
-            \Log::error('Error syncing prospek: ' . $e->getMessage());
+            \Log::error('Error syncing prospek: '.$e->getMessage());
+
             return redirect()->back()
-                ->with('error', "Gagal sinkronisasi: " . $e->getMessage());
+                ->with('error', 'Gagal sinkronisasi: '.$e->getMessage());
         }
     }
 }

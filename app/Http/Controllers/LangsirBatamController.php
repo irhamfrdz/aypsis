@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\LangsirBatam;
 use App\Models\Karyawan;
+use App\Models\LangsirBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -31,8 +31,8 @@ class LangsirBatamController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('no_transaksi', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%");
+                    ->orWhere('no_kontainer', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%");
             });
         }
 
@@ -58,11 +58,11 @@ class LangsirBatamController extends Controller
             ->orWhere('divisi', 'LIKE', '%supir%')
             ->orderBy('nama_panggilan', 'asc')
             ->get();
-            
+
         $kontainers = \App\Models\Kontainer::select('nomor_seri_gabungan as no_kontainer', 'ukuran as size')->get();
         $stock_kontainers = \App\Models\StockKontainer::select('nomor_seri_gabungan as no_kontainer', 'ukuran as size')->get();
         $all_kontainers = $kontainers->concat($stock_kontainers)->unique('no_kontainer')->sortBy('no_kontainer');
-            
+
         return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers'));
     }
 
@@ -99,6 +99,7 @@ class LangsirBatamController extends Controller
     public function show($id)
     {
         $langsir = LangsirBatam::with('user')->findOrFail($id);
+
         return view('langsir-batam.show', compact('langsir'));
     }
 

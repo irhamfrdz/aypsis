@@ -20,10 +20,10 @@ class MasterTujuanKirimController extends Controller
         $query = MasterTujuanKirim::query();
 
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('kode', 'like', '%' . $search . '%')
-                  ->orWhere('nama_tujuan', 'like', '%' . $search . '%')
-                  ->orWhere('catatan', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('kode', 'like', '%'.$search.'%')
+                    ->orWhere('nama_tujuan', 'like', '%'.$search.'%')
+                    ->orWhere('catatan', 'like', '%'.$search.'%');
             });
         }
 
@@ -43,7 +43,7 @@ class MasterTujuanKirimController extends Controller
     {
         $searchValue = $request->get('search', '');
         $isPopup = $request->has('popup');
-        
+
         return view('master.tujuan-kirim.create', compact('searchValue', 'isPopup'));
     }
 
@@ -62,7 +62,7 @@ class MasterTujuanKirimController extends Controller
             'kode' => 'required|string|max:10|unique:master_tujuan_kirim,kode',
             'nama_tujuan' => 'required|string|max:100',
             'catatan' => 'nullable|string|max:500',
-            'status' => 'required|in:active,inactive'
+            'status' => 'required|in:active,inactive',
         ]);
 
         if ($validator->fails()) {
@@ -71,7 +71,7 @@ class MasterTujuanKirimController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Validasi gagal',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
@@ -93,8 +93,8 @@ class MasterTujuanKirimController extends Controller
                         'kode' => $tujuanKirim->kode,
                         'nama_tujuan' => $tujuanKirim->nama_tujuan,
                         'catatan' => $tujuanKirim->catatan,
-                        'status' => $tujuanKirim->status
-                    ]
+                        'status' => $tujuanKirim->status,
+                    ],
                 ]);
             }
 
@@ -106,12 +106,12 @@ class MasterTujuanKirimController extends Controller
             if ($request->has('popup') || $request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal menyimpan data: ' . $e->getMessage()
+                    'message' => 'Gagal menyimpan data: '.$e->getMessage(),
                 ], 500);
             }
 
             return redirect()->back()
-                ->withErrors(['error' => 'Gagal menyimpan data: ' . $e->getMessage()])
+                ->withErrors(['error' => 'Gagal menyimpan data: '.$e->getMessage()])
                 ->withInput();
         }
     }
@@ -132,7 +132,7 @@ class MasterTujuanKirimController extends Controller
             $nextNumber = 1;
         }
 
-        return 'TK' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+        return 'TK'.str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -160,7 +160,7 @@ class MasterTujuanKirimController extends Controller
             'kode' => ['required', 'string', 'max:10', Rule::unique('master_tujuan_kirim')->ignore($tujuanKirim->id)],
             'nama_tujuan' => 'required|string|max:100',
             'catatan' => 'nullable|string|max:500',
-            'status' => 'required|in:active,inactive'
+            'status' => 'required|in:active,inactive',
         ]);
 
         if ($validator->fails()) {
@@ -196,7 +196,7 @@ class MasterTujuanKirimController extends Controller
             'Content-Disposition' => 'attachment; filename="template_tujuan_kirim.csv"',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
 
             // Write UTF-8 BOM
@@ -225,7 +225,7 @@ class MasterTujuanKirimController extends Controller
     public function import(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'csv_file' => 'required|file|mimes:csv,txt|max:2048'
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -239,7 +239,7 @@ class MasterTujuanKirimController extends Controller
             $path = $file->getRealPath();
 
             // Read CSV file
-            $csv = array_map(function($line) {
+            $csv = array_map(function ($line) {
                 return str_getcsv($line, ';');
             }, file($path));
 
@@ -286,34 +286,40 @@ class MasterTujuanKirimController extends Controller
                 // Validate required fields
                 if (empty($data['kode']) || empty($data['nama_tujuan'])) {
                     $errors[] = "Baris {$rowNumber}: Kode dan nama tujuan wajib diisi";
+
                     continue;
                 }
 
                 // Validate status (only if provided)
-                if (!empty($data['status']) && !in_array($data['status'], ['active', 'inactive'])) {
+                if (! empty($data['status']) && ! in_array($data['status'], ['active', 'inactive'])) {
                     $errors[] = "Baris {$rowNumber}: Status harus 'active' atau 'inactive'";
+
                     continue;
                 }
 
                 // Check for duplicates in database
                 if (MasterTujuanKirim::where('kode', $data['kode'])->exists()) {
                     $duplicates[] = "Baris {$rowNumber}: Kode '{$data['kode']}' sudah ada dalam database";
+
                     continue;
                 }
 
                 // Validate length
                 if (strlen($data['kode']) > 10) {
                     $errors[] = "Baris {$rowNumber}: Kode maksimal 10 karakter";
+
                     continue;
                 }
 
                 if (strlen($data['nama_tujuan']) > 100) {
                     $errors[] = "Baris {$rowNumber}: Nama tujuan maksimal 100 karakter";
+
                     continue;
                 }
 
                 if (strlen($data['catatan']) > 500) {
                     $errors[] = "Baris {$rowNumber}: Catatan maksimal 500 karakter";
+
                     continue;
                 }
 
@@ -323,32 +329,32 @@ class MasterTujuanKirimController extends Controller
                         'kode' => $data['kode'],
                         'nama_tujuan' => $data['nama_tujuan'],
                         'catatan' => $data['catatan'] ?: null,
-                        'status' => $data['status']
+                        'status' => $data['status'],
                     ]);
                     $imported++;
                 } catch (\Exception $e) {
-                    $errors[] = "Baris {$rowNumber}: Gagal menyimpan data - " . $e->getMessage();
+                    $errors[] = "Baris {$rowNumber}: Gagal menyimpan data - ".$e->getMessage();
                 }
             }
 
             // Prepare result message
             $message = "Import selesai. {$imported} data berhasil diimport.";
 
-            if (!empty($errors)) {
-                $message .= " " . count($errors) . " data gagal diimport.";
+            if (! empty($errors)) {
+                $message .= ' '.count($errors).' data gagal diimport.';
             }
 
-            if (!empty($duplicates)) {
-                $message .= " " . count($duplicates) . " data duplikat dilewati.";
+            if (! empty($duplicates)) {
+                $message .= ' '.count($duplicates).' data duplikat dilewati.';
             }
 
             $sessionData = ['success' => $message];
 
-            if (!empty($errors)) {
+            if (! empty($errors)) {
                 $sessionData['import_errors'] = $errors;
             }
 
-            if (!empty($duplicates)) {
+            if (! empty($duplicates)) {
                 $sessionData['import_duplicates'] = $duplicates;
             }
 
@@ -356,7 +362,7 @@ class MasterTujuanKirimController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->withErrors(['csv_file' => 'Terjadi kesalahan saat memproses file: ' . $e->getMessage()])
+                ->withErrors(['csv_file' => 'Terjadi kesalahan saat memproses file: '.$e->getMessage()])
                 ->withInput();
         }
     }
@@ -373,10 +379,10 @@ class MasterTujuanKirimController extends Controller
 
         // Apply same filters as index page
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('kode', 'like', '%' . $search . '%')
-                  ->orWhere('nama_tujuan', 'like', '%' . $search . '%')
-                  ->orWhere('catatan', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('kode', 'like', '%'.$search.'%')
+                    ->orWhere('nama_tujuan', 'like', '%'.$search.'%')
+                    ->orWhere('catatan', 'like', '%'.$search.'%');
             });
         }
 
@@ -387,18 +393,18 @@ class MasterTujuanKirimController extends Controller
         $tujuanKirim = $query->orderBy('nama_tujuan')->get();
 
         // Generate CSV filename with timestamp
-        $filename = 'tujuan-kirim-' . date('Ymd-His') . '.csv';
+        $filename = 'tujuan-kirim-'.date('Ymd-His').'.csv';
 
         // Create CSV content
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Pragma' => 'public',
-            'Expires' => '0'
+            'Expires' => '0',
         ];
 
-        $callback = function() use ($tujuanKirim) {
+        $callback = function () use ($tujuanKirim) {
             $file = fopen('php://output', 'w');
 
             // Add UTF-8 BOM for Excel compatibility
@@ -410,7 +416,7 @@ class MasterTujuanKirimController extends Controller
                 'Kode',
                 'Nama Tujuan',
                 'Catatan',
-                'Status'
+                'Status',
             ], ';');
 
             // CSV Data with semicolon delimiter
@@ -420,7 +426,7 @@ class MasterTujuanKirimController extends Controller
                     $item->kode,
                     $item->nama_tujuan,
                     $item->catatan ?? '',
-                    $item->status === 'active' ? 'Aktif' : 'Tidak Aktif'
+                    $item->status === 'active' ? 'Aktif' : 'Tidak Aktif',
                 ], ';');
             }
 
@@ -437,7 +443,7 @@ class MasterTujuanKirimController extends Controller
     public function createForOrder(Request $request)
     {
         $searchValue = $request->query('search', '');
-        
+
         return view('master.tujuan-kirim.create-for-order', compact('searchValue'));
     }
 
@@ -450,6 +456,7 @@ class MasterTujuanKirimController extends Controller
         // Handle code generation request
         if ($request->has('_generate_code_only')) {
             $code = $this->generateTujuanKirimCode();
+
             return response()->json(['code' => $code]);
         }
 
@@ -472,7 +479,7 @@ class MasterTujuanKirimController extends Controller
     {
         $q = $request->get('q', '');
 
-        $results = MasterTujuanKirim::where('nama_tujuan', 'like', '%' . $q . '%')
+        $results = MasterTujuanKirim::where('nama_tujuan', 'like', '%'.$q.'%')
             ->orderBy('nama_tujuan')
             ->limit(20)
             ->pluck('nama_tujuan');

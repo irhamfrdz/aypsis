@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -20,7 +20,9 @@ return new class extends Migration
             // Simplify status to only 2 options: 'paid' and 'unpaid'
             $table->enum('status', ['unpaid', 'paid'])->default('unpaid')->change();
         });
-    }    /**
+    }
+
+    /**
      * Reverse the migrations.
      */
     public function down(): void

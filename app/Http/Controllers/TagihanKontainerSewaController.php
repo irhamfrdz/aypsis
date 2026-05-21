@@ -11,6 +11,7 @@ class TagihanKontainerSewaController extends Controller
     {
         $q = $request->input('q');
         $tagihan = TagihanKontainerSewa::search($q)->orderBy('tanggal_harga_awal', 'desc')->paginate(15);
+
         return view('tagihan-kontainer-sewa.index', ['tagihanKontainerSewa' => $tagihan]);
     }
 
@@ -37,18 +38,21 @@ class TagihanKontainerSewaController extends Controller
         ]);
 
         $model = TagihanKontainerSewa::create($data);
+
         return redirect()->route('tagihan-kontainer-sewa.index')->with('success', 'Tagihan created');
     }
 
     public function show($id)
     {
         $tagihan = TagihanKontainerSewa::findOrFail($id);
+
         return view('tagihan-kontainer-sewa.show', compact('tagihan'));
     }
 
     public function edit($id)
     {
         $tagihan = TagihanKontainerSewa::findOrFail($id);
+
         return view('tagihan-kontainer-sewa.edit', compact('tagihan'));
     }
 
@@ -70,6 +74,7 @@ class TagihanKontainerSewaController extends Controller
         ]);
         $tagihan = TagihanKontainerSewa::findOrFail($id);
         $tagihan->update($data);
+
         return redirect()->route('tagihan-kontainer-sewa.index')->with('success', 'Tagihan updated');
     }
 
@@ -77,6 +82,7 @@ class TagihanKontainerSewaController extends Controller
     {
         $tagihan = TagihanKontainerSewa::findOrFail($id);
         $tagihan->delete();
+
         return redirect()->route('tagihan-kontainer-sewa.index')->with('success', 'Tagihan deleted');
     }
 
@@ -84,15 +90,18 @@ class TagihanKontainerSewaController extends Controller
     public function searchByKontainer(Request $request)
     {
         $q = $request->query('q');
-        if (!$q) return response()->json(['data' => []]);
-        $items = TagihanKontainerSewa::where('nomor_kontainer', 'like', '%' . $q . '%')
+        if (! $q) {
+            return response()->json(['data' => []]);
+        }
+        $items = TagihanKontainerSewa::where('nomor_kontainer', 'like', '%'.$q.'%')
             ->selectRaw('vendor, DATE(tanggal_harga_awal) as tanggal, group_code')
             ->groupBy('vendor', 'tanggal')
             ->limit(20)
             ->get()
             ->map(function ($r) {
-                return ['vendor' => $r->vendor, 'tanggal' => (string)$r->tanggal, 'group' => $r->group_code];
+                return ['vendor' => $r->vendor, 'tanggal' => (string) $r->tanggal, 'group' => $r->group_code];
             });
+
         return response()->json(['data' => $items]);
     }
 }

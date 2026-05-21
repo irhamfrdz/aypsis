@@ -14,17 +14,17 @@ class MasterLwbpLamaController extends Controller
     {
         $query = MasterLwbpLama::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('tahun', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('bulan', 'LIKE', '%' . $searchTerm . '%');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('tahun', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('bulan', 'LIKE', '%'.$searchTerm.'%');
             });
         }
 
         $lwbpLamas = $query->orderBy('tahun', 'desc')
-                           ->orderBy('bulan', 'desc')
-                           ->paginate(15);
+            ->orderBy('bulan', 'desc')
+            ->paginate(15);
 
         return view('master-lwbp-lama.index', compact('lwbpLamas'));
     }
@@ -61,6 +61,7 @@ class MasterLwbpLamaController extends Controller
     public function show(string $id)
     {
         $lwbpLama = MasterLwbpLama::findOrFail($id);
+
         return view('master-lwbp-lama.show', compact('lwbpLama'));
     }
 
@@ -70,6 +71,7 @@ class MasterLwbpLamaController extends Controller
     public function edit(string $id)
     {
         $lwbpLama = MasterLwbpLama::findOrFail($id);
+
         return view('master-lwbp-lama.edit', compact('lwbpLama'));
     }
 

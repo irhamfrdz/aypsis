@@ -23,7 +23,7 @@ class PranotaUangJalanBongkaran extends Model
         'status_pembayaran',
         'catatan',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
@@ -32,14 +32,16 @@ class PranotaUangJalanBongkaran extends Model
         'penyesuaian' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        'deleted_at' => 'datetime'
+        'deleted_at' => 'datetime',
     ];
 
     /**
      * Status pembayaran constants
      */
     const STATUS_UNPAID = 'unpaid';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_CANCELLED = 'cancelled';
 
     /**
@@ -48,7 +50,7 @@ class PranotaUangJalanBongkaran extends Model
     public function uangJalanBongkarans()
     {
         return $this->belongsToMany(UangJalanBongkaran::class, 'pranota_uang_jalan_bongkaran_items', 'pranota_uang_jalan_bongkaran_id', 'uang_jalan_bongkaran_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -97,6 +99,7 @@ class PranotaUangJalanBongkaran extends Model
         if ($status) {
             return $query->where('status_pembayaran', $status);
         }
+
         return $query;
     }
 
@@ -108,6 +111,7 @@ class PranotaUangJalanBongkaran extends Model
         if ($periode) {
             return $query->where('periode_tagihan', $periode);
         }
+
         return $query;
     }
 
@@ -148,7 +152,7 @@ class PranotaUangJalanBongkaran extends Model
      */
     public function getFormattedTotalAttribute()
     {
-        return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
+        return 'Rp '.number_format($this->total_amount, 0, ',', '.');
     }
 
     /**
@@ -156,7 +160,7 @@ class PranotaUangJalanBongkaran extends Model
      */
     public function getFormattedPenyesuaianAttribute()
     {
-        return 'Rp ' . number_format($this->penyesuaian, 0, ',', '.');
+        return 'Rp '.number_format($this->penyesuaian, 0, ',', '.');
     }
 
     /**
@@ -172,7 +176,7 @@ class PranotaUangJalanBongkaran extends Model
      */
     public function getFormattedTotalWithPenyesuaianAttribute()
     {
-        return 'Rp ' . number_format($this->total_with_penyesuaian, 0, ',', '.');
+        return 'Rp '.number_format($this->total_with_penyesuaian, 0, ',', '.');
     }
 
     /**

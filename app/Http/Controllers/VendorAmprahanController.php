@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\VendorAmprahan;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class VendorAmprahanController extends Controller
@@ -15,11 +14,11 @@ class VendorAmprahanController extends Controller
     {
         $query = VendorAmprahan::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_toko', 'like', "%{$search}%")
-                  ->orWhere('alamat_toko', 'like', "%{$search}%");
+                    ->orWhere('alamat_toko', 'like', "%{$search}%");
             });
         }
 
@@ -32,6 +31,7 @@ class VendorAmprahanController extends Controller
     {
         $search = $request->get('search');
         $isPopup = $request->get('popup');
+
         return view('master.vendor-amprahan.create', compact('search', 'isPopup'));
     }
 
@@ -39,7 +39,7 @@ class VendorAmprahanController extends Controller
     {
         $validated = $request->validate([
             'nama_toko' => 'required|string|max:255|unique:vendor_amprahans,nama_toko',
-            'alamat_toko' => 'nullable|string'
+            'alamat_toko' => 'nullable|string',
         ]);
 
         $validated['created_by'] = auth()->id();
@@ -58,7 +58,7 @@ class VendorAmprahanController extends Controller
                         }
                         window.close();
                     } else {
-                        window.location.href = '" . route('master.vendor-amprahan.index') . "';
+                        window.location.href = '".route('master.vendor-amprahan.index')."';
                     }
                 </script>
             ";
@@ -81,8 +81,8 @@ class VendorAmprahanController extends Controller
     public function update(Request $request, VendorAmprahan $vendorAmprahan)
     {
         $validated = $request->validate([
-            'nama_toko' => 'required|string|max:255|unique:vendor_amprahans,nama_toko,' . $vendorAmprahan->id,
-            'alamat_toko' => 'nullable|string'
+            'nama_toko' => 'required|string|max:255|unique:vendor_amprahans,nama_toko,'.$vendorAmprahan->id,
+            'alamat_toko' => 'nullable|string',
         ]);
 
         $validated['updated_by'] = auth()->id();

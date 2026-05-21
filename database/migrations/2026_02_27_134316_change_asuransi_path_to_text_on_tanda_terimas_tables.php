@@ -14,7 +14,7 @@ return new class extends Migration
         $tables = [
             'tanda_terimas',
             'tanda_terima_tanpa_surat_jalan',
-            'tanda_terimas_lcl'
+            'tanda_terimas_lcl',
         ];
 
         foreach ($tables as $tableName) {
@@ -33,7 +33,7 @@ return new class extends Migration
         $tables = [
             'tanda_terimas',
             'tanda_terima_tanpa_surat_jalan',
-            'tanda_terimas_lcl'
+            'tanda_terimas_lcl',
         ];
 
         foreach ($tables as $tableName) {

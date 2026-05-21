@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\PranotaUangKenek;
 use App\Models\SuratJalan;
 use Illuminate\Http\Request;
@@ -22,11 +21,11 @@ class PranotaUangKenekController extends Controller
         // Filter by search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_pranota', 'like', "%{$search}%")
-                  ->orWhere('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('kenek_nama', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%");
+                    ->orWhere('no_surat_jalan', 'like', "%{$search}%")
+                    ->orWhere('kenek_nama', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%");
             });
         }
 
@@ -101,11 +100,11 @@ class PranotaUangKenekController extends Controller
             foreach ($selectedData as $suratJalanId => $data) {
                 // Generate nomor pranota
                 $nomorPranota = $this->generateNomorPranota();
-                
+
                 // Hitung total rit (hanya kenek)
                 $totalRit = $data['uang_rit_kenek'];
                 $totalUang = $totalRit; // Hanya uang kenek saja
-                
+
                 $pranotaUangKenek = PranotaUangKenek::create([
                     'no_pranota' => $nomorPranota,
                     'tanggal' => $request->tanggal,
@@ -128,7 +127,7 @@ class PranotaUangKenekController extends Controller
                 $suratJalan = SuratJalan::find($suratJalanId);
                 if ($suratJalan) {
                     $suratJalan->update([
-                        'status_pembayaran_uang_rit_kenek' => SuratJalan::STATUS_UANG_RIT_KENEK_SUDAH_MASUK_PRANOTA
+                        'status_pembayaran_uang_rit_kenek' => SuratJalan::STATUS_UANG_RIT_KENEK_SUDAH_MASUK_PRANOTA,
                     ]);
                 }
 
@@ -146,11 +145,12 @@ class PranotaUangKenekController extends Controller
             $totalUangKeseluruhan = collect($createdPranota)->sum('total_uang');
 
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('success', "Berhasil membuat {$totalPranota} pranota uang kenek dengan total Rp " . number_format($totalUangKeseluruhan, 0, ',', '.'));
+                ->with('success', "Berhasil membuat {$totalPranota} pranota uang kenek dengan total Rp ".number_format($totalUangKeseluruhan, 0, ',', '.'));
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error creating Pranota Uang Kenek: ' . $e->getMessage());
+            Log::error('Error creating Pranota Uang Kenek: '.$e->getMessage());
+
             return back()->withErrors(['error' => 'Terjadi kesalahan saat membuat pranota uang kenek.'])->withInput();
         }
     }
@@ -161,23 +161,23 @@ class PranotaUangKenekController extends Controller
     public function show(PranotaUangKenek $pranotaUangKenek)
     {
         $pranotaUangKenek->load(['suratJalan', 'createdBy', 'updatedBy', 'approvedBy']);
-        
-        // Parse combined data 
+
+        // Parse combined data
         $kenekDetails = [];
         if ($pranotaUangKenek->no_surat_jalan) {
             $suratJalanArray = explode(',', $pranotaUangKenek->no_surat_jalan);
             $kenekNamaArray = explode(',', $pranotaUangKenek->kenek_nama);
             $uangRitArray = explode(',', $pranotaUangKenek->uang_rit_kenek);
-            
+
             foreach ($suratJalanArray as $index => $noSuratJalan) {
                 $kenekDetails[] = [
                     'no_surat_jalan' => trim($noSuratJalan),
                     'kenek_nama' => trim($kenekNamaArray[$index] ?? ''),
-                    'uang_rit' => floatval($uangRitArray[$index] ?? 0)
+                    'uang_rit' => floatval($uangRitArray[$index] ?? 0),
                 ];
             }
         }
-        
+
         return view('pranota-uang-kenek.show', compact('pranotaUangKenek', 'kenekDetails'));
     }
 
@@ -187,9 +187,9 @@ class PranotaUangKenekController extends Controller
     public function edit(PranotaUangKenek $pranotaUangKenek)
     {
         // Only allow editing if status is draft
-        if (!$pranotaUangKenek->isDraft()) {
+        if (! $pranotaUangKenek->isDraft()) {
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('error', 'Pranota uang kenek hanya dapat diedit jika status masih draft.');
+                ->with('error', 'Pranota uang kenek hanya dapat diedit jika status masih draft.');
         }
 
         return view('pranota-uang-kenek.edit', compact('pranotaUangKenek'));
@@ -201,9 +201,9 @@ class PranotaUangKenekController extends Controller
     public function update(Request $request, PranotaUangKenek $pranotaUangKenek)
     {
         // Only allow editing if status is draft
-        if (!$pranotaUangKenek->isDraft()) {
+        if (! $pranotaUangKenek->isDraft()) {
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('error', 'Pranota uang kenek hanya dapat diedit jika status masih draft.');
+                ->with('error', 'Pranota uang kenek hanya dapat diedit jika status masih draft.');
         }
 
         $request->validate([
@@ -232,12 +232,14 @@ class PranotaUangKenekController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('success', 'Pranota uang kenek berhasil diperbarui.');
+                ->with('success', 'Pranota uang kenek berhasil diperbarui.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error updating Pranota Uang Kenek: ' . $e->getMessage());
+            Log::error('Error updating Pranota Uang Kenek: '.$e->getMessage());
+
             return back()->withErrors(['error' => 'Terjadi kesalahan saat memperbarui pranota uang kenek.']);
         }
     }
@@ -248,9 +250,9 @@ class PranotaUangKenekController extends Controller
     public function destroy(PranotaUangKenek $pranotaUangKenek)
     {
         // Only allow deletion if status is draft
-        if (!$pranotaUangKenek->isDraft()) {
+        if (! $pranotaUangKenek->isDraft()) {
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('error', 'Pranota uang kenek hanya dapat dihapus jika status masih draft.');
+                ->with('error', 'Pranota uang kenek hanya dapat dihapus jika status masih draft.');
         }
 
         DB::beginTransaction();
@@ -258,7 +260,7 @@ class PranotaUangKenekController extends Controller
             // Reset surat jalan status
             if ($pranotaUangKenek->suratJalan) {
                 $pranotaUangKenek->suratJalan->update([
-                    'status_pembayaran_uang_rit_kenek' => SuratJalan::STATUS_UANG_RIT_KENEK_BELUM_DIBAYAR
+                    'status_pembayaran_uang_rit_kenek' => SuratJalan::STATUS_UANG_RIT_KENEK_BELUM_DIBAYAR,
                 ]);
             }
 
@@ -271,12 +273,14 @@ class PranotaUangKenekController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('success', 'Pranota uang kenek berhasil dihapus.');
+                ->with('success', 'Pranota uang kenek berhasil dihapus.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error deleting Pranota Uang Kenek: ' . $e->getMessage());
+            Log::error('Error deleting Pranota Uang Kenek: '.$e->getMessage());
+
             return back()->withErrors(['error' => 'Terjadi kesalahan saat menghapus pranota uang kenek.']);
         }
     }
@@ -286,9 +290,9 @@ class PranotaUangKenekController extends Controller
      */
     public function submit(Request $request, PranotaUangKenek $pranotaUangKenek)
     {
-        if (!$pranotaUangKenek->isDraft()) {
+        if (! $pranotaUangKenek->isDraft()) {
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('error', 'Hanya pranota dengan status draft yang dapat disubmit.');
+                ->with('error', 'Hanya pranota dengan status draft yang dapat disubmit.');
         }
 
         DB::beginTransaction();
@@ -298,7 +302,7 @@ class PranotaUangKenekController extends Controller
             // Update surat jalan status
             if ($pranotaUangKenek->suratJalan) {
                 $pranotaUangKenek->suratJalan->update([
-                    'status_pembayaran_uang_rit_kenek' => SuratJalan::STATUS_UANG_RIT_KENEK_PRANOTA_SUBMITTED
+                    'status_pembayaran_uang_rit_kenek' => SuratJalan::STATUS_UANG_RIT_KENEK_PRANOTA_SUBMITTED,
                 ]);
             }
 
@@ -309,12 +313,14 @@ class PranotaUangKenekController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('success', 'Pranota uang kenek berhasil disubmit untuk approval.');
+                ->with('success', 'Pranota uang kenek berhasil disubmit untuk approval.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error submitting Pranota Uang Kenek: ' . $e->getMessage());
+            Log::error('Error submitting Pranota Uang Kenek: '.$e->getMessage());
+
             return back()->withErrors(['error' => 'Terjadi kesalahan saat submit pranota uang kenek.']);
         }
     }
@@ -324,9 +330,9 @@ class PranotaUangKenekController extends Controller
      */
     public function approve(Request $request, PranotaUangKenek $pranotaUangKenek)
     {
-        if (!$pranotaUangKenek->isSubmitted()) {
+        if (! $pranotaUangKenek->isSubmitted()) {
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('error', 'Hanya pranota dengan status submitted yang dapat diapprove.');
+                ->with('error', 'Hanya pranota dengan status submitted yang dapat diapprove.');
         }
 
         DB::beginTransaction();
@@ -336,7 +342,7 @@ class PranotaUangKenekController extends Controller
             // Update surat jalan status
             if ($pranotaUangKenek->suratJalan) {
                 $pranotaUangKenek->suratJalan->update([
-                    'status_pembayaran_uang_rit_kenek' => SuratJalan::STATUS_UANG_RIT_KENEK_PRANOTA_APPROVED
+                    'status_pembayaran_uang_rit_kenek' => SuratJalan::STATUS_UANG_RIT_KENEK_PRANOTA_APPROVED,
                 ]);
             }
 
@@ -347,12 +353,14 @@ class PranotaUangKenekController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('success', 'Pranota uang kenek berhasil diapprove.');
+                ->with('success', 'Pranota uang kenek berhasil diapprove.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error approving Pranota Uang Kenek: ' . $e->getMessage());
+            Log::error('Error approving Pranota Uang Kenek: '.$e->getMessage());
+
             return back()->withErrors(['error' => 'Terjadi kesalahan saat approve pranota uang kenek.']);
         }
     }
@@ -362,9 +370,9 @@ class PranotaUangKenekController extends Controller
      */
     public function markAsPaid(Request $request, PranotaUangKenek $pranotaUangKenek)
     {
-        if (!$pranotaUangKenek->isApproved()) {
+        if (! $pranotaUangKenek->isApproved()) {
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('error', 'Hanya pranota dengan status approved yang dapat ditandai sebagai dibayar.');
+                ->with('error', 'Hanya pranota dengan status approved yang dapat ditandai sebagai dibayar.');
         }
 
         $request->validate([
@@ -378,7 +386,7 @@ class PranotaUangKenekController extends Controller
             // Update surat jalan status
             if ($pranotaUangKenek->suratJalan) {
                 $pranotaUangKenek->suratJalan->update([
-                    'status_pembayaran_uang_rit_kenek' => SuratJalan::STATUS_UANG_RIT_KENEK_DIBAYAR
+                    'status_pembayaran_uang_rit_kenek' => SuratJalan::STATUS_UANG_RIT_KENEK_DIBAYAR,
                 ]);
             }
 
@@ -390,12 +398,14 @@ class PranotaUangKenekController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('pranota-uang-kenek.index')
-                           ->with('success', 'Pranota uang kenek berhasil ditandai sebagai dibayar.');
+                ->with('success', 'Pranota uang kenek berhasil ditandai sebagai dibayar.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error marking Pranota Uang Kenek as paid: ' . $e->getMessage());
+            Log::error('Error marking Pranota Uang Kenek as paid: '.$e->getMessage());
+
             return back()->withErrors(['error' => 'Terjadi kesalahan saat menandai pranota sebagai dibayar.']);
         }
     }
@@ -406,23 +416,23 @@ class PranotaUangKenekController extends Controller
     public function print(PranotaUangKenek $pranotaUangKenek)
     {
         $pranotaUangKenek->load(['suratJalan', 'createdBy']);
-        
+
         // Parse combined data like pranota rit
         $kenekDetails = [];
         if ($pranotaUangKenek->no_surat_jalan) {
             $suratJalanArray = explode(',', $pranotaUangKenek->no_surat_jalan);
             $kenekNamaArray = explode(',', $pranotaUangKenek->kenek_nama);
             $uangRitArray = explode(',', $pranotaUangKenek->uang_rit_kenek);
-            
+
             foreach ($suratJalanArray as $index => $noSuratJalan) {
                 $kenekDetails[] = [
                     'no_surat_jalan' => trim($noSuratJalan),
                     'kenek_nama' => trim($kenekNamaArray[$index] ?? ''),
-                    'uang_rit' => floatval($uangRitArray[$index] ?? 0)
+                    'uang_rit' => floatval($uangRitArray[$index] ?? 0),
                 ];
             }
         }
-        
+
         return view('pranota-uang-kenek.print', compact('pranotaUangKenek', 'kenekDetails'));
     }
 
@@ -434,19 +444,19 @@ class PranotaUangKenekController extends Controller
         $prefix = 'PUK'; // Pranota Uang Kenek
         $year = date('Y');
         $month = date('m');
-        
+
         // Get last number for this month
         $lastPranota = PranotaUangKenek::where('no_pranota', 'like', "{$prefix}-{$year}{$month}%")
-                          ->orderBy('no_pranota', 'desc')
-                          ->first();
-        
+            ->orderBy('no_pranota', 'desc')
+            ->first();
+
         if ($lastPranota) {
             $lastNumber = intval(substr($lastPranota->no_pranota, -4));
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
-        
-        return $prefix . '-' . $year . $month . '-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+        return $prefix.'-'.$year.$month.'-'.str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 }

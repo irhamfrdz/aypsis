@@ -17,9 +17,9 @@ return new class extends Migration
 
             // Add new status_pembayaran column
             $table->enum('status_pembayaran', ['unpaid', 'partial', 'paid', 'cancelled'])
-                  ->default('unpaid')
-                  ->after('total_amount')
-                  ->comment('Status pembayaran pranota: unpaid, partial, paid, cancelled');
+                ->default('unpaid')
+                ->after('total_amount')
+                ->comment('Status pembayaran pranota: unpaid, partial, paid, cancelled');
         });
     }
 

@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -41,12 +41,12 @@ return new class extends Migration
                     DB::statement("ALTER TABLE {$fk->TABLE_NAME} DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
                     echo "Dropped foreign key: {$fk->CONSTRAINT_NAME} from table {$fk->TABLE_NAME}\n";
                 } catch (Exception $e) {
-                    echo "Warning: Could not drop foreign key {$fk->CONSTRAINT_NAME}: " . $e->getMessage() . "\n";
+                    echo "Warning: Could not drop foreign key {$fk->CONSTRAINT_NAME}: ".$e->getMessage()."\n";
                 }
             }
 
         } catch (Exception $e) {
-            echo "Warning during foreign key cleanup: " . $e->getMessage() . "\n";
+            echo 'Warning during foreign key cleanup: '.$e->getMessage()."\n";
         }
 
         // Step 2: Drop service_id column from pricelist_gate_ins if it exists
@@ -82,7 +82,7 @@ return new class extends Migration
     public function down(): void
     {
         // Recreate master_services table
-        if (!Schema::hasTable('master_services')) {
+        if (! Schema::hasTable('master_services')) {
             Schema::create('master_services', function (Blueprint $table) {
                 $table->id();
                 $table->string('nama');
@@ -93,19 +93,19 @@ return new class extends Migration
         }
 
         // Add back service_id columns (but don't restore foreign keys as they're not needed)
-        if (!Schema::hasColumn('pricelist_gate_ins', 'service_id')) {
+        if (! Schema::hasColumn('pricelist_gate_ins', 'service_id')) {
             Schema::table('pricelist_gate_ins', function (Blueprint $table) {
                 $table->unsignedBigInteger('service_id')->nullable()->after('id');
             });
         }
 
-        if (Schema::hasTable('gate_ins') && !Schema::hasColumn('gate_ins', 'service_id')) {
+        if (Schema::hasTable('gate_ins') && ! Schema::hasColumn('gate_ins', 'service_id')) {
             Schema::table('gate_ins', function (Blueprint $table) {
                 $table->unsignedBigInteger('service_id')->nullable()->after('id');
             });
         }
 
-        if (Schema::hasTable('kontainers') && !Schema::hasColumn('kontainers', 'service_id')) {
+        if (Schema::hasTable('kontainers') && ! Schema::hasColumn('kontainers', 'service_id')) {
             Schema::table('kontainers', function (Blueprint $table) {
                 $table->unsignedBigInteger('service_id')->nullable()->after('id');
             });

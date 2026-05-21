@@ -29,7 +29,7 @@ class AsuransiTandaTerima extends Model
         'nama_kapal',
         'nomor_voyage',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
@@ -77,9 +77,16 @@ class AsuransiTandaTerima extends Model
      */
     public function getSourceAttribute()
     {
-        if ($this->tanda_terima_id) return $this->tandaTerima;
-        if ($this->tanda_terima_tanpa_sj_id) return $this->tandaTerimaTanpaSj;
-        if ($this->tanda_terima_lcl_id) return $this->tandaTerimaLcl;
+        if ($this->tanda_terima_id) {
+            return $this->tandaTerima;
+        }
+        if ($this->tanda_terima_tanpa_sj_id) {
+            return $this->tandaTerimaTanpaSj;
+        }
+        if ($this->tanda_terima_lcl_id) {
+            return $this->tandaTerimaLcl;
+        }
+
         return null;
     }
 
@@ -88,9 +95,16 @@ class AsuransiTandaTerima extends Model
      */
     public function getSourceTypeNameAttribute()
     {
-        if ($this->tanda_terima_id) return 'Tanda Terima';
-        if ($this->tanda_terima_tanpa_sj_id) return 'TT Tanpa SJ';
-        if ($this->tanda_terima_lcl_id) return 'Tanda Terima LCL';
+        if ($this->tanda_terima_id) {
+            return 'Tanda Terima';
+        }
+        if ($this->tanda_terima_tanpa_sj_id) {
+            return 'TT Tanpa SJ';
+        }
+        if ($this->tanda_terima_lcl_id) {
+            return 'Tanda Terima LCL';
+        }
+
         return 'Unknown';
     }
 
@@ -100,12 +114,20 @@ class AsuransiTandaTerima extends Model
     public function getSourceNumberAttribute()
     {
         $source = $this->source;
-        if (!$source) return '-';
+        if (! $source) {
+            return '-';
+        }
 
-        if ($this->tanda_terima_id) return $source->no_surat_jalan;
-        if ($this->tanda_terima_tanpa_sj_id) return $source->no_tanda_terima;
-        if ($this->tanda_terima_lcl_id) return $source->nomor_tanda_terima;
-        
+        if ($this->tanda_terima_id) {
+            return $source->no_surat_jalan;
+        }
+        if ($this->tanda_terima_tanpa_sj_id) {
+            return $source->no_tanda_terima;
+        }
+        if ($this->tanda_terima_lcl_id) {
+            return $source->nomor_tanda_terima;
+        }
+
         return '-';
     }
 

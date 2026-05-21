@@ -3,7 +3,6 @@
 namespace App\Exports;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -12,7 +11,7 @@ class KontainerTemplateExport
 {
     public function download()
     {
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set sheet title
@@ -23,7 +22,7 @@ class KontainerTemplateExport
             'A1' => 'Nomor Seri Gabungan',
             'B1' => 'Ukuran',
             'C1' => 'Tipe Kontainer',
-            'D1' => 'Status'
+            'D1' => 'Status',
         ];
 
         // Set headers
@@ -35,21 +34,21 @@ class KontainerTemplateExport
         $headerStyle = [
             'font' => [
                 'bold' => true,
-                'color' => ['rgb' => 'FFFFFF']
+                'color' => ['rgb' => 'FFFFFF'],
             ],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '4F46E5']
+                'startColor' => ['rgb' => '4F46E5'],
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
-                'vertical' => Alignment::VERTICAL_CENTER
+                'vertical' => Alignment::VERTICAL_CENTER,
             ],
             'borders' => [
                 'allBorders' => [
-                    'borderStyle' => Border::BORDER_THIN
-                ]
-            ]
+                    'borderStyle' => Border::BORDER_THIN,
+                ],
+            ],
         ];
 
         $sheet->getStyle('A1:D1')->applyFromArray($headerStyle);
@@ -71,13 +70,13 @@ class KontainerTemplateExport
         // Style sample data
         $dataStyle = [
             'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
             ],
             'borders' => [
                 'allBorders' => [
-                    'borderStyle' => Border::BORDER_THIN
-                ]
-            ]
+                    'borderStyle' => Border::BORDER_THIN,
+                ],
+            ],
         ];
 
         $sheet->getStyle("A2:D{$row}")->applyFromArray($dataStyle);
@@ -99,7 +98,7 @@ class KontainerTemplateExport
             'CATATAN:',
             '- Pastikan data tidak ada yang kosong',
             '- Jangan mengubah format header (baris 1)',
-            '- Hapus baris contoh ini sebelum import'
+            '- Hapus baris contoh ini sebelum import',
         ];
 
         $instructionRow = $row + 2;
@@ -109,8 +108,8 @@ class KontainerTemplateExport
         }
 
         // Style instructions
-        $sheet->getStyle("A" . ($row + 3))->getFont()->setBold(true);
-        $sheet->getStyle("A" . ($row + 8))->getFont()->setBold(true);
+        $sheet->getStyle('A'.($row + 3))->getFont()->setBold(true);
+        $sheet->getStyle('A'.($row + 8))->getFont()->setBold(true);
 
         return $spreadsheet;
     }

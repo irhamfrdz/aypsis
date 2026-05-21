@@ -4,11 +4,11 @@ namespace App\Imports;
 
 use App\Models\Coa;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Collection;
 
 class MasterCoaImport
 {
     protected $errors = [];
+
     protected $successCount = 0;
 
     public function import($file)
@@ -19,6 +19,7 @@ class MasterCoaImport
 
         if (empty($data)) {
             $this->errors[] = 'File kosong atau tidak dapat dibaca';
+
             return false;
         }
 
@@ -31,7 +32,7 @@ class MasterCoaImport
 
         return [
             'success_count' => $this->successCount,
-            'errors' => $this->errors
+            'errors' => $this->errors,
         ];
     }
 
@@ -51,6 +52,7 @@ class MasterCoaImport
         }
 
         fclose($handle);
+
         return $data;
     }
 
@@ -63,7 +65,7 @@ class MasterCoaImport
         $saldo = trim($row[3] ?? '');
 
         // Convert saldo to numeric, handle common separators
-        if (!empty($saldo)) {
+        if (! empty($saldo)) {
             // Remove thousand separators (. or ,) and replace decimal comma with dot
             $saldo = str_replace(['.', ','], ['', '.'], $saldo);
         }
@@ -73,16 +75,17 @@ class MasterCoaImport
             'nomor_akun' => $nomor_akun,
             'nama_akun' => $nama_akun,
             'tipe_akun' => $tipe_akun,
-            'saldo' => $saldo
+            'saldo' => $saldo,
         ], [
             'nomor_akun' => 'required|string|max:20|unique:akun_coa,nomor_akun',
             'nama_akun' => 'required|string|max:255',
             'tipe_akun' => 'required|string|max:50',
-            'saldo' => 'nullable|numeric|min:0'
+            'saldo' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
-            $this->errors[] = "Baris {$rowNumber}: " . implode(', ', $validator->errors()->all());
+            $this->errors[] = "Baris {$rowNumber}: ".implode(', ', $validator->errors()->all());
+
             return;
         }
 
@@ -91,12 +94,12 @@ class MasterCoaImport
                 'nomor_akun' => $nomor_akun,
                 'nama_akun' => $nama_akun,
                 'tipe_akun' => $tipe_akun,
-                'saldo' => $saldo ?: 0
+                'saldo' => $saldo ?: 0,
             ]);
 
             $this->successCount++;
         } catch (\Exception $e) {
-            $this->errors[] = "Baris {$rowNumber}: Gagal menyimpan data - " . $e->getMessage();
+            $this->errors[] = "Baris {$rowNumber}: Gagal menyimpan data - ".$e->getMessage();
         }
     }
 }

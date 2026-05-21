@@ -7,6 +7,7 @@ use Illuminate\Console\Command;
 class TestTemplateGeneration extends Command
 {
     protected $signature = 'test:template-generation';
+
     protected $description = 'Test template generation directly';
 
     public function handle()
@@ -15,7 +16,7 @@ class TestTemplateGeneration extends Command
 
         // Simulate template generation
         $csvData = [
-            ['Awalan Kontainer', 'Nomor Seri', 'Akhiran', 'Ukuran', 'Vendor']
+            ['Awalan Kontainer', 'Nomor Seri', 'Akhiran', 'Ukuran', 'Vendor'],
         ];
 
         $filename = 'direct_template_test.csv';
@@ -39,7 +40,7 @@ class TestTemplateGeneration extends Command
         $header = fgetcsv($handle, 1000, ';');
         fclose($handle);
 
-        $this->info('Parsed header: ' . implode(', ', $header));
+        $this->info('Parsed header: '.implode(', ', $header));
 
         $expectedHeader = ['Awalan Kontainer', 'Nomor Seri', 'Akhiran', 'Ukuran', 'Vendor'];
 
@@ -50,6 +51,7 @@ class TestTemplateGeneration extends Command
         }
 
         $this->info('=== TEST SELESAI ===');
+
         return 0;
     }
 }

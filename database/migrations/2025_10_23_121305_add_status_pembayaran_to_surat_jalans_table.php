@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::table('surat_jalans', function (Blueprint $table) {
             $table->enum('status_pembayaran', ['belum_bayar', 'sebagian', 'lunas'])
-                  ->default('belum_bayar')
-                  ->after('status')
-                  ->comment('Status pembayaran: belum_bayar, sebagian, lunas');
+                ->default('belum_bayar')
+                ->after('status')
+                ->comment('Status pembayaran: belum_bayar, sebagian, lunas');
 
             $table->decimal('total_tarif', 15, 2)->nullable()->after('status_pembayaran');
             $table->decimal('jumlah_terbayar', 15, 2)->default(0)->after('total_tarif');

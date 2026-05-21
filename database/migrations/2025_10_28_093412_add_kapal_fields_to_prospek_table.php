@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('prospek', function (Blueprint $table) {
             $table->unsignedBigInteger('kapal_id')->nullable()->after('nama_kapal');
             $table->timestamp('tanggal_muat')->nullable()->after('kapal_id');
-            
+
             // Add index for better performance
             $table->index('kapal_id');
         });

@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('pricelist_gate_ins', function (Blueprint $table) {
             // Add missing columns
-            if (!Schema::hasColumn('pricelist_gate_ins', 'catatan')) {
+            if (! Schema::hasColumn('pricelist_gate_ins', 'catatan')) {
                 $table->text('catatan')->nullable()->after('keterangan');
             }
-            if (!Schema::hasColumn('pricelist_gate_ins', 'tarif')) {
+            if (! Schema::hasColumn('pricelist_gate_ins', 'tarif')) {
                 $table->decimal('tarif', 15, 2)->default(0)->after('catatan');
             }
         });

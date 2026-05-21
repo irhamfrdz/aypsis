@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\PranotaOb;
-use App\Models\NaikKapal;
-use App\Models\StockKontainer;
 use App\Models\Kontainer;
+use App\Models\PranotaOb;
+use App\Models\StockKontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +15,7 @@ class PranotaObController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('pranota-ob-view')) {
+        if (! $user || ! $user->can('pranota-ob-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota OB.');
         }
 
@@ -27,9 +25,9 @@ class PranotaObController extends Controller
             $s = $request->search;
             $query->where(function ($q) use ($s) {
                 $q->where('nomor_pranota', 'like', "%{$s}%")
-                  ->orWhere('nama_kapal', 'like', "%{$s}%")
-                  ->orWhere('no_voyage', 'like', "%{$s}%")
-                  ->orWhereJsonContains('items', ['nomor_kontainer' => $s]);
+                    ->orWhere('nama_kapal', 'like', "%{$s}%")
+                    ->orWhere('no_voyage', 'like', "%{$s}%")
+                    ->orWhereJsonContains('items', ['nomor_kontainer' => $s]);
             });
         }
 
@@ -47,7 +45,7 @@ class PranotaObController extends Controller
     {
         $pranota = PranotaOb::findOrFail($id);
         $user = Auth::user();
-        if (!$user || !$user->can('pranota-ob-view')) {
+        if (! $user || ! $user->can('pranota-ob-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota OB.');
         }
 
@@ -62,7 +60,7 @@ class PranotaObController extends Controller
         }
 
         // Log for debugging: what contents are present
-        \Log::info('PranotaOb show - id:' . $pranota->id . ' nomor:' . $pranota->nomor_pranota . ' nama_kapal:' . $pranota->nama_kapal . ' no_voyage:' . $pranota->no_voyage . ' items:' . json_encode($pranota->items) . ' enriched:' . json_encode($enrichedItems));
+        \Log::info('PranotaOb show - id:'.$pranota->id.' nomor:'.$pranota->nomor_pranota.' nama_kapal:'.$pranota->nama_kapal.' no_voyage:'.$pranota->no_voyage.' items:'.json_encode($pranota->items).' enriched:'.json_encode($enrichedItems));
 
         return view('pranota-ob.show', compact('pranota', 'displayItems'));
     }
@@ -70,7 +68,7 @@ class PranotaObController extends Controller
     public function print($id)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('pranota-ob-view')) {
+        if (! $user || ! $user->can('pranota-ob-view')) {
             abort(403, 'Anda tidak memiliki akses untuk mencetak pranota OB.');
         }
 
@@ -89,11 +87,11 @@ class PranotaObController extends Controller
         foreach ($pricelists as $pl) {
             // Normalize size - remove 'ft' suffix if present, then add it back
             $sizeRaw = preg_replace('/ft$/i', '', $pl->size_kontainer);
-            $sizeStr = $sizeRaw . 'ft';
+            $sizeStr = $sizeRaw.'ft';
             $biaya = (int) $pl->biaya; // Convert to integer for consistent comparison
-            $key = $biaya . '|' . $sizeStr;
+            $key = $biaya.'|'.$sizeStr;
             $reverseMap[$key] = strtolower($pl->status_kontainer);
-            \Log::info("Print pricelist map: $key => " . $pl->status_kontainer);
+            \Log::info("Print pricelist map: $key => ".$pl->status_kontainer);
         }
 
         // Summaries: total biaya and group by driver (supir) + counts for full/empty per size
@@ -103,14 +101,14 @@ class PranotaObController extends Controller
         $totalTlContainers = 0; // count TL containers
         foreach ($displayItems as $item) {
             $supirName = trim($item['supir'] ?? '');
-            
+
             // A container is TL if:
             // 1. the is_tl flag is set to true
             // 2. supir is explicitly 'TL'
             // 3. supir is empty, perusahaan, or a placeholder (like '-') AND biaya is null or zero
             $cleanSupir = preg_replace('/[^a-z0-9]/i', '', $supirName);
-            $isTl = ($item['is_tl'] ?? false) == 1 || 
-                    ($item['is_tl'] ?? false) === true || 
+            $isTl = ($item['is_tl'] ?? false) == 1 ||
+                    ($item['is_tl'] ?? false) === true ||
                     (strtolower($supirName) === 'tl') ||
                     ((empty($cleanSupir) || strtolower($cleanSupir) === 'perusahaan') && (($item['biaya'] ?? 0) === null || ($item['biaya'] ?? 0) == 0));
 
@@ -121,19 +119,21 @@ class PranotaObController extends Controller
                     $supirName = 'TL';
                 }
             }
-            
-            $amount = (float)($item['biaya'] ?? 0);
+
+            $amount = (float) ($item['biaya'] ?? 0);
             $totalBiaya += $amount;
-            
+
             if ($supirName === '') {
                 $supirName = 'Perusahaan';
             }
             $key = $supirName;
 
-            if (!isset($perSupir[$key])) $perSupir[$key] = 0;
+            if (! isset($perSupir[$key])) {
+                $perSupir[$key] = 0;
+            }
             $perSupir[$key] += $amount;
 
-            if (!isset($perSupirCounts[$key])) {
+            if (! isset($perSupirCounts[$key])) {
                 $perSupirCounts[$key] = [
                     'full' => 0,
                     'empty' => 0,
@@ -143,33 +143,43 @@ class PranotaObController extends Controller
 
             // PERBAIKAN: Tentukan status dari biaya yang tersimpan, bukan dari field status yang mungkin salah
             $status = 'full'; // default
-            
+
             // Normalize size first
-            $size = (string)($item['size'] ?? $item['size_kontainer'] ?? 'unknown');
-            if ($size === '') $size = 'unknown';
+            $size = (string) ($item['size'] ?? $item['size_kontainer'] ?? 'unknown');
+            if ($size === '') {
+                $size = 'unknown';
+            }
             $sizeKey = 'other';
             $lowerSize = strtolower($size);
-            if (str_contains($lowerSize, '40')) $sizeKey = '40';
-            elseif (str_contains($lowerSize, '20')) $sizeKey = '20';
-            elseif (is_numeric($size) && intval($size) === 40) $sizeKey = '40';
-            elseif (is_numeric($size) && intval($size) === 20) $sizeKey = '20';
-            
+            if (str_contains($lowerSize, '40')) {
+                $sizeKey = '40';
+            } elseif (str_contains($lowerSize, '20')) {
+                $sizeKey = '20';
+            } elseif (is_numeric($size) && intval($size) === 40) {
+                $sizeKey = '40';
+            } elseif (is_numeric($size) && intval($size) === 20) {
+                $sizeKey = '20';
+            }
+
             // Convert size to pricelist format
             $sizeStr = null;
-            if ($sizeKey === '20') $sizeStr = '20ft';
-            elseif ($sizeKey === '40') $sizeStr = '40ft';
-            
+            if ($sizeKey === '20') {
+                $sizeStr = '20ft';
+            } elseif ($sizeKey === '40') {
+                $sizeStr = '40ft';
+            }
+
             // Detect status from biaya using reverse map
             $biayaInt = (int) $amount; // Convert to integer for consistent comparison
             if ($biayaInt > 0 && $sizeStr) {
-                $reverseKey = $biayaInt . '|' . $sizeStr;
-                \Log::info("Print lookup: biaya=$biayaInt, size=$sizeStr, key=$reverseKey, found=" . ($reverseMap[$reverseKey] ?? 'NOT FOUND'));
+                $reverseKey = $biayaInt.'|'.$sizeStr;
+                \Log::info("Print lookup: biaya=$biayaInt, size=$sizeStr, key=$reverseKey, found=".($reverseMap[$reverseKey] ?? 'NOT FOUND'));
                 if (isset($reverseMap[$reverseKey])) {
                     // Status ditentukan dari pricelist yang cocok dengan biaya
                     $status = $reverseMap[$reverseKey];
                 } else {
                     // Biaya tidak cocok dengan pricelist, fallback ke status tersimpan atau nama_barang
-                    if (isset($item['status']) && in_array(strtolower($item['status']), ['full','empty'])) {
+                    if (isset($item['status']) && in_array(strtolower($item['status']), ['full', 'empty'])) {
                         $status = strtolower($item['status']);
                     } else {
                         $name = $item['nama_barang'] ?? '';
@@ -181,7 +191,7 @@ class PranotaObController extends Controller
                 }
             } else {
                 // Tidak ada biaya atau size, fallback ke status tersimpan atau nama_barang
-                if (isset($item['status']) && in_array(strtolower($item['status']), ['full','empty'])) {
+                if (isset($item['status']) && in_array(strtolower($item['status']), ['full', 'empty'])) {
                     $status = strtolower($item['status']);
                 } else {
                     $name = $item['nama_barang'] ?? '';
@@ -193,7 +203,7 @@ class PranotaObController extends Controller
             }
 
             $perSupirCounts[$key][$status]++;
-            if (!isset($perSupirCounts[$key]['sizes'][$sizeKey])) {
+            if (! isset($perSupirCounts[$key]['sizes'][$sizeKey])) {
                 $perSupirCounts[$key]['sizes'][$sizeKey] = ['full' => 0, 'empty' => 0, 'biaya' => 0];
             }
             $perSupirCounts[$key]['sizes'][$sizeKey][$status]++;
@@ -204,7 +214,7 @@ class PranotaObController extends Controller
         $biayaPerSize = [
             '20' => 0,
             '40' => 0,
-            'other' => 0
+            'other' => 0,
         ];
         foreach ($perSupirCounts as $counts) {
             foreach ($counts['sizes'] as $size => $data) {
@@ -224,7 +234,7 @@ class PranotaObController extends Controller
     {
         $pranota = PranotaOb::with(['creator', 'itemsPivot'])->findOrFail($id);
         $user = Auth::user();
-        if (!$user || !$user->can('pranota-ob-view')) {
+        if (! $user || ! $user->can('pranota-ob-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota OB.');
         }
 
@@ -235,8 +245,8 @@ class PranotaObController extends Controller
             ->get();
 
         // Get unique supir list from pranota items
-        $displayItems = $pranota->itemsPivot && $pranota->itemsPivot->count() > 0 
-            ? $pranota->itemsPivot->map(function($pivot) {
+        $displayItems = $pranota->itemsPivot && $pranota->itemsPivot->count() > 0
+            ? $pranota->itemsPivot->map(function ($pivot) {
                 return json_decode($pivot->item_data, true);
             })->toArray()
             : (is_array($pranota->items) ? $pranota->items : []);
@@ -244,7 +254,7 @@ class PranotaObController extends Controller
         $supirList = [];
         foreach ($displayItems as $item) {
             $supir = $item['supir'] ?? null;
-            if ($supir && !in_array($supir, $supirList)) {
+            if ($supir && ! in_array($supir, $supirList)) {
                 $supirList[] = $supir;
             }
         }
@@ -255,26 +265,26 @@ class PranotaObController extends Controller
     public function destroy($id)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('pranota-ob-delete')) {
+        if (! $user || ! $user->can('pranota-ob-delete')) {
             abort(403, 'Anda tidak memiliki akses untuk menghapus pranota OB.');
         }
 
         $pranota = PranotaOb::findOrFail($id);
-        
+
         try {
             // Delete related pivot items first
             if ($pranota->itemsPivot) {
                 $pranota->itemsPivot()->delete();
             }
-            
+
             // Delete the pranota
             $pranota->delete();
-            
+
             return redirect()->route('pranota-ob.index')
                 ->with('success', 'Pranota OB berhasil dihapus.');
         } catch (\Exception $e) {
             return redirect()->route('pranota-ob.index')
-                ->with('error', 'Gagal menghapus pranota OB: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus pranota OB: '.$e->getMessage());
         }
     }
 
@@ -284,24 +294,26 @@ class PranotaObController extends Controller
     public function bulkUpdateSize($id)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('pranota-ob-view')) {
+        if (! $user || ! $user->can('pranota-ob-view')) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
         try {
             $pranota = PranotaOb::with('itemsPivot')->findOrFail($id);
             $updatedCount = 0;
-            
+
             // Load all OB pricelists
             $priceList = DB::table('master_pricelist_ob')->get();
 
             // Internal helper for price lookup
-            $lookupPrice = function($size, $status) use ($priceList) {
-                if ($priceList->isEmpty()) return null;
+            $lookupPrice = function ($size, $status) use ($priceList) {
+                if ($priceList->isEmpty()) {
+                    return null;
+                }
                 // Normalize search size (e.g., '20' or '20ft' -> '20')
                 $searchSize = preg_replace('/[^0-9]/', '', $size);
                 $searchStatus = strtolower($status ?: 'full');
-                
+
                 foreach ($priceList as $pl) {
                     $plSize = preg_replace('/[^0-9]/', '', $pl->size_kontainer);
                     $plStatus = strtolower($pl->status_kontainer);
@@ -309,24 +321,31 @@ class PranotaObController extends Controller
                         return $pl->biaya;
                     }
                 }
+
                 return null;
             };
 
             // 1. Update items in pivot table (pranota_ob_items)
             $pivotItems = $pranota->itemsPivot;
             foreach ($pivotItems as $item) {
-                if (empty($item->nomor_kontainer)) continue;
-                
+                if (empty($item->nomor_kontainer)) {
+                    continue;
+                }
+
                 $nomorKontainer = trim($item->nomor_kontainer);
                 $ukuran = null;
-                
+
                 $stock = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-                if ($stock) $ukuran = $stock->ukuran;
-                if (!$ukuran) {
-                    $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-                    if ($kontainer) $ukuran = $kontainer->ukuran;
+                if ($stock) {
+                    $ukuran = $stock->ukuran;
                 }
-                
+                if (! $ukuran) {
+                    $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+                    if ($kontainer) {
+                        $ukuran = $kontainer->ukuran;
+                    }
+                }
+
                 if ($ukuran) {
                     $normalizedUkuran = trim(str_ireplace(['ft', 'feet', ' '], '', $ukuran));
                     $dataToUpdate = [];
@@ -356,23 +375,32 @@ class PranotaObController extends Controller
             if (is_array($pranota->items)) {
                 $jsonItems = $pranota->items;
                 $jsonUpdated = false;
-                
+
                 foreach ($jsonItems as &$jItem) {
                     $nomorKontainer = null;
-                    if (!empty($jItem['nomor_kontainer'])) $nomorKontainer = $jItem['nomor_kontainer'];
-                    elseif (!empty($jItem['no_kontainer'])) $nomorKontainer = $jItem['no_kontainer'];
-                    
-                    if (!$nomorKontainer) continue;
+                    if (! empty($jItem['nomor_kontainer'])) {
+                        $nomorKontainer = $jItem['nomor_kontainer'];
+                    } elseif (! empty($jItem['no_kontainer'])) {
+                        $nomorKontainer = $jItem['no_kontainer'];
+                    }
+
+                    if (! $nomorKontainer) {
+                        continue;
+                    }
                     $nomorKontainer = trim($nomorKontainer);
                     $ukuran = null;
-                    
+
                     $stock = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-                    if ($stock) $ukuran = $stock->ukuran;
-                    if (!$ukuran) {
-                        $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-                        if ($kontainer) $ukuran = $kontainer->ukuran;
+                    if ($stock) {
+                        $ukuran = $stock->ukuran;
                     }
-                    
+                    if (! $ukuran) {
+                        $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+                        if ($kontainer) {
+                            $ukuran = $kontainer->ukuran;
+                        }
+                    }
+
                     if ($ukuran) {
                         $normalizedUkuran = trim(str_ireplace(['ft', 'feet', ' '], '', $ukuran));
                         $needsUpdate = false;
@@ -398,7 +426,7 @@ class PranotaObController extends Controller
                             $jItem['biaya'] = $newPrice;
                             $needsUpdate = true;
                         }
-                        
+
                         if ($needsUpdate) {
                             $jsonUpdated = true;
                             if ($pivotItems->count() === 0) {
@@ -407,7 +435,7 @@ class PranotaObController extends Controller
                         }
                     }
                 }
-                
+
                 if ($jsonUpdated) {
                     $pranota->update(['items' => $jsonItems]);
                 }
@@ -418,14 +446,15 @@ class PranotaObController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Selesai. {$updatedCount} size kontainer berhasil diperbarui dari master.",
-                'updated_count' => $updatedCount
+                'updated_count' => $updatedCount,
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Pranota OB bulkUpdateSize error: ' . $e->getMessage());
+            Log::error('Pranota OB bulkUpdateSize error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }

@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\OrderBatam;
-use App\Models\SuratJalan;
-use App\Models\Term;
-use App\Models\Pengirim;
-use App\Models\Penerima;
 use App\Models\JenisBarang;
 use App\Models\MasterTujuanKirim;
-use App\Models\TujuanKegiatanUtama;
-use App\Models\StockKontainer;
 use App\Models\NomorTerakhir;
+use App\Models\OrderBatam;
+use App\Models\Penerima;
+use App\Models\Pengirim;
 use App\Models\PricelistUangJalanBatam;
+use App\Models\StockKontainer;
+use App\Models\SuratJalan;
+use App\Models\Term;
+use App\Models\TujuanKegiatanUtama;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -28,16 +27,16 @@ class OrderBatamController extends Controller
         $query = OrderBatam::with(['term', 'pengirim', 'jenisBarang']);
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('nomor_order', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('tujuan_kirim', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('tujuan_ambil', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('no_tiket_do', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhereHas('pengirim', function ($query) use ($searchTerm) {
-                      $query->where('nama_pengirim', 'LIKE', '%' . $searchTerm . '%');
-                  });
+                $q->where('nomor_order', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('tujuan_kirim', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('tujuan_ambil', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('no_tiket_do', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhereHas('pengirim', function ($query) use ($searchTerm) {
+                        $query->where('nama_pengirim', 'LIKE', '%'.$searchTerm.'%');
+                    });
             });
         }
 
@@ -121,7 +120,7 @@ class OrderBatamController extends Controller
             'tipe_kontainer' => $request->tipe_kontainer,
             'size_kontainer' => $request->size_kontainer,
             'unit_kontainer' => $request->unit_kontainer,
-            'all_data' => $request->all()
+            'all_data' => $request->all(),
         ]);
 
         $request->validate($rules);
@@ -164,14 +163,14 @@ class OrderBatamController extends Controller
         // Use unit_kontainer for outstanding tracking instead of units input
         $data['units'] = $data['unit_kontainer'] ?? 1; // For outstanding tracking, use actual container units or default to 1
         $data['sisa'] = $data['unit_kontainer'] ?? 1; // Initially, all container units are remaining or default to 1
-        
+
         // Set outstanding_status based on order status
         if ($data['status'] === 'confirmed') {
             $data['outstanding_status'] = 'pending'; // Ready to be processed (enum only has pending, partial, completed)
         } else {
             $data['outstanding_status'] = 'pending'; // Draft or pending orders
         }
-        
+
         $data['completion_percentage'] = 0.00;
         $data['processing_history'] = json_encode([]);
 
@@ -181,7 +180,7 @@ class OrderBatamController extends Controller
         }
 
         // Set penerima string field from penerimas table
-        if (!empty($data['penerima_id'])) {
+        if (! empty($data['penerima_id'])) {
             $penerimaObj = Penerima::find($data['penerima_id']);
             $data['penerima'] = $penerimaObj ? $penerimaObj->nama_penerima : null;
         }
@@ -200,12 +199,12 @@ class OrderBatamController extends Controller
         $currentDate = now();
         $month = $currentDate->format('m'); // 2 digit month
         $year = $currentDate->format('y');  // 2 digit year
-        
+
         // Format prefix for current month/year
-        $prefix = 'ODS' . $month . $year;
+        $prefix = 'ODS'.$month.$year;
 
         // Find the last order number with current month/year prefix
-        $lastOrder = OrderBatam::where('nomor_order', 'like', $prefix . '%')
+        $lastOrder = OrderBatam::where('nomor_order', 'like', $prefix.'%')
             ->orderBy('nomor_order', 'desc')
             ->first();
 
@@ -219,14 +218,14 @@ class OrderBatamController extends Controller
         } else {
             // If no orders found for current month, check nomor_terakhir table
             $nomorTerakhir = NomorTerakhir::where('modul', 'ODS')->first();
-            
+
             if ($nomorTerakhir && $nomorTerakhir->nomor_terakhir > 0) {
                 $runningNumber = $nomorTerakhir->nomor_terakhir + 1;
             }
         }
 
         // Format: ODS + MM + YY + 6digit running number
-        $orderBatamNumber = $prefix . str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
+        $orderBatamNumber = $prefix.str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
 
         return $orderBatamNumber;
     }
@@ -241,12 +240,12 @@ class OrderBatamController extends Controller
 
             return response()->json([
                 'success' => true,
-                'order_number' => $orderBatamNumber
+                'order_number' => $orderBatamNumber,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate nomor order: ' . $e->getMessage()
+                'message' => 'Gagal generate nomor order: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -262,7 +261,7 @@ class OrderBatamController extends Controller
 
             // Update nomor terakhir
             NomorTerakhir::where('modul', 'ODS')->update([
-                'nomor_terakhir' => $runningNumber
+                'nomor_terakhir' => $runningNumber,
             ]);
         }
     }
@@ -273,6 +272,7 @@ class OrderBatamController extends Controller
     public function show(string $id)
     {
         $orderBatam = OrderBatam::with(['term', 'pengirim', 'jenisBarang'])->findOrFail($id);
+
         return view('orders-batam.show', compact('orderBatam'));
     }
 
@@ -313,7 +313,7 @@ class OrderBatamController extends Controller
         $orderBatam = OrderBatam::findOrFail($id);
 
         $request->validate([
-            'nomor_order' => 'required|string|unique:order_batams,nomor_order,' . $id,
+            'nomor_order' => 'required|string|unique:order_batams,nomor_order,'.$id,
             'tanggal_order' => 'required|date',
             'tujuan_kirim_id' => 'required|exists:master_tujuan_kirim,id',
             'tujuan_ambil' => 'required|string|max:255',
@@ -397,13 +397,13 @@ class OrderBatamController extends Controller
                 'new_units' => $newUnits,
                 'user_id' => Auth::id(),
                 'timestamp' => now()->toDateTimeString(),
-                'notes' => 'Units updated via order edit (synced with unit_kontainer)'
+                'notes' => 'Units updated via order edit (synced with unit_kontainer)',
             ];
             $data['processing_history'] = json_encode($history);
         }
 
         // Set penerima string field from penerimas table
-        if (!empty($data['penerima_id'])) {
+        if (! empty($data['penerima_id'])) {
             $penerimaObj = Penerima::find($data['penerima_id']);
             $data['penerima'] = $penerimaObj ? $penerimaObj->nama_penerima : null;
         }
@@ -422,7 +422,7 @@ class OrderBatamController extends Controller
     private function syncSuratJalanData(OrderBatam $orderBatam)
     {
         $suratJalans = $orderBatam->suratJalans;
-        
+
         if ($suratJalans->isEmpty()) {
             return;
         }
@@ -464,19 +464,19 @@ class OrderBatamController extends Controller
         }
 
         // Only update if there's data to sync
-        if (!empty($syncData)) {
+        if (! empty($syncData)) {
             // Add metadata about the sync
             $syncData['updated_at'] = now();
-            
+
             // Update all related surat jalans
             $orderBatam->suratJalans()->update($syncData);
-            
+
             // Log the sync activity
             Log::info('SuratJalan data synced', [
                 'order_id' => $orderBatam->id,
                 'surat_jalan_count' => $suratJalans->count(),
                 'synced_fields' => array_keys($syncData),
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
         }
     }
@@ -489,45 +489,45 @@ class OrderBatamController extends Controller
         $query = OrderBatam::with(['term', 'pengirim', 'jenisBarang']);
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('nomor_order', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('tujuan_kirim', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('tujuan_ambil', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('no_tiket_do', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhereHas('pengirim', function ($query) use ($searchTerm) {
-                      $query->where('nama_pengirim', 'LIKE', '%' . $searchTerm . '%');
-                  });
+                $q->where('nomor_order', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('tujuan_kirim', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('tujuan_ambil', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('no_tiket_do', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhereHas('pengirim', function ($query) use ($searchTerm) {
+                        $query->where('nama_pengirim', 'LIKE', '%'.$searchTerm.'%');
+                    });
             });
         }
 
         // Query only incomplete orders using the same logic as the view
-        $query->where(function($q) {
+        $query->where(function ($q) {
             $q->whereNull('nomor_order')
-              ->orWhereNull('tanggal_order')
-              ->orWhere(function($sub) {
-                  $sub->whereNull('no_tiket_do')->orWhere('no_tiket_do', '');
-              })
-              ->orWhereNull('pengirim_id')
-              ->orWhere(function($sub) {
-                  $sub->whereNull('tujuan_ambil')->orWhere('tujuan_ambil', '');
-              })
-              ->orWhere(function($sub) {
-                  $sub->whereNull('tujuan_kirim')->orWhere('tujuan_kirim', '');
-              })
-              ->orWhereNull('term_id')
-              ->orWhereNull('jenis_barang_id')
-              ->orWhere(function($sub) {
-                  $sub->whereNull('tipe_kontainer')->orWhere('tipe_kontainer', '');
-              })
-              ->orWhere(function($sub) {
-                  $sub->where('tipe_kontainer', '!=', 'cargo')
-                      ->where(function($sub2) {
-                          $sub2->whereNull('size_kontainer')
-                               ->orWhere('unit_kontainer', '<=', 0);
-                      });
-              });
+                ->orWhereNull('tanggal_order')
+                ->orWhere(function ($sub) {
+                    $sub->whereNull('no_tiket_do')->orWhere('no_tiket_do', '');
+                })
+                ->orWhereNull('pengirim_id')
+                ->orWhere(function ($sub) {
+                    $sub->whereNull('tujuan_ambil')->orWhere('tujuan_ambil', '');
+                })
+                ->orWhere(function ($sub) {
+                    $sub->whereNull('tujuan_kirim')->orWhere('tujuan_kirim', '');
+                })
+                ->orWhereNull('term_id')
+                ->orWhereNull('jenis_barang_id')
+                ->orWhere(function ($sub) {
+                    $sub->whereNull('tipe_kontainer')->orWhere('tipe_kontainer', '');
+                })
+                ->orWhere(function ($sub) {
+                    $sub->where('tipe_kontainer', '!=', 'cargo')
+                        ->where(function ($sub2) {
+                            $sub2->whereNull('size_kontainer')
+                                ->orWhere('unit_kontainer', '<=', 0);
+                        });
+                });
         });
 
         $orders = $query->latest()->paginate(15);
@@ -541,26 +541,26 @@ class OrderBatamController extends Controller
      */
     public function downloadTemplate()
     {
-        $filename = 'template_orders_' . date('Y-m-d') . '.csv';
-        
+        $filename = 'template_orders_'.date('Y-m-d').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
-            
+
             // Write BOM for UTF-8
             fwrite($file, "\xEF\xBB\xBF");
-            
+
             // Header columns
             $header = [
                 'nomor_order',
                 'tanggal_order',
                 'pengirim_id',
                 'nama_pengirim',
-                'term_id', 
+                'term_id',
                 'nama_status',
                 'jenis_barang_id',
                 'nama_jenis_barang',
@@ -573,21 +573,21 @@ class OrderBatamController extends Controller
                 'jumlah_barang',
                 'berat_barang',
                 'keterangan',
-                'status'
+                'status',
             ];
-            
+
             fputcsv($file, $header);
-            
+
             // Example data rows
             $exampleData = [
                 [
-                    'ORD-' . date('Ymd') . '-001',
+                    'ORD-'.date('Ymd').'-001',
                     date('Y-m-d'),
                     '1',
                     'PT CONTOH PENGIRIM',
                     '1',
                     'COD',
-                    '1', 
+                    '1',
                     'Elektronik',
                     'Jakarta Utara',
                     'Surabaya',
@@ -598,10 +598,10 @@ class OrderBatamController extends Controller
                     '100',
                     '1000',
                     'Barang elektronik untuk toko',
-                    'draft'
+                    'draft',
                 ],
                 [
-                    'ORD-' . date('Ymd') . '-002',
+                    'ORD-'.date('Ymd').'-002',
                     date('Y-m-d'),
                     '2',
                     'PT CONTOH LAINNYA',
@@ -618,14 +618,14 @@ class OrderBatamController extends Controller
                     '50',
                     '500',
                     'Produk makanan ringan',
-                    'confirmed'
-                ]
+                    'confirmed',
+                ],
             ];
-            
+
             foreach ($exampleData as $row) {
                 fputcsv($file, $row);
             }
-            
+
             fclose($file);
         };
 

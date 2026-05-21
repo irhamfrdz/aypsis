@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
 use App\Models\InvoiceTagihanVendor;
 use App\Models\TagihanSupirVendor;
 use App\Models\VendorSupir;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceTagihanVendorController extends Controller
 {
@@ -20,13 +18,13 @@ class InvoiceTagihanVendorController extends Controller
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where('no_invoice', 'like', "%{$search}%")
-                  ->orWhereHas('vendor', function($q) use ($search) {
-                      $q->where('nama_vendor', 'like', "%{$search}%");
-                  });
+                ->orWhereHas('vendor', function ($q) use ($search) {
+                    $q->where('nama_vendor', 'like', "%{$search}%");
+                });
         }
-        
+
         $invoices = $query->latest()->paginate(10)->withQueryString();
-        
+
         return view('invoice-tagihan-vendor.index', compact('invoices'));
     }
 
@@ -35,7 +33,7 @@ class InvoiceTagihanVendorController extends Controller
         $vendors = VendorSupir::orderBy('nama_vendor')->get();
         $selectedVendor = $request->vendor_id;
         $tagihans = collect();
-        
+
         if ($selectedVendor) {
             $tagihans = TagihanSupirVendor::with('suratJalan')
                 ->where('vendor_id', $selectedVendor)
@@ -47,7 +45,7 @@ class InvoiceTagihanVendorController extends Controller
         // Generate default invoice number: INV-TSV-YYYYMMDD-XXXX
         $today = now()->format('Ymd');
         $countToday = InvoiceTagihanVendor::whereDate('created_at', now()->toDateString())->count();
-        $defaultInvoiceNo = 'INV-TSV-' . $today . '-' . str_pad($countToday + 1, 4, '0', STR_PAD_LEFT);
+        $defaultInvoiceNo = 'INV-TSV-'.$today.'-'.str_pad($countToday + 1, 4, '0', STR_PAD_LEFT);
 
         return view('invoice-tagihan-vendor.create', compact('vendors', 'selectedVendor', 'tagihans', 'defaultInvoiceNo'));
     }
@@ -60,23 +58,23 @@ class InvoiceTagihanVendorController extends Controller
             'tanggal_invoice' => 'required|date',
             'tagihan_id' => 'required|array|min:1',
             'tagihan_id.*' => 'exists:tagihan_supir_vendors,id',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         try {
             DB::beginTransaction();
-            
+
             // Calculate total from selected tagihans
             $tagihans = TagihanSupirVendor::whereIn('id', $request->tagihan_id)
                 ->where('vendor_id', $request->vendor_id)
                 ->whereNull('invoice_tagihan_vendor_id')
                 ->get();
-                
+
             if ($tagihans->isEmpty()) {
                 return back()->with('error', 'Tidak ada tagihan valid yang dipilih.');
             }
 
-            $totalNominal = $tagihans->sum(function($t) {
+            $totalNominal = $tagihans->sum(function ($t) {
                 return $t->nominal + ($t->adjustment ?? 0);
             });
 
@@ -100,19 +98,22 @@ class InvoiceTagihanVendorController extends Controller
             return redirect()->route('invoice-tagihan-vendor.index')->with('success', 'Invoice berhasil dibuat.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
     public function show($id)
     {
         $invoice = InvoiceTagihanVendor::with(['vendor', 'tagihanSupirVendors.suratJalan', 'creator', 'updater'])->findOrFail($id);
+
         return view('invoice-tagihan-vendor.show', compact('invoice'));
     }
 
     public function edit($id)
     {
         $invoice = InvoiceTagihanVendor::with(['vendor', 'tagihanSupirVendors'])->findOrFail($id);
+
         return view('invoice-tagihan-vendor.edit', compact('invoice'));
     }
 
@@ -120,16 +121,16 @@ class InvoiceTagihanVendorController extends Controller
     {
         $request->validate([
             'status_pembayaran' => 'required|in:belum_dibayar,sebagian,lunas',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         $invoice = InvoiceTagihanVendor::findOrFail($id);
         $invoice->update([
             'status_pembayaran' => $request->status_pembayaran,
             'keterangan' => $request->keterangan,
-            'updated_by' => Auth::id()
+            'updated_by' => Auth::id(),
         ]);
-        
+
         // Also update the status of related tagihans based on invoice
         TagihanSupirVendor::where('invoice_tagihan_vendor_id', $invoice->id)
             ->update(['status_pembayaran' => $request->status_pembayaran]);
@@ -142,17 +143,19 @@ class InvoiceTagihanVendorController extends Controller
         try {
             DB::beginTransaction();
             $invoice = InvoiceTagihanVendor::findOrFail($id);
-            
+
             // Release tagihans
             TagihanSupirVendor::where('invoice_tagihan_vendor_id', $invoice->id)
                 ->update(['invoice_tagihan_vendor_id' => null, 'status_pembayaran' => 'belum_dibayar']);
-                
+
             $invoice->delete();
             DB::commit();
+
             return redirect()->route('invoice-tagihan-vendor.index')->with('success', 'Invoice berhasil dihapus dan tagihan dilepaskan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 }

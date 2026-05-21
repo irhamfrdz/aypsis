@@ -39,20 +39,20 @@ class UangJalanObserver
         try {
             // Ambil semua pranota yang terkait (bisa multiple karena many-to-many)
             $pranotaUangJalans = $uangJalan->pranotaUangJalan()->get();
-            
+
             foreach ($pranotaUangJalans as $pranotaUangJalan) {
                 // Recalculate total pranota berdasarkan semua uang jalan yang terkait
                 $totalUangJalan = $pranotaUangJalan->uangJalans()->sum('jumlah_total');
                 $jumlahUangJalan = $pranotaUangJalan->uangJalans()->count();
-                
+
                 $oldTotal = $pranotaUangJalan->total_amount;
-                
+
                 // Update pranota
                 $pranotaUangJalan->update([
                     'jumlah_uang_jalan' => $jumlahUangJalan,
                     'total_amount' => $totalUangJalan,
                 ]);
-                
+
                 Log::info('Pranota total auto-updated via observer', [
                     'pranota_id' => $pranotaUangJalan->id,
                     'pranota_nomor' => $pranotaUangJalan->nomor_pranota,
@@ -67,7 +67,7 @@ class UangJalanObserver
             Log::error('Error updating pranota totals in observer', [
                 'uang_jalan_id' => $uangJalan->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }

@@ -15,11 +15,11 @@ class MasterPricelistBiayaStorageController extends Controller
         $query = MasterPricelistBiayaStorage::query();
 
         if ($request->filled('vendor')) {
-            $query->where('vendor', 'like', '%' . $request->vendor . '%');
+            $query->where('vendor', 'like', '%'.$request->vendor.'%');
         }
 
         if ($request->filled('lokasi')) {
-            $query->where('lokasi', 'like', '%' . $request->lokasi . '%');
+            $query->where('lokasi', 'like', '%'.$request->lokasi.'%');
         }
 
         if ($request->filled('size_kontainer')) {
@@ -70,6 +70,7 @@ class MasterPricelistBiayaStorageController extends Controller
     public function edit(MasterPricelistBiayaStorage $masterPricelistBiayaStorage)
     {
         $pricelist = $masterPricelistBiayaStorage;
+
         return view('master-pricelist-biaya-storage.edit', compact('pricelist'));
     }
 

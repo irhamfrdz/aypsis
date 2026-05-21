@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('pembayaran_aktivitas_lainnya', function (Blueprint $table) {
             // Check if columns don't exist before adding them
-            if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'nama_kapal')) {
+            if (! Schema::hasColumn('pembayaran_aktivitas_lainnya', 'nama_kapal')) {
                 $table->string('nama_kapal')->nullable()->after('plat_nomor');
             }
-            if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'nomor_voyage')) {
+            if (! Schema::hasColumn('pembayaran_aktivitas_lainnya', 'nomor_voyage')) {
                 $table->string('nomor_voyage')->nullable()->after('nama_kapal');
             }
         });

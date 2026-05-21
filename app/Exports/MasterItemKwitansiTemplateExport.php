@@ -2,13 +2,13 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class MasterItemKwitansiTemplateExport implements FromArray, WithHeadings, ShouldAutoSize, WithStyles
+class MasterItemKwitansiTemplateExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyles
 {
     public function headings(): array
     {
@@ -34,7 +34,7 @@ class MasterItemKwitansiTemplateExport implements FromArray, WithHeadings, Shoul
                 'Biaya Administrasi',
                 'ADMIN',
                 '',
-            ]
+            ],
         ];
     }
 

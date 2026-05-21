@@ -14,7 +14,7 @@ return new class extends Migration
         $tables = [
             'tanda_terimas',
             'tanda_terima_tanpa_surat_jalan',
-            'tanda_terimas_lcl'
+            'tanda_terimas_lcl',
         ];
 
         foreach ($tables as $tableName) {
@@ -23,12 +23,12 @@ return new class extends Migration
                 $table->string('asuransi_path')->nullable();
                 $table->timestamp('asuransi_uploaded_at')->nullable();
                 $table->foreignId('asuransi_uploaded_by')->nullable()->constrained('users')->onDelete('set null');
-                
+
                 // Approval
                 $table->boolean('is_asuransi_approved')->default(false);
                 $table->timestamp('asuransi_approved_at')->nullable();
                 $table->foreignId('asuransi_approved_by')->nullable()->constrained('users')->onDelete('set null');
-                
+
                 // Keterangan Asuransi (Opsional)
                 $table->text('asuransi_keterangan')->nullable();
             });
@@ -43,7 +43,7 @@ return new class extends Migration
         $tables = [
             'tanda_terimas',
             'tanda_terima_tanpa_surat_jalan',
-            'tanda_terimas_lcl'
+            'tanda_terimas_lcl',
         ];
 
         foreach ($tables as $tableName) {
@@ -57,7 +57,7 @@ return new class extends Migration
                     'is_asuransi_approved',
                     'asuransi_approved_at',
                     'asuransi_approved_by',
-                    'asuransi_keterangan'
+                    'asuransi_keterangan',
                 ]);
             });
         }

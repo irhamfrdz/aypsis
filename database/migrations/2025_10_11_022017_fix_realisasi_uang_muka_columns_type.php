@@ -16,7 +16,7 @@ return new class extends Migration
             $table->json('jumlah_per_supir')->change();
 
             // Add dp_amount column if not exists
-            if (!Schema::hasColumn('realisasi_uang_muka', 'dp_amount')) {
+            if (! Schema::hasColumn('realisasi_uang_muka', 'dp_amount')) {
                 $table->decimal('dp_amount', 15, 2)->default(0)->after('total_pembayaran');
             }
         });

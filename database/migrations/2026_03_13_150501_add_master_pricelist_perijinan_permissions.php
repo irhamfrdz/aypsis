@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -15,19 +13,19 @@ return new class extends Migration
         $permissions = [
             [
                 'name' => 'master-pricelist-perijinan-view',
-                'description' => 'Melihat data Master Pricelist Perijinan'
+                'description' => 'Melihat data Master Pricelist Perijinan',
             ],
             [
                 'name' => 'master-pricelist-perijinan-create',
-                'description' => 'Menambah data Master Pricelist Perijinan'
+                'description' => 'Menambah data Master Pricelist Perijinan',
             ],
             [
                 'name' => 'master-pricelist-perijinan-update',
-                'description' => 'Mengubah data Master Pricelist Perijinan'
+                'description' => 'Mengubah data Master Pricelist Perijinan',
             ],
             [
                 'name' => 'master-pricelist-perijinan-delete',
-                'description' => 'Menghapus data Master Pricelist Perijinan'
+                'description' => 'Menghapus data Master Pricelist Perijinan',
             ],
         ];
 
@@ -37,7 +35,7 @@ return new class extends Migration
                 [
                     'description' => $permission['description'],
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]
             );
 

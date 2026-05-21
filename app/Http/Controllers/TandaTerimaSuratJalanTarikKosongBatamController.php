@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TandaTerimaSuratJalanTarikKosongBatam;
 use App\Models\SuratJalanTarikKosongBatam;
+use App\Models\TandaTerimaSuratJalanTarikKosongBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class TandaTerimaSuratJalanTarikKosongBatamController extends Controller
 {
@@ -16,12 +15,12 @@ class TandaTerimaSuratJalanTarikKosongBatamController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_tanda_terima', 'like', "%{$search}%")
-                  ->orWhere('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%");
+                    ->orWhere('no_surat_jalan', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('no_kontainer', 'like', "%{$search}%");
             });
         }
 
@@ -33,6 +32,7 @@ class TandaTerimaSuratJalanTarikKosongBatamController extends Controller
         }
 
         $items = $query->paginate(20)->withQueryString();
+
         return view('tanda-terima-surat-jalan-tarik-kosong-batam.index', compact('items'));
     }
 
@@ -45,6 +45,7 @@ class TandaTerimaSuratJalanTarikKosongBatamController extends Controller
         }
 
         $noTandaTerima = $this->generateNoTandaTerima();
+
         return view('tanda-terima-surat-jalan-tarik-kosong-batam.create', compact('suratJalan', 'noTandaTerima'));
     }
 
@@ -83,19 +84,21 @@ class TandaTerimaSuratJalanTarikKosongBatamController extends Controller
     public function show($id)
     {
         $item = TandaTerimaSuratJalanTarikKosongBatam::with(['suratJalan', 'creator', 'updater'])->findOrFail($id);
+
         return view('tanda-terima-surat-jalan-tarik-kosong-batam.show', compact('item'));
     }
 
     public function edit($id)
     {
         $item = TandaTerimaSuratJalanTarikKosongBatam::findOrFail($id);
+
         return view('tanda-terima-surat-jalan-tarik-kosong-batam.edit', compact('item'));
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'no_tanda_terima' => 'required|string|unique:tanda_terima_surat_jalan_tarik_kosong_batams,no_tanda_terima,' . $id,
+            'no_tanda_terima' => 'required|string|unique:tanda_terima_surat_jalan_tarik_kosong_batams,no_tanda_terima,'.$id,
             'tanggal_tanda_terima' => 'required|date',
             'penerima' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
@@ -123,13 +126,14 @@ class TandaTerimaSuratJalanTarikKosongBatamController extends Controller
     public function print($id)
     {
         $item = TandaTerimaSuratJalanTarikKosongBatam::with(['suratJalan', 'creator'])->findOrFail($id);
+
         return view('tanda-terima-surat-jalan-tarik-kosong-batam.print', compact('item'));
     }
 
     private function generateNoTandaTerima()
     {
-        $prefix = 'TT-SJTK-' . date('y') . date('m') . '-';
-        $last = TandaTerimaSuratJalanTarikKosongBatam::where('no_tanda_terima', 'like', $prefix . '%')
+        $prefix = 'TT-SJTK-'.date('y').date('m').'-';
+        $last = TandaTerimaSuratJalanTarikKosongBatam::where('no_tanda_terima', 'like', $prefix.'%')
             ->orderBy('no_tanda_terima', 'desc')
             ->first();
 
@@ -140,7 +144,7 @@ class TandaTerimaSuratJalanTarikKosongBatamController extends Controller
             $nextNum = '0001';
         }
 
-        return $prefix . $nextNum;
+        return $prefix.$nextNum;
     }
 
     public function getSuratJalanData(Request $request)

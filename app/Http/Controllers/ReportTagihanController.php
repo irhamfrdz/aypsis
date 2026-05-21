@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\TagihanCat;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class ReportTagihanController extends Controller
 {
@@ -25,10 +23,10 @@ class ReportTagihanController extends Controller
         // Get Tagihan Sewa Kontainer
         if ($jenisTagihan === 'all' || $jenisTagihan === 'sewa') {
             $query = DaftarTagihanKontainerSewa::query()
-                ->where(function($q) use ($startDate, $endDate) {
+                ->where(function ($q) use ($startDate, $endDate) {
                     $q->whereBetween('tanggal_awal', [$startDate, $endDate])
-                      ->orWhereBetween('tanggal_akhir', [$startDate, $endDate])
-                      ->orWhereBetween('created_at', [$startDate, $endDate]);
+                        ->orWhereBetween('tanggal_akhir', [$startDate, $endDate])
+                        ->orWhereBetween('created_at', [$startDate, $endDate]);
                 });
 
             if ($status !== 'all') {
@@ -41,9 +39,9 @@ class ReportTagihanController extends Controller
         // Get Tagihan CAT
         if ($jenisTagihan === 'all' || $jenisTagihan === 'cat') {
             $query = TagihanCat::query()
-                ->where(function($q) use ($startDate, $endDate) {
+                ->where(function ($q) use ($startDate, $endDate) {
                     $q->whereBetween('tanggal_cat', [$startDate, $endDate])
-                      ->orWhereBetween('created_at', [$startDate, $endDate]);
+                        ->orWhereBetween('created_at', [$startDate, $endDate]);
                 });
 
             if ($status !== 'all') {

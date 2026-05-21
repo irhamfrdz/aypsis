@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PembayaranBiayaKapal;
 use App\Models\BiayaKapal;
 use App\Models\Coa;
 use App\Models\NomorTerakhir;
+use App\Models\PembayaranBiayaKapal;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,11 +47,11 @@ class PembayaranBiayaKapalController extends Controller
         // Search by invoice number, vessel name or vendor
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_invoice', 'like', "%{$search}%")
-                  ->orWhere('nama_kapal', 'like', "%{$search}%")
-                  ->orWhere('nama_vendor', 'like', "%{$search}%")
-                  ->orWhere('penerima', 'like', "%{$search}%");
+                    ->orWhere('nama_kapal', 'like', "%{$search}%")
+                    ->orWhere('nama_vendor', 'like', "%{$search}%")
+                    ->orWhere('penerima', 'like', "%{$search}%");
             });
         }
 
@@ -60,7 +60,7 @@ class PembayaranBiayaKapalController extends Controller
         $statuses = [
             'pending' => 'Belum Lunas',
             'paid' => 'Lunas',
-            'cancelled' => 'Dibatalkan'
+            'cancelled' => 'Dibatalkan',
         ];
 
         return view('pembayaran-biaya-kapal.index', compact('biayaKapalList', 'statuses'));
@@ -77,7 +77,7 @@ class PembayaranBiayaKapalController extends Controller
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $biayaKapalQuery->whereBetween('tanggal', [
                 $request->start_date,
-                $request->end_date
+                $request->end_date,
             ]);
         }
 
@@ -93,10 +93,10 @@ class PembayaranBiayaKapalController extends Controller
 
         // Get akun COA for bank selection
         $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%kas%')
-                      ->orderBy('nama_akun')
-                      ->get();
+            ->orWhere('nama_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%kas%')
+            ->orderBy('nama_akun')
+            ->get();
 
         $nomorPembayaran = $this->generateNomorPembayaran();
 
@@ -117,7 +117,7 @@ class PembayaranBiayaKapalController extends Controller
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string',
-            'nomor_accurate' => 'nullable|string'
+            'nomor_accurate' => 'nullable|string',
         ]);
 
         DB::beginTransaction();
@@ -128,7 +128,7 @@ class PembayaranBiayaKapalController extends Controller
                 ['modul' => 'PBK'],
                 ['nomor_terakhir' => 0, 'keterangan' => 'pembayaran biaya kapal']
             );
-            
+
             // Generate number
             $nomorPembayaran = $this->generateNomorPembayaran();
             $modulNomor->increment('nomor_terakhir');
@@ -150,7 +150,7 @@ class PembayaranBiayaKapalController extends Controller
 
             foreach ($validated['biaya_kapal_ids'] as $id) {
                 $biayaKapal = BiayaKapal::findOrFail($id);
-                
+
                 // Use total_biaya if available, else use nominal
                 $subtotal = $biayaKapal->total_biaya ?? $biayaKapal->nominal;
 
@@ -177,8 +177,9 @@ class PembayaranBiayaKapalController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error storing pembayaran biaya kapal: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+            Log::error('Error storing pembayaran biaya kapal: '.$e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage())->withInput();
         }
     }
 
@@ -188,6 +189,7 @@ class PembayaranBiayaKapalController extends Controller
     public function show($id)
     {
         $pembayaran = PembayaranBiayaKapal::with(['biayaKapals.klasifikasiBiaya', 'creator'])->findOrFail($id);
+
         return view('pembayaran-biaya-kapal.show', compact('pembayaran'));
     }
 
@@ -209,16 +211,18 @@ class PembayaranBiayaKapalController extends Controller
 
             // Remove items
             $pembayaran->biayaKapals()->detach();
-            
+
             // Delete payment record
             $pembayaran->delete();
 
             DB::commit();
+
             return redirect()->route('pembayaran-biaya-kapal.index')
                 ->with('success', 'Pembayaran berhasil dibatalkan dan dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal membatalkan pembayaran: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal membatalkan pembayaran: '.$e->getMessage());
         }
     }
 
@@ -226,6 +230,7 @@ class PembayaranBiayaKapalController extends Controller
     {
         $modul = NomorTerakhir::where('modul', 'PBK')->first();
         $nextNumber = $modul ? $modul->nomor_terakhir + 1 : 1;
-        return 'PBK-' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+
+        return 'PBK-'.str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
     }
 }

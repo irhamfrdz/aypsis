@@ -14,15 +14,15 @@ return new class extends Migration
         Schema::table('kontainer_perjalanans', function (Blueprint $table) {
             // Drop foreign key first
             $table->dropForeign(['surat_jalan_id']);
-            
+
             // Make column nullable
             $table->unsignedBigInteger('surat_jalan_id')->nullable()->change();
-            
+
             // Re-add foreign key as nullable
             $table->foreign('surat_jalan_id')
-                  ->references('id')
-                  ->on('surat_jalans')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('surat_jalans')
+                ->onDelete('cascade');
         });
     }
 
@@ -34,15 +34,15 @@ return new class extends Migration
         Schema::table('kontainer_perjalanans', function (Blueprint $table) {
             // Drop foreign key
             $table->dropForeign(['surat_jalan_id']);
-            
+
             // Make column NOT nullable
             $table->unsignedBigInteger('surat_jalan_id')->nullable(false)->change();
-            
+
             // Re-add foreign key
             $table->foreign('surat_jalan_id')
-                  ->references('id')
-                  ->on('surat_jalans')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('surat_jalans')
+                ->onDelete('cascade');
         });
     }
 };

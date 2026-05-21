@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\VendorKontainerSewa;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class VendorKontainerSewaController extends Controller
 {
@@ -24,9 +22,9 @@ class VendorKontainerSewaController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('npwp', 'like', "%{$search}%");
+                    ->orWhere('npwp', 'like', "%{$search}%");
             });
         }
 
@@ -52,18 +50,18 @@ class VendorKontainerSewaController extends Controller
             'name' => 'required|string|max:255',
             'npwp' => 'nullable|string|max:50',
             'tax_ppn_percent' => 'required|numeric|min:0|max:100',
-            'tax_pph_percent' => 'required|numeric|min:0|max:100'
+            'tax_pph_percent' => 'required|numeric|min:0|max:100',
         ]);
 
         try {
             VendorKontainerSewa::create($request->all());
 
             return redirect()->route('vendor-kontainer-sewa.index')
-                           ->with('success', 'Vendor kontainer sewa berhasil ditambahkan!');
+                ->with('success', 'Vendor kontainer sewa berhasil ditambahkan!');
         } catch (\Exception $e) {
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -92,18 +90,18 @@ class VendorKontainerSewaController extends Controller
             'name' => 'required|string|max:255',
             'npwp' => 'nullable|string|max:50',
             'tax_ppn_percent' => 'required|numeric|min:0|max:100',
-            'tax_pph_percent' => 'required|numeric|min:0|max:100'
+            'tax_pph_percent' => 'required|numeric|min:0|max:100',
         ]);
 
         try {
             $vendorKontainerSewa->update($request->all());
 
             return redirect()->route('vendor-kontainer-sewa.index')
-                           ->with('success', 'Vendor kontainer sewa berhasil diperbarui!');
+                ->with('success', 'Vendor kontainer sewa berhasil diperbarui!');
         } catch (\Exception $e) {
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -116,10 +114,10 @@ class VendorKontainerSewaController extends Controller
             $vendorKontainerSewa->delete();
 
             return redirect()->route('vendor-kontainer-sewa.index')
-                           ->with('success', 'Vendor kontainer sewa berhasil dihapus!');
+                ->with('success', 'Vendor kontainer sewa berhasil dihapus!');
         } catch (\Exception $e) {
             return redirect()->back()
-                           ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 }

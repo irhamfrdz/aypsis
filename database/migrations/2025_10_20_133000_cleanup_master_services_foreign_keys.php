@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -20,7 +20,7 @@ return new class extends Migration
             DB::statement('ALTER TABLE pricelist_gate_ins DROP FOREIGN KEY pricelist_gate_ins_service_id_foreign');
             echo "Dropped foreign key: pricelist_gate_ins_service_id_foreign\n";
         } catch (Exception $e) {
-            echo "Warning: Could not drop foreign key pricelist_gate_ins_service_id_foreign - " . $e->getMessage() . "\n";
+            echo 'Warning: Could not drop foreign key pricelist_gate_ins_service_id_foreign - '.$e->getMessage()."\n";
         }
 
         // Step 2: Find and drop any other foreign keys referencing master_services
@@ -38,7 +38,7 @@ return new class extends Migration
                 DB::statement("ALTER TABLE {$fk->TABLE_NAME} DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
                 echo "Dropped foreign key: {$fk->CONSTRAINT_NAME} from table {$fk->TABLE_NAME}\n";
             } catch (Exception $e) {
-                echo "Warning: Could not drop foreign key {$fk->CONSTRAINT_NAME} - " . $e->getMessage() . "\n";
+                echo "Warning: Could not drop foreign key {$fk->CONSTRAINT_NAME} - ".$e->getMessage()."\n";
             }
         }
 
@@ -59,7 +59,7 @@ return new class extends Migration
     public function down(): void
     {
         // Add back service_id column to pricelist_gate_ins (but don't restore foreign key)
-        if (!Schema::hasColumn('pricelist_gate_ins', 'service_id')) {
+        if (! Schema::hasColumn('pricelist_gate_ins', 'service_id')) {
             Schema::table('pricelist_gate_ins', function (Blueprint $table) {
                 $table->unsignedBigInteger('service_id')->nullable()->after('id');
             });

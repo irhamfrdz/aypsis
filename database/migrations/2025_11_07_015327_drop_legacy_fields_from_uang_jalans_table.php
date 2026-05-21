@@ -15,9 +15,9 @@ return new class extends Migration
             // Drop legacy fields that are no longer used in the new form
             $table->dropColumn([
                 'jumlah_uang_supir',
-                'jumlah_uang_kenek', 
+                'jumlah_uang_kenek',
                 'total_uang_jalan',
-                'keterangan'
+                'keterangan',
             ]);
         });
     }

@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class UangJalanAdjustment extends Model
 {
@@ -22,7 +22,7 @@ class UangJalanAdjustment extends Model
         'nomor_kas_bank',
         'alasan_penyesuaian',
         'memo',
-        'created_by'
+        'created_by',
     ];
 
     protected $casts = [
@@ -31,7 +31,7 @@ class UangJalanAdjustment extends Model
         'jumlah_mel' => 'decimal:2',
         'jumlah_pelancar' => 'decimal:2',
         'jumlah_kawalan' => 'decimal:2',
-        'jumlah_parkir' => 'decimal:2'
+        'jumlah_parkir' => 'decimal:2',
     ];
 
     public function uangJalan()

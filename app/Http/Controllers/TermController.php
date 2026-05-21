@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Term;
 use Illuminate\Http\Request;
 
@@ -16,12 +15,12 @@ class TermController extends Controller
         $query = Term::query();
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('kode', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('nama_status', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('catatan', 'LIKE', '%' . $searchTerm . '%');
+                $q->where('kode', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('nama_status', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('catatan', 'LIKE', '%'.$searchTerm.'%');
             });
         }
 
@@ -72,6 +71,7 @@ class TermController extends Controller
     public function show(string $id)
     {
         $term = Term::findOrFail($id);
+
         return view('master-term.show', compact('term'));
     }
 
@@ -81,6 +81,7 @@ class TermController extends Controller
     public function edit(string $id)
     {
         $term = Term::findOrFail($id);
+
         return view('master-term.edit', compact('term'));
     }
 
@@ -92,7 +93,7 @@ class TermController extends Controller
         $term = Term::findOrFail($id);
 
         $request->validate([
-            'kode' => 'required|string|unique:terms,kode,' . $id,
+            'kode' => 'required|string|unique:terms,kode,'.$id,
             'nama_status' => 'required|string|max:255',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
@@ -124,7 +125,7 @@ class TermController extends Controller
             'Content-Disposition' => 'attachment; filename="template_term.csv"',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
 
             // Write UTF-8 BOM
@@ -158,7 +159,7 @@ class TermController extends Controller
     public function import(Request $request)
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'csv_file' => 'required|file|mimes:csv,txt|max:2048'
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -172,7 +173,7 @@ class TermController extends Controller
             $path = $file->getRealPath();
 
             // Read CSV file
-            $csv = array_map(function($line) {
+            $csv = array_map(function ($line) {
                 return str_getcsv($line, ';');
             }, file($path));
 
@@ -222,6 +223,7 @@ class TermController extends Controller
                 // Validate required field (hanya nama_status yang wajib)
                 if (empty($data['nama_status'])) {
                     $errors[] = "Baris {$rowNumber}: Nama status wajib diisi";
+
                     continue;
                 }
 
@@ -243,12 +245,12 @@ class TermController extends Controller
                     $generatedCode = $baseCode;
 
                     while (Term::where('kode', $generatedCode)->exists()) {
-                        $generatedCode = $baseCode . str_pad($counter, 2, '0', STR_PAD_LEFT);
+                        $generatedCode = $baseCode.str_pad($counter, 2, '0', STR_PAD_LEFT);
                         $counter++;
 
                         // Batasi maksimal 99 untuk menghindari infinite loop
                         if ($counter > 99) {
-                            $generatedCode = $baseCode . date('His'); // fallback dengan timestamp
+                            $generatedCode = $baseCode.date('His'); // fallback dengan timestamp
                             break;
                         }
                     }
@@ -259,28 +261,33 @@ class TermController extends Controller
                 // Check for duplicates in database (untuk kode yang diinput manual)
                 if (Term::where('kode', $data['kode'])->exists()) {
                     $duplicates[] = "Baris {$rowNumber}: Kode '{$data['kode']}' sudah ada dalam database";
+
                     continue;
                 }
 
                 // Validate status
-                if (!in_array($data['status'], ['active', 'inactive'])) {
+                if (! in_array($data['status'], ['active', 'inactive'])) {
                     $errors[] = "Baris {$rowNumber}: Status harus 'active' atau 'inactive'";
+
                     continue;
                 }
 
                 // Validate length
                 if (strlen($data['kode']) > 50) {
                     $errors[] = "Baris {$rowNumber}: Kode maksimal 50 karakter";
+
                     continue;
                 }
 
                 if (strlen($data['nama_status']) > 255) {
                     $errors[] = "Baris {$rowNumber}: Nama status maksimal 255 karakter";
+
                     continue;
                 }
 
                 if (strlen($data['catatan']) > 1000) {
                     $errors[] = "Baris {$rowNumber}: Catatan maksimal 1000 karakter";
+
                     continue;
                 }
 
@@ -290,32 +297,32 @@ class TermController extends Controller
                         'kode' => $data['kode'],
                         'nama_status' => $data['nama_status'],
                         'catatan' => $data['catatan'] ?: null,
-                        'status' => $data['status']
+                        'status' => $data['status'],
                     ]);
                     $imported++;
                 } catch (\Exception $e) {
-                    $errors[] = "Baris {$rowNumber}: Gagal menyimpan data - " . $e->getMessage();
+                    $errors[] = "Baris {$rowNumber}: Gagal menyimpan data - ".$e->getMessage();
                 }
             }
 
             // Prepare result message
             $message = "Import selesai. {$imported} data berhasil diimport.";
 
-            if (!empty($errors)) {
-                $message .= " " . count($errors) . " data gagal diimport.";
+            if (! empty($errors)) {
+                $message .= ' '.count($errors).' data gagal diimport.';
             }
 
-            if (!empty($duplicates)) {
-                $message .= " " . count($duplicates) . " data duplikat dilewati.";
+            if (! empty($duplicates)) {
+                $message .= ' '.count($duplicates).' data duplikat dilewati.';
             }
 
             $sessionData = ['success' => $message];
 
-            if (!empty($errors)) {
+            if (! empty($errors)) {
                 $sessionData['import_errors'] = $errors;
             }
 
-            if (!empty($duplicates)) {
+            if (! empty($duplicates)) {
                 $sessionData['import_duplicates'] = $duplicates;
             }
 
@@ -323,7 +330,7 @@ class TermController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->withErrors(['csv_file' => 'Terjadi kesalahan saat memproses file: ' . $e->getMessage()])
+                ->withErrors(['csv_file' => 'Terjadi kesalahan saat memproses file: '.$e->getMessage()])
                 ->withInput();
         }
     }
@@ -335,7 +342,7 @@ class TermController extends Controller
     public function createForOrder(Request $request)
     {
         $searchValue = $request->query('search', '');
-        
+
         return view('master-term.create-for-order', compact('searchValue'));
     }
 
@@ -348,6 +355,7 @@ class TermController extends Controller
         // Handle code generation request
         if ($request->has('_generate_code_only')) {
             $code = $this->generateTermCode();
+
             return response()->json(['code' => $code]);
         }
 
@@ -376,6 +384,6 @@ class TermController extends Controller
             $nextNumber = 1;
         }
 
-        return 'TR' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+        return 'TR'.str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
 }

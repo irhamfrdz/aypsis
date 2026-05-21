@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
 use App\Models\Permission;
+use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -14,7 +14,7 @@ return new class extends Migration
         // Create the permission
         $permissionData = [
             'name' => 'tagihan-ob-antar-gudang-view',
-            'description' => 'Melihat halaman Tagihan OB Antar Gudang'
+            'description' => 'Melihat halaman Tagihan OB Antar Gudang',
         ];
 
         $permission = Permission::firstOrCreate(
@@ -24,7 +24,7 @@ return new class extends Migration
 
         // Assign to roles
         $roles = DB::table('roles')->whereIn('name', ['super-admin', 'admin', 'operational'])->pluck('id');
-        
+
         if ($roles->isNotEmpty() && $permission) {
             $data = [];
             foreach ($roles as $roleId) {
@@ -45,7 +45,7 @@ return new class extends Migration
     public function down(): void
     {
         $permission = Permission::where('name', 'tagihan-ob-antar-gudang-view')->first();
-        
+
         if ($permission) {
             DB::table('permission_role')->where('permission_id', $permission->id)->delete();
             $permission->delete();

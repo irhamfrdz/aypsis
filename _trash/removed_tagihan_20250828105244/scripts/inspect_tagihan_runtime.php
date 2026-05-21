@@ -1,6 +1,7 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
 
 // Boot the framework
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -32,5 +33,5 @@ foreach ($items as $i => $item) {
         ->selectRaw('COALESCE(SUM(COALESCE(total_harga_setelah_adj, jumlah_uang_jalan)),0) as total')
         ->value('total');
 
-    echo "#".($i+1)." id={$item->id} vendor={$vendor} tanggal(cast)={$tanggal} tanggal(raw)={$raw} count={$count} total={$total}\n";
+    echo '#'.($i + 1)." id={$item->id} vendor={$vendor} tanggal(cast)={$tanggal} tanggal(raw)={$raw} count={$count} total={$total}\n";
 }

@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::table('tanda_terima_tanpa_surat_jalan', function (Blueprint $table) {
             // Add supir, kenek, and no_plat fields back
-            if (!Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'supir')) {
+            if (! Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'supir')) {
                 $table->string('supir')->default('Supir Customer')->after('pic');
             }
-            if (!Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'kenek')) {
+            if (! Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'kenek')) {
                 $table->string('kenek')->default('Kenek Customer')->nullable()->after('supir');
             }
-            if (!Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'no_plat')) {
+            if (! Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'no_plat')) {
                 $table->string('no_plat', 20)->nullable()->after('kenek');
             }
         });
@@ -43,7 +43,7 @@ return new class extends Migration
                 $columnsToRemove[] = 'no_plat';
             }
 
-            if (!empty($columnsToRemove)) {
+            if (! empty($columnsToRemove)) {
                 $table->dropColumn($columnsToRemove);
             }
         });

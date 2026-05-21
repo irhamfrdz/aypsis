@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ReportTandaTerimaJakartaExport;
 use App\Models\TandaTerima;
-use App\Models\TandaTerimaTanpaSuratJalan;
-use App\Models\TandaTerimaBongkaran;
 use App\Models\TandaTerimaLcl;
+use App\Models\TandaTerimaTanpaSuratJalan;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ReportTandaTerimaJakartaExport;
 
 class ReportTandaTerimaJakartaController extends Controller
 {
@@ -19,7 +18,7 @@ class ReportTandaTerimaJakartaController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('tanda-terima-view')) {
+        if (! $user->can('tanda-terima-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -33,7 +32,7 @@ class ReportTandaTerimaJakartaController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('tanda-terima-view')) {
+        if (! $user->can('tanda-terima-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -54,14 +53,14 @@ class ReportTandaTerimaJakartaController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('tanda-terima-view')) {
+        if (! $user->can('tanda-terima-view')) {
             abort(403, 'Unauthorized');
         }
 
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
 
-        return Excel::download(new ReportTandaTerimaJakartaExport($startDate, $endDate), 'report-tanda-terima-jakarta-' . $startDate . '-to-' . $endDate . '.xlsx');
+        return Excel::download(new ReportTandaTerimaJakartaExport($startDate, $endDate), 'report-tanda-terima-jakarta-'.$startDate.'-to-'.$endDate.'.xlsx');
     }
 
     private function getAggregatedData($startDate, $endDate)
@@ -79,9 +78,10 @@ class ReportTandaTerimaJakartaController extends Controller
         // 1. Tanda Terima (Standard)
         $ttStandard = TandaTerima::whereBetween('tanggal', [$startDate, $endDate])
             ->get()
-            ->map(function($item) use ($manifestedTTs) {
+            ->map(function ($item) use ($manifestedTTs) {
                 $noTt = $item->no_surat_jalan ?? $item->surat_jalan?->no_surat_jalan ?? '-';
                 $manifest = $manifestedTTs->get($noTt);
+
                 return [
                     'source' => 'Standard',
                     'tanggal' => $item->tanggal,
@@ -104,9 +104,10 @@ class ReportTandaTerimaJakartaController extends Controller
         // 2. Tanda Terima Tanpa Surat Jalan
         $ttTSJ = TandaTerimaTanpaSuratJalan::whereBetween('tanggal_tanda_terima', [$startDate, $endDate])
             ->get()
-            ->map(function($item) use ($manifestedTTs) {
+            ->map(function ($item) use ($manifestedTTs) {
                 $noTt = $item->no_tanda_terima;
                 $manifest = $manifestedTTs->get($noTt);
+
                 return [
                     'source' => 'Tanpa SJ',
                     'tanggal' => $item->tanggal_tanda_terima,
@@ -130,9 +131,10 @@ class ReportTandaTerimaJakartaController extends Controller
         $ttLCL = TandaTerimaLcl::whereBetween('tanggal_tanda_terima', [$startDate, $endDate])
             ->with(['tujuanKirim', 'kontainerPivot'])
             ->get()
-            ->map(function($item) use ($manifestedTTs) {
+            ->map(function ($item) use ($manifestedTTs) {
                 $noTt = $item->nomor_tanda_terima;
                 $manifest = $manifestedTTs->get($noTt);
+
                 return [
                     'source' => 'LCL',
                     'tanggal' => $item->tanggal_tanda_terima,
@@ -153,9 +155,10 @@ class ReportTandaTerimaJakartaController extends Controller
         $data = $data->concat($ttLCL);
 
         return $data->sortBy([
-            [function($item) {
-                $hasContainer = !empty($item['no_kontainer']) && $item['no_kontainer'] != '-';
-                $hasSeal = !empty($item['no_seal']) && $item['no_seal'] != '-';
+            [function ($item) {
+                $hasContainer = ! empty($item['no_kontainer']) && $item['no_kontainer'] != '-';
+                $hasSeal = ! empty($item['no_seal']) && $item['no_seal'] != '-';
+
                 return ($hasContainer && $hasSeal) ? 0 : 1;
             }, 'asc'],
             ['source', 'asc'],

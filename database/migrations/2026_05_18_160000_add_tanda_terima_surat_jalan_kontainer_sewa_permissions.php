@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -15,19 +13,19 @@ return new class extends Migration
         $permissions = [
             [
                 'name' => 'tanda-terima-surat-jalan-kontainer-sewa-view',
-                'description' => 'Melihat tanda terima surat jalan kontainer sewa'
+                'description' => 'Melihat tanda terima surat jalan kontainer sewa',
             ],
             [
                 'name' => 'tanda-terima-surat-jalan-kontainer-sewa-create',
-                'description' => 'Membuat tanda terima surat jalan kontainer sewa'
+                'description' => 'Membuat tanda terima surat jalan kontainer sewa',
             ],
             [
                 'name' => 'tanda-terima-surat-jalan-kontainer-sewa-update',
-                'description' => 'Mengubah tanda terima surat jalan kontainer sewa'
+                'description' => 'Mengubah tanda terima surat jalan kontainer sewa',
             ],
             [
                 'name' => 'tanda-terima-surat-jalan-kontainer-sewa-delete',
-                'description' => 'Menghapus tanda terima surat jalan kontainer sewa'
+                'description' => 'Menghapus tanda terima surat jalan kontainer sewa',
             ],
         ];
 
@@ -37,7 +35,7 @@ return new class extends Migration
                 [
                     'description' => $permission['description'],
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]
             );
 

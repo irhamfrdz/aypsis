@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coa;
 use App\Models\PembayaranPranotaVendorSupir;
 use App\Models\PembayaranPranotaVendorSupirItem;
 use App\Models\PranotaInvoiceVendorSupir;
-use App\Models\VendorSupir;
-use App\Models\Coa; // Added Coa model
+use App\Models\VendorSupir; // Added Coa model
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,12 +30,12 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_pembayaran', 'like', "%{$search}%")
-                  ->orWhere('nomor_accurate', 'like', "%{$search}%")
-                  ->orWhereHas('vendor', function($vendorQ) use ($search) {
-                      $vendorQ->where('nama_vendor', 'like', "%{$search}%");
-                  });
+                    ->orWhere('nomor_accurate', 'like', "%{$search}%")
+                    ->orWhereHas('vendor', function ($vendorQ) use ($search) {
+                        $vendorQ->where('nama_vendor', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -56,10 +56,10 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
     public function create(Request $request)
     {
         $vendors = VendorSupir::orderBy('nama_vendor')->get();
-        
+
         $selectedVendorId = $request->vendor_id;
         $pranotas = [];
-        
+
         if ($selectedVendorId) {
             $pranotas = PranotaInvoiceVendorSupir::where('vendor_id', $selectedVendorId)
                 ->where('status_pembayaran', '!=', 'lunas')
@@ -69,15 +69,15 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
 
         // Get akun COA for bank selection
         $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%kas%')
-                      ->orderBy('nama_akun')
-                      ->get();
+            ->orWhere('nama_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%kas%')
+            ->orderBy('nama_akun')
+            ->get();
 
         // Generate nomor pembayaran
         $lastPayment = PembayaranPranotaVendorSupir::latest()->first();
         $nextId = $lastPayment ? $lastPayment->id + 1 : 1;
-        $nomorPembayaran = 'PAY-VS-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        $nomorPembayaran = 'PAY-VS-'.date('Ymd').'-'.str_pad($nextId, 4, '0', STR_PAD_LEFT);
 
         return view('pembayaran-pranota-invoice-vendor-supir.create', compact('vendors', 'pranotas', 'selectedVendorId', 'nomorPembayaran', 'akunCoa'));
     }
@@ -126,7 +126,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                     // Update Pranota Status
                     $pranota = PranotaInvoiceVendorSupir::with('invoiceTagihanVendors.tagihanSupirVendors')->find($pranotaId);
                     $totalTelahDibayar = PembayaranPranotaVendorSupirItem::where('pranota_id', $pranotaId)->sum('nominal');
-                    
+
                     if ($totalTelahDibayar >= ($pranota->grand_total ?? $pranota->total_nominal)) {
                         $newStatus = 'lunas';
                     } else {
@@ -156,7 +156,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
             $totalPembayaranFinal = $request->total_tagihan_setelah_penyesuaian;
             $bankName = $request->bank;
             $metodePembayaran = $request->metode_pembayaran; // di view ini 'debit' atau 'kredit'
-            $keteranganAccounting = "Pembayaran Pranota Vendor - " . $request->nomor_pembayaran;
+            $keteranganAccounting = 'Pembayaran Pranota Vendor - '.$request->nomor_pembayaran;
 
             // Tentukan apakah bank di-debit atau di-kredit
             // Note: Untuk vendor supir, akun bebannya adalah "Biaya Uang Jalan Vendor"
@@ -183,17 +183,20 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('pembayaran-pranota-invoice-vendor-supir.index')->with('success', 'Pembayaran berhasil disimpan dan dicatat ke accounting.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error store pembayaran: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+            Log::error('Error store pembayaran: '.$e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage())->withInput();
         }
     }
 
     public function show($pembayaran)
     {
         $pembayaran = PembayaranPranotaVendorSupir::with(['vendor', 'items.pranota', 'creator'])->findOrFail($pembayaran);
+
         return view('pembayaran-pranota-invoice-vendor-supir.show', compact('pembayaran'));
     }
 
@@ -210,7 +213,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
             $totalPembayaranFinal = $pembayaran->total_tagihan_setelah_penyesuaian;
             $bankName = $pembayaran->bank;
             $metodePembayaran = strtolower($pembayaran->metode_pembayaran);
-            $keteranganAccounting = "Pembayaran Pranota Vendor - " . $pembayaran->nomor_pembayaran;
+            $keteranganAccounting = 'Pembayaran Pranota Vendor - '.$pembayaran->nomor_pembayaran;
 
             if ($metodePembayaran == 'debit') {
                 $this->coaTransactionService->recordDoubleEntry(
@@ -233,11 +236,13 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
             }
 
             DB::commit();
+
             return back()->with('success', 'Data berhasil disinkronkan ke jurnal COA.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error syncToCoa: ' . $e->getMessage());
-            return back()->with('error', 'Gagal sinkronisasi: ' . $e->getMessage());
+            Log::error('Error syncToCoa: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal sinkronisasi: '.$e->getMessage());
         }
     }
 
@@ -246,19 +251,19 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
         DB::beginTransaction();
         try {
             $pembayaranRecord = PembayaranPranotaVendorSupir::with('items')->findOrFail($pembayaran);
-            
+
             // Revert pranota status
             foreach ($pembayaranRecord->items as $item) {
                 $pranotaId = $item->pranota_id;
-                
+
                 // Recalculate status pranota after this item is gone
                 $pranota = PranotaInvoiceVendorSupir::with('invoiceTagihanVendors.tagihanSupirVendors')->find($pranotaId);
-                
+
                 // We use a temporary delete or sub calculation
                 $totalTelahDibayarLainnya = PembayaranPranotaVendorSupirItem::where('pranota_id', $pranotaId)
                     ->where('id', '!=', $item->id)
                     ->sum('nominal');
-                
+
                 if ($totalTelahDibayarLainnya <= 0) {
                     $newStatus = 'belum_dibayar';
                 } elseif ($totalTelahDibayarLainnya < ($pranota->grand_total ?? $pranota->total_nominal)) {
@@ -268,7 +273,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                 }
                 $pranota->status_pembayaran = $newStatus;
                 $pranota->save();
-                
+
                 // Cascade status to children
                 if ($pranota->invoiceTagihanVendors) {
                     foreach ($pranota->invoiceTagihanVendors as $invoice) {
@@ -283,7 +288,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                         }
                     }
                 }
-                
+
                 $item->delete();
             }
 
@@ -294,11 +299,13 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
 
             $pembayaranRecord->delete();
             DB::commit();
+
             return redirect()->route('pembayaran-pranota-invoice-vendor-supir.index')->with('success', 'Pembayaran berhasil dihapus dan jurnal COA telah dibatalkan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error destroy pembayaran: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan saat menghapus: ' . $e->getMessage());
+            Log::error('Error destroy pembayaran: '.$e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan saat menghapus: '.$e->getMessage());
         }
     }
 }

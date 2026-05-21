@@ -1,17 +1,18 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
 
-use Illuminate\Support\Facades\DB;
+require __DIR__.'/../vendor/autoload.php';
+
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 // Boot Laravel app
-$app = require __DIR__ . '/../bootstrap/app.php';
+$app = require __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 $s = Carbon::parse('2025-08-28');
 $e = $s->copy()->addMonths(1)->subDay();
-$masa = $s->locale('id')->isoFormat('D MMMM') . ' - ' . $e->locale('id')->isoFormat('D MMMM');
+$masa = $s->locale('id')->isoFormat('D MMMM').' - '.$e->locale('id')->isoFormat('D MMMM');
 
 $id = DB::table('tagihan_kontainer_sewa')->insertGetId([
     'vendor' => 'TEST',

@@ -13,12 +13,12 @@ class SupirCekKendaraanController extends Controller
     public function index()
     {
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
         $karyawanId = $user->karyawan_id;
-        
+
         $history = CekKendaraan::with('mobil')
             ->where('karyawan_id', $karyawanId)
             ->latest()
@@ -30,12 +30,12 @@ class SupirCekKendaraanController extends Controller
     public function create()
     {
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
         $mobils = Mobil::orderBy('nomor_polisi')->get();
-        
+
         // Find default mobil for this supir
         $defaultMobilId = null;
         if ($user->karyawan) {
@@ -43,7 +43,7 @@ class SupirCekKendaraanController extends Controller
             $assignedMobil = Mobil::where('karyawan_id', $user->karyawan_id)->first();
             if ($assignedMobil) {
                 $defaultMobilId = $assignedMobil->id;
-            } else if ($user->karyawan->plat) {
+            } elseif ($user->karyawan->plat) {
                 // Priority 2: Check plat column in karyawans table matching nomor_polisi
                 $matchedMobil = Mobil::where('nomor_polisi', $user->karyawan->plat)->first();
                 if ($matchedMobil) {
@@ -60,7 +60,7 @@ class SupirCekKendaraanController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
@@ -148,18 +148,20 @@ class SupirCekKendaraanController extends Controller
             return redirect()->route('supir.cek-kendaraan.index')->with('success', 'Berhasil menyimpan pengecekan kendaraan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyimpan data: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', 'Gagal menyimpan data: '.$e->getMessage())->withInput();
         }
     }
 
     public function show(CekKendaraan $cekKendaraan)
     {
         $user = Auth::user();
-        if (!$user->isSupir() && $user->role !== 'admin') {
+        if (! $user->isSupir() && $user->role !== 'admin') {
             abort(403);
         }
 
         $cekKendaraan->load(['mobil', 'karyawan']);
+
         return view('supir.cek-kendaraan.show', compact('cekKendaraan'));
     }
 }

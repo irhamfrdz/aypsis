@@ -19,7 +19,7 @@ return new class extends Migration
                 'kondisi_kontainer',
                 'tanggal_kondisi_terakhir',
                 'kontainer_asal',
-                'pemilik_kontainer'
+                'pemilik_kontainer',
             ]);
         });
     }

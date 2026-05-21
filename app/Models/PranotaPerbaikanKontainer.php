@@ -2,18 +2,17 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-
-use App\Traits\Auditable;
 class PranotaPerbaikanKontainer extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $fillable = [
         'nomor_pranota',
         'tanggal_pranota',
@@ -37,8 +36,8 @@ class PranotaPerbaikanKontainer extends Model
     public function perbaikanKontainers(): BelongsToMany
     {
         return $this->belongsToMany(PerbaikanKontainer::class, 'pranota_perbaikan_kontainer_items')
-                    ->withPivot('biaya_item', 'catatan_item')
-                    ->withTimestamps();
+            ->withPivot('biaya_item', 'catatan_item')
+            ->withTimestamps();
     }
 
     /**
@@ -63,7 +62,7 @@ class PranotaPerbaikanKontainer extends Model
     public function pembayaranPranotaPerbaikanKontainers()
     {
         return $this->belongsToMany(PembayaranPranotaPerbaikanKontainer::class, 'pembayaran_pranota_perbaikan_kontainer_items', 'pranota_perbaikan_kontainer_id', 'pembayaran_pranota_perbaikan_kontainer_id')
-                    ->withPivot('amount')
-                    ->withTimestamps();
+            ->withPivot('amount')
+            ->withTimestamps();
     }
 }

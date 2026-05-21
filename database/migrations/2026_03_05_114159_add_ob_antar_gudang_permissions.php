@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
 use App\Models\Permission;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -13,26 +13,26 @@ return new class extends Migration
         $permissions = [
             [
                 'name' => 'ob-antar-gudang-view',
-                'description' => 'Melihat halaman OB Antar Gudang'
+                'description' => 'Melihat halaman OB Antar Gudang',
             ],
             [
                 'name' => 'ob-antar-gudang-create',
-                'description' => 'Menambah data OB Antar Gudang'
+                'description' => 'Menambah data OB Antar Gudang',
             ],
             [
                 'name' => 'ob-antar-gudang-update',
-                'description' => 'Mengedit data OB Antar Gudang'
+                'description' => 'Mengedit data OB Antar Gudang',
             ],
             [
                 'name' => 'ob-antar-gudang-delete',
-                'description' => 'Menghapus data OB Antar Gudang'
+                'description' => 'Menghapus data OB Antar Gudang',
             ],
         ];
 
         foreach ($permissions as $permissionData) {
             $existing = Permission::where('name', $permissionData['name'])->first();
 
-            if (!$existing) {
+            if (! $existing) {
                 Permission::create($permissionData);
             }
         }

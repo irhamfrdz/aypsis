@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\MasterPelayananPelabuhan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +14,7 @@ class MasterPelayananPelabuhanController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('master-pelayanan-pelabuhan-view')) {
+        if (! $user || ! $user->can('master-pelayanan-pelabuhan-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat master pelayanan pelabuhan.');
         }
 
@@ -24,10 +23,10 @@ class MasterPelayananPelabuhanController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nama_pelayanan', 'like', '%' . $search . '%')
-                  ->orWhere('deskripsi', 'like', '%' . $search . '%')
-                  ->orWhere('satuan', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_pelayanan', 'like', '%'.$search.'%')
+                    ->orWhere('deskripsi', 'like', '%'.$search.'%')
+                    ->orWhere('satuan', 'like', '%'.$search.'%');
             });
         }
 
@@ -48,7 +47,7 @@ class MasterPelayananPelabuhanController extends Controller
     public function create()
     {
         $user = Auth::user();
-        if (!$user || !$user->can('master-pelayanan-pelabuhan-create')) {
+        if (! $user || ! $user->can('master-pelayanan-pelabuhan-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat master pelayanan pelabuhan.');
         }
 
@@ -61,7 +60,7 @@ class MasterPelayananPelabuhanController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('master-pelayanan-pelabuhan-create')) {
+        if (! $user || ! $user->can('master-pelayanan-pelabuhan-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat master pelayanan pelabuhan.');
         }
 
@@ -95,11 +94,12 @@ class MasterPelayananPelabuhanController extends Controller
     public function edit(string $id)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('master-pelayanan-pelabuhan-edit')) {
+        if (! $user || ! $user->can('master-pelayanan-pelabuhan-edit')) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit master pelayanan pelabuhan.');
         }
 
         $pelayananPelabuhan = MasterPelayananPelabuhan::findOrFail($id);
+
         return view('master-pelayanan-pelabuhan.edit', compact('pelayananPelabuhan'));
     }
 
@@ -109,7 +109,7 @@ class MasterPelayananPelabuhanController extends Controller
     public function update(Request $request, string $id)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('master-pelayanan-pelabuhan-edit')) {
+        if (! $user || ! $user->can('master-pelayanan-pelabuhan-edit')) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit master pelayanan pelabuhan.');
         }
 
@@ -137,7 +137,7 @@ class MasterPelayananPelabuhanController extends Controller
     public function destroy(string $id)
     {
         $user = Auth::user();
-        if (!$user || !$user->can('master-pelayanan-pelabuhan-delete')) {
+        if (! $user || ! $user->can('master-pelayanan-pelabuhan-delete')) {
             abort(403, 'Anda tidak memiliki akses untuk menghapus master pelayanan pelabuhan.');
         }
 

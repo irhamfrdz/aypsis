@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Permission;
 use App\Models\User;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class AddPergerakanKapalPermissions extends Command
@@ -47,7 +47,7 @@ class AddPergerakanKapalPermissions extends Command
 
         // Assign to admin user
         $admin = User::where('username', 'admin')->first();
-        if (!$admin) {
+        if (! $admin) {
             // Try to find user with role 'admin'
             $admin = User::where('role', 'admin')->first();
         }
@@ -62,7 +62,7 @@ class AddPergerakanKapalPermissions extends Command
                     ->where('permission_id', $permission->id)
                     ->exists();
 
-                if (!$hasPermission) {
+                if (! $hasPermission) {
                     DB::table('user_permissions')->insert([
                         'user_id' => $admin->id,
                         'permission_id' => $permission->id,

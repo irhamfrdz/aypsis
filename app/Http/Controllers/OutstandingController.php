@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\Term;
 use App\Models\Pengirim;
-use App\Models\JenisBarang;
-use Illuminate\Http\Request;
+use App\Models\Term;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class OutstandingController extends Controller
 {
@@ -18,8 +16,8 @@ class OutstandingController extends Controller
     public function index(Request $request)
     {
         $query = Order::with(['term', 'pengirim', 'jenisBarang', 'tujuanAmbil'])
-                      ->outstanding()
-                      ->latest();
+            ->outstanding()
+            ->latest();
 
         // Apply filters
         $this->applyFilters($query, $request);
@@ -40,7 +38,7 @@ class OutstandingController extends Controller
     {
         $validStatuses = ['pending', 'partial', 'completed'];
 
-        if (!in_array($status, $validStatuses)) {
+        if (! in_array($status, $validStatuses)) {
             abort(404, 'Invalid status');
         }
 
@@ -74,8 +72,8 @@ class OutstandingController extends Controller
     public function processUnits(Request $request, Order $order): JsonResponse
     {
         $request->validate([
-            'processed_units' => 'required|integer|min:1|max:' . $order->sisa,
-            'notes' => 'nullable|string|max:255'
+            'processed_units' => 'required|integer|min:1|max:'.$order->sisa,
+            'notes' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -93,13 +91,13 @@ class OutstandingController extends Controller
                     'completion_percentage' => $order->completion_percentage,
                     'outstanding_status' => $order->outstanding_status,
                     'status_badge' => $order->outstanding_status_badge,
-                    'is_completed' => $order->isCompleted()
-                ]
+                    'is_completed' => $order->isCompleted(),
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
@@ -110,6 +108,7 @@ class OutstandingController extends Controller
     public function getStats(): JsonResponse
     {
         $stats = $this->getOutstandingStats();
+
         return response()->json($stats);
     }
 
@@ -126,7 +125,7 @@ class OutstandingController extends Controller
         // You can implement Excel export here
         return response()->json([
             'message' => 'Export functionality can be implemented here',
-            'count' => $orders->count()
+            'count' => $orders->count(),
         ]);
     }
 
@@ -139,13 +138,13 @@ class OutstandingController extends Controller
         if ($request->filled('search')) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('nomor_order', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('tujuan_kirim', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('tujuan_ambil', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('no_tiket_do', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhereHas('pengirim', function ($query) use ($searchTerm) {
-                      $query->where('nama_pengirim', 'LIKE', '%' . $searchTerm . '%');
-                  });
+                $q->where('nomor_order', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('tujuan_kirim', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('tujuan_ambil', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('no_tiket_do', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhereHas('pengirim', function ($query) use ($searchTerm) {
+                        $query->where('nama_pengirim', 'LIKE', '%'.$searchTerm.'%');
+                    });
             });
         }
 
@@ -199,7 +198,7 @@ class OutstandingController extends Controller
             'total_units_remaining' => Order::outstanding()->sum('sisa'),
             'total_units_ordered' => Order::outstanding()->sum('units'),
             'completion_rate' => $this->calculateCompletionRate(),
-            'average_completion_time' => $this->getAverageCompletionTime()
+            'average_completion_time' => $this->getAverageCompletionTime(),
         ];
     }
 
@@ -236,7 +235,7 @@ class OutstandingController extends Controller
             'terms' => Term::where('status', 'active')->select('id', 'nama_status')->get(),
             'pengirims' => Pengirim::where('status', 'active')->select('id', 'nama_pengirim')->get(),
             'sizes' => Order::outstanding()->distinct()->pluck('size_kontainer')->filter(),
-            'outstanding_statuses' => ['pending', 'partial', 'completed']
+            'outstanding_statuses' => ['pending', 'partial', 'completed'],
         ]);
     }
 
@@ -254,7 +253,7 @@ class OutstandingController extends Controller
             'outstanding_status' => $order->outstanding_status,
             'no_kontainer' => $order->no_kontainer,
             'term' => $order->term?->nama_status,
-            'pengirim' => $order->pengirim?->nama_pengirim
+            'pengirim' => $order->pengirim?->nama_pengirim,
         ]);
     }
 }

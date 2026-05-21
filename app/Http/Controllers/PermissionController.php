@@ -9,17 +9,18 @@ class PermissionController extends Controller
 {
     public function index()
     {
-    $permissions = Permission::latest()->paginate(20);
+        $permissions = Permission::latest()->paginate(20);
 
-    // No route scanning here anymore. The view receives only the curated permission list.
-    return view('master-permission.index', compact('permissions'));
+        // No route scanning here anymore. The view receives only the curated permission list.
+        return view('master-permission.index', compact('permissions'));
     }
 
     public function create()
     {
-    // allow prefilling the name from querystring (quick-create from detected features)
-    $prefill = request()->query('name');
-    return view('master-permission.create', ['prefill' => $prefill]);
+        // allow prefilling the name from querystring (quick-create from detected features)
+        $prefill = request()->query('name');
+
+        return view('master-permission.create', ['prefill' => $prefill]);
     }
 
     public function store(Request $request)
@@ -28,13 +29,13 @@ class PermissionController extends Controller
             'name' => 'required|string|unique:permissions,name|max:255|regex:/^[a-z\-]+$/',
             'description' => 'nullable|string|max:255',
         ], [
-            'name.regex' => 'Nama izin hanya boleh berisi huruf kecil dan tanda hubung (-).'
+            'name.regex' => 'Nama izin hanya boleh berisi huruf kecil dan tanda hubung (-).',
         ]);
 
         Permission::create($validated);
 
         return redirect()->route('master.permission.index')
-                         ->with('success', 'Izin berhasil ditambahkan.');
+            ->with('success', 'Izin berhasil ditambahkan.');
     }
 
     public function edit(Permission $permission)
@@ -45,16 +46,16 @@ class PermissionController extends Controller
     public function update(Request $request, Permission $permission)
     {
         $validated = $request->validate([
-            'name' => 'required|string|unique:permissions,name,' . $permission->id . '|max:255|regex:/^[a-z\-]+$/',
+            'name' => 'required|string|unique:permissions,name,'.$permission->id.'|max:255|regex:/^[a-z\-]+$/',
             'description' => 'nullable|string|max:255',
         ], [
-            'name.regex' => 'Nama izin hanya boleh berisi huruf kecil dan tanda hubung (-).'
+            'name.regex' => 'Nama izin hanya boleh berisi huruf kecil dan tanda hubung (-).',
         ]);
 
         $permission->update($validated);
 
         return redirect()->route('master.permission.index')
-                         ->with('success', 'Izin berhasil diperbarui.');
+            ->with('success', 'Izin berhasil diperbarui.');
     }
 
     public function destroy(Permission $permission)
@@ -67,7 +68,7 @@ class PermissionController extends Controller
         $permission->delete();
 
         return redirect()->route('master.permission.index')
-                         ->with('success', 'Izin berhasil dihapus.');
+            ->with('success', 'Izin berhasil dihapus.');
     }
 
     /**
@@ -76,6 +77,7 @@ class PermissionController extends Controller
     public function show(Permission $permission)
     {
         $permission->load('users');
+
         return view('master-permission.show', compact('permission'));
     }
 
@@ -118,7 +120,7 @@ class PermissionController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "{$deletedCount} permissions berhasil dihapus",
-                'deleted_count' => $deletedCount
+                'deleted_count' => $deletedCount,
             ]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
@@ -141,7 +143,7 @@ class PermissionController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Permission berhasil diassign ke users',
-                'assigned_count' => count($request->user_ids)
+                'assigned_count' => count($request->user_ids),
             ]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
@@ -158,7 +160,7 @@ class PermissionController extends Controller
         return response()->json([
             'success' => true,
             'users' => $users,
-            'count' => $users->count()
+            'count' => $users->count(),
         ]);
     }
 }

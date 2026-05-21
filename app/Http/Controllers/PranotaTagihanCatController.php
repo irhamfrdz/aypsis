@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\PranotaTagihanCat;
 use App\Models\TagihanCat;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PranotaTagihanCatController extends Controller
@@ -32,10 +32,10 @@ class PranotaTagihanCatController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_invoice', 'like', "%{$search}%")
-                  ->orWhere('supplier', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('supplier', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
@@ -79,7 +79,7 @@ class PranotaTagihanCatController extends Controller
             'no_invoice' => 'nullable|string',
             'keterangan' => 'nullable|string',
             'supplier' => 'nullable|string',
-            'tagihan_cat_id' => 'nullable|exists:tagihan_cats,id'
+            'tagihan_cat_id' => 'nullable|exists:tagihan_cats,id',
         ]);
 
         try {
@@ -88,7 +88,7 @@ class PranotaTagihanCatController extends Controller
             $noInvoice = $request->input('no_invoice');
             $tagihanCatId = $request->input('tagihan_cat_id');
 
-            if (!$noInvoice) {
+            if (! $noInvoice) {
                 // Generate nomor pranota with format: PTK + 1 digit cetakan + 2 digit tahun + 2 digit bulan + 6 digit running number
                 $nomorCetakan = 1; // Default
                 $tahun = Carbon::now()->format('y'); // 2 digit year
@@ -130,16 +130,17 @@ class PranotaTagihanCatController extends Controller
                 'jumlah_tagihan' => $jumlahTagihan,
                 'total_amount' => $totalAmount,
                 'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
-                'due_date' => Carbon::now()->addDays(30)->format('Y-m-d')
+                'due_date' => Carbon::now()->addDays(30)->format('Y-m-d'),
             ]);
 
             DB::commit();
 
-            return redirect()->route('pranota-cat.index')->with('success', 'Pranota CAT berhasil dibuat dengan nomor: ' . $pranota->no_invoice);
+            return redirect()->route('pranota-cat.index')->with('success', 'Pranota CAT berhasil dibuat dengan nomor: '.$pranota->no_invoice);
 
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Gagal membuat pranota CAT: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal membuat pranota CAT: '.$e->getMessage());
         }
     }
 
@@ -155,7 +156,7 @@ class PranotaTagihanCatController extends Controller
             'tanggal_pranota' => 'required|date',
             'supplier' => 'required|string|max:255',
             'realisasi_biaya_total' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ]);
 
         try {
@@ -172,13 +173,13 @@ class PranotaTagihanCatController extends Controller
             $pranota = PranotaTagihanCat::create([
                 'no_invoice' => $request->nomor_pranota,
                 'total_amount' => $request->realisasi_biaya_total,
-                'keterangan' => $request->keterangan ?: 'Pranota bulk CAT untuk ' . count($request->tagihan_cat_ids) . ' tagihan',
+                'keterangan' => $request->keterangan ?: 'Pranota bulk CAT untuk '.count($request->tagihan_cat_ids).' tagihan',
                 'status' => 'unpaid',
                 'tagihan_cat_ids' => $request->tagihan_cat_ids,
                 'jumlah_tagihan' => count($request->tagihan_cat_ids),
                 'tanggal_pranota' => $request->tanggal_pranota,
                 'supplier' => $request->supplier,
-                'due_date' => Carbon::parse($request->tanggal_pranota)->addDays(30)->format('Y-m-d')
+                'due_date' => Carbon::parse($request->tanggal_pranota)->addDays(30)->format('Y-m-d'),
             ]);
 
             // Update tagihan CAT items status
@@ -202,13 +203,14 @@ class PranotaTagihanCatController extends Controller
             DB::commit();
 
             return redirect()->back()->with('success',
-                'Pranota CAT berhasil dibuat dengan nomor: ' . $pranota->no_invoice .
-                ' untuk ' . count($request->tagihan_cat_ids) . ' tagihan CAT (Total: Rp ' . number_format($pranota->total_amount ?? 0, 0, ',', '.') . ')'
+                'Pranota CAT berhasil dibuat dengan nomor: '.$pranota->no_invoice.
+                ' untuk '.count($request->tagihan_cat_ids).' tagihan CAT (Total: Rp '.number_format($pranota->total_amount ?? 0, 0, ',', '.').')'
             );
 
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Gagal membuat pranota CAT: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal membuat pranota CAT: '.$e->getMessage());
         }
     }
 
@@ -220,26 +222,26 @@ class PranotaTagihanCatController extends Controller
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'required|integer|exists:pranota_tagihan_cats,id',
-            'status' => 'required|string|in:unpaid,paid'
+            'status' => 'required|string|in:unpaid,paid',
         ]);
 
         try {
             PranotaTagihanCat::whereIn('id', $request->ids)->update([
                 'status' => $request->status,
-                'updated_at' => Carbon::now()
+                'updated_at' => Carbon::now(),
             ]);
 
             $statusLabels = [
                 'unpaid' => 'Belum Lunas',
-                'paid' => 'Lunas'
+                'paid' => 'Lunas',
             ];
 
             return redirect()->back()->with('success',
-                count($request->ids) . ' pranota CAT berhasil diupdate status menjadi: ' . ($statusLabels[$request->status] ?? $request->status)
+                count($request->ids).' pranota CAT berhasil diupdate status menjadi: '.($statusLabels[$request->status] ?? $request->status)
             );
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal update status pranota CAT: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal update status pranota CAT: '.$e->getMessage());
         }
     }
 
@@ -250,7 +252,7 @@ class PranotaTagihanCatController extends Controller
     {
         $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'required|integer|exists:pranota_tagihan_cats,id'
+            'ids.*' => 'required|integer|exists:pranota_tagihan_cats,id',
         ]);
 
         try {
@@ -261,7 +263,7 @@ class PranotaTagihanCatController extends Controller
             }
 
             // Calculate total amount
-            $totalAmount = $pranotaList->sum(function($pranota) {
+            $totalAmount = $pranotaList->sum(function ($pranota) {
                 return $pranota->calculateTotalAmount();
             });
 
@@ -269,15 +271,15 @@ class PranotaTagihanCatController extends Controller
             session([
                 'bulk_payment_pranota_cat_ids' => $request->ids,
                 'bulk_payment_pranota_cat_total' => $totalAmount,
-                'bulk_payment_pranota_cat_count' => count($request->ids)
+                'bulk_payment_pranota_cat_count' => count($request->ids),
             ]);
 
             return redirect()->route('pembayaran-pranota-cat.create')->with('info',
-                'Siap melakukan pembayaran untuk ' . count($request->ids) . ' pranota CAT dengan total Rp ' . number_format($totalAmount, 0, ',', '.')
+                'Siap melakukan pembayaran untuk '.count($request->ids).' pranota CAT dengan total Rp '.number_format($totalAmount, 0, ',', '.')
             );
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal memproses pembayaran bulk: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memproses pembayaran bulk: '.$e->getMessage());
         }
     }
 
@@ -289,10 +291,10 @@ class PranotaTagihanCatController extends Controller
         try {
             $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
 
-            if (!$nomorTerakhir) {
+            if (! $nomorTerakhir) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Modul PMS tidak ditemukan di master nomor terakhir'
+                    'message' => 'Modul PMS tidak ditemukan di master nomor terakhir',
                 ], 404);
             }
 
@@ -307,18 +309,18 @@ class PranotaTagihanCatController extends Controller
             $nomorCetakan = 1; // Default cetakan
             $tahun = now()->format('y'); // 2 digit tahun
             $bulan = now()->format('m'); // 2 digit bulan
-            $nomorPranota = "PMS{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+            $nomorPranota = "PMS{$nomorCetakan}{$bulan}{$tahun}".str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
             return response()->json([
                 'success' => true,
                 'nomor_pranota' => $nomorPranota,
-                'next_number' => $nextNumber
+                'next_number' => $nextNumber,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate nomor pranota: ' . $e->getMessage()
+                'message' => 'Gagal generate nomor pranota: '.$e->getMessage(),
             ], 500);
         }
     }

@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\DaftarTagihanKontainerSewaDua;
 use App\Models\Kontainer;
 use App\Models\MasterPricelistSewaKontainer;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class DaftarTagihanKontainerSewaDuaController extends Controller
 {
@@ -22,7 +22,7 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
 
         // Exclude GROUP_SUMMARY records from main listing
         $query->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
-              ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
+            ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
 
         // Handle search functionality
         if ($request->filled('q')) {
@@ -30,13 +30,13 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
             $sanitizedSearch = preg_replace('/[^A-Za-z0-9]/', '', $searchTerm);
 
             $query->where(function ($q) use ($searchTerm, $sanitizedSearch) {
-                $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
-                    ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                    ->orWhere('group', 'LIKE', '%' . $searchTerm . '%')
-                    ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
+                $q->where('vendor', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('nomor_kontainer', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('group', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('invoice_vendor', 'LIKE', '%'.$searchTerm.'%');
 
-                if (!empty($sanitizedSearch)) {
-                    $q->orWhereRaw("REPLACE(REPLACE(nomor_kontainer, '-', ''),' ', '') LIKE ?", ['%' . $sanitizedSearch . '%']);
+                if (! empty($sanitizedSearch)) {
+                    $q->orWhereRaw("REPLACE(REPLACE(nomor_kontainer, '-', ''),' ', '') LIKE ?", ['%'.$sanitizedSearch.'%']);
                 }
             });
         }
@@ -64,25 +64,25 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
 
         // Ordering and Pagination
         $query->orderBy('nomor_kontainer')
-              ->orderBy('periode');
+            ->orderBy('periode');
 
         $tagihans = $query->paginate(25);
 
         // Filter Options
-        $vendors = Cache::remember('tagihan_dua_vendors', 300, function() {
+        $vendors = Cache::remember('tagihan_dua_vendors', 300, function () {
             return DaftarTagihanKontainerSewaDua::distinct()->whereNotNull('vendor')->pluck('vendor')->sort()->values();
         });
-        $sizes = Cache::remember('tagihan_dua_sizes', 300, function() {
+        $sizes = Cache::remember('tagihan_dua_sizes', 300, function () {
             return DaftarTagihanKontainerSewaDua::distinct()->whereNotNull('size')->pluck('size')->sort()->values();
         });
-        $periodes = Cache::remember('tagihan_dua_periodes', 300, function() {
+        $periodes = Cache::remember('tagihan_dua_periodes', 300, function () {
             return DaftarTagihanKontainerSewaDua::distinct()->whereNotNull('periode')->pluck('periode')->sort()->values();
         });
 
         // Status options
         $statusOptions = [
             'ongoing' => 'Container Ongoing',
-            'selesai' => 'Container Selesai'
+            'selesai' => 'Container Selesai',
         ];
 
         return view('daftar-tagihan-kontainer-sewa-2.index', compact('tagihans', 'vendors', 'sizes', 'periodes', 'statusOptions'));
@@ -98,7 +98,7 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
             ->whereNotNull('vendor')
             ->orderBy('nomor_seri_gabungan')
             ->get();
-            
+
         $vendors = Kontainer::select('vendor')->distinct()->whereNotNull('vendor')->orderBy('vendor')->pluck('vendor');
 
         return view('daftar-tagihan-kontainer-sewa-2.create', compact('containersData', 'vendors'));
@@ -130,7 +130,7 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
         ]);
 
         // Handle nomor_kontainer
-        if (empty($data['nomor_kontainer']) && !empty($data['nomor_kontainer_manual'])) {
+        if (empty($data['nomor_kontainer']) && ! empty($data['nomor_kontainer_manual'])) {
             $data['nomor_kontainer'] = $data['nomor_kontainer_manual'];
         }
         unset($data['nomor_kontainer_manual']);
@@ -142,13 +142,13 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
         // Auto-calculate logic (simplified from V1)
         $data['dpp'] = $data['dpp'] ?? 0;
         $data['dpp_nilai_lain'] = round($data['dpp'] * 11 / 12, 2);
-        
+
         // PPN is 12% of DPP Nilai Lain
         $data['ppn'] = $data['ppn'] ?? round($data['dpp_nilai_lain'] * 0.12, 2);
-        
+
         // PPH is 2% of DPP
         $data['pph'] = $data['pph'] ?? round($data['dpp'] * 0.02, 2);
-        
+
         $data['grand_total'] = $data['grand_total'] ?? ($data['dpp'] + $data['ppn'] - $data['pph']);
 
         DaftarTagihanKontainerSewaDua::create($data);
@@ -162,6 +162,7 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
     public function show($id)
     {
         $item = DaftarTagihanKontainerSewaDua::findOrFail($id);
+
         return view('daftar-tagihan-kontainer-sewa-2.show', compact('item'));
     }
 
@@ -171,6 +172,7 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
     public function edit($id)
     {
         $item = DaftarTagihanKontainerSewaDua::findOrFail($id);
+
         return view('daftar-tagihan-kontainer-sewa-2.edit', compact('item'));
     }
 
@@ -206,7 +208,7 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
     {
         $item = DaftarTagihanKontainerSewaDua::findOrFail($id);
         $item->delete();
-        
+
         return redirect()->route('daftar-tagihan-kontainer-sewa-2.index')->with('success', 'Tagihan kontainer berhasil dihapus.');
     }
 
@@ -232,7 +234,7 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
         // If periode is provided, compute the start date for that periode
         if ($periode && is_numeric($periode) && $periode > 0) {
             $p = intval($periode);
-            $periodStart = $baseStart->copy()->addMonthsNoOverflow($p-1);
+            $periodStart = $baseStart->copy()->addMonthsNoOverflow($p - 1);
         } else {
             $periodStart = $baseStart;
         }
@@ -245,12 +247,17 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
             if ($tanggal_akhir) {
                 try {
                     $endCap = Carbon::parse($tanggal_akhir)->startOfDay();
-                    if ($periodEndLocal->gt($endCap)) $periodEndLocal = $endCap;
-                } catch (\Exception $e) {}
+                    if ($periodEndLocal->gt($endCap)) {
+                        $periodEndLocal = $endCap;
+                    }
+                } catch (\Exception $e) {
+                }
             }
-            if ($periodEndLocal->lt($periodStartLocal)) $periodEndLocal = $periodStartLocal->copy();
+            if ($periodEndLocal->lt($periodStartLocal)) {
+                $periodEndLocal = $periodStartLocal->copy();
+            }
             $daysInPeriod = $periodStartLocal->diffInDays($periodEndLocal) + 1;
-        } else if ($tanggal_akhir) {
+        } elseif ($tanggal_akhir) {
             try {
                 $end = Carbon::parse($tanggal_akhir)->startOfDay();
                 $daysInPeriod = $baseStart->diffInDays($end) + 1;
@@ -268,35 +275,37 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
         if ($size) {
             $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)
                 ->where('vendor', $vendor)
-                ->where(function($q) use ($periodStart){
+                ->where(function ($q) use ($periodStart) {
                     $q->where('tanggal_harga_awal', '<=', $periodStart->toDateString())
-                      ->where(function($q2) use ($periodStart){ $q2->whereNull('tanggal_harga_akhir')->orWhere('tanggal_harga_akhir','>=',$periodStart->toDateString()); });
-                })->orderBy('tanggal_harga_awal','desc')->first();
+                        ->where(function ($q2) use ($periodStart) {
+                            $q2->whereNull('tanggal_harga_akhir')->orWhere('tanggal_harga_akhir', '>=', $periodStart->toDateString());
+                        });
+                })->orderBy('tanggal_harga_awal', 'desc')->first();
         }
 
         $dppComputed = 0.0;
         $tarifLabel = '';
         if ($pr) {
-            $harga = (float)$pr->harga;
-            $prTarif = strtolower((string)$pr->tarif);
-            if (strpos($prTarif,'harian')!==false) {
-                $dppComputed = round($harga * $daysInPeriod,2);
+            $harga = (float) $pr->harga;
+            $prTarif = strtolower((string) $pr->tarif);
+            if (strpos($prTarif, 'harian') !== false) {
+                $dppComputed = round($harga * $daysInPeriod, 2);
                 $tarifLabel = 'Harian';
             } else {
                 if ($daysInPeriod >= $fullMonthLen) {
-                    $dppComputed = round($harga,2);
+                    $dppComputed = round($harga, 2);
                     $tarifLabel = 'Bulanan';
                 } else {
-                    $dppComputed = round($harga * ($daysInPeriod/$fullMonthLen),2);
+                    $dppComputed = round($harga * ($daysInPeriod / $fullMonthLen), 2);
                     $tarifLabel = 'Harian';
                 }
             }
         }
 
-        $dpp_nilai_lain = round($dppComputed * 11/12,2);
-        $ppn = round($dpp_nilai_lain * 0.12,2);
-        $pph = round($dppComputed * 0.02,2);
-        $grand_total = round($dppComputed + $ppn - $pph,2);
+        $dpp_nilai_lain = round($dppComputed * 11 / 12, 2);
+        $ppn = round($dpp_nilai_lain * 0.12, 2);
+        $pph = round($dppComputed * 0.02, 2);
+        $grand_total = round($dppComputed + $ppn - $pph, 2);
 
         return response()->json([
             'success' => true,
@@ -306,28 +315,28 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
             'pph' => $pph,
             'grand_total' => $grand_total,
             'tarif' => $tarifLabel,
-            'harga_pricelist' => $pr ? (float)$pr->harga : null,
+            'harga_pricelist' => $pr ? (float) $pr->harga : null,
             'vendor' => $vendor,
             'size' => $size,
             'tanggal_berlaku' => $pr && $pr->tanggal_harga_awal ? Carbon::parse($pr->tanggal_harga_awal)->format('d M Y') : null,
         ]);
     }
-    
+
     /**
      * Show the form for creating a new group.
      */
     public function createGroup()
     {
         // Get all tagihan that don't have a group yet
-        $tagihans = DaftarTagihanKontainerSewaDua::where(function($query) {
+        $tagihans = DaftarTagihanKontainerSewaDua::where(function ($query) {
             $query->whereNull('group')
-                  ->orWhere('group', '');
+                ->orWhere('group', '');
         })
-        ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
-        ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%')
-        ->orderBy('vendor')
-        ->orderBy('nomor_kontainer')
-        ->get();
+            ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
+            ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%')
+            ->orderBy('vendor')
+            ->orderBy('nomor_kontainer')
+            ->get();
 
         return view('daftar-tagihan-kontainer-sewa-2.create-group', compact('tagihans'));
     }
@@ -358,10 +367,10 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
             $groupRecord = DaftarTagihanKontainerSewaDua::create([
                 'group' => $validated['group_name'],
                 'vendor' => 'GROUP',
-                'nomor_kontainer' => 'GROUP_SUMMARY_' . $validated['group_name'],
+                'nomor_kontainer' => 'GROUP_SUMMARY_'.$validated['group_name'],
                 'dpp' => 0,
                 'grand_total' => 0,
-                'status' => 'ongoing'
+                'status' => 'ongoing',
             ]);
 
             DB::commit();
@@ -369,18 +378,19 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Group '{$validated['group_name']}' berhasil dibuat.",
-                'group_id' => $groupRecord->id
+                'group_id' => $groupRecord->id,
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat group: ' . $e->getMessage()
+                'message' => 'Gagal membuat group: '.$e->getMessage(),
             ], 500);
         }
     }
-    
+
     public function import()
     {
         return view('daftar-tagihan-kontainer-sewa-2.import');
@@ -392,7 +402,7 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
 
         // Exclude GROUP_SUMMARY records
         $query->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
-              ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
+            ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
 
         // Apply same filters as index
         if ($request->filled('q')) {
@@ -400,13 +410,13 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
             $sanitizedSearch = preg_replace('/[^A-Za-z0-9]/', '', $searchTerm);
 
             $query->where(function ($q) use ($searchTerm, $sanitizedSearch) {
-                $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
-                    ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                    ->orWhere('group', 'LIKE', '%' . $searchTerm . '%')
-                    ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
+                $q->where('vendor', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('nomor_kontainer', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('group', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('invoice_vendor', 'LIKE', '%'.$searchTerm.'%');
 
-                if (!empty($sanitizedSearch)) {
-                    $q->orWhereRaw("REPLACE(REPLACE(nomor_kontainer, '-', ''),' ', '') LIKE ?", ['%' . $sanitizedSearch . '%']);
+                if (! empty($sanitizedSearch)) {
+                    $q->orWhereRaw("REPLACE(REPLACE(nomor_kontainer, '-', ''),' ', '') LIKE ?", ['%'.$sanitizedSearch.'%']);
                 }
             });
         }
@@ -433,24 +443,24 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
 
         // Ordering
         $query->orderBy('nomor_kontainer')
-              ->orderBy('periode');
+            ->orderBy('periode');
 
         $tagihans = $query->get();
 
         // Generate CSV
-        $filename = 'daftar_tagihan_kontainer_sewa_' . date('Y-m-d_His') . '.csv';
-        
+        $filename = 'daftar_tagihan_kontainer_sewa_'.date('Y-m-d_His').'.csv';
+
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($tagihans) {
+        $callback = function () use ($tagihans) {
             $file = fopen('php://output', 'w');
-            
+
             // Add BOM for Excel UTF-8 support
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
+
             // Header row
             fputcsv($file, [
                 'Vendor',
@@ -470,7 +480,7 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
                 'PPH',
                 'Grand Total',
                 'Group',
-                'Status'
+                'Status',
             ]);
 
             // Data rows
@@ -493,7 +503,7 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
                     $tagihan->pph,
                     $tagihan->grand_total,
                     $tagihan->group,
-                    $tagihan->tanggal_akhir ? 'Selesai' : 'Ongoing'
+                    $tagihan->tanggal_akhir ? 'Selesai' : 'Ongoing',
                 ]);
             }
 
@@ -502,7 +512,6 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
-
 
     public function exportTemplate()
     {
@@ -514,22 +523,23 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
     {
         $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa_dua,id'
+            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa_dua,id',
         ]);
 
         try {
             $deleted = DaftarTagihanKontainerSewaDua::whereIn('id', $request->ids)->delete();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "Berhasil menghapus {$deleted} tagihan kontainer.",
-                'deleted_count' => $deleted
+                'deleted_count' => $deleted,
             ]);
         } catch (\Exception $e) {
-            Log::error('Bulk delete error: ' . $e->getMessage());
+            Log::error('Bulk delete error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus tagihan: ' . $e->getMessage()
+                'message' => 'Gagal menghapus tagihan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -539,34 +549,35 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa_dua,id',
-            'status' => 'required|string|in:ongoing,selesai'
+            'status' => 'required|string|in:ongoing,selesai',
         ]);
 
         try {
             $status = $request->status;
             $updateData = [];
-            
+
             if ($status === 'selesai') {
                 $updateData['tanggal_akhir'] = now();
             } else {
                 $updateData['tanggal_akhir'] = null;
             }
-            
+
             $updated = DaftarTagihanKontainerSewaDua::whereIn('id', $request->ids)
                 ->update($updateData);
-            
+
             $statusLabel = $status === 'selesai' ? 'Selesai' : 'Ongoing';
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "Berhasil mengubah status {$updated} tagihan kontainer menjadi {$statusLabel}.",
-                'updated_count' => $updated
+                'updated_count' => $updated,
             ]);
         } catch (\Exception $e) {
-            Log::error('Bulk update status error: ' . $e->getMessage());
+            Log::error('Bulk update status error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengubah status tagihan: ' . $e->getMessage()
+                'message' => 'Gagal mengubah status tagihan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -575,23 +586,24 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
     {
         $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa_dua,id'
+            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa_dua,id',
         ]);
 
         try {
             $updated = DaftarTagihanKontainerSewaDua::whereIn('id', $request->ids)
                 ->update(['group' => null]);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "Berhasil mengeluarkan {$updated} kontainer dari grup.",
-                'updated_count' => $updated
+                'updated_count' => $updated,
             ]);
         } catch (\Exception $e) {
-            Log::error('Ungroup containers error: ' . $e->getMessage());
+            Log::error('Ungroup containers error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengeluarkan kontainer dari grup: ' . $e->getMessage()
+                'message' => 'Gagal mengeluarkan kontainer dari grup: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -606,16 +618,17 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
                 ->pluck('group')
                 ->sort()
                 ->values();
-            
+
             return response()->json([
                 'success' => true,
-                'groups' => $groups
+                'groups' => $groups,
             ]);
         } catch (\Exception $e) {
-            Log::error('Get groups error: ' . $e->getMessage());
+            Log::error('Get groups error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil data grup: ' . $e->getMessage()
+                'message' => 'Gagal mengambil data grup: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -624,35 +637,36 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
     {
         $request->validate([
             'groups' => 'required|array',
-            'groups.*' => 'required|string'
+            'groups.*' => 'required|string',
         ]);
 
         try {
             DB::beginTransaction();
-            
+
             // Remove group from containers
             $updated = DaftarTagihanKontainerSewaDua::whereIn('group', $request->groups)
                 ->update(['group' => null]);
-            
+
             // Delete group summary records
             $deleted = DaftarTagihanKontainerSewaDua::whereIn('group', $request->groups)
                 ->where('nomor_kontainer', 'LIKE', 'GROUP_SUMMARY_%')
                 ->delete();
-            
+
             DB::commit();
-            
+
             return response()->json([
                 'success' => true,
-                'message' => "Berhasil menghapus " . count($request->groups) . " grup dan membebaskan {$updated} kontainer.",
+                'message' => 'Berhasil menghapus '.count($request->groups)." grup dan membebaskan {$updated} kontainer.",
                 'updated_count' => $updated,
-                'deleted_count' => $deleted
+                'deleted_count' => $deleted,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Delete groups error: ' . $e->getMessage());
+            Log::error('Delete groups error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus grup: ' . $e->getMessage()
+                'message' => 'Gagal menghapus grup: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -661,23 +675,24 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
     {
         try {
             // Generate invoice number based on current date and count
-            $prefix = 'INV-KS-' . date('Ym') . '-';
+            $prefix = 'INV-KS-'.date('Ym').'-';
             $count = DaftarTagihanKontainerSewaDua::whereNotNull('invoice_vendor')
-                ->where('invoice_vendor', 'LIKE', $prefix . '%')
+                ->where('invoice_vendor', 'LIKE', $prefix.'%')
                 ->count();
-            
+
             $nextNumber = str_pad($count + 1, 4, '0', STR_PAD_LEFT);
-            $invoiceNumber = $prefix . $nextNumber;
-            
+            $invoiceNumber = $prefix.$nextNumber;
+
             return response()->json([
                 'success' => true,
-                'invoice_number' => $invoiceNumber
+                'invoice_number' => $invoiceNumber,
             ]);
         } catch (\Exception $e) {
-            Log::error('Generate invoice number error: ' . $e->getMessage());
+            Log::error('Generate invoice number error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate nomor invoice: ' . $e->getMessage()
+                'message' => 'Gagal generate nomor invoice: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -692,15 +707,15 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
             $file = $request->file('file');
             $path = $file->getRealPath();
             $data = array_map('str_getcsv', file($path));
-            
+
             // Remove header row
             $header = array_shift($data);
-            
+
             DB::beginTransaction();
-            
+
             $imported = 0;
             $errors = [];
-            
+
             foreach ($data as $index => $row) {
                 try {
                     // Map CSV columns to database fields
@@ -726,24 +741,25 @@ class DaftarTagihanKontainerSewaDuaController extends Controller
                     ]);
                     $imported++;
                 } catch (\Exception $e) {
-                    $errors[] = "Baris " . ($index + 2) . ": " . $e->getMessage();
+                    $errors[] = 'Baris '.($index + 2).': '.$e->getMessage();
                 }
             }
-            
+
             DB::commit();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "Berhasil import {$imported} data.",
                 'imported_count' => $imported,
-                'errors' => $errors
+                'errors' => $errors,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Import CSV error: ' . $e->getMessage());
+            Log::error('Import CSV error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal import CSV: ' . $e->getMessage()
+                'message' => 'Gagal import CSV: '.$e->getMessage(),
             ], 500);
         }
     }

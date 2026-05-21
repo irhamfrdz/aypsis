@@ -3,17 +3,19 @@
 namespace App\Imports;
 
 use App\Models\MasterPricelistAirTawar;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
-use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class MasterPricelistAirTawarImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithCustomCsvSettings
+class MasterPricelistAirTawarImport implements SkipsEmptyRows, ToModel, WithCustomCsvSettings, WithHeadingRow
 {
     private $successCount = 0;
+
     private $errorCount = 0;
+
     private $errors = [];
+
     private $rowNumber = 0;
 
     public function model(array $row)
@@ -37,6 +39,7 @@ class MasterPricelistAirTawarImport implements ToModel, WithHeadingRow, SkipsEmp
             if (empty($namaAgen) || $harga <= 0) {
                 $this->errorCount++;
                 $this->errors[] = "Baris {$this->rowNumber}: Data tidak lengkap atau tidak valid";
+
                 return null;
             }
 
@@ -50,10 +53,12 @@ class MasterPricelistAirTawarImport implements ToModel, WithHeadingRow, SkipsEmp
                     'lokasi' => $lokasi,
                 ]);
                 $this->successCount++;
+
                 return null;
             }
 
             $this->successCount++;
+
             return new MasterPricelistAirTawar([
                 'nama_agen' => $namaAgen,
                 'harga' => $harga,
@@ -63,7 +68,8 @@ class MasterPricelistAirTawarImport implements ToModel, WithHeadingRow, SkipsEmp
 
         } catch (\Exception $e) {
             $this->errorCount++;
-            $this->errors[] = "Baris {$this->rowNumber}: Error - " . $e->getMessage();
+            $this->errors[] = "Baris {$this->rowNumber}: Error - ".$e->getMessage();
+
             return null;
         }
     }
@@ -75,16 +81,20 @@ class MasterPricelistAirTawarImport implements ToModel, WithHeadingRow, SkipsEmp
                 return $row[$key];
             }
         }
+
         return '';
     }
 
     private function cleanNumber($value)
     {
-        if ($value === null || $value === '') return 0;
+        if ($value === null || $value === '') {
+            return 0;
+        }
         // Remove Rp, dots, commas, spaces
-        $cleaned = preg_replace('/[^\d,.-]/', '', (string)$value);
+        $cleaned = preg_replace('/[^\d,.-]/', '', (string) $value);
         // Handle comma as decimal separator
         $cleaned = str_replace(',', '.', $cleaned);
+
         return (float) $cleaned;
     }
 
@@ -92,16 +102,17 @@ class MasterPricelistAirTawarImport implements ToModel, WithHeadingRow, SkipsEmp
     {
         return [
             'input_encoding' => 'UTF-8',
-            'delimiter' => ';'
+            'delimiter' => ';',
         ];
     }
 
     private function normalizeLokasi($value)
     {
         $val = trim(strtolower((string) $value));
-        if (in_array(ucfirst($val), ['Jakarta','Batam','Pinang'])) {
+        if (in_array(ucfirst($val), ['Jakarta', 'Batam', 'Pinang'])) {
             return ucfirst($val);
         }
+
         // default
         return 'Jakarta';
     }

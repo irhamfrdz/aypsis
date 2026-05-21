@@ -13,10 +13,10 @@ return new class extends Migration
     {
         if (Schema::hasTable('tanda_terimas')) {
             Schema::table('tanda_terimas', function (Blueprint $table) {
-                if (!Schema::hasColumn('tanda_terimas', 'notify_party')) {
+                if (! Schema::hasColumn('tanda_terimas', 'notify_party')) {
                     $table->string('notify_party')->nullable()->after('alamat_penerima');
                 }
-                if (!Schema::hasColumn('tanda_terimas', 'alamat_notify_party')) {
+                if (! Schema::hasColumn('tanda_terimas', 'alamat_notify_party')) {
                     $table->text('alamat_notify_party')->nullable()->after('notify_party');
                 }
             });
@@ -24,10 +24,10 @@ return new class extends Migration
 
         if (Schema::hasTable('tanda_terimas_lcl')) {
             Schema::table('tanda_terimas_lcl', function (Blueprint $table) {
-                if (!Schema::hasColumn('tanda_terimas_lcl', 'notify_party')) {
+                if (! Schema::hasColumn('tanda_terimas_lcl', 'notify_party')) {
                     $table->string('notify_party')->nullable()->after('alamat_penerima');
                 }
-                if (!Schema::hasColumn('tanda_terimas_lcl', 'alamat_notify_party')) {
+                if (! Schema::hasColumn('tanda_terimas_lcl', 'alamat_notify_party')) {
                     $table->text('alamat_notify_party')->nullable()->after('notify_party');
                 }
             });

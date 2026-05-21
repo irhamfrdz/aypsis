@@ -16,7 +16,7 @@ return new class extends Migration
             $table->enum('tipe_transaksi', ['debit', 'kredit'])->nullable()->after('akun_coa_id');
             $table->decimal('nominal_debit', 15, 2)->nullable()->after('tipe_transaksi');
             $table->decimal('nominal_kredit', 15, 2)->nullable()->after('nominal_debit');
-            
+
             $table->foreign('akun_coa_id')->references('id')->on('akun_coa')->onDelete('set null');
         });
     }

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\KelolaBbm;
-use App\Models\PricelistUangJalanBatam;
 use App\Models\PricelistTarifHistory;
+use App\Models\PricelistUangJalanBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,23 +16,23 @@ class KelolaBbmController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search', '');
-        
+
         $query = KelolaBbm::query();
-        
+
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('bulan', 'like', "%{$search}%")
-                  ->orWhere('tahun', 'like', "%{$search}%")
-                  ->orWhere('bbm_per_liter', 'like', "%{$search}%")
-                  ->orWhere('persentase', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('tahun', 'like', "%{$search}%")
+                    ->orWhere('bbm_per_liter', 'like', "%{$search}%")
+                    ->orWhere('persentase', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
-        
+
         $kelolaBbm = $query->orderBy('tahun', 'desc')
-                          ->orderBy('bulan', 'desc')
-                          ->paginate(10);
-        
+            ->orderBy('bulan', 'desc')
+            ->paginate(10);
+
         return view('kelola-bbm.index', compact('kelolaBbm', 'search'));
     }
 
@@ -59,38 +58,38 @@ class KelolaBbmController extends Controller
         ]);
 
         DB::beginTransaction();
-        
+
         try {
             // Simpan data BBM
             $kelolaBbm = KelolaBbm::create($validated);
-            
+
             // Update tarif pricelist uang jalan Batam berdasarkan persentase BBM
             $this->updatePricelistTarif($validated['persentase'], $kelolaBbm->id);
-            
+
             DB::commit();
-            
+
             $message = 'Data BBM berhasil ditambahkan!';
-            
+
             // Tambahkan info berdasarkan persentase
             if ($validated['persentase'] < 5) {
-                $message .= " Tarif pricelist uang jalan Batam telah dikembalikan ke nilai awal (persentase di bawah 5%).";
+                $message .= ' Tarif pricelist uang jalan Batam telah dikembalikan ke nilai awal (persentase di bawah 5%).';
             } elseif ($validated['persentase'] > 5) {
                 $perubahanTarif = $validated['persentase'] - 5;
                 $message .= " Tarif pricelist uang jalan Batam telah diupdate dengan kenaikan {$perubahanTarif}%.";
             }
-            
+
             return redirect()->route('kelola-bbm.index')
                 ->with('success', $message);
-                
+
         } catch (\Exception $e) {
             DB::rollback();
-            
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Gagal menyimpan data BBM: ' . $e->getMessage());
+                ->with('error', 'Gagal menyimpan data BBM: '.$e->getMessage());
         }
     }
-    
+
     /**
      * Update tarif pricelist berdasarkan persentase BBM
      */
@@ -121,12 +120,12 @@ class KelolaBbmController extends Controller
                         $historyLogs[] = [
                             'field' => $tarifField,
                             'old' => $tarifLama,
-                            'new' => $tarifBase
+                            'new' => $tarifBase,
                         ];
                     }
                 }
 
-                if (!empty($updateData)) {
+                if (! empty($updateData)) {
                     $pricelist->update($updateData);
 
                     foreach ($historyLogs as $log) {
@@ -142,10 +141,13 @@ class KelolaBbmController extends Controller
                     }
                 }
             }
+
             return;
         }
 
-        if ($persentaseBbm == 5) return;
+        if ($persentaseBbm == 5) {
+            return;
+        }
 
         $perubahanTarif = $persentaseBbm - 5;
         $faktorPengali = 1 + ($perubahanTarif / 100);
@@ -164,12 +166,12 @@ class KelolaBbmController extends Controller
                     $historyLogs[] = [
                         'field' => $tarifField,
                         'old' => $tarifLama,
-                        'new' => $tarifBaru
+                        'new' => $tarifBaru,
                     ];
                 }
             }
 
-            if (!empty($updateData)) {
+            if (! empty($updateData)) {
                 $pricelist->update($updateData);
 
                 foreach ($historyLogs as $log) {

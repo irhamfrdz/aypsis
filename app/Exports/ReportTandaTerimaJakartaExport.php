@@ -3,21 +3,22 @@
 namespace App\Exports;
 
 use App\Models\TandaTerima;
-use App\Models\TandaTerimaTanpaSuratJalan;
-use App\Models\TandaTerimaBongkaran;
 use App\Models\TandaTerimaLcl;
+use App\Models\TandaTerimaTanpaSuratJalan;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     protected $startDate;
+
     protected $endDate;
+
     protected $penerimaLookup = [];
+
     protected $termLookup = [];
 
     public function __construct($startDate, $endDate)
@@ -30,25 +31,25 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
     protected function initializeLookups()
     {
         // Fetch from Penerima model
-        \App\Models\Penerima::all()->each(function($p) {
+        \App\Models\Penerima::all()->each(function ($p) {
             $name = strtoupper(trim($p->nama_penerima));
-            if (!isset($this->penerimaLookup[$name])) {
+            if (! isset($this->penerimaLookup[$name])) {
                 $this->penerimaLookup[$name] = [
                     'npwp' => $p->npwp,
                     'cp' => $p->contact_person,
-                    'address' => $p->alamat
+                    'address' => $p->alamat,
                 ];
             }
         });
 
         // Fetch from MasterPengirimPenerima (complement)
-        \App\Models\MasterPengirimPenerima::all()->each(function($p) {
+        \App\Models\MasterPengirimPenerima::all()->each(function ($p) {
             $name = strtoupper(trim($p->nama));
-            if (!isset($this->penerimaLookup[$name])) {
+            if (! isset($this->penerimaLookup[$name])) {
                 $this->penerimaLookup[$name] = [
                     'npwp' => $p->npwp,
                     'cp' => '',
-                    'address' => $p->alamat
+                    'address' => $p->alamat,
                 ];
             } else {
                 // If already exists but NPWP is empty, try to fill it
@@ -59,7 +60,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         });
 
         // Fetch Terms
-        \App\Models\Term::all()->each(function($t) {
+        \App\Models\Term::all()->each(function ($t) {
             $this->termLookup[$t->id] = $t->nama_status;
         });
     }
@@ -71,17 +72,17 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         // 1. Tanda Terima (Standard)
         $ttStandard = TandaTerima::whereBetween('tanggal', [$this->startDate, $this->endDate])
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 // Extract items for perincian
                 $items = [];
-                $dimensi = !empty($item->dimensi_details) ? $item->dimensi_details : $item->dimensi_items;
+                $dimensi = ! empty($item->dimensi_details) ? $item->dimensi_details : $item->dimensi_items;
 
-                if (!empty($dimensi)) {
-                    $items = collect($dimensi)->map(function($i) use ($item) {
+                if (! empty($dimensi)) {
+                    $items = collect($dimensi)->map(function ($i) use ($item) {
                         $qty = data_get($i, 'jumlah') ?? data_get($i, 'qty') ?? 0;
                         $satuan = data_get($i, 'satuan') ?? '';
                         $nama = data_get($i, 'nama_barang') ?: data_get($i, 'nama') ?: $item->nama_barang ?: $item->jenis_barang;
-                        
+
                         // Handle if $item->nama_barang was an array (unlikely but for safety)
                         if (is_array($nama)) {
                             $nama = implode(', ', $nama);
@@ -99,7 +100,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     $items = [[
                         'qty' => $item->jumlah ?? 0,
                         'satuan' => $item->satuan ?? '',
-                        'nama' => !empty($item->nama_barang) ? (is_array($item->nama_barang) ? implode(', ', $item->nama_barang) : $item->nama_barang) : $item->jenis_barang,
+                        'nama' => ! empty($item->nama_barang) ? (is_array($item->nama_barang) ? implode(', ', $item->nama_barang) : $item->nama_barang) : $item->jenis_barang,
                         'weight' => $item->tonase ?? 0,
                         'meass' => $item->meter_kubik ?? 0,
                     ]];
@@ -131,9 +132,10 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         $ttTSJ = TandaTerimaTanpaSuratJalan::whereBetween('tanggal_tanda_terima', [$this->startDate, $this->endDate])
             ->with(['dimensiItems'])
             ->get()
-            ->map(function($item) {
-                $items = $item->dimensiItems->map(function($i) use ($item) {
+            ->map(function ($item) {
+                $items = $item->dimensiItems->map(function ($i) use ($item) {
                     $nama = $i->nama_barang ?: $i->nama ?: $item->nama_barang ?: $item->jenis_barang;
+
                     return [
                         'qty' => $i->jumlah ?? 0,
                         'satuan' => $i->satuan ?? '',
@@ -183,9 +185,10 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         $ttLCL = TandaTerimaLcl::whereBetween('tanggal_tanda_terima', [$this->startDate, $this->endDate])
             ->with(['tujuanKirim', 'kontainerPivot', 'items'])
             ->get()
-            ->map(function($item) {
-                $items = $item->items->map(function($i) use ($item) {
+            ->map(function ($item) {
+                $items = $item->items->map(function ($i) use ($item) {
                     $nama = $i->nama_barang ?: $i->nama ?: $item->nama_barang ?: $item->kegiatan ?: $item->jenis_barang;
+
                     return [
                         'qty' => $i->jumlah ?? 0,
                         'satuan' => $i->satuan ?? '',
@@ -218,10 +221,10 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         $data = $data->concat($ttLCL);
 
         // Enhance with lookup data
-        $enhancedData = $data->map(function($item) {
+        $enhancedData = $data->map(function ($item) {
             $pName = strtoupper(trim($item['penerima']));
             $pLookup = $this->penerimaLookup[$pName] ?? null;
-            
+
             $sName = strtoupper(trim($item['pengirim']));
             $sLookup = $this->penerimaLookup[$sName] ?? null;
 
@@ -231,15 +234,16 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             $item['p_npwp'] = $pLookup['npwp'] ?? '-';
 
             $item['s_address'] = $item['shipper_address_raw'] ?: ($sLookup['address'] ?? '-');
-            
+
             return $item;
         });
 
         // Sort data first to enable grouping
         $sortedData = $enhancedData->sortBy([
-            [function($item) {
-                $hasContainer = !empty($item['no_kontainer']) && $item['no_kontainer'] != '-';
-                $hasSeal = !empty($item['no_seal']) && $item['no_seal'] != '-';
+            [function ($item) {
+                $hasContainer = ! empty($item['no_kontainer']) && $item['no_kontainer'] != '-';
+                $hasSeal = ! empty($item['no_seal']) && $item['no_seal'] != '-';
+
                 return ($hasContainer && $hasSeal) ? 0 : 1;
             }, 'asc'],
             ['source', 'asc'],
@@ -250,22 +254,22 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
 
         // Transform collection to include header rows and special numbering
         $finalData = collect();
-        $grouped = $sortedData->groupBy(function($item) {
-            return ($item['no_kontainer'] ?: 'none') . '|' . ($item['no_seal'] ?: 'none');
+        $grouped = $sortedData->groupBy(function ($item) {
+            return ($item['no_kontainer'] ?: 'none').'|'.($item['no_seal'] ?: 'none');
         });
 
         $groupCounter = 1;
         foreach ($grouped as $key => $items) {
             $firstItem = $items->first();
-            $hasInfo = !empty($firstItem['no_kontainer']) && $firstItem['no_kontainer'] != '-' && 
-                       !empty($firstItem['no_seal']) && $firstItem['no_seal'] != '-';
+            $hasInfo = ! empty($firstItem['no_kontainer']) && $firstItem['no_kontainer'] != '-' &&
+                       ! empty($firstItem['no_seal']) && $firstItem['no_seal'] != '-';
 
             if ($hasInfo) {
                 // Special check: If this group is Standard, we don't want a separate header row
                 // We will merge container info into the item row itself
                 $isStandard = ($firstItem['source'] === 'Standard');
 
-                if (!$isStandard) {
+                if (! $isStandard) {
                     // Add Header Row for the Group (Non-Standard like LCL)
                     $finalData->push([
                         'type' => 'header',
@@ -282,7 +286,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                     if ($idx > 0) {
                         $number .= chr(96 + $idx); // 1 -> a, 2 -> b, etc.
                     }
-                    
+
                     // For each item in Tanda Terima, push its perincian
                     $perincian = $item['perincian_items'] ?? [];
                     if (empty($perincian)) {
@@ -305,7 +309,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                         $row = $item;
                         $row['type'] = 'item';
                         $row['display_number'] = ($pIdx === 0) ? $number : '';
-                        
+
                         // If Standard, we inject the container header info into the first perincian row
                         if ($item['source'] === 'Standard' && $pIdx === 0) {
                             $row['is_combined_standard'] = true;
@@ -321,7 +325,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                             $row['tujuan'] = '';
                             $row['keterangan'] = '';
                         }
-                        
+
                         $row['p_qty'] = $pItem['qty'];
                         $row['p_satuan'] = $pItem['satuan'];
                         $row['p_nama'] = $pItem['nama'];
@@ -335,7 +339,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                 // For items without container/seal info, just add them normally
                 foreach ($items as $item) {
                     $perincian = $item['perincian_items'] ?? [['qty' => '', 'satuan' => '', 'nama' => '']];
-                    
+
                     // Special case for Standard: condense all items into 1 row
                     if ($item['source'] === 'Standard' && count($perincian) > 1) {
                         $pItem = [
@@ -352,7 +356,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                         $row = $item;
                         $row['type'] = 'item';
                         $row['display_number'] = '';
-                        
+
                         if ($pIdx > 0) {
                             $row['tanggal'] = null;
                             $row['no_tt'] = '';
@@ -362,7 +366,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                             $row['tujuan'] = '';
                             $row['keterangan'] = '';
                         }
-                        
+
                         $row['p_qty'] = $pItem['qty'];
                         $row['p_satuan'] = $pItem['satuan'];
                         $row['p_nama'] = $pItem['nama'];
@@ -407,13 +411,13 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'Document PPFTZ',
             'TERM',
             'Tujuan',
-            'Keterangan'
+            'Keterangan',
         ];
     }
 
     public function map($row): array
     {
-        $formattedDate = !empty($row['tanggal']) ? \Carbon\Carbon::parse($row['tanggal'])->format('d/m/Y') : '';
+        $formattedDate = ! empty($row['tanggal']) ? \Carbon\Carbon::parse($row['tanggal'])->format('d/m/Y') : '';
 
         if ($row['type'] === 'header') {
             return [
@@ -425,7 +429,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                 $row['no_seal'], // F: SEAL NO
                 '1', // G: Qty
                 'Unit', // H: Satuan
-                'Container ' . ($row['size'] ?: '-') . ' feet stc :', // I: Desc
+                'Container '.($row['size'] ?: '-').' feet stc :', // I: Desc
                 '', // J
                 '', // K
                 'General cargo', // L: Activity
@@ -444,7 +448,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
                 '', // Y: Document PPFTZ
                 '', // Z: TERM
                 $row['tujuan'], // AA
-                ''  // AB: Keterangan
+                '',  // AB: Keterangan
             ];
         }
 
@@ -477,16 +481,16 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             $row['ppftz'] ?? '-', // Y: Document PPFTZ
             $row['term'] ?? '-', // Z: TERM
             $row['tujuan'], // AA: Tujuan
-            $row['keterangan'] // AB: Keterangan
+            $row['keterangan'], // AB: Keterangan
         ];
 
         // If it's a combined standard row, inject the container header values
-        if (!empty($row['is_combined_standard'])) {
+        if (! empty($row['is_combined_standard'])) {
             $data[4] = $row['no_kontainer']; // E: MARK AND NUMBERS
             $data[5] = $row['no_seal']; // F: SEAL NO
             $data[6] = '1'; // G: Qty
             $data[7] = 'Unit'; // H: Satuan
-            $data[8] = 'Container ' . ($row['size'] ?: '-') . ' feet stc :'; // I: Desc
+            $data[8] = 'Container '.($row['size'] ?: '-').' feet stc :'; // I: Desc
             $data[11] = 'General cargo'; // L: Activity
         }
 
@@ -504,7 +508,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'M' => 10, 'N' => 12, 'O' => 40, 'P' => 12, 'Q' => 12, // Perincian
             'R' => 10, 'S' => 25, 'T' => 35, 'U' => 25, // Size, Shipper, Shipper Address, Consignee
             'V' => 40, 'W' => 20, 'X' => 20, 'Y' => 20, 'Z' => 15, // Consignee Address, NPWP, CP, PPFTZ, TERM
-            'AA' => 25, 'AB' => 30 // Tujuan, Keterangan
+            'AA' => 25, 'AB' => 30, // Tujuan, Keterangan
         ];
         foreach ($widths as $col => $width) {
             $sheet->getColumnDimension($col)->setWidth($width);
@@ -512,7 +516,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
 
         // Add one more row at the top for the "PERINCIAN" and "MANIFEST" headers
         $sheet->insertNewRowBefore(1, 1);
-        
+
         // --- Row 1 & 2: Set Values and Merges ---
         // Column mapping for easy iteration
         $headerValues = [
@@ -534,26 +538,26 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             'Y' => 'Document PPFTZ',
             'Z' => 'TERM',
             'AA' => 'Tujuan',
-            'AB' => 'Keterangan'
+            'AB' => 'Keterangan',
         ];
 
         foreach ($headerValues as $col => $val) {
             $sheet->setCellValue("{$col}1", $val);
-            if (!in_array($col, ['G', 'M'])) {
+            if (! in_array($col, ['G', 'M'])) {
                 $sheet->mergeCells("{$col}1:{$col}2");
             }
         }
-        
+
         // Merges for the main headers
         $sheet->mergeCells('G1:L1');
         $sheet->mergeCells('M1:Q1');
-        
+
         // Row 2 Sub-headers
         $sheet->setCellValue('G2', 'Qty');
         $sheet->setCellValue('H2', 'Satuan');
         $sheet->setCellValue('I2', 'DESCRIPTION OF GOODS MANIFEST');
         $sheet->mergeCells('I2:L2');
-        
+
         $sheet->setCellValue('M2', 'Qty');
         $sheet->setCellValue('N2', 'Satuan');
         $sheet->setCellValue('O2', 'Nama Barang');
@@ -561,7 +565,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         $sheet->setCellValue('Q2', 'Meass');
 
         // --- Apply Styles ---
-        
+
         // Standard Headers (Light Gray)
         $sheet->getStyle('A1:F2')->applyFromArray($this->getStandardHeaderStyle());
         $sheet->getStyle('R1:U2')->applyFromArray($this->getStandardHeaderStyle()); // Size to Consignee
@@ -597,7 +601,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
         // General styling for all headers (Row 1 & 2)
         $sheet->getStyle('A1:AB2')->getFont()->setBold(true);
         $sheet->getStyle('A1:AB2')->getAlignment()->setWrapText(true);
-        
+
         // Style for content data
         return [
             'A:AB' => [
@@ -611,19 +615,23 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
 
     protected function getPpftzFromDocs($docs)
     {
-        if (empty($docs)) return '-';
+        if (empty($docs)) {
+            return '-';
+        }
         if (is_string($docs)) {
             $docs = json_decode($docs, true);
         }
-        if (!is_array($docs)) return '-';
-        
+        if (! is_array($docs)) {
+            return '-';
+        }
+
         // Look for common PPFTZ identifiers in PPBJ or other docs
         foreach ($docs as $doc) {
             if (is_string($doc) && (str_contains(strtoupper($doc), 'FTZ') || str_contains(strtoupper($doc), 'PPFTZ'))) {
                 return $doc;
             }
         }
-        
+
         // Fallback to first document if exists
         return $docs[0] ?? '-';
     }

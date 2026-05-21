@@ -20,8 +20,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('pembayaran_pranota_kontainer_id', 'fk_pembayaran_pranota_kontainer')
-                  ->references('id')->on('pembayaran_pranota_kontainer')
-                  ->onDelete('cascade');
+                ->references('id')->on('pembayaran_pranota_kontainer')
+                ->onDelete('cascade');
             $table->foreign('pranota_id')->references('id')->on('pranotalist')->onDelete('cascade');
 
             // Ensure each pranota can only be paid once

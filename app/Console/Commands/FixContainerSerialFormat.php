@@ -2,9 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use App\Models\StockKontainer;
+use Illuminate\Console\Command;
 
 class FixContainerSerialFormat extends Command
 {
@@ -28,7 +27,7 @@ class FixContainerSerialFormat extends Command
     public function handle()
     {
         $dryRun = $this->option('dry-run');
-        
+
         if ($dryRun) {
             $this->info('🔍 Running in DRY RUN mode - no changes will be made');
             $this->info('');
@@ -36,9 +35,10 @@ class FixContainerSerialFormat extends Command
 
         // Get all stock containers
         $stockKontainers = StockKontainer::whereNotNull('nomor_seri_gabungan')->get();
-        
+
         if ($stockKontainers->isEmpty()) {
             $this->warn('No stock containers found with nomor_seri_gabungan.');
+
             return 0;
         }
 
@@ -54,17 +54,18 @@ class FixContainerSerialFormat extends Command
         foreach ($stockKontainers as $stock) {
             try {
                 $originalFormat = $stock->nomor_seri_gabungan;
-                
+
                 // Check if already in correct format (contains space and dash)
                 if (preg_match('/^[A-Z]{4} \d{5,6}-\d$/', $originalFormat)) {
                     $skipped++;
                     $this->output->progressAdvance();
+
                     continue;
                 }
 
                 // Remove any existing spaces and dashes
                 $cleanNomor = str_replace([' ', '-'], '', $originalFormat);
-                
+
                 $newFormat = null;
                 $awalan = null;
                 $seri = null;
@@ -88,15 +89,16 @@ class FixContainerSerialFormat extends Command
                         $seri = $stock->nomor_seri_kontainer;
                         $akhiran = $stock->akhiran_kontainer;
                     } else {
-                        $this->warn("Skipping ID {$stock->id}: Cannot parse format '{$originalFormat}' (length: " . strlen($cleanNomor) . ")");
+                        $this->warn("Skipping ID {$stock->id}: Cannot parse format '{$originalFormat}' (length: ".strlen($cleanNomor).')');
                         $errors++;
                         $this->output->progressAdvance();
+
                         continue;
                     }
                 }
 
                 // Create new formatted string
-                $newFormat = $awalan . ' ' . $seri . '-' . $akhiran;
+                $newFormat = $awalan.' '.$seri.'-'.$akhiran;
 
                 if ($dryRun) {
                     $this->line("ID {$stock->id}: '{$originalFormat}' → '{$newFormat}'");
@@ -111,9 +113,9 @@ class FixContainerSerialFormat extends Command
                 }
 
                 $fixed++;
-                
+
             } catch (\Exception $e) {
-                $this->error("Error processing ID {$stock->id}: " . $e->getMessage());
+                $this->error("Error processing ID {$stock->id}: ".$e->getMessage());
                 $errors++;
             }
 

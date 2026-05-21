@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SuratJalanKontainerSewa;
-use App\Models\SuratJalanKontainerSewaItem;
-use App\Models\MasterPricelistTujuanKontainerSewa;
-use App\Models\Kontainer;
 use App\Models\Karyawan;
+use App\Models\Kontainer;
+use App\Models\MasterPricelistTujuanKontainerSewa;
+use App\Models\SuratJalanKontainerSewa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class SuratJalanKontainerSewaController extends Controller
 {
@@ -27,10 +25,10 @@ class SuratJalanKontainerSewaController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('vendor', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('nomor_kontainer', 'like', "%{$search}%");
+                    ->orWhere('vendor', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('nomor_kontainer', 'like', "%{$search}%");
             });
         }
 
@@ -58,9 +56,9 @@ class SuratJalanKontainerSewaController extends Controller
         }
 
         $suratJalans = $query->orderByDesc('tanggal')
-                             ->orderByDesc('id')
-                             ->paginate(20)
-                             ->withQueryString();
+            ->orderByDesc('id')
+            ->paginate(20)
+            ->withQueryString();
 
         // Get vendor options for filter
         $vendors = Kontainer::distinct()
@@ -133,7 +131,7 @@ class SuratJalanKontainerSewaController extends Controller
         DB::beginTransaction();
         try {
             $nomorSuratJalan = $request->nomor_surat_jalan;
-            
+
             // Lookup kontainer info
             $kontainer = Kontainer::where('nomor_seri_gabungan', $request->nomor_kontainer)->first();
 
@@ -170,12 +168,13 @@ class SuratJalanKontainerSewaController extends Controller
             ]);
 
             return redirect()->route('surat-jalan-kontainer-sewa.show', $suratJalan->id)
-                             ->with('success', "Surat Jalan {$nomorSuratJalan} berhasil dibuat.");
+                ->with('success', "Surat Jalan {$nomorSuratJalan} berhasil dibuat.");
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating SJ Kontainer Sewa: ' . $e->getMessage());
-            return back()->withInput()->with('error', 'Gagal membuat surat jalan: ' . $e->getMessage());
+            Log::error('Error creating SJ Kontainer Sewa: '.$e->getMessage());
+
+            return back()->withInput()->with('error', 'Gagal membuat surat jalan: '.$e->getMessage());
         }
     }
 
@@ -258,13 +257,15 @@ class SuratJalanKontainerSewaController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('surat-jalan-kontainer-sewa.show', $suratJalan->id)
-                             ->with('success', "Surat Jalan {$suratJalan->nomor_surat_jalan} berhasil diperbarui.");
+                ->with('success', "Surat Jalan {$suratJalan->nomor_surat_jalan} berhasil diperbarui.");
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating SJ Kontainer Sewa: ' . $e->getMessage());
-            return back()->withInput()->with('error', 'Gagal memperbarui surat jalan: ' . $e->getMessage());
+            Log::error('Error updating SJ Kontainer Sewa: '.$e->getMessage());
+
+            return back()->withInput()->with('error', 'Gagal memperbarui surat jalan: '.$e->getMessage());
         }
     }
 
@@ -274,6 +275,7 @@ class SuratJalanKontainerSewaController extends Controller
     public function show($id)
     {
         $suratJalan = SuratJalanKontainerSewa::with('createdByUser')->findOrFail($id);
+
         return view('surat-jalan-kontainer-sewa.show', compact('suratJalan'));
     }
 
@@ -283,6 +285,7 @@ class SuratJalanKontainerSewaController extends Controller
     public function print($id)
     {
         $suratJalan = SuratJalanKontainerSewa::findOrFail($id);
+
         return view('surat-jalan-kontainer-sewa.print', compact('suratJalan'));
     }
 
@@ -301,7 +304,7 @@ class SuratJalanKontainerSewaController extends Controller
             'updated_by' => Auth::id(),
         ]);
 
-        return back()->with('success', 'Status berhasil diperbarui menjadi ' . ucfirst($request->status));
+        return back()->with('success', 'Status berhasil diperbarui menjadi '.ucfirst($request->status));
     }
 
     /**
@@ -316,8 +319,9 @@ class SuratJalanKontainerSewaController extends Controller
         }
 
         $suratJalan->delete();
+
         return redirect()->route('surat-jalan-kontainer-sewa.index')
-                         ->with('success', 'Surat jalan berhasil dihapus.');
+            ->with('success', 'Surat jalan berhasil dihapus.');
     }
 
     /**

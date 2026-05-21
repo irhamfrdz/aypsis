@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\StockKontainer;
 use App\Models\Kontainer;
+use App\Models\StockKontainer;
 use Illuminate\Support\Facades\Log;
 
 class StockKontainerObserver
@@ -32,7 +32,7 @@ class StockKontainerObserver
      */
     private function validateDuplicate(StockKontainer $stockKontainer): void
     {
-        if (!$stockKontainer->nomor_seri_gabungan) {
+        if (! $stockKontainer->nomor_seri_gabungan) {
             return;
         }
 
@@ -43,7 +43,7 @@ class StockKontainerObserver
 
             Log::info("Auto-set stock kontainer {$stockKontainer->nomor_seri_gabungan} to inactive due to duplicate in kontainers table", [
                 'stock_kontainer_id' => $stockKontainer->id,
-                'existing_kontainer_id' => $existingKontainer->id
+                'existing_kontainer_id' => $existingKontainer->id,
             ]);
         }
     }

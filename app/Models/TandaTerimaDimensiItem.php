@@ -22,7 +22,7 @@ class TandaTerimaDimensiItem extends Model
         'ukuran',
         'meter_kubik',
         'tonase',
-        'item_order'
+        'item_order',
     ];
 
     protected $casts = [
@@ -32,7 +32,7 @@ class TandaTerimaDimensiItem extends Model
         'tinggi' => 'decimal:2',
         'meter_kubik' => 'decimal:6',
         'tonase' => 'decimal:2',
-        'item_order' => 'integer'
+        'item_order' => 'integer',
     ];
 
     /**
@@ -53,6 +53,7 @@ class TandaTerimaDimensiItem extends Model
             // Values are already in meters, so result is in m³
             return $this->panjang * $this->lebar * $this->tinggi;
         }
+
         return 0;
     }
 

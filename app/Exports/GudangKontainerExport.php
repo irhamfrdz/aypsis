@@ -5,15 +5,16 @@ namespace App\Exports;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class GudangKontainerExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $gudangId;
+
     protected $type;
 
     public function __construct($gudangId, $type = 'all')
@@ -35,19 +36,19 @@ class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoS
             } else {
                 $queryK->where('gudangs_id', $this->gudangId);
             }
-            
-            $kontainers = $queryK->get()->map(function($k) use ($gudangIdForHistory) {
-                    $tanggalMasuk = \App\Models\HistoryKontainer::where('nomor_kontainer', $k->nomor_seri_gabungan)
-                        ->where('gudang_id', $gudangIdForHistory)
-                        ->max('tanggal_kegiatan');
 
-                    return [
-                        $k->nomor_seri_gabungan,
-                        $k->ukuran ?? '-',
-                        $k->tipe_kontainer ?? '-',
-                        $tanggalMasuk ? \Carbon\Carbon::parse($tanggalMasuk)->format('d/m/Y') : '-',
-                    ];
-                });
+            $kontainers = $queryK->get()->map(function ($k) use ($gudangIdForHistory) {
+                $tanggalMasuk = \App\Models\HistoryKontainer::where('nomor_kontainer', $k->nomor_seri_gabungan)
+                    ->where('gudang_id', $gudangIdForHistory)
+                    ->max('tanggal_kegiatan');
+
+                return [
+                    $k->nomor_seri_gabungan,
+                    $k->ukuran ?? '-',
+                    $k->tipe_kontainer ?? '-',
+                    $tanggalMasuk ? \Carbon\Carbon::parse($tanggalMasuk)->format('d/m/Y') : '-',
+                ];
+            });
         }
 
         $stockKontainers = collect([]);
@@ -60,18 +61,18 @@ class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoS
                 $queryS->where('gudangs_id', $this->gudangId);
             }
 
-            $stockKontainers = $queryS->get()->map(function($s) use ($gudangIdForHistory) {
-                    $tanggalMasuk = \App\Models\HistoryKontainer::where('nomor_kontainer', $s->nomor_seri_gabungan)
-                        ->where('gudang_id', $gudangIdForHistory)
-                        ->max('tanggal_kegiatan');
+            $stockKontainers = $queryS->get()->map(function ($s) use ($gudangIdForHistory) {
+                $tanggalMasuk = \App\Models\HistoryKontainer::where('nomor_kontainer', $s->nomor_seri_gabungan)
+                    ->where('gudang_id', $gudangIdForHistory)
+                    ->max('tanggal_kegiatan');
 
-                    return [
-                        $s->nomor_seri_gabungan,
-                        $s->ukuran ?? '-',
-                        $s->tipe_kontainer ?? '-',
-                        $tanggalMasuk ? \Carbon\Carbon::parse($tanggalMasuk)->format('d/m/Y') : '-',
-                    ];
-                });
+                return [
+                    $s->nomor_seri_gabungan,
+                    $s->ukuran ?? '-',
+                    $s->tipe_kontainer ?? '-',
+                    $tanggalMasuk ? \Carbon\Carbon::parse($tanggalMasuk)->format('d/m/Y') : '-',
+                ];
+            });
         }
 
         return $kontainers->concat($stockKontainers);
@@ -90,11 +91,11 @@ class GudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoS
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $sheet->getStyle('A1:D1')->getFont()->setBold(true);
                 $sheet->getStyle('A1:D1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            }
+            },
         ];
     }
 }

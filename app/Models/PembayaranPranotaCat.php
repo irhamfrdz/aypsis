@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class PembayaranPranotaCat extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $table = 'pembayaran_pranota_cat';
 
     protected $fillable = [
@@ -25,14 +24,14 @@ class PembayaranPranotaCat extends Model
         'total_setelah_penyesuaian',
         'alasan_penyesuaian',
         'keterangan',
-        'status'
+        'status',
     ];
 
     protected $casts = [
         'tanggal_kas' => 'date',
         'total_pembayaran' => 'decimal:2',
         'penyesuaian' => 'decimal:2',
-        'total_setelah_penyesuaian' => 'decimal:2'
+        'total_setelah_penyesuaian' => 'decimal:2',
     ];
 
     /**
@@ -64,7 +63,7 @@ class PembayaranPranotaCat extends Model
         // This table doesn't have a creator field, so return a dummy relationship
         return $this->belongsTo(User::class, 'created_by')->withDefault([
             'name' => 'System',
-            'id' => null
+            'id' => null,
         ]);
     }
 

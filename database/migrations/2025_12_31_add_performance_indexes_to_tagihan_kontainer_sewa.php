@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -26,7 +26,7 @@ return new class extends Migration
                 'idx_vendor_kontainer' => ['vendor', 'nomor_kontainer'],
                 'idx_kontainer_periode' => ['nomor_kontainer', 'periode'],
                 'idx_vendor_periode' => ['vendor', 'periode'],
-                'idx_group_periode' => ['group', 'periode']
+                'idx_group_periode' => ['group', 'periode'],
             ];
 
             foreach ($indexes as $indexName => $columns) {
@@ -69,7 +69,7 @@ return new class extends Migration
                 'idx_vendor_kontainer',
                 'idx_kontainer_periode',
                 'idx_vendor_periode',
-                'idx_group_periode'
+                'idx_group_periode',
             ];
 
             foreach ($indexNames as $indexName) {

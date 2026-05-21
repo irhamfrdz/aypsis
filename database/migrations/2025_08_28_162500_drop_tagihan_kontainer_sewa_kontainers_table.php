@@ -19,7 +19,7 @@ class DropTagihanKontainerSewaKontainersTable extends Migration
             $table->unsignedBigInteger('tagihan_id');
             $table->unsignedBigInteger('kontainer_id');
             $table->timestamps();
-            $table->unique(['tagihan_id','kontainer_id']);
+            $table->unique(['tagihan_id', 'kontainer_id']);
         });
     }
 }

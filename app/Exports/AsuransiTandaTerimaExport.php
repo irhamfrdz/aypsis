@@ -2,16 +2,16 @@
 
 namespace App\Exports;
 
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Carbon\Carbon;
 
-class AsuransiTandaTerimaExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class AsuransiTandaTerimaExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     protected $receipts;
 
@@ -41,14 +41,14 @@ class AsuransiTandaTerimaExport implements FromCollection, WithHeadings, WithMap
             'Nomor Polis',
             'Vendor Asuransi',
             'Kapal',
-            'Voyage'
+            'Voyage',
         ];
     }
 
     public function map($item): array
     {
         $statusAsuransi = $item->insurance ? 'Terproteksi' : 'Belum Diasuransikan';
-        
+
         $namaBarang = $item->nama_barang;
         if ($item->type == 'tt' && is_string($namaBarang) && (str_starts_with($namaBarang, '[') || str_starts_with($namaBarang, '{'))) {
             $decoded = json_decode($namaBarang, true);

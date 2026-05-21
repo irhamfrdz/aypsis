@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\StockKontainer;
 use App\Http\Controllers\StockKontainerImportController;
+use App\Models\StockKontainer;
+use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Route;
@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 class TestStockKontainerImport extends Command
 {
     protected $signature = 'test:stock-kontainer-import';
+
     protected $description = 'Test stock kontainer import functionality';
 
     public function handle()
@@ -24,8 +25,8 @@ class TestStockKontainerImport extends Command
             $this->info("Current stock kontainer count: {$currentCount}");
 
             // Test 2: Test template download (simulate)
-            $controller = new StockKontainerImportController();
-            $this->info("✓ Template download controller method exists");
+            $controller = new StockKontainerImportController;
+            $this->info('✓ Template download controller method exists');
 
             // Test 3: Create sample CSV content
             $csvContent = "Nomor Kontainer;Ukuran;Tipe Kontainer;Status;Tahun Pembuatan;Keterangan\n";
@@ -34,7 +35,7 @@ class TestStockKontainerImport extends Command
             $csvContent .= "TEST003;20ft;Dry;rented;2021;Kontainer disewa untuk testing\n";
 
             // Test 4: Write to temporary file
-            $tempFile = tempnam(sys_get_temp_dir(), 'stock_kontainer_test') . '.csv';
+            $tempFile = tempnam(sys_get_temp_dir(), 'stock_kontainer_test').'.csv';
             file_put_contents($tempFile, $csvContent);
             $this->info("✓ Test CSV file created: {$tempFile}");
 
@@ -48,11 +49,11 @@ class TestStockKontainerImport extends Command
             );
 
             // Test 6: Create mock request
-            $request = new Request();
+            $request = new Request;
             $request->files->set('excel_file', $uploadedFile);
 
             // Test 7: Test import functionality
-            $this->info("Testing import functionality...");
+            $this->info('Testing import functionality...');
             $response = $controller->import($request);
 
             // Test 8: Check if data was imported
@@ -62,7 +63,7 @@ class TestStockKontainerImport extends Command
 
             // Test 9: Verify specific records
             $testRecords = StockKontainer::whereIn('nomor_kontainer', ['TEST001', 'TEST002', 'TEST003'])->get();
-            $this->info("Test records found: " . $testRecords->count());
+            $this->info('Test records found: '.$testRecords->count());
 
             foreach ($testRecords as $record) {
                 $this->info("- {$record->nomor_kontainer}: {$record->ukuran}, {$record->status}");
@@ -82,7 +83,7 @@ class TestStockKontainerImport extends Command
                 true
             );
 
-            $request2 = new Request();
+            $request2 = new Request;
             $request2->files->set('excel_file', $uploadedFile2);
 
             $response2 = $controller->import($request2);
@@ -92,17 +93,17 @@ class TestStockKontainerImport extends Command
             if ($updatedRecord && $updatedRecord->status === 'damaged') {
                 $this->info("✓ Update test passed - TEST001 status changed to: {$updatedRecord->status}");
             } else {
-                $this->error("✗ Update test failed");
+                $this->error('✗ Update test failed');
             }
 
             // Test 11: Route testing
             $this->info("\nTesting routes...");
-            $routes = collect(Route::getRoutes())->filter(function($route) {
+            $routes = collect(Route::getRoutes())->filter(function ($route) {
                 return str_contains($route->getName() ?? '', 'stock-kontainer');
             });
 
             foreach ($routes as $route) {
-                $this->info("Route: " . $route->getName() . " -> " . $route->uri());
+                $this->info('Route: '.$route->getName().' -> '.$route->uri());
             }
 
             // Clean up
@@ -113,7 +114,7 @@ class TestStockKontainerImport extends Command
             $this->info("\n✅ All tests completed successfully!");
 
         } catch (\Exception $e) {
-            $this->error("❌ Test failed: " . $e->getMessage());
+            $this->error('❌ Test failed: '.$e->getMessage());
             $this->error($e->getTraceAsString());
         }
     }

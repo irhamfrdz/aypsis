@@ -2,12 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Karyawan;
+use App\Models\Permohonan;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\Permohonan;
-use App\Models\TagihanKontainerSewa;
-use App\Models\Karyawan;
-use App\Models\User;
 
 class TagihanKontainerSewaTest extends TestCase
 {

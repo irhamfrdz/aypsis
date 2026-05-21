@@ -11,12 +11,12 @@ class PricelistTantoController extends Controller
     {
         $query = PricelistTanto::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('jenis_biaya', 'like', "%{$search}%")
-                  ->orWhere('size', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%");
+                    ->orWhere('size', 'like', "%{$search}%")
+                    ->orWhere('lokasi', 'like', "%{$search}%");
             });
         }
 
@@ -49,13 +49,14 @@ class PricelistTantoController extends Controller
     public function edit($id)
     {
         $pricelistTanto = PricelistTanto::findOrFail($id);
+
         return view('master.pricelist-tanto.edit', compact('pricelistTanto'));
     }
 
     public function update(Request $request, $id)
     {
         $pricelistTanto = PricelistTanto::findOrFail($id);
-        
+
         $request->validate([
             'jenis_biaya' => 'required|string|max:255',
             'lokasi' => 'nullable|string|max:255',

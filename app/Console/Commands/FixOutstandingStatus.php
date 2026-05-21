@@ -2,9 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Order;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Console\Command;
 
 class FixOutstandingStatus extends Command
 {
@@ -33,14 +32,15 @@ class FixOutstandingStatus extends Command
         try {
             // Get orders with confirmed status but pending outstanding_status
             $ordersToFix = Order::where('status', 'confirmed')
-                                ->where('outstanding_status', 'pending')
-                                ->where('sisa', '>', 0)
-                                ->get();
+                ->where('outstanding_status', 'pending')
+                ->where('sisa', '>', 0)
+                ->get();
 
             $this->info("📊 Ditemukan {$ordersToFix->count()} order yang perlu diperbaiki");
 
             if ($ordersToFix->count() === 0) {
                 $this->info('✅ Tidak ada order yang perlu diperbaiki');
+
                 return 0;
             }
 
@@ -76,6 +76,7 @@ class FixOutstandingStatus extends Command
 
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }

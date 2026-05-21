@@ -2,15 +2,15 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Http\Controllers\KontainerImportController;
+use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
-use Symfony\Component\HttpFoundation\File\UploadedFile as SymfonyUploadedFile;
 
 class TestImportMethod extends Command
 {
     protected $signature = 'test:import-method';
+
     protected $description = 'Test import method functionality';
 
     public function handle()
@@ -23,10 +23,10 @@ class TestImportMethod extends Command
             $csvContent .= "METH;111111;1;20;PT. Method Test A\n";
             $csvContent .= "CTRL;222222;2;40;PT. Method Test B\n";
 
-            $tempFile = tempnam(sys_get_temp_dir(), 'test_import') . '.csv';
+            $tempFile = tempnam(sys_get_temp_dir(), 'test_import').'.csv';
             file_put_contents($tempFile, $csvContent);
 
-            $this->info('Test CSV created: ' . $tempFile);
+            $this->info('Test CSV created: '.$tempFile);
 
             // Create mock UploadedFile
             $uploadedFile = new UploadedFile(
@@ -38,11 +38,11 @@ class TestImportMethod extends Command
             );
 
             // Create mock request
-            $request = new Request();
+            $request = new Request;
             $request->files->set('excel_file', $uploadedFile);
 
             // Test controller
-            $controller = new KontainerImportController();
+            $controller = new KontainerImportController;
             $response = $controller->import($request);
 
             // Check response
@@ -51,15 +51,15 @@ class TestImportMethod extends Command
 
                 // Check session for messages
                 if (session()->has('success')) {
-                    $this->info('✓ Success message: ' . session('success'));
+                    $this->info('✓ Success message: '.session('success'));
                 } elseif (session()->has('error')) {
-                    $this->error('✗ Error message: ' . session('error'));
+                    $this->error('✗ Error message: '.session('error'));
                 } else {
                     $this->warn('No session message found');
                 }
             } else {
                 $this->warn('Response is not redirect');
-                $this->info('Response content: ' . $response->getContent());
+                $this->info('Response content: '.$response->getContent());
             }
 
             // Verify data in database
@@ -78,12 +78,14 @@ class TestImportMethod extends Command
             unlink($tempFile);
 
         } catch (\Exception $e) {
-            $this->error('Error: ' . $e->getMessage());
-            $this->error('Trace: ' . $e->getTraceAsString());
+            $this->error('Error: '.$e->getMessage());
+            $this->error('Trace: '.$e->getTraceAsString());
+
             return 1;
         }
 
         $this->info('=== TEST IMPORT METHOD SELESAI ===');
+
         return 0;
     }
 }

@@ -13,7 +13,7 @@ class PermissionHelper
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -26,7 +26,7 @@ class PermissionHelper
             // Jika method hasRole tidak tersedia, lanjutkan
         }
 
-        $permissions = config('permissions.menu_permissions.' . $menuName, []);
+        $permissions = config('permissions.menu_permissions.'.$menuName, []);
 
         // Jika tidak ada permission yang dibutuhkan, berarti semua user bisa akses
         if (empty($permissions)) {
@@ -58,7 +58,7 @@ class PermissionHelper
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -96,7 +96,7 @@ class PermissionHelper
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -172,6 +172,6 @@ class PermissionHelper
             'pembayaran-pranota-supir' => 'Akses menu pembayaran pranota supir',
         ];
 
-        return $descriptions[$permission] ?? 'Permission ' . $permission;
+        return $descriptions[$permission] ?? 'Permission '.$permission;
     }
 }

@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
 
 class NaikKapal extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'naik_kapal';
 
@@ -39,14 +39,14 @@ class NaikKapal extends Model
         // 'status', // Kolom tidak ada di table
         'keterangan',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $dates = [
         'tanggal_muat',
         'tanggal_ob',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
     protected $casts = [
@@ -58,13 +58,16 @@ class NaikKapal extends Model
         'sudah_ob' => 'boolean',
         'is_tl' => 'boolean',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
     ];
 
     // Status constants
     const STATUS_MENUNGGU = 'menunggu';
+
     const STATUS_DIMUAT = 'dimuat';
+
     const STATUS_SELESAI = 'selesai';
+
     const STATUS_BATAL = 'batal';
 
     public static function getStatusOptions()
@@ -73,7 +76,7 @@ class NaikKapal extends Model
             self::STATUS_MENUNGGU => 'Menunggu',
             self::STATUS_DIMUAT => 'Sedang Dimuat',
             self::STATUS_SELESAI => 'Selesai',
-            self::STATUS_BATAL => 'Batal'
+            self::STATUS_BATAL => 'Batal',
         ];
     }
 
@@ -118,6 +121,7 @@ class NaikKapal extends Model
     public function getStatusLabelAttribute()
     {
         $statuses = self::getStatusOptions();
+
         return $statuses[$this->status] ?? $this->status;
     }
 

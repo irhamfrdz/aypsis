@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class AktivitasLainnya extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $table = 'aktivitas_lainnya';
 
     protected $fillable = [
@@ -27,13 +26,13 @@ class AktivitasLainnya extends Model
         'keterangan',
         'created_by',
         'approved_by',
-        'approved_at'
+        'approved_at',
     ];
 
     protected $casts = [
         'tanggal_aktivitas' => 'date',
         'nominal' => 'decimal:2',
-        'approved_at' => 'datetime'
+        'approved_at' => 'datetime',
     ];
 
     /**
@@ -90,8 +89,8 @@ class AktivitasLainnya extends Model
     public function pembayaran()
     {
         return $this->belongsToMany(PembayaranAktivitasLainnya::class, 'pembayaran_aktivitas_lainnya_items', 'aktivitas_id', 'pembayaran_id')
-                    ->withPivot('nominal_dibayar', 'keterangan')
-                    ->withTimestamps();
+            ->withPivot('nominal_dibayar', 'keterangan')
+            ->withTimestamps();
     }
 
     /**
@@ -104,7 +103,7 @@ class AktivitasLainnya extends Model
             'pending' => 'Pending Approval',
             'approved' => 'Disetujui',
             'rejected' => 'Ditolak',
-            'paid' => 'Sudah Dibayar'
+            'paid' => 'Sudah Dibayar',
         ];
     }
 
@@ -118,7 +117,7 @@ class AktivitasLainnya extends Model
             'maintenance' => 'Maintenance',
             'administrasi' => 'Administrasi',
             'transport' => 'Transport',
-            'lainnya' => 'Lainnya'
+            'lainnya' => 'Lainnya',
         ];
     }
 
@@ -128,9 +127,9 @@ class AktivitasLainnya extends Model
     public static function generateNomorAktivitas()
     {
         $date = now();
-        $prefix = 'AL/' . $date->format('Y/m') . '/';
+        $prefix = 'AL/'.$date->format('Y/m').'/';
 
-        $lastRecord = self::where('nomor_aktivitas', 'like', $prefix . '%')
+        $lastRecord = self::where('nomor_aktivitas', 'like', $prefix.'%')
             ->orderBy('nomor_aktivitas', 'desc')
             ->first();
 
@@ -141,7 +140,7 @@ class AktivitasLainnya extends Model
             $newNumber = '0001';
         }
 
-        return $prefix . $newNumber;
+        return $prefix.$newNumber;
     }
 
     /**
@@ -209,8 +208,8 @@ class AktivitasLainnya extends Model
     public function scopePayable($query)
     {
         return $query->where('status', 'approved')
-                    ->whereDoesntHave('pembayaran', function($q) {
-                        $q->where('pembayaran_aktivitas_lainnya.status', 'paid');
-                    });
+            ->whereDoesntHave('pembayaran', function ($q) {
+                $q->where('pembayaran_aktivitas_lainnya.status', 'paid');
+            });
     }
 }

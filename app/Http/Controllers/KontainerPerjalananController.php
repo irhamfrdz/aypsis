@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\KontainerPerjalanan;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class KontainerPerjalananController extends Controller
 {

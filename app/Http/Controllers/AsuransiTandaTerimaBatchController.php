@@ -4,15 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\AsuransiTandaTerimaBatch;
 use App\Models\AsuransiTandaTerimaBatchItem;
-use App\Models\AsuransiTandaTerima;
 use App\Models\VendorAsuransi;
-use App\Models\TandaTerima;
-use App\Models\TandaTerimaTanpaSuratJalan;
-use App\Models\TandaTerimaLcl;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class AsuransiTandaTerimaBatchController extends Controller
 {
@@ -35,7 +30,7 @@ class AsuransiTandaTerimaBatchController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where('nomor_polis', 'like', "%{$search}%")
-                ->orWhereHas('vendorAsuransi', function($q) use ($search) {
+                ->orWhereHas('vendorAsuransi', function ($q) use ($search) {
                     $q->where('nama_asuransi', 'like', "%{$search}%");
                 });
         }
@@ -48,7 +43,7 @@ class AsuransiTandaTerimaBatchController extends Controller
     public function create(Request $request)
     {
         $vendors = VendorAsuransi::orderBy('nama_asuransi')->get();
-        
+
         // Get receipts that are not yet insured in BOTH systems
         $receipts = $this->getAvailableReceipts($request);
 
@@ -62,12 +57,12 @@ class AsuransiTandaTerimaBatchController extends Controller
         // 1. Regular Tanda Terima
         $tt = DB::table('tanda_terimas')
             ->leftJoin('surat_jalans', 'tanda_terimas.surat_jalan_id', '=', 'surat_jalans.id')
-            ->whereNotExists(function($q) {
+            ->whereNotExists(function ($q) {
                 $q->select(DB::raw(1))
                     ->from('asuransi_tanda_terimas')
                     ->whereColumn('asuransi_tanda_terimas.tanda_terima_id', 'tanda_terimas.id');
             })
-            ->whereNotExists(function($q) {
+            ->whereNotExists(function ($q) {
                 $q->select(DB::raw(1))
                     ->from('asuransi_tanda_terima_batch_items')
                     ->whereColumn('asuransi_tanda_terima_batch_items.tanda_terima_id', 'tanda_terimas.id');
@@ -86,22 +81,22 @@ class AsuransiTandaTerimaBatchController extends Controller
             );
 
         if ($search) {
-            $tt->where(function($q) use ($search) {
+            $tt->where(function ($q) use ($search) {
                 $q->where('tanda_terimas.no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('tanda_terimas.pengirim', 'like', "%{$search}%")
-                  ->orWhere('tanda_terimas.penerima', 'like', "%{$search}%")
-                  ->orWhere('tanda_terimas.no_kontainer', 'like', "%{$search}%");
+                    ->orWhere('tanda_terimas.pengirim', 'like', "%{$search}%")
+                    ->orWhere('tanda_terimas.penerima', 'like', "%{$search}%")
+                    ->orWhere('tanda_terimas.no_kontainer', 'like', "%{$search}%");
             });
         }
 
         // 2. Tanpa SJ
         $tttsj = DB::table('tanda_terima_tanpa_surat_jalan')
-            ->whereNotExists(function($q) {
+            ->whereNotExists(function ($q) {
                 $q->select(DB::raw(1))
                     ->from('asuransi_tanda_terimas')
                     ->whereColumn('asuransi_tanda_terimas.tanda_terima_tanpa_sj_id', 'tanda_terima_tanpa_surat_jalan.id');
             })
-            ->whereNotExists(function($q) {
+            ->whereNotExists(function ($q) {
                 $q->select(DB::raw(1))
                     ->from('asuransi_tanda_terima_batch_items')
                     ->whereColumn('asuransi_tanda_terima_batch_items.tanda_terima_tanpa_sj_id', 'tanda_terima_tanpa_surat_jalan.id');
@@ -120,11 +115,11 @@ class AsuransiTandaTerimaBatchController extends Controller
             );
 
         if ($search) {
-            $tttsj->where(function($q) use ($search) {
+            $tttsj->where(function ($q) use ($search) {
                 $q->where('no_tanda_terima', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('penerima', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%");
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('penerima', 'like', "%{$search}%")
+                    ->orWhere('no_kontainer', 'like', "%{$search}%");
             });
         }
 
@@ -133,12 +128,12 @@ class AsuransiTandaTerimaBatchController extends Controller
             ->leftJoin('tanda_terima_lcl_items', 'tanda_terimas_lcl.id', '=', 'tanda_terima_lcl_items.tanda_terima_lcl_id')
             ->leftJoin('tanda_terima_lcl_kontainer_pivot', 'tanda_terimas_lcl.id', '=', 'tanda_terima_lcl_kontainer_pivot.tanda_terima_lcl_id')
             ->whereNull('tanda_terimas_lcl.deleted_at')
-            ->whereNotExists(function($q) {
+            ->whereNotExists(function ($q) {
                 $q->select(DB::raw(1))
                     ->from('asuransi_tanda_terimas')
                     ->whereColumn('asuransi_tanda_terimas.tanda_terima_lcl_id', 'tanda_terimas_lcl.id');
             })
-            ->whereNotExists(function($q) {
+            ->whereNotExists(function ($q) {
                 $q->select(DB::raw(1))
                     ->from('asuransi_tanda_terima_batch_items')
                     ->whereColumn('asuransi_tanda_terima_batch_items.tanda_terima_lcl_id', 'tanda_terimas_lcl.id');
@@ -166,12 +161,12 @@ class AsuransiTandaTerimaBatchController extends Controller
             );
 
         if ($search) {
-            $lcl->where(function($q) use ($search) {
+            $lcl->where(function ($q) use ($search) {
                 $q->where('nomor_tanda_terima', 'like', "%{$search}%")
-                  ->orWhere('nama_pengirim', 'like', "%{$search}%")
-                  ->orWhere('nama_penerima', 'like', "%{$search}%")
-                  ->orWhere('tanda_terima_lcl_kontainer_pivot.nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('tanda_terimas_lcl.nomor_kontainer', 'like', "%{$search}%");
+                    ->orWhere('nama_pengirim', 'like', "%{$search}%")
+                    ->orWhere('nama_penerima', 'like', "%{$search}%")
+                    ->orWhere('tanda_terima_lcl_kontainer_pivot.nomor_kontainer', 'like', "%{$search}%")
+                    ->orWhere('tanda_terimas_lcl.nomor_kontainer', 'like', "%{$search}%");
             });
         }
 
@@ -189,7 +184,7 @@ class AsuransiTandaTerimaBatchController extends Controller
 
         DB::beginTransaction();
         try {
-            $batch = new AsuransiTandaTerimaBatch();
+            $batch = new AsuransiTandaTerimaBatch;
             $batch->nomor_polis = $request->nomor_polis;
             $batch->tanggal_polis = $request->tanggal_polis;
             $batch->vendor_asuransi_id = $request->vendor_asuransi_id;
@@ -208,20 +203,24 @@ class AsuransiTandaTerimaBatchController extends Controller
             $totalNB = 0;
             foreach ($request->selected_receipts as $receiptKey) {
                 // Key format: type_id
-                list($type, $id) = explode('_', $receiptKey);
-                
-                $batchItem = new AsuransiTandaTerimaBatchItem();
+                [$type, $id] = explode('_', $receiptKey);
+
+                $batchItem = new AsuransiTandaTerimaBatchItem;
                 $batchItem->batch_id = $batch->id;
                 $batchItem->receipt_type = $type;
-                
+
                 // but for now let's assume it's entered in the form
                 $nilaiBarang = $request->input("nilai_barang.{$receiptKey}", 0);
                 $batchItem->nilai_barang = $nilaiBarang;
-                
-                if ($type == 'tt') $batchItem->tanda_terima_id = $id;
-                elseif ($type == 'tttsj') $batchItem->tanda_terima_tanpa_sj_id = $id;
-                elseif ($type == 'lcl') $batchItem->tanda_terima_lcl_id = $id;
-                
+
+                if ($type == 'tt') {
+                    $batchItem->tanda_terima_id = $id;
+                } elseif ($type == 'tttsj') {
+                    $batchItem->tanda_terima_tanpa_sj_id = $id;
+                } elseif ($type == 'lcl') {
+                    $batchItem->tanda_terima_lcl_id = $id;
+                }
+
                 $batchItem->save();
                 $totalNB += $nilaiBarang;
             }
@@ -232,16 +231,19 @@ class AsuransiTandaTerimaBatchController extends Controller
             $batch->save();
 
             DB::commit();
+
             return redirect()->route('asuransi-tanda-terima-multi.index')->with('success', 'Batch Asuransi berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyimpan data: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', 'Gagal menyimpan data: '.$e->getMessage())->withInput();
         }
     }
 
     public function show(AsuransiTandaTerimaBatch $asuransiTandaTerimaMulti)
     {
         $asuransiTandaTerimaMulti->load(['items.tandaTerima', 'items.tandaTerimaTanpaSj', 'items.tandaTerimaLcl', 'vendorAsuransi', 'creator']);
+
         return view('asuransi-tanda-terima-multi.show', ['batch' => $asuransiTandaTerimaMulti]);
     }
 
@@ -249,6 +251,7 @@ class AsuransiTandaTerimaBatchController extends Controller
     {
         $asuransiTandaTerimaMulti->load(['items.tandaTerima', 'items.tandaTerimaTanpaSj', 'items.tandaTerimaLcl', 'vendorAsuransi']);
         $vendors = VendorAsuransi::orderBy('nama_asuransi')->get();
+
         return view('asuransi-tanda-terima-multi.edit', ['batch' => $asuransiTandaTerimaMulti, 'vendors' => $vendors]);
     }
 
@@ -280,6 +283,7 @@ class AsuransiTandaTerimaBatchController extends Controller
     public function destroy(AsuransiTandaTerimaBatch $asuransiTandaTerimaMulti)
     {
         $asuransiTandaTerimaMulti->delete();
+
         return redirect()->route('asuransi-tanda-terima-multi.index')->with('success', 'Batch Asuransi berhasil dihapus.');
     }
 }

@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
 
 class PembayaranPranota extends Model
 {
-    use HasFactory, Auditable;
-
     use Auditable;
+    use Auditable, HasFactory;
+
     protected $table = 'pembayaran_pranota';
 
     protected $fillable = [
@@ -24,14 +24,14 @@ class PembayaranPranota extends Model
         'total_setelah_penyesuaian',
         'alasan_penyesuaian',
         'keterangan',
-        'status'
+        'status',
     ];
 
     protected $casts = [
         'tanggal_kas' => 'date',
         'total_pembayaran' => 'decimal:2',
         'penyesuaian' => 'decimal:2',
-        'total_setelah_penyesuaian' => 'decimal:2'
+        'total_setelah_penyesuaian' => 'decimal:2',
     ];
 
     /**

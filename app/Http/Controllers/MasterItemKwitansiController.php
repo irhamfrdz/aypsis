@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use App\Models\MasterItemKwitansi;
-use App\Imports\MasterItemKwitansiImport;
 use App\Exports\MasterItemKwitansiTemplateExport;
+use App\Imports\MasterItemKwitansiImport;
+use App\Models\MasterItemKwitansi;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class MasterItemKwitansiController extends Controller
@@ -15,6 +13,7 @@ class MasterItemKwitansiController extends Controller
     public function index()
     {
         $items = MasterItemKwitansi::latest()->get();
+
         return view('master.item-kwitansi.index', compact('items'));
     }
 
@@ -26,16 +25,18 @@ class MasterItemKwitansiController extends Controller
 
         try {
             Excel::import(new MasterItemKwitansiImport, $request->file('file'));
+
             return redirect()->back()->with('success', 'Data Item Kwitansi berhasil diimport.');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $failures = $e->failures();
             $error_messages = [];
             foreach ($failures as $failure) {
-                $error_messages[] = 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+                $error_messages[] = 'Baris '.$failure->row().': '.implode(', ', $failure->errors());
             }
+
             return redirect()->back()->withErrors($error_messages);
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['Terjadi kesalahan saat mengimport data: ' . $e->getMessage()]);
+            return redirect()->back()->withErrors(['Terjadi kesalahan saat mengimport data: '.$e->getMessage()]);
         }
     }
 
@@ -60,7 +61,7 @@ class MasterItemKwitansiController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'kode' => 'required|string|max:50|unique:master_item_kwitansis,kode,' . $id,
+            'kode' => 'required|string|max:50|unique:master_item_kwitansis,kode,'.$id,
             'nama_item' => 'required|string|max:255',
             'group' => 'required|string|max:100',
         ]);

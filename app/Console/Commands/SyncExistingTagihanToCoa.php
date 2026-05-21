@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\Coa;
 use App\Models\CoaTransaction;
+use App\Models\DaftarTagihanKontainerSewa;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class SyncExistingTagihanToCoa extends Command
@@ -40,8 +40,9 @@ class SyncExistingTagihanToCoa extends Command
         // Find COA007 account
         $coa = Coa::where('nomor_akun', 'COA007')->first();
 
-        if (!$coa) {
+        if (! $coa) {
             $this->error('❌ COA007 account not found! Please create COA007 first.');
+
             return Command::FAILURE;
         }
 
@@ -50,31 +51,32 @@ class SyncExistingTagihanToCoa extends Command
         // Get all tagihan that don't have COA transactions yet
         $query = DaftarTagihanKontainerSewa::query();
 
-        if (!$isForce) {
+        if (! $isForce) {
             // Only get tagihan that don't have COA transactions yet
             $existingRefs = CoaTransaction::where('jenis_transaksi', 'tagihan_kontainer_sewa')
-                                       ->pluck('nomor_referensi')
-                                       ->toArray();
+                ->pluck('nomor_referensi')
+                ->toArray();
 
-            $query->whereNotIn('id', function($subQuery) use ($existingRefs) {
+            $query->whereNotIn('id', function ($subQuery) use ($existingRefs) {
                 $subQuery->select('id')
-                        ->from('daftar_tagihan_kontainer_sewa')
-                        ->whereIn(
-                            DB::raw("CONCAT('TKS-', nomor_kontainer, '-P', periode)"),
-                            $existingRefs
-                        );
+                    ->from('daftar_tagihan_kontainer_sewa')
+                    ->whereIn(
+                        DB::raw("CONCAT('TKS-', nomor_kontainer, '-P', periode)"),
+                        $existingRefs
+                    );
             });
         }
 
         $tagihans = $query->whereNotNull('grand_total')
-                         ->where('grand_total', '>', 0)
-                         ->orderBy('tanggal_awal')
-                         ->orderBy('nomor_kontainer')
-                         ->orderBy('periode')
-                         ->get();
+            ->where('grand_total', '>', 0)
+            ->orderBy('tanggal_awal')
+            ->orderBy('nomor_kontainer')
+            ->orderBy('periode')
+            ->get();
 
         if ($tagihans->isEmpty()) {
             $this->info('ℹ️  No tagihan found to sync (all might be already synced)');
+
             return Command::SUCCESS;
         }
 
@@ -86,9 +88,9 @@ class SyncExistingTagihanToCoa extends Command
             ['Metric', 'Value'],
             [
                 ['Total Tagihan', number_format($tagihans->count())],
-                ['Total Amount', 'Rp ' . number_format($totalAmount, 2, ',', '.')],
-                ['Date Range', $tagihans->min('tanggal_awal') . ' to ' . $tagihans->max('tanggal_awal')],
-                ['Containers', $tagihans->pluck('nomor_kontainer')->unique()->count() . ' unique']
+                ['Total Amount', 'Rp '.number_format($totalAmount, 2, ',', '.')],
+                ['Date Range', $tagihans->min('tanggal_awal').' to '.$tagihans->max('tanggal_awal')],
+                ['Containers', $tagihans->pluck('nomor_kontainer')->unique()->count().' unique'],
             ]
         );
 
@@ -96,21 +98,23 @@ class SyncExistingTagihanToCoa extends Command
             $this->info('🧪 DRY RUN - Showing first 10 tagihan that would be synced:');
             $this->table(
                 ['Container', 'Periode', 'Amount', 'Reference'],
-                $tagihans->take(10)->map(function($tagihan) {
+                $tagihans->take(10)->map(function ($tagihan) {
                     return [
                         $tagihan->nomor_kontainer,
                         $tagihan->periode,
-                        'Rp ' . number_format((float)$tagihan->grand_total, 2, ',', '.'),
-                        "TKS-{$tagihan->nomor_kontainer}-P{$tagihan->periode}"
+                        'Rp '.number_format((float) $tagihan->grand_total, 2, ',', '.'),
+                        "TKS-{$tagihan->nomor_kontainer}-P{$tagihan->periode}",
                     ];
                 })->toArray()
             );
+
             return Command::SUCCESS;
         }
 
         // Confirm before proceeding
-        if (!$this->confirm("🚀 Proceed to create {$tagihans->count()} COA transactions?")) {
+        if (! $this->confirm("🚀 Proceed to create {$tagihans->count()} COA transactions?")) {
             $this->info('❌ Operation cancelled');
+
             return Command::SUCCESS;
         }
 
@@ -126,7 +130,7 @@ class SyncExistingTagihanToCoa extends Command
             } catch (\Exception $e) {
                 $errorCount++;
                 $this->newLine();
-                $this->error("❌ Failed for {$tagihan->nomor_kontainer} P{$tagihan->periode}: " . $e->getMessage());
+                $this->error("❌ Failed for {$tagihan->nomor_kontainer} P{$tagihan->periode}: ".$e->getMessage());
             }
             $progressBar->advance();
         }
@@ -141,19 +145,19 @@ class SyncExistingTagihanToCoa extends Command
         }
 
         // Final summary
-        $this->info("✅ Sync completed!");
+        $this->info('✅ Sync completed!');
         $this->table(
             ['Result', 'Count'],
             [
                 ['✅ Success', $successCount],
                 ['❌ Errors', $errorCount],
-                ['📊 Total', $tagihans->count()]
+                ['📊 Total', $tagihans->count()],
             ]
         );
 
         if ($successCount > 0) {
-            $this->info("💰 COA007 balance should now reflect Rp " . number_format($totalAmount, 2, ',', '.'));
-            $this->info("🔍 Check COA007 transactions in your accounting system");
+            $this->info('💰 COA007 balance should now reflect Rp '.number_format($totalAmount, 2, ',', '.'));
+            $this->info('🔍 Check COA007 transactions in your accounting system');
         }
 
         return Command::SUCCESS;
@@ -169,7 +173,7 @@ class SyncExistingTagihanToCoa extends Command
 
         // Check if transaction already exists
         $existing = CoaTransaction::where('nomor_referensi', $referenceNumber)->first();
-        if ($existing && !$this->option('force')) {
+        if ($existing && ! $this->option('force')) {
             throw new \Exception("Transaction already exists: {$referenceNumber}");
         }
 
@@ -184,7 +188,7 @@ class SyncExistingTagihanToCoa extends Command
             'nomor_referensi' => $referenceNumber,
             'created_by' => 1, // Default admin user ID
             'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now()
+            'updated_at' => Carbon::now(),
         ]);
 
         return $transaksi;
@@ -196,9 +200,9 @@ class SyncExistingTagihanToCoa extends Command
     private function updateAllCoaSaldos($coaId)
     {
         $transactions = CoaTransaction::where('coa_id', $coaId)
-                                    ->orderBy('tanggal_transaksi', 'asc')
-                                    ->orderBy('id', 'asc')
-                                    ->get();
+            ->orderBy('tanggal_transaksi', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
 
         $runningSaldo = 0;
         foreach ($transactions as $transaction) {

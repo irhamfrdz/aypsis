@@ -38,7 +38,7 @@ return new class extends Migration
             $table->text('catatan_ob')->nullable()->after('tanggal_ob');
             $table->unsignedBigInteger('created_by')->nullable()->after('catatan_ob')->index();
             $table->unsignedBigInteger('updated_by')->nullable()->after('created_by')->index();
-            
+
             // Foreign keys
             $table->foreign('prospek_id')->references('id')->on('prospek')->onDelete('set null');
             $table->foreign('supir_id')->references('id')->on('karyawans')->onDelete('set null');
@@ -57,7 +57,7 @@ return new class extends Migration
             $table->dropForeign(['supir_id']);
             $table->dropForeign(['created_by']);
             $table->dropForeign(['updated_by']);
-            
+
             $table->dropColumn([
                 'status_bongkar',
                 'sudah_ob',

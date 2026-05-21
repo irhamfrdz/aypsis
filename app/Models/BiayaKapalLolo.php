@@ -24,12 +24,12 @@ class BiayaKapalLolo extends Model
 
     protected $casts = [
         'kontainer_ids' => 'array',
-        'subtotal'      => 'decimal:2',
+        'subtotal' => 'decimal:2',
         'biaya_materai' => 'decimal:2',
-        'ppn'           => 'decimal:2',
-        'pph'           => 'decimal:2',
-        'adjustment'    => 'decimal:2',
-        'total_biaya'   => 'decimal:2',
+        'ppn' => 'decimal:2',
+        'pph' => 'decimal:2',
+        'adjustment' => 'decimal:2',
+        'total_biaya' => 'decimal:2',
     ];
 
     public function biayaKapal()

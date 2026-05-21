@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -35,7 +35,7 @@ return new class extends Migration
             }
 
             // Add new column with foreign key to pembayaran_uang_muka
-            if (!Schema::hasColumn('pembayaran_obs', 'pembayaran_uang_muka_id')) {
+            if (! Schema::hasColumn('pembayaran_obs', 'pembayaran_uang_muka_id')) {
                 $table->foreignId('pembayaran_uang_muka_id')->nullable()->after('keterangan')->constrained('pembayaran_uang_muka')->onDelete('set null');
             }
         });
@@ -69,7 +69,7 @@ return new class extends Migration
             }
 
             // Restore original column if not exists
-            if (!Schema::hasColumn('pembayaran_obs', 'pembayaran_dp_ob_id')) {
+            if (! Schema::hasColumn('pembayaran_obs', 'pembayaran_dp_ob_id')) {
                 $table->foreignId('pembayaran_dp_ob_id')->nullable()->after('keterangan')->constrained('pembayaran_dp_obs')->onDelete('set null');
             }
         });

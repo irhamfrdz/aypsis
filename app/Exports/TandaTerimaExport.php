@@ -2,18 +2,17 @@
 
 namespace App\Exports;
 
-use App\Models\TandaTerima;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
+use App\Models\TandaTerima;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
+class TandaTerimaExport implements FromCollection, ShouldAutoSize, WithEvents
 {
     protected $tandaTerimaIds;
 
@@ -33,8 +32,8 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
 
         // Try to find in kontainers table first
         $kontainer = Kontainer::where('nomor_seri_gabungan', $noKontainer)
-            ->orWhere(function($q) use ($noKontainer) {
-                $q->whereRaw("CONCAT(awalan_kontainer, nomor_seri_kontainer, akhiran_kontainer) = ?", [$noKontainer]);
+            ->orWhere(function ($q) use ($noKontainer) {
+                $q->whereRaw('CONCAT(awalan_kontainer, nomor_seri_kontainer, akhiran_kontainer) = ?', [$noKontainer]);
             })
             ->first();
 
@@ -43,8 +42,8 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
         } else {
             // If not found, try stock_kontainers table
             $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $noKontainer)
-                ->orWhere(function($q) use ($noKontainer) {
-                    $q->whereRaw("CONCAT(awalan_kontainer, nomor_seri_kontainer, akhiran_kontainer) = ?", [$noKontainer]);
+                ->orWhere(function ($q) use ($noKontainer) {
+                    $q->whereRaw('CONCAT(awalan_kontainer, nomor_seri_kontainer, akhiran_kontainer) = ?', [$noKontainer]);
                 })
                 ->first();
 
@@ -74,7 +73,7 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
      */
     private function getStatus(?string $kegiatan): string
     {
-        if (!$kegiatan) {
+        if (! $kegiatan) {
             return '';
         }
 
@@ -93,7 +92,7 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
      */
     private function getPod(?string $tujuanPengiriman): string
     {
-        if (!$tujuanPengiriman) {
+        if (! $tujuanPengiriman) {
             return '';
         }
 
@@ -133,7 +132,7 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
             $rows->push([
                 'RO NOMOR :',
                 ($nomorRo ?: 'N/A'),
-                '', '', '', '', '', '', '', '', '', ''
+                '', '', '', '', '', '', '', '', '', '',
             ]);
 
             // Add column headers
@@ -149,7 +148,7 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
                 'CONSIGNEE',
                 'REMARK',
                 'POD',
-                'TUJUAN'
+                'TUJUAN',
             ]);
 
             // Add data for this RO
@@ -166,7 +165,7 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
                     '02522267',                                 // CONSIGNEE (fixed value)
                     '',                                         // REMARK (kosong)
                     $this->getPod($tandaTerima->tujuan_pengiriman), // POD (IDBTM/IDKID)
-                    $tandaTerima->tujuan_pengiriman ?? ''       // TUJUAN
+                    $tandaTerima->tujuan_pengiriman ?? '',       // TUJUAN
                 ]);
             }
 
@@ -225,12 +224,12 @@ class TandaTerimaExport implements FromCollection, WithEvents, ShouldAutoSize
 
                 // Apply styles and merge RO rows, style header rows
                 for ($row = 1; $row <= $highestRow; $row++) {
-                    $firstCell = (string) $sheet->getCell('A' . $row)->getValue();
-                        if ($firstCell !== null && trim($firstCell) === 'RO NOMOR :') {
-                            // Apply RO style only to A and B columns (label and number) instead of merging the entire row
-                            $sheet->getStyle("A{$row}")->applyFromArray($roStyle);
-                            $sheet->getStyle("B{$row}")->applyFromArray($roStyle);
-                        }
+                    $firstCell = (string) $sheet->getCell('A'.$row)->getValue();
+                    if ($firstCell !== null && trim($firstCell) === 'RO NOMOR :') {
+                        // Apply RO style only to A and B columns (label and number) instead of merging the entire row
+                        $sheet->getStyle("A{$row}")->applyFromArray($roStyle);
+                        $sheet->getStyle("B{$row}")->applyFromArray($roStyle);
+                    }
 
                     // If this row contains the column headers (CONTAINER_NO in column A), style it yellow
                     if (trim(strtoupper($firstCell)) === 'CONTAINER_NO') {

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class PranotaUangKenek extends Model
 {
@@ -26,7 +25,7 @@ class PranotaUangKenek extends Model
         'created_by',
         'updated_by',
         'approved_by',
-        'approved_at'
+        'approved_at',
     ];
 
     protected $casts = [
@@ -44,9 +43,13 @@ class PranotaUangKenek extends Model
 
     // Status constants
     const STATUS_DRAFT = 'draft';
+
     const STATUS_SUBMITTED = 'submitted';
+
     const STATUS_APPROVED = 'approved';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_CANCELLED = 'cancelled';
 
     public static function getStatusOptions()
@@ -56,13 +59,14 @@ class PranotaUangKenek extends Model
             self::STATUS_SUBMITTED => 'Submitted',
             self::STATUS_APPROVED => 'Approved',
             self::STATUS_PAID => 'Paid',
-            self::STATUS_CANCELLED => 'Cancelled'
+            self::STATUS_CANCELLED => 'Cancelled',
         ];
     }
 
     public function getStatusLabelAttribute()
     {
         $statuses = self::getStatusOptions();
+
         return $statuses[$this->status] ?? $this->status;
     }
 
@@ -74,7 +78,7 @@ class PranotaUangKenek extends Model
             if (empty($model->no_pranota)) {
                 $model->no_pranota = $model->generateNoPranota();
             }
-            
+
             // Auto-calculate total_uang based on grand_total
             $model->total_uang = $model->grand_total ?? 0;
         });
@@ -91,20 +95,20 @@ class PranotaUangKenek extends Model
         $prefix = 'PUK'; // Pranota Uang Kenek
         $year = date('Y');
         $month = date('m');
-        
+
         // Get last number for this month
         $lastPranota = self::where('no_pranota', 'like', "{$prefix}-{$year}{$month}%")
-                          ->orderBy('no_pranota', 'desc')
-                          ->first();
-        
+            ->orderBy('no_pranota', 'desc')
+            ->first();
+
         if ($lastPranota) {
             $lastNumber = intval(substr($lastPranota->no_pranota, -4));
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
-        
-        return $prefix . '-' . $year . $month . '-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+        return $prefix.'-'.$year.$month.'-'.str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 
     // Relationships
@@ -186,7 +190,7 @@ class PranotaUangKenek extends Model
     {
         $this->update([
             'status' => self::STATUS_SUBMITTED,
-            'updated_by' => Auth::id()
+            'updated_by' => Auth::id(),
         ]);
     }
 
@@ -196,7 +200,7 @@ class PranotaUangKenek extends Model
             'status' => self::STATUS_APPROVED,
             'approved_by' => Auth::id(),
             'approved_at' => now(),
-            'updated_by' => Auth::id()
+            'updated_by' => Auth::id(),
         ]);
     }
 
@@ -205,7 +209,7 @@ class PranotaUangKenek extends Model
         $this->update([
             'status' => self::STATUS_PAID,
             'tanggal_bayar' => $tanggalBayar ?? now()->toDateString(),
-            'updated_by' => Auth::id()
+            'updated_by' => Auth::id(),
         ]);
     }
 
@@ -213,7 +217,7 @@ class PranotaUangKenek extends Model
     {
         $this->update([
             'status' => self::STATUS_CANCELLED,
-            'updated_by' => Auth::id()
+            'updated_by' => Auth::id(),
         ]);
     }
 

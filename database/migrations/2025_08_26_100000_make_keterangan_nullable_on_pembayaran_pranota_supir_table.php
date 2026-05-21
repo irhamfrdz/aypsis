@@ -15,7 +15,7 @@ class MakeKeteranganNullableOnPembayaranPranotaSupirTable extends Migration
      */
     public function up()
     {
-        if (!Schema::hasTable('pembayaran_pranota_supir')) {
+        if (! Schema::hasTable('pembayaran_pranota_supir')) {
             return;
         }
 
@@ -29,7 +29,7 @@ class MakeKeteranganNullableOnPembayaranPranotaSupirTable extends Migration
      */
     public function down()
     {
-        if (!Schema::hasTable('pembayaran_pranota_supir')) {
+        if (! Schema::hasTable('pembayaran_pranota_supir')) {
             return;
         }
 

@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -33,8 +33,8 @@ return new class extends Migration
         // We cannot easily revert back to enum if data contains new values not in enum
         // So we just keep it as string or revert to old default
         Schema::table('stock_bans', function (Blueprint $table) {
-             // Optional: revert to 'Baru' default, but keep as string to prevent data loss
-             $table->string('kondisi', 50)->default('Baru')->change();
+            // Optional: revert to 'Baru' default, but keep as string to prevent data loss
+            $table->string('kondisi', 50)->default('Baru')->change();
         });
     }
 };

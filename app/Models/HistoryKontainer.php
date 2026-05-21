@@ -16,7 +16,7 @@ class HistoryKontainer extends Model
         'asal_gudang_id',
         'gudang_id',
         'keterangan',
-        'created_by'
+        'created_by',
     ];
 
     protected $casts = [

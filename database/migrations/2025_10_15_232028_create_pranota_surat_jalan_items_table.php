@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('pranota_surat_jalan_id')->constrained('pranota_surat_jalans')->onDelete('cascade');
             $table->foreignId('surat_jalan_id')->constrained('surat_jalans')->onDelete('cascade');
             $table->timestamps();
-            
+
             // Ensure unique combination
             $table->unique(['pranota_surat_jalan_id', 'surat_jalan_id'], 'unique_pranota_surat_jalan');
         });

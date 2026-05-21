@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class SuratJalanBatam extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'surat_jalan_batams';
 
@@ -74,7 +74,7 @@ class SuratJalanBatam extends Model
         'is_supir_customer',
         'lembur',
         'nginap',
-        'tidak_lembur_nginap'
+        'tidak_lembur_nginap',
     ];
 
     protected $casts = [
@@ -124,7 +124,7 @@ class SuratJalanBatam extends Model
         if ($this->status_pembayaran === 'sudah_dibayar') {
             return 'sudah_dibayar';
         }
-        
+
         if ($this->status_pembayaran_uang_jalan === 'dibayar') {
             return 'sudah_dibayar';
         } elseif ($this->status_pembayaran_uang_jalan === 'sudah_masuk_uang_jalan') {

@@ -17,9 +17,9 @@ class KodeNomorController extends Controller
         $query = KodeNomor::query();
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where('kode', 'like', '%' . $request->search . '%')
-                  ->orWhere('catatan', 'like', '%' . $request->search . '%');
+        if ($request->has('search') && ! empty($request->search)) {
+            $query->where('kode', 'like', '%'.$request->search.'%')
+                ->orWhere('catatan', 'like', '%'.$request->search.'%');
         }
 
         $kodeNomors = $query->orderBy('kode')->paginate(15);
@@ -33,6 +33,7 @@ class KodeNomorController extends Controller
     public function create()
     {
         $tipeAkuns = TipeAkun::orderBy('tipe_akun')->get();
+
         return view('master.kode-nomor.create', compact('tipeAkuns'));
     }
 
@@ -43,13 +44,13 @@ class KodeNomorController extends Controller
     {
         $request->validate([
             'kode' => 'required|string|max:50|unique:kode_nomor,kode',
-            'catatan' => 'nullable|string|max:1000'
+            'catatan' => 'nullable|string|max:1000',
         ]);
 
         KodeNomor::create($request->all());
 
         return redirect()->route('master.kode-nomor.index')
-                        ->with('success', 'Kode Nomor berhasil ditambahkan.');
+            ->with('success', 'Kode Nomor berhasil ditambahkan.');
     }
 
     /**
@@ -66,6 +67,7 @@ class KodeNomorController extends Controller
     public function edit(KodeNomor $kodeNomor)
     {
         $tipeAkuns = TipeAkun::orderBy('tipe_akun')->get();
+
         return view('master.kode-nomor.edit', compact('kodeNomor', 'tipeAkuns'));
     }
 
@@ -76,13 +78,13 @@ class KodeNomorController extends Controller
     {
         $request->validate([
             'kode' => ['required', 'string', 'max:50', Rule::unique('kode_nomor')->ignore($kodeNomor->id)],
-            'catatan' => 'nullable|string|max:1000'
+            'catatan' => 'nullable|string|max:1000',
         ]);
 
         $kodeNomor->update($request->all());
 
         return redirect()->route('master.kode-nomor.index')
-                        ->with('success', 'Kode Nomor berhasil diperbarui.');
+            ->with('success', 'Kode Nomor berhasil diperbarui.');
     }
 
     /**
@@ -93,6 +95,6 @@ class KodeNomorController extends Controller
         $kodeNomor->delete();
 
         return redirect()->route('master.kode-nomor.index')
-                        ->with('success', 'Kode Nomor berhasil dihapus.');
+            ->with('success', 'Kode Nomor berhasil dihapus.');
     }
 }

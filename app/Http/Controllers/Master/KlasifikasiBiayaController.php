@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Master;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\KlasifikasiBiaya;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\KlasifikasiBiayaTemplateExport;
+use App\Http\Controllers\Controller;
+use App\Models\KlasifikasiBiaya;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class KlasifikasiBiayaController extends Controller
 {
@@ -38,25 +38,25 @@ class KlasifikasiBiayaController extends Controller
         try {
             // Get last kode
             $lastKode = KlasifikasiBiaya::orderBy('kode', 'desc')->first();
-            
+
             if ($lastKode && preg_match('/^KB(\d+)$/', $lastKode->kode, $matches)) {
                 // Extract number and increment
-                $nextNumber = (int)$matches[1] + 1;
+                $nextNumber = (int) $matches[1] + 1;
             } else {
                 // First kode
                 $nextNumber = 1;
             }
-            
-            $kode = 'KB' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-            
+
+            $kode = 'KB'.str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
             return response()->json([
                 'success' => true,
-                'kode' => $kode
+                'kode' => $kode,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate kode: ' . $e->getMessage()
+                'message' => 'Gagal generate kode: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -84,10 +84,11 @@ class KlasifikasiBiayaController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            \Log::error('Error saving klasifikasi biaya: ' . $e->getMessage());
+            \Log::error('Error saving klasifikasi biaya: '.$e->getMessage());
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Gagal menyimpan klasifikasi biaya: ' . $e->getMessage());
+                ->with('error', 'Gagal menyimpan klasifikasi biaya: '.$e->getMessage());
         }
     }
 
@@ -100,7 +101,7 @@ class KlasifikasiBiayaController extends Controller
     {
         try {
             $data = $request->validate([
-                'kode' => 'required|string|max:50|unique:klasifikasi_biayas,kode,' . $klasifikasiBiaya->id,
+                'kode' => 'required|string|max:50|unique:klasifikasi_biayas,kode,'.$klasifikasiBiaya->id,
                 'nama' => 'required|string|max:255',
                 'deskripsi' => 'nullable|string',
             ], [
@@ -119,10 +120,11 @@ class KlasifikasiBiayaController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            \Log::error('Error updating klasifikasi biaya: ' . $e->getMessage());
+            \Log::error('Error updating klasifikasi biaya: '.$e->getMessage());
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Gagal memperbarui klasifikasi biaya: ' . $e->getMessage());
+                ->with('error', 'Gagal memperbarui klasifikasi biaya: '.$e->getMessage());
         }
     }
 
@@ -140,7 +142,7 @@ class KlasifikasiBiayaController extends Controller
     {
         $fileName = 'master_klasifikasi_biaya_template.xlsx';
 
-        $export = new KlasifikasiBiayaTemplateExport();
+        $export = new KlasifikasiBiayaTemplateExport;
 
         return Excel::download($export, $fileName);
     }
@@ -159,7 +161,7 @@ class KlasifikasiBiayaController extends Controller
     public function import(Request $request)
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'csv_file' => 'required|file|mimes:xlsx,xls,csv,txt|max:5120'
+            'csv_file' => 'required|file|mimes:xlsx,xls,csv,txt|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -178,7 +180,7 @@ class KlasifikasiBiayaController extends Controller
             if (in_array($extension, ['xlsx', 'xls'])) {
                 // Read Excel via Maatwebsite Excel to array
                 $sheets = Excel::toArray([], $file);
-                if (empty($sheets) || !isset($sheets[0]) || count($sheets[0]) == 0) {
+                if (empty($sheets) || ! isset($sheets[0]) || count($sheets[0]) == 0) {
                     return redirect()->back()->withErrors(['csv_file' => 'File Excel kosong atau tidak dapat dibaca'])->withInput();
                 }
 
@@ -199,7 +201,7 @@ class KlasifikasiBiayaController extends Controller
             } else {
                 // CSV handling (delimiter: ; )
                 $path = $file->getRealPath();
-                $csv = array_map(function($line) {
+                $csv = array_map(function ($line) {
                     return str_getcsv($line, ';');
                 }, file($path));
 
@@ -207,7 +209,7 @@ class KlasifikasiBiayaController extends Controller
 
                 $foundRequired = array_intersect($header, $requiredHeader);
                 if (count($foundRequired) < 1) {
-                    return redirect()->back()->withErrors(['csv_file' => "Format header CSV tidak sesuai. Header minimal: nama"])->withInput();
+                    return redirect()->back()->withErrors(['csv_file' => 'Format header CSV tidak sesuai. Header minimal: nama'])->withInput();
                 }
 
                 $rows = $csv;
@@ -218,7 +220,9 @@ class KlasifikasiBiayaController extends Controller
             $duplicates = [];
 
             // Normalize and index header (remove BOM if present)
-            $header = array_map(function($h){ return strtolower(str_replace("\xEF\xBB\xBF", '', trim((string)$h))); }, $header);
+            $header = array_map(function ($h) {
+                return strtolower(str_replace("\xEF\xBB\xBF", '', trim((string) $h)));
+            }, $header);
             $colIndex = array_flip($header);
 
             foreach ($rows as $index => $row) {
@@ -237,13 +241,14 @@ class KlasifikasiBiayaController extends Controller
                         $value = $row[$pos] ?? '';
                     }
 
-                    $data[$col] = is_array($value) ? '' : trim((string)$value);
+                    $data[$col] = is_array($value) ? '' : trim((string) $value);
                 }
 
                 $isActiveRaw = trim(strtolower($data['is_active'] ?? ''));
 
                 if (empty($data['nama'])) {
                     $errors[] = "Baris {$rowNumber}: Nama wajib diisi";
+
                     continue;
                 }
 
@@ -253,8 +258,8 @@ class KlasifikasiBiayaController extends Controller
                 }
 
                 // Normalize is_active: default to ACTIVE when empty; recognize common truthy/falsy values
-                $activeValues = ['active','1','true','yes','y'];
-                $inactiveValues = ['inactive','0','false','no','n'];
+                $activeValues = ['active', '1', 'true', 'yes', 'y'];
+                $inactiveValues = ['inactive', '0', 'false', 'no', 'n'];
 
                 if ($isActiveRaw === '') {
                     $isActive = true; // default
@@ -270,22 +275,26 @@ class KlasifikasiBiayaController extends Controller
                 // Check duplicate kode
                 if (KlasifikasiBiaya::where('kode', $data['kode'])->exists()) {
                     $duplicates[] = "Baris {$rowNumber}: Kode '{$data['kode']}' sudah ada";
+
                     continue;
                 }
 
                 // Validate lengths
                 if (strlen($data['kode']) > 50) {
                     $errors[] = "Baris {$rowNumber}: Kode maksimal 50 karakter";
+
                     continue;
                 }
 
                 if (strlen($data['nama']) > 255) {
                     $errors[] = "Baris {$rowNumber}: Nama maksimal 255 karakter";
+
                     continue;
                 }
 
                 if (strlen($data['deskripsi']) > 1000) {
                     $errors[] = "Baris {$rowNumber}: Deskripsi maksimal 1000 karakter";
+
                     continue;
                 }
 
@@ -295,26 +304,34 @@ class KlasifikasiBiayaController extends Controller
                         'kode' => $data['kode'],
                         'nama' => $data['nama'],
                         'deskripsi' => $data['deskripsi'] ?: null,
-                        'is_active' => $isActive
+                        'is_active' => $isActive,
                     ]);
                     $imported++;
                 } catch (\Exception $e) {
-                    $errors[] = "Baris {$rowNumber}: Gagal menyimpan - " . $e->getMessage();
+                    $errors[] = "Baris {$rowNumber}: Gagal menyimpan - ".$e->getMessage();
                 }
             }
 
             $message = "Import selesai. {$imported} data berhasil diimport.";
-            if (!empty($errors)) $message .= " " . count($errors) . " data gagal diimport.";
-            if (!empty($duplicates)) $message .= " " . count($duplicates) . " data duplikat dilewati.";
+            if (! empty($errors)) {
+                $message .= ' '.count($errors).' data gagal diimport.';
+            }
+            if (! empty($duplicates)) {
+                $message .= ' '.count($duplicates).' data duplikat dilewati.';
+            }
 
             $sessionData = ['success' => $message];
-            if (!empty($errors)) $sessionData['import_errors'] = $errors;
-            if (!empty($duplicates)) $sessionData['import_duplicates'] = $duplicates;
+            if (! empty($errors)) {
+                $sessionData['import_errors'] = $errors;
+            }
+            if (! empty($duplicates)) {
+                $sessionData['import_duplicates'] = $duplicates;
+            }
 
             return redirect()->route('klasifikasi-biaya.index')->with($sessionData);
 
         } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['csv_file' => 'Terjadi kesalahan saat memproses file: ' . $e->getMessage()])->withInput();
+            return redirect()->back()->withErrors(['csv_file' => 'Terjadi kesalahan saat memproses file: '.$e->getMessage()])->withInput();
         }
     }
 
@@ -324,17 +341,17 @@ class KlasifikasiBiayaController extends Controller
     private function generateKlasifikasiBiayaCode()
     {
         $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'KB')->first();
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             $nomorTerakhir = \App\Models\NomorTerakhir::create([
                 'modul' => 'KB',
                 'nomor_terakhir' => 0,
-                'keterangan' => 'Nomor terakhir untuk kode klasifikasi biaya'
+                'keterangan' => 'Nomor terakhir untuk kode klasifikasi biaya',
             ]);
         }
 
         $running = $nomorTerakhir->nomor_terakhir + 1;
         $nomorTerakhir->update(['nomor_terakhir' => $running]);
 
-        return 'KB' . str_pad($running, 5, '0', STR_PAD_LEFT);
+        return 'KB'.str_pad($running, 5, '0', STR_PAD_LEFT);
     }
 }

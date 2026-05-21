@@ -16,7 +16,7 @@ class PranotaUangRitBatamItem extends Model
         'surat_jalan_batam_id',
         'surat_jalan_bongkaran_batam_id',
         'surat_jalan_tarik_kosong_batam_id',
-        'uang_rit'
+        'uang_rit',
     ];
 
     public function pranota()

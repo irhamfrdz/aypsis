@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\MasterPricelistFreight;
+use App\Exports\MasterPricelistFreightTemplateExport;
+use App\Imports\MasterPricelistFreightImport;
 use App\Models\MasterPelabuhan;
+use App\Models\MasterPricelistFreight;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\MasterPricelistFreightImport;
-use App\Exports\MasterPricelistFreightTemplateExport;
 
 class MasterPricelistFreightController extends Controller
 {
@@ -25,18 +24,18 @@ class MasterPricelistFreightController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_barang', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%")
-                  ->orWhere('vendor', 'like', "%{$search}%")
-                  ->orWhere('size_kontainer', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('lokasi', 'like', "%{$search}%")
+                    ->orWhere('vendor', 'like', "%{$search}%")
+                    ->orWhere('size_kontainer', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
         // Pagination
         $perPage = $request->get('per_page', 15);
         $pricelistFreight = $query->latest()
-                            ->paginate($perPage)
-                            ->withQueryString();
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('master.pricelist-freight.index', compact('pricelistFreight'));
     }
@@ -48,7 +47,7 @@ class MasterPricelistFreightController extends Controller
     {
         $pelabuhans = MasterPelabuhan::aktif()->orderBy('nama_pelabuhan')->get();
         $sizeOptions = MasterPricelistFreight::getSizeKontainerOptions();
-        
+
         return view('master.pricelist-freight.create', compact('pelabuhans', 'sizeOptions'));
     }
 
@@ -63,7 +62,7 @@ class MasterPricelistFreightController extends Controller
             'vendor' => 'nullable|string|max:255',
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|string|in:Aktif,Tidak Aktif',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ], [
             'nama_barang.required' => 'Nama barang harus diisi',
             'tarif.required' => 'Tarif harus diisi',
@@ -77,12 +76,12 @@ class MasterPricelistFreightController extends Controller
 
         try {
             MasterPricelistFreight::create($request->all());
-            
+
             return redirect()->route('master-pricelist-freight.index')
-                           ->with('success', 'Master Pricelist Freight berhasil ditambahkan.');
+                ->with('success', 'Master Pricelist Freight berhasil ditambahkan.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menambahkan data: ' . $e->getMessage())
-                        ->withInput();
+            return back()->with('error', 'Gagal menambahkan data: '.$e->getMessage())
+                ->withInput();
         }
     }
 
@@ -101,7 +100,7 @@ class MasterPricelistFreightController extends Controller
     {
         $pelabuhans = MasterPelabuhan::aktif()->orderBy('nama_pelabuhan')->get();
         $sizeOptions = MasterPricelistFreight::getSizeKontainerOptions();
-        
+
         return view('master.pricelist-freight.edit', compact('masterPricelistFreight', 'pelabuhans', 'sizeOptions'));
     }
 
@@ -116,7 +115,7 @@ class MasterPricelistFreightController extends Controller
             'vendor' => 'nullable|string|max:255',
             'tarif' => 'required|numeric|min:0',
             'status' => 'required|string|in:Aktif,Tidak Aktif',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ], [
             'nama_barang.required' => 'Nama barang harus diisi',
             'tarif.required' => 'Tarif harus diisi',
@@ -130,12 +129,12 @@ class MasterPricelistFreightController extends Controller
 
         try {
             $masterPricelistFreight->update($request->all());
-            
+
             return redirect()->route('master-pricelist-freight.index')
-                           ->with('success', 'Master Pricelist Freight berhasil diperbarui.');
+                ->with('success', 'Master Pricelist Freight berhasil diperbarui.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage())
-                        ->withInput();
+            return back()->with('error', 'Gagal memperbarui data: '.$e->getMessage())
+                ->withInput();
         }
     }
 
@@ -146,38 +145,39 @@ class MasterPricelistFreightController extends Controller
     {
         try {
             $masterPricelistFreight->delete();
-            
+
             return redirect()->route('master-pricelist-freight.index')
-                           ->with('success', 'Master Pricelist Freight berhasil dihapus.');
+                ->with('success', 'Master Pricelist Freight berhasil dihapus.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus data: '.$e->getMessage());
         }
     }
 
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls'
+            'file' => 'required|mimes:xlsx,xls',
         ]);
 
         try {
-            $import = new MasterPricelistFreightImport();
+            $import = new MasterPricelistFreightImport;
             Excel::import($import, $request->file('file'));
 
             $message = "Import berhasil: {$import->getSuccessCount()} data berhasil diimpor.";
             if ($import->getErrorCount() > 0) {
                 $message .= " Namun ada {$import->getErrorCount()} baris yang bermasalah.";
+
                 return redirect()->back()->with('success', $message)->with('import_errors', $import->getErrors());
             }
 
             return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal mengimpor data: '.$e->getMessage());
         }
     }
 
     public function downloadTemplate()
     {
-        return Excel::download(new MasterPricelistFreightTemplateExport(), 'template-pricelist-freight.xlsx');
+        return Excel::download(new MasterPricelistFreightTemplateExport, 'template-pricelist-freight.xlsx');
     }
 }

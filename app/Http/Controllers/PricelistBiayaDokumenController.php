@@ -13,6 +13,7 @@ class PricelistBiayaDokumenController extends Controller
     public function index()
     {
         $pricelists = PricelistBiayaDokumen::orderBy('created_at', 'desc')->get();
+
         return view('master.pricelist-biaya-dokumen.index', compact('pricelists'));
     }
 

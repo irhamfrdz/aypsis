@@ -65,19 +65,20 @@ class UpdateVendorNames extends Command
         }
 
         // Filter tables if specific table is provided
-        $tablesToProcess = $specificTable 
-            ? [$specificTable] 
+        $tablesToProcess = $specificTable
+            ? [$specificTable]
             : $this->tables;
 
         try {
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 DB::beginTransaction();
             }
 
             foreach ($tablesToProcess as $tableName) {
-                if (!Schema::hasTable($tableName)) {
+                if (! Schema::hasTable($tableName)) {
                     $this->warn("⚠️  Table '{$tableName}' does not exist. Skipping...");
                     $this->newLine();
+
                     continue;
                 }
 
@@ -93,7 +94,7 @@ class UpdateVendorNames extends Command
                         ->count();
 
                     if ($count > 0) {
-                        if (!$isDryRun) {
+                        if (! $isDryRun) {
                             // Perform the update
                             DB::table($tableName)
                                 ->where('vendor', $oldName)
@@ -114,41 +115,41 @@ class UpdateVendorNames extends Command
                 $this->newLine();
             }
 
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 DB::commit();
             }
 
             $this->newLine();
             $this->info('=================================================');
-            
+
             if ($isDryRun) {
                 $this->info("✓ DRY RUN COMPLETE! Would update: {$totalUpdated} records");
             } else {
                 $this->info("✓ SUCCESS! Total records updated: {$totalUpdated}");
             }
-            
+
             $this->info('=================================================');
             $this->newLine();
 
             // Display final vendor summary
-            if (!$isDryRun && Schema::hasTable('kontainers')) {
+            if (! $isDryRun && Schema::hasTable('kontainers')) {
                 $this->displayVendorSummary();
             }
 
             return Command::SUCCESS;
 
         } catch (\Exception $e) {
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 DB::rollBack();
             }
 
             $this->newLine();
             $this->error('=================================================');
-            $this->error('✗ ERROR: ' . $e->getMessage());
+            $this->error('✗ ERROR: '.$e->getMessage());
             $this->error('=================================================');
             $this->newLine();
 
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 $this->warn('Transaction rolled back. No changes were made.');
             }
 

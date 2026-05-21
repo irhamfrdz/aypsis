@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\TipeStockBan;
 use Illuminate\Http\Request;
 
@@ -15,9 +14,9 @@ class TipeStockBanController extends Controller
     {
         $query = TipeStockBan::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
-            $query->where('nama', 'LIKE', '%' . $searchTerm . '%');
+            $query->where('nama', 'LIKE', '%'.$searchTerm.'%');
         }
 
         $tipeStockBans = $query->paginate(15);
@@ -54,6 +53,7 @@ class TipeStockBanController extends Controller
     public function show(string $id)
     {
         $tipeStockBan = TipeStockBan::findOrFail($id);
+
         return view('master-tipe-stock-ban.show', compact('tipeStockBan'));
     }
 
@@ -63,6 +63,7 @@ class TipeStockBanController extends Controller
     public function edit(string $id)
     {
         $tipeStockBan = TipeStockBan::findOrFail($id);
+
         return view('master-tipe-stock-ban.edit', compact('tipeStockBan'));
     }
 

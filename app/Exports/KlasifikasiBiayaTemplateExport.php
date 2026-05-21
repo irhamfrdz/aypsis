@@ -3,19 +3,19 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class KlasifikasiBiayaTemplateExport implements FromArray, WithHeadings, WithStyles, WithColumnWidths, WithTitle
+class KlasifikasiBiayaTemplateExport implements FromArray, WithColumnWidths, WithHeadings, WithStyles, WithTitle
 {
     public function array(): array
     {
         return [
             ['KB00001', 'Biaya Bongkar', 'Biaya bongkar muatan', 'active'],
-            ['', 'Biaya Tambahan', 'Deskripsi opsional', 'inactive']
+            ['', 'Biaya Tambahan', 'Deskripsi opsional', 'inactive'],
         ];
     }
 

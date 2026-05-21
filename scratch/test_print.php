@@ -1,13 +1,13 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-use App\Models\BiayaKapal;
 use App\Models\Bank;
+use App\Models\BiayaKapal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 
@@ -18,7 +18,7 @@ try {
 
     // 1. Fetch or create a Bank
     $bank = Bank::first();
-    if (!$bank) {
+    if (! $bank) {
         $bank = Bank::create([
             'name' => 'BCA Test',
             'code' => 'BCA',
@@ -29,7 +29,7 @@ try {
 
     // 2. Fetch or create a BiayaKapal record for testing (KB024 for Biaya Buruh)
     $biayaKapal = BiayaKapal::where('jenis_biaya', 'KB024')->first();
-    if (!$biayaKapal) {
+    if (! $biayaKapal) {
         $biayaKapal = BiayaKapal::create([
             'tanggal' => date('Y-m-d'),
             'nomor_invoice' => 'BKP-05-26-999999',
@@ -52,7 +52,7 @@ try {
     // Load relation
     $biayaKapal->load(['klasifikasiBiaya', 'bank']);
 
-    echo "Eager loaded bank: " . ($biayaKapal->bank ? $biayaKapal->bank->name : 'NONE') . "\n";
+    echo 'Eager loaded bank: '.($biayaKapal->bank ? $biayaKapal->bank->name : 'NONE')."\n";
 
     // 3. Test rendering the print view
     echo "Rendering view biaya-kapal.print...\n";
@@ -67,7 +67,7 @@ try {
             'fontSize' => '9px',
             'headerH1' => '14px',
             'tableFont' => '8px',
-        ]
+        ],
     ])->render();
 
     echo "SUCCESS: view compiled without errors!\n";
@@ -76,7 +76,7 @@ try {
     if (strpos($html, $bank->name) !== false) {
         echo "SUCCESS: Bank name '{$bank->name}' is present in the rendered print view!\n";
     } else {
-        throw new \Exception("Bank name not found in rendered HTML!");
+        throw new \Exception('Bank name not found in rendered HTML!');
     }
 
     // 4. Test print-tkbm.blade.php as well
@@ -92,7 +92,7 @@ try {
             'fontSize' => '9px',
             'headerH1' => '14px',
             'tableFont' => '8px',
-        ]
+        ],
     ])->render();
 
     echo "SUCCESS: print-tkbm view compiled without errors!\n";
@@ -100,13 +100,13 @@ try {
     if (strpos($htmlTkbm, $bank->name) !== false) {
         echo "SUCCESS: Bank name '{$bank->name}' is present in the rendered print-tkbm view!\n";
     } else {
-        throw new \Exception("Bank name not found in rendered print-tkbm HTML!");
+        throw new \Exception('Bank name not found in rendered print-tkbm HTML!');
     }
 
 } catch (\Exception $e) {
     echo "ERROR: Test failed!\n";
-    echo "Message: " . $e->getMessage() . "\n";
-    echo "Trace:\n" . $e->getTraceAsString() . "\n";
+    echo 'Message: '.$e->getMessage()."\n";
+    echo "Trace:\n".$e->getTraceAsString()."\n";
 } finally {
     DB::rollBack();
     echo "Database transaction rolled back. DB is clean.\n";

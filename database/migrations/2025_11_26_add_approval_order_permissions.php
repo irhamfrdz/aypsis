@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Schema;
 use App\Models\Permission;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -15,42 +14,42 @@ return new class extends Migration
         $permissions = [
             [
                 'name' => 'approval-order-view',
-                'description' => 'Melihat halaman approval order'
+                'description' => 'Melihat halaman approval order',
             ],
             [
-                'name' => 'approval-order-create', 
-                'description' => 'Menambah term pembayaran order'
+                'name' => 'approval-order-create',
+                'description' => 'Menambah term pembayaran order',
             ],
             [
                 'name' => 'approval-order-update',
-                'description' => 'Mengedit term pembayaran order'
+                'description' => 'Mengedit term pembayaran order',
             ],
             [
                 'name' => 'approval-order-delete',
-                'description' => 'Menghapus term pembayaran order'
+                'description' => 'Menghapus term pembayaran order',
             ],
             [
                 'name' => 'approval-order-approve',
-                'description' => 'Menyetujui approval order'
+                'description' => 'Menyetujui approval order',
             ],
             [
                 'name' => 'approval-order-reject',
-                'description' => 'Menolak approval order'
+                'description' => 'Menolak approval order',
             ],
             [
                 'name' => 'approval-order-print',
-                'description' => 'Mencetak dokumen approval order'
+                'description' => 'Mencetak dokumen approval order',
             ],
             [
                 'name' => 'approval-order-export',
-                'description' => 'Export data approval order'
-            ]
+                'description' => 'Export data approval order',
+            ],
         ];
 
         foreach ($permissions as $permissionData) {
             $existing = Permission::where('name', $permissionData['name'])->first();
-            
-            if (!$existing) {
+
+            if (! $existing) {
                 Permission::create($permissionData);
             }
         }
@@ -70,7 +69,7 @@ return new class extends Migration
             'approval-order-approve',
             'approval-order-reject',
             'approval-order-print',
-            'approval-order-export'
+            'approval-order-export',
         ];
 
         foreach ($permissionNames as $name) {

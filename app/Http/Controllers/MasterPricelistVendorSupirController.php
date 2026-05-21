@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasterPricelistVendorSupir;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,12 +25,12 @@ class MasterPricelistVendorSupirController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('dari', 'like', "%{$search}%")
-                  ->orWhere('ke', 'like', "%{$search}%")
-                  ->orWhereHas('vendor', function($vq) use ($search) {
-                      $vq->where('nama_vendor', 'like', "%{$search}%");
-                  });
+                    ->orWhere('ke', 'like', "%{$search}%")
+                    ->orWhereHas('vendor', function ($vq) use ($search) {
+                        $vq->where('nama_vendor', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -41,7 +40,7 @@ class MasterPricelistVendorSupirController extends Controller
 
         $pricelists = $query->orderBy('created_at', 'desc')->paginate(20);
         $vendors = \App\Models\VendorSupir::orderBy('nama_vendor')->get();
-        
+
         return view('master-tarif.pricelist-vendor-supir.index', compact('pricelists', 'vendors'));
     }
 
@@ -51,6 +50,7 @@ class MasterPricelistVendorSupirController extends Controller
     public function create()
     {
         $vendors = \App\Models\VendorSupir::orderBy('nama_vendor')->get();
+
         return view('master-tarif.pricelist-vendor-supir.create', compact('vendors'));
     }
 
@@ -97,6 +97,7 @@ class MasterPricelistVendorSupirController extends Controller
     public function edit(MasterPricelistVendorSupir $pricelistVendorSupir)
     {
         $vendors = \App\Models\VendorSupir::orderBy('nama_vendor')->get();
+
         return view('master-tarif.pricelist-vendor-supir.edit', compact('pricelistVendorSupir', 'vendors'));
     }
 

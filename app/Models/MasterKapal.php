@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Auditable;
 
 class MasterKapal extends Model
 {
-    use SoftDeletes, Auditable;
-
     use Auditable;
+    use Auditable, SoftDeletes;
+
     protected $table = 'master_kapals';
 
     protected $fillable = [
@@ -65,6 +65,7 @@ class MasterKapal extends Model
     public function getFormattedTotalKapasitasAttribute()
     {
         $total = $this->total_kapasitas_kontainer;
+
         return $total > 0 ? number_format($total) : '-';
     }
 

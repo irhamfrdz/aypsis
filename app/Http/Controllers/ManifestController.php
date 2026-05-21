@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Exports\ManifestTableExport;
 use App\Models\Manifest;
 use App\Models\Prospek;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ManifestTableExport;
 
 class ManifestController extends Controller
 {
@@ -30,7 +29,7 @@ class ManifestController extends Controller
         $noVoyage = $request->get('no_voyage');
 
         // If no filters, redirect to select ship page
-        if (!$namaKapal || !$noVoyage) {
+        if (! $namaKapal || ! $noVoyage) {
             return redirect()->route('report.manifests.select-ship');
         }
 
@@ -64,7 +63,7 @@ class ManifestController extends Controller
 
         // Convert to objects for view compatibility
         $ships = $shipNames->map(function ($name) {
-            return (object)['nama_kapal' => $name];
+            return (object) ['nama_kapal' => $name];
         });
 
         return view('manifests.select-ship', compact('ships'));
@@ -88,20 +87,20 @@ class ManifestController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_bl', 'LIKE', "%{$search}%")
-                  ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
-                  ->orWhere('nomor_tanda_terima', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_barang', 'LIKE', "%{$search}%")
-                  ->orWhere('pengirim', 'LIKE', "%{$search}%")
-                  ->orWhere('penerima', 'LIKE', "%{$search}%");
+                    ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
+                    ->orWhere('nomor_tanda_terima', 'LIKE', "%{$search}%")
+                    ->orWhere('nama_barang', 'LIKE', "%{$search}%")
+                    ->orWhere('pengirim', 'LIKE', "%{$search}%")
+                    ->orWhere('penerima', 'LIKE', "%{$search}%");
             });
         }
 
         // Filter by tipe kontainer
         if ($request->filled('tipe_kontainer')) {
             $tipe = $request->tipe_kontainer;
-            $query->whereRaw("UPPER(tipe_kontainer) = ?", [strtoupper($tipe)]);
+            $query->whereRaw('UPPER(tipe_kontainer) = ?', [strtoupper($tipe)]);
         }
 
         // Filter by size kontainer
@@ -114,7 +113,7 @@ class ManifestController extends Controller
         // Store selection in session
         session([
             'selected_manifest_ship' => $namaKapal,
-            'selected_manifest_voyage' => $noVoyage
+            'selected_manifest_voyage' => $noVoyage,
         ]);
 
         return view('manifests.index', compact('manifests', 'namaKapal', 'noVoyage'));
@@ -128,7 +127,7 @@ class ManifestController extends Controller
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
 
-        if (!$namaKapal || !$noVoyage) {
+        if (! $namaKapal || ! $noVoyage) {
             return redirect()->back()->with('error', 'Nama Kapal dan No Voyage harus ada untuk export');
         }
 
@@ -142,20 +141,20 @@ class ManifestController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_bl', 'LIKE', "%{$search}%")
-                  ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
-                  ->orWhere('nomor_tanda_terima', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_barang', 'LIKE', "%{$search}%")
-                  ->orWhere('pengirim', 'LIKE', "%{$search}%")
-                  ->orWhere('penerima', 'LIKE', "%{$search}%");
+                    ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
+                    ->orWhere('nomor_tanda_terima', 'LIKE', "%{$search}%")
+                    ->orWhere('nama_barang', 'LIKE', "%{$search}%")
+                    ->orWhere('pengirim', 'LIKE', "%{$search}%")
+                    ->orWhere('penerima', 'LIKE', "%{$search}%");
             });
         }
 
         // Filter by tipe kontainer
         if ($request->filled('tipe_kontainer')) {
             $tipe = $request->tipe_kontainer;
-            $query->whereRaw("UPPER(tipe_kontainer) = ?", [strtoupper($tipe)]);
+            $query->whereRaw('UPPER(tipe_kontainer) = ?', [strtoupper($tipe)]);
         }
 
         // Filter by size kontainer
@@ -165,7 +164,7 @@ class ManifestController extends Controller
 
         $manifests = $query->orderBy('created_at', 'desc')->get();
 
-        $filename = 'Manifest_' . str_replace(' ', '_', $namaKapal) . '_' . str_replace('/', '-', $noVoyage) . '.xlsx';
+        $filename = 'Manifest_'.str_replace(' ', '_', $namaKapal).'_'.str_replace('/', '-', $noVoyage).'.xlsx';
 
         return Excel::download(new ManifestTableExport($manifests), $filename);
     }
@@ -177,6 +176,7 @@ class ManifestController extends Controller
     {
         // Only load a few initial records, the rest will be handled by AJAX
         $prospeks = \App\Models\Prospek::orderBy('pt_pengirim')->limit(20)->get();
+
         return view('manifests.create', compact('prospeks'));
     }
 
@@ -223,7 +223,7 @@ class ManifestController extends Controller
 
         return redirect()->route('report.manifests.index', [
             'nama_kapal' => $validated['nama_kapal'] ?? '',
-            'no_voyage' => $validated['no_voyage'] ?? ''
+            'no_voyage' => $validated['no_voyage'] ?? '',
         ])->with('success', 'Manifest berhasil ditambahkan');
     }
 
@@ -233,6 +233,7 @@ class ManifestController extends Controller
     public function show(string $id)
     {
         $manifest = Manifest::with(['prospek', 'createdBy', 'updatedBy'])->findOrFail($id);
+
         return view('manifests.show', compact('manifest'));
     }
 
@@ -246,7 +247,7 @@ class ManifestController extends Controller
         $prospeks = \App\Models\Prospek::where('id', $manifest->prospek_id)
             ->union(\App\Models\Prospek::orderBy('pt_pengirim')->limit(20))
             ->get();
-            
+
         return view('manifests.edit', compact('manifest', 'prospeks'));
     }
 
@@ -294,7 +295,7 @@ class ManifestController extends Controller
 
         return redirect()->route('report.manifests.index', [
             'nama_kapal' => $manifest->nama_kapal,
-            'no_voyage' => $manifest->no_voyage
+            'no_voyage' => $manifest->no_voyage,
         ])->with('success', 'Manifest berhasil diperbarui');
     }
 
@@ -311,7 +312,7 @@ class ManifestController extends Controller
 
         return redirect()->route('report.manifests.index', [
             'nama_kapal' => $namaKapal,
-            'no_voyage' => $noVoyage
+            'no_voyage' => $noVoyage,
         ])->with('success', 'Manifest berhasil dihapus');
     }
 
@@ -333,7 +334,7 @@ class ManifestController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Nomor BL berhasil diperbarui',
-            'nomor_bl' => $manifest->nomor_bl
+            'nomor_bl' => $manifest->nomor_bl,
         ]);
     }
 
@@ -345,7 +346,7 @@ class ManifestController extends Controller
         $namaKapal = $request->input('nama_kapal');
         $noVoyage = $request->input('no_voyage');
 
-        if (!$namaKapal || !$noVoyage) {
+        if (! $namaKapal || ! $noVoyage) {
             return response()->json(['success' => false, 'message' => 'Data kapal dan voyage tidak valid'], 400);
         }
 
@@ -365,7 +366,7 @@ class ManifestController extends Controller
         $namaKapal = $request->input('nama_kapal');
         $noVoyage = $request->input('no_voyage');
 
-        if (!$namaKapal || !$noVoyage) {
+        if (! $namaKapal || ! $noVoyage) {
             return response()->json(['success' => false, 'message' => 'Data kapal dan voyage tidak valid'], 400);
         }
 
@@ -375,9 +376,9 @@ class ManifestController extends Controller
 
         $manifests = Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $noVoyage)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereNull('size_kontainer')
-                      ->orWhere('size_kontainer', '');
+                    ->orWhere('size_kontainer', '');
             })
             ->where('nomor_kontainer', '!=', 'Cargo')
             ->get();
@@ -388,11 +389,11 @@ class ManifestController extends Controller
             $foundUkuran = null;
 
             $kontainer = \App\Models\Kontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
-            if ($kontainer && !empty($kontainer->ukuran)) {
+            if ($kontainer && ! empty($kontainer->ukuran)) {
                 $foundUkuran = $kontainer->ukuran;
             } else {
                 $stockKontainer = \App\Models\StockKontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
-                if ($stockKontainer && !empty($stockKontainer->ukuran)) {
+                if ($stockKontainer && ! empty($stockKontainer->ukuran)) {
                     $foundUkuran = $stockKontainer->ukuran;
                 }
             }
@@ -457,19 +458,19 @@ class ManifestController extends Controller
         foreach ($manifests as $manifest) {
             $isLcl = false;
             $isCargo = false;
-            
+
             // Determine if Cargo based on tipe_kontainer or size_kontainer
             if (
-                (!empty($manifest->tipe_kontainer) && stripos($manifest->tipe_kontainer, 'Cargo') !== false) ||
-                (!empty($manifest->size_kontainer) && stripos($manifest->size_kontainer, 'Cargo') !== false)
+                (! empty($manifest->tipe_kontainer) && stripos($manifest->tipe_kontainer, 'Cargo') !== false) ||
+                (! empty($manifest->size_kontainer) && stripos($manifest->size_kontainer, 'Cargo') !== false)
             ) {
                 $isCargo = true;
             }
 
             // Determine if LCL based on tipe_kontainer or size_kontainer
             if (
-                (!empty($manifest->tipe_kontainer) && stripos($manifest->tipe_kontainer, 'LCL') !== false) ||
-                (!empty($manifest->size_kontainer) && stripos($manifest->size_kontainer, 'LCL') !== false)
+                (! empty($manifest->tipe_kontainer) && stripos($manifest->tipe_kontainer, 'LCL') !== false) ||
+                (! empty($manifest->size_kontainer) && stripos($manifest->size_kontainer, 'LCL') !== false)
             ) {
                 $isLcl = true;
             }
@@ -507,7 +508,7 @@ class ManifestController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Nomor urut berhasil diperbarui',
-            'nomor_urut' => $manifest->nomor_urut
+            'nomor_urut' => $manifest->nomor_urut,
         ]);
     }
 
@@ -532,7 +533,7 @@ class ManifestController extends Controller
 
             if ($result === false) {
                 return redirect()->back()
-                    ->with('error', 'Import gagal: ' . implode(', ', $import->getErrors()));
+                    ->with('error', 'Import gagal: '.implode(', ', $import->getErrors()));
             }
 
             $successCount = $result['success_count'];
@@ -541,20 +542,20 @@ class ManifestController extends Controller
             if ($successCount > 0 && empty($errors)) {
                 return redirect()->route('report.manifests.index', [
                     'nama_kapal' => $namaKapal,
-                    'no_voyage' => $noVoyage
+                    'no_voyage' => $noVoyage,
                 ])->with('success', "Berhasil import {$successCount} data manifest");
-            } elseif ($successCount > 0 && !empty($errors)) {
+            } elseif ($successCount > 0 && ! empty($errors)) {
                 return redirect()->route('report.manifests.index', [
                     'nama_kapal' => $namaKapal,
-                    'no_voyage' => $noVoyage
-                ])->with('warning', "Import selesai dengan {$successCount} data berhasil, namun ada " . count($errors) . " error: " . implode('; ', array_slice($errors, 0, 3)));
+                    'no_voyage' => $noVoyage,
+                ])->with('warning', "Import selesai dengan {$successCount} data berhasil, namun ada ".count($errors).' error: '.implode('; ', array_slice($errors, 0, 3)));
             } else {
                 return redirect()->back()
-                    ->with('error', 'Import gagal: ' . implode('; ', array_slice($errors, 0, 5)));
+                    ->with('error', 'Import gagal: '.implode('; ', array_slice($errors, 0, 5)));
             }
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -563,7 +564,7 @@ class ManifestController extends Controller
      */
     public function downloadTemplate()
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set headers
@@ -578,15 +579,15 @@ class ManifestController extends Controller
             'SHIPPER',
             'Alamat Pengirim',
             'CONSIGNEE',
-            'Term'
+            'Term',
         ];
 
         // Write headers in row 1
         $col = 'A';
         foreach ($headers as $header) {
-            $sheet->setCellValue($col . '1', $header);
-            $sheet->getStyle($col . '1')->getFont()->setBold(true);
-            $sheet->getStyle($col . '1')->getFill()
+            $sheet->setCellValue($col.'1', $header);
+            $sheet->getStyle($col.'1')->getFont()->setBold(true);
+            $sheet->getStyle($col.'1')->getFill()
                 ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                 ->getStartColor()->setARGB('FFE0E0E0');
             $sheet->getColumnDimension($col)->setAutoSize(true);
@@ -605,12 +606,12 @@ class ManifestController extends Controller
             'PT Pengirim',
             'Alamat Pengirim Contoh',
             'PT Penerima',
-            'FOB'
+            'FOB',
         ];
 
         $col = 'A';
         foreach ($exampleData as $data) {
-            $sheet->setCellValue($col . '2', $data);
+            $sheet->setCellValue($col.'2', $data);
             $col++;
         }
 
@@ -620,7 +621,7 @@ class ManifestController extends Controller
 
         // Set headers for download
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');
@@ -638,7 +639,7 @@ class ManifestController extends Controller
 
         try {
             $file = $request->file('file');
-            
+
             // Parse Excel to get all data
             $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
             $worksheet = $spreadsheet->getActiveSheet();
@@ -662,14 +663,14 @@ class ManifestController extends Controller
 
             // Remove header row
             $header = array_shift($rows);
-            
+
             $successCount = 0;
             $errors = [];
             $shipsProcessed = [];
 
             foreach ($rows as $index => $row) {
                 $rowNumber = $index + 2;
-                
+
                 // Extract data - sekarang dengan 25 kolom lengkap
                 $namaKapal = trim($row[0] ?? '');
                 $noVoyage = trim($row[1] ?? '');
@@ -696,9 +697,9 @@ class ManifestController extends Controller
                 $pelabuhanBongkar = trim($row[22] ?? '');
                 $asalKontainer = trim($row[23] ?? '');
                 $ke = trim($row[24] ?? '');
-                
+
                 // Parse tanggal berangkat
-                if (!empty($tanggalBerangkat)) {
+                if (! empty($tanggalBerangkat)) {
                     try {
                         if (is_numeric($tanggalBerangkat)) {
                             // Excel date format (serial number)
@@ -726,18 +727,18 @@ class ManifestController extends Controller
                     $foundUkuran = null;
 
                     $kontainer = \App\Models\Kontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
-                    if ($kontainer && !empty($kontainer->ukuran)) {
+                    if ($kontainer && ! empty($kontainer->ukuran)) {
                         $foundUkuran = $kontainer->ukuran;
                     } else {
                         $stockKontainer = \App\Models\StockKontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
-                        if ($stockKontainer && !empty($stockKontainer->ukuran)) {
+                        if ($stockKontainer && ! empty($stockKontainer->ukuran)) {
                             $foundUkuran = $stockKontainer->ukuran;
                         }
                     }
 
                     if ($foundUkuran) {
                         $sizeKontainer = $foundUkuran;
-                        if (!isset($autoFilledWarnings)) {
+                        if (! isset($autoFilledWarnings)) {
                             $autoFilledWarnings = [];
                         }
                         $autoFilledWarnings[] = "Baris {$rowNumber}: Size otomatis diisi {$foundUkuran} untuk kontainer {$nomorKontainer}";
@@ -747,6 +748,7 @@ class ManifestController extends Controller
                 // Validate required fields
                 if (empty($namaKapal) || empty($noVoyage) || empty($nomorBl)) {
                     $errors[] = "Baris {$rowNumber}: Nama Kapal, No Voyage, dan No BL wajib diisi";
+
                     continue;
                 }
 
@@ -816,65 +818,65 @@ class ManifestController extends Controller
                     }
 
                     $successCount++;
-                    
+
                     // Track ships processed
-                    $shipKey = $namaKapal . '|' . $noVoyage;
-                    if (!isset($shipsProcessed[$shipKey])) {
+                    $shipKey = $namaKapal.'|'.$noVoyage;
+                    if (! isset($shipsProcessed[$shipKey])) {
                         $shipsProcessed[$shipKey] = [
                             'nama_kapal' => $namaKapal,
                             'no_voyage' => $noVoyage,
-                            'count' => 0
+                            'count' => 0,
                         ];
                     }
                     $shipsProcessed[$shipKey]['count']++;
 
                 } catch (\Exception $e) {
-                    $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+                    $errors[] = "Baris {$rowNumber}: ".$e->getMessage();
                 }
             }
 
             // Build success message with ship summary
             $shipSummary = '';
-            if (!empty($shipsProcessed)) {
-                $shipSummary = ' (' . implode(', ', array_map(function($ship) {
-                    return $ship['nama_kapal'] . ' - ' . $ship['no_voyage'] . ': ' . $ship['count'] . ' manifest';
-                }, $shipsProcessed)) . ')';
+            if (! empty($shipsProcessed)) {
+                $shipSummary = ' ('.implode(', ', array_map(function ($ship) {
+                    return $ship['nama_kapal'].' - '.$ship['no_voyage'].': '.$ship['count'].' manifest';
+                }, $shipsProcessed)).')';
             }
 
             if ($successCount > 0 && empty($errors)) {
                 // Redirect to first ship's manifest page
                 $firstShip = reset($shipsProcessed);
-                
-                if (!empty($autoFilledWarnings)) {
+
+                if (! empty($autoFilledWarnings)) {
                     return redirect()->route('report.manifests.index', [
                         'nama_kapal' => $firstShip['nama_kapal'],
-                        'no_voyage' => $firstShip['no_voyage']
-                    ])->with('warning', "Berhasil import {$successCount} data manifest{$shipSummary}. Namun terdapat " . count($autoFilledWarnings) . " autofill size kontainer.")
-                      ->with('errors_list', array_slice($autoFilledWarnings, 0, 15));
+                        'no_voyage' => $firstShip['no_voyage'],
+                    ])->with('warning', "Berhasil import {$successCount} data manifest{$shipSummary}. Namun terdapat ".count($autoFilledWarnings).' autofill size kontainer.')
+                        ->with('errors_list', array_slice($autoFilledWarnings, 0, 15));
                 }
 
                 return redirect()->route('report.manifests.index', [
                     'nama_kapal' => $firstShip['nama_kapal'],
-                    'no_voyage' => $firstShip['no_voyage']
+                    'no_voyage' => $firstShip['no_voyage'],
                 ])->with('success', "Berhasil import {$successCount} data manifest{$shipSummary}");
-            } elseif ($successCount > 0 && !empty($errors)) {
+            } elseif ($successCount > 0 && ! empty($errors)) {
                 $firstShip = reset($shipsProcessed);
-                
+
                 $allWarningsAndErrors = array_merge($errors, $autoFilledWarnings ?? []);
-                
+
                 return redirect()->route('report.manifests.index', [
                     'nama_kapal' => $firstShip['nama_kapal'],
-                    'no_voyage' => $firstShip['no_voyage']
-                ])->with('warning', "Import selesai dengan {$successCount} data berhasil{$shipSummary}, namun ada " . count($errors) . " error dan " . (!empty($autoFilledWarnings) ? count($autoFilledWarnings) : 0) . " peringatan autofill.")
-                  ->with('errors_list', array_slice($allWarningsAndErrors, 0, 15));
+                    'no_voyage' => $firstShip['no_voyage'],
+                ])->with('warning', "Import selesai dengan {$successCount} data berhasil{$shipSummary}, namun ada ".count($errors).' error dan '.(! empty($autoFilledWarnings) ? count($autoFilledWarnings) : 0).' peringatan autofill.')
+                    ->with('errors_list', array_slice($allWarningsAndErrors, 0, 15));
             } else {
                 return redirect()->back()
-                    ->with('error', 'Import gagal: ' . implode('; ', array_slice($errors, 0, 5)));
+                    ->with('error', 'Import gagal: '.implode('; ', array_slice($errors, 0, 5)));
             }
 
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -883,7 +885,7 @@ class ManifestController extends Controller
      */
     public function downloadBulkTemplate()
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set headers - kolom lengkap untuk table manifests
@@ -912,15 +914,15 @@ class ManifestController extends Controller
             'Pelabuhan Muat',
             'Pelabuhan Bongkar',
             'Asal Kontainer',
-            'Ke'
+            'Ke',
         ];
 
         // Write headers in row 1
         $col = 'A';
         foreach ($headers as $header) {
-            $sheet->setCellValue($col . '1', $header);
-            $sheet->getStyle($col . '1')->getFont()->setBold(true);
-            $sheet->getStyle($col . '1')->getFill()
+            $sheet->setCellValue($col.'1', $header);
+            $sheet->getStyle($col.'1')->getFont()->setBold(true);
+            $sheet->getStyle($col.'1')->getFill()
                 ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                 ->getStartColor()->setARGB('FFE0E0E0');
             $sheet->getColumnDimension($col)->setAutoSize(true);
@@ -953,12 +955,12 @@ class ManifestController extends Controller
             'Jakarta',             // Pelabuhan Muat
             'Surabaya',            // Pelabuhan Bongkar
             'Jakarta',             // Asal Kontainer
-            'Gudang A'             // Ke
+            'Gudang A',             // Ke
         ];
 
         $col = 'A';
         foreach ($exampleData as $data) {
-            $sheet->setCellValue($col . '2', $data);
+            $sheet->setCellValue($col.'2', $data);
             $col++;
         }
 
@@ -968,7 +970,7 @@ class ManifestController extends Controller
 
         // Set headers for download
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');
@@ -983,7 +985,7 @@ class ManifestController extends Controller
         try {
             // Decode URL-encoded ship name
             $namaKapal = urldecode($namaKapal);
-            
+
             // Normalize ship name for loose matching
             $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
             $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
@@ -994,7 +996,7 @@ class ManifestController extends Controller
                 ->distinct()
                 ->orderBy('no_voyage', 'asc')
                 ->pluck('no_voyage')
-                ->map(function($voyage) {
+                ->map(function ($voyage) {
                     // Normalize voyage: trim and uppercase
                     return strtoupper(trim($voyage));
                 })
@@ -1005,14 +1007,14 @@ class ManifestController extends Controller
             return response()->json([
                 'success' => true,
                 'voyages' => $voyages,
-                'count' => count($voyages)
+                'count' => count($voyages),
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'voyages' => [],
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -1035,7 +1037,7 @@ class ManifestController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Satuan berhasil diperbarui',
-            'satuan' => $manifest->satuan
+            'satuan' => $manifest->satuan,
         ]);
     }
 
@@ -1057,7 +1059,7 @@ class ManifestController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Kuantitas berhasil diperbarui',
-            'kuantitas' => $manifest->kuantitas
+            'kuantitas' => $manifest->kuantitas,
         ]);
     }
 
@@ -1067,40 +1069,40 @@ class ManifestController extends Controller
     public function searchShippers(Request $request)
     {
         $q = $request->get('q');
-        
+
         $pengirims = \App\Models\Pengirim::select('id', 'nama_pengirim as name', 'alamat')
             ->where('nama_pengirim', 'LIKE', "%$q%")
             ->limit(50)
-            ->get()->map(function($item) {
+            ->get()->map(function ($item) {
                 return [
                     'id' => $item->name,
                     'text' => $item->name,
                     'alamat' => $item->alamat,
-                    'edit_url' => route('pengirim.edit', $item->id)
+                    'edit_url' => route('pengirim.edit', $item->id),
                 ];
             });
 
         $penerimas = \App\Models\Penerima::select('id', 'nama_penerima as name', 'alamat')
             ->where('nama_penerima', 'LIKE', "%$q%")
             ->limit(50)
-            ->get()->map(function($item) {
+            ->get()->map(function ($item) {
                 return [
                     'id' => $item->name,
                     'text' => $item->name,
                     'alamat' => $item->alamat,
-                    'edit_url' => route('penerima.edit', $item->id)
+                    'edit_url' => route('penerima.edit', $item->id),
                 ];
             });
 
         $masters = \App\Models\MasterPengirimPenerima::select('id', 'nama as name', 'alamat')
             ->where('nama', 'LIKE', "%$q%")
             ->limit(50)
-            ->get()->map(function($item) {
+            ->get()->map(function ($item) {
                 return [
                     'id' => $item->name,
                     'text' => $item->name,
                     'alamat' => $item->alamat,
-                    'edit_url' => route('master-pengirim-penerima.edit', $item->id)
+                    'edit_url' => route('master-pengirim-penerima.edit', $item->id),
                 ];
             });
 
@@ -1122,7 +1124,7 @@ class ManifestController extends Controller
             ->where('pt_pengirim', 'LIKE', "%$q%")
             ->limit(50)
             ->get();
-            
+
         return response()->json($results);
     }
 
@@ -1132,26 +1134,26 @@ class ManifestController extends Controller
     public function printDocument(string $id)
     {
         $manifest = Manifest::findOrFail($id);
-        
+
         $imageUrls = [];
         $ttNo = $manifest->nomor_tanda_terima;
         $containerNo = $manifest->nomor_kontainer;
-        
+
         // 1. DIRECT RELATIONSHIPS
         if ($manifest->prospek && $manifest->prospek->tandaTerima) {
             $tandaTerima = $manifest->prospek->tandaTerima;
             $this->extractImagesFromTandaTerima($tandaTerima, $imageUrls);
         }
-        
+
         // 2. FALLBACK/LOOKUP BY TANDA TERIMA NUMBER
-        
+
         // FCL (TandaTerima & TandaTerimaBatam)
         if ($ttNo) {
             $fcls = \App\Models\TandaTerima::where('no_surat_jalan', $ttNo)->get();
             foreach ($fcls as $fcl) {
                 $this->extractImagesFromTandaTerima($fcl, $imageUrls);
             }
-            
+
             if (class_exists(\App\Models\TandaTerimaBatam::class)) {
                 $fclBatams = \App\Models\TandaTerimaBatam::where('no_surat_jalan', $ttNo)->get();
                 foreach ($fclBatams as $fclBatam) {
@@ -1159,7 +1161,7 @@ class ManifestController extends Controller
                 }
             }
         }
-        
+
         // Tanpa Surat Jalan (TandaTerimaTanpaSuratJalan & TandaTerimaTanpaSuratJalanBatam)
         if ($ttNo) {
             $ttsjs = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $ttNo)
@@ -1168,7 +1170,7 @@ class ManifestController extends Controller
             foreach ($ttsjs as $ttsj) {
                 $this->extractImagesFromArrayField($ttsj->gambar_tanda_terima, $imageUrls);
             }
-            
+
             if (class_exists(\App\Models\TandaTerimaTanpaSuratJalanBatam::class)) {
                 $ttsjBatams = \App\Models\TandaTerimaTanpaSuratJalanBatam::where('no_tanda_terima', $ttNo)
                     ->orWhere('nomor_tanda_terima', $ttNo)
@@ -1178,14 +1180,14 @@ class ManifestController extends Controller
                 }
             }
         }
-        
+
         // LCL (TandaTerimaLcl & TandaTerimaLclBatam)
         if ($ttNo) {
             $lcls = \App\Models\TandaTerimaLcl::where('nomor_tanda_terima', $ttNo)->get();
             foreach ($lcls as $lcl) {
                 $this->extractImagesFromArrayField($lcl->gambar_surat_jalan, $imageUrls);
             }
-            
+
             if (class_exists(\App\Models\TandaTerimaLclBatam::class)) {
                 $lclBatams = \App\Models\TandaTerimaLclBatam::where('nomor_tanda_terima', $ttNo)->get();
                 foreach ($lclBatams as $lclBatam) {
@@ -1193,34 +1195,35 @@ class ManifestController extends Controller
                 }
             }
         }
-        
+
         // Deduplicate
         $imageUrls = array_unique($imageUrls);
-        
+
         return view('manifests.print-document', compact('manifest', 'imageUrls'));
     }
-    
+
     private function extractImagesFromTandaTerima($tandaTerima, &$imageUrls)
     {
         $gambar = $tandaTerima->gambar_checkpoint;
-        if (!$gambar && $tandaTerima->suratJalan) {
+        if (! $gambar && $tandaTerima->suratJalan) {
             $gambar = $tandaTerima->suratJalan->gambar_checkpoint;
         }
         if ($gambar) {
             $this->extractImagesFromArrayField($gambar, $imageUrls);
         }
     }
-    
+
     private function extractImagesFromArrayField($field, &$imageUrls)
     {
-        if (empty($field)) return;
-        
+        if (empty($field)) {
+            return;
+        }
+
         $decoded = is_array($field) ? $field : (is_string($field) && (str_starts_with($field, '[') || str_starts_with($field, '{')) ? json_decode($field, true) : [$field]);
         if (is_array($decoded)) {
             foreach (array_filter($decoded) as $img) {
-                $imageUrls[] = asset('storage/' . $img);
+                $imageUrls[] = asset('storage/'.$img);
             }
         }
     }
 }
-

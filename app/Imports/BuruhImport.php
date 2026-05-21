@@ -10,23 +10,18 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 class BuruhImport implements ToModel, WithHeadingRow, WithValidation
 {
     /**
-    * @param array $row
-    *
-    * @return \Illuminate\Database\Eloquent\Model|null
-    */
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
     public function model(array $row)
     {
         return new Buruh([
-            'nama'   => $row['nama'],
-            'nik'    => $row['nik'] ?? null,
+            'nama' => $row['nama'],
+            'nik' => $row['nik'] ?? null,
             'status' => isset($row['status']) && strtolower($row['status']) === 'aktif' ? 'aktif' : 'non-aktif',
             'status_bpjs' => isset($row['status_bpjs']) && strtolower($row['status_bpjs']) === 'aktif' ? 'aktif' : 'tidak aktif',
         ]);
     }
 
-    /**
-     * @return array
-     */
     public function rules(): array
     {
         return [

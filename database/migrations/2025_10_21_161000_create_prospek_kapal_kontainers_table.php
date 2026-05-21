@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('prospek_kapal_kontainers')) {
+        if (! Schema::hasTable('prospek_kapal_kontainers')) {
             Schema::create('prospek_kapal_kontainers', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('prospek_kapal_id')->constrained('prospek_kapal')->onDelete('cascade');
@@ -30,8 +30,8 @@ return new class extends Migration
 
                 // Foreign key constraint with shorter name
                 $table->foreign('tanda_terima_tanpa_sj_id', 'pk_kontainers_tt_tanpa_sj_foreign')
-                      ->references('id')->on('tanda_terima_tanpa_surat_jalan')
-                      ->onDelete('cascade');
+                    ->references('id')->on('tanda_terima_tanpa_surat_jalan')
+                    ->onDelete('cascade');
 
                 $table->index(['prospek_kapal_id', 'status_loading']);
                 $table->index('nomor_kontainer');

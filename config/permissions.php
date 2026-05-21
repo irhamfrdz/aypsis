@@ -44,7 +44,7 @@ return [
                 'master-kegiatan' => 'Manajemen Kegiatan',
                 'master-permission' => 'Manajemen Permission',
                 'master-mobil' => 'Manajemen Mobil',
-            ]
+            ],
         ],
         'user-approval' => [
             'name' => 'Persetujuan User',
@@ -80,7 +80,7 @@ return [
                 'pranota-stock-create' => 'Buat Pranota',
                 'pranota-stock-print' => 'Cetak Pranota',
                 'pranota-stock-delete' => 'Hapus Pranota',
-            ]
+            ],
         ],
     ],
 
@@ -108,5 +108,5 @@ return [
 
         // Pranota Stock Amprahan - butuh pranota-stock-view
         'pranota-stock' => ['pranota-stock-view'],
-    ]
+    ],
 ];

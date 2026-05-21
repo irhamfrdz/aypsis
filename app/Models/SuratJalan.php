@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Carbon\Carbon;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class SuratJalan extends Model
 {
-    use HasFactory, Auditable;
-
     use Auditable;
+    use Auditable, HasFactory;
+
     protected $table = 'surat_jalans';
 
     protected $fillable = [
@@ -74,7 +73,7 @@ class SuratJalan extends Model
         'is_supir_customer',
         'lembur',
         'nginap',
-        'tidak_lembur_nginap'
+        'tidak_lembur_nginap',
     ];
 
     protected $casts = [
@@ -172,9 +171,9 @@ class SuratJalan extends Model
 
         // 1. Check PembayaranAktivitasLain (related by no_surat_jalan)
         $pembayarans = \App\Models\PembayaranAktivitasLain::where('no_surat_jalan', $this->no_surat_jalan)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('jenis_aktivitas', 'like', '%Adjusment%')
-                      ->orWhere('jenis_aktivitas', 'like', '%Adjustment%');
+                    ->orWhere('jenis_aktivitas', 'like', '%Adjustment%');
             })
             ->get();
 
@@ -183,7 +182,9 @@ class SuratJalan extends Model
             if (is_array($details)) {
                 foreach ($details as $detail) {
                     if (($detail['tipe'] ?? '') === 'krani') {
-                        if ($p->penerima) $kranis->push($p->penerima);
+                        if ($p->penerima) {
+                            $kranis->push($p->penerima);
+                        }
                     }
                 }
             }
@@ -191,9 +192,9 @@ class SuratJalan extends Model
 
         // 2. Check InvoiceAktivitasLain (related by surat_jalan_id)
         $invoices = \App\Models\InvoiceAktivitasLain::where('surat_jalan_id', $this->id)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('jenis_aktivitas', 'like', '%Adjusment%')
-                      ->orWhere('jenis_aktivitas', 'like', '%Adjustment%');
+                    ->orWhere('jenis_aktivitas', 'like', '%Adjustment%');
             })
             ->get();
 
@@ -202,7 +203,9 @@ class SuratJalan extends Model
             if (is_array($details)) {
                 foreach ($details as $detail) {
                     if (($detail['tipe'] ?? '') === 'krani') {
-                        if ($i->penerima) $kranis->push($i->penerima);
+                        if ($i->penerima) {
+                            $kranis->push($i->penerima);
+                        }
                     }
                 }
             }
@@ -219,41 +222,45 @@ class SuratJalan extends Model
     {
         return $this->belongsTo(Kontainer::class, 'no_kontainer', 'nomor_seri_gabungan');
     }
-    
+
     // Alternative: Get supir NIK with fallback
     public function getSupirNikAttribute()
     {
         // Try nama_panggilan first
         $karyawan = Karyawan::where('nama_panggilan', $this->supir)->first();
-        if (!$karyawan) {
+        if (! $karyawan) {
             // Fallback to nama_lengkap
             $karyawan = Karyawan::where('nama_lengkap', $this->supir)->first();
         }
+
         return $karyawan ? $karyawan->nik : null;
     }
 
     // Alternative: Get supir2 NIK with fallback
     public function getSupir2NikAttribute()
     {
-        if (!$this->supir2) return null;
-        
+        if (! $this->supir2) {
+            return null;
+        }
+
         $karyawan = Karyawan::where('nama_panggilan', $this->supir2)->first();
-        if (!$karyawan) {
+        if (! $karyawan) {
             $karyawan = Karyawan::where('nama_lengkap', $this->supir2)->first();
         }
+
         return $karyawan ? $karyawan->nik : null;
     }
 
-    
     // Alternative: Get kenek NIK with fallback
     public function getKenekNikAttribute()
     {
         // Try nama_lengkap first
         $karyawan = Karyawan::where('nama_lengkap', $this->kenek)->first();
-        if (!$karyawan) {
+        if (! $karyawan) {
             // Fallback to nama_panggilan
             $karyawan = Karyawan::where('nama_panggilan', $this->kenek)->first();
         }
+
         return $karyawan ? $karyawan->nik : null;
     }
 
@@ -262,15 +269,17 @@ class SuratJalan extends Model
      */
     public function getSupirDisplayNameAttribute()
     {
-        if (!$this->supir) return '-';
-        
+        if (! $this->supir) {
+            return '-';
+        }
+
         $karyawan = Karyawan::where('nama_panggilan', $this->supir)->first();
-        if (!$karyawan) {
+        if (! $karyawan) {
             $karyawan = Karyawan::where('nama_lengkap', $this->supir)->first();
         }
+
         return $karyawan ? ($karyawan->nama_panggilan ?: $karyawan->nama_lengkap) : $this->supir;
     }
-
 
     public function pranotaSuratJalan()
     {
@@ -296,10 +305,15 @@ class SuratJalan extends Model
 
     // Status pembayaran uang rit constants
     const STATUS_UANG_RIT_BELUM_DIBAYAR = 'belum_dibayar';
+
     const STATUS_UANG_RIT_PROSES_PRANOTA = 'proses_pranota';
+
     const STATUS_UANG_RIT_SUDAH_MASUK_PRANOTA = 'sudah_masuk_pranota';
+
     const STATUS_UANG_RIT_PRANOTA_SUBMITTED = 'pranota_submitted';
+
     const STATUS_UANG_RIT_PRANOTA_APPROVED = 'pranota_approved';
+
     const STATUS_UANG_RIT_DIBAYAR = 'dibayar';
 
     public static function getStatusPembayaranUangRitOptions()
@@ -310,22 +324,28 @@ class SuratJalan extends Model
             self::STATUS_UANG_RIT_SUDAH_MASUK_PRANOTA => 'Sudah Masuk Pranota',
             self::STATUS_UANG_RIT_PRANOTA_SUBMITTED => 'Pranota Submitted',
             self::STATUS_UANG_RIT_PRANOTA_APPROVED => 'Pranota Approved',
-            self::STATUS_UANG_RIT_DIBAYAR => 'Dibayar'
+            self::STATUS_UANG_RIT_DIBAYAR => 'Dibayar',
         ];
     }
 
     public function getStatusPembayaranUangRitLabelAttribute()
     {
         $statuses = self::getStatusPembayaranUangRitOptions();
+
         return $statuses[$this->status_pembayaran_uang_rit] ?? $this->status_pembayaran_uang_rit;
     }
 
     // Status pembayaran uang rit kenek constants
     const STATUS_UANG_RIT_KENEK_BELUM_DIBAYAR = 'belum_dibayar';
+
     const STATUS_UANG_RIT_KENEK_PROSES_PRANOTA = 'proses_pranota';
+
     const STATUS_UANG_RIT_KENEK_SUDAH_MASUK_PRANOTA = 'sudah_masuk_pranota';
+
     const STATUS_UANG_RIT_KENEK_PRANOTA_SUBMITTED = 'pranota_submitted';
+
     const STATUS_UANG_RIT_KENEK_PRANOTA_APPROVED = 'pranota_approved';
+
     const STATUS_UANG_RIT_KENEK_DIBAYAR = 'dibayar';
 
     public static function getStatusPembayaranUangRitKenekOptions()
@@ -336,17 +356,16 @@ class SuratJalan extends Model
             self::STATUS_UANG_RIT_KENEK_SUDAH_MASUK_PRANOTA => 'Sudah Masuk Pranota',
             self::STATUS_UANG_RIT_KENEK_PRANOTA_SUBMITTED => 'Pranota Submitted',
             self::STATUS_UANG_RIT_KENEK_PRANOTA_APPROVED => 'Pranota Approved',
-            self::STATUS_UANG_RIT_KENEK_DIBAYAR => 'Dibayar'
+            self::STATUS_UANG_RIT_KENEK_DIBAYAR => 'Dibayar',
         ];
     }
 
     public function getStatusPembayaranUangRitKenekLabelAttribute()
     {
         $statuses = self::getStatusPembayaranUangRitKenekOptions();
+
         return $statuses[$this->status_pembayaran_uang_rit_kenek] ?? $this->status_pembayaran_uang_rit_kenek;
     }
-
-
 
     public function hasPranota()
     {
@@ -382,7 +401,7 @@ class SuratJalan extends Model
 
     public function getFormattedUangJalanAttribute()
     {
-        return $this->uang_jalan ? 'Rp ' . number_format($this->uang_jalan, 0, ',', '.') : 'Rp 0';
+        return $this->uang_jalan ? 'Rp '.number_format($this->uang_jalan, 0, ',', '.') : 'Rp 0';
     }
 
     public function getStatusBadgeAttribute()
@@ -404,7 +423,7 @@ class SuratJalan extends Model
      */
     public function getFormattedTotalTarifAttribute()
     {
-        return $this->total_tarif ? 'Rp ' . number_format((float) $this->total_tarif, 0, ',', '.') : 'Rp 0';
+        return $this->total_tarif ? 'Rp '.number_format((float) $this->total_tarif, 0, ',', '.') : 'Rp 0';
     }
 
     /**
@@ -412,7 +431,7 @@ class SuratJalan extends Model
      */
     public function getFormattedJumlahTerbayarAttribute()
     {
-        return $this->jumlah_terbayar ? 'Rp ' . number_format((float) $this->jumlah_terbayar, 0, ',', '.') : 'Rp 0';
+        return $this->jumlah_terbayar ? 'Rp '.number_format((float) $this->jumlah_terbayar, 0, ',', '.') : 'Rp 0';
     }
 
     /**
@@ -422,6 +441,7 @@ class SuratJalan extends Model
     {
         $total = (float) ($this->total_tarif ?? 0);
         $terbayar = (float) ($this->jumlah_terbayar ?? 0);
+
         return $total - $terbayar;
     }
 
@@ -430,7 +450,7 @@ class SuratJalan extends Model
      */
     public function getFormattedSisaPembayaranAttribute()
     {
-        return 'Rp ' . number_format($this->sisa_pembayaran, 0, ',', '.');
+        return 'Rp '.number_format($this->sisa_pembayaran, 0, ',', '.');
     }
 
     /**
@@ -466,15 +486,15 @@ class SuratJalan extends Model
     {
         // Prioritas logika:
         // 1. Jika ada status_pembayaran dan sudah dibayar, return sudah_dibayar
-        // 2. Jika uang jalan sudah dibayar, return "sudah_dibayar" 
+        // 2. Jika uang jalan sudah dibayar, return "sudah_dibayar"
         // 3. Jika sudah ada uang jalan tapi belum dibayar, return "belum_dibayar"
         // 4. Jika belum ada uang jalan sama sekali, return "belum_masuk_pranota"
-        
+
         // Cek status pembayaran umum dulu
         if ($this->status_pembayaran === 'sudah_dibayar') {
             return 'sudah_dibayar';
         }
-        
+
         // Cek status pembayaran uang jalan
         if ($this->status_pembayaran_uang_jalan === 'dibayar') {
             return 'sudah_dibayar';
@@ -635,16 +655,16 @@ class SuratJalan extends Model
     public function getVendorInvoiceStatusAttribute()
     {
         $tagihan = $this->tagihanSupirVendor;
-        if (!$tagihan) {
+        if (! $tagihan) {
             return 'belum_tagihan';
         }
 
-        if (!$tagihan->invoice_tagihan_vendor_id) {
+        if (! $tagihan->invoice_tagihan_vendor_id) {
             return 'sudah_tagihan';
         }
 
         $invoice = $tagihan->invoice;
-        if (!$invoice) {
+        if (! $invoice) {
             return 'sudah_invoice'; // Fallback if invoice_id exists but relation failed
         }
 

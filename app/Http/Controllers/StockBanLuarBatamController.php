@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StockBanLuarBatam;
+use App\Models\MerkBan;
 use App\Models\Mobil;
 use App\Models\NamaStockBan;
-use App\Models\MerkBan;
-use App\Models\Gudang;
+use App\Models\StockBanLuarBatam;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class StockBanLuarBatamController extends Controller
@@ -24,7 +22,7 @@ class StockBanLuarBatamController extends Controller
         $masterGudangBans = \App\Models\MasterGudangBan::where('status', 'aktif')->orderBy('nama_gudang')->get();
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
         $nextInvoice = StockBanLuarBatam::generateNextInvoice();
-        
+
         return view('stock-ban-luar-batam.create', compact('mobils', 'namaStockBans', 'merkBans', 'masterGudangBans', 'karyawans', 'nextInvoice'));
     }
 
@@ -80,7 +78,7 @@ class StockBanLuarBatamController extends Controller
         $merkBans = MerkBan::orderBy('nama')->get();
         $masterGudangBans = \App\Models\MasterGudangBan::where('status', 'aktif')->orderBy('nama_gudang')->get();
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
-        
+
         return view('stock-ban-luar-batam.edit', compact('stockBan', 'mobils', 'namaStockBans', 'merkBans', 'masterGudangBans', 'karyawans'));
     }
 
@@ -93,7 +91,7 @@ class StockBanLuarBatamController extends Controller
 
         $request->validate([
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
-            'nomor_seri' => 'nullable|unique:stock_ban_luar_batams,nomor_seri,' . $stockBan->id,
+            'nomor_seri' => 'nullable|unique:stock_ban_luar_batams,nomor_seri,'.$stockBan->id,
             'nomor_faktur' => 'nullable|string|max:255',
             'merk' => 'nullable|required_without:merk_id|string|max:255',
             'merk_id' => 'nullable|exists:merk_bans,id',
@@ -142,6 +140,7 @@ class StockBanLuarBatamController extends Controller
     public function show($id)
     {
         $stockBan = StockBanLuarBatam::with(['namaStockBan', 'mobil', 'penerima', 'createdBy', 'updatedBy'])->findOrFail($id);
+
         return view('stock-ban-luar-batam.show', compact('stockBan'));
     }
 
@@ -163,15 +162,15 @@ class StockBanLuarBatamController extends Controller
 
         $tanggalHilang = \Carbon\Carbon::parse($request->tanggal_hilang)->format('d-m-Y');
 
-        $lostNote = "[Hilang] Tgl: " . $tanggalHilang;
+        $lostNote = '[Hilang] Tgl: '.$tanggalHilang;
         if ($request->filled('keterangan_hilang')) {
-            $lostNote .= ", Ket: " . $request->keterangan_hilang;
+            $lostNote .= ', Ket: '.$request->keterangan_hilang;
         }
 
         $stockBan->update([
             'status' => 'Hilang',
             'lokasi' => 'Hilang',
-            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $lostNote) : $lostNote,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan."\n".$lostNote) : $lostNote,
             'mobil_id' => null,
             'alat_berat_id' => null,
             'penerima_id' => null,

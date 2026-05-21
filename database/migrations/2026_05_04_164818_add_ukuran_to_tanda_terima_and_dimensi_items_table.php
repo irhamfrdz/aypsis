@@ -11,19 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('tanda_terimas', 'ukuran')) {
+        if (! Schema::hasColumn('tanda_terimas', 'ukuran')) {
             Schema::table('tanda_terimas', function (Blueprint $blueprint) {
                 $blueprint->string('ukuran')->nullable()->after('nama_barang');
             });
         }
 
-        if (!Schema::hasColumn('tanda_terima_dimensi_items', 'ukuran')) {
+        if (! Schema::hasColumn('tanda_terima_dimensi_items', 'ukuran')) {
             Schema::table('tanda_terima_dimensi_items', function (Blueprint $blueprint) {
                 $blueprint->string('ukuran')->nullable()->after('nama_barang');
             });
         }
-        
-        if (!Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'ukuran')) {
+
+        if (! Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'ukuran')) {
             Schema::table('tanda_terima_tanpa_surat_jalan', function (Blueprint $blueprint) {
                 $blueprint->string('ukuran')->nullable()->after('nama_barang');
             });
@@ -46,7 +46,7 @@ return new class extends Migration
                 $blueprint->dropColumn('ukuran');
             });
         }
-        
+
         if (Schema::hasColumn('tanda_terima_tanpa_surat_jalan', 'ukuran')) {
             Schema::table('tanda_terima_tanpa_surat_jalan', function (Blueprint $blueprint) {
                 $blueprint->dropColumn('ukuran');

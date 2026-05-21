@@ -3,47 +3,47 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 
-class PenerimaTemplateExport implements FromArray, WithHeadings, WithStyles, WithColumnWidths
+class PenerimaTemplateExport implements FromArray, WithColumnWidths, WithHeadings, WithStyles
 {
     public function array(): array
     {
         return [
             [
                 'Contoh Penerima',
-                'Contoh CP', 
-                'Jl. Contoh No. 1', 
-                '12.345.678.9-000.000', 
-                '1234567890123456', 
-                'Catatan contoh', 
+                'Contoh CP',
+                'Jl. Contoh No. 1',
+                '12.345.678.9-000.000',
+                '1234567890123456',
+                'Catatan contoh',
                 'active',
-                'tidak ada'
-            ]
+                'tidak ada',
+            ],
         ];
     }
 
     public function headings(): array
     {
         return [
-            'nama_penerima', 
+            'nama_penerima',
             'contact_person',
-            'alamat', 
-            'npwp', 
-            'nitku', 
-            'catatan', 
+            'alamat',
+            'npwp',
+            'nitku',
+            'catatan',
             'status',
-            'iu_bp_kawasan'
+            'iu_bp_kawasan',
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         return [
-            1 => ['font' => ['bold' => true]], 
+            1 => ['font' => ['bold' => true]],
         ];
     }
 

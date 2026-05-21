@@ -2,21 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class MasterPricelistOb extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'master_pricelist_ob';
 
     protected $fillable = [
         'size_kontainer',
-        'status_kontainer', 
+        'status_kontainer',
         'biaya',
-        'keterangan'
+        'keterangan',
     ];
 
     protected $casts = [
@@ -30,7 +30,7 @@ class MasterPricelistOb extends Model
     {
         return [
             'full' => 'Full',
-            'empty' => 'Empty'
+            'empty' => 'Empty',
         ];
     }
 
@@ -41,7 +41,7 @@ class MasterPricelistOb extends Model
     {
         return [
             '20ft' => '20 ft',
-            '40ft' => '40 ft'
+            '40ft' => '40 ft',
         ];
     }
 
@@ -50,7 +50,7 @@ class MasterPricelistOb extends Model
      */
     public function getFormattedBiayaAttribute()
     {
-        return 'Rp ' . number_format($this->biaya, 0, ',', '.');
+        return 'Rp '.number_format($this->biaya, 0, ',', '.');
     }
 
     /**
@@ -59,6 +59,7 @@ class MasterPricelistOb extends Model
     public function getStatusKontainerLabelAttribute()
     {
         $options = self::getStatusKontainerOptions();
+
         return $options[$this->status_kontainer] ?? $this->status_kontainer;
     }
 
@@ -68,6 +69,7 @@ class MasterPricelistOb extends Model
     public function getSizeKontainerLabelAttribute()
     {
         $options = self::getSizeKontainerOptions();
+
         return $options[$this->size_kontainer] ?? $this->size_kontainer;
     }
 }

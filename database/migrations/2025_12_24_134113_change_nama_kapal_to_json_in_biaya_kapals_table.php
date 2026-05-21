@@ -19,7 +19,7 @@ return new class extends Migration
                 // Index might not exist, continue
             }
         });
-        
+
         // Now change to JSON
         Schema::table('biaya_kapals', function (Blueprint $table) {
             $table->json('nama_kapal')->nullable()->change();

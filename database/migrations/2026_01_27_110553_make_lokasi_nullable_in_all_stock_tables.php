@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -13,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         // Using raw SQL for safety if doctrine/dbal is missing, or standard schema builder
-        // Since we are not sure about dbal, we can try Schema builder first. 
+        // Since we are not sure about dbal, we can try Schema builder first.
         // But if it fails, the user will have errors.
         // Let's stick to standard Schema builder, assuming environment is set up.
-        
+
         $tables = ['stock_bans', 'stock_ring_velgs', 'stock_velgs', 'stock_ban_dalams'];
 
         foreach ($tables as $tableName) {

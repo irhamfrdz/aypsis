@@ -2,18 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use App\Models\Karyawan;
 use App\Models\Coa;
-use App\Models\CoaTransaction;
-use App\Models\PembayaranUangMuka;
-use App\Models\NomorTerakhir;
+use App\Models\Karyawan;
 use App\Models\MasterKegiatan;
 use App\Models\Mobil;
+use App\Models\PembayaranUangMuka;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PembayaranUangMukaController extends Controller
 {
@@ -24,15 +21,15 @@ class PembayaranUangMukaController extends Controller
     {
         // Query pembayaran Uang Muka dengan relationships
         $query = PembayaranUangMuka::with(['kasBankAkun', 'pembuatPembayaran', 'penyetujuPembayaran', 'masterKegiatan'])
-                               ->orderBy('tanggal_pembayaran', 'desc');        // Filter berdasarkan nomor pembayaran
+            ->orderBy('tanggal_pembayaran', 'desc');        // Filter berdasarkan nomor pembayaran
         if ($request->filled('nomor_pembayaran')) {
-            $query->where('nomor_pembayaran', 'like', '%' . $request->nomor_pembayaran . '%');
+            $query->where('nomor_pembayaran', 'like', '%'.$request->nomor_pembayaran.'%');
         }
 
         // Filter berdasarkan kegiatan
         if ($request->filled('kegiatan')) {
-            $query->whereHas('masterKegiatan', function($q) use ($request) {
-                $q->where('nama', 'like', '%' . $request->kegiatan . '%');
+            $query->whereHas('masterKegiatan', function ($q) use ($request) {
+                $q->where('nama', 'like', '%'.$request->kegiatan.'%');
             });
         }
 
@@ -56,14 +53,14 @@ class PembayaranUangMukaController extends Controller
 
         // Ambil data karyawan supir untuk dropdown pencarian
         $supirList = Karyawan::whereRaw('LOWER(divisi) = ?', ['supir'])
-                            ->where('status', 'active')
-                            ->orderBy('nama_lengkap')
-                            ->get();
+            ->where('status', 'active')
+            ->orderBy('nama_lengkap')
+            ->get();
 
         return view('pembayaran-uang-muka.index', [
             'title' => 'Pembayaran Uang Muka',
             'pembayaranList' => $pembayaranList,
-            'supirList' => $supirList
+            'supirList' => $supirList,
         ]);
     }
 
@@ -74,28 +71,28 @@ class PembayaranUangMukaController extends Controller
     {
         // Ambil data karyawan yang mempunyai divisi supir
         $supirList = Karyawan::whereRaw('LOWER(divisi) = ?', ['supir'])
-                            ->where('status', 'active') // hanya karyawan aktif
-                            ->orderBy('nama_lengkap')
-                            ->get();
+            ->where('status', 'active') // hanya karyawan aktif
+            ->orderBy('nama_lengkap')
+            ->get();
 
         // Ambil data akun kas/bank dari COA
         $kasBankList = Coa::where('tipe_akun', 'Kas/Bank')
-                          ->orderBy('nomor_akun')
-                          ->get();
+            ->orderBy('nomor_akun')
+            ->get();
 
         // Ambil data kegiatan dengan type "uang muka" dan status aktif
         $kegiatanList = MasterKegiatan::where('type', 'uang muka')
-                                     ->where('status', 'aktif')
-                                     ->orderBy('nama_kegiatan')
-                                     ->get();
+            ->where('status', 'aktif')
+            ->orderBy('nama_kegiatan')
+            ->get();
 
         // Ambil data mobil untuk dropdown KIR & STNK
         $mobilList = Mobil::orderBy('nomor_polisi')->get();
 
         // Ambil data karyawan untuk dropdown penerima (KIR & STNK)
         $karyawanList = Karyawan::where('status', 'active')
-                               ->orderBy('nama_lengkap')
-                               ->get();
+            ->orderBy('nama_lengkap')
+            ->get();
 
         return view('pembayaran-uang-muka.create', [
             'title' => 'Create Pembayaran Uang Muka',
@@ -103,7 +100,7 @@ class PembayaranUangMukaController extends Controller
             'kasBankList' => $kasBankList,
             'kegiatanList' => $kegiatanList,
             'mobilList' => $mobilList,
-            'karyawanList' => $karyawanList
+            'karyawanList' => $karyawanList,
         ]);
     }
 
@@ -117,7 +114,7 @@ class PembayaranUangMukaController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal generate nomor: ' . $e->getMessage()
+                'message' => 'Gagal generate nomor: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -133,10 +130,10 @@ class PembayaranUangMukaController extends Controller
 
         // Get COA info untuk kode bank
         $coa = \App\Models\Coa::find($kasBankId);
-        if (!$coa) {
+        if (! $coa) {
             return [
                 'success' => false,
-                'message' => 'Bank/Kas tidak ditemukan'
+                'message' => 'Bank/Kas tidak ditemukan',
             ];
         }
 
@@ -146,10 +143,10 @@ class PembayaranUangMukaController extends Controller
         // Get next running number from master nomor terakhir
         $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'nomor_pembayaran')->first();
 
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             return [
                 'success' => false,
-                'message' => 'Modul nomor_pembayaran tidak ditemukan di master nomor terakhir'
+                'message' => 'Modul nomor_pembayaran tidak ditemukan di master nomor terakhir',
             ];
         }
 
@@ -165,7 +162,7 @@ class PembayaranUangMukaController extends Controller
             // Check if nomor already exists
             $exists = \App\Models\PembayaranUangMuka::where('nomor_pembayaran', $nomorPembayaran)->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 // Nomor unik ditemukan
                 if ($actualGenerate) {
                     // Update counter jika ini actual generate (bukan preview)
@@ -175,7 +172,7 @@ class PembayaranUangMukaController extends Controller
                 return [
                     'success' => true,
                     'nomor_pembayaran' => $nomorPembayaran,
-                    'preview' => !$actualGenerate
+                    'preview' => ! $actualGenerate,
                 ];
             }
 
@@ -185,7 +182,7 @@ class PembayaranUangMukaController extends Controller
         // Jika tidak bisa generate nomor unik
         return [
             'success' => false,
-            'message' => 'Tidak dapat generate nomor unik setelah ' . $maxAttempts . ' percobaan'
+            'message' => 'Tidak dapat generate nomor unik setelah '.$maxAttempts.' percobaan',
         ];
     }
 
@@ -196,7 +193,7 @@ class PembayaranUangMukaController extends Controller
     {
         // Pre-process jumlah data to ensure it's clean
         $jumlahData = $request->input('jumlah', []);
-        if (!is_array($jumlahData)) {
+        if (! is_array($jumlahData)) {
             return back()->withErrors(['jumlah' => 'Data jumlah harus berupa array'])->withInput();
         }
 
@@ -216,7 +213,7 @@ class PembayaranUangMukaController extends Controller
             'kas_bank' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|in:debit,kredit',
             'kegiatan' => 'required|exists:master_kegiatans,id',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         // Ambil info kegiatan untuk menentukan jenis validasi
@@ -264,7 +261,7 @@ class PembayaranUangMukaController extends Controller
             'jumlah.*' => 'nullable|numeric|min:0',
             'jumlah_mobil' => 'nullable|numeric|min:0',
             'jumlah_penerima' => 'nullable|numeric|min:0',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ], $conditionalRules);
 
         $validated = $request->validate($allRules);
@@ -274,9 +271,9 @@ class PembayaranUangMukaController extends Controller
 
             // Generate nomor pembayaran jika kosong atau sudah ada
             $nomorPembayaran = $validated['nomor_pembayaran'];
-            if (!$nomorPembayaran) {
+            if (! $nomorPembayaran) {
                 $generateResult = $this->generateUniqueNomor($validated['kas_bank'], true);
-                if (!$generateResult['success']) {
+                if (! $generateResult['success']) {
                     throw new \Exception($generateResult['message']);
                 }
                 $nomorPembayaran = $generateResult['nomor_pembayaran'];
@@ -285,8 +282,8 @@ class PembayaranUangMukaController extends Controller
                 $exists = PembayaranUangMuka::where('nomor_pembayaran', $nomorPembayaran)->exists();
                 if ($exists) {
                     $generateResult = $this->generateUniqueNomor($validated['kas_bank'], true);
-                    if (!$generateResult['success']) {
-                        throw new \Exception('Nomor pembayaran sudah digunakan dan gagal generate nomor baru: ' . $generateResult['message']);
+                    if (! $generateResult['success']) {
+                        throw new \Exception('Nomor pembayaran sudah digunakan dan gagal generate nomor baru: '.$generateResult['message']);
                     }
                     $nomorPembayaran = $generateResult['nomor_pembayaran'];
                 }
@@ -298,14 +295,14 @@ class PembayaranUangMukaController extends Controller
             $supirIds = [];
 
             // Check jika ada mobil_id (untuk KIR & STNK)
-            if (!empty($validated['mobil_id'])) {
+            if (! empty($validated['mobil_id'])) {
                 $totalPembayaran = floatval($validated['jumlah_mobil'] ?? 0);
                 $supirIds = []; // Array kosong untuk KIR & STNK
-            } elseif (!empty($validated['jumlah_penerima'])) {
+            } elseif (! empty($validated['jumlah_penerima'])) {
                 // Logic untuk penerima (Amprahan dan kegiatan lainnya)
                 $totalPembayaran = floatval($validated['jumlah_penerima']);
                 $supirIds = []; // Array kosong untuk kegiatan penerima
-            } elseif (!empty($validated['supir']) && is_array($validated['supir'])) {
+            } elseif (! empty($validated['supir']) && is_array($validated['supir'])) {
                 // Logic untuk supir (OB Muat/Bongkar)
                 foreach ($validated['supir'] as $supirId) {
                     $jumlah = floatval($validated['jumlah'][$supirId] ?? 0);
@@ -345,28 +342,28 @@ class PembayaranUangMukaController extends Controller
 
             $message = "Pembayaran Uang Muka berhasil dibuat dengan nomor: {$nomorPembayaran}. ";
 
-            if (!empty($validated['mobil_id'])) {
+            if (! empty($validated['mobil_id'])) {
                 // Untuk KIR & STNK
                 $mobil = Mobil::find($validated['mobil_id']);
                 $message .= "Mobil: {$mobil->plat}. ";
 
-                if (!empty($validated['penerima_id'])) {
+                if (! empty($validated['penerima_id'])) {
                     $penerima = Karyawan::find($validated['penerima_id']);
                     $message .= "Penerima: {$penerima->nama_lengkap}. ";
                 }
-            } elseif (!empty($validated['jumlah_penerima'])) {
+            } elseif (! empty($validated['jumlah_penerima'])) {
                 // Untuk Amprahan dan kegiatan lainnya dengan penerima
-                if (!empty($validated['penerima_id'])) {
+                if (! empty($validated['penerima_id'])) {
                     $penerima = Karyawan::find($validated['penerima_id']);
                     $message .= "Penerima: {$penerima->nama_lengkap}. ";
                 }
-            } elseif (!empty($validated['supir'])) {
+            } elseif (! empty($validated['supir'])) {
                 // Untuk OB Muat/Bongkar dengan supir
                 $jumlahSupir = count($validated['supir']);
                 $message .= "Total supir: {$jumlahSupir}. ";
             }
 
-            $message .= "Total pembayaran: Rp " . number_format($totalPembayaran, 0, ',', '.') . ".";
+            $message .= 'Total pembayaran: Rp '.number_format($totalPembayaran, 0, ',', '.').'.';
 
             return redirect()->route('pembayaran-uang-muka.index')->with('success', $message);
 
@@ -374,7 +371,7 @@ class PembayaranUangMukaController extends Controller
             DB::rollback();
 
             return back()->withErrors([
-                'error' => 'Gagal menyimpan pembayaran Uang Muka: ' . $e->getMessage()
+                'error' => 'Gagal menyimpan pembayaran Uang Muka: '.$e->getMessage(),
             ])->withInput();
         }
     }
@@ -385,7 +382,7 @@ class PembayaranUangMukaController extends Controller
     public function show($id)
     {
         $pembayaran = PembayaranUangMuka::with(['kasBankAkun', 'pembuatPembayaran', 'penyetujuPembayaran'])
-                                      ->findOrFail($id);
+            ->findOrFail($id);
 
         // Get supir list from supir_ids
         $supirList = Karyawan::whereIn('id', $pembayaran->supir_ids ?? [])->get();
@@ -407,33 +404,33 @@ class PembayaranUangMukaController extends Controller
         // Check if already used
         if ($pembayaran->isUsed()) {
             return redirect()->route('pembayaran-uang-muka.index')
-                           ->with('error', 'Tidak dapat mengedit Uang Muka yang sudah terpakai.');
+                ->with('error', 'Tidak dapat mengedit Uang Muka yang sudah terpakai.');
         }
 
         // Ambil data karyawan yang mempunyai divisi supir
         $supirList = Karyawan::whereRaw('LOWER(divisi) = ?', ['supir'])
-                            ->where('status', 'active')
-                            ->orderBy('nama_lengkap')
-                            ->get();
+            ->where('status', 'active')
+            ->orderBy('nama_lengkap')
+            ->get();
 
         // Ambil data akun kas/bank dari COA
         $kasBankList = Coa::where('tipe_akun', 'Kas/Bank')
-                          ->orderBy('nomor_akun')
-                          ->get();
+            ->orderBy('nomor_akun')
+            ->get();
 
         // Ambil data kegiatan dengan type "uang muka" dan status aktif
         $kegiatanList = MasterKegiatan::where('type', 'uang muka')
-                                     ->where('status', 'aktif')
-                                     ->orderBy('nama_kegiatan')
-                                     ->get();
+            ->where('status', 'aktif')
+            ->orderBy('nama_kegiatan')
+            ->get();
 
         // Ambil data mobil untuk dropdown KIR & STNK
         $mobilList = Mobil::orderBy('nomor_polisi')->get();
 
         // Ambil data karyawan untuk dropdown penerima (KIR & STNK)
         $karyawanList = Karyawan::where('status', 'active')
-                               ->orderBy('nama_lengkap')
-                               ->get();
+            ->orderBy('nama_lengkap')
+            ->get();
 
         return view('pembayaran-uang-muka.edit', [
             'title' => 'Edit Pembayaran Uang Muka',
@@ -442,7 +439,7 @@ class PembayaranUangMukaController extends Controller
             'kasBankList' => $kasBankList,
             'kegiatanList' => $kegiatanList,
             'mobilList' => $mobilList,
-            'karyawanList' => $karyawanList
+            'karyawanList' => $karyawanList,
         ]);
     }
 
@@ -456,12 +453,12 @@ class PembayaranUangMukaController extends Controller
         // Check if already used
         if ($pembayaran->isUsed()) {
             return redirect()->route('pembayaran-uang-muka.index')
-                           ->with('error', 'Tidak dapat mengupdate Uang Muka yang sudah terpakai.');
+                ->with('error', 'Tidak dapat mengupdate Uang Muka yang sudah terpakai.');
         }
 
         // Pre-process jumlah data
         $jumlahData = $request->input('jumlah', []);
-        if (!is_array($jumlahData)) {
+        if (! is_array($jumlahData)) {
             return back()->withErrors(['jumlah' => 'Data jumlah harus berupa array'])->withInput();
         }
 
@@ -477,12 +474,12 @@ class PembayaranUangMukaController extends Controller
 
         // Tentukan rules validasi berdasarkan kegiatan
         $validationRules = [
-            'nomor_pembayaran' => 'required|string|max:255|unique:pembayaran_uang_muka,nomor_pembayaran,' . $id,
+            'nomor_pembayaran' => 'required|string|max:255|unique:pembayaran_uang_muka,nomor_pembayaran,'.$id,
             'tanggal_pembayaran' => 'required|date',
             'kas_bank' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|in:debit,kredit',
             'kegiatan' => 'required|exists:master_kegiatans,id',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ];
 
         if ($kegiatan && strtolower($kegiatan->nama) === 'uang muka kir & stnk') {
@@ -520,10 +517,10 @@ class PembayaranUangMukaController extends Controller
             $supirIds = [];
 
             // Check jika ada mobil_id (untuk KIR & STNK)
-            if (!empty($validated['mobil_id'])) {
+            if (! empty($validated['mobil_id'])) {
                 $totalPembayaran = floatval($validated['jumlah_mobil'] ?? 0);
                 $supirIds = []; // Array kosong untuk KIR & STNK
-            } elseif (!empty($validated['jumlah_penerima'])) {
+            } elseif (! empty($validated['jumlah_penerima'])) {
                 // Logic untuk penerima (Amprahan dan kegiatan lainnya)
                 $totalPembayaran = floatval($validated['jumlah_penerima']);
                 $supirIds = []; // Array kosong untuk kegiatan penerima
@@ -555,11 +552,11 @@ class PembayaranUangMukaController extends Controller
             DB::commit();
 
             $jumlahSupir = count($validated['supir']);
-            $message = "Pembayaran Uang Muka berhasil diupdate. ";
+            $message = 'Pembayaran Uang Muka berhasil diupdate. ';
             $message .= "Nomor: {$validated['nomor_pembayaran']}. ";
             $message .= "Kegiatan: {$validated['kegiatan']}. ";
             $message .= "Total supir: {$jumlahSupir}. ";
-            $message .= "Total pembayaran: Rp " . number_format($totalPembayaran, 0, ',', '.') . ".";
+            $message .= 'Total pembayaran: Rp '.number_format($totalPembayaran, 0, ',', '.').'.';
 
             return redirect()->route('pembayaran-uang-muka.index')->with('success', $message);
 
@@ -567,7 +564,7 @@ class PembayaranUangMukaController extends Controller
             DB::rollback();
 
             return back()->withErrors([
-                'error' => 'Gagal mengupdate pembayaran Uang Muka: ' . $e->getMessage()
+                'error' => 'Gagal mengupdate pembayaran Uang Muka: '.$e->getMessage(),
             ])->withInput();
         }
     }
@@ -583,18 +580,18 @@ class PembayaranUangMukaController extends Controller
             // Check if already used
             if ($pembayaran->isUsed()) {
                 return redirect()->route('pembayaran-uang-muka.index')
-                               ->with('error', 'Tidak dapat menghapus Uang Muka yang sudah terpakai.');
+                    ->with('error', 'Tidak dapat menghapus Uang Muka yang sudah terpakai.');
             }
 
             $nomorPembayaran = $pembayaran->nomor_pembayaran;
             $pembayaran->delete();
 
             return redirect()->route('pembayaran-uang-muka.index')
-                           ->with('success', "Pembayaran Uang Muka {$nomorPembayaran} berhasil dihapus.");
+                ->with('success', "Pembayaran Uang Muka {$nomorPembayaran} berhasil dihapus.");
 
         } catch (\Exception $e) {
             return redirect()->route('pembayaran-uang-muka.index')
-                           ->with('error', 'Gagal menghapus pembayaran Uang Muka: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus pembayaran Uang Muka: '.$e->getMessage());
         }
     }
 
@@ -610,7 +607,7 @@ class PembayaranUangMukaController extends Controller
         // Get kas/bank COA
         $kasBankCoa = Coa::find($validated['kas_bank']);
 
-        if (!$kasBankCoa) {
+        if (! $kasBankCoa) {
             throw new \Exception('COA Kas/Bank tidak ditemukan');
         }
 
@@ -625,7 +622,7 @@ class PembayaranUangMukaController extends Controller
                 $kasBankCoa->id,
                 $pembayaran->nomor_pembayaran,
                 $pembayaran->tanggal_pembayaran,
-                'Pembayaran Uang Muka - ' . $kegiatanText,
+                'Pembayaran Uang Muka - '.$kegiatanText,
                 0, // debet
                 $totalPembayaran, // kredit
                 $kasBankCoa->saldo // saldo terbaru setelah decrement
@@ -646,7 +643,7 @@ class PembayaranUangMukaController extends Controller
                 $kasBankCoa->id,
                 $pembayaran->nomor_pembayaran,
                 $pembayaran->tanggal_pembayaran,
-                'Penerimaan Uang Muka - ' . $kegiatanText,
+                'Penerimaan Uang Muka - '.$kegiatanText,
                 $totalPembayaran, // debet
                 0, // kredit
                 $kasBankCoa->saldo // saldo terbaru setelah increment
@@ -693,14 +690,14 @@ class PembayaranUangMukaController extends Controller
         // Cari atau buat COA
         $uangMukaCoa = Coa::where('nomor_akun', $coaCode)->first();
 
-        if (!$uangMukaCoa) {
+        if (! $uangMukaCoa) {
             // Buat COA baru jika tidak ada
             $uangMukaCoa = Coa::create([
                 'nomor_akun' => $coaCode,
                 'nama_akun' => $coaName,
                 'tipe_akun' => 'Asset',
                 'saldo' => 0,
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ]);
         }
 
@@ -713,7 +710,7 @@ class PembayaranUangMukaController extends Controller
             $uangMukaCoa->id,
             $pembayaran->nomor_pembayaran,
             $pembayaran->tanggal_pembayaran,
-            'Pembayaran Uang Muka - ' . $kegiatanText,
+            'Pembayaran Uang Muka - '.$kegiatanText,
             $amount, // debet
             0, // kredit
             $uangMukaCoa->saldo // saldo terbaru setelah increment
@@ -756,14 +753,14 @@ class PembayaranUangMukaController extends Controller
         // Cari atau buat COA
         $uangMukaCoa = Coa::where('nomor_akun', $coaCode)->first();
 
-        if (!$uangMukaCoa) {
+        if (! $uangMukaCoa) {
             // Buat COA baru jika tidak ada
             $uangMukaCoa = Coa::create([
                 'nomor_akun' => $coaCode,
                 'nama_akun' => $coaName,
                 'tipe_akun' => 'Asset',
                 'saldo' => 0,
-                'status' => 'Aktif'
+                'status' => 'Aktif',
             ]);
         }
 
@@ -776,7 +773,7 @@ class PembayaranUangMukaController extends Controller
             $uangMukaCoa->id,
             $pembayaran->nomor_pembayaran,
             $pembayaran->tanggal_pembayaran,
-            'Penerimaan Uang Muka - ' . $kegiatanText,
+            'Penerimaan Uang Muka - '.$kegiatanText,
             0, // debet
             $amount, // kredit
             $uangMukaCoa->saldo // saldo terbaru setelah decrement

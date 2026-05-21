@@ -29,7 +29,7 @@ class UangJalan extends Model
         'jumlah_total',
         'memo',
         'status',
-        'created_by'
+        'created_by',
     ];
 
     protected $casts = [
@@ -44,7 +44,7 @@ class UangJalan extends Model
         'jumlah_total' => 'decimal:2',
         'jumlah_uang_supir' => 'decimal:2',
         'jumlah_uang_kenek' => 'decimal:2',
-        'total_uang_jalan' => 'decimal:2'
+        'total_uang_jalan' => 'decimal:2',
     ];
 
     /**
@@ -93,7 +93,7 @@ class UangJalan extends Model
     public function pranotaUangJalan()
     {
         return $this->belongsToMany(PranotaUangJalan::class, 'pranota_uang_jalan_items', 'uang_jalan_id', 'pranota_uang_jalan_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -122,24 +122,24 @@ class UangJalan extends Model
         $now = now();
         $month = $now->format('m'); // 2 digit bulan
         $year = $now->format('y');  // 2 digit tahun
-        
+
         // Ambil nomor urut terakhir dari semua record (tidak filter berdasarkan bulan/tahun)
         // Urutkan berdasarkan nomor uang jalan untuk mendapatkan running number terbesar
         $lastRecord = static::whereNotNull('nomor_uang_jalan')
-                           ->where('nomor_uang_jalan', 'LIKE', 'UJ%')
-                           ->orderByRaw('CAST(SUBSTRING(nomor_uang_jalan, -6) AS UNSIGNED) DESC')
-                           ->first();
-        
+            ->where('nomor_uang_jalan', 'LIKE', 'UJ%')
+            ->orderByRaw('CAST(SUBSTRING(nomor_uang_jalan, -6) AS UNSIGNED) DESC')
+            ->first();
+
         $runningNumber = 1;
-        
+
         if ($lastRecord && $lastRecord->nomor_uang_jalan) {
             // Extract running number dari nomor terakhir (6 digit terakhir)
             $lastNumber = substr($lastRecord->nomor_uang_jalan, -6);
             $runningNumber = intval($lastNumber) + 1;
         }
-        
+
         // Format: UJ + 2 digit bulan + 2 digit tahun + 6 digit running number
-        return 'UJ' . $month . $year . str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
+        return 'UJ'.$month.$year.str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -148,15 +148,16 @@ class UangJalan extends Model
     public static function getNextRunningNumber()
     {
         $lastRecord = static::whereNotNull('nomor_uang_jalan')
-                           ->where('nomor_uang_jalan', 'LIKE', 'UJ%')
-                           ->orderByRaw('CAST(SUBSTRING(nomor_uang_jalan, -6) AS UNSIGNED) DESC')
-                           ->first();
-        
+            ->where('nomor_uang_jalan', 'LIKE', 'UJ%')
+            ->orderByRaw('CAST(SUBSTRING(nomor_uang_jalan, -6) AS UNSIGNED) DESC')
+            ->first();
+
         if ($lastRecord && $lastRecord->nomor_uang_jalan) {
             $lastNumber = substr($lastRecord->nomor_uang_jalan, -6);
+
             return intval($lastNumber) + 1;
         }
-        
+
         return 1;
     }
 

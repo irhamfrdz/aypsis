@@ -30,6 +30,7 @@ class PembayaranUangRit extends Model
     ];
 
     const STATUS_DRAFT = 'draft';
+
     const STATUS_PAID = 'paid';
 
     protected static function boot()
@@ -40,7 +41,7 @@ class PembayaranUangRit extends Model
             if (empty($model->no_pembayaran)) {
                 $model->no_pembayaran = static::generateNoPembayaran();
             }
-            
+
             if (empty($model->created_by)) {
                 $model->created_by = Auth::id();
             }
@@ -54,7 +55,7 @@ class PembayaranUangRit extends Model
     {
         $date = now()->format('Ymd');
         $prefix = "PAY-{$date}-";
-        
+
         $lastNumber = static::where('no_pembayaran', 'like', "{$prefix}%")
             ->orderBy('no_pembayaran', 'desc')
             ->first();
@@ -66,7 +67,7 @@ class PembayaranUangRit extends Model
             $newSequence = 1;
         }
 
-        return $prefix . str_pad($newSequence, 4, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($newSequence, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -100,7 +101,7 @@ class PembayaranUangRit extends Model
      */
     public function getStatusLabelAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             self::STATUS_DRAFT => 'Draft',
             self::STATUS_PAID => 'Dibayar',
             default => 'Unknown'

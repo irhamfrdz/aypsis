@@ -29,9 +29,10 @@ class FixKapalSumberAbadi extends Command
 
         $bls = \App\Models\Bl::where('nama_kapal', 'LIKE', 'KM SUMBER ABADI%')->get();
         $count = $bls->count();
-        
+
         if ($count === 0) {
             $this->info('No data found for KM SUMBER ABADI.');
+
             return;
         }
 
@@ -42,19 +43,19 @@ class FixKapalSumberAbadi extends Command
             // Cek apakah nama kapal mengandung angka di akhir (contoh: KM SUMBER ABADI 178)
             // Regex match: (Nama Kapal)(Spasi)(Angka)
             if (preg_match('/(KM\.?\s*SUMBER\s*ABADI)\s+(\d+)$/i', $bl->nama_kapal, $matches)) {
-                $baseName = "KM SUMBER ABADI"; 
+                $baseName = 'KM SUMBER ABADI';
                 $number = $matches[2]; // The number (e.g., 178)
-                
+
                 $originalName = $bl->nama_kapal;
-                
+
                 // Update nama kapal menjadi bersih
                 $bl->nama_kapal = $baseName;
-                
+
                 // Update no_voyage jika kosong atau placeholder
                 if (empty($bl->no_voyage) || trim($bl->no_voyage) == '-') {
                     $bl->no_voyage = $number;
                 }
-                
+
                 $bl->save();
                 $updatedCount++;
             }

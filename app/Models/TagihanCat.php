@@ -2,17 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Traits\Auditable;
 
 class TagihanCat extends Model
 {
-    
     use Auditable;
 
-protected $table = 'tagihan_cat';
+    protected $table = 'tagihan_cat';
 
     protected $fillable = [
         'nomor_tagihan_cat',
@@ -73,7 +72,7 @@ protected $table = 'tagihan_cat';
     // Accessors
     public function getStatusLabelAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'Pending',
             'paid' => 'Sudah Dibayar',
             'cancelled' => 'Dibatalkan',
@@ -83,7 +82,7 @@ protected $table = 'tagihan_cat';
 
     public function getStatusColorAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'bg-yellow-100 text-yellow-800',
             'paid' => 'bg-green-100 text-green-800',
             'cancelled' => 'bg-red-100 text-red-800',

@@ -1,12 +1,13 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
+
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 try {
-    $tagihan = \DB::table('tagihan_kontainer_sewa')->select('id','vendor','tarif','tanggal_harga_awal','tanggal_harga_akhir')->orderBy('id','desc')->limit(10)->get();
+    $tagihan = \DB::table('tagihan_kontainer_sewa')->select('id', 'vendor', 'tarif', 'tanggal_harga_awal', 'tanggal_harga_akhir')->orderBy('id', 'desc')->limit(10)->get();
     $tagihanCount = \DB::table('tagihan_kontainer_sewa')->count();
     $pivotCount = \DB::table('tagihan_kontainer_sewa_kontainers')->count();
     $orphanCount = \DB::table('tagihan_kontainer_sewa_kontainers')
@@ -35,5 +36,5 @@ try {
         }
     }
 } catch (Exception $e) {
-    echo 'Error: ' . $e->getMessage() . "\n";
+    echo 'Error: '.$e->getMessage()."\n";
 }

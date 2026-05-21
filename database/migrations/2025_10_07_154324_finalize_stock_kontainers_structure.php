@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -15,16 +15,16 @@ return new class extends Migration
         // Pastikan kolom-kolom baru ada terlebih dahulu
         Schema::table('stock_kontainers', function (Blueprint $table) {
             // Tambahkan kolom baru jika belum ada
-            if (!Schema::hasColumn('stock_kontainers', 'awalan_kontainer')) {
+            if (! Schema::hasColumn('stock_kontainers', 'awalan_kontainer')) {
                 $table->string('awalan_kontainer', 10)->nullable()->after('keterangan');
             }
-            if (!Schema::hasColumn('stock_kontainers', 'nomor_seri_kontainer')) {
+            if (! Schema::hasColumn('stock_kontainers', 'nomor_seri_kontainer')) {
                 $table->string('nomor_seri_kontainer', 20)->nullable()->after('awalan_kontainer');
             }
-            if (!Schema::hasColumn('stock_kontainers', 'akhiran_kontainer')) {
+            if (! Schema::hasColumn('stock_kontainers', 'akhiran_kontainer')) {
                 $table->string('akhiran_kontainer', 5)->nullable()->after('nomor_seri_kontainer');
             }
-            if (!Schema::hasColumn('stock_kontainers', 'nomor_seri_gabungan')) {
+            if (! Schema::hasColumn('stock_kontainers', 'nomor_seri_gabungan')) {
                 $table->string('nomor_seri_gabungan', 50)->nullable()->after('akhiran_kontainer');
             }
         });
@@ -45,7 +45,7 @@ return new class extends Migration
                                 'awalan_kontainer' => $awalan,
                                 'nomor_seri_kontainer' => $nomor_seri,
                                 'akhiran_kontainer' => $akhiran,
-                                'nomor_seri_gabungan' => $stock->nomor_kontainer
+                                'nomor_seri_gabungan' => $stock->nomor_kontainer,
                             ]);
                     }
                 }
@@ -75,7 +75,7 @@ return new class extends Migration
     {
         // Kembalikan kolom nomor_kontainer terlebih dahulu
         Schema::table('stock_kontainers', function (Blueprint $table) {
-            if (!Schema::hasColumn('stock_kontainers', 'nomor_kontainer')) {
+            if (! Schema::hasColumn('stock_kontainers', 'nomor_kontainer')) {
                 $table->string('nomor_kontainer')->nullable()->after('id');
             }
         });
@@ -86,7 +86,7 @@ return new class extends Migration
                 DB::table('stock_kontainers')
                     ->where('id', $stock->id)
                     ->update([
-                        'nomor_kontainer' => $stock->nomor_seri_gabungan
+                        'nomor_kontainer' => $stock->nomor_seri_gabungan,
                     ]);
             }
         });

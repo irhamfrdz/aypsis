@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class TagihanOb extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'tagihan_ob';
 
@@ -26,7 +26,7 @@ class TagihanOb extends Model
         'bl_id', // untuk referensi ke BL (untuk OB Bongkar)
         'naik_kapal_id', // untuk referensi ke Naik Kapal (untuk OB Muat)
         'created_by',
-        'keterangan'
+        'keterangan',
     ];
 
     protected $casts = [
@@ -88,7 +88,7 @@ class TagihanOb extends Model
      */
     public function getFormattedBiayaAttribute()
     {
-        return 'Rp ' . number_format($this->biaya, 0, ',', '.');
+        return 'Rp '.number_format($this->biaya, 0, ',', '.');
     }
 
     /**
@@ -101,39 +101,39 @@ class TagihanOb extends Model
 
     /**
      * Get status kontainer based on surat jalan kegiatan
-     * 
-     * @param string $kegiatan
+     *
+     * @param  string  $kegiatan
      * @return string
      */
     public static function getStatusKontainerFromKegiatan($kegiatan)
     {
-        // Berdasarkan requirement: 
+        // Berdasarkan requirement:
         // - jika kegiatannya tarik isi maka full
         // - jika tarik kosong maka empty (E)
-        
+
         if (str_contains(strtolower($kegiatan), 'tarik isi') || str_contains(strtolower($kegiatan), 'muat')) {
             return 'full';
         } elseif (str_contains(strtolower($kegiatan), 'tarik kosong') || str_contains(strtolower($kegiatan), 'bongkar')) {
             return 'empty';
         }
-        
+
         // Default to empty if unclear
         return 'empty';
     }
 
     /**
      * Calculate biaya from master pricelist OB
-     * 
-     * @param string $sizeKontainer
-     * @param string $statusKontainer
+     *
+     * @param  string  $sizeKontainer
+     * @param  string  $statusKontainer
      * @return float
      */
     public static function calculateBiayaFromPricelist($sizeKontainer, $statusKontainer)
     {
         $pricelist = \App\Models\MasterPricelistOb::where('size_kontainer', $sizeKontainer)
-                                                  ->where('status_kontainer', $statusKontainer)
-                                                  ->first();
-        
+            ->where('status_kontainer', $statusKontainer)
+            ->first();
+
         return $pricelist ? $pricelist->biaya : 0;
     }
 
@@ -144,6 +144,7 @@ class TagihanOb extends Model
     {
         if ($value === null) {
             $this->attributes['nomor_kontainer'] = null;
+
             return;
         }
 

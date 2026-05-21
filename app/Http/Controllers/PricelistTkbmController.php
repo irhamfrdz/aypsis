@@ -63,6 +63,7 @@ class PricelistTkbmController extends Controller
     public function edit($id)
     {
         $pricelistTkbm = PricelistTkbm::findOrFail($id);
+
         return view('master.pricelist-tkbm.edit', compact('pricelistTkbm'));
     }
 
@@ -72,7 +73,7 @@ class PricelistTkbmController extends Controller
     public function update(Request $request, $id)
     {
         $pricelistTkbm = PricelistTkbm::findOrFail($id);
-        
+
         $request->validate([
             'nama_barang' => 'required|string|max:255',
             'tarif' => 'required|numeric|min:0',

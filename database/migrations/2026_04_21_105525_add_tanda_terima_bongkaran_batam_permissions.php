@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -15,33 +13,33 @@ return new class extends Migration
         $permissions = [
             [
                 'name' => 'tanda-terima-bongkaran-batam-view',
-                'description' => 'Akses Menu Tanda Terima Bongkaran Batam'
+                'description' => 'Akses Menu Tanda Terima Bongkaran Batam',
             ],
             [
                 'name' => 'tanda-terima-bongkaran-batam-create',
-                'description' => 'Membuat Tanda Terima Bongkaran Batam'
+                'description' => 'Membuat Tanda Terima Bongkaran Batam',
             ],
             [
                 'name' => 'tanda-terima-bongkaran-batam-update',
-                'description' => 'Mengupdate Tanda Terima Bongkaran Batam'
+                'description' => 'Mengupdate Tanda Terima Bongkaran Batam',
             ],
             [
                 'name' => 'tanda-terima-bongkaran-batam-delete',
-                'description' => 'Menghapus Tanda Terima Bongkaran Batam'
+                'description' => 'Menghapus Tanda Terima Bongkaran Batam',
             ],
             [
                 'name' => 'tanda-terima-bongkaran-batam-print',
-                'description' => 'Mencetak Tanda Terima Bongkaran Batam'
+                'description' => 'Mencetak Tanda Terima Bongkaran Batam',
             ],
             [
                 'name' => 'tanda-terima-bongkaran-batam-export',
-                'description' => 'Export Tanda Terima Bongkaran Batam'
+                'description' => 'Export Tanda Terima Bongkaran Batam',
             ],
         ];
 
         foreach ($permissions as $permission) {
             $exists = DB::table('permissions')->where('name', $permission['name'])->exists();
-            if (!$exists) {
+            if (! $exists) {
                 DB::table('permissions')->insert([
                     'name' => $permission['name'],
                     'description' => $permission['description'],

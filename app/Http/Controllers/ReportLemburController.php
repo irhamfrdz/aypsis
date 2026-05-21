@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\SuratJalan;
-use App\Models\SuratJalanBongkaran;
-use App\Models\PranotaLembur;
 use App\Models\MasterPricelistLembur;
 use App\Models\NomorTerakhir;
-use Illuminate\Support\Facades\Auth;
+use App\Models\SuratJalan;
+use App\Models\SuratJalanBongkaran;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReportLemburController extends Controller
 {
@@ -17,7 +16,7 @@ class ReportLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -29,27 +28,27 @@ class ReportLemburController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
         // Validasi required tanggal
-        if (!$request->has('start_date') || !$request->has('end_date')) {
+        if (! $request->has('start_date') || ! $request->has('end_date')) {
             return redirect()->route('report.lembur.index')
                 ->with('error', 'Tanggal mulai dan tanggal akhir harus diisi');
         }
 
         $data = $this->getReportData($request);
-        
+
         // Prepare data for Modal Pranota
         $pricelistLemburs = MasterPricelistLembur::where('status', 'aktif')->get();
-        
+
         $nomorTerakhir = NomorTerakhir::where('modul', 'PML')->first();
         $nextNumber = $nomorTerakhir ? $nomorTerakhir->nomor_terakhir + 1 : 1;
         $tahun = now()->format('y');
         $bulan = now()->format('m');
         $nomorCetakan = 1; // Default
-        $nomorPranotaDisplay = "PML{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+        $nomorPranotaDisplay = "PML{$nomorCetakan}{$bulan}{$tahun}".str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
         return view('report-lembur.view', [
             'suratJalans' => $data['suratJalans'],
@@ -58,17 +57,17 @@ class ReportLemburController extends Controller
             'pricelistLemburs' => $pricelistLemburs,
             'nomorPranotaDisplay' => $nomorPranotaDisplay,
             'nextNumber' => $nextNumber,
-            'statusPranota' => $data['statusPranota']
+            'statusPranota' => $data['statusPranota'],
         ]);
     }
 
     public function export(Request $request)
     {
         $data = $this->getReportData($request);
-        $fileName = 'Report_Lembur_' . $data['startDate']->format('d_m_Y') . '_to_' . $data['endDate']->format('d_m_Y') . '.xlsx';
-        
+        $fileName = 'Report_Lembur_'.$data['startDate']->format('d_m_Y').'_to_'.$data['endDate']->format('d_m_Y').'.xlsx';
+
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\ReportLemburExport($data['suratJalans']), 
+            new \App\Exports\ReportLemburExport($data['suratJalans']),
             $fileName
         );
     }
@@ -83,21 +82,21 @@ class ReportLemburController extends Controller
         // Query Surat Jalan (Muat)
         $suratJalanQuery = SuratJalan::query()
             ->with(['tandaTerima', 'pranotaLemburs'])
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('lembur', true)
-                  ->orWhere('nginap', true);
+                    ->orWhere('nginap', true);
             })
-            ->whereHas('tandaTerima', function($q) use ($startDate, $endDate) {
+            ->whereHas('tandaTerima', function ($q) use ($startDate, $endDate) {
                 $q->whereDate('tanggal', '>=', $startDate)
-                  ->whereDate('tanggal', '<=', $endDate);
+                    ->whereDate('tanggal', '<=', $endDate);
             });
 
         if ($search) {
-            $suratJalanQuery->where(function($q) use ($search) {
+            $suratJalanQuery->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%");
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%");
             });
         }
 
@@ -112,21 +111,21 @@ class ReportLemburController extends Controller
         // Query Surat Jalan Bongkaran
         $bongkaranQuery = SuratJalanBongkaran::query()
             ->with(['tandaTerima', 'pranotaLemburs'])
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('lembur', true)
-                  ->orWhere('nginap', true);
+                    ->orWhere('nginap', true);
             })
-            ->whereHas('tandaTerima', function($q) use ($startDate, $endDate) {
+            ->whereHas('tandaTerima', function ($q) use ($startDate, $endDate) {
                 $q->whereDate('tanggal_tanda_terima', '>=', $startDate)
-                  ->whereDate('tanggal_tanda_terima', '<=', $endDate);
+                    ->whereDate('tanggal_tanda_terima', '<=', $endDate);
             });
 
         if ($search) {
-            $bongkaranQuery->where(function($q) use ($search) {
+            $bongkaranQuery->where(function ($q) use ($search) {
                 $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%");
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%");
             });
         }
 
@@ -139,14 +138,14 @@ class ReportLemburController extends Controller
         $bongkarans = $bongkaranQuery->get();
 
         // Standardize properties
-        $suratJalans->each(function($item) {
+        $suratJalans->each(function ($item) {
             $item->type_surat = 'Muat';
             $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal : null;
             $item->sudah_pranota = $item->hasPranotaLembur();
             $item->no_pranota = $item->pranotaLemburs->first()?->nomor_pranota;
         });
 
-        $bongkarans->each(function($item) {
+        $bongkarans->each(function ($item) {
             $item->type_surat = 'Bongkaran';
             $item->no_surat_jalan = $item->nomor_surat_jalan;
             $item->report_date = $item->tandaTerima ? $item->tandaTerima->tanggal_tanda_terima : null;
@@ -161,8 +160,7 @@ class ReportLemburController extends Controller
             'suratJalans' => $allSuratJalans,
             'startDate' => $startDate,
             'endDate' => $endDate,
-            'statusPranota' => $statusPranota
+            'statusPranota' => $statusPranota,
         ];
     }
 }
-

@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -14,7 +12,7 @@ return new class extends Migration
     {
         $permissions = [
             ['name' => 'surat-jalan-batam-approve', 'description' => 'Menyetujui/Menyelesaikan Surat Jalan Batam'],
-            ['name' => 'surat-jalan-batam-print', 'description' => 'Mencetak Surat Jalan Batam']
+            ['name' => 'surat-jalan-batam-print', 'description' => 'Mencetak Surat Jalan Batam'],
         ];
 
         // Insert new permissions
@@ -24,7 +22,7 @@ return new class extends Migration
                 [
                     'description' => $permission['description'] ?? null,
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]
             );
         }

@@ -10,6 +10,6 @@ class Buruh extends Model
         'nama',
         'nik',
         'status',
-        'status_bpjs'
+        'status_bpjs',
     ];
 }

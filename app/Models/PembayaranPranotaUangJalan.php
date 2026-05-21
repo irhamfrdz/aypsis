@@ -44,13 +44,18 @@ class PembayaranPranotaUangJalan extends Model
 
     // Constants for status
     const STATUS_PENDING = 'pending';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_CANCELLED = 'cancelled';
 
     // Constants for payment methods
     const METHOD_CASH = 'cash';
+
     const METHOD_TRANSFER = 'transfer';
+
     const METHOD_CHECK = 'check';
+
     const METHOD_GIRO = 'giro';
 
     /**
@@ -87,15 +92,16 @@ class PembayaranPranotaUangJalan extends Model
             'pranota_uang_jalan_id'
         )->withPivot('subtotal')->withTimestamps()->limit(1);
     }
-    
+
     /**
      * Get first pranota as model instance (for attributes access)
      */
     public function getPranotaUangJalanAttribute()
     {
-        if (!isset($this->relations['pranotaUangJalan'])) {
+        if (! isset($this->relations['pranotaUangJalan'])) {
             $this->load('pranotaUangJalan');
         }
+
         return $this->pranotaUangJalan->first();
     }
 
@@ -120,7 +126,7 @@ class PembayaranPranotaUangJalan extends Model
      */
     public function getFormattedAmountAttribute()
     {
-        return 'Rp ' . number_format($this->total_pembayaran, 0, ',', '.');
+        return 'Rp '.number_format($this->total_pembayaran, 0, ',', '.');
     }
 
     /**
@@ -191,6 +197,7 @@ class PembayaranPranotaUangJalan extends Model
         if ($status) {
             return $query->where('status_pembayaran', $status);
         }
+
         return $query;
     }
 
@@ -202,6 +209,7 @@ class PembayaranPranotaUangJalan extends Model
         if ($method) {
             return $query->where('jenis_transaksi', $method);
         }
+
         return $query;
     }
 
@@ -211,15 +219,16 @@ class PembayaranPranotaUangJalan extends Model
     public function scopeSearch($query, $search)
     {
         if ($search) {
-            return $query->where(function($q) use ($search) {
+            return $query->where(function ($q) use ($search) {
                 $q->where('nomor_pembayaran', 'like', "%{$search}%")
-                  ->orWhere('nomor_cetakan', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%")
-                  ->orWhereHas('pranotaUangJalan', function($subQ) use ($search) {
-                      $subQ->where('nomor_pranota', 'like', "%{$search}%");
-                  });
+                    ->orWhere('nomor_cetakan', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%")
+                    ->orWhereHas('pranotaUangJalan', function ($subQ) use ($search) {
+                        $subQ->where('nomor_pranota', 'like', "%{$search}%");
+                    });
             });
         }
+
         return $query;
     }
 
@@ -234,10 +243,10 @@ class PembayaranPranotaUangJalan extends Model
             ->orderBy('id', 'desc')
             ->first();
 
-        $sequence = $lastRecord ? 
-            intval(substr($lastRecord->nomor_pembayaran, -4)) + 1 : 
+        $sequence = $lastRecord ?
+            intval(substr($lastRecord->nomor_pembayaran, -4)) + 1 :
             1;
 
-        return 'PUJ-' . now()->format('ym') . '-' . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        return 'PUJ-'.now()->format('ym').'-'.str_pad($sequence, 4, '0', STR_PAD_LEFT);
     }
 }

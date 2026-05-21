@@ -14,7 +14,7 @@ class PembayaranPranotaUangJalanBongkaranItem extends Model
     protected $fillable = [
         'pembayaran_pranota_uang_jalan_bongkaran_id',
         'pranota_uang_jalan_bongkaran_id',
-        'subtotal'
+        'subtotal',
     ];
 
     public function pranotaUangJalanBongkaran()

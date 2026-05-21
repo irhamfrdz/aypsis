@@ -24,7 +24,7 @@ class BiayaKapalPerijinan extends Model
         'nomor_rekening',
         'tanggal_invoice_vendor',
         'keterangan',
-        'jumlah_biaya'
+        'jumlah_biaya',
     ];
 
     protected $casts = [

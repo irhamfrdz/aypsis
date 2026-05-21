@@ -24,10 +24,10 @@ return new class extends Migration
             }
 
             // Add new columns only if they don't exist
-            if (!Schema::hasColumn('pricelist_gate_ins', 'pelabuhan')) {
+            if (! Schema::hasColumn('pricelist_gate_ins', 'pelabuhan')) {
                 $table->string('pelabuhan')->after('id');
             }
-            if (!Schema::hasColumn('pricelist_gate_ins', 'kegiatan')) {
+            if (! Schema::hasColumn('pricelist_gate_ins', 'kegiatan')) {
                 $table->enum('kegiatan', [
                     'BATAL MUAT',
                     'CHANGE VASSEL',
@@ -38,16 +38,16 @@ return new class extends Migration
                     'PENUMPUKAN BPRP',
                     'PERPANJANGAN DELIVERY',
                     'RECEIVING',
-                    'RECEIVING LOSING'
+                    'RECEIVING LOSING',
                 ])->after('pelabuhan');
             }
-            if (!Schema::hasColumn('pricelist_gate_ins', 'gudang')) {
+            if (! Schema::hasColumn('pricelist_gate_ins', 'gudang')) {
                 $table->enum('gudang', ['CY', 'DERMAGA', 'SS'])->nullable()->after('kegiatan');
             }
-            if (!Schema::hasColumn('pricelist_gate_ins', 'kontainer')) {
+            if (! Schema::hasColumn('pricelist_gate_ins', 'kontainer')) {
                 $table->enum('kontainer', ['20', '40'])->nullable()->after('gudang');
             }
-            if (!Schema::hasColumn('pricelist_gate_ins', 'muatan')) {
+            if (! Schema::hasColumn('pricelist_gate_ins', 'muatan')) {
                 $table->enum('muatan', ['EMPTY', 'FULL'])->nullable()->after('kontainer');
             }
 
@@ -98,13 +98,13 @@ return new class extends Migration
             }
 
             // Add back old columns
-            if (!Schema::hasColumn('pricelist_gate_ins', 'kode')) {
+            if (! Schema::hasColumn('pricelist_gate_ins', 'kode')) {
                 $table->string('kode')->nullable();
             }
-            if (!Schema::hasColumn('pricelist_gate_ins', 'keterangan')) {
+            if (! Schema::hasColumn('pricelist_gate_ins', 'keterangan')) {
                 $table->text('keterangan')->nullable();
             }
-            if (!Schema::hasColumn('pricelist_gate_ins', 'catatan')) {
+            if (! Schema::hasColumn('pricelist_gate_ins', 'catatan')) {
                 $table->text('catatan')->nullable();
             }
         });

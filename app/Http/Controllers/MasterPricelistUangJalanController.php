@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasterPricelistUangJalan;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -37,27 +36,27 @@ class MasterPricelistUangJalanController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('dari', 'LIKE', "%{$search}%")
-                  ->orWhere('ke', 'LIKE', "%{$search}%")
-                  ->orWhere('kode', 'LIKE', "%{$search}%")
-                  ->orWhere('wilayah', 'LIKE', "%{$search}%");
+                    ->orWhere('ke', 'LIKE', "%{$search}%")
+                    ->orWhere('kode', 'LIKE', "%{$search}%")
+                    ->orWhere('wilayah', 'LIKE', "%{$search}%");
             });
         }
 
         $pricelistData = $query->orderBy('cabang')
-                              ->orderBy('wilayah')
-                              ->orderBy('ke')
-                              ->paginate(20);
+            ->orderBy('wilayah')
+            ->orderBy('ke')
+            ->paginate(20);
 
         // Get unique values untuk filter dropdown
         $cabangList = MasterPricelistUangJalan::select('cabang')
-                                              ->distinct()
-                                              ->orderBy('cabang')
-                                              ->pluck('cabang');
+            ->distinct()
+            ->orderBy('cabang')
+            ->pluck('cabang');
 
         $wilayahList = MasterPricelistUangJalan::select('wilayah')
-                                               ->distinct()
-                                               ->orderBy('wilayah')
-                                               ->pluck('wilayah');
+            ->distinct()
+            ->orderBy('wilayah')
+            ->pluck('wilayah');
 
         return view('master-pricelist-uang-jalan.index', compact(
             'pricelistData',
@@ -73,9 +72,9 @@ class MasterPricelistUangJalanController extends Controller
     {
         // Get existing cabang untuk dropdown
         $cabangList = MasterPricelistUangJalan::select('cabang')
-                                              ->distinct()
-                                              ->orderBy('cabang')
-                                              ->pluck('cabang');
+            ->distinct()
+            ->orderBy('cabang')
+            ->pluck('cabang');
 
         return view('master-pricelist-uang-jalan.create', compact('cabangList'));
     }
@@ -101,7 +100,7 @@ class MasterPricelistUangJalanController extends Controller
             'antar_lokasi_20ft' => 'nullable|numeric|min:0',
             'antar_lokasi_40ft' => 'nullable|numeric|min:0',
             'berlaku_dari' => 'required|date',
-            'berlaku_sampai' => 'nullable|date|after_or_equal:berlaku_dari'
+            'berlaku_sampai' => 'nullable|date|after_or_equal:berlaku_dari',
         ]);
 
         try {
@@ -111,7 +110,7 @@ class MasterPricelistUangJalanController extends Controller
                 $request->all(),
                 [
                     'created_by' => Auth::id(),
-                    'status' => 'active'
+                    'status' => 'active',
                 ]
             ));
 
@@ -123,10 +122,11 @@ class MasterPricelistUangJalanController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Gagal membuat pricelist: ' . $e->getMessage());
+                ->with('error', 'Gagal membuat pricelist: '.$e->getMessage());
         }
     }
 
@@ -149,9 +149,9 @@ class MasterPricelistUangJalanController extends Controller
 
         // Get existing cabang untuk dropdown
         $cabangList = MasterPricelistUangJalan::select('cabang')
-                                              ->distinct()
-                                              ->orderBy('cabang')
-                                              ->pluck('cabang');
+            ->distinct()
+            ->orderBy('cabang')
+            ->pluck('cabang');
 
         return view('master-pricelist-uang-jalan.edit', compact('pricelist', 'cabangList'));
     }
@@ -178,7 +178,7 @@ class MasterPricelistUangJalanController extends Controller
             'antar_lokasi_40ft' => 'nullable|numeric|min:0',
             'status' => 'required|in:active,inactive',
             'berlaku_dari' => 'required|date',
-            'berlaku_sampai' => 'nullable|date|after_or_equal:berlaku_dari'
+            'berlaku_sampai' => 'nullable|date|after_or_equal:berlaku_dari',
         ]);
 
         try {
@@ -197,10 +197,11 @@ class MasterPricelistUangJalanController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Gagal update pricelist: ' . $e->getMessage());
+                ->with('error', 'Gagal update pricelist: '.$e->getMessage());
         }
     }
 
@@ -215,7 +216,7 @@ class MasterPricelistUangJalanController extends Controller
             // Soft delete - ubah status jadi inactive
             $masterPricelistUangJalan->update([
                 'status' => 'inactive',
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
 
             DB::commit();
@@ -226,9 +227,10 @@ class MasterPricelistUangJalanController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect()
                 ->back()
-                ->with('error', 'Gagal menghapus pricelist: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus pricelist: '.$e->getMessage());
         }
     }
 
@@ -238,7 +240,7 @@ class MasterPricelistUangJalanController extends Controller
     public function importCsv(Request $request)
     {
         $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:2048'
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
         ]);
 
         try {
@@ -252,8 +254,10 @@ class MasterPricelistUangJalanController extends Controller
             $imported = 0;
             $errors = [];
 
-            while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
-                if (count($data) < 13) continue;
+            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                if (count($data) < 13) {
+                    continue;
+                }
 
                 try {
                     // Parse data from CSV
@@ -275,7 +279,7 @@ class MasterPricelistUangJalanController extends Controller
                         'antar_lokasi_40ft' => isset($data[14]) ? $this->parseNumber($data[14]) : 0,
                         'status' => 'active',
                         'berlaku_dari' => now(),
-                        'created_by' => Auth::id()
+                        'created_by' => Auth::id(),
                     ];
 
                     // Skip jika data kosong
@@ -287,7 +291,7 @@ class MasterPricelistUangJalanController extends Controller
                     $imported++;
 
                 } catch (\Exception $e) {
-                    $errors[] = "Row " . ($imported + count($errors) + 2) . ": " . $e->getMessage();
+                    $errors[] = 'Row '.($imported + count($errors) + 2).': '.$e->getMessage();
                 }
             }
 
@@ -295,8 +299,8 @@ class MasterPricelistUangJalanController extends Controller
             DB::commit();
 
             $message = "Import berhasil: {$imported} data ditambahkan";
-            if (!empty($errors)) {
-                $message .= ". " . count($errors) . " error: " . implode('; ', array_slice($errors, 0, 3));
+            if (! empty($errors)) {
+                $message .= '. '.count($errors).' error: '.implode('; ', array_slice($errors, 0, 3));
             }
 
             return redirect()
@@ -305,9 +309,10 @@ class MasterPricelistUangJalanController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect()
                 ->back()
-                ->with('error', 'Import gagal: ' . $e->getMessage());
+                ->with('error', 'Import gagal: '.$e->getMessage());
         }
     }
 
@@ -333,14 +338,14 @@ class MasterPricelistUangJalanController extends Controller
                     'uang_jalan_by_size' => $pricelist->getUangJalanBySize($ukuran),
                     'mel_by_size' => $pricelist->getMelBySize($ukuran),
                     'antar_lokasi_by_size' => $pricelist->getAntarLokasiBySize($ukuran),
-                    'total_biaya' => $pricelist->getTotalBiaya($ukuran)
-                ]
+                    'total_biaya' => $pricelist->getTotalBiaya($ukuran),
+                ],
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'Pricelist tidak ditemukan untuk rute ini'
+            'message' => 'Pricelist tidak ditemukan untuk rute ini',
         ]);
     }
 
@@ -349,7 +354,9 @@ class MasterPricelistUangJalanController extends Controller
      */
     private function parseNumber($value)
     {
-        if (empty($value)) return 0;
+        if (empty($value)) {
+            return 0;
+        }
 
         // Remove spaces dan currency symbols
         $cleaned = preg_replace('/[^\d,.]/', '', $value);

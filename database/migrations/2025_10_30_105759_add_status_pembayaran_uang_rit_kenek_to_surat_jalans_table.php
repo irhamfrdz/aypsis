@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::table('surat_jalans', function (Blueprint $table) {
             $table->enum('status_pembayaran_uang_rit_kenek', [
-                'belum_dibayar', 
-                'proses_pranota', 
+                'belum_dibayar',
+                'proses_pranota',
                 'sudah_masuk_pranota',
-                'pranota_submitted', 
-                'pranota_approved', 
-                'dibayar'
+                'pranota_submitted',
+                'pranota_approved',
+                'dibayar',
             ])->default('belum_dibayar')->after('status_pembayaran_uang_rit');
-            
+
             // Add index for better query performance
             $table->index('status_pembayaran_uang_rit_kenek');
         });

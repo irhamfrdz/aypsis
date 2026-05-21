@@ -27,14 +27,14 @@ class PembayaranPranotaUangJalanBongkaran extends Model
         'status_pembayaran',
         'bukti_pembayaran',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
         'tanggal_pembayaran' => 'date',
         'total_pembayaran' => 'decimal:2',
         'total_tagihan_penyesuaian' => 'decimal:2',
-        'total_tagihan_setelah_penyesuaian' => 'decimal:2'
+        'total_tagihan_setelah_penyesuaian' => 'decimal:2',
     ];
 
     // Backward compatibility: relation to pranota bongkaran (single pranota stored per record)

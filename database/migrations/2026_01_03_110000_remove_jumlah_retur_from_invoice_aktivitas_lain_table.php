@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasColumn('invoice_aktivitas_lain', 'jumlah_retur')) {
+        if (! Schema::hasColumn('invoice_aktivitas_lain', 'jumlah_retur')) {
             Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
                 $table->integer('jumlah_retur')->nullable()->after('jenis_penyesuaian')->comment('Jumlah retur galon untuk jenis penyesuaian retur galon');
             });

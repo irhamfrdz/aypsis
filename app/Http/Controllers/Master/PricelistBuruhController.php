@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Master;
 
+use App\Exports\PricelistBuruhExport;
 use App\Http\Controllers\Controller;
+use App\Imports\PricelistBuruhImport;
 use App\Models\PricelistBuruh;
 use Illuminate\Http\Request;
-use App\Exports\PricelistBuruhExport;
-use App\Imports\PricelistBuruhImport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PricelistBuruhController extends Controller
@@ -22,7 +22,7 @@ class PricelistBuruhController extends Controller
         if ($search = $request->get('q')) {
             $query->where(function ($q) use ($search) {
                 $q->where('barang', 'like', "%{$search}%")
-                  ->orWhere('size', 'like', "%{$search}%");
+                    ->orWhere('size', 'like', "%{$search}%");
             });
         }
 
@@ -73,10 +73,11 @@ class PricelistBuruhController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            \Log::error('Error saving pricelist buruh: ' . $e->getMessage());
+            \Log::error('Error saving pricelist buruh: '.$e->getMessage());
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Gagal menyimpan pricelist buruh: ' . $e->getMessage());
+                ->with('error', 'Gagal menyimpan pricelist buruh: '.$e->getMessage());
         }
     }
 
@@ -125,10 +126,11 @@ class PricelistBuruhController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            \Log::error('Error updating pricelist buruh: ' . $e->getMessage());
+            \Log::error('Error updating pricelist buruh: '.$e->getMessage());
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Gagal memperbarui pricelist buruh: ' . $e->getMessage());
+                ->with('error', 'Gagal memperbarui pricelist buruh: '.$e->getMessage());
         }
     }
 
@@ -139,10 +141,12 @@ class PricelistBuruhController extends Controller
     {
         try {
             $pricelistBuruh->delete();
+
             return redirect()->route('master.pricelist-buruh.index')->with('success', 'Pricelist buruh berhasil dihapus.');
         } catch (\Exception $e) {
-            \Log::error('Error deleting pricelist buruh: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menghapus pricelist buruh: ' . $e->getMessage());
+            \Log::error('Error deleting pricelist buruh: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal menghapus pricelist buruh: '.$e->getMessage());
         }
     }
 
@@ -151,7 +155,7 @@ class PricelistBuruhController extends Controller
      */
     public function export()
     {
-        return Excel::download(new PricelistBuruhExport, 'pricelist-buruh-' . date('Y-m-d') . '.xlsx');
+        return Excel::download(new PricelistBuruhExport, 'pricelist-buruh-'.date('Y-m-d').'.xlsx');
     }
 
     /**
@@ -174,14 +178,14 @@ class PricelistBuruhController extends Controller
             ['Stuffing', '40', 'Full', 200000, 'Aktif', ''],
         ];
 
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set headers
         $col = 'A';
         foreach ($headers as $header) {
-            $sheet->setCellValue($col . '1', $header);
-            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $sheet->setCellValue($col.'1', $header);
+            $sheet->getStyle($col.'1')->getFont()->setBold(true);
             $col++;
         }
 
@@ -190,7 +194,7 @@ class PricelistBuruhController extends Controller
         foreach ($sampleData as $data) {
             $col = 'A';
             foreach ($data as $value) {
-                $sheet->setCellValue($col . $row, $value);
+                $sheet->setCellValue($col.$row, $value);
                 $col++;
             }
             $row++;
@@ -205,7 +209,7 @@ class PricelistBuruhController extends Controller
         $filename = 'template-pricelist-buruh.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');
@@ -233,17 +237,18 @@ class PricelistBuruhController extends Controller
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $failures = $e->failures();
             $errors = [];
-            
+
             foreach ($failures as $failure) {
-                $errors[] = "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+                $errors[] = "Baris {$failure->row()}: ".implode(', ', $failure->errors());
             }
 
             return redirect()->back()
-                ->with('error', 'Gagal import data: ' . implode('<br>', $errors));
+                ->with('error', 'Gagal import data: '.implode('<br>', $errors));
         } catch (\Exception $e) {
-            \Log::error('Error importing pricelist buruh: ' . $e->getMessage());
+            \Log::error('Error importing pricelist buruh: '.$e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Gagal import data: ' . $e->getMessage());
+                ->with('error', 'Gagal import data: '.$e->getMessage());
         }
     }
 }

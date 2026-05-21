@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('realisasi_uang_muka', function (Blueprint $table) {
-            if (!Schema::hasColumn('realisasi_uang_muka', 'pembayaran_uang_muka_id')) {
+            if (! Schema::hasColumn('realisasi_uang_muka', 'pembayaran_uang_muka_id')) {
                 $table->foreignId('pembayaran_uang_muka_id')->nullable()->after('dp_amount')->constrained('pembayaran_uang_muka')->onDelete('set null');
             }
         });

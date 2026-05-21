@@ -22,9 +22,9 @@ return new class extends Migration
 
             // Foreign key constraint
             $table->foreign('pembayaran_id')
-                  ->references('id')
-                  ->on('pembayaran_aktivitas_lainnya')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('pembayaran_aktivitas_lainnya')
+                ->onDelete('cascade');
 
             // Index untuk performa query
             $table->index('pembayaran_id');

@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\Term;
 use App\Models\Penerima;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
+use App\Models\Term;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ApprovalOrderController extends Controller
 {
@@ -25,17 +25,17 @@ class ApprovalOrderController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_order', 'like', "%{$search}%")
-                  ->orWhere('tujuan_ambil', 'like', "%{$search}%")
-                  ->orWhere('tujuan_kirim', 'like', "%{$search}%")
-                  ->orWhereHas('pengirim', function($query) use ($search) {
-                      $query->where('nama_pengirim', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('suratJalans', function($query) use ($search) {
-                      $query->where('no_surat_jalan', 'like', "%{$search}%")
+                    ->orWhere('tujuan_ambil', 'like', "%{$search}%")
+                    ->orWhere('tujuan_kirim', 'like', "%{$search}%")
+                    ->orWhereHas('pengirim', function ($query) use ($search) {
+                        $query->where('nama_pengirim', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('suratJalans', function ($query) use ($search) {
+                        $query->where('no_surat_jalan', 'like', "%{$search}%")
                             ->orWhere('no_kontainer', 'like', "%{$search}%");
-                  });
+                    });
             });
         }
 
@@ -91,7 +91,7 @@ class ApprovalOrderController extends Controller
             'order_id' => 'required|exists:orders,id',
             'term_name' => 'required|string|max:255',
             'term_days' => 'required|integer|min:0',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         try {
@@ -102,7 +102,7 @@ class ApprovalOrderController extends Controller
                 'name' => $request->term_name,
                 'days' => $request->term_days,
                 'description' => $request->description,
-                'created_by' => Auth::id()
+                'created_by' => Auth::id(),
             ]);
 
             // Update order with term
@@ -113,13 +113,14 @@ class ApprovalOrderController extends Controller
             DB::commit();
 
             return redirect()->route('approval-order.index')
-                           ->with('success', 'Term berhasil ditambahkan ke Order');
+                ->with('success', 'Term berhasil ditambahkan ke Order');
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()
-                           ->with('error', 'Gagal menambahkan term: ' . $e->getMessage())
-                           ->withInput();
+                ->with('error', 'Gagal menambahkan term: '.$e->getMessage())
+                ->withInput();
         }
     }
 
@@ -129,7 +130,7 @@ class ApprovalOrderController extends Controller
     public function show($id)
     {
         $order = Order::with(['pengirim', 'term', 'jenisBarang', 'recipient', 'notifyParty'])
-                     ->findOrFail($id);
+            ->findOrFail($id);
 
         return view('approval-order.show', compact('order'));
     }
@@ -176,33 +177,33 @@ class ApprovalOrderController extends Controller
         try {
             $order = Order::findOrFail($id);
             $order->term_id = $request->term_id;
-            
+
             // Update Informasi Pengirim
             $order->pengirim_id = $request->pengirim_id;
             $order->alamat_pengirim = $request->alamat_pengirim;
-            
+
             // Update Informasi Penerima
             $order->penerima_id = $request->penerima_id;
             $order->notify_party_id = $request->notify_party_id;
-            
+
             if ($request->filled('penerima_id')) {
                 $penerima = \App\Models\Penerima::find($request->penerima_id);
                 $order->penerima = $penerima ? $penerima->nama_penerima : null;
             } else {
                 $order->penerima = null;
             }
-            
+
             $order->kontak_penerima = $request->kontak_penerima;
             $order->alamat_penerima = $request->alamat_penerima;
-            
+
             // Update FTZ03
             $order->exclude_ftz03 = $request->ftz03_option == 'exclude';
             $order->include_ftz03 = $request->ftz03_option == 'include';
-            
+
             // Update SPPB
             $order->exclude_sppb = $request->sppb_option == 'exclude';
             $order->include_sppb = $request->sppb_option == 'include';
-            
+
             // Update Buruh Bongkar
             $order->exclude_buruh_bongkar = $request->buruh_bongkar_option == 'exclude';
             $order->include_buruh_bongkar = $request->buruh_bongkar_option == 'include';
@@ -217,8 +218,10 @@ class ApprovalOrderController extends Controller
             if ($request->has('nama_barang_dimensi')) {
                 foreach ($request->nama_barang_dimensi as $key => $val) {
                     // Check if row has any data
-                    if (empty($val) && empty($request->panjang[$key]) && empty($request->lebar[$key]) && empty($request->tonase[$key])) continue;
-                    
+                    if (empty($val) && empty($request->panjang[$key]) && empty($request->lebar[$key]) && empty($request->tonase[$key])) {
+                        continue;
+                    }
+
                     $item = [
                         'nama_barang' => $val,
                         'jumlah' => $request->jumlah_dimensi[$key] ?? 0,
@@ -230,10 +233,12 @@ class ApprovalOrderController extends Controller
                         'tonase' => $request->tonase[$key] ?? 0,
                     ];
                     $dimensiItems[] = $item;
-                    $totalJumlah += (int)($item['jumlah'] ?? 0);
-                    $totalTonase += (float)($item['tonase'] ?? 0);
-                    $totalVolume += (float)($item['meter_kubik'] ?? 0);
-                    if (!empty($val)) $namaBarangList[] = $val;
+                    $totalJumlah += (int) ($item['jumlah'] ?? 0);
+                    $totalTonase += (float) ($item['tonase'] ?? 0);
+                    $totalVolume += (float) ($item['meter_kubik'] ?? 0);
+                    if (! empty($val)) {
+                        $namaBarangList[] = $val;
+                    }
                 }
             }
 
@@ -242,7 +247,7 @@ class ApprovalOrderController extends Controller
             $order->tonase = $totalTonase;
             $order->meter_kubik = $totalVolume;
             $order->nama_barang = $namaBarangList;
-            
+
             $order->save();
 
             // Sync with SuratJalan and TandaTerima
@@ -259,7 +264,7 @@ class ApprovalOrderController extends Controller
                     'pengirim' => $namaPengirim,
                     'alamat' => $alamatPengirim,
                     'penerima_id' => $penerimaId,
-                    'alamat_penerima' => $alamatPenerima
+                    'alamat_penerima' => $alamatPenerima,
                 ]);
 
                 // Update TandaTerima
@@ -280,12 +285,12 @@ class ApprovalOrderController extends Controller
             }
 
             return redirect()->route('approval-order.index')
-                           ->with('success', 'Data Order berhasil diupdate dan disinkronkan ke Tanda Terima');
+                ->with('success', 'Data Order berhasil diupdate dan disinkronkan ke Tanda Terima');
 
         } catch (\Exception $e) {
             return redirect()->back()
-                           ->with('error', 'Gagal mengupdate data: ' . $e->getMessage())
-                           ->withInput();
+                ->with('error', 'Gagal mengupdate data: '.$e->getMessage())
+                ->withInput();
         }
     }
 
@@ -300,11 +305,11 @@ class ApprovalOrderController extends Controller
             $order->save();
 
             return redirect()->route('approval-order.index')
-                           ->with('success', 'Term berhasil dihapus dari Order');
+                ->with('success', 'Term berhasil dihapus dari Order');
 
         } catch (\Exception $e) {
             return redirect()->back()
-                           ->with('error', 'Gagal menghapus term: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus term: '.$e->getMessage());
         }
     }
 
@@ -321,11 +326,11 @@ class ApprovalOrderController extends Controller
             $order->save();
 
             return redirect()->route('approval-order.index')
-                           ->with('success', 'Order berhasil disetujui');
+                ->with('success', 'Order berhasil disetujui');
 
         } catch (\Exception $e) {
             return redirect()->back()
-                           ->with('error', 'Gagal menyetujui Order: ' . $e->getMessage());
+                ->with('error', 'Gagal menyetujui Order: '.$e->getMessage());
         }
     }
 
@@ -342,11 +347,11 @@ class ApprovalOrderController extends Controller
             $order->save();
 
             return redirect()->route('approval-order.index')
-                           ->with('success', 'Order berhasil ditolak');
+                ->with('success', 'Order berhasil ditolak');
 
         } catch (\Exception $e) {
             return redirect()->back()
-                           ->with('error', 'Gagal menolak Order: ' . $e->getMessage());
+                ->with('error', 'Gagal menolak Order: '.$e->getMessage());
         }
     }
 
@@ -357,43 +362,43 @@ class ApprovalOrderController extends Controller
     {
         try {
             $dryRun = $request->input('dry_run', false);
-            
+
             // Prepare command arguments
             $arguments = ['--all' => true];
             if ($dryRun) {
                 $arguments['--dry-run'] = true;
             }
-            
+
             // Run artisan command and capture output
             Artisan::call('tanda-terima:update-penerima', $arguments);
             $output = Artisan::output();
-            
+
             // Parse output to get statistics
             $totalOrders = 0;
             $totalTandaTerima = 0;
             $totalWithChanges = 0;
             $totalUpdated = 0;
-            
+
             if (preg_match('/Ditemukan (\d+) order dengan data penerima/', $output, $matches)) {
                 $totalOrders = (int) $matches[1];
             }
-            
+
             if (preg_match('/Total Tanda Terima ditemukan: (\d+)/', $output, $matches)) {
                 $totalTandaTerima = (int) $matches[1];
             }
-            
+
             if (preg_match('/Total Tanda Terima dengan perubahan: (\d+)/', $output, $matches)) {
                 $totalWithChanges = (int) $matches[1];
             }
-            
+
             if (preg_match('/Total Tanda Terima yang akan diupdate: (\d+)/', $output, $matches)) {
                 $totalWithChanges = (int) $matches[1]; // dry run
             }
-            
+
             if (preg_match('/Total Tanda Terima berhasil diupdate: (\d+)/', $output, $matches)) {
                 $totalUpdated = (int) $matches[1];
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => $dryRun ? 'Preview berhasil' : 'Update berhasil',
@@ -401,14 +406,15 @@ class ApprovalOrderController extends Controller
                 'total_tanda_terima' => $totalTandaTerima,
                 'total_with_changes' => $totalWithChanges,
                 'total_updated' => $dryRun ? 0 : $totalUpdated,
-                'output' => $output
+                'output' => $output,
             ]);
-            
+
         } catch (\Exception $e) {
-            Log::error('Error updating tanda terima: ' . $e->getMessage());
+            Log::error('Error updating tanda terima: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
+                'message' => 'Error: '.$e->getMessage(),
             ], 500);
         }
     }

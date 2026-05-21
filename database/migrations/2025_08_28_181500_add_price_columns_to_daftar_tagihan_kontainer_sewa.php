@@ -13,24 +13,24 @@ return new class extends Migration
      */
     public function up()
     {
-        if (!Schema::hasTable('daftar_tagihan_kontainer_sewa')) {
+        if (! Schema::hasTable('daftar_tagihan_kontainer_sewa')) {
             return;
         }
 
         Schema::table('daftar_tagihan_kontainer_sewa', function (Blueprint $table) {
-            if (!Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'dpp')) {
+            if (! Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'dpp')) {
                 $table->decimal('dpp', 15, 2)->nullable()->after('tarif');
             }
-            if (!Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'dpp_nilai_lain')) {
+            if (! Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'dpp_nilai_lain')) {
                 $table->decimal('dpp_nilai_lain', 15, 2)->nullable()->after('dpp');
             }
-            if (!Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'ppn')) {
+            if (! Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'ppn')) {
                 $table->decimal('ppn', 15, 2)->nullable()->after('dpp_nilai_lain');
             }
-            if (!Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'pph')) {
+            if (! Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'pph')) {
                 $table->decimal('pph', 15, 2)->nullable()->after('ppn');
             }
-            if (!Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'grand_total')) {
+            if (! Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'grand_total')) {
                 $table->decimal('grand_total', 18, 2)->nullable()->after('pph');
             }
         });
@@ -43,7 +43,7 @@ return new class extends Migration
      */
     public function down()
     {
-        if (!Schema::hasTable('daftar_tagihan_kontainer_sewa')) {
+        if (! Schema::hasTable('daftar_tagihan_kontainer_sewa')) {
             return;
         }
 

@@ -2,15 +2,15 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
+use App\Models\Karyawan;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
-use App\Models\Karyawan;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Console\Command;
 
 class UpdateNoPlatFromKaryawan extends Command
 {
     protected $signature = 'update:no-plat-from-karyawan {--dry-run : Preview changes without saving}';
+
     protected $description = 'Update no_plat pada surat_jalans dan surat_jalan_bongkarans berdasarkan plat karyawan (periode 25 Feb - 24 Mar 2026)';
 
     public function handle()
@@ -19,9 +19,9 @@ class UpdateNoPlatFromKaryawan extends Command
         $startDate = '2026-02-25';
         $endDate = '2026-03-24';
 
-        $this->info("=== Update No Plat dari Karyawan ===");
+        $this->info('=== Update No Plat dari Karyawan ===');
         $this->info("Periode: {$startDate} s/d {$endDate}");
-        $this->info($isDryRun ? "MODE: DRY RUN (tidak akan menyimpan perubahan)" : "MODE: LIVE (perubahan akan disimpan)");
+        $this->info($isDryRun ? 'MODE: DRY RUN (tidak akan menyimpan perubahan)' : 'MODE: LIVE (perubahan akan disimpan)');
         $this->newLine();
 
         // Cache semua karyawan yang punya plat (lookup by nama_panggilan)
@@ -32,23 +32,23 @@ class UpdateNoPlatFromKaryawan extends Command
                 return strtolower(trim($k->nama_panggilan));
             });
 
-        $this->info("Total karyawan dengan plat: " . $karyawanMap->count());
+        $this->info('Total karyawan dengan plat: '.$karyawanMap->count());
         $this->newLine();
 
         // =============================================
         // 1. UPDATE SURAT JALAN
         // =============================================
-        $this->info("--- Surat Jalan ---");
+        $this->info('--- Surat Jalan ---');
 
         $suratJalans = SuratJalan::where(function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-                      ->orWhereHas('tandaTerima', function ($q) use ($startDate, $endDate) {
-                          $q->whereBetween('tanggal', [$startDate, $endDate]);
-                      });
-            })
+            $query->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+                ->orWhereHas('tandaTerima', function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('tanggal', [$startDate, $endDate]);
+                });
+        })
             ->get();
 
-        $this->info("Total Surat Jalan ditemukan: " . $suratJalans->count());
+        $this->info('Total Surat Jalan ditemukan: '.$suratJalans->count());
 
         $sjUpdated = 0;
         $sjSkipped = 0;
@@ -60,24 +60,26 @@ class UpdateNoPlatFromKaryawan extends Command
 
             if (empty($supirName)) {
                 $sjSkipped++;
+
                 continue;
             }
 
             $karyawan = $karyawanMap->get($supirName);
 
             // Fallback: cari by nama_lengkap jika tidak ketemu by nama_panggilan
-            if (!$karyawan) {
+            if (! $karyawan) {
                 $karyawan = Karyawan::whereNotNull('plat')
                     ->where('plat', '!=', '')
                     ->whereRaw('LOWER(TRIM(nama_lengkap)) = ?', [$supirName])
                     ->first();
             }
 
-            if (!$karyawan) {
-                if (!in_array($sj->supir, $sjNotFound)) {
+            if (! $karyawan) {
+                if (! in_array($sj->supir, $sjNotFound)) {
                     $sjNotFound[] = $sj->supir;
                 }
                 $sjSkipped++;
+
                 continue;
             }
 
@@ -94,7 +96,7 @@ class UpdateNoPlatFromKaryawan extends Command
                     'Plat Baru' => $newPlat,
                 ];
 
-                if (!$isDryRun) {
+                if (! $isDryRun) {
                     $sj->no_plat = $newPlat;
                     $sj->saveQuietly(); // saveQuietly agar tidak trigger event/audit
                 }
@@ -110,24 +112,24 @@ class UpdateNoPlatFromKaryawan extends Command
         $this->info("SJ Updated: {$sjUpdated} | Skipped/Sama: {$sjSkipped}");
 
         if (count($sjNotFound) > 0) {
-            $this->warn("Supir tidak ditemukan di karyawan: " . implode(', ', $sjNotFound));
+            $this->warn('Supir tidak ditemukan di karyawan: '.implode(', ', $sjNotFound));
         }
         $this->newLine();
 
         // =============================================
         // 2. UPDATE SURAT JALAN BONGKARAN
         // =============================================
-        $this->info("--- Surat Jalan Bongkaran ---");
+        $this->info('--- Surat Jalan Bongkaran ---');
 
         $suratJalanBongkarans = SuratJalanBongkaran::where(function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-                      ->orWhereHas('tandaTerima', function ($q) use ($startDate, $endDate) {
-                          $q->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
-                      });
-            })
+            $query->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+                ->orWhereHas('tandaTerima', function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
+                });
+        })
             ->get();
 
-        $this->info("Total SJ Bongkaran ditemukan: " . $suratJalanBongkarans->count());
+        $this->info('Total SJ Bongkaran ditemukan: '.$suratJalanBongkarans->count());
 
         $sjbUpdated = 0;
         $sjbSkipped = 0;
@@ -139,24 +141,26 @@ class UpdateNoPlatFromKaryawan extends Command
 
             if (empty($supirName)) {
                 $sjbSkipped++;
+
                 continue;
             }
 
             $karyawan = $karyawanMap->get($supirName);
 
             // Fallback: cari by nama_lengkap jika tidak ketemu by nama_panggilan
-            if (!$karyawan) {
+            if (! $karyawan) {
                 $karyawan = Karyawan::whereNotNull('plat')
                     ->where('plat', '!=', '')
                     ->whereRaw('LOWER(TRIM(nama_lengkap)) = ?', [$supirName])
                     ->first();
             }
 
-            if (!$karyawan) {
-                if (!in_array($sjb->supir, $sjbNotFound)) {
+            if (! $karyawan) {
+                if (! in_array($sjb->supir, $sjbNotFound)) {
                     $sjbNotFound[] = $sjb->supir;
                 }
                 $sjbSkipped++;
+
                 continue;
             }
 
@@ -173,7 +177,7 @@ class UpdateNoPlatFromKaryawan extends Command
                     'Plat Baru' => $newPlat,
                 ];
 
-                if (!$isDryRun) {
+                if (! $isDryRun) {
                     $sjb->no_plat = $newPlat;
                     $sjb->saveQuietly();
                 }
@@ -189,23 +193,23 @@ class UpdateNoPlatFromKaryawan extends Command
         $this->info("SJB Updated: {$sjbUpdated} | Skipped/Sama: {$sjbSkipped}");
 
         if (count($sjbNotFound) > 0) {
-            $this->warn("Supir tidak ditemukan di karyawan: " . implode(', ', $sjbNotFound));
+            $this->warn('Supir tidak ditemukan di karyawan: '.implode(', ', $sjbNotFound));
         }
 
         // =============================================
         // SUMMARY
         // =============================================
         $this->newLine();
-        $this->info("=== RINGKASAN ===");
+        $this->info('=== RINGKASAN ===');
         $this->info("Surat Jalan      : {$sjUpdated} di-update, {$sjSkipped} di-skip");
         $this->info("SJ Bongkaran     : {$sjbUpdated} di-update, {$sjbSkipped} di-skip");
-        $this->info("Total di-update  : " . ($sjUpdated + $sjbUpdated));
+        $this->info('Total di-update  : '.($sjUpdated + $sjbUpdated));
 
         if ($isDryRun) {
             $this->newLine();
-            $this->warn("⚠️  Ini adalah DRY RUN. Tidak ada perubahan yang disimpan.");
-            $this->warn("Jalankan tanpa --dry-run untuk menyimpan perubahan:");
-            $this->warn("   php artisan update:no-plat-from-karyawan");
+            $this->warn('⚠️  Ini adalah DRY RUN. Tidak ada perubahan yang disimpan.');
+            $this->warn('Jalankan tanpa --dry-run untuk menyimpan perubahan:');
+            $this->warn('   php artisan update:no-plat-from-karyawan');
         }
 
         return Command::SUCCESS;

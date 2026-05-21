@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Auditable;
 use App\Traits\AsuransiManageable;
+use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TandaTerimaBatam extends Model
 {
-    use HasFactory, SoftDeletes, Auditable, AsuransiManageable;
+    use AsuransiManageable, Auditable, HasFactory, SoftDeletes;
 
     protected $table = 'tanda_terima_batams';
 
@@ -170,7 +170,7 @@ class TandaTerimaBatam extends Model
         }
 
         // Alternatif: cari berdasarkan no_surat_jalan jika surat_jalan_batam_id tidak ada
-        if ($this->no_surat_jalan && !$this->surat_jalan_batam_id) {
+        if ($this->no_surat_jalan && ! $this->surat_jalan_batam_id) {
             \App\Models\ProspekBatam::where('no_surat_jalan', $this->no_surat_jalan)
                 ->whereNull('tanda_terima_batam_id')
                 ->update(['tanda_terima_batam_id' => $this->id]);
@@ -193,6 +193,7 @@ class TandaTerimaBatam extends Model
         if (is_null($this->meter_kubik)) {
             return null;
         }
+
         return rtrim(rtrim(number_format($this->meter_kubik, 3, '.', ''), '0'), '.');
     }
 
@@ -201,6 +202,7 @@ class TandaTerimaBatam extends Model
         if (is_null($this->tonase)) {
             return null;
         }
+
         return rtrim(rtrim(number_format($this->tonase, 3, '.', ''), '0'), '.');
     }
 
@@ -209,6 +211,7 @@ class TandaTerimaBatam extends Model
         if (is_null($this->panjang)) {
             return null;
         }
+
         return rtrim(rtrim(number_format($this->panjang, 3, '.', ''), '0'), '.');
     }
 
@@ -217,6 +220,7 @@ class TandaTerimaBatam extends Model
         if (is_null($this->lebar)) {
             return null;
         }
+
         return rtrim(rtrim(number_format($this->lebar, 3, '.', ''), '0'), '.');
     }
 
@@ -225,6 +229,7 @@ class TandaTerimaBatam extends Model
         if (is_null($this->tinggi)) {
             return null;
         }
+
         return rtrim(rtrim(number_format($this->tinggi, 3, '.', ''), '0'), '.');
     }
 }

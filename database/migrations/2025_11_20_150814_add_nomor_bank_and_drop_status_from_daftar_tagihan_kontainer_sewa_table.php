@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('daftar_tagihan_kontainer_sewa', function (Blueprint $table) {
             // Tambah kolom nomor_bank setelah kolom adjustment_note
             $table->string('nomor_bank')->nullable()->after('adjustment_note');
-            
+
             // Hapus kolom status jika ada
             if (Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'status')) {
                 $table->dropColumn('status');
@@ -32,7 +32,7 @@ return new class extends Migration
             if (Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'nomor_bank')) {
                 $table->dropColumn('nomor_bank');
             }
-            
+
             // Kembalikan kolom status
             $table->string('status')->nullable()->after('adjustment_note');
         });

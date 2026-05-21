@@ -3,13 +3,13 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class KapalExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class KapalExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $rows;
 
@@ -32,7 +32,7 @@ class KapalExport implements FromCollection, WithHeadings, ShouldAutoSize, WithE
                 $kapal->catatan ?? '',
                 ucfirst($kapal->status ?? ''),
                 $kapal->created_at ? $kapal->created_at->format('d/M/Y H:i') : '',
-                $kapal->updated_at ? $kapal->updated_at->format('d/M/Y H:i') : ''
+                $kapal->updated_at ? $kapal->updated_at->format('d/M/Y H:i') : '',
             ];
         });
     }
@@ -58,7 +58,7 @@ class KapalExport implements FromCollection, WithHeadings, ShouldAutoSize, WithE
             'Catatan',
             'Status',
             'Tanggal Dibuat',
-            'Tanggal Diperbarui'
+            'Tanggal Diperbarui',
         ];
     }
 
@@ -68,9 +68,9 @@ class KapalExport implements FromCollection, WithHeadings, ShouldAutoSize, WithE
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $highestRow = $sheet->getHighestRow();
-                $sheet->getStyle("A1:N1")->getFont()->setBold(true);
+                $sheet->getStyle('A1:N1')->getFont()->setBold(true);
                 $sheet->getStyle("A1:N{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-            }
+            },
         ];
     }
 }

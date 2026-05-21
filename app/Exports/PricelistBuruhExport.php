@@ -12,16 +12,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class PricelistBuruhExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function collection()
     {
         return PricelistBuruh::orderBy('barang')->orderBy('size')->get();
     }
 
-    /**
-     * @return array
-     */
     public function headings(): array
     {
         return [
@@ -36,7 +33,7 @@ class PricelistBuruhExport implements FromCollection, WithHeadings, WithMapping,
     }
 
     /**
-     * @var PricelistBuruh $item
+     * @var PricelistBuruh
      */
     public function map($item): array
     {

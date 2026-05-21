@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasColumn('tagihan_kontainer_sewa', 'periode_raw')) {
+        if (! Schema::hasColumn('tagihan_kontainer_sewa', 'periode_raw')) {
             Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
                 $table->string('periode_raw')->nullable()->after('tanggal_harga_awal');
             });

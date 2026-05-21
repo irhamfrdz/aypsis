@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class MasterPricelistUangJalan extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $table = 'master_pricelist_uang_jalan';
 
     protected $fillable = [
@@ -34,7 +33,7 @@ class MasterPricelistUangJalan extends Model
         'berlaku_dari',
         'berlaku_sampai',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
@@ -49,7 +48,7 @@ class MasterPricelistUangJalan extends Model
         'berlaku_dari' => 'date',
         'berlaku_sampai' => 'date',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
     ];
 
     /**
@@ -74,11 +73,11 @@ class MasterPricelistUangJalan extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active')
-                    ->where('berlaku_dari', '<=', now())
-                    ->where(function ($q) {
-                        $q->whereNull('berlaku_sampai')
-                          ->orWhere('berlaku_sampai', '>=', now());
-                    });
+            ->where('berlaku_dari', '<=', now())
+            ->where(function ($q) {
+                $q->whereNull('berlaku_sampai')
+                    ->orWhere('berlaku_sampai', '>=', now());
+            });
     }
 
     /**
@@ -102,7 +101,7 @@ class MasterPricelistUangJalan extends Model
      */
     public function getFormattedUangJalan20ftAttribute()
     {
-        return 'Rp ' . number_format($this->uang_jalan_20ft, 0, ',', '.');
+        return 'Rp '.number_format($this->uang_jalan_20ft, 0, ',', '.');
     }
 
     /**
@@ -110,7 +109,7 @@ class MasterPricelistUangJalan extends Model
      */
     public function getFormattedUangJalan40ftAttribute()
     {
-        return 'Rp ' . number_format($this->uang_jalan_40ft, 0, ',', '.');
+        return 'Rp '.number_format($this->uang_jalan_40ft, 0, ',', '.');
     }
 
     /**
@@ -208,8 +207,8 @@ class MasterPricelistUangJalan extends Model
     public static function findByRoute($dari, $ke, $ukuran = null)
     {
         $query = static::active()
-                      ->where('dari', 'LIKE', "%{$dari}%")
-                      ->where('ke', 'LIKE', "%{$ke}%");
+            ->where('dari', 'LIKE', "%{$dari}%")
+            ->where('ke', 'LIKE', "%{$ke}%");
 
         if ($ukuran) {
             // Bisa ditambahkan filter berdasarkan ukuran jika diperlukan
@@ -238,8 +237,8 @@ class MasterPricelistUangJalan extends Model
     private static function generateKode($cabang)
     {
         $lastKode = static::where('cabang', $cabang)
-                          ->orderBy('kode', 'desc')
-                          ->first();
+            ->orderBy('kode', 'desc')
+            ->first();
 
         if ($lastKode) {
             $lastNumber = (int) substr($lastKode->kode, -3);
@@ -248,6 +247,6 @@ class MasterPricelistUangJalan extends Model
             $newNumber = 1;
         }
 
-        return $cabang . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        return $cabang.str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 }

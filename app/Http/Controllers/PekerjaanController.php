@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pekerjaan;
 use App\Models\Divisi;
+use App\Models\Pekerjaan;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class PekerjaanController extends Controller
@@ -18,7 +17,7 @@ class PekerjaanController extends Controller
         $query = Pekerjaan::query();
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $query->search($request->search);
         }
 
@@ -38,6 +37,7 @@ class PekerjaanController extends Controller
     public function create()
     {
         $divisis = Divisi::active()->orderBy('nama_divisi')->get();
+
         return view('master-pekerjaan.create', compact('divisis'));
     }
 
@@ -50,7 +50,7 @@ class PekerjaanController extends Controller
             'nama_pekerjaan' => 'required|string|max:100|unique:pekerjaans,nama_pekerjaan',
             'kode_pekerjaan' => 'required|string|max:20|unique:pekerjaans,kode_pekerjaan',
             'divisi' => 'required|string|max:100',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
         ]);
 
         try {
@@ -58,14 +58,14 @@ class PekerjaanController extends Controller
                 'nama_pekerjaan' => $request->nama_pekerjaan,
                 'kode_pekerjaan' => strtoupper($request->kode_pekerjaan),
                 'divisi' => $request->divisi,
-                'is_active' => $request->has('is_active')
+                'is_active' => $request->has('is_active'),
             ]);
 
             return redirect()->route('master.pekerjaan.index')
-                           ->with('success', 'Pekerjaan berhasil ditambahkan!');
+                ->with('success', 'Pekerjaan berhasil ditambahkan!');
         } catch (\Exception $e) {
             return back()->withInput()
-                        ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -75,6 +75,7 @@ class PekerjaanController extends Controller
     public function show(string $id)
     {
         $pekerjaan = Pekerjaan::with('karyawans')->findOrFail($id);
+
         return view('master-pekerjaan.show', compact('pekerjaan'));
     }
 
@@ -85,6 +86,7 @@ class PekerjaanController extends Controller
     {
         $pekerjaan = Pekerjaan::findOrFail($id);
         $divisis = Divisi::active()->orderBy('nama_divisi')->get();
+
         return view('master-pekerjaan.edit', compact('pekerjaan', 'divisis'));
     }
 
@@ -99,7 +101,7 @@ class PekerjaanController extends Controller
             'nama_pekerjaan' => ['required', 'string', 'max:100', Rule::unique('pekerjaans')->ignore($pekerjaan->id)],
             'kode_pekerjaan' => ['required', 'string', 'max:20', Rule::unique('pekerjaans')->ignore($pekerjaan->id)],
             'divisi' => 'required|string|max:100',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
         ]);
 
         try {
@@ -107,14 +109,14 @@ class PekerjaanController extends Controller
                 'nama_pekerjaan' => $request->nama_pekerjaan,
                 'kode_pekerjaan' => strtoupper($request->kode_pekerjaan),
                 'divisi' => $request->divisi,
-                'is_active' => $request->has('is_active')
+                'is_active' => $request->has('is_active'),
             ]);
 
             return redirect()->route('master.pekerjaan.index')
-                           ->with('success', 'Pekerjaan berhasil diperbarui!');
+                ->with('success', 'Pekerjaan berhasil diperbarui!');
         } catch (\Exception $e) {
             return back()->withInput()
-                        ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -134,9 +136,9 @@ class PekerjaanController extends Controller
             $pekerjaan->delete();
 
             return redirect()->route('master.pekerjaan.index')
-                           ->with('success', 'Pekerjaan berhasil dihapus!');
+                ->with('success', 'Pekerjaan berhasil dihapus!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -147,14 +149,14 @@ class PekerjaanController extends Controller
     {
         try {
             $pekerjaan = Pekerjaan::findOrFail($id);
-            $pekerjaan->update(['is_active' => !$pekerjaan->is_active]);
+            $pekerjaan->update(['is_active' => ! $pekerjaan->is_active]);
 
             $status = $pekerjaan->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
             return redirect()->route('master.pekerjaan.index')
-                           ->with('success', 'Pekerjaan berhasil ' . $status . '!');
+                ->with('success', 'Pekerjaan berhasil '.$status.'!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -163,17 +165,17 @@ class PekerjaanController extends Controller
      */
     public function exportTemplate()
     {
-        $filename = 'template_pekerjaan_' . date('Y-m-d') . '.csv';
+        $filename = 'template_pekerjaan_'.date('Y-m-d').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
             'Pragma' => 'no-cache',
-            'Expires' => '0'
+            'Expires' => '0',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
 
             // Header row with semicolon delimiter
@@ -181,7 +183,7 @@ class PekerjaanController extends Controller
                 'nama_pekerjaan',
                 'kode_pekerjaan',
                 'divisi',
-                'is_active'
+                'is_active',
             ], ';');
 
             fclose($file);
@@ -196,13 +198,13 @@ class PekerjaanController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:csv,txt|max:2048'
+            'file' => 'required|mimes:csv,txt|max:2048',
         ]);
 
         $file = $request->file('file');
         $path = $file->getRealPath();
 
-        $data = array_map(function($line) {
+        $data = array_map(function ($line) {
             return str_getcsv($line, ';'); // Use semicolon as delimiter
         }, file($path));
 
@@ -217,6 +219,7 @@ class PekerjaanController extends Controller
                 if (count($row) < 2) { // Minimum required fields
                     $errors[] = "Baris {$rowNumber}: Data tidak lengkap";
                     $rowNumber++;
+
                     continue;
                 }
 
@@ -231,17 +234,19 @@ class PekerjaanController extends Controller
                 if (empty($pekerjaanData['nama_pekerjaan']) || empty($pekerjaanData['kode_pekerjaan'])) {
                     $errors[] = "Baris {$rowNumber}: Nama pekerjaan dan kode pekerjaan wajib diisi";
                     $rowNumber++;
+
                     continue;
                 }
 
                 // Check for duplicates
                 $existing = Pekerjaan::where('nama_pekerjaan', $pekerjaanData['nama_pekerjaan'])
-                                    ->orWhere('kode_pekerjaan', $pekerjaanData['kode_pekerjaan'])
-                                    ->first();
+                    ->orWhere('kode_pekerjaan', $pekerjaanData['kode_pekerjaan'])
+                    ->first();
 
                 if ($existing) {
                     $errors[] = "Baris {$rowNumber}: Pekerjaan dengan nama '{$pekerjaanData['nama_pekerjaan']}' atau kode '{$pekerjaanData['kode_pekerjaan']}' sudah ada";
                     $rowNumber++;
+
                     continue;
                 }
 
@@ -250,14 +255,14 @@ class PekerjaanController extends Controller
                 $rowNumber++;
 
             } catch (\Exception $e) {
-                $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+                $errors[] = "Baris {$rowNumber}: ".$e->getMessage();
                 $rowNumber++;
             }
         }
 
         $message = "Import selesai. {$successCount} data berhasil diimpor.";
-        if (!empty($errors)) {
-            $message .= " Terdapat " . count($errors) . " error(s).";
+        if (! empty($errors)) {
+            $message .= ' Terdapat '.count($errors).' error(s).';
             session()->flash('import_errors', $errors);
         }
 

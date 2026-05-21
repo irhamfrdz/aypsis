@@ -41,7 +41,7 @@ class PergerakanKapal extends Model
      */
     public function getStatusBadgeAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'scheduled' => 'bg-blue-100 text-blue-800',
             'sailing' => 'bg-yellow-100 text-yellow-800',
             'arrived' => 'bg-green-100 text-green-800',
@@ -57,7 +57,7 @@ class PergerakanKapal extends Model
      */
     public function getStatusLabelAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'scheduled' => 'Terjadwal',
             'sailing' => 'Berlayar',
             'arrived' => 'Tiba',
@@ -97,7 +97,7 @@ class PergerakanKapal extends Model
      */
     public function scopeByKapal($query, $kapal)
     {
-        return $query->where('nama_kapal', 'like', '%' . $kapal . '%');
+        return $query->where('nama_kapal', 'like', '%'.$kapal.'%');
     }
 
     /**
@@ -113,13 +113,13 @@ class PergerakanKapal extends Model
      */
     public function scopeSearch($query, $search)
     {
-        return $query->where(function($q) use ($search) {
-            $q->where('nama_kapal', 'like', '%' . $search . '%')
-              ->orWhere('kapten', 'like', '%' . $search . '%')
-              ->orWhere('voyage', 'like', '%' . $search . '%')
-              ->orWhere('tujuan_asal', 'like', '%' . $search . '%')
-              ->orWhere('tujuan_tujuan', 'like', '%' . $search . '%')
-              ->orWhere('tujuan_transit', 'like', '%' . $search . '%');
+        return $query->where(function ($q) use ($search) {
+            $q->where('nama_kapal', 'like', '%'.$search.'%')
+                ->orWhere('kapten', 'like', '%'.$search.'%')
+                ->orWhere('voyage', 'like', '%'.$search.'%')
+                ->orWhere('tujuan_asal', 'like', '%'.$search.'%')
+                ->orWhere('tujuan_tujuan', 'like', '%'.$search.'%')
+                ->orWhere('tujuan_transit', 'like', '%'.$search.'%');
         });
     }
 
@@ -131,6 +131,7 @@ class PergerakanKapal extends Model
         if ($this->tanggal_sandar && $this->tanggal_berangkat) {
             return $this->tanggal_berangkat->diffInDays($this->tanggal_sandar);
         }
+
         return null;
     }
 

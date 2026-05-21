@@ -2,24 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\BtmSewaVendor;
-use App\Models\BtmSewaType;
-use App\Models\BtmSewaSize;
-use App\Models\BtmSewaUnit;
-use App\Models\BtmSewaRate;
-use App\Models\BtmSewaTransaction;
 use App\Models\BtmSewaAudit;
-use App\Models\BtmSewaPranota;
 use App\Models\BtmSewaPayment;
 use App\Models\BtmSewaPaymentDetail;
 use App\Models\BtmSewaPermohonanTransfer;
 use App\Models\BtmSewaPermohonanTransferDetail;
+use App\Models\BtmSewaPranota;
+use App\Models\BtmSewaRate;
+use App\Models\BtmSewaSize;
+use App\Models\BtmSewaTransaction;
+use App\Models\BtmSewaType;
+use App\Models\BtmSewaUnit;
+use App\Models\BtmSewaVendor;
 use App\Models\Coa;
 use App\Models\NomorTerakhir;
 use App\Services\CoaTransactionService;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class KontainerSewaFinalController extends Controller
@@ -33,13 +33,16 @@ class KontainerSewaFinalController extends Controller
 
     private function toExcelSerial($date)
     {
-        if (!$date) return "0";
+        if (! $date) {
+            return '0';
+        }
         try {
             $dt = \Carbon\Carbon::parse($date);
             $baseDate = \Carbon\Carbon::create(1899, 12, 30);
-            return (int)$dt->diffInDays($baseDate);
+
+            return (int) $dt->diffInDays($baseDate);
         } catch (\Exception $e) {
-            return "0";
+            return '0';
         }
     }
 
@@ -47,66 +50,67 @@ class KontainerSewaFinalController extends Controller
     {
         // Fetch all data from DB
         $data = [
-            'v' => BtmSewaVendor::orderBy('name')->get()->map(fn($i) => ['val' => $i->name, 'id' => $i->id, 'act' => true]),
-            't' => BtmSewaType::orderBy('name')->get()->map(fn($i) => ['val' => $i->name, 'id' => $i->id, 'act' => true]),
-            'z' => BtmSewaSize::orderBy('name')->get()->map(fn($i) => ['val' => $i->name, 'id' => $i->id, 'act' => true]),
-            'u' => BtmSewaUnit::with(['vendor', 'type', 'size'])->get()->map(fn($i) => [
-                'id' => $i->id, 
-                'no' => $i->unit_number, 
-                'v' => $i->vendor->name ?? '', 
-                't' => $i->type->name ?? '', 
-                'z' => $i->size->name ?? '', 
-                'act' => true
+            'v' => BtmSewaVendor::orderBy('name')->get()->map(fn ($i) => ['val' => $i->name, 'id' => $i->id, 'act' => true]),
+            't' => BtmSewaType::orderBy('name')->get()->map(fn ($i) => ['val' => $i->name, 'id' => $i->id, 'act' => true]),
+            'z' => BtmSewaSize::orderBy('name')->get()->map(fn ($i) => ['val' => $i->name, 'id' => $i->id, 'act' => true]),
+            'u' => BtmSewaUnit::with(['vendor', 'type', 'size'])->get()->map(fn ($i) => [
+                'id' => $i->id,
+                'no' => $i->unit_number,
+                'v' => $i->vendor->name ?? '',
+                't' => $i->type->name ?? '',
+                'z' => $i->size->name ?? '',
+                'act' => true,
             ]),
-            'r' => BtmSewaRate::with(['vendor', 'type', 'size'])->get()->map(fn($i) => [
-                'id' => $i->id, 
-                'v' => $i->vendor->name ?? '', 
-                't' => $i->type->name ?? '', 
-                'z' => $i->size->name ?? '', 
-                'rb' => (int)$i->monthly_rate, 
-                'rh' => (int)$i->daily_rate, 
-                'act' => true
+            'r' => BtmSewaRate::with(['vendor', 'type', 'size'])->get()->map(fn ($i) => [
+                'id' => $i->id,
+                'v' => $i->vendor->name ?? '',
+                't' => $i->type->name ?? '',
+                'z' => $i->size->name ?? '',
+                'rb' => (int) $i->monthly_rate,
+                'rh' => (int) $i->daily_rate,
+                'act' => true,
             ]),
-            'x' => BtmSewaTransaction::orderBy('date_in', 'desc')->get()->map(fn($i) => [
-                'id' => $i->id, 
-                'no' => $i->unit_number, 
-                's' => $i->date_in->format('d/m/Y'), 
-                'e' => $i->date_out ? $i->date_out->format('d/m/Y') : null, 
-                'stT' => $i->billing_mode, 
-                'act' => true
+            'x' => BtmSewaTransaction::orderBy('date_in', 'desc')->get()->map(fn ($i) => [
+                'id' => $i->id,
+                'no' => $i->unit_number,
+                's' => $i->date_in->format('d/m/Y'),
+                'e' => $i->date_out ? $i->date_out->format('d/m/Y') : null,
+                'stT' => $i->billing_mode,
+                'act' => true,
             ]),
-            'cart' => BtmSewaAudit::whereNull('pranota_id')->with('transaction')->get()->map(function($i) {
+            'cart' => BtmSewaAudit::whereNull('pranota_id')->with('transaction')->get()->map(function ($i) {
                 // Use transaction_key (unit+excelSerial) format to match genPeriode JS idp format
                 if ($i->transaction_key) {
-                    $idp = $i->transaction_key . '-' . $i->period_name;
+                    $idp = $i->transaction_key.'-'.$i->period_name;
                 } elseif ($i->transaction) {
-                    $idp = $i->transaction->unit_number . $this->toExcelSerial($i->transaction->date_in) . '-' . $i->period_name;
+                    $idp = $i->transaction->unit_number.$this->toExcelSerial($i->transaction->date_in).'-'.$i->period_name;
                 } else {
-                    $idp = $i->transaction_id . '-' . $i->period_name;
+                    $idp = $i->transaction_id.'-'.$i->period_name;
                 }
+
                 return [
                     'id' => $i->id,
                     'idp' => $idp,
                     'unit' => $i->unit_number,
                     'masa' => $i->period_name,
-                    'aypsis' => (float)$i->aypsis_nominal,
-                    'vendorBill' => (float)$i->vendor_nominal,
-                    'note' => $i->note
+                    'aypsis' => (float) $i->aypsis_nominal,
+                    'vendorBill' => (float) $i->vendor_nominal,
+                    'note' => $i->note,
                 ];
             }),
-            'p' => BtmSewaPranota::with('vendor')->latest()->get()->map(fn($i) => [
+            'p' => BtmSewaPranota::with('vendor')->latest()->get()->map(fn ($i) => [
                 'id' => $i->id,
                 'nomor' => $i->nomor,
                 'vendor' => $i->vendor->name ?? '',
                 'no_inv' => $i->no_invoice,
                 'tgl_inv' => $i->tgl_invoice,
-                'total' => (float)$i->grand_total,
-                'status' => $i->status
+                'total' => (float) $i->grand_total,
+                'status' => $i->status,
             ]),
-            'unavailable_pranota_ids' => BtmSewaPermohonanTransferDetail::whereHas('permohonan', function($q) {
+            'unavailable_pranota_ids' => BtmSewaPermohonanTransferDetail::whereHas('permohonan', function ($q) {
                 $q->where('status', 'PENDING');
             })->pluck('btm_sewa_pranota_id')->toArray(),
-            'audits_map' => BtmSewaAudit::with(['transaction', 'pranota'])->whereNotNull('pranota_id')->get()->map(function($i) {
+            'audits_map' => BtmSewaAudit::with(['transaction', 'pranota'])->whereNotNull('pranota_id')->get()->map(function ($i) {
                 return [
                     'unit' => $i->unit_number,
                     'period' => $i->period_name,
@@ -114,40 +118,40 @@ class KontainerSewaFinalController extends Controller
                     'status' => $i->pranota->status ?? '-',
                 ];
             })->toArray(),
-            'history' => BtmSewaPayment::where('status', 'PAID')->with('pranotas.vendor')->latest()->get()->map(fn($i) => [
+            'history' => BtmSewaPayment::where('status', 'PAID')->with('pranotas.vendor')->latest()->get()->map(fn ($i) => [
                 'id' => $i->id,
                 'no' => $i->nomor_pembayaran,
                 'tgl' => $i->tanggal_pembayaran,
                 'bank' => $i->bank,
-                'total' => (float)$i->grand_total,
+                'total' => (float) $i->grand_total,
                 'status' => $i->status,
-                'items' => $i->pranotas->map(fn($p) => [
+                'items' => $i->pranotas->map(fn ($p) => [
                     'nomor' => $p->nomor,
                     'vendor' => $p->vendor->name ?? '',
-                    'total' => (float)$p->grand_total
-                ])
+                    'total' => (float) $p->grand_total,
+                ]),
             ]),
             'pending_payments' => BtmSewaPermohonanTransfer::where('status', 'PENDING')
                 ->latest()
                 ->get()
-                ->map(fn($i) => [
+                ->map(fn ($i) => [
                     'id' => $i->id,
                     'no' => $i->nomor,
                     'vendor' => $i->vendor_name,
                     'tgl' => $i->tanggal,
                     'bank' => $i->bank,
-                    'total' => (float)$i->grand_total,
+                    'total' => (float) $i->grand_total,
                     'status' => $i->status,
                 ]),
-            'all_permohonans' => BtmSewaPermohonanTransfer::with('creator')->latest()->get()->map(fn($i) => [
+            'all_permohonans' => BtmSewaPermohonanTransfer::with('creator')->latest()->get()->map(fn ($i) => [
                 'id' => $i->id,
                 'no' => $i->nomor,
                 'vendor' => $i->vendor_name,
                 'tgl' => $i->tanggal,
-                'total' => (float)$i->grand_total,
+                'total' => (float) $i->grand_total,
                 'status' => $i->status,
-                'user' => $i->creator->name ?? '-'
-            ])
+                'user' => $i->creator->name ?? '-',
+            ]),
         ];
 
         // Seed from JSON if DB is empty (initial setup)
@@ -159,10 +163,10 @@ class KontainerSewaFinalController extends Controller
         }
 
         $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%kas%')
-                      ->orderBy('nama_akun')
-                      ->get();
+            ->orWhere('nama_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%kas%')
+            ->orderBy('nama_akun')
+            ->get();
 
         return view('kontainer_sewa_final.index', compact('initialData', 'akunCoa'));
     }
@@ -170,7 +174,9 @@ class KontainerSewaFinalController extends Controller
     public function sync(Request $request)
     {
         $data = $request->input('data');
-        if (!$data) return response()->json(['success' => false, 'message' => 'No data provided']);
+        if (! $data) {
+            return response()->json(['success' => false, 'message' => 'No data provided']);
+        }
 
         try {
             DB::beginTransaction();
@@ -266,15 +272,15 @@ class KontainerSewaFinalController extends Controller
                 foreach ($data['cart'] as $c) {
                     $parts = explode('-', $c['idp']);
                     $transId = $parts[0];
-                    if (!is_numeric($transId)) {
+                    if (! is_numeric($transId)) {
                         // If transId is not numeric (prototype case), we might need to find by unit and date
                         // But for now, let's assume it's been synced and has an ID if it's in the cart.
                         // Actually, if it's the first sync, the JS won't have IDs.
-                        // We'll skip audits that don't have a valid transaction link yet, 
+                        // We'll skip audits that don't have a valid transaction link yet,
                         // or handle them after transactions are all saved.
-                        continue; 
+                        continue;
                     }
-                    
+
                     BtmSewaAudit::updateOrCreate(
                         ['transaction_id' => $transId, 'period_name' => $c['masa']],
                         [
@@ -288,9 +294,11 @@ class KontainerSewaFinalController extends Controller
             }
 
             DB::commit();
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
@@ -308,20 +316,20 @@ class KontainerSewaFinalController extends Controller
         }
 
         $vendor = BtmSewaVendor::firstOrCreate(['name' => $vName]);
-        if (!$vendor) {
-            return response()->json(['success' => false, 'message' => 'Gagal membuat/menemukan vendor: ' . $vName]);
+        if (! $vendor) {
+            return response()->json(['success' => false, 'message' => 'Gagal membuat/menemukan vendor: '.$vName]);
         }
 
         try {
-            return DB::transaction(function() use ($vendor, $noInv, $tglInv, $cartData) {
+            return DB::transaction(function () use ($vendor, $noInv, $tglInv, $cartData) {
                 // Generate Nomor
-                $last = BtmSewaPranota::where('nomor', 'like', 'PTS-BTM-' . date('Y') . '-%')->latest()->first();
+                $last = BtmSewaPranota::where('nomor', 'like', 'PTS-BTM-'.date('Y').'-%')->latest()->first();
                 $num = 1;
                 if ($last) {
                     $parts = explode('-', $last->nomor);
-                    $num = (int)end($parts) + 1;
+                    $num = (int) end($parts) + 1;
                 }
-                $nomor = 'PTS-BTM-' . date('Y') . '-' . str_pad($num, 4, '0', STR_PAD_LEFT);
+                $nomor = 'PTS-BTM-'.date('Y').'-'.str_pad($num, 4, '0', STR_PAD_LEFT);
 
                 $totalAypsis = collect($cartData)->sum('aypsis');
                 $totalVendor = collect($cartData)->sum('vendorBill');
@@ -341,12 +349,12 @@ class KontainerSewaFinalController extends Controller
                     'ppn' => $ppn,
                     'pph' => $pph,
                     'grand_total' => $grand,
-                    'status' => $statusOverride ?? 'PENDING'
+                    'status' => $statusOverride ?? 'PENDING',
                 ]);
 
                 foreach ($cartData as $c) {
                     // If item has a DB id (came from initial.cart), update directly — no idp parsing needed
-                    if (!empty($c['id'])) {
+                    if (! empty($c['id'])) {
                         BtmSewaAudit::where('id', $c['id'])->update([
                             'vendor_nominal' => $c['vendorBill'],
                             'aypsis_nominal' => $c['aypsis'],
@@ -354,6 +362,7 @@ class KontainerSewaFinalController extends Controller
                             'pranota_id' => $pranota->id,
                             'is_approved' => true,
                         ]);
+
                         continue;
                     }
 
@@ -371,11 +380,11 @@ class KontainerSewaFinalController extends Controller
                         $unitNumber = $c['unit'] ?? '';
                         $serialStr = substr($transactionKey, strlen($unitNumber));
                         if (is_numeric($serialStr)) {
-                            $excelSerial = (int)$serialStr;
+                            $excelSerial = (int) $serialStr;
                             $base = \Carbon\Carbon::create(1899, 12, 30);
                             $transactions = BtmSewaTransaction::where('unit_number', $unitNumber)->get();
                             foreach ($transactions as $trx) {
-                                if ((int)\Carbon\Carbon::parse($trx->date_in)->diffInDays($base) === $excelSerial) {
+                                if ((int) \Carbon\Carbon::parse($trx->date_in)->diffInDays($base) === $excelSerial) {
                                     $transId = $trx->id;
                                     break;
                                 }
@@ -384,7 +393,7 @@ class KontainerSewaFinalController extends Controller
                     }
 
                     // Fallback: latest transaction for this unit
-                    if (!$transId) {
+                    if (! $transId) {
                         $transId = BtmSewaTransaction::where('unit_number', $c['unit'])->latest()->first()?->id;
                     }
 
@@ -396,7 +405,7 @@ class KontainerSewaFinalController extends Controller
                             'vendor_nominal' => $c['vendorBill'],
                             'note' => $c['note'] ?? null,
                             'pranota_id' => $pranota->id,
-                            'is_approved' => true
+                            'is_approved' => true,
                         ]
                     );
                 }
@@ -407,15 +416,18 @@ class KontainerSewaFinalController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+
     public function printPranota($id)
     {
         $pranota = BtmSewaPranota::with(['vendor', 'audits'])->findOrFail($id);
+
         return view('kontainer_sewa_final.print', compact('pranota'));
     }
 
     public function showPranota($id)
     {
         $pranota = BtmSewaPranota::with(['vendor', 'audits'])->findOrFail($id);
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -425,31 +437,31 @@ class KontainerSewaFinalController extends Controller
                 'no_invoice' => $pranota->no_invoice,
                 'tgl_invoice' => $pranota->tgl_invoice,
                 'status' => $pranota->status,
-                'audits' => $pranota->audits->map(fn($a) => [
+                'audits' => $pranota->audits->map(fn ($a) => [
                     'id' => $a->id,
                     'unit' => $a->unit_number,
                     'masa' => $a->period_name,
-                    'aypsis' => (float)$a->aypsis_nominal,
-                    'vendorBill' => (float)$a->vendor_nominal,
-                    'note' => $a->note
-                ])
-            ]
+                    'aypsis' => (float) $a->aypsis_nominal,
+                    'vendorBill' => (float) $a->vendor_nominal,
+                    'note' => $a->note,
+                ]),
+            ],
         ]);
     }
 
     public function updatePranota(Request $request, $id)
     {
         $pranota = BtmSewaPranota::findOrFail($id);
-        
+
         try {
             DB::beginTransaction();
-            
+
             $pranota->update([
                 'no_invoice' => $request->no_invoice,
                 'tgl_invoice' => $request->tgl_invoice,
-                'status' => $request->status ?? $pranota->status
+                'status' => $request->status ?? $pranota->status,
             ]);
-            
+
             // If items are provided, we could update them too, but for simplicity let's stick to header first.
             // Actually, if we allow deleting items from pranota:
             if ($request->has('remove_audit_ids')) {
@@ -457,7 +469,7 @@ class KontainerSewaFinalController extends Controller
                     ->where('pranota_id', $id)
                     ->update(['pranota_id' => null, 'is_approved' => false]);
             }
-            
+
             // Recalculate totals
             $audits = BtmSewaAudit::where('pranota_id', $id)->get();
             $totalAypsis = $audits->sum('aypsis_nominal');
@@ -466,7 +478,7 @@ class KontainerSewaFinalController extends Controller
             $ppn = round($dpp * 0.11);
             $pph = round($dpp * 0.02);
             $grand = $dpp + $ppn - $pph;
-            
+
             $pranota->update([
                 'total_aypsis' => $totalAypsis,
                 'total_vendor_bill' => $totalVendor,
@@ -475,11 +487,13 @@ class KontainerSewaFinalController extends Controller
                 'pph' => $pph,
                 'grand_total' => $grand,
             ]);
-            
+
             DB::commit();
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
@@ -492,13 +506,14 @@ class KontainerSewaFinalController extends Controller
             return response()->json(['success' => false, 'message' => 'Audit sudah terkait dengan pranota, tidak bisa dihapus langsung.']);
         }
         $audit->delete();
+
         return response()->json(['success' => true]);
     }
 
     public function destroyTransaction($id)
     {
         $transaction = BtmSewaTransaction::findOrFail($id);
-        
+
         // Check if there are linked audits
         $hasAudits = BtmSewaAudit::where('transaction_id', $id)->exists();
         if ($hasAudits) {
@@ -506,6 +521,7 @@ class KontainerSewaFinalController extends Controller
         }
 
         $transaction->delete();
+
         return response()->json(['success' => true]);
     }
 
@@ -518,9 +534,11 @@ class KontainerSewaFinalController extends Controller
             BtmSewaAudit::where('pranota_id', $id)->update(['pranota_id' => null, 'is_approved' => false]);
             $pranota->delete();
             DB::commit();
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
@@ -532,6 +550,7 @@ class KontainerSewaFinalController extends Controller
         $bulan = $now->format('m');
         $tahun = $now->format('y');
         $runningNumber = str_pad($modulSis->nomor_terakhir + 1, 6, '0', STR_PAD_LEFT);
+
         return response()->json(['success' => true, 'nomor' => "SIS-{$bulan}-{$tahun}-{$runningNumber}"]);
     }
 
@@ -576,7 +595,7 @@ class KontainerSewaFinalController extends Controller
                 BtmSewaPermohonanTransferDetail::create([
                     'permohonan_id' => $permohonan->id,
                     'btm_sewa_pranota_id' => $pranota->id,
-                    'subtotal' => $pranota->grand_total
+                    'subtotal' => $pranota->grand_total,
                 ]);
 
                 if ($status === 'PAID') {
@@ -603,7 +622,7 @@ class KontainerSewaFinalController extends Controller
                     'updated_by' => Auth::id(),
                 ]);
 
-                $desc = "Pembayaran Sewa Kontainer (Bulk) - " . $permohonan->nomor;
+                $desc = 'Pembayaran Sewa Kontainer (Bulk) - '.$permohonan->nomor;
                 $total = $permohonan->grand_total;
                 $this->coaTransactionService->recordDoubleEntry(
                     ['nama_akun' => 'Biaya Sewa Kontainer', 'jumlah' => $total],
@@ -613,24 +632,27 @@ class KontainerSewaFinalController extends Controller
             }
 
             DB::commit();
+
             return response()->json(['success' => true, 'message' => 'Permohonan Transfer berhasil disimpan']);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Gagal simpan permohonan: ' . $e->getMessage()]);
+
+            return response()->json(['success' => false, 'message' => 'Gagal simpan permohonan: '.$e->getMessage()]);
         }
     }
 
     public function printPayment($id)
     {
         $payment = BtmSewaPayment::with('details.pranota.vendor', 'details.pranota.audits')->findOrFail($id);
+
         return view('kontainer_sewa_final.print_payment', compact('payment'));
     }
 
     public function payTransfer(Request $request, $id)
     {
         $permohonan = BtmSewaPermohonanTransfer::with('pranotas')->findOrFail($id);
-        
+
         if ($permohonan->status === 'PAID') {
             return response()->json(['success' => false, 'message' => 'Permohonan ini sudah dibayar']);
         }
@@ -640,7 +662,7 @@ class KontainerSewaFinalController extends Controller
             // 1. Update status Permohonan
             $permohonan->update([
                 'status' => 'PAID',
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
 
             // 2. Buat Record Pembayaran Real (Audit Trail)
@@ -666,14 +688,14 @@ class KontainerSewaFinalController extends Controller
                 BtmSewaPaymentDetail::create([
                     'btm_sewa_payment_id' => $payment->id,
                     'btm_sewa_pranota_id' => $pranota->id,
-                    'subtotal' => $pranota->pivot->subtotal
+                    'subtotal' => $pranota->pivot->subtotal,
                 ]);
-                
+
                 $pranota->update(['status' => 'PAID']);
             }
 
             // 4. Jurnal Akuntansi (Double Entry)
-            $desc = "Pembayaran Sewa Kontainer - " . $permohonan->nomor;
+            $desc = 'Pembayaran Sewa Kontainer - '.$permohonan->nomor;
             $total = $permohonan->grand_total;
             if ($permohonan->jenis_transaksi == 'Debit') {
                 $this->coaTransactionService->recordDoubleEntry(
@@ -690,10 +712,12 @@ class KontainerSewaFinalController extends Controller
             }
 
             DB::commit();
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e->getMessage());
+
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
@@ -701,6 +725,7 @@ class KontainerSewaFinalController extends Controller
     public function printPermohonan($id)
     {
         $permohonan = BtmSewaPermohonanTransfer::with(['details.pranota.vendor', 'details.pranota.audits', 'creator'])->findOrFail($id);
+
         return view('kontainer_sewa_final.print_permohonan', compact('permohonan'));
     }
 }

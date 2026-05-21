@@ -60,10 +60,6 @@ class PricelistUangJalanBatam extends Model
         return $query->where('ring', $ring);
     }
 
-
-
-
-
     /**
      * Scope untuk filter berdasarkan status
      */
@@ -76,7 +72,7 @@ class PricelistUangJalanBatam extends Model
     {
         return self::where('expedisi', $expedisi)
             ->where('ring', $ring)
-            ->when($status, function($q) use ($status) {
+            ->when($status, function ($q) use ($status) {
                 return $q->where('status', $status);
             })
             ->first();

@@ -30,15 +30,15 @@ return new class extends Migration
         // Re-add status column to tanda_terimas table
         Schema::table('tanda_terimas', function (Blueprint $table) {
             $table->enum('status', ['draft', 'submitted', 'approved', 'completed', 'cancelled'])
-                  ->default('draft')
-                  ->after('catatan');
+                ->default('draft')
+                ->after('catatan');
         });
 
         // Re-add status column to tanda_terima_tanpa_surat_jalan table
         Schema::table('tanda_terima_tanpa_surat_jalan', function (Blueprint $table) {
             $table->enum('status', ['draft', 'submitted', 'approved', 'completed', 'cancelled'])
-                  ->default('draft')
-                  ->after('catatan');
+                ->default('draft')
+                ->after('catatan');
         });
     }
 };

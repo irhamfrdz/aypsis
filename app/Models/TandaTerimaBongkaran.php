@@ -23,7 +23,7 @@ class TandaTerimaBongkaran extends Model
         'keterangan',
         'lembur',
         'nginap',
-        'tidak_lembur_nginap'
+        'tidak_lembur_nginap',
     ];
 
     protected $casts = [

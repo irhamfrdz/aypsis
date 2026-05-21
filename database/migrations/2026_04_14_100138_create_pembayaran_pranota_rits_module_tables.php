@@ -37,11 +37,11 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('pembayaran_pranota_rit_id', 'ppr_id_foreign')
-                  ->references('id')->on('pembayaran_pranota_rits')
-                  ->onDelete('cascade');
+                ->references('id')->on('pembayaran_pranota_rits')
+                ->onDelete('cascade');
             $table->foreign('pranota_uang_rit_id', 'pur_id_foreign')
-                  ->references('id')->on('pranota_uang_rits')
-                  ->onDelete('cascade');
+                ->references('id')->on('pranota_uang_rits')
+                ->onDelete('cascade');
         });
     }
 

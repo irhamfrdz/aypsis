@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\PranotaUangRit;
 use App\Models\PranotaUangRitSupirDetail;
 use App\Models\SuratJalan;
@@ -20,7 +19,7 @@ class PranotaUangRitController extends Controller
     public function index(Request $request)
     {
         // Default to last 30 days if no date range is provided
-        if (!($request->filled('start_date') && $request->filled('end_date'))) {
+        if (! ($request->filled('start_date') && $request->filled('end_date'))) {
             $request->merge([
                 'start_date' => \Carbon\Carbon::now()->subDays(30)->format('Y-m-d'),
                 'end_date' => \Carbon\Carbon::now()->format('Y-m-d'),
@@ -32,10 +31,10 @@ class PranotaUangRitController extends Controller
         // Filter by search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_pranota', 'like', "%{$search}%")
-                  ->orWhere('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir_nama', 'like', "%{$search}%");
+                    ->orWhere('no_surat_jalan', 'like', "%{$search}%")
+                    ->orWhere('supir_nama', 'like', "%{$search}%");
             });
         }
 
@@ -95,17 +94,17 @@ class PranotaUangRitController extends Controller
         // Apply date range filter first for better performance and consistency
         $startDateObj = null;
         $endDateObj = null;
-        if (!empty($startDate) && !empty($endDate)) {
+        if (! empty($startDate) && ! empty($endDate)) {
             try {
                 $startDateObj = \Carbon\Carbon::parse($startDate)->startOfDay();
                 $endDateObj = \Carbon\Carbon::parse($endDate)->endOfDay();
-                
+
                 // Logging for debugging
                 Log::info('PranotaUangRit::create date filters', [
-                    'start' => $startDateObj->toDateString(), 
+                    'start' => $startDateObj->toDateString(),
                     'end' => $endDateObj->toDateString(),
                     'start_input' => $startDate,
-                    'end_input' => $endDate
+                    'end_input' => $endDate,
                 ]);
             } catch (\Exception $e) {
                 Log::error('Date parsing failed', ['start' => $startDate, 'end' => $endDate, 'error' => $e->getMessage()]);
@@ -117,20 +116,20 @@ class PranotaUangRitController extends Controller
 
         // Get available surat jalans that haven't been processed for pranota uang rit
         // Only include surat jalans that use 'menggunakan_rit' and status pembayaran uang rit 'belum_dibayar'
-        $baseQuery = SuratJalan::with(['tandaTerima', 'approvals'])->where(function($q) {
+        $baseQuery = SuratJalan::with(['tandaTerima', 'approvals'])->where(function ($q) {
             // Include surat jalan which have been approved or already passed checkpoint / have tanda terima
             $q->where('status', 'approved')
-              ->orWhere('status', 'sudah_checkpoint')
-              ->orWhere('status', 'active')
-              ->orWhereNotNull('tanggal_checkpoint')
-              ->orWhereHas('tandaTerima')
-              ->orWhereHas('approvals', function($sub) {
-                  $sub->where('status', 'approved');
-              });
+                ->orWhere('status', 'sudah_checkpoint')
+                ->orWhere('status', 'active')
+                ->orWhereNotNull('tanggal_checkpoint')
+                ->orWhereHas('tandaTerima')
+                ->orWhereHas('approvals', function ($sub) {
+                    $sub->where('status', 'approved');
+                });
         })
             ->where('rit', 'menggunakan_rit') // Filter only surat jalan yang menggunakan rit
             ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR) // Filter yang belum dibayar
-            ->whereNotIn('id', function($query) {
+            ->whereNotIn('id', function ($query) {
                 $query->select('surat_jalan_id')
                     ->from('pranota_uang_rits')
                     ->whereNotNull('surat_jalan_id')
@@ -141,129 +140,129 @@ class PranotaUangRitController extends Controller
             // - Have a Tanda Terima record, OR
             // - Are bongkaran with tanggal tanda terima, OR
             // - Are approved (don't strictly require checkpoint)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima')
-                  ->orWhere(function($subQ) {
-                      // Surat jalan bongkaran yang sudah memilih tanggal tanda terima
-                      $subQ->where('kegiatan', 'bongkaran')
-                           ->whereNotNull('tanggal_tanda_terima');
-                  })
-                  ->orWhere('status', 'approved'); // Tambahan: surat jalan yang sudah approved bisa langsung muncul
+                    ->orWhereHas('tandaTerima')
+                    ->orWhere(function ($subQ) {
+                        // Surat jalan bongkaran yang sudah memilih tanggal tanda terima
+                        $subQ->where('kegiatan', 'bongkaran')
+                            ->whereNotNull('tanggal_tanda_terima');
+                    })
+                    ->orWhere('status', 'approved'); // Tambahan: surat jalan yang sudah approved bisa langsung muncul
             });
 
         // Apply date range filter to base query BEFORE any cloning - filter by tanggal tanda terima
         if ($startDateObj && $endDateObj) {
-            $baseQuery->where(function($q) use ($startDateObj, $endDateObj) {
+            $baseQuery->where(function ($q) use ($startDateObj, $endDateObj) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
-                $q->where(function($subQ) use ($startDateObj, $endDateObj) {
+                $q->where(function ($subQ) use ($startDateObj, $endDateObj) {
                     // 1. Tanggal dari relasi tandaTerima (untuk surat jalan non-bongkaran seperti pengiriman, muat, dll)
-                    $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDateObj, $endDateObj) {
+                    $subQ->whereHas('tandaTerima', function ($ttQuery) use ($startDateObj, $endDateObj) {
                         $ttQuery->where(DB::raw('DATE(tanggal)'), '>=', $startDateObj->toDateString())
-                                ->where(DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
+                            ->where(DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
                     });
                 })
-                ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
-                    // 2. Tanggal tanda terima untuk kegiatan bongkaran (kolom langsung di tabel surat_jalans)
-                    $subQ->where('kegiatan', 'bongkaran')
-                         ->whereNotNull('tanggal_tanda_terima')
-                         ->where(DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
-                         ->where(DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
-                })
-                ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
-                    // 3. Filter berdasarkan tanggal checkpoint
-                    $subQ->whereNotNull('tanggal_checkpoint')
-                         ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
-                         ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
-                });
+                    ->orWhere(function ($subQ) use ($startDateObj, $endDateObj) {
+                        // 2. Tanggal tanda terima untuk kegiatan bongkaran (kolom langsung di tabel surat_jalans)
+                        $subQ->where('kegiatan', 'bongkaran')
+                            ->whereNotNull('tanggal_tanda_terima')
+                            ->where(DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
+                            ->where(DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
+                    })
+                    ->orWhere(function ($subQ) use ($startDateObj, $endDateObj) {
+                        // 3. Filter berdasarkan tanggal checkpoint
+                        $subQ->whereNotNull('tanggal_checkpoint')
+                            ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
+                            ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
+                    });
             });
-            
+
             // Log the actual SQL query for debugging
             $sqlQuery = $baseQuery->toSql();
             $bindings = $baseQuery->getBindings();
-            
+
             Log::info('Applied date filter to base query (tanggal tanda terima)', [
                 'start_filter' => $startDateObj->toDateString(),
                 'end_filter' => $endDateObj->toDateString(),
                 'filter_type' => 'tanggal_tanda_terima (relasi + kolom bongkaran + fallback checkpoint)',
                 'sql_query_preview' => str_replace('?', "'%s'", $sqlQuery),
-                'bindings_count' => count($bindings)
+                'bindings_count' => count($bindings),
             ]);
         }
 
         $baseQuery->orderBy('created_at', 'desc');
 
         // Now calculate statistics based on the filtered base query
-        $baseQueryBeforeDate = SuratJalan::with(['tandaTerima', 'approvals'])->where(function($q) {
+        $baseQueryBeforeDate = SuratJalan::with(['tandaTerima', 'approvals'])->where(function ($q) {
             // Include surat jalan which have been approved or already passed checkpoint / have tanda terima
             $q->where('status', 'approved')
-              ->orWhere('status', 'sudah_checkpoint')
-              ->orWhere('status', 'active')
-              ->orWhereNotNull('tanggal_checkpoint')
-              ->orWhereHas('tandaTerima')
-              ->orWhereHas('approvals', function($sub) {
-                  $sub->where('status', 'approved');
-              });
+                ->orWhere('status', 'sudah_checkpoint')
+                ->orWhere('status', 'active')
+                ->orWhereNotNull('tanggal_checkpoint')
+                ->orWhereHas('tandaTerima')
+                ->orWhereHas('approvals', function ($sub) {
+                    $sub->where('status', 'approved');
+                });
         })
             ->where('rit', 'menggunakan_rit')
             ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)
-            ->whereNotIn('id', function($query) {
+            ->whereNotIn('id', function ($query) {
                 $query->select('surat_jalan_id')
                     ->from('pranota_uang_rits')
                     ->whereNotNull('surat_jalan_id')
                     ->whereNotIn('status', ['cancelled']);
             })
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima')
-                  ->orWhere(function($subQ) {
-                      // Surat jalan bongkaran yang sudah memilih tanggal tanda terima
-                      $subQ->where('kegiatan', 'bongkaran')
-                           ->whereNotNull('tanggal_tanda_terima');
-                  });
+                    ->orWhereHas('tandaTerima')
+                    ->orWhere(function ($subQ) {
+                        // Surat jalan bongkaran yang sudah memilih tanggal tanda terima
+                        $subQ->where('kegiatan', 'bongkaran')
+                            ->whereNotNull('tanggal_tanda_terima');
+                    });
             });
-        
+
         $countBeforeDate = $baseQueryBeforeDate->count();
         $countAfterDate = (clone $baseQuery)->count();
-        
+
         Log::info('Date filtering impact', [
             'count_before_date_filter' => $countBeforeDate,
             'count_after_date_filter' => $countAfterDate,
             'date_filter_applied' => ($startDateObj && $endDateObj),
             'start_date' => $startDateObj ? $startDateObj->toDateString() : null,
-            'end_date' => $endDateObj ? $endDateObj->toDateString() : null
+            'end_date' => $endDateObj ? $endDateObj->toDateString() : null,
         ]);
-        
+
         $eligibleCount = (clone $baseQuery)->count();
-        $pranotaUsedCount = (clone $baseQuery)->whereIn('id', function($subQuery) {
+        $pranotaUsedCount = (clone $baseQuery)->whereIn('id', function ($subQuery) {
             $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
         })->count();
-        
+
         // Get final surat jalans (no need to reapply filters, they're already in baseQuery)
         $suratJalans = (clone $baseQuery)->get();
         $finalFilteredCount = $suratJalans->count();
 
         // Get examples for debugging
         $eligibleExamples = (clone $baseQuery)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint', 'tanggal_surat_jalan']);
-        $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function($subQuery) {
+        $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function ($subQuery) {
             $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
         })->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint', 'tanggal_surat_jalan']);
         $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'status_pembayaran_uang_rit', 'tanggal_surat_jalan']);
-        
+
         // Pass the start and end dates to the view so UI shows selected range explicitly
         $viewStartDate = $startDate;
         $viewEndDate = $endDate;
 
-        Log::info('Final Surat Jalans for Pranota: ' . $suratJalans->count());
+        Log::info('Final Surat Jalans for Pranota: '.$suratJalans->count());
         Log::info('Date filtering applied', [
             'start_date' => $startDate,
             'end_date' => $endDate,
             'start_obj' => $startDateObj ? $startDateObj->toDateString() : null,
             'end_obj' => $endDateObj ? $endDateObj->toDateString() : null,
             'eligible_count' => $eligibleCount,
-            'final_count' => $finalFilteredCount
+            'final_count' => $finalFilteredCount,
         ]);
-        
+
         // Debug: Show some sample data with dates
         if ($suratJalans->count() > 0) {
             $sample = $suratJalans->first();
@@ -274,9 +273,9 @@ class PranotaUangRitController extends Controller
                 'status' => $sample->status,
                 'rit' => $sample->rit,
                 'supir_nama' => $sample->supir_nama,
-                'kenek_nama' => $sample->kenek_nama
+                'kenek_nama' => $sample->kenek_nama,
             ]);
-            
+
             // Log ALL dates to see if filtering is working
             $allDates = $suratJalans->pluck('tanggal_surat_jalan', 'no_surat_jalan')->toArray();
             Log::info('ALL Surat Jalan dates returned:', $allDates);
@@ -294,29 +293,29 @@ class PranotaUangRitController extends Controller
         $suratJalanBongkarans = collect();
         if ($startDateObj && $endDateObj) {
             $queryBongkaran = SuratJalanBongkaran::with(['tandaTerima'])
-                ->where(function($q) use ($startDateObj, $endDateObj) {
-                    $q->whereHas('tandaTerima', function($query) use ($startDateObj, $endDateObj) {
+                ->where(function ($q) use ($startDateObj, $endDateObj) {
+                    $q->whereHas('tandaTerima', function ($query) use ($startDateObj, $endDateObj) {
                         $query->where(DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
-                              ->where(DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
+                            ->where(DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
                     })
-                    ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
-                        $subQ->whereNotNull('tanggal_checkpoint')
-                             ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
-                             ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
-                    });
+                        ->orWhere(function ($subQ) use ($startDateObj, $endDateObj) {
+                            $subQ->whereNotNull('tanggal_checkpoint')
+                                ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
+                                ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
+                        });
                 })
                 // Filter lokasi removed to match Report logic
-                ->where(function($q) {
+                ->where(function ($q) {
                     // Filter: rit = menggunakan_rit ATAU rit is NULL (default dianggap menggunakan rit)
                     $q->where('rit', 'menggunakan_rit')
-                      ->orWhereNull('rit');
+                        ->orWhereNull('rit');
                 })
-                ->where(function($q) {
+                ->where(function ($q) {
                     // Filter: status_pembayaran_uang_rit = belum_bayar ATAU NULL (belum ada pembayaran)
                     $q->where('status_pembayaran_uang_rit', 'belum_bayar')
-                      ->orWhereNull('status_pembayaran_uang_rit');
+                        ->orWhereNull('status_pembayaran_uang_rit');
                 })
-                ->whereNotIn('id', function($query) {
+                ->whereNotIn('id', function ($query) {
                     $query->select('surat_jalan_bongkaran_id')
                         ->from('pranota_uang_rits')
                         ->whereNotNull('surat_jalan_bongkaran_id')
@@ -326,11 +325,11 @@ class PranotaUangRitController extends Controller
             $suratJalanBongkarans = $queryBongkaran->orderBy('created_at', 'desc')->get();
 
             Log::info('Surat Jalan Bongkaran Query', [
-                'date_range' => $startDateObj->toDateString() . ' to ' . $endDateObj->toDateString(),
+                'date_range' => $startDateObj->toDateString().' to '.$endDateObj->toDateString(),
                 'count' => $suratJalanBongkarans->count(),
                 'sql' => $queryBongkaran->toSql(),
             ]);
-            
+
             if ($suratJalanBongkarans->count() > 0) {
                 Log::info('Sample Bongkaran Data:', [
                     'first' => [
@@ -340,7 +339,7 @@ class PranotaUangRitController extends Controller
                         'status_pembayaran' => $suratJalanBongkarans->first()->status_pembayaran_uang_rit,
                         'has_tanda_terima' => $suratJalanBongkarans->first()->tandaTerima ? 'yes' : 'no',
                         'tanggal_tt' => $suratJalanBongkarans->first()->tandaTerima ? $suratJalanBongkarans->first()->tandaTerima->tanggal_tanda_terima : null,
-                    ]
+                    ],
                 ]);
             }
         }
@@ -354,38 +353,38 @@ class PranotaUangRitController extends Controller
     public function selectUangJalan(Request $request)
     {
         // Build base eligibility query
-        $baseQuery = SuratJalan::with(['tandaTerima', 'approvals'])->where(function($q) {
+        $baseQuery = SuratJalan::with(['tandaTerima', 'approvals'])->where(function ($q) {
             $q->where('status', 'approved')
-              ->orWhere('status', 'sudah_checkpoint')
-              ->orWhere('status', 'active')
-              ->orWhereNotNull('tanggal_checkpoint')
-              ->orWhereHas('tandaTerima')
-              ->orWhereHas('approvals', function($sub) {
-                  $sub->where('status', 'approved');
-              });
+                ->orWhere('status', 'sudah_checkpoint')
+                ->orWhere('status', 'active')
+                ->orWhereNotNull('tanggal_checkpoint')
+                ->orWhereHas('tandaTerima')
+                ->orWhereHas('approvals', function ($sub) {
+                    $sub->where('status', 'approved');
+                });
         });
 
         // Clone base query for counting and further filtering
         $query = (clone $baseQuery)->where('rit', 'menggunakan_rit') // Filter only surat jalan yang menggunakan rit
             ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR) // Filter yang belum dibayar
-            ->whereNotIn('id', function($subQuery) {
+            ->whereNotIn('id', function ($subQuery) {
                 $subQuery->select('surat_jalan_id')
                     ->from('pranota_uang_rits')
                     ->whereNotNull('surat_jalan_id')
                     ->whereNotIn('status', ['cancelled']);
             })
             // Only include surat jalan that already have a supir checkpoint OR have a Tanda Terima record
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
+                    ->orWhereHas('tandaTerima');
             });
 
         // Filter by search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir_nama', 'like', "%{$search}%");
+                    ->orWhere('supir_nama', 'like', "%{$search}%");
             });
         }
 
@@ -398,31 +397,31 @@ class PranotaUangRitController extends Controller
                 $endDateObj = \Carbon\Carbon::parse($endDate)->endOfDay();
                 if ($startDateObj->gt($endDateObj)) {
                     return redirect()->route('pranota-uang-rit.select-uang-jalan')
-                            ->withInput()
-                            ->with('error', 'Tanggal mulai tidak boleh lebih besar dari tanggal akhir.');
+                        ->withInput()
+                        ->with('error', 'Tanggal mulai tidak boleh lebih besar dari tanggal akhir.');
                 }
                 // Ganti filter tanggal_surat_jalan dengan logika filter yang sama dengan Report (checkpoint/tanda terima)
-                $query->where(function($q) use ($startDateObj, $endDateObj) {
-                    $q->where(function($subQ) use ($startDateObj, $endDateObj) {
+                $query->where(function ($q) use ($startDateObj, $endDateObj) {
+                    $q->where(function ($subQ) use ($startDateObj, $endDateObj) {
                         // 1. Tanggal dari relasi tandaTerima
-                        $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDateObj, $endDateObj) {
+                        $subQ->whereHas('tandaTerima', function ($ttQuery) use ($startDateObj, $endDateObj) {
                             $ttQuery->where(DB::raw('DATE(tanggal)'), '>=', $startDateObj->toDateString())
-                                    ->where(DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
+                                ->where(DB::raw('DATE(tanggal)'), '<=', $endDateObj->toDateString());
                         });
                     })
-                    ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
-                        // 2. Tanggal tanda terima untuk kegiatan bongkaran (jika ada kolom ini di tabel surat_jalans)
-                        $subQ->where('kegiatan', 'bongkaran')
-                             ->whereNotNull('tanggal_tanda_terima')
-                             ->where(DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
-                             ->where(DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
-                    })
-                    ->orWhere(function($subQ) use ($startDateObj, $endDateObj) {
-                        // 3. Filter berdasarkan tanggal checkpoint
-                        $subQ->whereNotNull('tanggal_checkpoint')
-                             ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
-                             ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
-                    });
+                        ->orWhere(function ($subQ) use ($startDateObj, $endDateObj) {
+                            // 2. Tanggal tanda terima untuk kegiatan bongkaran (jika ada kolom ini di tabel surat_jalans)
+                            $subQ->where('kegiatan', 'bongkaran')
+                                ->whereNotNull('tanggal_tanda_terima')
+                                ->where(DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDateObj->toDateString())
+                                ->where(DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDateObj->toDateString());
+                        })
+                        ->orWhere(function ($subQ) use ($startDateObj, $endDateObj) {
+                            // 3. Filter berdasarkan tanggal checkpoint
+                            $subQ->whereNotNull('tanggal_checkpoint')
+                                ->where(DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDateObj->toDateString())
+                                ->where(DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDateObj->toDateString());
+                        });
                 });
             } catch (\Exception $e) {
                 // Invalid date format, ignore filter and show all but return an error message
@@ -437,13 +436,13 @@ class PranotaUangRitController extends Controller
 
         // Compute counts for debugging/help messages
         $eligibleCount = (clone $baseQuery)->count();
-        $pranotaUsedCount = (clone $baseQuery)->whereIn('id', function($subQuery) {
+        $pranotaUsedCount = (clone $baseQuery)->whereIn('id', function ($subQuery) {
             $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
         })->count();
         $finalFilteredCount = (clone $query)->count();
 
         $eligibleExamples = (clone $baseQuery)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint']);
-        $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function($subQuery) {
+        $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function ($subQuery) {
             $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
         })->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'tanggal_checkpoint']);
         $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'supir', 'status', 'status_pembayaran_uang_rit']);
@@ -472,19 +471,19 @@ class PranotaUangRitController extends Controller
         ]);
 
         $suratJalans = SuratJalan::whereIn('id', $request->surat_jalan_ids)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('status', 'approved')
-                  ->orWhere('status', 'sudah_checkpoint')
-                  ->orWhere('status', 'active')
-                  ->orWhereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima')
-                  ->orWhereHas('approvals', function($sub) {
-                      $sub->where('status', 'approved');
-                  });
+                    ->orWhere('status', 'sudah_checkpoint')
+                    ->orWhere('status', 'active')
+                    ->orWhereNotNull('tanggal_checkpoint')
+                    ->orWhereHas('tandaTerima')
+                    ->orWhereHas('approvals', function ($sub) {
+                        $sub->where('status', 'approved');
+                    });
             })
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
+                    ->orWhereHas('tandaTerima');
             })
             ->get();
 
@@ -534,7 +533,7 @@ class PranotaUangRitController extends Controller
             // Filter hanya data yang dipilih untuk regular surat jalan
             $selectedData = [];
             if ($request->has('surat_jalan_data')) {
-                $selectedData = array_filter($request->surat_jalan_data, function($item) {
+                $selectedData = array_filter($request->surat_jalan_data, function ($item) {
                     return isset($item['selected']) && $item['selected'];
                 });
             }
@@ -542,7 +541,7 @@ class PranotaUangRitController extends Controller
             // Filter hanya data yang dipilih untuk surat jalan bongkaran
             $selectedBongkaranData = [];
             if ($request->has('surat_jalan_bongkaran_data')) {
-                $selectedBongkaranData = array_filter($request->surat_jalan_bongkaran_data, function($item) {
+                $selectedBongkaranData = array_filter($request->surat_jalan_bongkaran_data, function ($item) {
                     return isset($item['selected']) && $item['selected'];
                 });
             }
@@ -553,7 +552,7 @@ class PranotaUangRitController extends Controller
 
             // Generate nomor pranota DALAM transaksi yang sama
             $nomorPranota = $this->generateNomorPranota();
-            
+
             // Hitung total per supir dan total keseluruhan
             $supirTotals = [];
             $totalUangSupirKeseluruhan = 0.0; // Initialize as float
@@ -567,20 +566,20 @@ class PranotaUangRitController extends Controller
             // Hitung total uang supir per supir
             foreach ($selectedData as $suratJalanId => $data) {
                 $supirInput = $data['supir_nama'];
-                
+
                 // Normalisasi identitas supir berdasarkan NIK jika ada
                 $karyawan = \App\Models\Karyawan::where('nama_panggilan', $supirInput)
                     ->orWhere('nama_lengkap', $supirInput)
                     ->first();
-                
+
                 $supirKey = $karyawan ? ($karyawan->nik ?? $supirInput) : $supirInput;
                 $supirDisplayName = $karyawan ? strtoupper($karyawan->nama_lengkap) : strtoupper($supirInput);
-                
+
                 $uangSupir = floatval($data['uang_rit_supir'] ?? 0); // Ensure it's a number
-                
+
                 Log::info("Processing Regular Supir: {$supirInput} -> Key: {$supirKey}, Uang Supir: {$uangSupir}");
-                
-                if (!isset($supirTotals[$supirKey])) {
+
+                if (! isset($supirTotals[$supirKey])) {
                     $supirTotals[$supirKey] = [
                         'supir_nama' => $supirDisplayName,
                         'total_uang_supir' => 0.0,
@@ -591,11 +590,11 @@ class PranotaUangRitController extends Controller
                         'original_names' => [strtoupper($supirInput)],
                     ];
                 } else {
-                    if (!in_array(strtoupper($supirInput), $supirTotals[$supirKey]['original_names'])) {
+                    if (! in_array(strtoupper($supirInput), $supirTotals[$supirKey]['original_names'])) {
                         $supirTotals[$supirKey]['original_names'][] = strtoupper($supirInput);
                     }
                 }
-                
+
                 $supirTotals[$supirKey]['total_uang_supir'] += $uangSupir;
                 $supirTotals[$supirKey]['jumlah_rit'] += 1;
                 $totalUangSupirKeseluruhan += $uangSupir;
@@ -604,20 +603,20 @@ class PranotaUangRitController extends Controller
             // Hitung total uang supir per supir untuk bongkaran
             foreach ($selectedBongkaranData as $suratJalanBongkaranId => $data) {
                 $supirInput = $data['supir_nama'];
-                
+
                 // Normalisasi identitas supir berdasarkan NIK jika ada
                 $karyawan = \App\Models\Karyawan::where('nama_panggilan', $supirInput)
                     ->orWhere('nama_lengkap', $supirInput)
                     ->first();
-                
+
                 $supirKey = $karyawan ? ($karyawan->nik ?? $supirInput) : $supirInput;
                 $supirDisplayName = $karyawan ? strtoupper($karyawan->nama_lengkap) : strtoupper($supirInput);
-                
+
                 $uangSupir = floatval($data['uang_rit_supir'] ?? 0);
-                
+
                 Log::info("Processing Bongkaran Supir: {$supirInput} -> Key: {$supirKey}, Uang Supir: {$uangSupir}");
-                
-                if (!isset($supirTotals[$supirKey])) {
+
+                if (! isset($supirTotals[$supirKey])) {
                     $supirTotals[$supirKey] = [
                         'supir_nama' => $supirDisplayName,
                         'total_uang_supir' => 0.0,
@@ -628,11 +627,11 @@ class PranotaUangRitController extends Controller
                         'original_names' => [strtoupper($supirInput)],
                     ];
                 } else {
-                    if (!in_array(strtoupper($supirInput), $supirTotals[$supirKey]['original_names'])) {
+                    if (! in_array(strtoupper($supirInput), $supirTotals[$supirKey]['original_names'])) {
                         $supirTotals[$supirKey]['original_names'][] = strtoupper($supirInput);
                     }
                 }
-                
+
                 $supirTotals[$supirKey]['total_uang_supir'] += $uangSupir;
                 $supirTotals[$supirKey]['jumlah_rit'] += 1;
                 $totalUangSupirKeseluruhan += $uangSupir;
@@ -643,12 +642,12 @@ class PranotaUangRitController extends Controller
             // Ambil data hutang, tabungan, dan BPJS dari frontend
             $supirDetails = $request->input('supir_details', []);
             Log::info('Supir Details from request:', $supirDetails);
-            
+
             foreach ($supirDetails as $supirKeyFromInput => $details) {
                 // Determine if supirKeyFromInput is a name or a NIK that maps to our supirTotals
                 $targetKey = $supirKeyFromInput;
-                
-                if (!isset($supirTotals[$targetKey])) {
+
+                if (! isset($supirTotals[$targetKey])) {
                     // Try to find if this name maps to a NIK in our totals
                     foreach ($supirTotals as $key => $val) {
                         if (isset($val['original_names']) && in_array(strtoupper($supirKeyFromInput), $val['original_names'])) {
@@ -662,7 +661,7 @@ class PranotaUangRitController extends Controller
                     $supirTotals[$targetKey]['hutang'] = floatval($details['hutang'] ?? 0);
                     $supirTotals[$targetKey]['tabungan'] = floatval($details['tabungan'] ?? 0);
                     $supirTotals[$targetKey]['bpjs'] = floatval($details['bpjs'] ?? 0);
-                    
+
                     $totalHutangKeseluruhan += $supirTotals[$targetKey]['hutang'];
                     $totalTabunganKeseluruhan += $supirTotals[$targetKey]['tabungan'];
                     $totalBpjsKeseluruhan += $supirTotals[$targetKey]['bpjs'];
@@ -670,12 +669,12 @@ class PranotaUangRitController extends Controller
             }
 
             $grandTotalBersih = $totalUangSupirKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
-            
+
             Log::info("Final calculations - Total Uang: {$totalUangSupirKeseluruhan}, Total Hutang: {$totalHutangKeseluruhan}, Total Tabungan: {$totalTabunganKeseluruhan}, Total BPJS: {$totalBpjsKeseluruhan}, Grand Total: {$grandTotalBersih}");
 
             // Buat SATU pranota untuk SEMUA surat jalan yang dipilih
             $grandTotalValue = $totalUangSupirKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
-            
+
             // Gabungkan informasi dari semua surat jalan
             $allNoSuratJalan = [];
             $allSupirNama = [];
@@ -683,16 +682,16 @@ class PranotaUangRitController extends Controller
             $allNoPlat = [];
             $firstSuratJalanId = null;
             $firstSuratJalanBongkaranId = null;
-            
+
             foreach ($selectedData as $suratJalanId => $data) {
                 if ($firstSuratJalanId === null) {
                     $firstSuratJalanId = $suratJalanId; // Gunakan ID surat jalan pertama sebagai referensi
                 }
                 $allNoSuratJalan[] = $data['no_surat_jalan'];
-                if (!in_array($data['supir_nama'], $allSupirNama)) {
+                if (! in_array($data['supir_nama'], $allSupirNama)) {
                     $allSupirNama[] = $data['supir_nama'];
                 }
-                if (!empty($data['kenek_nama']) && !in_array($data['kenek_nama'], $allKenekNama)) {
+                if (! empty($data['kenek_nama']) && ! in_array($data['kenek_nama'], $allKenekNama)) {
                     $allKenekNama[] = $data['kenek_nama'];
                 }
             }
@@ -701,19 +700,19 @@ class PranotaUangRitController extends Controller
                 if ($firstSuratJalanBongkaranId === null) {
                     $firstSuratJalanBongkaranId = $suratJalanBongkaranId;
                 }
-                $allNoSuratJalan[] = $data['no_surat_jalan'] . ' (Bongkaran)';
-                if (!in_array($data['supir_nama'], $allSupirNama)) {
+                $allNoSuratJalan[] = $data['no_surat_jalan'].' (Bongkaran)';
+                if (! in_array($data['supir_nama'], $allSupirNama)) {
                     $allSupirNama[] = $data['supir_nama'];
                 }
             }
-            
+
             // Gabungkan menjadi string
             $combinedNoSuratJalan = implode(', ', $allNoSuratJalan);
             $combinedSupirNama = implode(', ', $allSupirNama);
             $combinedKenekNama = implode(', ', array_filter($allKenekNama));
-            
+
             Log::info("Creating SINGLE Pranota with values - Nomor: {$nomorPranota}, Total Uang: {$totalUangSupirKeseluruhan}, Total Hutang: {$totalHutangKeseluruhan}, Total Tabungan: {$totalTabunganKeseluruhan}, Total BPJS: {$totalBpjsKeseluruhan}, Grand Total: {$grandTotalValue}");
-            
+
             // Buat satu record pranota untuk semua surat jalan
             $pranotaUangRit = PranotaUangRit::create([
                 'no_pranota' => $nomorPranota,
@@ -743,7 +742,7 @@ class PranotaUangRitController extends Controller
                 $suratJalan = SuratJalan::find($suratJalanId);
                 if ($suratJalan) {
                     $suratJalan->update([
-                        'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_DIBAYAR
+                        'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_DIBAYAR,
                     ]);
                 }
             }
@@ -753,7 +752,7 @@ class PranotaUangRitController extends Controller
                 $suratJalanBongkaran = SuratJalanBongkaran::find($suratJalanBongkaranId);
                 if ($suratJalanBongkaran) {
                     $suratJalanBongkaran->update([
-                        'status_pembayaran_uang_rit' => 'lunas' // Gunakan nilai enum yang sesuai dengan tabel bongkaran
+                        'status_pembayaran_uang_rit' => 'lunas', // Gunakan nilai enum yang sesuai dengan tabel bongkaran
                     ]);
                 }
             }
@@ -776,21 +775,22 @@ class PranotaUangRitController extends Controller
             foreach ($selectedData as $suratJalanId => $data) {
                 // Buat record detail surat jalan jika ada model untuk itu
                 // Atau bisa menggunakan tabel pivot/relation table
-                Log::info("Pranota {$nomorPranota} includes Surat Jalan: {$data['no_surat_jalan']} - {$data['supir_nama']} - Rp " . number_format($data['uang_rit_supir']));
+                Log::info("Pranota {$nomorPranota} includes Surat Jalan: {$data['no_surat_jalan']} - {$data['supir_nama']} - Rp ".number_format($data['uang_rit_supir']));
             }
 
             DB::commit();
-            
+
             $jumlahSuratJalan = count($selectedData);
             $jumlahSupir = count($supirTotals);
             $message = "Pranota Uang Rit {$nomorPranota} berhasil dibuat untuk {$jumlahSuratJalan} surat jalan dengan {$jumlahSupir} supir!";
-                
+
             return redirect()->route('pranota-uang-rit.index')->with('success', $message);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating Pranota Uang Rit: ' . $e->getMessage());
-            return back()->with('error', 'Gagal membuat Pranota Uang Rit: ' . $e->getMessage())
+            Log::error('Error creating Pranota Uang Rit: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal membuat Pranota Uang Rit: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -802,28 +802,28 @@ class PranotaUangRitController extends Controller
     {
         // Load necessary relationships
         $pranotaUangRit->load(['suratJalan', 'creator', 'updater', 'approver']);
-        
+
         // Parse multiple surat jalan from combined field (since we now store combined data)
         $suratJalanNomors = explode(', ', $pranotaUangRit->no_surat_jalan);
         $suratJalanSupirs = explode(', ', $pranotaUangRit->supir_nama);
-        
+
         // Create grouped pranota data from the combined stored data
         $groupedPranota = collect();
         foreach ($suratJalanNomors as $index => $nomor) {
             $supir = $suratJalanSupirs[$index] ?? $suratJalanSupirs[0];
-            $groupedPranota->push((object)[
+            $groupedPranota->push((object) [
                 'no_surat_jalan' => trim($nomor),
                 'supir_nama' => trim($supir),
                 'tanggal' => $pranotaUangRit->tanggal,
                 'uang_rit_supir' => $pranotaUangRit->uang_rit_supir / count($suratJalanNomors), // Split evenly
             ]);
         }
-            
+
         // Get supir details for this pranota
         $supirDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
             ->orderBy('supir_nama')
             ->get();
-            
+
         return view('pranota-uang-rit.show', compact('pranotaUangRit', 'groupedPranota', 'supirDetails'));
     }
 
@@ -833,16 +833,16 @@ class PranotaUangRitController extends Controller
     public function edit(PranotaUangRit $pranotaUangRit)
     {
         // Only allow editing if status is draft or submitted
-        if (!in_array($pranotaUangRit->status, [PranotaUangRit::STATUS_DRAFT, PranotaUangRit::STATUS_SUBMITTED])) {
+        if (! in_array($pranotaUangRit->status, [PranotaUangRit::STATUS_DRAFT, PranotaUangRit::STATUS_SUBMITTED])) {
             return redirect()->route('pranota-uang-rit.index')
-                ->with('error', 'Pranota Uang Rit dengan status ' . $pranotaUangRit->status_label . ' tidak dapat diedit.');
+                ->with('error', 'Pranota Uang Rit dengan status '.$pranotaUangRit->status_label.' tidak dapat diedit.');
         }
 
         // Get surat jalan numbers from the combined field
         $suratJalanNomorsRaw = explode(', ', $pranotaUangRit->no_surat_jalan);
         $regularNomors = [];
         $bongkaranNomors = [];
-        
+
         foreach ($suratJalanNomorsRaw as $nomor) {
             $trimmed = trim($nomor);
             if (str_contains($trimmed, '(Bongkaran)')) {
@@ -851,26 +851,26 @@ class PranotaUangRitController extends Controller
                 $regularNomors[] = $trimmed;
             }
         }
-        
+
         // Fetch regular Surat Jalan
         $suratJalans = SuratJalan::whereIn('no_surat_jalan', $regularNomors)->get();
-        
+
         // Fetch Surat Jalan Bongkaran
         $bongkarans = SuratJalanBongkaran::whereIn('nomor_surat_jalan', $bongkaranNomors)->get();
-        
+
         // Map Bongkarans to match the SuratJalan structure for the view
-        $mappedBongkarans = $bongkarans->map(function($b) {
-            return (object)[
-                'no_surat_jalan' => $b->nomor_surat_jalan . ' (Bongkaran)',
+        $mappedBongkarans = $bongkarans->map(function ($b) {
+            return (object) [
+                'no_surat_jalan' => $b->nomor_surat_jalan.' (Bongkaran)',
                 'tanggal_surat_jalan' => $b->tanggal_surat_jalan,
                 'supir' => $b->supir,
                 'uang_rit_supir' => $b->uang_rit_supir,
             ];
         });
-        
+
         // Merge collections
         $allSuratJalans = $suratJalans->concat($mappedBongkarans)->sortByDesc('tanggal_surat_jalan');
-        
+
         // Get supir details for this pranota
         $supirDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
             ->orderBy('supir_nama')
@@ -879,7 +879,7 @@ class PranotaUangRitController extends Controller
         return view('pranota-uang-rit.edit', [
             'pranotaUangRit' => $pranotaUangRit,
             'suratJalans' => $allSuratJalans,
-            'supirDetails' => $supirDetails
+            'supirDetails' => $supirDetails,
         ]);
     }
 
@@ -889,9 +889,9 @@ class PranotaUangRitController extends Controller
     public function update(Request $request, PranotaUangRit $pranotaUangRit)
     {
         // Only allow updating if status is draft or submitted
-        if (!in_array($pranotaUangRit->status, [PranotaUangRit::STATUS_DRAFT, PranotaUangRit::STATUS_SUBMITTED])) {
+        if (! in_array($pranotaUangRit->status, [PranotaUangRit::STATUS_DRAFT, PranotaUangRit::STATUS_SUBMITTED])) {
             return redirect()->route('pranota-uang-rit.index')
-                ->with('error', 'Pranota Uang Rit dengan status ' . $pranotaUangRit->status_label . ' tidak dapat diupdate.');
+                ->with('error', 'Pranota Uang Rit dengan status '.$pranotaUangRit->status_label.' tidak dapat diupdate.');
         }
 
         $request->validate([
@@ -910,12 +910,12 @@ class PranotaUangRitController extends Controller
             $totalHutangKeseluruhan = 0.0;
             $totalTabunganKeseluruhan = 0.0;
             $totalBpjsKeseluruhan = 0.0;
-            
+
             foreach ($supirDetails as $detailId => $details) {
                 $hutang = floatval($details['hutang'] ?? 0);
                 $tabungan = floatval($details['tabungan'] ?? 0);
                 $bpjs = floatval($details['bpjs'] ?? 0);
-                
+
                 // Update detail per supir using the primary key (ID)
                 // This is more reliable than using the name which caused a type mismatch
                 PranotaUangRitSupirDetail::where('id', $detailId)
@@ -923,9 +923,9 @@ class PranotaUangRitController extends Controller
                         'hutang' => $hutang,
                         'tabungan' => $tabungan,
                         'bpjs' => $bpjs,
-                ]);
+                    ]);
             }
-                
+
             // Recalculate totals from DB to ensure consistency
             $allDetails = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)->get();
             $totalUangKeseluruhan = $allDetails->sum('total_uang_supir');
@@ -933,12 +933,12 @@ class PranotaUangRitController extends Controller
             $totalTabunganKeseluruhan = $allDetails->sum('tabungan');
             $totalBpjsKeseluruhan = $allDetails->sum('bpjs');
             $grandTotalBersih = $totalUangKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan;
-            
+
             // Update pranota
             $pranotaUangRit->update([
                 'tanggal' => $request->tanggal,
-                'total_uang' => $totalUangKeseluruhan, 
-                'total_rit' => $totalUangKeseluruhan, 
+                'total_uang' => $totalUangKeseluruhan,
+                'total_rit' => $totalUangKeseluruhan,
                 'total_hutang' => $totalHutangKeseluruhan,
                 'total_tabungan' => $totalTabunganKeseluruhan,
                 'total_bpjs' => $totalBpjsKeseluruhan,
@@ -954,13 +954,15 @@ class PranotaUangRitController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('pranota-uang-rit.index')
                 ->with('success', 'Pranota Uang Rit berhasil diperbarui!');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating Pranota Uang Rit: ' . $e->getMessage());
-            return back()->with('error', 'Gagal memperbarui Pranota Uang Rit: ' . $e->getMessage())
+            Log::error('Error updating Pranota Uang Rit: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal memperbarui Pranota Uang Rit: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -979,20 +981,20 @@ class PranotaUangRitController extends Controller
         try {
             // Ambil no_surat_jalan untuk mencari surat jalan yang terkait
             $noSuratJalanList = explode(', ', $pranotaUangRit->no_surat_jalan);
-            
+
             // Kembalikan status surat jalan biasa ke 'belum_dibayar'
             // Karena status langsung di-set ke 'dibayar' saat buat pranota
             SuratJalan::whereIn('no_surat_jalan', $noSuratJalanList)
                 ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_DIBAYAR)
                 ->update([
-                    'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR
+                    'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR,
                 ]);
 
             // Kembalikan status surat jalan bongkaran ke 'belum_bayar'
             SuratJalanBongkaran::whereIn('nomor_surat_jalan', $noSuratJalanList)
                 ->where('status_pembayaran_uang_rit', 'lunas')
                 ->update([
-                    'status_pembayaran_uang_rit' => 'belum_bayar'
+                    'status_pembayaran_uang_rit' => 'belum_bayar',
                 ]);
 
             // Hapus pranota
@@ -1009,8 +1011,9 @@ class PranotaUangRitController extends Controller
                 ->with('success', 'Pranota Uang Rit berhasil dihapus dan status surat jalan telah dikembalikan!');
 
         } catch (\Exception $e) {
-            Log::error('Error deleting Pranota Uang Rit: ' . $e->getMessage());
-            return back()->with('error', 'Gagal menghapus Pranota Uang Rit: ' . $e->getMessage());
+            Log::error('Error deleting Pranota Uang Rit: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal menghapus Pranota Uang Rit: '.$e->getMessage());
         }
     }
 
@@ -1040,8 +1043,9 @@ class PranotaUangRitController extends Controller
                 ->with('success', 'Pranota Uang Rit berhasil disubmit untuk approval!');
 
         } catch (\Exception $e) {
-            Log::error('Error submitting Pranota Uang Rit: ' . $e->getMessage());
-            return back()->with('error', 'Gagal submit Pranota Uang Rit: ' . $e->getMessage());
+            Log::error('Error submitting Pranota Uang Rit: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal submit Pranota Uang Rit: '.$e->getMessage());
         }
     }
 
@@ -1075,8 +1079,9 @@ class PranotaUangRitController extends Controller
                 ->with('success', 'Pranota Uang Rit berhasil diapprove!');
 
         } catch (\Exception $e) {
-            Log::error('Error approving Pranota Uang Rit: ' . $e->getMessage());
-            return back()->with('error', 'Gagal approve Pranota Uang Rit: ' . $e->getMessage());
+            Log::error('Error approving Pranota Uang Rit: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal approve Pranota Uang Rit: '.$e->getMessage());
         }
     }
 
@@ -1104,7 +1109,7 @@ class PranotaUangRitController extends Controller
             // Update status surat jalan menjadi dibayar
             if ($pranotaUangRit->suratJalan) {
                 $pranotaUangRit->suratJalan->update([
-                    'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_DIBAYAR
+                    'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_DIBAYAR,
                 ]);
             }
 
@@ -1119,15 +1124,16 @@ class PranotaUangRitController extends Controller
                 ->with('success', 'Pranota Uang Rit berhasil dimark sebagai Paid!');
 
         } catch (\Exception $e) {
-            Log::error('Error marking Pranota Uang Rit as paid: ' . $e->getMessage());
-            return back()->with('error', 'Gagal mark Pranota Uang Rit sebagai Paid: ' . $e->getMessage());
+            Log::error('Error marking Pranota Uang Rit as paid: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal mark Pranota Uang Rit sebagai Paid: '.$e->getMessage());
         }
     }
 
     /**
      * Generate nomor pranota otomatis
      * Format: PUR-MM-YY-XXXXXX
-     * - PUR: 3 digit kode modul 
+     * - PUR: 3 digit kode modul
      * - MM: 2 digit bulan
      * - YY: 2 digit tahun
      * - XXXXXX: 6 digit nomor terakhir dari master nomor terakhir modul PUR
@@ -1137,12 +1143,12 @@ class PranotaUangRitController extends Controller
         $date = now();
         $bulan = $date->format('m'); // 2 digit bulan
         $tahun = $date->format('y'); // 2 digit tahun
-        
+
         // Cari nomor tertinggi yang sudah ada di database untuk format bulan-tahun ini
         $lastExisting = PranotaUangRit::where('no_pranota', 'like', "PUR-{$bulan}-{$tahun}-%")
             ->orderBy('no_pranota', 'desc')
             ->first();
-            
+
         $lastNumber = 0;
         if ($lastExisting) {
             // Extract nomor dari format PUR-MM-YY-XXXXXX
@@ -1151,17 +1157,17 @@ class PranotaUangRitController extends Controller
                 $lastNumber = (int) end($parts);
             }
         }
-        
+
         // Lock record untuk mencegah race condition
         $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'PUR')->lockForUpdate()->first();
 
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             // Buat record baru, sinkron dengan database yang sudah ada
             $nomorBaru = max($lastNumber + 1, 1);
             \App\Models\NomorTerakhir::create([
                 'modul' => 'PUR',
                 'nomor_terakhir' => $nomorBaru,
-                'keterangan' => 'Auto generated Pranota Uang Rit number'
+                'keterangan' => 'Auto generated Pranota Uang Rit number',
             ]);
         } else {
             // Update dengan nomor yang lebih tinggi dari existing atau nomor_terakhir
@@ -1172,20 +1178,21 @@ class PranotaUangRitController extends Controller
         // Format 6 digit nomor urut
         $sequence = str_pad($nomorBaru, 6, '0', STR_PAD_LEFT);
         $nomorPranota = "PUR-{$bulan}-{$tahun}-{$sequence}";
-        
+
         // Double check - jika masih ada duplicate, increment lagi
         while (PranotaUangRit::where('no_pranota', $nomorPranota)->exists()) {
             $nomorBaru++;
             $sequence = str_pad($nomorBaru, 6, '0', STR_PAD_LEFT);
             $nomorPranota = "PUR-{$bulan}-{$tahun}-{$sequence}";
-            
+
             // Update nomor_terakhir dengan nomor yang benar
             if ($nomorTerakhir) {
                 $nomorTerakhir->update(['nomor_terakhir' => $nomorBaru]);
             }
         }
-        
+
         Log::info("Generated Pranota Number: {$nomorPranota}");
+
         return $nomorPranota;
     }
 
@@ -1196,37 +1203,37 @@ class PranotaUangRitController extends Controller
     {
         // Load necessary relationships
         $pranotaUangRit->load(['suratJalan', 'creator', 'updater', 'approver']);
-        
+
         // Parse multiple surat jalan from combined field (since we now store combined data)
         $suratJalanNomors = explode(', ', $pranotaUangRit->no_surat_jalan);
         $suratJalanSupirs = explode(', ', $pranotaUangRit->supir_nama);
-        
+
         // Create grouped pranota data from the combined stored data
         $groupedPranota = collect();
         foreach ($suratJalanNomors as $index => $nomor) {
             $supir = $suratJalanSupirs[$index] ?? $suratJalanSupirs[0];
-            $groupedPranota->push((object)[
+            $groupedPranota->push((object) [
                 'no_surat_jalan' => trim($nomor),
                 'supir_nama' => trim($supir),
                 'tanggal' => $pranotaUangRit->tanggal,
                 'uang_rit_supir' => $pranotaUangRit->uang_rit_supir / count($suratJalanNomors), // Split evenly
             ]);
         }
-            
+
         // Get supir details for this pranota
         $supirDetailsRaw = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
             ->get();
-            
+
         // Group supir details by NIK (or name if NIK not found) to consolidate duplicates
         $consolidatedDetails = [];
         foreach ($supirDetailsRaw as $detail) {
             $karyawan = \App\Models\Karyawan::where('nama_panggilan', $detail->supir_nama)
                 ->orWhere('nama_lengkap', $detail->supir_nama)
                 ->first();
-            
+
             $key = $karyawan ? $karyawan->nik : $detail->supir_nama;
-            
-            if (!isset($consolidatedDetails[$key])) {
+
+            if (! isset($consolidatedDetails[$key])) {
                 $consolidatedDetails[$key] = [
                     'supir_nama' => $karyawan ? $karyawan->nama_lengkap : $detail->supir_nama,
                     'nik' => $karyawan ? $karyawan->nik : null,
@@ -1235,10 +1242,10 @@ class PranotaUangRitController extends Controller
                     'hutang' => 0,
                     'tabungan' => 0,
                     'bpjs' => 0,
-                    'grand_total' => 0
+                    'grand_total' => 0,
                 ];
             }
-            
+
             $consolidatedDetails[$key]['jumlah_rit'] += $detail->jumlah_rit;
             $consolidatedDetails[$key]['total_uang_supir'] += $detail->total_uang_supir;
             $consolidatedDetails[$key]['hutang'] += $detail->hutang;
@@ -1250,11 +1257,11 @@ class PranotaUangRitController extends Controller
         // Convert back to collection of objects for the view
         $supirDetails = collect();
         foreach ($consolidatedDetails as $detail) {
-            $supirDetails->push((object)$detail);
+            $supirDetails->push((object) $detail);
         }
-        
+
         $supirDetails = $supirDetails->sortBy('supir_nama');
-            
+
         return view('pranota-uang-rit.print', compact('pranotaUangRit', 'groupedPranota', 'supirDetails'));
     }
 
@@ -1265,7 +1272,7 @@ class PranotaUangRitController extends Controller
     {
         // Load necessary relationships
         $pranotaUangRit->load(['suratJalan', 'creator', 'updater', 'approver']);
-        
+
         // Get supir details for this pranota with karyawan data
         $supirDetailsRaw = PranotaUangRitSupirDetail::where('no_pranota', $pranotaUangRit->no_pranota)
             ->get();
@@ -1276,11 +1283,11 @@ class PranotaUangRitController extends Controller
             $karyawan = \App\Models\Karyawan::where('nama_panggilan', $detail->supir_nama)
                 ->orWhere('nama_lengkap', $detail->supir_nama)
                 ->first();
-            
+
             $key = $karyawan ? $karyawan->nik : $detail->supir_nama;
-            
-            if (!isset($consolidatedDetails[$key])) {
-                $consolidatedDetails[$key] = (object)[
+
+            if (! isset($consolidatedDetails[$key])) {
+                $consolidatedDetails[$key] = (object) [
                     'supir_nama' => $karyawan ? $karyawan->nama_lengkap : $detail->supir_nama,
                     'nik' => $karyawan ? $karyawan->nik : '-',
                     'jumlah_rit' => 0,
@@ -1288,10 +1295,10 @@ class PranotaUangRitController extends Controller
                     'hutang' => 0,
                     'tabungan' => 0,
                     'bpjs' => 0,
-                    'grand_total' => 0
+                    'grand_total' => 0,
                 ];
             }
-            
+
             $consolidatedDetails[$key]->jumlah_rit += $detail->jumlah_rit;
             $consolidatedDetails[$key]->total_uang_supir += $detail->total_uang_supir;
             $consolidatedDetails[$key]->hutang += $detail->hutang;
@@ -1303,7 +1310,7 @@ class PranotaUangRitController extends Controller
         $supirDetails = collect($consolidatedDetails)->sortBy('supir_nama');
 
         // Create Excel file using PhpSpreadsheet
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set title
@@ -1313,21 +1320,21 @@ class PranotaUangRitController extends Controller
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         // Pranota info
-        $sheet->setCellValue('A3', 'GAJI SUPIR TGL: ' . $pranotaUangRit->tanggal->format('d M Y'));
+        $sheet->setCellValue('A3', 'GAJI SUPIR TGL: '.$pranotaUangRit->tanggal->format('d M Y'));
         $sheet->setCellValue('I3', $pranotaUangRit->no_pranota);
         $sheet->getStyle('I3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
         // Detail supir headers
         $row = 5;
-        $sheet->setCellValue('A' . $row, 'No');
-        $sheet->setCellValue('B' . $row, 'NIK');
-        $sheet->setCellValue('C' . $row, 'Supir');
-        $sheet->setCellValue('D' . $row, 'Rit');
-        $sheet->setCellValue('E' . $row, 'Total Uang');
-        $sheet->setCellValue('F' . $row, 'Hutang');
-        $sheet->setCellValue('G' . $row, 'Tabungan');
-        $sheet->setCellValue('H' . $row, 'BPJS');
-        $sheet->setCellValue('I' . $row, 'Grand Total');
+        $sheet->setCellValue('A'.$row, 'No');
+        $sheet->setCellValue('B'.$row, 'NIK');
+        $sheet->setCellValue('C'.$row, 'Supir');
+        $sheet->setCellValue('D'.$row, 'Rit');
+        $sheet->setCellValue('E'.$row, 'Total Uang');
+        $sheet->setCellValue('F'.$row, 'Hutang');
+        $sheet->setCellValue('G'.$row, 'Tabungan');
+        $sheet->setCellValue('H'.$row, 'BPJS');
+        $sheet->setCellValue('I'.$row, 'Grand Total');
 
         // Style headers
         $headerStyle = [
@@ -1337,11 +1344,11 @@ class PranotaUangRitController extends Controller
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    'color' => ['rgb' => 'FFFFFF']
-                ]
-            ]
+                    'color' => ['rgb' => 'FFFFFF'],
+                ],
+            ],
         ];
-        $sheet->getStyle('A' . $row . ':I' . $row)->applyFromArray($headerStyle);
+        $sheet->getStyle('A'.$row.':I'.$row)->applyFromArray($headerStyle);
 
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(5);   // No
@@ -1366,40 +1373,40 @@ class PranotaUangRitController extends Controller
 
         foreach ($supirDetails as $detail) {
             $rit = $detail->total_uang_supir > 0 ? round($detail->total_uang_supir / 85000) : 0;
-            
-            $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $detail->nik ?? '-');
-            $sheet->setCellValue('C' . $row, strtoupper($detail->supir_nama));
-            $sheet->setCellValue('D' . $row, $rit);
-            $sheet->setCellValue('E' . $row, $detail->total_uang_supir);
-            $sheet->setCellValue('F' . $row, $detail->hutang);
-            $sheet->setCellValue('G' . $row, $detail->tabungan);
-            $sheet->setCellValue('H' . $row, $detail->bpjs);
-            $sheet->setCellValue('I' . $row, $detail->grand_total);
+
+            $sheet->setCellValue('A'.$row, $no);
+            $sheet->setCellValue('B'.$row, $detail->nik ?? '-');
+            $sheet->setCellValue('C'.$row, strtoupper($detail->supir_nama));
+            $sheet->setCellValue('D'.$row, $rit);
+            $sheet->setCellValue('E'.$row, $detail->total_uang_supir);
+            $sheet->setCellValue('F'.$row, $detail->hutang);
+            $sheet->setCellValue('G'.$row, $detail->tabungan);
+            $sheet->setCellValue('H'.$row, $detail->bpjs);
+            $sheet->setCellValue('I'.$row, $detail->grand_total);
 
             // Format currency
-            $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode('#,##0');
-            $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode('#,##0');
-            $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0');
-            $sheet->getStyle('H' . $row)->getNumberFormat()->setFormatCode('#,##0');
-            $sheet->getStyle('I' . $row)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('E'.$row)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('F'.$row)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('G'.$row)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('H'.$row)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('I'.$row)->getNumberFormat()->setFormatCode('#,##0');
 
             // Center align for No, NIK, Rit
-            $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('B' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('B'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('D'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
             // Right align for currency columns
-            $sheet->getStyle('E' . $row . ':I' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle('E'.$row.':I'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
             // Add border to data rows
-            $sheet->getStyle('A' . $row . ':I' . $row)->applyFromArray([
+            $sheet->getStyle('A'.$row.':I'.$row)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        'color' => ['rgb' => '000000']
-                    ]
-                ]
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
             ]);
 
             $totalRit += $rit;
@@ -1414,44 +1421,44 @@ class PranotaUangRitController extends Controller
         }
 
         // Total row
-        $sheet->setCellValue('A' . $row, 'TOTAL');
-        $sheet->mergeCells('A' . $row . ':C' . $row);
-        $sheet->setCellValue('D' . $row, $totalRit);
-        $sheet->setCellValue('E' . $row, $totalUang);
-        $sheet->setCellValue('F' . $row, $totalHutang);
-        $sheet->setCellValue('G' . $row, $totalTabungan);
-        $sheet->setCellValue('H' . $row, $totalBpjs);
-        $sheet->setCellValue('I' . $row, $totalGrand);
+        $sheet->setCellValue('A'.$row, 'TOTAL');
+        $sheet->mergeCells('A'.$row.':C'.$row);
+        $sheet->setCellValue('D'.$row, $totalRit);
+        $sheet->setCellValue('E'.$row, $totalUang);
+        $sheet->setCellValue('F'.$row, $totalHutang);
+        $sheet->setCellValue('G'.$row, $totalTabungan);
+        $sheet->setCellValue('H'.$row, $totalBpjs);
+        $sheet->setCellValue('I'.$row, $totalGrand);
 
         // Format total row
-        $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode('#,##0');
-        $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode('#,##0');
-        $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0');
-        $sheet->getStyle('H' . $row)->getNumberFormat()->setFormatCode('#,##0');
-        $sheet->getStyle('I' . $row)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('E'.$row)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('F'.$row)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('G'.$row)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('H'.$row)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('I'.$row)->getNumberFormat()->setFormatCode('#,##0');
 
-        $sheet->getStyle('A' . $row . ':I' . $row)->getFont()->setBold(true);
-        $sheet->getStyle('A' . $row . ':I' . $row)->getFill()
+        $sheet->getStyle('A'.$row.':I'.$row)->getFont()->setBold(true);
+        $sheet->getStyle('A'.$row.':I'.$row)->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setRGB('F5F5F5');
-        $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('E' . $row . ':I' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('A' . $row . ':I' . $row)->applyFromArray([
+        $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('D'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('E'.$row.':I'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('A'.$row.':I'.$row)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-                    'color' => ['rgb' => '000000']
-                ]
-            ]
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
         ]);
 
         // Create writer and download
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $filename = 'RITASI_SUPIR_' . $pranotaUangRit->no_pranota . '.xlsx';
+        $filename = 'RITASI_SUPIR_'.$pranotaUangRit->no_pranota.'.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');
@@ -1465,13 +1472,13 @@ class PranotaUangRitController extends Controller
     {
         // Get surat jalan numbers from the combined field
         $suratJalanNomors = array_map('trim', explode(', ', $pranotaUangRit->no_surat_jalan));
-        
+
         // Get surat jalan data - sorted by supir name alphabetically
         $suratJalans = SuratJalan::whereIn('no_surat_jalan', $suratJalanNomors)
             ->orderBy('supir', 'asc')
             ->orderBy('tanggal_surat_jalan', 'desc')
             ->get();
-        
+
         // Also check for surat jalan bongkaran if exists - sorted by supir name alphabetically
         $suratJalanBongkarans = collect();
         if ($pranotaUangRit->surat_jalan_bongkaran_id) {
@@ -1480,9 +1487,9 @@ class PranotaUangRitController extends Controller
                 ->orderBy('tanggal', 'desc')
                 ->get();
         }
-        
+
         // Create Excel file using PhpSpreadsheet
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set title
@@ -1493,18 +1500,18 @@ class PranotaUangRitController extends Controller
 
         // Pranota info
         $sheet->setCellValue('A3', 'No Pranota');
-        $sheet->setCellValue('B3', ': ' . $pranotaUangRit->no_pranota);
+        $sheet->setCellValue('B3', ': '.$pranotaUangRit->no_pranota);
         $sheet->setCellValue('A4', 'Tanggal');
-        $sheet->setCellValue('B4', ': ' . $pranotaUangRit->tanggal->format('d/m/Y'));
+        $sheet->setCellValue('B4', ': '.$pranotaUangRit->tanggal->format('d/m/Y'));
         $sheet->setCellValue('A5', 'Total Surat Jalan');
-        $sheet->setCellValue('B5', ': ' . count($suratJalanNomors) . ' SJ');
+        $sheet->setCellValue('B5', ': '.count($suratJalanNomors).' SJ');
 
         // Headers
         $row = 7;
         $headers = ['No', 'No Surat Jalan', 'Tanggal', 'Kegiatan', 'Supir', 'Kenek', 'No Plat', 'Pengirim', 'Penerima', 'Jenis Barang', 'Tipe Kontainer', 'Rit'];
         $col = 'A';
         foreach ($headers as $header) {
-            $sheet->setCellValue($col . $row, $header);
+            $sheet->setCellValue($col.$row, $header);
             $col++;
         }
 
@@ -1516,11 +1523,11 @@ class PranotaUangRitController extends Controller
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    'color' => ['rgb' => '000000']
-                ]
-            ]
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
         ];
-        $sheet->getStyle('A' . $row . ':L' . $row)->applyFromArray($headerStyle);
+        $sheet->getStyle('A'.$row.':L'.$row)->applyFromArray($headerStyle);
 
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(5);   // No
@@ -1543,35 +1550,35 @@ class PranotaUangRitController extends Controller
 
         // Add regular surat jalan
         foreach ($suratJalans as $sj) {
-            $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $sj->no_surat_jalan);
-            $sheet->setCellValue('C' . $row, $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-');
-            $sheet->setCellValue('D' . $row, ucfirst($sj->kegiatan ?? '-'));
-            $sheet->setCellValue('E' . $row, $sj->supir ?? '-');
-            $sheet->setCellValue('F' . $row, $sj->kenek ?? '-');
-            $sheet->setCellValue('G' . $row, $sj->no_plat ?? '-');
-            $sheet->setCellValue('H' . $row, $sj->pengirim ?? '-');
-            $sheet->setCellValue('I' . $row, $sj->penerima ?? '-');
-            $sheet->setCellValue('J' . $row, $sj->jenis_barang ?? '-');
-            $sheet->setCellValue('K' . $row, $sj->tipe_kontainer ?? '-');
-            $sheet->setCellValue('L' . $row, $sj->rit ?? 1);
+            $sheet->setCellValue('A'.$row, $no);
+            $sheet->setCellValue('B'.$row, $sj->no_surat_jalan);
+            $sheet->setCellValue('C'.$row, $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-');
+            $sheet->setCellValue('D'.$row, ucfirst($sj->kegiatan ?? '-'));
+            $sheet->setCellValue('E'.$row, $sj->supir ?? '-');
+            $sheet->setCellValue('F'.$row, $sj->kenek ?? '-');
+            $sheet->setCellValue('G'.$row, $sj->no_plat ?? '-');
+            $sheet->setCellValue('H'.$row, $sj->pengirim ?? '-');
+            $sheet->setCellValue('I'.$row, $sj->penerima ?? '-');
+            $sheet->setCellValue('J'.$row, $sj->jenis_barang ?? '-');
+            $sheet->setCellValue('K'.$row, $sj->tipe_kontainer ?? '-');
+            $sheet->setCellValue('L'.$row, $sj->rit ?? 1);
 
             $totalRit += $sj->rit ?? 1;
 
             // Center align
-            $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('C' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('L' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('C'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('D'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('L'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
             // Add border
-            $sheet->getStyle('A' . $row . ':L' . $row)->applyFromArray([
+            $sheet->getStyle('A'.$row.':L'.$row)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        'color' => ['rgb' => '000000']
-                    ]
-                ]
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
             ]);
 
             $row++;
@@ -1580,35 +1587,35 @@ class PranotaUangRitController extends Controller
 
         // Add surat jalan bongkaran if exists
         foreach ($suratJalanBongkarans as $sj) {
-            $sheet->setCellValue('A' . $row, $no);
-            $sheet->setCellValue('B' . $row, $sj->no_surat_jalan . ' (Bongkaran)');
-            $sheet->setCellValue('C' . $row, $sj->tanggal ? $sj->tanggal->format('d/m/Y') : '-');
-            $sheet->setCellValue('D' . $row, 'Bongkar');
-            $sheet->setCellValue('E' . $row, $sj->supir ?? '-');
-            $sheet->setCellValue('F' . $row, $sj->kenek ?? '-');
-            $sheet->setCellValue('G' . $row, $sj->no_plat ?? '-');
-            $sheet->setCellValue('H' . $row, $sj->pengirim ?? '-');
-            $sheet->setCellValue('I' . $row, $sj->penerima ?? '-');
-            $sheet->setCellValue('J' . $row, $sj->jenis_barang ?? '-');
-            $sheet->setCellValue('K' . $row, $sj->tipe_kontainer ?? '-');
-            $sheet->setCellValue('L' . $row, $sj->rit ?? 1);
+            $sheet->setCellValue('A'.$row, $no);
+            $sheet->setCellValue('B'.$row, $sj->no_surat_jalan.' (Bongkaran)');
+            $sheet->setCellValue('C'.$row, $sj->tanggal ? $sj->tanggal->format('d/m/Y') : '-');
+            $sheet->setCellValue('D'.$row, 'Bongkar');
+            $sheet->setCellValue('E'.$row, $sj->supir ?? '-');
+            $sheet->setCellValue('F'.$row, $sj->kenek ?? '-');
+            $sheet->setCellValue('G'.$row, $sj->no_plat ?? '-');
+            $sheet->setCellValue('H'.$row, $sj->pengirim ?? '-');
+            $sheet->setCellValue('I'.$row, $sj->penerima ?? '-');
+            $sheet->setCellValue('J'.$row, $sj->jenis_barang ?? '-');
+            $sheet->setCellValue('K'.$row, $sj->tipe_kontainer ?? '-');
+            $sheet->setCellValue('L'.$row, $sj->rit ?? 1);
 
             $totalRit += $sj->rit ?? 1;
 
             // Center align
-            $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('C' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('L' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('C'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('D'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('L'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
             // Add border
-            $sheet->getStyle('A' . $row . ':L' . $row)->applyFromArray([
+            $sheet->getStyle('A'.$row.':L'.$row)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        'color' => ['rgb' => '000000']
-                    ]
-                ]
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
             ]);
 
             $row++;
@@ -1616,31 +1623,31 @@ class PranotaUangRitController extends Controller
         }
 
         // Total row
-        $sheet->setCellValue('A' . $row, 'TOTAL');
-        $sheet->mergeCells('A' . $row . ':K' . $row);
-        $sheet->setCellValue('L' . $row, $totalRit);
+        $sheet->setCellValue('A'.$row, 'TOTAL');
+        $sheet->mergeCells('A'.$row.':K'.$row);
+        $sheet->setCellValue('L'.$row, $totalRit);
 
-        $sheet->getStyle('A' . $row . ':L' . $row)->getFont()->setBold(true);
-        $sheet->getStyle('A' . $row . ':L' . $row)->getFill()
+        $sheet->getStyle('A'.$row.':L'.$row)->getFont()->setBold(true);
+        $sheet->getStyle('A'.$row.':L'.$row)->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setRGB('F5F5F5');
-        $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('L' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A' . $row . ':L' . $row)->applyFromArray([
+        $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('L'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A'.$row.':L'.$row)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-                    'color' => ['rgb' => '000000']
-                ]
-            ]
+                    'color' => ['rgb' => '000000'],
+                ],
+            ],
         ]);
 
         // Create writer and download
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $filename = 'DETAIL_SURAT_JALAN_' . $pranotaUangRit->no_pranota . '.xlsx';
+        $filename = 'DETAIL_SURAT_JALAN_'.$pranotaUangRit->no_pranota.'.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');
@@ -1653,7 +1660,7 @@ class PranotaUangRitController extends Controller
     public function exportExcel(Request $request)
     {
         $request->validate([
-            'selected_data' => 'required|json'
+            'selected_data' => 'required|json',
         ]);
 
         $selectedData = json_decode($request->selected_data, true);
@@ -1663,7 +1670,7 @@ class PranotaUangRitController extends Controller
         }
 
         // Create Excel file using PhpSpreadsheet
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set headers
@@ -1678,7 +1685,7 @@ class PranotaUangRitController extends Controller
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
-            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER]
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
         ];
         $sheet->getStyle('A1:F1')->applyFromArray($headerStyle);
 
@@ -1693,54 +1700,54 @@ class PranotaUangRitController extends Controller
         // Fill data
         $row = 2;
         foreach ($selectedData as $index => $data) {
-            $sheet->setCellValue('A' . $row, $index + 1);
-            $sheet->setCellValue('B' . $row, $data['no_surat_jalan'] ?? '-');
-            $sheet->setCellValue('C' . $row, $data['supir'] ?? '-');
-            
+            $sheet->setCellValue('A'.$row, $index + 1);
+            $sheet->setCellValue('B'.$row, $data['no_surat_jalan'] ?? '-');
+            $sheet->setCellValue('C'.$row, $data['supir'] ?? '-');
+
             // Format tanggal dengan prioritas: checkpoint -> tanda terima -> tanda terima bongkaran
             $tanggalDisplay = '-';
-            
+
             // Coba ambil dari tanggal checkpoint dulu
-            if (!empty($data['tanggal_checkpoint'])) {
+            if (! empty($data['tanggal_checkpoint'])) {
                 try {
                     $tanggalDisplay = \Carbon\Carbon::parse($data['tanggal_checkpoint'])->format('d/m/Y');
                 } catch (\Exception $e) {
                     $tanggalDisplay = '-';
                 }
             }
-            
+
             // Jika checkpoint tidak ada, coba tanda terima
-            if ($tanggalDisplay === '-' && !empty($data['tanggal_tanda_terima'])) {
+            if ($tanggalDisplay === '-' && ! empty($data['tanggal_tanda_terima'])) {
                 try {
                     $tanggalDisplay = \Carbon\Carbon::parse($data['tanggal_tanda_terima'])->format('d/m/Y');
                 } catch (\Exception $e) {
                     $tanggalDisplay = '-';
                 }
             }
-            
+
             // Jika masih tidak ada, coba tanda terima bongkaran
-            if ($tanggalDisplay === '-' && !empty($data['tanggal_tanda_terima_bongkaran'])) {
+            if ($tanggalDisplay === '-' && ! empty($data['tanggal_tanda_terima_bongkaran'])) {
                 try {
                     $tanggalDisplay = \Carbon\Carbon::parse($data['tanggal_tanda_terima_bongkaran'])->format('d/m/Y');
                 } catch (\Exception $e) {
                     $tanggalDisplay = '-';
                 }
             }
-            
-            $sheet->setCellValue('D' . $row, $tanggalDisplay);
-            $sheet->setCellValue('E' . $row, $data['pengirim'] ?? '-');
-            $sheet->setCellValue('F' . $row, $data['tujuan_pengambilan'] ?? '-');
-            
+
+            $sheet->setCellValue('D'.$row, $tanggalDisplay);
+            $sheet->setCellValue('E'.$row, $data['pengirim'] ?? '-');
+            $sheet->setCellValue('F'.$row, $data['tujuan_pengambilan'] ?? '-');
+
             // Add border to data rows
-            $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray([
+            $sheet->getStyle('A'.$row.':F'.$row)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        'color' => ['rgb' => '000000']
-                    ]
-                ]
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
             ]);
-            
+
             $row++;
         }
 
@@ -1749,17 +1756,17 @@ class PranotaUangRitController extends Controller
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    'color' => ['rgb' => 'FFFFFF']
-                ]
-            ]
+                    'color' => ['rgb' => 'FFFFFF'],
+                ],
+            ],
         ]);
 
         // Create writer and download
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $filename = 'Surat_Jalan_Pranota_' . date('YmdHis') . '.xlsx';
+        $filename = 'Surat_Jalan_Pranota_'.date('YmdHis').'.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');

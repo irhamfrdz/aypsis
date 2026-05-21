@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class KaryawanApprovalRequest extends Model
 {
@@ -17,13 +17,13 @@ class KaryawanApprovalRequest extends Model
         'status',
         'approved_by',
         'approved_at',
-        'reason'
+        'reason',
     ];
 
     protected $casts = [
         'data_before' => 'array',
         'data_after' => 'array',
-        'approved_at' => 'datetime'
+        'approved_at' => 'datetime',
     ];
 
     public function karyawan()

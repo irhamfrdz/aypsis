@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
 
 class PembayaranAktivitasLainnyaSupir extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'pembayaran_aktivitas_lainnya_supir';
 
@@ -16,11 +16,11 @@ class PembayaranAktivitasLainnyaSupir extends Model
         'pembayaran_id',
         'supir_id',
         'jumlah_uang_muka',
-        'keterangan'
+        'keterangan',
     ];
 
     protected $casts = [
-        'jumlah_uang_muka' => 'decimal:2'
+        'jumlah_uang_muka' => 'decimal:2',
     ];
 
     /**

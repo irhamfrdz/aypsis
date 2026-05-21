@@ -40,28 +40,31 @@ class PranotaOb extends Model
     public function getEnrichedItems(): array
     {
         $enrichedItems = [];
-        
+
         // Fetch karyawans for nickname mapping
         $karyawanData = \DB::table('karyawans')
             ->select('nama_lengkap', 'nama_panggilan')
             ->get();
-        
+
         $nicknameMap = [];
         foreach ($karyawanData as $k) {
             $fullName = strtolower(trim($k->nama_lengkap ?? ''));
             $nickname = trim($k->nama_panggilan ?? '');
-            
+
             if ($fullName && $nickname) {
                 $nicknameMap[$fullName] = $nickname;
             }
         }
 
-        $resolveNickname = function($name) use ($nicknameMap) {
-            if (empty($name) || $name === '-') return $name;
+        $resolveNickname = function ($name) use ($nicknameMap) {
+            if (empty($name) || $name === '-') {
+                return $name;
+            }
             $cleanName = strtolower(trim($name));
             if (isset($nicknameMap[$cleanName])) {
                 return $nicknameMap[$cleanName];
             }
+
             return $name;
         };
 
@@ -81,15 +84,16 @@ class PranotaOb extends Model
                     'biaya' => $p->biaya ?? null,
                 ];
             }
+
             return $enrichedItems;
         }
-        if (!is_array($this->items)) {
+        if (! is_array($this->items)) {
             return $enrichedItems;
         }
 
         foreach ($this->items as $item) {
             // if snapshot present
-            if (!empty($item['nomor_kontainer']) || !empty($item['nama_barang'])) {
+            if (! empty($item['nomor_kontainer']) || ! empty($item['nama_barang'])) {
                 $enrichedItems[] = [
                     'nomor_kontainer' => $item['nomor_kontainer'] ?? '-',
                     'nama_barang' => $item['nama_barang'] ?? ($item['jenis_barang'] ?? '-'),
@@ -97,17 +101,19 @@ class PranotaOb extends Model
                     'size' => $item['size'] ?? ($item['size_kontainer'] ?? '-'),
                     'biaya' => $item['biaya'] ?? null,
                 ];
+
                 continue;
             }
 
-            if (!isset($item['type']) || !isset($item['id'])) {
+            if (! isset($item['type']) || ! isset($item['id'])) {
                 $enrichedItems[] = [
-                    'nomor_kontainer' => $item['nomor_kontainer'] ?? ('ID: ' . ($item['id'] ?? '?')),
-                    'nama_barang' => $item['nama_barang'] ?? ('Type: ' . ($item['type'] ?? '?')),
+                    'nomor_kontainer' => $item['nomor_kontainer'] ?? ('ID: '.($item['id'] ?? '?')),
+                    'nama_barang' => $item['nama_barang'] ?? ('Type: '.($item['type'] ?? '?')),
                     'supir' => $item['supir'] ?? '-',
                     'size' => $item['size'] ?? '-',
                     'biaya' => $item['biaya'] ?? null,
                 ];
+
                 continue;
             }
 
@@ -129,7 +135,7 @@ class PranotaOb extends Model
                         ];
                     } else {
                         $enrichedItems[] = [
-                            'nomor_kontainer' => 'ID: ' . $item['id'],
+                            'nomor_kontainer' => 'ID: '.$item['id'],
                             'nama_barang' => 'BL record not found',
                             'supir' => '-',
                             'size' => '-',
@@ -139,7 +145,7 @@ class PranotaOb extends Model
                 } catch (\Throwable $e) {
                     $enrichedItems[] = [
                         'nomor_kontainer' => 'Error loading BL',
-                        'nama_barang' => 'Exception: ' . $e->getMessage(),
+                        'nama_barang' => 'Exception: '.$e->getMessage(),
                         'supir' => '-',
                         'size' => '-',
                         'biaya' => null,
@@ -150,7 +156,7 @@ class PranotaOb extends Model
                     $nk = \DB::table('naik_kapal')->find($item['id']);
                     if ($nk) {
                         $supirName = '-';
-                        if (!empty($nk->supir_id)) {
+                        if (! empty($nk->supir_id)) {
                             $sup = \DB::table('karyawans')->find($nk->supir_id);
                             $supirName = $sup ? ($sup->nama_panggilan ?? $sup->nama_lengkap ?? $sup->name ?? '-') : '-';
                         }
@@ -163,7 +169,7 @@ class PranotaOb extends Model
                         ];
                     } else {
                         $enrichedItems[] = [
-                            'nomor_kontainer' => 'ID: ' . $item['id'],
+                            'nomor_kontainer' => 'ID: '.$item['id'],
                             'nama_barang' => 'Naik Kapal record not found',
                             'supir' => '-',
                             'size' => '-',
@@ -173,7 +179,7 @@ class PranotaOb extends Model
                 } catch (\Throwable $e) {
                     $enrichedItems[] = [
                         'nomor_kontainer' => 'Error loading Naik Kapal',
-                        'nama_barang' => 'Exception: ' . $e->getMessage(),
+                        'nama_barang' => 'Exception: '.$e->getMessage(),
                         'supir' => '-',
                         'size' => '-',
                         'biaya' => null,
@@ -182,8 +188,8 @@ class PranotaOb extends Model
             } else {
                 // Unknown type
                 $enrichedItems[] = [
-                    'nomor_kontainer' => 'ID: ' . $item['id'] ?? '?',
-                    'nama_barang' => 'Type: ' . ($item['type'] ?? '?'),
+                    'nomor_kontainer' => 'ID: '.$item['id'] ?? '?',
+                    'nama_barang' => 'Type: '.($item['type'] ?? '?'),
                     'supir' => '-',
                     'size' => '-',
                     'biaya' => null,
@@ -200,7 +206,7 @@ class PranotaOb extends Model
     public function calculateTotalAmount()
     {
         $total = 0;
-        
+
         // Try pivot items first
         try {
             $pivotRows = $this->itemsPivot()->get();
@@ -208,19 +214,20 @@ class PranotaOb extends Model
                 foreach ($pivotRows as $item) {
                     $total += floatval($item->biaya ?? 0);
                 }
+
                 return $total;
             }
         } catch (\Throwable $e) {
             // Continue to items array
         }
-        
+
         // Fallback to items array
         if (is_array($this->items)) {
             foreach ($this->items as $item) {
                 $total += floatval($item['biaya'] ?? 0);
             }
         }
-        
+
         return $total;
     }
 }

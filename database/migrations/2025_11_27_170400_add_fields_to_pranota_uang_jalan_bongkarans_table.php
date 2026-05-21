@@ -12,37 +12,37 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pranota_uang_jalan_bongkarans', function (Blueprint $table) {
-            if (!Schema::hasColumn('pranota_uang_jalan_bongkarans', 'nomor_pranota')) {
+            if (! Schema::hasColumn('pranota_uang_jalan_bongkarans', 'nomor_pranota')) {
                 $table->string('nomor_pranota', 50)->unique()->after('id');
             }
-            if (!Schema::hasColumn('pranota_uang_jalan_bongkarans', 'tanggal_pranota')) {
+            if (! Schema::hasColumn('pranota_uang_jalan_bongkarans', 'tanggal_pranota')) {
                 $table->date('tanggal_pranota')->after('nomor_pranota');
             }
-            if (!Schema::hasColumn('pranota_uang_jalan_bongkarans', 'periode_tagihan')) {
+            if (! Schema::hasColumn('pranota_uang_jalan_bongkarans', 'periode_tagihan')) {
                 $table->string('periode_tagihan', 20)->after('tanggal_pranota');
             }
-            if (!Schema::hasColumn('pranota_uang_jalan_bongkarans', 'jumlah_uang_jalan_bongkaran')) {
+            if (! Schema::hasColumn('pranota_uang_jalan_bongkarans', 'jumlah_uang_jalan_bongkaran')) {
                 $table->integer('jumlah_uang_jalan_bongkaran')->default(0)->after('periode_tagihan');
             }
-            if (!Schema::hasColumn('pranota_uang_jalan_bongkarans', 'total_amount')) {
+            if (! Schema::hasColumn('pranota_uang_jalan_bongkarans', 'total_amount')) {
                 $table->decimal('total_amount', 15, 2)->default(0)->after('jumlah_uang_jalan_bongkaran');
             }
-            if (!Schema::hasColumn('pranota_uang_jalan_bongkarans', 'penyesuaian')) {
+            if (! Schema::hasColumn('pranota_uang_jalan_bongkarans', 'penyesuaian')) {
                 $table->decimal('penyesuaian', 15, 2)->default(0)->after('total_amount');
             }
-            if (!Schema::hasColumn('pranota_uang_jalan_bongkarans', 'keterangan_penyesuaian')) {
+            if (! Schema::hasColumn('pranota_uang_jalan_bongkarans', 'keterangan_penyesuaian')) {
                 $table->text('keterangan_penyesuaian')->nullable()->after('penyesuaian');
             }
-            if (!Schema::hasColumn('pranota_uang_jalan_bongkarans', 'status_pembayaran')) {
+            if (! Schema::hasColumn('pranota_uang_jalan_bongkarans', 'status_pembayaran')) {
                 $table->enum('status_pembayaran', ['unpaid', 'paid', 'partial', 'cancelled'])->default('unpaid')->after('keterangan_penyesuaian');
             }
-            if (!Schema::hasColumn('pranota_uang_jalan_bongkarans', 'catatan')) {
+            if (! Schema::hasColumn('pranota_uang_jalan_bongkarans', 'catatan')) {
                 $table->text('catatan')->nullable()->after('status_pembayaran');
             }
-            if (!Schema::hasColumn('pranota_uang_jalan_bongkarans', 'created_by')) {
+            if (! Schema::hasColumn('pranota_uang_jalan_bongkarans', 'created_by')) {
                 $table->unsignedBigInteger('created_by')->after('catatan');
             }
-            if (!Schema::hasColumn('pranota_uang_jalan_bongkarans', 'updated_by')) {
+            if (! Schema::hasColumn('pranota_uang_jalan_bongkarans', 'updated_by')) {
                 $table->unsignedBigInteger('updated_by')->nullable()->after('created_by');
             }
 

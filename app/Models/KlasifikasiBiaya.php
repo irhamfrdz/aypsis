@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Model;
 
 class KlasifikasiBiaya extends Model
 {
@@ -13,6 +13,6 @@ class KlasifikasiBiaya extends Model
         'kode',
         'nama',
         'deskripsi',
-        'is_active'
+        'is_active',
     ];
 }

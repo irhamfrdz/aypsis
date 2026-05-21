@@ -13,10 +13,10 @@ return new class extends Migration
     {
         // Drop tabel pivot penerima LCL jika ada
         Schema::dropIfExists('tanda_terima_lcl_penerima');
-        
+
         // Drop tabel pivot pengirim LCL jika ada
         Schema::dropIfExists('tanda_terima_lcl_pengirim');
-        
+
         // Drop tabel pivot kontainer LCL jika ada
         Schema::dropIfExists('kontainer_tanda_terima_lcl');
     }
@@ -37,7 +37,7 @@ return new class extends Migration
             $table->integer('urutan')->default(1);
             $table->timestamps();
         });
-        
+
         // Recreate tabel pivot pengirim
         Schema::create('tanda_terima_lcl_pengirim', function (Blueprint $table) {
             $table->id();
@@ -49,7 +49,7 @@ return new class extends Migration
             $table->integer('urutan')->default(1);
             $table->timestamps();
         });
-        
+
         // Recreate tabel pivot kontainer
         Schema::create('kontainer_tanda_terima_lcl', function (Blueprint $table) {
             $table->id();

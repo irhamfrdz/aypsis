@@ -4,10 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up()
     {
-        if (!Schema::hasTable('pembayaran_pranota_tagihan_kontainer')) {
+        if (! Schema::hasTable('pembayaran_pranota_tagihan_kontainer')) {
             Schema::create('pembayaran_pranota_tagihan_kontainer', function (Blueprint $table) {
                 $table->id();
                 $table->string('nomor_pembayaran')->unique();
@@ -22,7 +23,7 @@ return new class extends Migration {
             });
         }
 
-        if (!Schema::hasTable('pembayaran_pranota_tagihan_kontainer_tagihan')) {
+        if (! Schema::hasTable('pembayaran_pranota_tagihan_kontainer_tagihan')) {
             Schema::create('pembayaran_pranota_tagihan_kontainer_tagihan', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('pembayaran_id');

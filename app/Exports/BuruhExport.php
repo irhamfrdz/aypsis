@@ -19,25 +19,22 @@ class BuruhExport implements FromCollection, WithHeadings, WithMapping, WithStyl
     }
 
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function collection()
     {
         $query = Buruh::query();
-        
+
         if ($this->search) {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->where('nama', 'LIKE', "%{$this->search}%")
-                  ->orWhere('nik', 'LIKE', "%{$this->search}%");
+                    ->orWhere('nik', 'LIKE', "%{$this->search}%");
             });
         }
 
         return $query->orderBy('nama', 'asc')->get();
     }
 
-    /**
-     * @return array
-     */
     public function headings(): array
     {
         return [
@@ -50,7 +47,7 @@ class BuruhExport implements FromCollection, WithHeadings, WithMapping, WithStyl
     }
 
     /**
-     * @var Buruh $item
+     * @var Buruh
      */
     public function map($item): array
     {

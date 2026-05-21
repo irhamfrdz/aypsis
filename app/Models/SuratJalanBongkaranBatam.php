@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Carbon\Carbon;
 use App\Traits\Auditable;
-use App\Models\MasterKapal;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class SuratJalanBongkaranBatam extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'surat_jalan_bongkaran_batams';
 
@@ -79,7 +78,7 @@ class SuratJalanBongkaranBatam extends Model
         'f_e',
         'lembur',
         'nginap',
-        'tidak_lembur_nginap'
+        'tidak_lembur_nginap',
     ];
 
     protected $casts = [

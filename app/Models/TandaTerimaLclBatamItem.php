@@ -18,7 +18,7 @@ class TandaTerimaLclBatamItem extends Model
         'lebar',
         'tinggi',
         'meter_kubik',
-        'tonase'
+        'tonase',
     ];
 
     public function tandaTerimaLclBatam()

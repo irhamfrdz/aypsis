@@ -6,7 +6,6 @@ use App\Models\StockKontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-
 class StockKontainerController extends Controller
 {
     /**
@@ -32,20 +31,20 @@ class StockKontainerController extends Controller
 
         // Filter tanpa ukuran
         if ($request->has('no_size') && $request->no_size == '1') {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->whereNull('ukuran')
-                  ->orWhere('ukuran', '');
+                    ->orWhere('ukuran', '');
             });
         }
 
         // Search berdasarkan nomor kontainer
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nomor_seri_gabungan', 'like', '%' . $search . '%')
-                  ->orWhere('awalan_kontainer', 'like', '%' . $search . '%')
-                  ->orWhere('nomor_seri_kontainer', 'like', '%' . $search . '%')
-                  ->orWhere('akhiran_kontainer', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_seri_gabungan', 'like', '%'.$search.'%')
+                    ->orWhere('awalan_kontainer', 'like', '%'.$search.'%')
+                    ->orWhere('nomor_seri_kontainer', 'like', '%'.$search.'%')
+                    ->orWhere('akhiran_kontainer', 'like', '%'.$search.'%');
             });
         }
 
@@ -78,11 +77,11 @@ class StockKontainerController extends Controller
             'tanggal_masuk' => 'nullable|date',
             'tanggal_keluar' => 'nullable|date',
             'keterangan' => 'nullable|string',
-            'tahun_pembuatan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
+            'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
         ]);
 
         // Gabungkan nomor seri
-        $nomorSeriGabungan = $request->awalan_kontainer . $request->nomor_seri_kontainer . $request->akhiran_kontainer;
+        $nomorSeriGabungan = $request->awalan_kontainer.$request->nomor_seri_kontainer.$request->akhiran_kontainer;
 
         // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer
         $existingWithSameSerialAndSuffix = StockKontainer::where('nomor_seri_kontainer', $request->nomor_seri_kontainer)
@@ -132,6 +131,7 @@ class StockKontainerController extends Controller
     public function show(StockKontainer $stockKontainer)
     {
         $stockKontainer->load(['gudang', 'auditCreated']);
+
         return view('master-stock-kontainer.show', compact('stockKontainer'));
     }
 
@@ -159,11 +159,11 @@ class StockKontainerController extends Controller
             'tanggal_masuk' => 'nullable|date',
             'tanggal_keluar' => 'nullable|date',
             'keterangan' => 'nullable|string',
-            'tahun_pembuatan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
+            'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
         ]);
 
         // Gabungkan nomor seri
-        $nomorSeriGabungan = $request->awalan_kontainer . $request->nomor_seri_kontainer . $request->akhiran_kontainer;
+        $nomorSeriGabungan = $request->awalan_kontainer.$request->nomor_seri_kontainer.$request->akhiran_kontainer;
 
         // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer (selain diri sendiri)
         $existingWithSameSerialAndSuffix = StockKontainer::where('nomor_seri_kontainer', $request->nomor_seri_kontainer)
@@ -182,9 +182,9 @@ class StockKontainerController extends Controller
 
         // Validasi unique untuk nomor seri gabungan (kecuali untuk record yang sedang diupdate)
         $existingStock = StockKontainer::where('nomor_seri_gabungan', $nomorSeriGabungan)
-                                      ->where('id', '!=', $stockKontainer->id)
-                                      ->where('status', 'active')
-                                      ->first();
+            ->where('id', '!=', $stockKontainer->id)
+            ->where('status', 'active')
+            ->first();
         if ($existingStock) {
             return back()->withErrors(['nomor_seri_gabungan' => 'Nomor kontainer sudah ada di stock kontainer aktif.'])->withInput();
         }
@@ -204,7 +204,7 @@ class StockKontainerController extends Controller
         $data['status'] = $status;
 
         $oldGudangId = $stockKontainer->gudangs_id;
-        
+
         $stockKontainer->update($data);
 
         // Check if location (gudang) changed and log history
@@ -212,17 +212,21 @@ class StockKontainerController extends Controller
             $nomorKontainer = $stockKontainer->nomor_seri_gabungan;
             $userId = \Illuminate\Support\Facades\Auth::id();
             $now = now();
-            
+
             $oldGudangName = '-';
             if ($oldGudangId) {
                 $oldGudang = \App\Models\Gudang::find($oldGudangId);
-                if ($oldGudang) $oldGudangName = $oldGudang->nama_gudang;
+                if ($oldGudang) {
+                    $oldGudangName = $oldGudang->nama_gudang;
+                }
             }
 
             $newGudangName = '-';
             if ($stockKontainer->gudangs_id) {
-                 $newGudang = \App\Models\Gudang::find($stockKontainer->gudangs_id);
-                 if ($newGudang) $newGudangName = $newGudang->nama_gudang;
+                $newGudang = \App\Models\Gudang::find($stockKontainer->gudangs_id);
+                if ($newGudang) {
+                    $newGudangName = $newGudang->nama_gudang;
+                }
             }
 
             // Log 'Keluar' from old gudang
@@ -233,7 +237,7 @@ class StockKontainerController extends Controller
                     'jenis_kegiatan' => 'Keluar',
                     'tanggal_kegiatan' => $now,
                     'gudang_id' => $oldGudangId,
-                    'keterangan' => 'Pemindahan lokasi (Edit) ke: ' . $newGudangName,
+                    'keterangan' => 'Pemindahan lokasi (Edit) ke: '.$newGudangName,
                     'created_by' => $userId,
                 ]);
             }
@@ -246,7 +250,7 @@ class StockKontainerController extends Controller
                     'jenis_kegiatan' => 'Masuk',
                     'tanggal_kegiatan' => $now,
                     'gudang_id' => $stockKontainer->gudangs_id,
-                    'keterangan' => 'Pemindahan lokasi (Edit) dari: ' . $oldGudangName,
+                    'keterangan' => 'Pemindahan lokasi (Edit) dari: '.$oldGudangName,
                     'created_by' => $userId,
                 ]);
             }
@@ -278,15 +282,15 @@ class StockKontainerController extends Controller
             'Content-Disposition' => "attachment; filename=\"$filename\"",
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0'
+            'Expires' => '0',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
-            
+
             // Add BOM for Excel UTF-8 compatibility
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
+
             // Header columns
             fputcsv($file, [
                 'nomor_kontainer',
@@ -295,7 +299,7 @@ class StockKontainerController extends Controller
                 'status',
                 'nama_gudang',
                 'tahun_pembuatan',
-                'keterangan'
+                'keterangan',
             ]);
 
             // Example data
@@ -306,7 +310,7 @@ class StockKontainerController extends Controller
                 'available',
                 'Gudang Utama',
                 '2020',
-                'Contoh keterangan'
+                'Contoh keterangan',
             ]);
 
             fclose($file);
@@ -327,15 +331,15 @@ class StockKontainerController extends Controller
         try {
             $file = $request->file('excel_file');
             $handle = fopen($file->getRealPath(), 'r');
-            
+
             // Skip BOM if exists
             $bom = fread($handle, 3);
             if ($bom !== chr(0xEF).chr(0xBB).chr(0xBF)) {
                 rewind($handle);
             }
-            
+
             $header = fgetcsv($handle);
-            
+
             // Validate header
             $expectedHeaders = ['nomor_kontainer', 'ukuran', 'tipe_kontainer', 'status', 'nama_gudang', 'tahun_pembuatan', 'keterangan'];
             if ($header !== $expectedHeaders) {
@@ -349,7 +353,7 @@ class StockKontainerController extends Controller
 
             while (($row = fgetcsv($handle)) !== false) {
                 $rowNumber++;
-                
+
                 // Skip empty rows
                 if (empty(array_filter($row))) {
                     continue;
@@ -367,13 +371,15 @@ class StockKontainerController extends Controller
                     // Validasi nomor kontainer
                     if (strlen($nomorKontainer) !== 11) {
                         $errors[] = "Baris $rowNumber: Nomor kontainer harus 11 karakter (contoh: ABCD1234567)";
+
                         continue;
                     }
 
                     // Validasi status
                     $validStatuses = ['available', 'rented', 'maintenance', 'damaged', 'inactive'];
-                    if (!in_array($status, $validStatuses)) {
-                        $errors[] = "Baris $rowNumber: Status tidak valid. Harus salah satu dari: " . implode(', ', $validStatuses);
+                    if (! in_array($status, $validStatuses)) {
+                        $errors[] = "Baris $rowNumber: Status tidak valid. Harus salah satu dari: ".implode(', ', $validStatuses);
+
                         continue;
                     }
 
@@ -384,8 +390,8 @@ class StockKontainerController extends Controller
 
                     // Find gudang by nama_gudang
                     $gudangId = null;
-                    if (!empty($namaGudang)) {
-                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . $namaGudang . '%')->first();
+                    if (! empty($namaGudang)) {
+                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%'.$namaGudang.'%')->first();
                         if ($gudang) {
                             $gudangId = $gudang->id;
                         } else {
@@ -395,10 +401,11 @@ class StockKontainerController extends Controller
 
                     // Validasi tahun pembuatan
                     $tahunPembuatanValue = null;
-                    if (!empty($tahunPembuatan) && is_numeric($tahunPembuatan)) {
+                    if (! empty($tahunPembuatan) && is_numeric($tahunPembuatan)) {
                         $tahunPembuatanValue = (int) $tahunPembuatan;
                         if ($tahunPembuatanValue < 1900 || $tahunPembuatanValue > (date('Y') + 1)) {
                             $errors[] = "Baris $rowNumber: Tahun pembuatan tidak valid";
+
                             continue;
                         }
                     }
@@ -420,7 +427,7 @@ class StockKontainerController extends Controller
                             'tahun_pembuatan' => $tahunPembuatanValue,
                             'keterangan' => $keterangan ?: $existing->keterangan,
                         ]);
-                        
+
                         if ($asalGudangId != $gudangId) {
                             \App\Models\HistoryKontainer::create([
                                 'nomor_kontainer' => $nomorKontainer,
@@ -465,26 +472,27 @@ class StockKontainerController extends Controller
                     }
 
                 } catch (\Exception $e) {
-                    $errors[] = "Baris $rowNumber: " . $e->getMessage();
+                    $errors[] = "Baris $rowNumber: ".$e->getMessage();
                 }
             }
 
             fclose($handle);
 
             $message = "Import selesai: $imported data baru ditambahkan, $updated data diperbarui.";
-            
-            if (!empty($errors)) {
-                $message .= " Namun ada beberapa error: " . implode(' | ', array_slice($errors, 0, 5));
+
+            if (! empty($errors)) {
+                $message .= ' Namun ada beberapa error: '.implode(' | ', array_slice($errors, 0, 5));
                 if (count($errors) > 5) {
-                    $message .= " (dan " . (count($errors) - 5) . " error lainnya)";
+                    $message .= ' (dan '.(count($errors) - 5).' error lainnya)';
                 }
+
                 return back()->with('warning', $message);
             }
 
             return back()->with('success', $message);
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Error saat import: ' . $e->getMessage());
+            return back()->with('error', 'Error saat import: '.$e->getMessage());
         }
     }
 
@@ -493,37 +501,37 @@ class StockKontainerController extends Controller
      */
     public function downloadTemplateGudang()
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
-        
+
         // Set headers
         $sheet->setCellValue('A1', 'nomor_kontainer');
         $sheet->setCellValue('B1', 'nama_gudang');
-        
+
         // Style headers
         $sheet->getStyle('A1:B1')->getFont()->setBold(true);
         $sheet->getStyle('A1:B1')->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setARGB('FFE2E8F0');
-        
+
         // Add example rows
         $sheet->setCellValue('A2', 'ABCD1234567');
         $sheet->setCellValue('B2', 'Gudang Utama');
         $sheet->setCellValue('A3', 'EFGH7654321');
         $sheet->setCellValue('B3', 'Gudang Pelabuhan');
-        
+
         // Auto-size columns
         $sheet->getColumnDimension('A')->setAutoSize(true);
         $sheet->getColumnDimension('B')->setAutoSize(true);
-        
+
         $filename = 'template_update_gudang_kontainer.xlsx';
-        
+
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Disposition: attachment; filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
-        
+
         $writer->save('php://output');
         exit;
     }
@@ -540,17 +548,17 @@ class StockKontainerController extends Controller
         try {
             $file = $request->file('gudang_file');
             $extension = $file->getClientOriginalExtension();
-            
+
             // Handle Excel files
             if (in_array($extension, ['xlsx', 'xls'])) {
                 return $this->updateGudangFromExcel($file);
             }
-            
+
             // Handle CSV files
             return $this->updateGudangFromCsv($file);
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Error saat update gudang: ' . $e->getMessage());
+            return back()->with('error', 'Error saat update gudang: '.$e->getMessage());
         }
     }
 
@@ -560,19 +568,20 @@ class StockKontainerController extends Controller
     private function updateGudangFromCsv($file)
     {
         $handle = fopen($file->getRealPath(), 'r');
-        
+
         // Skip BOM if exists
         $bom = fread($handle, 3);
         if ($bom !== chr(0xEF).chr(0xBB).chr(0xBF)) {
             rewind($handle);
         }
-        
+
         $header = fgetcsv($handle);
-        
+
         // Validate header
         $expectedHeaders = ['nomor_kontainer', 'nama_gudang'];
         if ($header !== $expectedHeaders) {
             fclose($handle);
+
             return back()->with('error', 'Format file tidak sesuai. Header harus: nomor_kontainer, nama_gudang');
         }
 
@@ -585,7 +594,7 @@ class StockKontainerController extends Controller
 
         while (($row = fgetcsv($handle)) !== false) {
             $rowNumber++;
-            
+
             // Skip empty rows
             if (empty(array_filter($row))) {
                 continue;
@@ -597,30 +606,33 @@ class StockKontainerController extends Controller
 
                 if (empty($nomorKontainer)) {
                     $errors[] = "Baris $rowNumber: Nomor kontainer kosong";
+
                     continue;
                 }
 
                 // Find stock kontainer
                 $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-                
-                if (!$stockKontainer) {
+
+                if (! $stockKontainer) {
                     $notFound++;
                     $kontainerNotFound[] = $nomorKontainer;
                     $errors[] = "Baris $rowNumber: Kontainer $nomorKontainer tidak ditemukan";
+
                     continue;
                 }
 
                 // Find gudang
                 $gudangId = null;
-                if (!empty($namaGudang)) {
-                    $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . $namaGudang . '%')->first();
+                if (! empty($namaGudang)) {
+                    $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%'.$namaGudang.'%')->first();
                     if ($gudang) {
                         $gudangId = $gudang->id;
                     } else {
-                        if (!in_array($namaGudang, $gudangNotFound)) {
+                        if (! in_array($namaGudang, $gudangNotFound)) {
                             $gudangNotFound[] = $namaGudang;
                         }
                         $errors[] = "Baris $rowNumber: Kontainer $nomorKontainer - Gudang '$namaGudang' tidak ditemukan";
+
                         continue;
                     }
                 }
@@ -628,7 +640,7 @@ class StockKontainerController extends Controller
                 // Update gudangs_id
                 $asalGudangId = $stockKontainer->gudangs_id;
                 $stockKontainer->update(['gudangs_id' => $gudangId]);
-                
+
                 if ($asalGudangId != $gudangId) {
                     \App\Models\HistoryKontainer::create([
                         'nomor_kontainer' => $nomorKontainer,
@@ -644,41 +656,43 @@ class StockKontainerController extends Controller
                 $updated++;
 
             } catch (\Exception $e) {
-                $errors[] = "Baris $rowNumber ($nomorKontainer): " . $e->getMessage();
+                $errors[] = "Baris $rowNumber ($nomorKontainer): ".$e->getMessage();
             }
         }
 
         fclose($handle);
 
         $message = "Update gudang selesai: $updated kontainer berhasil diupdate.";
-        
+
         if ($notFound > 0) {
             $message .= " $notFound kontainer tidak ditemukan";
-            
+
             // Show list of containers not found
-            if (!empty($kontainerNotFound)) {
+            if (! empty($kontainerNotFound)) {
                 $kontainerList = implode(', ', array_slice($kontainerNotFound, 0, 5));
                 if (count($kontainerNotFound) > 5) {
-                    $kontainerList .= " (dan " . (count($kontainerNotFound) - 5) . " lainnya)";
+                    $kontainerList .= ' (dan '.(count($kontainerNotFound) - 5).' lainnya)';
                 }
-                $message .= ": " . $kontainerList;
+                $message .= ': '.$kontainerList;
             }
-            $message .= ".";
+            $message .= '.';
         }
 
-        if (!empty($gudangNotFound)) {
-            $message .= " Gudang tidak ditemukan: " . implode(', ', array_slice($gudangNotFound, 0, 3));
+        if (! empty($gudangNotFound)) {
+            $message .= ' Gudang tidak ditemukan: '.implode(', ', array_slice($gudangNotFound, 0, 3));
             if (count($gudangNotFound) > 3) {
-                $message .= " (dan " . (count($gudangNotFound) - 3) . " lainnya)";
+                $message .= ' (dan '.(count($gudangNotFound) - 3).' lainnya)';
             }
-            $message .= ".";
+            $message .= '.';
         }
 
-        if (!empty($errors) && count($errors) <= 10) {
-            $message .= " Detail error: " . implode(' | ', $errors);
+        if (! empty($errors) && count($errors) <= 10) {
+            $message .= ' Detail error: '.implode(' | ', $errors);
+
             return back()->with('warning', $message);
-        } elseif (!empty($errors)) {
-            $message .= " Total " . count($errors) . " error terjadi.";
+        } elseif (! empty($errors)) {
+            $message .= ' Total '.count($errors).' error terjadi.';
+
             return back()->with('warning', $message);
         }
 
@@ -691,7 +705,7 @@ class StockKontainerController extends Controller
     private function updateGudangFromExcel($file)
     {
         // Check if PhpSpreadsheet is available
-        if (!class_exists('\PhpOffice\PhpSpreadsheet\IOFactory')) {
+        if (! class_exists('\PhpOffice\PhpSpreadsheet\IOFactory')) {
             return back()->with('error', 'Library PhpSpreadsheet tidak tersedia. Silakan gunakan format CSV.');
         }
 
@@ -703,7 +717,7 @@ class StockKontainerController extends Controller
             // Validate header
             $header = array_map('trim', $rows[0] ?? []);
             $expectedHeaders = ['nomor_kontainer', 'nama_gudang'];
-            
+
             if ($header !== $expectedHeaders) {
                 return back()->with('error', 'Format file tidak sesuai. Header harus: nomor_kontainer, nama_gudang');
             }
@@ -730,30 +744,33 @@ class StockKontainerController extends Controller
 
                     if (empty($nomorKontainer)) {
                         $errors[] = "Baris $rowNumber: Nomor kontainer kosong";
+
                         continue;
                     }
 
                     // Find stock kontainer
                     $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-                    
-                    if (!$stockKontainer) {
+
+                    if (! $stockKontainer) {
                         $notFound++;
                         $kontainerNotFound[] = $nomorKontainer;
                         $errors[] = "Baris $rowNumber: Kontainer $nomorKontainer tidak ditemukan";
+
                         continue;
                     }
 
                     // Find gudang
                     $gudangId = null;
-                    if (!empty($namaGudang)) {
-                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%' . $namaGudang . '%')->first();
+                    if (! empty($namaGudang)) {
+                        $gudang = \App\Models\Gudang::where('nama_gudang', 'like', '%'.$namaGudang.'%')->first();
                         if ($gudang) {
                             $gudangId = $gudang->id;
                         } else {
-                            if (!in_array($namaGudang, $gudangNotFound)) {
+                            if (! in_array($namaGudang, $gudangNotFound)) {
                                 $gudangNotFound[] = $namaGudang;
                             }
                             $errors[] = "Baris $rowNumber: Kontainer $nomorKontainer - Gudang '$namaGudang' tidak ditemukan";
+
                             continue;
                         }
                     }
@@ -761,7 +778,7 @@ class StockKontainerController extends Controller
                     // Update gudangs_id
                     $asalGudangId = $stockKontainer->gudangs_id;
                     $stockKontainer->update(['gudangs_id' => $gudangId]);
-                    
+
                     if ($asalGudangId != $gudangId) {
                         \App\Models\HistoryKontainer::create([
                             'nomor_kontainer' => $nomorKontainer,
@@ -777,48 +794,51 @@ class StockKontainerController extends Controller
                     $updated++;
 
                 } catch (\Exception $e) {
-                    $errors[] = "Baris $rowNumber ($nomorKontainer): " . $e->getMessage();
+                    $errors[] = "Baris $rowNumber ($nomorKontainer): ".$e->getMessage();
                 }
             }
 
             $message = "Update gudang selesai: $updated kontainer berhasil diupdate.";
-            
+
             if ($notFound > 0) {
                 $message .= " $notFound kontainer tidak ditemukan";
-                
+
                 // Show list of containers not found
-                if (!empty($kontainerNotFound)) {
+                if (! empty($kontainerNotFound)) {
                     $kontainerList = implode(', ', array_slice($kontainerNotFound, 0, 5));
                     if (count($kontainerNotFound) > 5) {
-                        $kontainerList .= " (dan " . (count($kontainerNotFound) - 5) . " lainnya)";
+                        $kontainerList .= ' (dan '.(count($kontainerNotFound) - 5).' lainnya)';
                     }
-                    $message .= ": " . $kontainerList;
+                    $message .= ': '.$kontainerList;
                 }
-                $message .= ".";
+                $message .= '.';
             }
 
-            if (!empty($gudangNotFound)) {
-                $message .= " Gudang tidak ditemukan: " . implode(', ', array_slice($gudangNotFound, 0, 3));
+            if (! empty($gudangNotFound)) {
+                $message .= ' Gudang tidak ditemukan: '.implode(', ', array_slice($gudangNotFound, 0, 3));
                 if (count($gudangNotFound) > 3) {
-                    $message .= " (dan " . (count($gudangNotFound) - 3) . " lainnya)";
+                    $message .= ' (dan '.(count($gudangNotFound) - 3).' lainnya)';
                 }
-                $message .= ".";
+                $message .= '.';
             }
 
-            if (!empty($errors) && count($errors) <= 10) {
-                $message .= " Detail error: " . implode(' | ', $errors);
+            if (! empty($errors) && count($errors) <= 10) {
+                $message .= ' Detail error: '.implode(' | ', $errors);
+
                 return back()->with('warning', $message);
-            } elseif (!empty($errors)) {
-                $message .= " Total " . count($errors) . " error terjadi.";
+            } elseif (! empty($errors)) {
+                $message .= ' Total '.count($errors).' error terjadi.';
+
                 return back()->with('warning', $message);
             }
 
             return back()->with('success', $message);
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Error membaca file Excel: ' . $e->getMessage() . '. Silakan gunakan format CSV.');
+            return back()->with('error', 'Error membaca file Excel: '.$e->getMessage().'. Silakan gunakan format CSV.');
         }
     }
+
     /**
      * Export stock kontainer to Excel
      */
@@ -831,24 +851,24 @@ class StockKontainerController extends Controller
         }
 
         if ($request->has('no_size') && $request->no_size == '1') {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->whereNull('ukuran')
-                  ->orWhere('ukuran', '');
+                    ->orWhere('ukuran', '');
             });
         }
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nomor_seri_gabungan', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_seri_gabungan', 'like', '%'.$search.'%');
             });
         }
 
         $items = $query->latest()->get();
 
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
-        
+
         $sheet->setCellValue('A1', 'Nomor Kontainer');
         $sheet->setCellValue('B1', 'Ukuran');
         $sheet->setCellValue('C1', 'Tipe Kontainer');
@@ -862,13 +882,13 @@ class StockKontainerController extends Controller
 
         $rowNumber = 2;
         foreach ($items as $item) {
-            $sheet->setCellValue('A' . $rowNumber, $item->nomor_seri_gabungan);
-            $sheet->setCellValue('B' . $rowNumber, $item->ukuran ?? '-');
-            $sheet->setCellValue('C' . $rowNumber, $item->tipe_kontainer ?? '-');
-            $sheet->setCellValue('D' . $rowNumber, $item->gudang ? $item->gudang->nama_gudang : '-');
-            $sheet->setCellValue('E' . $rowNumber, $item->status);
-            $sheet->setCellValue('F' . $rowNumber, $item->tahun_pembuatan ?? '-');
-            $sheet->setCellValue('G' . $rowNumber, $item->keterangan ?? '-');
+            $sheet->setCellValue('A'.$rowNumber, $item->nomor_seri_gabungan);
+            $sheet->setCellValue('B'.$rowNumber, $item->ukuran ?? '-');
+            $sheet->setCellValue('C'.$rowNumber, $item->tipe_kontainer ?? '-');
+            $sheet->setCellValue('D'.$rowNumber, $item->gudang ? $item->gudang->nama_gudang : '-');
+            $sheet->setCellValue('E'.$rowNumber, $item->status);
+            $sheet->setCellValue('F'.$rowNumber, $item->tahun_pembuatan ?? '-');
+            $sheet->setCellValue('G'.$rowNumber, $item->keterangan ?? '-');
             $rowNumber++;
         }
 
@@ -880,13 +900,13 @@ class StockKontainerController extends Controller
         $sheet->getColumnDimension('F')->setAutoSize(true);
         $sheet->getColumnDimension('G')->setAutoSize(true);
 
-        $filename = 'export_stock_kontainer_' . date('Ymd_His') . '.xlsx';
+        $filename = 'export_stock_kontainer_'.date('Ymd_His').'.xlsx';
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Disposition: attachment; filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
-        
+
         $writer->save('php://output');
         exit;
     }

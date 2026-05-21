@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 
 class UserApprovalController extends Controller
 {
@@ -17,13 +16,13 @@ class UserApprovalController extends Controller
         // Check if user has permission to view user approvals
         $user = Auth::user();
         $userPermissions = $user->permissions->pluck('name')->toArray();
-        $hasAccess = !empty(array_intersect($userPermissions, [
+        $hasAccess = ! empty(array_intersect($userPermissions, [
             'master-user-view',
             'user-approval-view',
-            'admin.user-approval'
+            'admin.user-approval',
         ]));
 
-        if (!$hasAccess) {
+        if (! $hasAccess) {
             abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
         }
 
@@ -55,13 +54,13 @@ class UserApprovalController extends Controller
         // Check if user has permission to approve user registrations
         $currentUser = Auth::user();
         $userPermissions = $currentUser->permissions->pluck('name')->toArray();
-        $hasAccess = !empty(array_intersect($userPermissions, [
+        $hasAccess = ! empty(array_intersect($userPermissions, [
             'master-user-update',
             'user-approval-approve',
-            'admin.user-approval'
+            'admin.user-approval',
         ]));
 
-        if (!$hasAccess) {
+        if (! $hasAccess) {
             abort(403, 'Anda tidak memiliki izin untuk menyetujui user.');
         }
 
@@ -86,18 +85,18 @@ class UserApprovalController extends Controller
         // Check if user has permission to reject user registrations
         $currentUser = Auth::user();
         $userPermissions = $currentUser->permissions->pluck('name')->toArray();
-        $hasAccess = !empty(array_intersect($userPermissions, [
+        $hasAccess = ! empty(array_intersect($userPermissions, [
             'master-user-update',
             'user-approval-reject',
-            'admin.user-approval'
+            'admin.user-approval',
         ]));
 
-        if (!$hasAccess) {
+        if (! $hasAccess) {
             abort(403, 'Anda tidak memiliki izin untuk menolak user.');
         }
 
         $request->validate([
-            'rejection_reason' => 'nullable|string|max:500'
+            'rejection_reason' => 'nullable|string|max:500',
         ]);
 
         if ($user->status !== 'pending') {
@@ -108,7 +107,7 @@ class UserApprovalController extends Controller
             'status' => 'rejected',
             'approved_by' => Auth::id(),
             'approved_at' => now(),
-            'registration_reason' => $user->registration_reason . "\n\nDitolak: " . ($request->rejection_reason ?? 'Tidak ada alasan yang diberikan'),
+            'registration_reason' => $user->registration_reason."\n\nDitolak: ".($request->rejection_reason ?? 'Tidak ada alasan yang diberikan'),
         ]);
 
         return back()->with('success', "Akun {$user->name} telah ditolak.");
@@ -122,17 +121,18 @@ class UserApprovalController extends Controller
         // Check if user has permission to view user details
         $currentUser = Auth::user();
         $userPermissions = $currentUser->permissions->pluck('name')->toArray();
-        $hasAccess = !empty(array_intersect($userPermissions, [
+        $hasAccess = ! empty(array_intersect($userPermissions, [
             'master-user-view',
             'user-approval-view',
-            'admin.user-approval'
+            'admin.user-approval',
         ]));
 
-        if (!$hasAccess) {
+        if (! $hasAccess) {
             abort(403, 'Anda tidak memiliki izin untuk melihat detail user.');
         }
 
         $user->load(['karyawan', 'approvedBy']);
+
         return view('admin.user-approval-detail', compact('user'));
     }
 }

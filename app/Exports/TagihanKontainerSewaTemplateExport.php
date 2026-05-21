@@ -3,15 +3,14 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TagihanKontainerSewaTemplateExport implements FromArray, WithHeadings, WithStyles, WithColumnWidths, WithTitle
+class TagihanKontainerSewaTemplateExport implements FromArray, WithColumnWidths, WithHeadings, WithStyles, WithTitle
 {
     /**
      * Return template data with sample rows
@@ -27,7 +26,7 @@ class TagihanKontainerSewaTemplateExport implements FromArray, WithHeadings, Wit
                 '2024-01-31',
                 '25000',
                 'GROUP001',
-                'ongoing'
+                'ongoing',
             ],
             [
                 'DPE',
@@ -37,7 +36,7 @@ class TagihanKontainerSewaTemplateExport implements FromArray, WithHeadings, Wit
                 '2024-01-31',
                 '35000',
                 'GROUP002',
-                'selesai'
+                'selesai',
             ],
             [
                 'ZONA',
@@ -47,8 +46,8 @@ class TagihanKontainerSewaTemplateExport implements FromArray, WithHeadings, Wit
                 '2024-02-29',
                 '25000',
                 '',
-                'ongoing'
-            ]
+                'ongoing',
+            ],
         ];
     }
 
@@ -65,7 +64,7 @@ class TagihanKontainerSewaTemplateExport implements FromArray, WithHeadings, Wit
             'tanggal_akhir',
             'tarif',
             'group',
-            'status'
+            'status',
         ];
     }
 
@@ -79,12 +78,12 @@ class TagihanKontainerSewaTemplateExport implements FromArray, WithHeadings, Wit
             1 => [
                 'font' => [
                     'bold' => true,
-                    'color' => ['rgb' => 'FFFFFF']
+                    'color' => ['rgb' => 'FFFFFF'],
                 ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '4F46E5']
-                ]
+                    'startColor' => ['rgb' => '4F46E5'],
+                ],
             ],
             // Style sample data rows
             2 => ['fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F0FDF4']]],

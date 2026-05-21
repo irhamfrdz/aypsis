@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Gudang;
+use App\Models\HistoryKontainer;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
-use App\Models\Gudang;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\HistoryKontainer;
+use Illuminate\Support\Facades\DB;
 
 class PergerakanKontainerController extends Controller
 {
@@ -24,15 +23,15 @@ class PergerakanKontainerController extends Controller
 
         // Get kontainers from kontainers table with 'kontainer' type
         $kontainersQuery = Kontainer::query()
-            ->when($search, function($query, $search) {
-                $query->where(function($q) use ($search) {
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor_seri_gabungan', 'like', "%{$search}%")
-                      ->orWhere('awalan_kontainer', 'like', "%{$search}%")
-                      ->orWhere('nomor_seri_kontainer', 'like', "%{$search}%")
-                      ->orWhere('akhiran_kontainer', 'like', "%{$search}%");
+                        ->orWhere('awalan_kontainer', 'like', "%{$search}%")
+                        ->orWhere('nomor_seri_kontainer', 'like', "%{$search}%")
+                        ->orWhere('akhiran_kontainer', 'like', "%{$search}%");
                 });
             })
-            ->when($gudangFilter, function($query, $gudangFilter) {
+            ->when($gudangFilter, function ($query, $gudangFilter) {
                 $query->where('gudangs_id', $gudangFilter);
             })
             ->select(
@@ -51,15 +50,15 @@ class PergerakanKontainerController extends Controller
 
         // Get kontainers from stock_kontainers table with 'stock' type
         $stockQuery = StockKontainer::query()
-            ->when($search, function($query, $search) {
-                $query->where(function($q) use ($search) {
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor_seri_gabungan', 'like', "%{$search}%")
-                      ->orWhere('awalan_kontainer', 'like', "%{$search}%")
-                      ->orWhere('nomor_seri_kontainer', 'like', "%{$search}%")
-                      ->orWhere('akhiran_kontainer', 'like', "%{$search}%");
+                        ->orWhere('awalan_kontainer', 'like', "%{$search}%")
+                        ->orWhere('nomor_seri_kontainer', 'like', "%{$search}%")
+                        ->orWhere('akhiran_kontainer', 'like', "%{$search}%");
                 });
             })
-            ->when($gudangFilter, function($query, $gudangFilter) {
+            ->when($gudangFilter, function ($query, $gudangFilter) {
                 $query->where('gudangs_id', $gudangFilter);
             })
             ->select(
@@ -106,7 +105,7 @@ class PergerakanKontainerController extends Controller
             'source_table' => 'required|in:kontainer,stock',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
             'tanggal_pergerakan' => 'required|date',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         try {
@@ -117,13 +116,13 @@ class PergerakanKontainerController extends Controller
                 $kontainer = Kontainer::findOrFail($request->kontainer_id);
                 $gudangAsal = $kontainer->gudangs_id;
                 $kontainer->update([
-                    'gudangs_id' => $request->gudang_tujuan_id
+                    'gudangs_id' => $request->gudang_tujuan_id,
                 ]);
             } else {
                 $kontainer = StockKontainer::findOrFail($request->kontainer_id);
                 $gudangAsal = $kontainer->gudangs_id;
                 $kontainer->update([
-                    'gudangs_id' => $request->gudang_tujuan_id
+                    'gudangs_id' => $request->gudang_tujuan_id,
                 ]);
             }
 
@@ -134,7 +133,7 @@ class PergerakanKontainerController extends Controller
                 'jenis_kegiatan' => 'Keluar',
                 'tanggal_kegiatan' => \Carbon\Carbon::parse($request->tanggal_pergerakan),
                 'gudang_id' => $gudangAsal,
-                'keterangan' => 'Mutasi ke Gudang: ' . (Gudang::find($request->gudang_tujuan_id)->nama_gudang ?? '-') . '. ' . ($request->keterangan ?? ''),
+                'keterangan' => 'Mutasi ke Gudang: '.(Gudang::find($request->gudang_tujuan_id)->nama_gudang ?? '-').'. '.($request->keterangan ?? ''),
                 'created_by' => Auth::id(),
             ]);
 
@@ -145,7 +144,7 @@ class PergerakanKontainerController extends Controller
                 'jenis_kegiatan' => 'Masuk',
                 'tanggal_kegiatan' => \Carbon\Carbon::parse($request->tanggal_pergerakan),
                 'gudang_id' => $request->gudang_tujuan_id,
-                'keterangan' => 'Mutasi dari Gudang: ' . (Gudang::find($gudangAsal)->nama_gudang ?? '-') . '. ' . ($request->keterangan ?? ''),
+                'keterangan' => 'Mutasi dari Gudang: '.(Gudang::find($gudangAsal)->nama_gudang ?? '-').'. '.($request->keterangan ?? ''),
                 'created_by' => Auth::id(),
             ]);
 
@@ -156,8 +155,9 @@ class PergerakanKontainerController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect()->route('pergerakan-kontainer.index')
-                ->with('error', 'Gagal menyimpan pergerakan kontainer: ' . $e->getMessage());
+                ->with('error', 'Gagal menyimpan pergerakan kontainer: '.$e->getMessage());
         }
     }
 }

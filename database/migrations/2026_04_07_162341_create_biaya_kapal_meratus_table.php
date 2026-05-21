@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('voyage')->nullable();
             $table->string('nomor_referensi')->nullable();
             $table->string('pricelist_meratus_id')->nullable(); // Can be ID or MANUAL
-            $table->string('jenis_biaya'); 
+            $table->string('jenis_biaya');
             $table->string('lokasi')->nullable();
             $table->string('size')->nullable();
             $table->decimal('kuantitas', 15, 2)->default(0);

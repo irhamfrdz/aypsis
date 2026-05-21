@@ -15,9 +15,9 @@ return new class extends Migration
             // Drop unused columns
             $table->dropColumn([
                 'harga_satuan',
-                'tahun_pembuatan', 
+                'tahun_pembuatan',
                 'keterangan1',
-                'keterangan2'
+                'keterangan2',
             ]);
         });
     }

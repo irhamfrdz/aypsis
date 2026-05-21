@@ -28,7 +28,7 @@ class UangJalanBongkaran extends Model
         'jumlah_total',
         'memo',
         'status',
-        'created_by'
+        'created_by',
     ];
 
     protected $casts = [
@@ -43,7 +43,7 @@ class UangJalanBongkaran extends Model
         'jumlah_total' => 'decimal:2',
         'jumlah_uang_supir' => 'decimal:2',
         'jumlah_uang_kenek' => 'decimal:2',
-        'total_uang_jalan' => 'decimal:2'
+        'total_uang_jalan' => 'decimal:2',
     ];
 
     /**
@@ -60,7 +60,7 @@ class UangJalanBongkaran extends Model
     public function pranotaUangJalanBongkaran()
     {
         return $this->belongsToMany(PranotaUangJalanBongkaran::class, 'pranota_uang_jalan_bongkaran_items', 'uang_jalan_bongkaran_id', 'pranota_uang_jalan_bongkaran_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -79,6 +79,7 @@ class UangJalanBongkaran extends Model
         if ($status && $status !== 'all') {
             return $query->where('status', $status);
         }
+
         return $query;
     }
 
@@ -93,6 +94,7 @@ class UangJalanBongkaran extends Model
         if ($tanggalSampai) {
             $query->whereDate('tanggal_uang_jalan', '<=', $tanggalSampai);
         }
+
         return $query;
     }
 
@@ -106,7 +108,7 @@ class UangJalanBongkaran extends Model
             'belum_masuk_pranota' => 'Belum Masuk Pranota',
             'sudah_masuk_pranota' => 'Sudah Masuk Pranota',
             'lunas' => 'Lunas',
-            'dibatalkan' => 'Dibatalkan'
+            'dibatalkan' => 'Dibatalkan',
         ];
     }
 
@@ -120,7 +122,7 @@ class UangJalanBongkaran extends Model
             'belum_masuk_pranota' => 'bg-orange-100 text-orange-800',
             'sudah_masuk_pranota' => 'bg-blue-100 text-blue-800',
             'lunas' => 'bg-green-100 text-green-800',
-            'dibatalkan' => 'bg-red-100 text-red-800'
+            'dibatalkan' => 'bg-red-100 text-red-800',
         ];
 
         return $statusClasses[$this->status] ?? 'bg-gray-100 text-gray-800';
@@ -136,24 +138,24 @@ class UangJalanBongkaran extends Model
         $now = now();
         $month = $now->format('m'); // 2 digit bulan
         $year = $now->format('y');  // 2 digit tahun
-        
+
         // Ambil nomor urut terakhir dari semua record (tidak filter berdasarkan bulan/tahun)
         // Urutkan berdasarkan nomor uang jalan untuk mendapatkan running number terbesar
         $lastRecord = static::withTrashed()->whereNotNull('nomor_uang_jalan')
-                           ->where('nomor_uang_jalan', 'LIKE', 'UJB%')
-                           ->lockForUpdate()
-                           ->orderByRaw('CAST(SUBSTRING(nomor_uang_jalan, -6) AS UNSIGNED) DESC')
-                           ->first();
-        
+            ->where('nomor_uang_jalan', 'LIKE', 'UJB%')
+            ->lockForUpdate()
+            ->orderByRaw('CAST(SUBSTRING(nomor_uang_jalan, -6) AS UNSIGNED) DESC')
+            ->first();
+
         $runningNumber = 1;
-        
+
         if ($lastRecord && $lastRecord->nomor_uang_jalan) {
             // Extract running number dari nomor terakhir (6 digit terakhir)
             $lastNumber = substr($lastRecord->nomor_uang_jalan, -6);
             $runningNumber = intval($lastNumber) + 1;
         }
-        
+
         // Format: UJB + 2 digit bulan + 2 digit tahun + 6 digit running number
-        return 'UJB' . $month . $year . str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
+        return 'UJB'.$month.$year.str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
     }
 }

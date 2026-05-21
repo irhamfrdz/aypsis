@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class MasterTujuanKirim extends Model
 {
     use Auditable;
@@ -16,11 +15,11 @@ class MasterTujuanKirim extends Model
         'kode',
         'nama_tujuan',
         'catatan',
-        'status'
+        'status',
     ];
 
     protected $casts = [
-        'status' => 'string'
+        'status' => 'string',
     ];
 
     // Scope untuk status active

@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SuratJalanKontainerSewa extends Model
@@ -74,7 +74,7 @@ class SuratJalanKontainerSewa extends Model
 
     public function getStatusLabelAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'draft' => 'Draft',
             'aktif' => 'Aktif',
             'selesai' => 'Selesai',
@@ -85,7 +85,7 @@ class SuratJalanKontainerSewa extends Model
 
     public function getStatusBadgeAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'draft' => 'bg-gray-100 text-gray-700',
             'aktif' => 'bg-blue-100 text-blue-700',
             'selesai' => 'bg-green-100 text-green-700',
@@ -123,6 +123,6 @@ class SuratJalanKontainerSewa extends Model
             $nextSeq = 1;
         }
 
-        return "{$prefix}/{$bulan}/" . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
+        return "{$prefix}/{$bulan}/".str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
     }
 }

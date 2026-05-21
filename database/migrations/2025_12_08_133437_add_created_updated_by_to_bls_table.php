@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('bls', function (Blueprint $table) {
             $table->unsignedBigInteger('created_by')->nullable()->after('catatan_ob');
             $table->unsignedBigInteger('updated_by')->nullable()->after('created_by');
-            
+
             $table->foreign('created_by')->references('id')->on('users');
             $table->foreign('updated_by')->references('id')->on('users');
         });

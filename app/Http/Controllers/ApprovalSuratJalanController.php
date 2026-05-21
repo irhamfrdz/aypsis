@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalan;
 use App\Models\Term;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ApprovalSuratJalanController extends Controller
 {
@@ -21,12 +21,12 @@ class ApprovalSuratJalanController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('jenis_barang', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%");
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('jenis_barang', 'like', "%{$search}%")
+                    ->orWhere('no_kontainer', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%");
             });
         }
 
@@ -78,7 +78,7 @@ class ApprovalSuratJalanController extends Controller
             'surat_jalan_id' => 'required|exists:surat_jalan,id',
             'term_name' => 'required|string|max:255',
             'term_days' => 'required|integer|min:0',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         try {
@@ -89,7 +89,7 @@ class ApprovalSuratJalanController extends Controller
                 'name' => $request->term_name,
                 'days' => $request->term_days,
                 'description' => $request->description,
-                'created_by' => Auth::id()
+                'created_by' => Auth::id(),
             ]);
 
             // Update surat jalan with term
@@ -100,13 +100,14 @@ class ApprovalSuratJalanController extends Controller
             DB::commit();
 
             return redirect()->route('approval-surat-jalan.index')
-                           ->with('success', 'Term berhasil ditambahkan ke Surat Jalan');
+                ->with('success', 'Term berhasil ditambahkan ke Surat Jalan');
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()
-                           ->with('error', 'Gagal menambahkan term: ' . $e->getMessage())
-                           ->withInput();
+                ->with('error', 'Gagal menambahkan term: '.$e->getMessage())
+                ->withInput();
         }
     }
 
@@ -116,7 +117,7 @@ class ApprovalSuratJalanController extends Controller
     public function show($id)
     {
         $suratJalan = SuratJalan::with(['order', 'term', 'tujuanPengambilanRelation', 'tujuanPengirimanRelation'])
-                               ->findOrFail($id);
+            ->findOrFail($id);
 
         return view('approval-surat-jalan.show', compact('suratJalan'));
     }
@@ -138,7 +139,7 @@ class ApprovalSuratJalanController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'term_id' => 'required|exists:terms,id'
+            'term_id' => 'required|exists:terms,id',
         ]);
 
         try {
@@ -147,12 +148,12 @@ class ApprovalSuratJalanController extends Controller
             $suratJalan->save();
 
             return redirect()->route('approval-surat-jalan.index')
-                           ->with('success', 'Term Surat Jalan berhasil diupdate');
+                ->with('success', 'Term Surat Jalan berhasil diupdate');
 
         } catch (\Exception $e) {
             return redirect()->back()
-                           ->with('error', 'Gagal mengupdate term: ' . $e->getMessage())
-                           ->withInput();
+                ->with('error', 'Gagal mengupdate term: '.$e->getMessage())
+                ->withInput();
         }
     }
 
@@ -167,11 +168,11 @@ class ApprovalSuratJalanController extends Controller
             $suratJalan->save();
 
             return redirect()->route('approval-surat-jalan.index')
-                           ->with('success', 'Term berhasil dihapus dari Surat Jalan');
+                ->with('success', 'Term berhasil dihapus dari Surat Jalan');
 
         } catch (\Exception $e) {
             return redirect()->back()
-                           ->with('error', 'Gagal menghapus term: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus term: '.$e->getMessage());
         }
     }
 
@@ -188,11 +189,11 @@ class ApprovalSuratJalanController extends Controller
             $suratJalan->save();
 
             return redirect()->route('approval-surat-jalan.index')
-                           ->with('success', 'Surat Jalan berhasil disetujui');
+                ->with('success', 'Surat Jalan berhasil disetujui');
 
         } catch (\Exception $e) {
             return redirect()->back()
-                           ->with('error', 'Gagal menyetujui Surat Jalan: ' . $e->getMessage());
+                ->with('error', 'Gagal menyetujui Surat Jalan: '.$e->getMessage());
         }
     }
 
@@ -209,11 +210,11 @@ class ApprovalSuratJalanController extends Controller
             $suratJalan->save();
 
             return redirect()->route('approval-surat-jalan.index')
-                           ->with('success', 'Surat Jalan berhasil ditolak');
+                ->with('success', 'Surat Jalan berhasil ditolak');
 
         } catch (\Exception $e) {
             return redirect()->back()
-                           ->with('error', 'Gagal menolak Surat Jalan: ' . $e->getMessage());
+                ->with('error', 'Gagal menolak Surat Jalan: '.$e->getMessage());
         }
     }
 }

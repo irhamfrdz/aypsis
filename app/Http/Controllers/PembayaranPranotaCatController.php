@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coa;
 use App\Models\PembayaranPranotaCat;
 use App\Models\PembayaranPranotaCatItem;
 use App\Models\PranotaTagihanCat;
-use App\Models\Coa;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 
 class PembayaranPranotaCatController extends Controller
 {
@@ -21,6 +20,7 @@ class PembayaranPranotaCatController extends Controller
     {
         $this->coaTransactionService = $coaTransactionService;
     }
+
     public function index()
     {
         // Get all pembayaran_pranota_cat
@@ -44,13 +44,13 @@ class PembayaranPranotaCatController extends Controller
     public function create(Request $request)
     {
         // Check permission manually to provide better error message
-        if (!Gate::allows('pembayaran-pranota-cat-create')) {
+        if (! Gate::allows('pembayaran-pranota-cat-create')) {
             return redirect()->route('dashboard')
                 ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota CAT. Silakan hubungi administrator.');
         }
 
         // If pranota_ids are provided (from pranota index page), redirect to payment form
-        if ($request->has('pranota_ids') && !empty($request->pranota_ids)) {
+        if ($request->has('pranota_ids') && ! empty($request->pranota_ids)) {
             return $this->showPaymentForm($request);
         }
 
@@ -67,12 +67,12 @@ class PembayaranPranotaCatController extends Controller
             ->get();
 
         // Get Bank/Kas accounts only, sorted by account number
-        $akunCoa = Coa::where(function($query) {
-                $query->where('tipe_akun', 'Kas/Bank')
-                      ->orWhere('tipe_akun', 'Bank/Kas')
-                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
-                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
-            })
+        $akunCoa = Coa::where(function ($query) {
+            $query->where('tipe_akun', 'Kas/Bank')
+                ->orWhere('tipe_akun', 'Bank/Kas')
+                ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+        })
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
@@ -86,7 +86,7 @@ class PembayaranPranotaCatController extends Controller
     {
         $request->validate([
             'pranota_ids' => 'required|array|min:1',
-            'pranota_ids.*' => 'exists:pranota_tagihan_cat,id'
+            'pranota_ids.*' => 'exists:pranota_tagihan_cat,id',
         ]);
 
         $pranotaIds = $request->input('pranota_ids');
@@ -121,7 +121,7 @@ class PembayaranPranotaCatController extends Controller
     public function store(Request $request)
     {
         // Check permission manually to provide better error message
-        if (!Gate::allows('pembayaran-pranota-cat-create')) {
+        if (! Gate::allows('pembayaran-pranota-cat-create')) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota CAT. Silakan hubungi administrator.');
@@ -140,7 +140,7 @@ class PembayaranPranotaCatController extends Controller
                 'pranota_ids.*' => 'exists:pranota_tagihan_cat,id',
                 'total_tagihan_penyesuaian' => 'nullable|numeric',
                 'alasan_penyesuaian' => 'nullable|string',
-                'keterangan' => 'nullable|string'
+                'keterangan' => 'nullable|string',
             ]);
 
             $pranotaIds = $request->input('pranota_ids');
@@ -181,7 +181,7 @@ class PembayaranPranotaCatController extends Controller
                 'total_setelah_penyesuaian' => $totalPembayaran + $penyesuaian,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'keterangan' => $request->keterangan,
-                'status' => 'approved'
+                'status' => 'approved',
             ]);
             Log::info('Pembayaran record created', ['id' => $pembayaran->id]);
 
@@ -190,7 +190,7 @@ class PembayaranPranotaCatController extends Controller
                 PembayaranPranotaCatItem::create([
                     'pembayaran_pranota_cat_id' => $pembayaran->id,
                     'pranota_tagihan_cat_id' => $pranota->id,
-                    'amount' => $pranota->total_amount
+                    'amount' => $pranota->total_amount,
                 ]);
                 Log::info('Payment item created', ['pranota_id' => $pranota->id]);
 
@@ -203,12 +203,12 @@ class PembayaranPranotaCatController extends Controller
             $totalSetelahPenyesuaian = $totalPembayaran + $penyesuaian;
             $tanggalTransaksi = $request->tanggal_kas;
 
-            $keterangan = "Pembayaran Pranota CAT Kontainer - " . $request->nomor_pembayaran;
+            $keterangan = 'Pembayaran Pranota CAT Kontainer - '.$request->nomor_pembayaran;
             if ($request->keterangan) {
-                $keterangan .= " | " . $request->keterangan;
+                $keterangan .= ' | '.$request->keterangan;
             }
             if ($request->alasan_penyesuaian) {
-                $keterangan .= " | Penyesuaian: " . $request->alasan_penyesuaian;
+                $keterangan .= ' | Penyesuaian: '.$request->alasan_penyesuaian;
             }
 
             // Catat transaksi double-entry: Biaya CAT Kontainer (Debit) dan Bank (Kredit)
@@ -225,8 +225,8 @@ class PembayaranPranotaCatController extends Controller
             Log::info('Transaction committed successfully');
 
             $message = "Pembayaran pranota CAT berhasil dibuat dengan nomor: {$request->nomor_pembayaran}. ";
-            $message .= "Total pranota: " . count($pranotaIds) . ". ";
-            $message .= "Status: Sudah dibayar.";
+            $message .= 'Total pranota: '.count($pranotaIds).'. ';
+            $message .= 'Status: Sudah dibayar.';
 
             return redirect()->route('pembayaran-pranota-cat.index')->with('success', $message);
 
@@ -235,9 +235,10 @@ class PembayaranPranotaCatController extends Controller
             Log::error('Error in pembayaran pranota CAT store', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
+                'request' => $request->all(),
             ]);
-            return redirect()->back()->withInput()->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage());
+
+            return redirect()->back()->withInput()->with('error', 'Gagal membuat pembayaran: '.$e->getMessage());
         }
     }
 

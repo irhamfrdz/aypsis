@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('penerima')->nullable()->after('tujuan_ambil');
             $table->text('alamat_penerima')->nullable()->after('penerima');
             $table->string('kontak_penerima')->nullable()->after('alamat_penerima');
-            
+
             // Add unit field for goods measurement
             $table->string('satuan')->nullable()->after('tanggal_pickup');
         });

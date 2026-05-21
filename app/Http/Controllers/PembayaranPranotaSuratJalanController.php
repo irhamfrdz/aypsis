@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PembayaranPranotaSuratJalan;
-use App\Models\PranotaSuratJalan;
 use App\Models\Coa;
 use App\Models\NomorTerakhir;
+use App\Models\PembayaranPranotaSuratJalan;
+use App\Models\PranotaSuratJalan;
 use App\Models\Prospek;
-use App\Models\SuratJalan;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,16 +56,16 @@ class PembayaranPranotaSuratJalanController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nomor_pembayaran', 'like', "%{$search}%")
-                  ->orWhere('nomor_referensi', 'like', "%{$search}%")
-                  ->orWhereHas('pranotaSuratJalan', function ($sq) use ($search) {
-                      $sq->where('nomor_pranota', 'like', "%{$search}%");
-                  });
+                    ->orWhere('nomor_referensi', 'like', "%{$search}%")
+                    ->orWhereHas('pranotaSuratJalan', function ($sq) use ($search) {
+                        $sq->where('nomor_pranota', 'like', "%{$search}%");
+                    });
             });
         }
 
         $pembayaran = $query->orderBy('tanggal_pembayaran', 'desc')
-                            ->paginate(15)
-                            ->withQueryString();
+            ->paginate(15)
+            ->withQueryString();
 
         $statuses = PembayaranPranotaSuratJalan::getStatuses();
         $methods = PembayaranPranotaSuratJalan::getPaymentMethods();
@@ -89,7 +88,7 @@ class PembayaranPranotaSuratJalanController extends Controller
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $pranotaSuratJalanQuery->whereBetween('tanggal_pranota', [
                 $request->start_date,
-                $request->end_date
+                $request->end_date,
             ]);
         }
 
@@ -99,7 +98,7 @@ class PembayaranPranotaSuratJalanController extends Controller
         }
 
         $pranotaSuratJalan = $pranotaSuratJalanQuery
-            ->with(['suratJalans' => function($query) {
+            ->with(['suratJalans' => function ($query) {
                 $query->select('surat_jalans.*');
             }])
             ->orderBy('tanggal_pranota', 'desc')
@@ -107,10 +106,10 @@ class PembayaranPranotaSuratJalanController extends Controller
 
         // Get akun COA for bank selection (same as pranota supir)
         $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%kas%')
-                      ->orderBy('nama_akun')
-                      ->get();
+            ->orWhere('nama_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%kas%')
+            ->orderBy('nama_akun')
+            ->get();
 
         $statuses = PembayaranPranotaSuratJalan::getStatuses();
         $methods = PembayaranPranotaSuratJalan::getPaymentMethods();
@@ -159,7 +158,7 @@ class PembayaranPranotaSuratJalanController extends Controller
             // Handle file upload
             if ($request->hasFile('bukti_pembayaran')) {
                 $file = $request->file('bukti_pembayaran');
-                $filename = 'pembayaran_' . time() . '_' . $file->getClientOriginalName();
+                $filename = 'pembayaran_'.time().'_'.$file->getClientOriginalName();
                 $path = $file->storeAs('pembayaran/pranota-surat-jalan', $filename, 'public');
                 $validated['bukti_pembayaran'] = $path;
             }
@@ -177,7 +176,7 @@ class PembayaranPranotaSuratJalanController extends Controller
 
                 // Modify nomor pembayaran for multiple entries
                 if ($index > 0) {
-                    $paymentData['nomor_pembayaran'] = $validated['nomor_pembayaran'] . '-' . ($index + 1);
+                    $paymentData['nomor_pembayaran'] = $validated['nomor_pembayaran'].'-'.($index + 1);
                 }
 
                 // Remove the array field
@@ -203,7 +202,7 @@ class PembayaranPranotaSuratJalanController extends Controller
             $totalPembayaran = $validated['total_tagihan_setelah_penyesuaian'] ?? $validated['total_pembayaran'];
             $bankName = $validated['bank'];
             $jenisTransaksi = $validated['jenis_transaksi'];
-            $keterangan = "Pembayaran Pranota Surat Jalan - " . $validated['nomor_pembayaran'];
+            $keterangan = 'Pembayaran Pranota Surat Jalan - '.$validated['nomor_pembayaran'];
 
             // Tentukan apakah bank di-debit atau di-kredit berdasarkan jenis transaksi
             if ($jenisTransaksi == 'Debit') {
@@ -236,25 +235,25 @@ class PembayaranPranotaSuratJalanController extends Controller
                 'jenis_transaksi' => $jenisTransaksi,
                 'biaya_account' => 'Biaya Uang Jalan Muat',
                 'double_entry_success' => $doubleEntryResult,
-                'pranota_count' => count($pembayaranIds)
+                'pranota_count' => count($pembayaranIds),
             ]);
 
             DB::commit();
 
             // Prepare success message
-            $successMessage = 'Pembayaran berhasil disimpan untuk ' . count($pembayaranIds) . ' pranota surat jalan.';
+            $successMessage = 'Pembayaran berhasil disimpan untuk '.count($pembayaranIds).' pranota surat jalan.';
             if ($totalProspeksCreated > 0) {
-                $successMessage .= ' ' . $totalProspeksCreated . ' data prospek FCL/CARGO telah dibuat otomatis.';
+                $successMessage .= ' '.$totalProspeksCreated.' data prospek FCL/CARGO telah dibuat otomatis.';
             }
 
             // Redirect to first payment record or index page
             $firstPembayaranId = $pembayaranIds[0] ?? null;
             if ($firstPembayaranId) {
                 return redirect()->route('pembayaran-pranota-surat-jalan.show', $firstPembayaranId)
-                               ->with('success', $successMessage);
+                    ->with('success', $successMessage);
             } else {
                 return redirect()->route('pembayaran-pranota-surat-jalan.index')
-                               ->with('success', $successMessage);
+                    ->with('success', $successMessage);
             }
 
         } catch (\Exception $e) {
@@ -272,7 +271,7 @@ class PembayaranPranotaSuratJalanController extends Controller
                 'user_id' => Auth::id(),
                 'form_data' => $validated,
                 'file' => $e->getFile(),
-                'line' => $e->getLine()
+                'line' => $e->getLine(),
             ]);
 
             // Provide specific error messages based on error type
@@ -290,7 +289,7 @@ class PembayaranPranotaSuratJalanController extends Controller
                 $errorMessage .= 'Silakan coba lagi atau hubungi administrator jika masalah berlanjut.';
             }
 
-            return back()->withInput()->with('error', $errorMessage . ' Detail: ' . $e->getMessage());
+            return back()->withInput()->with('error', $errorMessage.' Detail: '.$e->getMessage());
         }
     }
 
@@ -312,12 +311,12 @@ class PembayaranPranotaSuratJalanController extends Controller
         // Don't allow editing paid or cancelled payments
         if (in_array($pembayaranPranotaSuratJalan->status_pembayaran, ['paid', 'cancelled'])) {
             return redirect()->route('pembayaran-pranota-surat-jalan.show', $pembayaranPranotaSuratJalan->id)
-                           ->with('error', 'Pembayaran yang sudah lunas atau dibatalkan tidak dapat diedit.');
+                ->with('error', 'Pembayaran yang sudah lunas atau dibatalkan tidak dapat diedit.');
         }
 
         $pranotaSuratJalan = PranotaSuratJalan::whereIn('status_pembayaran', ['unpaid', 'partial'])
-                                            ->orWhere('id', $pembayaranPranotaSuratJalan->pranota_surat_jalan_id)
-                                            ->get();
+            ->orWhere('id', $pembayaranPranotaSuratJalan->pranota_surat_jalan_id)
+            ->get();
 
         $statuses = PembayaranPranotaSuratJalan::getStatuses();
         $methods = PembayaranPranotaSuratJalan::getPaymentMethods();
@@ -333,12 +332,12 @@ class PembayaranPranotaSuratJalanController extends Controller
         // Don't allow updating paid or cancelled payments
         if (in_array($pembayaranPranotaSuratJalan->status_pembayaran, ['paid', 'cancelled'])) {
             return redirect()->route('pembayaran-pranota-surat-jalan.show', $pembayaranPranotaSuratJalan->id)
-                           ->with('error', 'Pembayaran yang sudah lunas atau dibatalkan tidak dapat diubah.');
+                ->with('error', 'Pembayaran yang sudah lunas atau dibatalkan tidak dapat diubah.');
         }
 
         $validated = $request->validate([
             'pranota_surat_jalan_id' => ['required', 'exists:pranota_surat_jalans,id'],
-            'nomor_pembayaran' => ['required', 'string', 'max:255', 'unique:pembayaran_pranota_surat_jalan,nomor_pembayaran,' . $pembayaranPranotaSuratJalan->id],
+            'nomor_pembayaran' => ['required', 'string', 'max:255', 'unique:pembayaran_pranota_surat_jalan,nomor_pembayaran,'.$pembayaranPranotaSuratJalan->id],
             'tanggal_pembayaran' => ['required', 'date'],
             'bank' => ['nullable', 'string', 'max:255'],
             'jenis_transaksi' => ['nullable', 'in:Debit,Kredit'],
@@ -362,7 +361,7 @@ class PembayaranPranotaSuratJalanController extends Controller
                 }
 
                 $file = $request->file('bukti_pembayaran');
-                $filename = 'pembayaran_' . time() . '_' . $file->getClientOriginalName();
+                $filename = 'pembayaran_'.time().'_'.$file->getClientOriginalName();
                 $path = $file->storeAs('pembayaran/pranota-surat-jalan', $filename, 'public');
                 $validated['bukti_pembayaran'] = $path;
             }
@@ -381,12 +380,12 @@ class PembayaranPranotaSuratJalanController extends Controller
             DB::commit();
 
             return redirect()->route('pembayaran-pranota-surat-jalan.show', $pembayaranPranotaSuratJalan->id)
-                           ->with('success', 'Pembayaran berhasil diupdate.');
+                ->with('success', 'Pembayaran berhasil diupdate.');
 
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->withInput()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            return back()->withInput()->withErrors(['error' => 'Terjadi kesalahan: '.$e->getMessage()]);
         }
     }
 
@@ -398,7 +397,7 @@ class PembayaranPranotaSuratJalanController extends Controller
         // Don't allow deleting paid payments
         if ($pembayaranPranotaSuratJalan->status_pembayaran === 'paid') {
             return redirect()->route('pembayaran-pranota-surat-jalan.index')
-                           ->with('error', 'Pembayaran yang sudah lunas tidak dapat dihapus.');
+                ->with('error', 'Pembayaran yang sudah lunas tidak dapat dihapus.');
         }
 
         try {
@@ -419,11 +418,12 @@ class PembayaranPranotaSuratJalanController extends Controller
             DB::commit();
 
             return redirect()->route('pembayaran-pranota-surat-jalan.index')
-                           ->with('success', 'Pembayaran berhasil dihapus.');
+                ->with('success', 'Pembayaran berhasil dihapus.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Terjadi kesalahan: '.$e->getMessage()]);
         }
     }
 
@@ -433,12 +433,14 @@ class PembayaranPranotaSuratJalanController extends Controller
     private function updatePranotaPaymentStatus($pranotaId)
     {
         $pranota = PranotaSuratJalan::find($pranotaId);
-        if (!$pranota) return;
+        if (! $pranota) {
+            return;
+        }
 
         // Simple logic: if there's any non-cancelled payment, status is 'paid'
         $hasPayment = PembayaranPranotaSuratJalan::where('pranota_surat_jalan_id', $pranotaId)
-                                                ->whereNotIn('status_pembayaran', ['cancelled'])
-                                                ->exists();
+            ->whereNotIn('status_pembayaran', ['cancelled'])
+            ->exists();
 
         $status = $hasPayment ? 'paid' : 'unpaid';
         $pranota->update(['status_pembayaran' => $status]);
@@ -454,8 +456,8 @@ class PembayaranPranotaSuratJalanController extends Controller
     {
         // Get all surat jalan IDs related to this pranota
         $suratJalanIds = DB::table('pranota_surat_jalan_items')
-                          ->where('pranota_surat_jalan_id', $pranotaId)
-                          ->pluck('surat_jalan_id');
+            ->where('pranota_surat_jalan_id', $pranotaId)
+            ->pluck('surat_jalan_id');
 
         if ($suratJalanIds->count() > 0) {
             // Convert payment status to surat jalan status format
@@ -463,17 +465,17 @@ class PembayaranPranotaSuratJalanController extends Controller
 
             // Update all related surat jalan
             DB::table('surat_jalans')
-              ->whereIn('id', $suratJalanIds)
-              ->update([
-                  'status_pembayaran' => $suratJalanStatus,
-                  'updated_at' => now()
-              ]);
+                ->whereIn('id', $suratJalanIds)
+                ->update([
+                    'status_pembayaran' => $suratJalanStatus,
+                    'updated_at' => now(),
+                ]);
 
             Log::info('Updated surat jalan payment status', [
                 'pranota_id' => $pranotaId,
                 'surat_jalan_ids' => $suratJalanIds->toArray(),
                 'new_status' => $suratJalanStatus,
-                'payment_status' => $paymentStatus
+                'payment_status' => $paymentStatus,
             ]);
         }
     }
@@ -485,9 +487,9 @@ class PembayaranPranotaSuratJalanController extends Controller
     {
         $prefix = 'PAY-SJ-';
         $date = now()->format('Ymd');
-        $lastPayment = PembayaranPranotaSuratJalan::where('nomor_pembayaran', 'like', $prefix . $date . '%')
-                                                 ->orderBy('nomor_pembayaran', 'desc')
-                                                 ->first();
+        $lastPayment = PembayaranPranotaSuratJalan::where('nomor_pembayaran', 'like', $prefix.$date.'%')
+            ->orderBy('nomor_pembayaran', 'desc')
+            ->first();
 
         if ($lastPayment) {
             $lastNumber = intval(substr($lastPayment->nomor_pembayaran, -4));
@@ -496,7 +498,7 @@ class PembayaranPranotaSuratJalanController extends Controller
             $nextNumber = 1;
         }
 
-        return $prefix . $date . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        return $prefix.$date.'-'.str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -514,7 +516,7 @@ class PembayaranPranotaSuratJalanController extends Controller
             // Get pranota with related surat jalan
             $pranota = PranotaSuratJalan::with('suratJalans')->find($pranotaId);
 
-            if (!$pranota || !$pranota->suratJalans) {
+            if (! $pranota || ! $pranota->suratJalans) {
                 return $prospeksCreated;
             }
 
@@ -528,24 +530,24 @@ class PembayaranPranotaSuratJalanController extends Controller
 
                 // Get jumlah kontainer untuk surat jalan ini
                 $jumlahKontainer = $suratJalan->jumlah_kontainer ?? 1;
-                
+
                 // Create prospek berdasarkan jumlah kontainer
                 for ($i = 1; $i <= $jumlahKontainer; $i++) {
                     // Parse nomor kontainer dan seal jika sudah ada dari checkpoint
                     $nomorKontainerArray = [];
                     $noSealArray = [];
-                    
-                    if (!empty($suratJalan->no_kontainer)) {
+
+                    if (! empty($suratJalan->no_kontainer)) {
                         $nomorKontainerArray = array_map('trim', explode(',', $suratJalan->no_kontainer));
                     }
-                    
-                    if (!empty($suratJalan->no_seal)) {
+
+                    if (! empty($suratJalan->no_seal)) {
                         $noSealArray = array_map('trim', explode(',', $suratJalan->no_seal));
                     }
-                    
+
                     // Ambil nomor kontainer dan seal untuk kontainer ke-i (jika ada)
-                    $nomorKontainerIni = isset($nomorKontainerArray[$i-1]) ? $nomorKontainerArray[$i-1] : null;
-                    $noSealIni = isset($noSealArray[$i-1]) ? $noSealArray[$i-1] : null;
+                    $nomorKontainerIni = isset($nomorKontainerArray[$i - 1]) ? $nomorKontainerArray[$i - 1] : null;
+                    $noSealIni = isset($noSealArray[$i - 1]) ? $noSealArray[$i - 1] : null;
 
                     // Prepare prospek data from surat jalan untuk kontainer ke-i
                     $prospekData = [
@@ -555,18 +557,18 @@ class PembayaranPranotaSuratJalanController extends Controller
                         'pt_pengirim' => $suratJalan->pengirim ?? null,
                         'ukuran' => $suratJalan->size ?? null,
                         'tipe' => $suratJalan->tipe_kontainer ?? null, // FCL, LCL, dll
-                        'no_surat_jalan' => $suratJalan->no_surat_jalan ? ($jumlahKontainer > 1 ? $suratJalan->no_surat_jalan . '-' . $i : $suratJalan->no_surat_jalan) : null, // Field baru untuk tracking
+                        'no_surat_jalan' => $suratJalan->no_surat_jalan ? ($jumlahKontainer > 1 ? $suratJalan->no_surat_jalan.'-'.$i : $suratJalan->no_surat_jalan) : null, // Field baru untuk tracking
                         'surat_jalan_id' => $suratJalan->id, // Field baru untuk tracking yang lebih akurat
                         'nomor_kontainer' => $nomorKontainerIni ?: null, // Set null jika belum ada, akan diisi saat checkpoint
                         'no_seal' => $noSealIni, // Nomor seal spesifik untuk kontainer ke-i
                         'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? null,
                         'nama_kapal' => null, // Belum ada
-                        'keterangan' => 'Auto generated dari Surat Jalan: ' . ($suratJalan->no_surat_jalan ?? '-') . 
-                                      ' | Pranota: ' . ($pranota->nomor_pranota ?? '-') . 
+                        'keterangan' => 'Auto generated dari Surat Jalan: '.($suratJalan->no_surat_jalan ?? '-').
+                                      ' | Pranota: '.($pranota->nomor_pranota ?? '-').
                                       ($jumlahKontainer > 1 ? " | Kontainer #$i dari $jumlahKontainer" : ''),
                         'status' => Prospek::STATUS_AKTIF,
                         'created_by' => Auth::id(),
-                        'updated_by' => Auth::id()
+                        'updated_by' => Auth::id(),
                     ];
 
                     // Create prospek untuk kontainer ke-i
@@ -585,7 +587,7 @@ class PembayaranPranotaSuratJalanController extends Controller
                         'pranota_no' => $pranota->nomor_pranota,
                         'tipe_kontainer' => $suratJalan->tipe_kontainer,
                         'supir' => $suratJalan->supir,
-                        'pengirim' => $suratJalan->pengirim
+                        'pengirim' => $suratJalan->pengirim,
                     ]);
                 }
             }
@@ -593,7 +595,7 @@ class PembayaranPranotaSuratJalanController extends Controller
             if ($prospeksCreated > 0) {
                 Log::info('Total prospek created from payment', [
                     'pranota_id' => $pranotaId,
-                    'total_prospeks' => $prospeksCreated
+                    'total_prospeks' => $prospeksCreated,
                 ]);
             }
 
@@ -602,7 +604,7 @@ class PembayaranPranotaSuratJalanController extends Controller
             Log::error('Error creating prospek from FCL/CARGO surat jalan', [
                 'pranota_id' => $pranotaId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
         }
 

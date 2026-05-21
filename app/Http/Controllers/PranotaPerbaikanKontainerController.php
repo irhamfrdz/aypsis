@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PranotaPerbaikanKontainer;
 use App\Models\PerbaikanKontainer;
+use App\Models\PranotaPerbaikanKontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -34,14 +34,14 @@ class PranotaPerbaikanKontainerController extends Controller
         // Search by kontainer number or description
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_pranota', 'like', "%{$search}%")
-                  ->orWhereHas('perbaikanKontainers', function($perbaikan) use ($search) {
-                      $perbaikan->where('nomor_kontainer', 'like', "%{$search}%")
-                               ->orWhere('nomor_tagihan', 'like', "%{$search}%");
-                  })
-                  ->orWhere('deskripsi_pekerjaan', 'like', "%{$search}%")
-                  ->orWhere('nama_teknisi', 'like', "%{$search}%");
+                    ->orWhereHas('perbaikanKontainers', function ($perbaikan) use ($search) {
+                        $perbaikan->where('nomor_kontainer', 'like', "%{$search}%")
+                            ->orWhere('nomor_tagihan', 'like', "%{$search}%");
+                    })
+                    ->orWhere('deskripsi_pekerjaan', 'like', "%{$search}%")
+                    ->orWhere('nama_teknisi', 'like', "%{$search}%");
             });
         }
 
@@ -90,7 +90,7 @@ class PranotaPerbaikanKontainerController extends Controller
 
             $perbaikanIds = json_decode($request->perbaikan_ids, true);
 
-            if (!is_array($perbaikanIds) || empty($perbaikanIds)) {
+            if (! is_array($perbaikanIds) || empty($perbaikanIds)) {
                 return redirect()->back()->with('error', 'Tidak ada item perbaikan yang dipilih.');
             }
 
@@ -108,7 +108,7 @@ class PranotaPerbaikanKontainerController extends Controller
             $pranota = PranotaPerbaikanKontainer::create([
                 'nomor_pranota' => $request->nomor_pranota,
                 'tanggal_pranota' => $request->tanggal_pranota,
-                'deskripsi_pekerjaan' => 'Perbaikan kontainer bulk - ' . $perbaikans->count() . ' item',
+                'deskripsi_pekerjaan' => 'Perbaikan kontainer bulk - '.$perbaikans->count().' item',
                 'nama_teknisi' => $request->supplier ?? 'Supplier',
                 'total_biaya' => $totalBiaya,
                 'catatan' => $request->catatan,
@@ -125,7 +125,7 @@ class PranotaPerbaikanKontainerController extends Controller
                 ->update(['status_perbaikan' => 'sudah_masuk_pranota']);
 
             return redirect()->route('pranota-perbaikan-kontainer.index')
-                ->with('success', 'Pranota berhasil dibuat dengan ' . count($perbaikanIds) . ' item perbaikan.');
+                ->with('success', 'Pranota berhasil dibuat dengan '.count($perbaikanIds).' item perbaikan.');
         }
 
         // Handle single pranota creation (if needed for backward compatibility)
@@ -137,7 +137,7 @@ class PranotaPerbaikanKontainerController extends Controller
      */
     public function show(PranotaPerbaikanKontainer $pranotaPerbaikanKontainer)
     {
-        if (!Gate::allows('pranota-perbaikan-kontainer-view')) {
+        if (! Gate::allows('pranota-perbaikan-kontainer-view')) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk melihat detail pranota.');
         }
 
@@ -188,7 +188,7 @@ class PranotaPerbaikanKontainerController extends Controller
      */
     public function destroy(PranotaPerbaikanKontainer $pranotaPerbaikanKontainer)
     {
-        if (!Gate::allows('pranota-perbaikan-kontainer-delete')) {
+        if (! Gate::allows('pranota-perbaikan-kontainer-delete')) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk menghapus pranota.');
         }
 
@@ -206,7 +206,7 @@ class PranotaPerbaikanKontainerController extends Controller
      */
     public function print(PranotaPerbaikanKontainer $pranotaPerbaikanKontainer)
     {
-        if (!Gate::allows('pranota-perbaikan-kontainer-print')) {
+        if (! Gate::allows('pranota-perbaikan-kontainer-print')) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mencetak pranota.');
         }
 

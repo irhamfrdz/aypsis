@@ -3,14 +3,14 @@
 namespace App\Exports;
 
 use App\Models\DaftarTagihanKontainerSewa;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Carbon\Carbon;
 
-class DaftarTagihanKontainerSewaExport implements FromCollection, WithHeadings, ShouldAutoSize, WithStyles
+class DaftarTagihanKontainerSewaExport implements FromCollection, ShouldAutoSize, WithHeadings, WithStyles
 {
     protected $filters;
 
@@ -25,22 +25,22 @@ class DaftarTagihanKontainerSewaExport implements FromCollection, WithHeadings, 
 
         // Exclude GROUP_SUMMARY records
         $query->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
-              ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
+            ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
 
         // Apply filters
-        if (!empty($this->filters['vendor'])) {
+        if (! empty($this->filters['vendor'])) {
             $query->where('vendor', $this->filters['vendor']);
         }
 
-        if (!empty($this->filters['size'])) {
+        if (! empty($this->filters['size'])) {
             $query->where('size', $this->filters['size']);
         }
 
-        if (!empty($this->filters['periode'])) {
+        if (! empty($this->filters['periode'])) {
             $query->where('periode', $this->filters['periode']);
         }
 
-        if (!empty($this->filters['status'])) {
+        if (! empty($this->filters['status'])) {
             $status = $this->filters['status'];
             if ($status === 'ongoing') {
                 $query->whereNull('tanggal_akhir');
@@ -49,7 +49,7 @@ class DaftarTagihanKontainerSewaExport implements FromCollection, WithHeadings, 
             }
         }
 
-        if (!empty($this->filters['status_pranota'])) {
+        if (! empty($this->filters['status_pranota'])) {
             $statusPranota = $this->filters['status_pranota'];
             if ($statusPranota === 'null' || $statusPranota === 'belum_pranota') {
                 $query->whereNull('status_pranota');
@@ -61,12 +61,12 @@ class DaftarTagihanKontainerSewaExport implements FromCollection, WithHeadings, 
         }
 
         // Apply search if provided
-        if (!empty($this->filters['q'])) {
+        if (! empty($this->filters['q'])) {
             $searchTerm = $this->filters['q'];
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('group', 'LIKE', '%' . $searchTerm . '%');
+                $q->where('vendor', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('nomor_kontainer', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('group', 'LIKE', '%'.$searchTerm.'%');
             });
         }
 
@@ -93,7 +93,7 @@ class DaftarTagihanKontainerSewaExport implements FromCollection, WithHeadings, 
                 $tagihan->pph ?? 0,
                 $tagihan->grand_total ?? 0,
                 $tagihan->status_pranota ?? '',
-                $tagihan->pranota_id ?? ''
+                $tagihan->pranota_id ?? '',
             ];
         });
     }
@@ -118,7 +118,7 @@ class DaftarTagihanKontainerSewaExport implements FromCollection, WithHeadings, 
             'PPH',
             'Grand Total',
             'Status Pranota',
-            'Pranota ID'
+            'Pranota ID',
         ];
     }
 

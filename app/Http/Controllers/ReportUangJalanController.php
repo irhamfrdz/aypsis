@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\UangJalan;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReportUangJalanController extends Controller
 {
@@ -13,7 +13,7 @@ class ReportUangJalanController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -24,11 +24,11 @@ class ReportUangJalanController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
-        if (!$request->has('start_date') || !$request->has('end_date')) {
+        if (! $request->has('start_date') || ! $request->has('end_date')) {
             return redirect()->route('report.uang-jalan.index')
                 ->with('error', 'Tanggal mulai dan tanggal akhir harus diisi');
         }
@@ -42,18 +42,18 @@ class ReportUangJalanController extends Controller
             ->whereBetween('tanggal_uang_jalan', [$startDate, $endDate]);
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_uang_jalan', 'like', "%{$search}%")
-                  ->orWhereHas('suratJalan', function($sq) use ($search) {
-                      $sq->where('no_surat_jalan', 'like', "%{$search}%")
-                         ->orWhere('supir', 'like', "%{$search}%")
-                         ->orWhere('no_plat', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('suratJalanBongkaran', function($sq) use ($search) {
-                      $sq->where('nomor_surat_jalan', 'like', "%{$search}%")
-                         ->orWhere('supir', 'like', "%{$search}%")
-                         ->orWhere('no_plat', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('suratJalan', function ($sq) use ($search) {
+                        $sq->where('no_surat_jalan', 'like', "%{$search}%")
+                            ->orWhere('supir', 'like', "%{$search}%")
+                            ->orWhere('no_plat', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('suratJalanBongkaran', function ($sq) use ($search) {
+                        $sq->where('nomor_surat_jalan', 'like', "%{$search}%")
+                            ->orWhere('supir', 'like', "%{$search}%")
+                            ->orWhere('no_plat', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -63,7 +63,7 @@ class ReportUangJalanController extends Controller
             'uangJalans' => $uangJalans,
             'startDate' => $startDate,
             'endDate' => $endDate,
-            'search' => $search
+            'search' => $search,
         ]);
     }
 
@@ -74,7 +74,7 @@ class ReportUangJalanController extends Controller
 
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -87,26 +87,26 @@ class ReportUangJalanController extends Controller
             ->whereBetween('tanggal_uang_jalan', [$startDate, $endDate]);
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_uang_jalan', 'like', "%{$search}%")
-                  ->orWhereHas('suratJalan', function($sq) use ($search) {
-                      $sq->where('no_surat_jalan', 'like', "%{$search}%")
-                         ->orWhere('supir', 'like', "%{$search}%")
-                         ->orWhere('no_plat', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('suratJalanBongkaran', function($sq) use ($search) {
-                      $sq->where('nomor_surat_jalan', 'like', "%{$search}%")
-                         ->orWhere('supir', 'like', "%{$search}%")
-                         ->orWhere('no_plat', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('suratJalan', function ($sq) use ($search) {
+                        $sq->where('no_surat_jalan', 'like', "%{$search}%")
+                            ->orWhere('supir', 'like', "%{$search}%")
+                            ->orWhere('no_plat', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('suratJalanBongkaran', function ($sq) use ($search) {
+                        $sq->where('nomor_surat_jalan', 'like', "%{$search}%")
+                            ->orWhere('supir', 'like', "%{$search}%")
+                            ->orWhere('no_plat', 'like', "%{$search}%");
+                    });
             });
         }
 
         $uangJalans = $query->orderBy('tanggal_uang_jalan', 'asc')->get();
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\ReportUangJalanExport($uangJalans, $startDate, $endDate), 
-            'Report_Uang_Jalan_' . $startDate->format('Y-m-d') . '_to_' . $endDate->format('Y-m-d') . '.xlsx'
+            new \App\Exports\ReportUangJalanExport($uangJalans, $startDate, $endDate),
+            'Report_Uang_Jalan_'.$startDate->format('Y-m-d').'_to_'.$endDate->format('Y-m-d').'.xlsx'
         );
     }
 }

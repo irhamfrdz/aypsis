@@ -7,14 +7,15 @@ use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class SuratJalanBongkaranTableExport implements FromView, ShouldAutoSize, WithEvents
 {
     protected $data;
+
     protected $mode;
+
     protected $nama_kapal;
+
     protected $no_voyage;
 
     public function __construct($data, $mode = 'manifest', $nama_kapal = '', $no_voyage = '')
@@ -39,15 +40,15 @@ class SuratJalanBongkaranTableExport implements FromView, ShouldAutoSize, WithEv
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 // Additional styling can be applied here if needed beyond HTML/CSS
                 // For example, ensuring specific column widths or print layout
                 $sheet = $event->sheet->getDelegate();
-                
+
                 // Example: Set specific column widths if AutoSize isn't perfect
                 // $sheet->getColumnDimension('A')->setWidth(5);
                 // $sheet->getColumnDimension('B')->setWidth(8);
-            }
+            },
         ];
     }
 }

@@ -15,12 +15,12 @@ class CrewChecklistTest extends Model
         'nomor_sertifikat',
         'issued_date',
         'expired_date',
-        'catatan'
+        'catatan',
     ];
 
     protected $dates = [
         'issued_date',
-        'expired_date'
+        'expired_date',
     ];
 
     public function karyawan()
@@ -51,7 +51,7 @@ class CrewChecklistTest extends Model
             'SDSD (Seafarer with Designated Security Duties)',
             'ERM (Engine Room Resource Management)',
             'BRM (Bridge Resource Management)',
-            'MC (Medical Care)'
+            'MC (Medical Care)',
         ];
     }
 
@@ -67,7 +67,7 @@ class CrewChecklistTest extends Model
                 'nomor_sertifikat' => null,
                 'issued_date' => null,
                 'expired_date' => null,
-                'catatan' => null
+                'catatan' => null,
             ]);
         }
     }

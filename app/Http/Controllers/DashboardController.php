@@ -2,20 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Permohonan;
-use App\Models\Karyawan;
 use App\Models\Kontainer;
-use App\Models\Prospek;
 use App\Models\Mobil;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\Prospek;
 use Carbon\Carbon;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     use AuthorizesRequests;
+
     /**
      * Menampilkan halaman dashboard dengan data ringkasan.
      *
@@ -67,13 +65,13 @@ class DashboardController extends Controller
         // Data Asset Asuransi
         $today = Carbon::today();
         $oneMonthLater = Carbon::today()->addMonth();
-        
+
         // Asset yang asuransinya sudah lewat (expired)
         $assetsExpired = Mobil::whereNotNull('tanggal_jatuh_tempo_asuransi')
             ->whereDate('tanggal_jatuh_tempo_asuransi', '<', $today)
             ->orderBy('tanggal_jatuh_tempo_asuransi', 'asc')
             ->get();
-        
+
         // Asset yang asuransinya akan jatuh tempo dalam 1 bulan
         $assetsExpiringSoon = Mobil::whereNotNull('tanggal_jatuh_tempo_asuransi')
             ->whereDate('tanggal_jatuh_tempo_asuransi', '>=', $today)
@@ -87,7 +85,7 @@ class DashboardController extends Controller
             ->with(['pengirimRelation', 'tujuanPengirimanRelation', 'uangJalan'])
             ->whereNotIn('status', ['cancelled', 'draft'])
             ->where('status_pembayaran_uang_jalan', 'dibayar')
-            ->when(request('supir'), function($q) {
+            ->when(request('supir'), function ($q) {
                 return $q->where('supir', request('supir'));
             })
             ->orderBy('tanggal_surat_jalan', 'desc')
@@ -114,13 +112,13 @@ class DashboardController extends Controller
     private function getProspekByTujuanUkuran($tujuan, $ukuran)
     {
         return Prospek::where('tujuan_pengiriman', 'like', "%{$tujuan}%")
-                     ->where('ukuran', $ukuran)
-                     ->where(function($query) {
-                         $query->whereNull('status')
-                               ->orWhere('status', '')
-                               ->orWhere('status', 'aktif');
-                     })
-                     ->count();
+            ->where('ukuran', $ukuran)
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhere('status', '')
+                    ->orWhere('status', 'aktif');
+            })
+            ->count();
     }
 
     /**
@@ -129,12 +127,12 @@ class DashboardController extends Controller
     private function getProspekByTujuanTipe($tujuan, $tipe)
     {
         return Prospek::where('tujuan_pengiriman', 'like', "%{$tujuan}%")
-                     ->where('tipe', $tipe)
-                     ->where(function($query) {
-                         $query->whereNull('status')
-                               ->orWhere('status', '')
-                               ->orWhere('status', 'aktif');
-                     })
-                     ->count();
+            ->where('tipe', $tipe)
+            ->where(function ($query) {
+                $query->whereNull('status')
+                    ->orWhere('status', '')
+                    ->orWhere('status', 'aktif');
+            })
+            ->count();
     }
 }

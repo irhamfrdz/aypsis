@@ -1,8 +1,8 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 return new class extends Migration
 {
@@ -41,7 +41,7 @@ return new class extends Migration
         foreach ($permissions as $permission) {
             // Check if permission already exists to avoid errors on retry
             $exists = DB::table('permissions')->where('name', $permission['name'])->exists();
-            if (!$exists) {
+            if (! $exists) {
                 DB::table('permissions')->insert($permission);
             }
         }

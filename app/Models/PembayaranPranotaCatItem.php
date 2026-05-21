@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class PembayaranPranotaCatItem extends Model
 {
     use Auditable;
@@ -15,11 +14,11 @@ class PembayaranPranotaCatItem extends Model
     protected $fillable = [
         'pembayaran_pranota_cat_id',
         'pranota_tagihan_cat_id',
-        'amount'
+        'amount',
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2'
+        'amount' => 'decimal:2',
     ];
 
     /**

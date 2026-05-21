@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Model;
 
 class Pengirim extends Model
 {
-    
     use Auditable;
 
     protected $fillable = [
@@ -15,6 +14,6 @@ class Pengirim extends Model
         'nama_pengirim',
         'alamat',
         'catatan',
-        'status'
+        'status',
     ];
 }

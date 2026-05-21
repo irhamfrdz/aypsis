@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\UangJalanExport;
 use App\Models\SuratJalan;
 use App\Models\UangJalan;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\UangJalanExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UangJalanController extends Controller
 {
@@ -31,39 +31,39 @@ class UangJalanController extends Controller
         $status = $request->get('status', 'all');
         $tanggal_dari = $request->get('tanggal_dari', '');
         $tanggal_sampai = $request->get('tanggal_sampai', '');
-        
+
         // Query uang jalan dengan relasi (termasuk surat jalan bongkaran)
         $query = UangJalan::with([
-            'suratJalan.order.pengirim', 
+            'suratJalan.order.pengirim',
             'suratJalanBongkaran',
             'createdBy',
-            'pranotaUangJalan'
+            'pranotaUangJalan',
         ]);
-        
+
         // Filter berdasarkan pencarian
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nomor_uang_jalan', 'like', "%{$search}%")
-                  ->orWhere('memo', 'like', "%{$search}%")
+                    ->orWhere('memo', 'like', "%{$search}%")
                   // Search di surat jalan biasa
-                  ->orWhereHas('suratJalan', function ($suratJalanQuery) use ($search) {
-                      $suratJalanQuery->where('no_surat_jalan', 'like', "%{$search}%")
-                                      ->orWhere('supir', 'like', "%{$search}%")
-                                      ->orWhere('no_plat', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('suratJalan.order', function ($orderQuery) use ($search) {
-                      $orderQuery->where('nomor_order', 'like', "%{$search}%")
-                                 ->orWhereHas('pengirim', function ($pengirimQuery) use ($search) {
-                                     $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
-                                 });
-                  })
+                    ->orWhereHas('suratJalan', function ($suratJalanQuery) use ($search) {
+                        $suratJalanQuery->where('no_surat_jalan', 'like', "%{$search}%")
+                            ->orWhere('supir', 'like', "%{$search}%")
+                            ->orWhere('no_plat', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('suratJalan.order', function ($orderQuery) use ($search) {
+                        $orderQuery->where('nomor_order', 'like', "%{$search}%")
+                            ->orWhereHas('pengirim', function ($pengirimQuery) use ($search) {
+                                $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
+                            });
+                    })
                   // Search di surat jalan bongkaran
-                  ->orWhereHas('suratJalanBongkaran', function ($suratJalanBongkaranQuery) use ($search) {
-                      $suratJalanBongkaranQuery->where('nomor_surat_jalan', 'like', "%{$search}%")
-                                               ->orWhere('supir', 'like', "%{$search}%")
-                                               ->orWhere('no_plat', 'like', "%{$search}%")
-                                               ->orWhere('pengirim', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('suratJalanBongkaran', function ($suratJalanBongkaranQuery) use ($search) {
+                        $suratJalanBongkaranQuery->where('nomor_surat_jalan', 'like', "%{$search}%")
+                            ->orWhere('supir', 'like', "%{$search}%")
+                            ->orWhere('no_plat', 'like', "%{$search}%")
+                            ->orWhere('pengirim', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -76,7 +76,7 @@ class UangJalanController extends Controller
         if ($tanggal_dari) {
             $query->whereDate('tanggal_uang_jalan', '>=', $tanggal_dari);
         }
-        
+
         if ($tanggal_sampai) {
             $query->whereDate('tanggal_uang_jalan', '<=', $tanggal_sampai);
         }
@@ -89,7 +89,7 @@ class UangJalanController extends Controller
             'belum_masuk_pranota' => 'Belum Masuk Pranota',
             'sudah_masuk_pranota' => 'Sudah Masuk Pranota',
             'lunas' => 'Lunas',
-            'dibatalkan' => 'Dibatalkan'
+            'dibatalkan' => 'Dibatalkan',
         ];
 
         return view('uang-jalan.index', compact('uangJalans', 'search', 'status', 'statusOptions', 'tanggal_dari', 'tanggal_sampai'));
@@ -104,94 +104,94 @@ class UangJalanController extends Controller
         $isPenyesuaian = $request->get('penyesuaian') || \Route::currentRouteName() === 'uang-jalan.select-surat-jalan-penyesuaian';
         $search = $request->get('search');
         $status = $request->get('status', 'all'); // Default filter
-        
+
         // Query surat jalan biasa dengan filter
         $querySuratJalan = SuratJalan::with(['order.pengirim', 'order.jenisBarang'])
             ->whereNotNull('order_id') // Hanya surat jalan yang ada ordernya
             ->where('status_pembayaran_uang_jalan', 'belum_ada') // Hanya yang belum ada uang jalan
-            ->where(function($q) {
+            ->where(function ($q) {
                 // Exclude surat jalan yang merupakan 'supir customer'
                 $q->whereNull('is_supir_customer')
-                  ->orWhere('is_supir_customer', false)
-                  ->orWhere('is_supir_customer', 0);
+                    ->orWhere('is_supir_customer', false)
+                    ->orWhere('is_supir_customer', 0);
             });
-        
+
         // Query surat jalan bongkaran dengan filter
         $querySuratJalanBongkaran = \App\Models\SuratJalanBongkaran::query();
-        
+
         // Exclude surat jalan bongkaran yang sudah memiliki uang jalan di tabel uang_jalans
         $existingUangJalanBongkaranIds = UangJalan::whereNotNull('surat_jalan_bongkaran_id')
-                                                   ->pluck('surat_jalan_bongkaran_id')
-                                                   ->toArray();
+            ->pluck('surat_jalan_bongkaran_id')
+            ->toArray();
         $querySuratJalanBongkaran->whereNotIn('id', $existingUangJalanBongkaranIds);
-        
+
         // Filter berdasarkan status untuk surat jalan biasa
         if ($status && $status !== 'all') {
             $querySuratJalan->where('status', $status);
         }
-        
+
         // Filter berdasarkan pencarian untuk surat jalan biasa
         if ($search) {
             $querySuratJalan->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('kenek', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhereHas('order', function ($orderQuery) use ($search) {
-                      $orderQuery->where('nomor_order', 'like', "%{$search}%")
-                                 ->orWhereHas('pengirim', function ($pengirimQuery) use ($search) {
-                                     $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
-                                 });
-                  });
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('kenek', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhereHas('order', function ($orderQuery) use ($search) {
+                        $orderQuery->where('nomor_order', 'like', "%{$search}%")
+                            ->orWhereHas('pengirim', function ($pengirimQuery) use ($search) {
+                                $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
+                            });
+                    });
             });
-            
+
             // Filter berdasarkan pencarian untuk surat jalan bongkaran
             $querySuratJalanBongkaran->where(function ($q) use ($search) {
                 $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('kenek', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%");
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('kenek', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('no_kontainer', 'like', "%{$search}%");
             });
         }
-        
+
         // Ambil data surat jalan biasa
         $suratJalansBiasa = $querySuratJalan->orderBy('tanggal_surat_jalan', 'desc')
-                                           ->orderBy('created_at', 'desc')
-                                           ->get();
-        
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         // Ambil data surat jalan bongkaran
         $suratJalansBongkaran = $querySuratJalanBongkaran->orderBy('tanggal_surat_jalan', 'desc')
-                                                         ->orderBy('created_at', 'desc')
-                                                         ->get();
-        
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         // Tambahkan flag untuk membedakan jenis surat jalan
-        $suratJalansBiasa->each(function($item) {
+        $suratJalansBiasa->each(function ($item) {
             $item->jenis_surat_jalan = 'biasa';
         });
-        
-        $suratJalansBongkaran->each(function($item) {
+
+        $suratJalansBongkaran->each(function ($item) {
             $item->jenis_surat_jalan = 'bongkaran';
             // Normalisasi field untuk konsistensi di frontend
             $item->no_surat_jalan = $item->nomor_surat_jalan;
             $item->no_kontainer = $item->no_kontainer ?? $item->nomor_kontainer;
         });
-        
+
         // Gabungkan kedua collection dan urutkan berdasarkan tanggal
         $allSuratJalans = $suratJalansBiasa->concat($suratJalansBongkaran)
-                                          ->sortByDesc(function($item) {
-                                              return $item->tanggal_surat_jalan ?? $item->created_at;
-                                          });
-        
+            ->sortByDesc(function ($item) {
+                return $item->tanggal_surat_jalan ?? $item->created_at;
+            });
+
         // Manual pagination - ambil semua data untuk modal
         $perPage = 9999; // Set large number to get all items
         $currentPage = $request->get('page', 1);
         $offset = ($currentPage - 1) * $perPage;
-        
+
         $paginatedItems = $allSuratJalans->slice($offset, $perPage)->values();
         $total = $allSuratJalans->count();
-        
+
         $suratJalans = new \Illuminate\Pagination\LengthAwarePaginator(
             $paginatedItems,
             $total,
@@ -202,18 +202,18 @@ class UangJalanController extends Controller
                 'pageName' => 'page',
             ]
         );
-        
+
         $suratJalans->appends($request->query());
-        
+
         // Status options untuk filter
         $statusOptions = [
             'all' => 'Semua Status',
             'belum_masuk_checkpoint' => 'Belum Masuk Checkpoint',
             'sudah_masuk_checkpoint' => 'Sudah Masuk Checkpoint',
             'sudah_berangkat' => 'Sudah Berangkat',
-            'approved' => 'Approved'
+            'approved' => 'Approved',
         ];
-        
+
         return view('uang-jalan.select-surat-jalan', compact('suratJalans', 'search', 'status', 'statusOptions', 'isPenyesuaian'));
     }
 
@@ -224,19 +224,19 @@ class UangJalanController extends Controller
     {
         $suratJalanId = $request->get('surat_jalan_id');
         $jenisSuratJalan = $request->get('jenis_surat_jalan', 'biasa');
-        
-        if (!$suratJalanId) {
+
+        if (! $suratJalanId) {
             return redirect()->route('uang-jalan.select-surat-jalan')
-                           ->with('error', 'Silakan pilih surat jalan terlebih dahulu.');
+                ->with('error', 'Silakan pilih surat jalan terlebih dahulu.');
         }
-        
+
         if ($jenisSuratJalan === 'bongkaran') {
             // Ambil data surat jalan bongkaran
             $suratJalan = \App\Models\SuratJalanBongkaran::findOrFail($suratJalanId);
-            
+
             // Cek apakah sudah ada uang jalan untuk surat jalan bongkaran ini di tabel uang_jalans
             $existingUangJalan = UangJalan::where('surat_jalan_bongkaran_id', $suratJalanId)->first();
-            
+
             if ($existingUangJalan) {
                 // Log for debugging which existing record caused this
                 Log::warning('Existing UangJalan found when trying to create', [
@@ -245,31 +245,31 @@ class UangJalanController extends Controller
                     'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
                 ]);
 
-                $msg = 'Uang jalan untuk surat jalan bongkaran ini sudah dibuat' . (
-                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: ' . $existingUangJalan->nomor_uang_jalan . ')' : '.'
+                $msg = 'Uang jalan untuk surat jalan bongkaran ini sudah dibuat'.(
+                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: '.$existingUangJalan->nomor_uang_jalan.')' : '.'
                 );
 
                 return redirect()->route('uang-jalan.select-surat-jalan')
-                               ->with('error', $msg);
+                    ->with('error', $msg);
             }
-            
+
             // Normalisasi field untuk konsistensi dengan surat jalan biasa
             $suratJalan->no_surat_jalan = $suratJalan->nomor_surat_jalan;
             $suratJalan->no_kontainer = $suratJalan->no_kontainer ?? $suratJalan->nomor_kontainer;
         } else {
             // Ambil data surat jalan dengan relasi yang diperlukan
             $suratJalan = SuratJalan::with(['order.pengirim', 'order.jenisBarang'])
-                                    ->findOrFail($suratJalanId);
-            
+                ->findOrFail($suratJalanId);
+
             // Cek apakah surat jalan ini adalah supir customer - jika ya, tidak boleh dibuat uang jalan
-            if (!empty($suratJalan->is_supir_customer) && $suratJalan->is_supir_customer) {
+            if (! empty($suratJalan->is_supir_customer) && $suratJalan->is_supir_customer) {
                 return redirect()->route('uang-jalan.select-surat-jalan')
-                               ->with('error', 'Uang jalan tidak dapat dibuat untuk Surat Jalan dengan Supir Customer.');
+                    ->with('error', 'Uang jalan tidak dapat dibuat untuk Surat Jalan dengan Supir Customer.');
             }
 
             // Cek apakah sudah ada uang jalan untuk surat jalan ini
             $existingUangJalan = UangJalan::where('surat_jalan_id', $suratJalanId)->first();
-            
+
             if ($existingUangJalan) {
                 // Log for debugging which existing record caused this
                 Log::warning('Existing UangJalan found when trying to create', [
@@ -278,18 +278,18 @@ class UangJalanController extends Controller
                     'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
                 ]);
 
-                $msg = 'Uang jalan untuk surat jalan ini sudah dibuat' . (
-                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: ' . $existingUangJalan->nomor_uang_jalan . ')' : '.'
+                $msg = 'Uang jalan untuk surat jalan ini sudah dibuat'.(
+                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: '.$existingUangJalan->nomor_uang_jalan.')' : '.'
                 );
 
                 return redirect()->route('uang-jalan.select-surat-jalan')
-                               ->with('error', $msg);
+                    ->with('error', $msg);
             }
         }
-        
+
         // Generate nomor uang jalan untuk preview - gunakan format yang sama untuk semua jenis
         $nomorUangJalan = UangJalan::generateNomorUangJalan();
-        
+
         return view('uang-jalan.create', compact('suratJalan', 'nomorUangJalan', 'jenisSuratJalan'));
     }
 
@@ -300,15 +300,15 @@ class UangJalanController extends Controller
     {
         // Tentukan jenis surat jalan
         $jenisSuratJalan = $request->get('jenis_surat_jalan', 'biasa');
-        
+
         // Log untuk debugging
         \Log::info('UangJalan Store - Request Data', [
             'jenis_surat_jalan' => $jenisSuratJalan,
             'surat_jalan_id' => $request->get('surat_jalan_id'),
             'kegiatan_bongkar_muat' => $request->get('kegiatan_bongkar_muat'),
-            'all_input' => $request->all()
+            'all_input' => $request->all(),
         ]);
-        
+
         // Validasi berbeda berdasarkan jenis surat jalan
         if ($jenisSuratJalan === 'bongkaran') {
             $request->validate([
@@ -327,31 +327,31 @@ class UangJalanController extends Controller
                 'jumlah_total' => 'required|numeric|min:0',
                 'memo' => 'nullable|string|max:1000',
             ]);
-            
+
             // Cek apakah sudah ada uang jalan untuk surat jalan bongkaran ini
             $existingUangJalan = UangJalan::where('surat_jalan_bongkaran_id', $request->surat_jalan_id)->first();
-            
+
             if ($existingUangJalan) {
                 Log::warning('Attempt to store UangJalan for bongkaran but existing record present', [
                     'surat_jalan_bongkaran_id' => $request->surat_jalan_id,
                     'existing_uang_jalan_id' => $existingUangJalan->id ?? null,
                     'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
-                    'input' => $request->all()
+                    'input' => $request->all(),
                 ]);
 
-                $msg = 'Uang jalan untuk surat jalan bongkaran ini sudah dibuat' . (
-                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: ' . $existingUangJalan->nomor_uang_jalan . ')' : '.'
+                $msg = 'Uang jalan untuk surat jalan bongkaran ini sudah dibuat'.(
+                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: '.$existingUangJalan->nomor_uang_jalan.')' : '.'
                 );
 
                 return redirect()->back()
-                               ->with('error', $msg)
-                               ->withInput();
+                    ->with('error', $msg)
+                    ->withInput();
             }
-            
+
             try {
                 // Generate nomor uang jalan otomatis - gunakan format yang sama untuk semua jenis
                 $nomorUangJalan = $request->nomor_uang_jalan ?: UangJalan::generateNomorUangJalan();
-                
+
                 // Buat record uang jalan baru dengan surat_jalan_bongkaran_id
                 $uangJalan = UangJalan::create([
                     'nomor_uang_jalan' => $nomorUangJalan,
@@ -370,19 +370,19 @@ class UangJalanController extends Controller
                     'jumlah_total' => $request->jumlah_total,
                     'memo' => $request->memo,
                     'status' => 'belum_masuk_pranota',
-                    'created_by' => Auth::id()
+                    'created_by' => Auth::id(),
                 ]);
-                
+
                 // Get surat jalan untuk pesan sukses
                 $suratJalan = \App\Models\SuratJalanBongkaran::find($request->surat_jalan_id);
-                
+
                 return redirect()->route('uang-jalan.index')
-                               ->with('success', 'Uang jalan berhasil dibuat untuk surat jalan bongkaran ' . ($suratJalan->nomor_surat_jalan ?? ''));
-                
+                    ->with('success', 'Uang jalan berhasil dibuat untuk surat jalan bongkaran '.($suratJalan->nomor_surat_jalan ?? ''));
+
             } catch (\Exception $e) {
                 return redirect()->back()
-                               ->with('error', 'Terjadi kesalahan saat menyimpan data uang jalan bongkaran: ' . $e->getMessage())
-                               ->withInput();
+                    ->with('error', 'Terjadi kesalahan saat menyimpan data uang jalan bongkaran: '.$e->getMessage())
+                    ->withInput();
             }
         } else {
             // Validasi untuk surat jalan biasa
@@ -404,41 +404,41 @@ class UangJalanController extends Controller
                 'jumlah_uang_supir' => 'nullable|numeric|min:0',
                 'jumlah_uang_kenek' => 'nullable|numeric|min:0',
                 'total_uang_jalan' => 'nullable|numeric|min:0',
-                'keterangan' => 'nullable|string|max:1000'
+                'keterangan' => 'nullable|string|max:1000',
             ]);
-            
+
             // Cek apakah sudah ada uang jalan untuk surat jalan ini
             $existingUangJalan = UangJalan::where('surat_jalan_id', $request->surat_jalan_id)->first();
-            
+
             if ($existingUangJalan) {
                 Log::warning('Attempt to store UangJalan but existing record present', [
                     'surat_jalan_id' => $request->surat_jalan_id,
                     'existing_uang_jalan_id' => $existingUangJalan->id ?? null,
                     'nomor' => $existingUangJalan->nomor_uang_jalan ?? null,
-                    'input' => $request->all()
+                    'input' => $request->all(),
                 ]);
 
-                $msg = 'Uang jalan untuk surat jalan ini sudah dibuat' . (
-                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: ' . $existingUangJalan->nomor_uang_jalan . ')' : '.'
+                $msg = 'Uang jalan untuk surat jalan ini sudah dibuat'.(
+                    ($existingUangJalan->nomor_uang_jalan) ? ' (Nomor: '.$existingUangJalan->nomor_uang_jalan.')' : '.'
                 );
 
                 return redirect()->back()
-                               ->with('error', $msg)
-                               ->withInput();
+                    ->with('error', $msg)
+                    ->withInput();
             }
-            
+
             // Double-check: ensure surat jalan is not supir customer
             $sj = SuratJalan::find($request->surat_jalan_id);
             if ($sj && $sj->is_supir_customer) {
                 return redirect()->back()
-                               ->with('error', 'Uang jalan tidak dapat dibuat untuk Surat Jalan yang menggunakan Supir Customer.')
-                               ->withInput();
+                    ->with('error', 'Uang jalan tidak dapat dibuat untuk Surat Jalan yang menggunakan Supir Customer.')
+                    ->withInput();
             }
 
             try {
                 // Generate nomor uang jalan otomatis jika tidak diisi
                 $nomorUangJalan = $request->nomor_uang_jalan ?: UangJalan::generateNomorUangJalan();
-                
+
                 // Buat record uang jalan baru
                 $uangJalan = UangJalan::create([
                     'nomor_uang_jalan' => $nomorUangJalan,
@@ -460,22 +460,22 @@ class UangJalanController extends Controller
                     'total_uang_jalan' => $request->total_uang_jalan ?? $request->jumlah_total,
                     'keterangan' => $request->keterangan ?? $request->memo,
                     'status' => 'belum_masuk_pranota',
-                    'created_by' => Auth::id()
+                    'created_by' => Auth::id(),
                 ]);
-                
+
                 // Update status pembayaran uang jalan di surat jalan
                 $suratJalan = SuratJalan::find($request->surat_jalan_id);
                 $suratJalan->update([
-                    'status_pembayaran_uang_jalan' => 'sudah_masuk_uang_jalan'
+                    'status_pembayaran_uang_jalan' => 'sudah_masuk_uang_jalan',
                 ]);
-                
+
                 return redirect()->route('uang-jalan.index')
-                               ->with('success', 'Uang jalan berhasil dibuat untuk surat jalan ' . $suratJalan->no_surat_jalan);
-                
+                    ->with('success', 'Uang jalan berhasil dibuat untuk surat jalan '.$suratJalan->no_surat_jalan);
+
             } catch (\Exception $e) {
                 return redirect()->back()
-                               ->with('error', 'Terjadi kesalahan saat menyimpan data uang jalan: ' . $e->getMessage())
-                               ->withInput();
+                    ->with('error', 'Terjadi kesalahan saat menyimpan data uang jalan: '.$e->getMessage())
+                    ->withInput();
             }
         }
     }
@@ -486,8 +486,8 @@ class UangJalanController extends Controller
     public function show($id)
     {
         $uangJalan = UangJalan::with(['suratJalan.order.pengirim', 'createdBy'])
-                             ->findOrFail($id);
-        
+            ->findOrFail($id);
+
         return view('uang-jalan.show', compact('uangJalan'));
     }
 
@@ -497,14 +497,14 @@ class UangJalanController extends Controller
     public function edit($id)
     {
         $uangJalan = UangJalan::with([
-            'suratJalan.order.pengirim', 
+            'suratJalan.order.pengirim',
             'suratJalanBongkaran',
-            'createdBy'
+            'createdBy',
         ])->findOrFail($id);
-        
+
         // Determine jenis surat jalan
         $jenisSuratJalan = $uangJalan->surat_jalan_bongkaran_id ? 'bongkaran' : 'biasa';
-        
+
         // Get surat jalan data
         if ($jenisSuratJalan === 'bongkaran') {
             $suratJalan = $uangJalan->suratJalanBongkaran;
@@ -516,7 +516,7 @@ class UangJalanController extends Controller
         } else {
             $suratJalan = $uangJalan->suratJalan;
         }
-        
+
         return view('uang-jalan.edit', compact('uangJalan', 'suratJalan', 'jenisSuratJalan'));
     }
 
@@ -526,10 +526,10 @@ class UangJalanController extends Controller
     public function update(Request $request, $id)
     {
         $uangJalan = UangJalan::findOrFail($id);
-        
+
         // Tentukan jenis surat jalan
         $jenisSuratJalan = $uangJalan->surat_jalan_bongkaran_id ? 'bongkaran' : 'biasa';
-        
+
         // Validasi
         $request->validate([
             'tanggal_uang_jalan' => 'required|date',
@@ -547,9 +547,9 @@ class UangJalanController extends Controller
             'jumlah_uang_supir' => 'nullable|numeric|min:0',
             'jumlah_uang_kenek' => 'nullable|numeric|min:0',
             'total_uang_jalan' => 'nullable|numeric|min:0',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ]);
-        
+
         try {
             // Update uang jalan
             $uangJalan->update([
@@ -569,26 +569,26 @@ class UangJalanController extends Controller
                 'jumlah_uang_kenek' => $request->jumlah_uang_kenek ?? 0,
                 'total_uang_jalan' => $request->total_uang_jalan ?? $request->jumlah_total,
                 'keterangan' => $request->keterangan ?? $request->memo,
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
-            
+
             // Observer akan otomatis update total pranota jika perlu
-            
-            $identifier = $uangJalan->nomor_uang_jalan ?? 'ID: ' . $uangJalan->id;
-            
+
+            $identifier = $uangJalan->nomor_uang_jalan ?? 'ID: '.$uangJalan->id;
+
             return redirect()->route('uang-jalan.index')
-                           ->with('success', 'Uang jalan "' . $identifier . '" berhasil diperbarui.');
-            
+                ->with('success', 'Uang jalan "'.$identifier.'" berhasil diperbarui.');
+
         } catch (\Exception $e) {
             Log::error('Error updating uang jalan', [
                 'uang_jalan_id' => $id,
                 'error' => $e->getMessage(),
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
-            
+
             return redirect()->back()
-                           ->with('error', 'Terjadi kesalahan saat memperbarui data uang jalan: ' . $e->getMessage())
-                           ->withInput();
+                ->with('error', 'Terjadi kesalahan saat memperbarui data uang jalan: '.$e->getMessage())
+                ->withInput();
         }
     }
 
@@ -599,47 +599,47 @@ class UangJalanController extends Controller
     {
         try {
             $uangJalan = UangJalan::findOrFail($id);
-            
+
             // Check if uang jalan can be deleted (only if status allows it)
-            if (!in_array($uangJalan->status, ['belum_dibayar', 'belum_masuk_pranota'])) {
+            if (! in_array($uangJalan->status, ['belum_dibayar', 'belum_masuk_pranota'])) {
                 return redirect()
                     ->route('uang-jalan.index')
-                    ->with('error', 'Uang jalan dengan status ' . $uangJalan->status . ' tidak dapat dihapus.');
+                    ->with('error', 'Uang jalan dengan status '.$uangJalan->status.' tidak dapat dihapus.');
             }
-            
+
             // Check if uang jalan is already in pranota
             if ($uangJalan->pranotaUangJalan()->exists()) {
                 return redirect()
                     ->route('uang-jalan.index')
                     ->with('error', 'Uang jalan sudah masuk dalam pranota dan tidak dapat dihapus.');
             }
-            
+
             // Store info for success message
-            $identifier = $uangJalan->nomor_uang_jalan ?? $uangJalan->suratJalan->no_surat_jalan ?? 'ID: ' . $uangJalan->id;
-            
+            $identifier = $uangJalan->nomor_uang_jalan ?? $uangJalan->suratJalan->no_surat_jalan ?? 'ID: '.$uangJalan->id;
+
             // Delete the uang jalan
             $uangJalan->delete();
-            
+
             Log::info('Uang jalan deleted successfully', [
                 'uang_jalan_id' => $id,
                 'identifier' => $identifier,
-                'deleted_by' => Auth::id()
+                'deleted_by' => Auth::id(),
             ]);
-            
+
             return redirect()
                 ->route('uang-jalan.index')
-                ->with('success', 'Uang jalan "' . $identifier . '" berhasil dihapus.');
-                
+                ->with('success', 'Uang jalan "'.$identifier.'" berhasil dihapus.');
+
         } catch (\Exception $e) {
             Log::error('Error deleting uang jalan', [
                 'uang_jalan_id' => $id,
                 'error' => $e->getMessage(),
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
-            
+
             return redirect()
                 ->route('uang-jalan.index')
-                ->with('error', 'Terjadi kesalahan saat menghapus uang jalan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat menghapus uang jalan: '.$e->getMessage());
         }
     }
 
@@ -650,13 +650,15 @@ class UangJalanController extends Controller
     {
         try {
             $filters = $request->only(['search', 'status', 'tanggal_dari', 'tanggal_sampai']);
-            $fileName = 'uang_jalan_export_' . date('Ymd_His') . '.xlsx';
+            $fileName = 'uang_jalan_export_'.date('Ymd_His').'.xlsx';
 
             $export = new UangJalanExport($filters, []);
+
             return Excel::download($export, $fileName);
         } catch (\Exception $e) {
-            \Log::error('Error exporting uang jalan: ' . $e->getMessage());
-            return back()->with('error', 'Gagal export uang jalan: ' . $e->getMessage());
+            \Log::error('Error exporting uang jalan: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal export uang jalan: '.$e->getMessage());
         }
     }
 
@@ -667,13 +669,13 @@ class UangJalanController extends Controller
     {
         $suratJalanId = $request->get('surat_jalan_id');
 
-        if (!$suratJalanId) {
+        if (! $suratJalanId) {
             return response()->json(['success' => false, 'message' => 'Surat jalan ID diperlukan']);
         }
 
         $suratJalan = SuratJalan::find($suratJalanId);
 
-        if (!$suratJalan) {
+        if (! $suratJalan) {
             return response()->json(['success' => false, 'message' => 'Surat jalan tidak ditemukan']);
         }
 
@@ -687,12 +689,12 @@ class UangJalanController extends Controller
             return response()->json([
                 'success' => true,
                 'uang_jalan_id' => $uangJalan->id,
-                'nomor_uang_jalan' => $uangJalan->nomor_uang_jalan
+                'nomor_uang_jalan' => $uangJalan->nomor_uang_jalan,
             ]);
         } else {
             return response()->json([
                 'success' => false,
-                'message' => 'Tidak ada uang jalan yang dapat disesuaikan'
+                'message' => 'Tidak ada uang jalan yang dapat disesuaikan',
             ]);
         }
     }
@@ -709,7 +711,7 @@ class UangJalanController extends Controller
         $query = SuratJalan::with(['order.pengirim', 'order.jenisBarang', 'uangJalan'])
             ->whereNotNull('order_id')
             ->where('status_pembayaran_uang_jalan', 'sudah_masuk_uang_jalan')
-            ->whereHas('uangJalan', function($q) {
+            ->whereHas('uangJalan', function ($q) {
                 $q->whereIn('status', ['belum_masuk_pranota', 'sudah_masuk_pranota']);
             });
 
@@ -722,31 +724,31 @@ class UangJalanController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('kenek', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhereHas('order', function ($orderQuery) use ($search) {
-                      $orderQuery->where('nomor_order', 'like', "%{$search}%")
-                                 ->orWhereHas('pengirim', function ($pengirimQuery) use ($search) {
-                                     $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
-                                 });
-                  })
-                  ->orWhereHas('uangJalan', function ($uangJalanQuery) use ($search) {
-                      $uangJalanQuery->where('nomor_uang_jalan', 'like', "%{$search}%");
-                  });
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('kenek', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhereHas('order', function ($orderQuery) use ($search) {
+                        $orderQuery->where('nomor_order', 'like', "%{$search}%")
+                            ->orWhereHas('pengirim', function ($pengirimQuery) use ($search) {
+                                $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
+                            });
+                    })
+                    ->orWhereHas('uangJalan', function ($uangJalanQuery) use ($search) {
+                        $uangJalanQuery->where('nomor_uang_jalan', 'like', "%{$search}%");
+                    });
             });
         }
 
         $suratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')
-                           ->orderBy('created_at', 'desc')
-                           ->paginate(15);
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
         $statusOptions = [
             'all' => 'Semua Status',
             'belum_masuk_checkpoint' => 'Belum Masuk Checkpoint',
             'sudah_masuk_checkpoint' => 'Sudah Masuk Checkpoint',
             'sudah_berangkat' => 'Sudah Berangkat',
-            'approved' => 'Approved'
+            'approved' => 'Approved',
         ];
 
         return view('uang-jalan.adjustment.select-surat-jalan-adjustment', compact('suratJalans', 'search', 'status', 'statusOptions'));
@@ -759,9 +761,9 @@ class UangJalanController extends Controller
     {
         $suratJalanId = $request->get('surat_jalan_id');
 
-        if (!$suratJalanId) {
+        if (! $suratJalanId) {
             return redirect()->route('uang-jalan.adjustment.select-surat-jalan')
-                           ->with('error', 'Silakan pilih surat jalan terlebih dahulu.');
+                ->with('error', 'Silakan pilih surat jalan terlebih dahulu.');
         }
 
         $suratJalan = SuratJalan::with(['order.pengirim', 'uangJalan'])->findOrFail($suratJalanId);
@@ -782,17 +784,17 @@ class UangJalanController extends Controller
     {
         $uangJalanId = $request->get('uang_jalan_id');
 
-        if (!$uangJalanId) {
+        if (! $uangJalanId) {
             return redirect()->route('uang-jalan.adjustment.select-surat-jalan')
-                           ->with('error', 'Silakan pilih surat jalan terlebih dahulu.');
+                ->with('error', 'Silakan pilih surat jalan terlebih dahulu.');
         }
 
         $uangJalan = UangJalan::with(['suratJalan.order.pengirim'])->findOrFail($uangJalanId);
 
         // Cek apakah uang jalan masih bisa di-adjust
-        if (!in_array($uangJalan->status, ['belum_masuk_pranota', 'sudah_masuk_pranota'])) {
+        if (! in_array($uangJalan->status, ['belum_masuk_pranota', 'sudah_masuk_pranota'])) {
             return redirect()->route('uang-jalan.adjustment.select-surat-jalan')
-                           ->with('error', 'Uang jalan dengan status ' . $uangJalan->status . ' tidak dapat di-adjust.');
+                ->with('error', 'Uang jalan dengan status '.$uangJalan->status.' tidak dapat di-adjust.');
         }
 
         return view('uang-jalan.adjustment.create-adjustment', compact('uangJalan'));
@@ -815,16 +817,16 @@ class UangJalanController extends Controller
             'nomor_kas_bank' => 'nullable|exists:akun_coa,id',
             'alasan_penyesuaian' => 'required|string|max:500',
             'tanggal_penyesuaian' => 'required|date',
-            'memo' => 'nullable|string|max:1000'
+            'memo' => 'nullable|string|max:1000',
         ]);
 
         $uangJalan = UangJalan::findOrFail($request->uang_jalan_id);
 
         // Cek apakah uang jalan masih bisa di-adjust
-        if (!in_array($uangJalan->status, ['belum_masuk_pranota', 'sudah_masuk_pranota'])) {
+        if (! in_array($uangJalan->status, ['belum_masuk_pranota', 'sudah_masuk_pranota'])) {
             return redirect()->back()
-                           ->with('error', 'Uang jalan dengan status ' . $uangJalan->status . ' tidak dapat di-adjust.')
-                           ->withInput();
+                ->with('error', 'Uang jalan dengan status '.$uangJalan->status.' tidak dapat di-adjust.')
+                ->withInput();
         }
 
         try {
@@ -855,29 +857,29 @@ class UangJalanController extends Controller
                 'nomor_kas_bank' => $request->nomor_kas_bank,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'memo' => $request->memo,
-                'created_by' => Auth::id()
+                'created_by' => Auth::id(),
             ]);
 
             Log::info('Uang jalan adjustment created successfully', [
                 'uang_jalan_id' => $uangJalan->id,
                 'jenis_penyesuaian' => $request->jenis_penyesuaian,
                 'jumlah_penyesuaian' => $jumlahPenyesuaian,
-                'adjusted_by' => Auth::id()
+                'adjusted_by' => Auth::id(),
             ]);
 
             return redirect()->route('uang-jalan.index')
-                           ->with('success', 'Penyesuaian uang jalan berhasil disimpan untuk ' . $uangJalan->nomor_uang_jalan);
+                ->with('success', 'Penyesuaian uang jalan berhasil disimpan untuk '.$uangJalan->nomor_uang_jalan);
 
         } catch (\Exception $e) {
             Log::error('Error creating uang jalan adjustment', [
                 'uang_jalan_id' => $request->uang_jalan_id,
                 'error' => $e->getMessage(),
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
 
             return redirect()->back()
-                           ->with('error', 'Terjadi kesalahan saat menyimpan penyesuaian: ' . $e->getMessage())
-                           ->withInput();
+                ->with('error', 'Terjadi kesalahan saat menyimpan penyesuaian: '.$e->getMessage())
+                ->withInput();
         }
     }
 }

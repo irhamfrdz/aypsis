@@ -33,36 +33,36 @@ class AddApprovalOrderPermissions extends Command
         $permissions = [
             [
                 'name' => 'approval-order-view',
-                'description' => 'Melihat halaman approval order dan daftar order'
+                'description' => 'Melihat halaman approval order dan daftar order',
             ],
             [
                 'name' => 'approval-order-create',
-                'description' => 'Menambah term pembayaran untuk order baru'
+                'description' => 'Menambah term pembayaran untuk order baru',
             ],
             [
                 'name' => 'approval-order-update',
-                'description' => 'Mengedit dan memperbarui term pembayaran order'
+                'description' => 'Mengedit dan memperbarui term pembayaran order',
             ],
             [
                 'name' => 'approval-order-delete',
-                'description' => 'Menghapus term pembayaran dari order'
+                'description' => 'Menghapus term pembayaran dari order',
             ],
             [
                 'name' => 'approval-order-approve',
-                'description' => 'Menyetujui dan approve order'
+                'description' => 'Menyetujui dan approve order',
             ],
             [
                 'name' => 'approval-order-reject',
-                'description' => 'Menolak dan reject order'
+                'description' => 'Menolak dan reject order',
             ],
             [
                 'name' => 'approval-order-print',
-                'description' => 'Mencetak dokumen approval order'
+                'description' => 'Mencetak dokumen approval order',
             ],
             [
                 'name' => 'approval-order-export',
-                'description' => 'Export data approval order ke Excel/PDF'
-            ]
+                'description' => 'Export data approval order ke Excel/PDF',
+            ],
         ];
 
         $addedCount = 0;
@@ -74,22 +74,22 @@ class AddApprovalOrderPermissions extends Command
             $exists = DB::table('permissions')
                 ->where('name', $permissionData['name'])
                 ->exists();
-            
-            if (!$exists || $force) {
+
+            if (! $exists || $force) {
                 if ($exists && $force) {
                     // Update existing permission
                     DB::table('permissions')
                         ->where('name', $permissionData['name'])
                         ->update([
                             'description' => $permissionData['description'],
-                            'updated_at' => now()
+                            'updated_at' => now(),
                         ]);
                     $this->line("🔄 Updated: <comment>{$permissionData['name']}</comment>");
                 } else {
                     // Insert new permission
                     DB::table('permissions')->insert(array_merge($permissionData, [
                         'created_at' => now(),
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]));
                     $this->line("✅ Added: <info>{$permissionData['name']}</info>");
                 }
@@ -104,7 +104,7 @@ class AddApprovalOrderPermissions extends Command
         $this->info('📊 Summary:');
         $this->line("✅ Processed: <info>{$addedCount}</info>");
         $this->line("⚪ Skipped: <comment>{$existingCount}</comment>");
-        $this->line("📊 Total permissions: <info>" . count($permissions) . "</info>");
+        $this->line('📊 Total permissions: <info>'.count($permissions).'</info>');
         $this->newLine();
 
         if ($addedCount > 0) {

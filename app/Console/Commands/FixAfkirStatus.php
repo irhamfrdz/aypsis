@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\StockBan;
+use Illuminate\Console\Command;
 
 class FixAfkirStatus extends Command
 {
@@ -34,6 +34,7 @@ class FixAfkirStatus extends Command
 
         if ($bans->isEmpty()) {
             $this->info('No bans with kondisi "afkir" and incorrect status found.');
+
             return 0;
         }
 
@@ -42,12 +43,13 @@ class FixAfkirStatus extends Command
             $oldStatus = $ban->status;
             $ban->status = 'Rusak';
             $ban->save();
-            
+
             $this->line("Updated Ban ID {$ban->id} ({$ban->nomor_seri}): {$oldStatus} -> Rusak");
             $count++;
         }
 
         $this->info("Successfully updated {$count} bans to status 'Rusak'.");
+
         return 0;
     }
 }

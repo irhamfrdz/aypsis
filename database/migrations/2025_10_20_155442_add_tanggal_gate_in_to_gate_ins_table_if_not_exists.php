@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('gate_ins', function (Blueprint $table) {
             // Check if tanggal_gate_in column doesn't exist, then add it
-            if (!Schema::hasColumn('gate_ins', 'tanggal_gate_in')) {
+            if (! Schema::hasColumn('gate_ins', 'tanggal_gate_in')) {
                 $table->timestamp('tanggal_gate_in')->nullable()->after('kapal_id');
             }
         });

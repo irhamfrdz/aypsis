@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('tagihan_ob', function (Blueprint $table) {
             // Tambahkan kolom kegiatan setelah voyage
-            if (!Schema::hasColumn('tagihan_ob', 'kegiatan')) {
+            if (! Schema::hasColumn('tagihan_ob', 'kegiatan')) {
                 $table->string('kegiatan', 50)->nullable()->after('voyage')->comment('Jenis kegiatan: muat atau bongkar');
             }
         });

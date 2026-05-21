@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class CrewChecklist extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $fillable = [
         'karyawan_id',
         'item_name',
@@ -19,12 +18,12 @@ class CrewChecklist extends Model
         'nomor_sertifikat',
         'issued_date',
         'expired_date',
-        'catatan'
+        'catatan',
     ];
 
     protected $dates = [
         'issued_date',
-        'expired_date'
+        'expired_date',
     ];
 
     public function karyawan()
@@ -55,7 +54,7 @@ class CrewChecklist extends Model
             'SDSD (Seafarer with Designated Security Duties)',
             'ERM (Engine Room Resource Management)',
             'BRM (Bridge Resource Management)',
-            'MC (Medical Care)'
+            'MC (Medical Care)',
         ];
     }
 
@@ -71,14 +70,14 @@ class CrewChecklist extends Model
                 'nomor_sertifikat' => null,
                 'issued_date' => null,
                 'expired_date' => null,
-                'catatan' => null
+                'catatan' => null,
             ]);
         }
     }
 
     public function isExpired()
     {
-        if (!$this->expired_date) {
+        if (! $this->expired_date) {
             return false;
         }
 
@@ -87,7 +86,7 @@ class CrewChecklist extends Model
 
     public function isExpiringSoon($days = 30)
     {
-        if (!$this->expired_date) {
+        if (! $this->expired_date) {
             return false;
         }
 

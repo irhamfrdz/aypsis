@@ -34,18 +34,18 @@ return new class extends Migration
             $table->boolean('include_sppb')->default(false);
             $table->boolean('exclude_buruh_bongkar')->default(false);
             $table->boolean('include_buruh_bongkar')->default(false);
-            
+
             // Satuan
             $table->enum('satuan', ['kg', 'ton', 'm3', 'unit', 'pcs', 'dus', 'karung', 'kontainer'])->nullable();
-            
-            // Penerima 
+
+            // Penerima
             $table->string('penerima')->nullable();
             $table->foreignId('penerima_id')->nullable()->constrained('penerimas')->onDelete('set null');
             $table->text('alamat_penerima')->nullable();
             $table->string('kontak_penerima')->nullable();
             $table->foreignId('notify_party_id')->nullable()->constrained('penerimas')->onDelete('set null');
             $table->foreignId('tujuan_ambil_id')->nullable()->constrained('tujuan_kegiatan_utamas')->onDelete('set null');
-            
+
             // Track processing status
             $table->integer('units')->default(1);
             $table->integer('sisa')->default(1);

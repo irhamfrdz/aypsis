@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\Permohonan;
 use App\Models\Karyawan;
+use App\Models\Permohonan;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
 
 class ApprovalGroupCoalesceTest extends TestCase
 {
@@ -21,11 +21,11 @@ class ApprovalGroupCoalesceTest extends TestCase
      */
     public function test_two_approvals_same_vendor_and_date_merge_into_one_tagihan()
     {
-    // Arrange: create a user and act as them; disable CSRF middleware for test requests
-    $user = User::factory()->create();
-    $this->actingAs($user);
-    // Disable all middleware to avoid CSRF/session related 419 errors in this test
-    $this->withoutMiddleware();
+        // Arrange: create a user and act as them; disable CSRF middleware for test requests
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        // Disable all middleware to avoid CSRF/session related 419 errors in this test
+        $this->withoutMiddleware();
 
         $supir = Karyawan::factory()->create();
 
@@ -43,11 +43,11 @@ class ApprovalGroupCoalesceTest extends TestCase
 
         // Act: approve first
         // Call controller store() directly to avoid routing/middleware complexity in tests
-        $request1 = \Illuminate\Http\Request::create('/approval/' . $perm1->id, 'POST', [
+        $request1 = \Illuminate\Http\Request::create('/approval/'.$perm1->id, 'POST', [
             'status_permohonan' => 'selesai',
             'tanggal_masuk_sewa' => $date,
         ]);
-        $controller = new \App\Http\Controllers\PenyelesaianController();
+        $controller = new \App\Http\Controllers\PenyelesaianController;
         $response1 = $controller->store($request1, $perm1);
         $this->assertNotNull($response1);
 
@@ -61,7 +61,7 @@ class ApprovalGroupCoalesceTest extends TestCase
         $perm2->kontainers()->attach($k2->id);
 
         // Act: approve second
-        $request2 = \Illuminate\Http\Request::create('/approval/' . $perm2->id, 'POST', [
+        $request2 = \Illuminate\Http\Request::create('/approval/'.$perm2->id, 'POST', [
             'status_permohonan' => 'selesai',
             'tanggal_masuk_sewa' => $date,
         ]);

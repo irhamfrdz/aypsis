@@ -22,7 +22,7 @@ trait Auditable
             $original = $model->getOriginal();
             $changes = $model->getDirty();
 
-            if (!empty($changes)) {
+            if (! empty($changes)) {
                 $oldValues = array_intersect_key($original, $changes);
                 $model->logAudit('updated', $oldValues, $changes);
             }
@@ -56,7 +56,7 @@ trait Auditable
             'remember_token',
             'email_verified_at',
             'created_at',
-            'updated_at'
+            'updated_at',
         ];
 
         // Exclude fields yang ada di property $auditExclude jika ada

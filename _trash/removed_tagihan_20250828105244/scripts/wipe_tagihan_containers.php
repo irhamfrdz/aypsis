@@ -1,14 +1,15 @@
 <?php
+
 // scripts/wipe_tagihan_containers.php
 // Safe one-off script to remove all TagihanKontainerSewa rows and pivot links.
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-use Illuminate\Support\Facades\DB;
 use App\Models\TagihanKontainerSewa;
+use Illuminate\Support\Facades\DB;
 
 echo "Wipe Tagihan Kontainer Sewa - START\n";
 
@@ -26,7 +27,7 @@ if ($driver === 'mysql') {
 }
 
 $pivotTable = 'tagihan_kontainer_sewa_kontainers';
-$mainTable = (new TagihanKontainerSewa())->getTable();
+$mainTable = (new TagihanKontainerSewa)->getTable();
 
 $beforeTag = TagihanKontainerSewa::count();
 $beforePiv = DB::table($pivotTable)->count();

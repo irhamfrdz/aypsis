@@ -8,13 +8,13 @@ return new class extends Migration
 {
     public function up()
     {
-        if (!Schema::hasTable('master_kegiatans')) {
+        if (! Schema::hasTable('master_kegiatans')) {
             Schema::create('master_kegiatans', function (Blueprint $table) {
                 $table->id();
                 $table->string('kode')->unique();
                 $table->string('kegiatan');
                 $table->text('keterangan')->nullable();
-                $table->enum('status', ['aktif','nonaktif'])->default('aktif');
+                $table->enum('status', ['aktif', 'nonaktif'])->default('aktif');
                 $table->timestamps();
             });
         }

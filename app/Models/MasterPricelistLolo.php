@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MasterPricelistLolo extends Model
 {
-    use HasFactory, SoftDeletes, Auditable;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $table = 'master_pricelist_lolos';
 
@@ -19,11 +19,11 @@ class MasterPricelistLolo extends Model
         'lokasi',
         'size',
         'tarif',
-        'status'
+        'status',
     ];
 
     protected $casts = [
-        'tarif' => 'decimal:2'
+        'tarif' => 'decimal:2',
     ];
 
     /**
@@ -31,7 +31,7 @@ class MasterPricelistLolo extends Model
      */
     public function getFormattedTarifAttribute()
     {
-        return 'Rp ' . number_format($this->tarif, 0, ',', '.');
+        return 'Rp '.number_format($this->tarif, 0, ',', '.');
     }
 
     /**

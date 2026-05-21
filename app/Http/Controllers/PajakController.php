@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pajak;
 use App\Exports\PajakTemplateExport;
 use App\Imports\PajakImport;
+use App\Models\Pajak;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -18,7 +18,7 @@ class PajakController extends Controller
         $query = Pajak::query();
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $query->search($request->search);
         }
 
@@ -32,7 +32,8 @@ class PajakController extends Controller
      */
     public function downloadTemplate()
     {
-        $export = new PajakTemplateExport();
+        $export = new PajakTemplateExport;
+
         return $export->download();
     }
 
@@ -42,28 +43,29 @@ class PajakController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:2048'
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:2048',
         ]);
 
         try {
-            $import = new PajakImport();
+            $import = new PajakImport;
             $result = $import->import($request->file('file'));
 
             if ($result['success_count'] > 0) {
                 $message = "Berhasil mengimport {$result['success_count']} data pajak.";
-                if (!empty($result['errors'])) {
-                    $message .= " Namun ada " . count($result['errors']) . " error: " . implode('; ', array_slice($result['errors'], 0, 3));
+                if (! empty($result['errors'])) {
+                    $message .= ' Namun ada '.count($result['errors']).' error: '.implode('; ', array_slice($result['errors'], 0, 3));
                     if (count($result['errors']) > 3) {
-                        $message .= " dan " . (count($result['errors']) - 3) . " error lainnya.";
+                        $message .= ' dan '.(count($result['errors']) - 3).' error lainnya.';
                     }
                 }
+
                 return redirect()->route('master.pajak.index')->with('success', $message);
             } else {
-                return redirect()->route('master.pajak.index')->with('error', 'Import gagal: ' . implode('; ', $result['errors']));
+                return redirect()->route('master.pajak.index')->with('error', 'Import gagal: '.implode('; ', $result['errors']));
             }
 
         } catch (\Exception $e) {
-            return redirect()->route('master.pajak.index')->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+            return redirect()->route('master.pajak.index')->with('error', 'Terjadi kesalahan saat import: '.$e->getMessage());
         }
     }
 
@@ -82,12 +84,12 @@ class PajakController extends Controller
     {
         $request->validate([
             'nama_status' => 'required|string|max:100|unique:pajaks,nama_status',
-            'keterangan' => 'nullable|string|max:500'
+            'keterangan' => 'nullable|string|max:500',
         ]);
 
         Pajak::create([
             'nama_status' => $request->nama_status,
-            'keterangan' => $request->keterangan
+            'keterangan' => $request->keterangan,
         ]);
 
         return redirect()->route('master.pajak.index')->with('success', 'Pajak berhasil ditambahkan!');
@@ -116,12 +118,12 @@ class PajakController extends Controller
     {
         $request->validate([
             'nama_status' => ['required', 'string', 'max:100', Rule::unique('pajaks')->ignore($pajak->id)],
-            'keterangan' => 'nullable|string|max:500'
+            'keterangan' => 'nullable|string|max:500',
         ]);
 
         $pajak->update([
             'nama_status' => $request->nama_status,
-            'keterangan' => $request->keterangan
+            'keterangan' => $request->keterangan,
         ]);
 
         return redirect()->route('master.pajak.index')->with('success', 'Pajak berhasil diperbarui!');

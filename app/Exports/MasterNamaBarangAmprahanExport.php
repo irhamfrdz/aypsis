@@ -4,14 +4,14 @@ namespace App\Exports;
 
 use App\Models\MasterNamaBarangAmprahan;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class MasterNamaBarangAmprahanExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class MasterNamaBarangAmprahanExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $filters;
 
@@ -24,12 +24,12 @@ class MasterNamaBarangAmprahanExport implements FromCollection, WithHeadings, Sh
     {
         $query = MasterNamaBarangAmprahan::query();
 
-        if (!empty($this->filters['search'])) {
+        if (! empty($this->filters['search'])) {
             $searchTerm = $this->filters['search'];
-            $query->where('nama_barang', 'LIKE', '%' . $searchTerm . '%');
+            $query->where('nama_barang', 'LIKE', '%'.$searchTerm.'%');
         }
 
-        return $query->latest()->get()->map(function($item, $index) {
+        return $query->latest()->get()->map(function ($item, $index) {
             return [
                 $index + 1,
                 $item->nama_barang,
@@ -52,7 +52,7 @@ class MasterNamaBarangAmprahanExport implements FromCollection, WithHeadings, Sh
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 // Style the header row
                 $event->sheet->getStyle('A1:D1')->applyFromArray([
                     'font' => [
@@ -70,17 +70,17 @@ class MasterNamaBarangAmprahanExport implements FromCollection, WithHeadings, Sh
                 ]);
 
                 // Center align the No column
-                $event->sheet->getStyle('A2:A' . ($event->sheet->getHighestRow()))
+                $event->sheet->getStyle('A2:A'.($event->sheet->getHighestRow()))
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 // Center align the Status column
-                $event->sheet->getStyle('C2:C' . ($event->sheet->getHighestRow()))
+                $event->sheet->getStyle('C2:C'.($event->sheet->getHighestRow()))
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 // Add border to all cells
-                $event->sheet->getStyle('A1:D' . ($event->sheet->getHighestRow()))
+                $event->sheet->getStyle('A1:D'.($event->sheet->getHighestRow()))
                     ->applyFromArray([
                         'borders' => [
                             'allBorders' => [

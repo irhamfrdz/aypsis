@@ -112,11 +112,12 @@ class KontainerPerjalanan extends Model
      */
     public function getDurasiPerjalananAttribute()
     {
-        if (!$this->waktu_keluar) {
+        if (! $this->waktu_keluar) {
             return null;
         }
 
         $waktuAkhir = $this->waktu_tiba_aktual ?? now();
+
         return $this->waktu_keluar->diffInHours($waktuAkhir);
     }
 
@@ -125,7 +126,7 @@ class KontainerPerjalanan extends Model
      */
     public function getStatusBadgeColorAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'dalam_perjalanan' => 'blue',
             'sampai_tujuan' => 'green',
             'dibatalkan' => 'red',
@@ -138,7 +139,7 @@ class KontainerPerjalanan extends Model
      */
     public function getStatusLabelAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'dalam_perjalanan' => 'Dalam Perjalanan',
             'sampai_tujuan' => 'Sampai Tujuan',
             'dibatalkan' => 'Dibatalkan',

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Coa;
-use App\Models\KodeNomor;
 use App\Exports\MasterCoaTemplateExport;
 use App\Imports\MasterCoaImport;
+use App\Models\Coa;
+use App\Models\KodeNomor;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -19,18 +19,18 @@ class MasterCoaController extends Controller
         $query = Coa::query();
 
         // Search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('nomor_akun', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('kode_nomor', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('nama_akun', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('tipe_akun', 'like', '%' . $searchTerm . '%');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('nomor_akun', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('kode_nomor', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('nama_akun', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('tipe_akun', 'like', '%'.$searchTerm.'%');
             });
         }
 
         // Filter by tipe_akun
-        if ($request->has('tipe_akun') && !empty($request->tipe_akun)) {
+        if ($request->has('tipe_akun') && ! empty($request->tipe_akun)) {
             $query->where('tipe_akun', $request->tipe_akun);
         }
 
@@ -49,6 +49,7 @@ class MasterCoaController extends Controller
     {
         $tipeAkuns = \App\Models\TipeAkun::orderBy('tipe_akun')->get();
         $kodeNomors = KodeNomor::orderBy('kode')->get();
+
         return view('master-coa.create', compact('tipeAkuns', 'kodeNomors'));
     }
 
@@ -92,6 +93,7 @@ class MasterCoaController extends Controller
     {
         $tipeAkuns = \App\Models\TipeAkun::orderBy('tipe_akun')->get();
         $kodeNomors = KodeNomor::orderBy('kode')->get();
+
         return view('master-coa.edit', compact('coa', 'tipeAkuns', 'kodeNomors'));
     }
 
@@ -136,7 +138,8 @@ class MasterCoaController extends Controller
      */
     public function downloadTemplate()
     {
-        $export = new MasterCoaTemplateExport();
+        $export = new MasterCoaTemplateExport;
+
         return $export->download();
     }
 
@@ -146,24 +149,25 @@ class MasterCoaController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:2048'
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:2048',
         ]);
 
         try {
-            $import = new MasterCoaImport();
+            $import = new MasterCoaImport;
             $result = $import->import($request->file('file'));
 
             if ($result['success_count'] > 0) {
                 $message = "Berhasil mengimport {$result['success_count']} data COA";
-                if (!empty($result['errors'])) {
-                    $message .= ". Namun ada " . count($result['errors']) . " error: " . implode('; ', $result['errors']);
+                if (! empty($result['errors'])) {
+                    $message .= '. Namun ada '.count($result['errors']).' error: '.implode('; ', $result['errors']);
                 }
+
                 return redirect()->route('master-coa-index')->with('success', $message);
             } else {
-                return redirect()->route('master-coa-index')->with('error', 'Gagal mengimport data: ' . implode('; ', $result['errors']));
+                return redirect()->route('master-coa-index')->with('error', 'Gagal mengimport data: '.implode('; ', $result['errors']));
             }
         } catch (\Exception $e) {
-            return redirect()->route('master-coa-index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->route('master-coa-index')->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -175,11 +179,11 @@ class MasterCoaController extends Controller
         $query = $coa->transactions()->orderBy('tanggal_transaksi', 'asc')->orderBy('id', 'asc');
 
         // Filter by date range
-        if ($request->has('dari_tanggal') && !empty($request->dari_tanggal)) {
+        if ($request->has('dari_tanggal') && ! empty($request->dari_tanggal)) {
             $query->where('tanggal_transaksi', '>=', $request->dari_tanggal);
         }
 
-        if ($request->has('sampai_tanggal') && !empty($request->sampai_tanggal)) {
+        if ($request->has('sampai_tanggal') && ! empty($request->sampai_tanggal)) {
             $query->where('tanggal_transaksi', '<=', $request->sampai_tanggal);
         }
 
@@ -187,7 +191,7 @@ class MasterCoaController extends Controller
 
         // Calculate saldo awal (sebelum filter tanggal)
         $saldoAwal = 0;
-        if ($request->has('dari_tanggal') && !empty($request->dari_tanggal)) {
+        if ($request->has('dari_tanggal') && ! empty($request->dari_tanggal)) {
             $transaksiSebelumnya = $coa->transactions()
                 ->where('tanggal_transaksi', '<', $request->dari_tanggal)
                 ->orderBy('tanggal_transaksi', 'desc')
@@ -212,11 +216,11 @@ class MasterCoaController extends Controller
         $query = $coa->transactions()->orderBy('tanggal_transaksi', 'asc')->orderBy('id', 'asc');
 
         // Filter by date range
-        if ($request->has('dari_tanggal') && !empty($request->dari_tanggal)) {
+        if ($request->has('dari_tanggal') && ! empty($request->dari_tanggal)) {
             $query->where('tanggal_transaksi', '>=', $request->dari_tanggal);
         }
 
-        if ($request->has('sampai_tanggal') && !empty($request->sampai_tanggal)) {
+        if ($request->has('sampai_tanggal') && ! empty($request->sampai_tanggal)) {
             $query->where('tanggal_transaksi', '<=', $request->sampai_tanggal);
         }
 
@@ -225,7 +229,7 @@ class MasterCoaController extends Controller
 
         // Calculate saldo awal (sebelum filter tanggal)
         $saldoAwal = 0;
-        if ($request->has('dari_tanggal') && !empty($request->dari_tanggal)) {
+        if ($request->has('dari_tanggal') && ! empty($request->dari_tanggal)) {
             $transaksiSebelumnya = $coa->transactions()
                 ->where('tanggal_transaksi', '<', $request->dari_tanggal)
                 ->orderBy('tanggal_transaksi', 'desc')
@@ -250,34 +254,34 @@ class MasterCoaController extends Controller
         $query = Coa::query();
 
         // Apply same filters as index
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('nomor_akun', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('kode_nomor', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('nama_akun', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('tipe_akun', 'like', '%' . $searchTerm . '%');
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('nomor_akun', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('kode_nomor', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('nama_akun', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('tipe_akun', 'like', '%'.$searchTerm.'%');
             });
         }
 
-        if ($request->has('tipe_akun') && !empty($request->tipe_akun)) {
+        if ($request->has('tipe_akun') && ! empty($request->tipe_akun)) {
             $query->where('tipe_akun', $request->tipe_akun);
         }
 
         $coas = $query->orderBy('nomor_akun')->get();
 
         // Generate CSV content
-        $filename = 'master_coa_' . date('Y-m-d_H-i-s') . '.csv';
+        $filename = 'master_coa_'.date('Y-m-d_H-i-s').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires' => '0'
+            'Expires' => '0',
         ];
 
-        $callback = function() use ($coas) {
+        $callback = function () use ($coas) {
             $file = fopen('php://output', 'w');
 
             // Add BOM for UTF-8
@@ -291,7 +295,7 @@ class MasterCoaController extends Controller
                 'Tipe Akun',
                 'Saldo',
                 'Tanggal Dibuat',
-                'Tanggal Diupdate'
+                'Tanggal Diupdate',
             ], ';');
 
             // CSV Data
@@ -301,9 +305,9 @@ class MasterCoaController extends Controller
                     $coa->kode_nomor ?? '',
                     $coa->nama_akun,
                     $coa->tipe_akun,
-                    number_format((float)$coa->saldo ?? 0, 2, ',', '.'),
+                    number_format((float) $coa->saldo ?? 0, 2, ',', '.'),
                     $coa->created_at ? $coa->created_at->format('d/m/Y H:i:s') : '',
-                    $coa->updated_at ? $coa->updated_at->format('d/m/Y H:i:s') : ''
+                    $coa->updated_at ? $coa->updated_at->format('d/m/Y H:i:s') : '',
                 ], ';');
             }
 

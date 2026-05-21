@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tujuan;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
-use Exception;
+use Illuminate\Support\Facades\Validator;
 
 class MasterTujuanImportController extends Controller
 {
@@ -17,12 +17,12 @@ class MasterTujuanImportController extends Controller
     public function downloadTemplate()
     {
         try {
-            $fileName = 'template_master_tujuan_' . date('Y-m-d_H-i-s') . '.csv';
+            $fileName = 'template_master_tujuan_'.date('Y-m-d_H-i-s').'.csv';
 
             // Headers for CSV
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ];
 
             // CSV content dengan header dan contoh data
@@ -30,14 +30,14 @@ class MasterTujuanImportController extends Controller
                 ['Cabang', 'Wilayah', 'Dari', 'Ke', 'Uang Jalan 20ft', 'Ongkos Truk 20ft', 'Uang Jalan 40ft', 'Ongkos Truk 40ft', 'Antar Lokasi 20ft', 'Antar Lokasi 40ft'],
                 ['Jakarta', 'Jakarta Timur', 'Tanjung Priok', 'Bekasi', '150000', '80000', '200000', '120000', '100000', '150000'],
                 ['Jakarta', 'Jakarta Barat', 'Soekarno Hatta', 'Tangerang', '175000', '90000', '225000', '130000', '125000', '175000'],
-                ['Surabaya', 'Surabaya Utara', 'Tanjung Perak', 'Gresik', '120000', '70000', '180000', '110000', '80000', '120000']
+                ['Surabaya', 'Surabaya Utara', 'Tanjung Perak', 'Gresik', '120000', '70000', '180000', '110000', '80000', '120000'],
             ];
 
-            $callback = function() use ($csvData) {
+            $callback = function () use ($csvData) {
                 $file = fopen('php://output', 'w');
 
                 // Add BOM for UTF-8
-                fputs($file, "\xEF\xBB\xBF");
+                fwrite($file, "\xEF\xBB\xBF");
 
                 // Set CSV dengan semicolon delimiter
                 foreach ($csvData as $row) {
@@ -50,7 +50,7 @@ class MasterTujuanImportController extends Controller
             return Response::stream($callback, 200, $headers);
 
         } catch (Exception $e) {
-            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mendownload template: '.$e->getMessage());
         }
     }
 
@@ -65,12 +65,12 @@ class MasterTujuanImportController extends Controller
                 'required',
                 'file',
                 'mimes:csv,txt',
-                'max:5120' // 5MB
-            ]
+                'max:5120', // 5MB
+            ],
         ], [
             'csv_file.required' => 'File CSV harus dipilih.',
             'csv_file.mimes' => 'File harus berformat .csv',
-            'csv_file.max' => 'Ukuran file maksimal 5MB.'
+            'csv_file.max' => 'Ukuran file maksimal 5MB.',
         ]);
 
         if ($validator->fails()) {
@@ -83,8 +83,8 @@ class MasterTujuanImportController extends Controller
 
             // Read CSV file with semicolon delimiter
             $csvData = [];
-            if (($handle = fopen($path, 'r')) !== FALSE) {
-                while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
+            if (($handle = fopen($path, 'r')) !== false) {
+                while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                     $csvData[] = $data;
                 }
                 fclose($handle);
@@ -104,7 +104,7 @@ class MasterTujuanImportController extends Controller
                 'errors' => 0,
                 'skipped' => 0,
                 'error_details' => [],
-                'warnings' => []
+                'warnings' => [],
             ];
 
             DB::beginTransaction();
@@ -121,6 +121,7 @@ class MasterTujuanImportController extends Controller
                 if (count($row) < 10) {
                     $stats['errors']++;
                     $stats['error_details'][] = "Baris {$rowNumber}: Data tidak lengkap";
+
                     continue;
                 }
 
@@ -140,6 +141,7 @@ class MasterTujuanImportController extends Controller
                     if (empty($cabang) || empty($wilayah) || empty($dari) || empty($ke)) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Cabang, Wilayah, Dari, dan Ke tidak boleh kosong";
+
                         continue;
                     }
 
@@ -150,24 +152,25 @@ class MasterTujuanImportController extends Controller
                         'Uang Jalan 40ft' => $uangJalan40,
                         'Ongkos Truk 40ft' => $ongkosTruk40,
                         'Antar Lokasi 20ft' => $antar20,
-                        'Antar Lokasi 40ft' => $antar40
+                        'Antar Lokasi 40ft' => $antar40,
                     ];
 
                     foreach ($numericFields as $fieldName => $value) {
-                        if (!empty($value) && !is_numeric(str_replace(',', '', $value))) {
+                        if (! empty($value) && ! is_numeric(str_replace(',', '', $value))) {
                             $stats['errors']++;
                             $stats['error_details'][] = "Baris {$rowNumber}: {$fieldName} harus berupa angka";
+
                             continue 2; // Skip this row
                         }
                     }
 
                     // Clean numeric values
-                    $uangJalan20 = !empty($uangJalan20) ? (int)str_replace(',', '', $uangJalan20) : 0;
-                    $ongkosTruk20 = !empty($ongkosTruk20) ? (int)str_replace(',', '', $ongkosTruk20) : 0;
-                    $uangJalan40 = !empty($uangJalan40) ? (int)str_replace(',', '', $uangJalan40) : 0;
-                    $ongkosTruk40 = !empty($ongkosTruk40) ? (int)str_replace(',', '', $ongkosTruk40) : 0;
-                    $antar20 = !empty($antar20) ? (int)str_replace(',', '', $antar20) : 0;
-                    $antar40 = !empty($antar40) ? (int)str_replace(',', '', $antar40) : 0;
+                    $uangJalan20 = ! empty($uangJalan20) ? (int) str_replace(',', '', $uangJalan20) : 0;
+                    $ongkosTruk20 = ! empty($ongkosTruk20) ? (int) str_replace(',', '', $ongkosTruk20) : 0;
+                    $uangJalan40 = ! empty($uangJalan40) ? (int) str_replace(',', '', $uangJalan40) : 0;
+                    $ongkosTruk40 = ! empty($ongkosTruk40) ? (int) str_replace(',', '', $ongkosTruk40) : 0;
+                    $antar20 = ! empty($antar20) ? (int) str_replace(',', '', $antar20) : 0;
+                    $antar40 = ! empty($antar40) ? (int) str_replace(',', '', $antar40) : 0;
 
                     // Check if tujuan already exists (based on cabang, wilayah, dari, ke)
                     $existingTujuan = Tujuan::where('cabang', $cabang)
@@ -187,7 +190,7 @@ class MasterTujuanImportController extends Controller
                         'ongkos_truk_40' => $ongkosTruk40,
                         'antar_20' => $antar20,
                         'antar_40' => $antar40,
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ];
 
                     if ($existingTujuan) {
@@ -203,14 +206,14 @@ class MasterTujuanImportController extends Controller
 
                 } catch (Exception $e) {
                     $stats['errors']++;
-                    $stats['error_details'][] = "Baris {$rowNumber}: " . $e->getMessage();
+                    $stats['error_details'][] = "Baris {$rowNumber}: ".$e->getMessage();
                 }
             }
 
             DB::commit();
 
             // Build success message
-            $message = "Import berhasil! ";
+            $message = 'Import berhasil! ';
             if ($stats['success'] > 0) {
                 $message .= "Ditambahkan: {$stats['success']} tujuan, ";
             }
@@ -219,10 +222,10 @@ class MasterTujuanImportController extends Controller
             }
             if ($stats['errors'] > 0) {
                 $message .= "Error: {$stats['errors']} baris. ";
-                if (!empty($stats['error_details'])) {
-                    $message .= "Error detail: " . implode(', ', array_slice($stats['error_details'], 0, 5));
+                if (! empty($stats['error_details'])) {
+                    $message .= 'Error detail: '.implode(', ', array_slice($stats['error_details'], 0, 5));
                     if (count($stats['error_details']) > 5) {
-                        $message .= " (dan " . (count($stats['error_details']) - 5) . " error lainnya)";
+                        $message .= ' (dan '.(count($stats['error_details']) - 5).' error lainnya)';
                     }
                 }
             }
@@ -231,7 +234,8 @@ class MasterTujuanImportController extends Controller
 
         } catch (Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan saat import: '.$e->getMessage());
         }
     }
 }

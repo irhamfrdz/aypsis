@@ -26,7 +26,7 @@ class AuditLog extends Model
         'new_values',
         'ip_address',
         'user_agent',
-        'url'
+        'url',
     ];
 
     protected $casts = [
@@ -172,7 +172,7 @@ class AuditLog extends Model
      */
     public function getFormattedChanges()
     {
-        if (!$this->old_values || !$this->new_values) {
+        if (! $this->old_values || ! $this->new_values) {
             return null;
         }
 
@@ -187,7 +187,7 @@ class AuditLog extends Model
                 $changes[] = [
                     'field' => $field,
                     'old' => $oldValue,
-                    'new' => $newValue
+                    'new' => $newValue,
                 ];
             }
         }

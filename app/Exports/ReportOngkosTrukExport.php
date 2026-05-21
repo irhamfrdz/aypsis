@@ -4,18 +4,20 @@ namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents, WithColumnFormatting
+class ReportOngkosTrukExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithEvents, WithHeadings
 {
     protected $data;
+
     protected $startDate;
+
     protected $endDate;
 
     public function __construct($data, $startDate, $endDate)
@@ -27,21 +29,21 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
 
     public function collection()
     {
-        return $this->data->map(function($item, $index) {
+        return $this->data->map(function ($item, $index) {
             return [
                 $index + 1,
                 $item['tanggal'],
                 $item['no_surat_jalan'],
                 $item['no_plat'],
                 $item['nama_lengkap_supir'],
-                $item['nik_supir'] ? "'" . $item['nik_supir'] : '-',
+                $item['nik_supir'] ? "'".$item['nik_supir'] : '-',
                 $item['rit_supir'],
                 $item['nama_lengkap_kenek'],
-                $item['nik_kenek'] ? "'" . $item['nik_kenek'] : '-',
+                $item['nik_kenek'] ? "'".$item['nik_kenek'] : '-',
                 $item['rit_kenek'],
                 $item['tujuan'],
-                (float)$item['ongkos_truck'],
-                (float)$item['uang_jalan'],
+                (float) $item['ongkos_truck'],
+                (float) $item['uang_jalan'],
                 $item['nomor_bukti'] ?? '-',
             ];
         });
@@ -78,24 +80,24 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                
+
                 // 1. Insert Title rows FIRST to get correct row numbers
                 $sheet->insertNewRowBefore(1, 3);
                 $sheet->setCellValue('A1', 'LAPORAN ONGKOS TRUK');
-                $sheet->setCellValue('A2', 'Periode: ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
-                
+                $sheet->setCellValue('A2', 'Periode: '.$this->startDate->format('d/m/Y').' - '.$this->endDate->format('d/m/Y'));
+
                 $lastCol = 'N';
                 $headerRow = 4; // Now headers are at row 4
                 $dataStartRow = 5; // Data starts at row 5
-                
+
                 // Merge title
                 $sheet->mergeCells("A1:{$lastCol}1");
                 $sheet->mergeCells("A2:{$lastCol}2");
-                $sheet->getStyle("A1:A2")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle("A1")->getFont()->setBold(true)->setSize(14);
-                $sheet->getStyle("A2")->getFont()->setBold(true);
+                $sheet->getStyle('A1:A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+                $sheet->getStyle('A2')->getFont()->setBold(true);
 
                 // 2. Style Header (Row 4)
                 $sheet->getStyle("A{$headerRow}:{$lastCol}{$headerRow}")->applyFromArray([
@@ -131,7 +133,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $sheet->setCellValue("L{$totalRow}", "=SUM(L{$dataStartRow}:L{$lastDataRow})");
                 // Sum Uang Jalan
                 $sheet->setCellValue("M{$totalRow}", "=SUM(M{$dataStartRow}:M{$lastDataRow})");
-                
+
                 // Style the entire table borders
                 $sheet->getStyle("A{$headerRow}:{$lastCol}{$totalRow}")->applyFromArray([
                     'borders' => [
@@ -147,7 +149,7 @@ class ReportOngkosTrukExport implements FromCollection, WithHeadings, ShouldAuto
                 $sheet->getStyle("G{$totalRow}")->getFont()->setBold(true); // Bold Rit Supir Total
                 $sheet->getStyle("J{$totalRow}")->getFont()->setBold(true); // Bold Rit Kenek Total
                 $sheet->getStyle("L{$dataStartRow}:M{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-                
+
                 // Auto height for rows
                 $sheet->getRowDimension('1')->setRowHeight(25);
                 $sheet->getRowDimension('2')->setRowHeight(20);

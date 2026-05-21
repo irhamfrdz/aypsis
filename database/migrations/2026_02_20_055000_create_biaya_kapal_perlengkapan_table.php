@@ -21,9 +21,9 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('biaya_kapal_id')
-                  ->references('id')
-                  ->on('biaya_kapals')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('biaya_kapals')
+                ->onDelete('cascade');
         });
     }
 

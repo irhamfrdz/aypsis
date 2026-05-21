@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('tarif', 15, 2); // Tarif dalam rupiah
             $table->enum('status', ['AQUA', 'CHASIS PB'])->nullable(); // Status opsional
             $table->timestamps();
-            
+
             // Index untuk pencarian cepat
             $table->index(['expedisi', 'ring', 'size', 'f_e']);
         });

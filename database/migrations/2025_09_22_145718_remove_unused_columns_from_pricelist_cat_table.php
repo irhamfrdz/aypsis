@@ -16,7 +16,7 @@ return new class extends Migration
                 'tanggal_harga_awal',
                 'tanggal_harga_akhir',
                 'harga',
-                'keterangan'
+                'keterangan',
             ]);
         });
     }

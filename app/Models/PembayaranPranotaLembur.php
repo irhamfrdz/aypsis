@@ -39,7 +39,9 @@ class PembayaranPranotaLembur extends Model
 
     // Constants for status
     const STATUS_PENDING = 'pending';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_CANCELLED = 'cancelled';
 
     /**
@@ -84,7 +86,7 @@ class PembayaranPranotaLembur extends Model
      */
     public function getFormattedAmountAttribute()
     {
-        return 'Rp ' . number_format($this->total_pembayaran, 0, ',', '.');
+        return 'Rp '.number_format($this->total_pembayaran, 0, ',', '.');
     }
 
     /**

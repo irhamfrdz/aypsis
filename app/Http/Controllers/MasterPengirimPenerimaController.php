@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\MasterPengirimPenerima;
 use App\Exports\MasterPengirimPenerimaTemplateExport;
 use App\Imports\MasterPengirimPenerimaImport;
+use App\Models\MasterPengirimPenerima;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -27,11 +26,11 @@ class MasterPengirimPenerimaController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('kode', 'like', "%{$search}%")
-                  ->orWhere('nama', 'like', "%{$search}%")
-                  ->orWhere('alamat', 'like', "%{$search}%")
-                  ->orWhere('npwp', 'like', "%{$search}%");
+                    ->orWhere('nama', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%")
+                    ->orWhere('npwp', 'like', "%{$search}%");
             });
         }
 
@@ -46,6 +45,7 @@ class MasterPengirimPenerimaController extends Controller
     public function create()
     {
         $kodeOtomatis = MasterPengirimPenerima::generateKode();
+
         return view('master-pengirim-penerima.create', compact('kodeOtomatis'));
     }
 
@@ -55,6 +55,7 @@ class MasterPengirimPenerimaController extends Controller
     public function createForTandaTerima()
     {
         $kodeOtomatis = MasterPengirimPenerima::generateKode();
+
         return view('master-pengirim-penerima.create-for-tanda-terima', compact('kodeOtomatis'));
     }
 
@@ -79,7 +80,7 @@ class MasterPengirimPenerimaController extends Controller
             $penerima = MasterPengirimPenerima::create($validated);
 
             DB::commit();
-            
+
             // Store penerima data in session for popup to send to parent
             session([
                 'penerima_nama' => $penerima->nama,
@@ -88,12 +89,13 @@ class MasterPengirimPenerimaController extends Controller
             ]);
 
             return redirect()->back()
-                           ->with('success', 'Penerima berhasil ditambahkan')
-                           ->with('popup', true);
+                ->with('success', 'Penerima berhasil ditambahkan')
+                ->with('popup', true);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()->withInput()
-                           ->with('error', 'Gagal menambahkan penerima: ' . $e->getMessage());
+                ->with('error', 'Gagal menambahkan penerima: '.$e->getMessage());
         }
     }
 
@@ -118,12 +120,14 @@ class MasterPengirimPenerimaController extends Controller
             MasterPengirimPenerima::create($validated);
 
             DB::commit();
+
             return redirect()->route('master-pengirim-penerima.index')
-                           ->with('success', 'Data berhasil ditambahkan');
+                ->with('success', 'Data berhasil ditambahkan');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()->withInput()
-                           ->with('error', 'Gagal menambahkan data: ' . $e->getMessage());
+                ->with('error', 'Gagal menambahkan data: '.$e->getMessage());
         }
     }
 
@@ -133,6 +137,7 @@ class MasterPengirimPenerimaController extends Controller
     public function show(MasterPengirimPenerima $masterPengirimPenerima)
     {
         $masterPengirimPenerima->load('creator', 'updater');
+
         return view('master-pengirim-penerima.show', compact('masterPengirimPenerima'));
     }
 
@@ -150,7 +155,7 @@ class MasterPengirimPenerimaController extends Controller
     public function update(Request $request, MasterPengirimPenerima $masterPengirimPenerima)
     {
         $validated = $request->validate([
-            'kode' => 'required|string|max:50|unique:master_pengirim_penerima,kode,' . $masterPengirimPenerima->id,
+            'kode' => 'required|string|max:50|unique:master_pengirim_penerima,kode,'.$masterPengirimPenerima->id,
             'nama' => 'required|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
@@ -163,12 +168,14 @@ class MasterPengirimPenerimaController extends Controller
             $masterPengirimPenerima->update($validated);
 
             DB::commit();
+
             return redirect()->route('master-pengirim-penerima.index')
-                           ->with('success', 'Data berhasil diupdate');
+                ->with('success', 'Data berhasil diupdate');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()->withInput()
-                           ->with('error', 'Gagal mengupdate data: ' . $e->getMessage());
+                ->with('error', 'Gagal mengupdate data: '.$e->getMessage());
         }
     }
 
@@ -180,14 +187,16 @@ class MasterPengirimPenerimaController extends Controller
         DB::beginTransaction();
         try {
             $masterPengirimPenerima->delete();
-            
+
             DB::commit();
+
             return redirect()->route('master-pengirim-penerima.index')
-                           ->with('success', 'Data berhasil dihapus');
+                ->with('success', 'Data berhasil dihapus');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return redirect()->back()
-                           ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus data: '.$e->getMessage());
         }
     }
 
@@ -196,7 +205,8 @@ class MasterPengirimPenerimaController extends Controller
      */
     public function downloadTemplate()
     {
-        $export = new MasterPengirimPenerimaTemplateExport();
+        $export = new MasterPengirimPenerimaTemplateExport;
+
         return $export->download();
     }
 
@@ -206,24 +216,25 @@ class MasterPengirimPenerimaController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:2048'
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:2048',
         ]);
 
         try {
-            $import = new MasterPengirimPenerimaImport();
+            $import = new MasterPengirimPenerimaImport;
             $result = $import->import($request->file('file'));
 
             if ($result['success_count'] > 0) {
                 $message = "Berhasil mengimport {$result['success_count']} data pengirim/penerima";
-                if (!empty($result['errors'])) {
-                    $message .= ". Namun ada " . count($result['errors']) . " error: " . implode('; ', $result['errors']);
+                if (! empty($result['errors'])) {
+                    $message .= '. Namun ada '.count($result['errors']).' error: '.implode('; ', $result['errors']);
                 }
+
                 return redirect()->route('master-pengirim-penerima.index')->with('success', $message);
             } else {
-                return redirect()->route('master-pengirim-penerima.index')->with('error', 'Gagal mengimport data: ' . implode('; ', $result['errors']));
+                return redirect()->route('master-pengirim-penerima.index')->with('error', 'Gagal mengimport data: '.implode('; ', $result['errors']));
             }
         } catch (\Exception $e) {
-            return redirect()->route('master-pengirim-penerima.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->route('master-pengirim-penerima.index')->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -235,7 +246,7 @@ class MasterPengirimPenerimaController extends Controller
         $nextKode = MasterPengirimPenerima::generateKode();
         $search = $request->get('search', '');
         $isPopup = $request->has('popup');
-        
+
         return view('master-pengirim-penerima.create-for-order', compact('nextKode', 'search', 'isPopup'));
     }
 
@@ -253,14 +264,14 @@ class MasterPengirimPenerimaController extends Controller
         ]);
 
         $validated['created_by'] = Auth::id();
-        
+
         $penerima = MasterPengirimPenerima::create($validated);
 
         if ($request->has('popup')) {
             // Return HTML with postMessage script for popup mode
             return view('master-pengirim-penerima.popup-success', [
                 'penerima' => $penerima,
-                'message' => 'Penerima berhasil ditambahkan!'
+                'message' => 'Penerima berhasil ditambahkan!',
             ]);
         }
 

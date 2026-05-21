@@ -2,23 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-
-use App\Traits\Auditable;
 class MasterTerminal extends Model
 {
+    use Auditable;
     use HasFactory, SoftDeletes;
 
-    use Auditable;
     protected $fillable = [
         'kode_terminal',
         'nama_terminal',
         'lokasi',
         'keterangan',
-        'status'
+        'status',
     ];
 
     // Relationships
@@ -46,6 +45,6 @@ class MasterTerminal extends Model
     // Accessors
     public function getFormattedNamaAttribute()
     {
-        return $this->kode_terminal . ' - ' . $this->nama_terminal;
+        return $this->kode_terminal.' - '.$this->nama_terminal;
     }
 }

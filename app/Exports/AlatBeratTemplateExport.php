@@ -2,13 +2,13 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class AlatBeratTemplateExport implements FromArray, WithHeadings, ShouldAutoSize, WithStyles
+class AlatBeratTemplateExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyles
 {
     public function headings(): array
     {
@@ -48,7 +48,7 @@ class AlatBeratTemplateExport implements FromArray, WithHeadings, ShouldAutoSize
                 '12000000', // tarif_bulanan example
                 'active', // status (active/inactive/maintenance)
                 'Kondisi baik', // keterangan
-            ]
+            ],
         ];
     }
 
@@ -56,7 +56,7 @@ class AlatBeratTemplateExport implements FromArray, WithHeadings, ShouldAutoSize
     {
         return [
             // Style the first row as bold text
-            1    => ['font' => ['bold' => true]],
+            1 => ['font' => ['bold' => true]],
         ];
     }
 }

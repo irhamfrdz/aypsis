@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\Permohonan;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 class PermohonanFactory extends Factory
 {
@@ -13,7 +12,7 @@ class PermohonanFactory extends Factory
     public function definition()
     {
         return [
-            'nomor_memo' => 'MEMO-' . $this->faker->unique()->numerify('####'),
+            'nomor_memo' => 'MEMO-'.$this->faker->unique()->numerify('####'),
             'tanggal_memo' => $this->faker->date('Y-m-d'),
             'tujuan' => $this->faker->city(),
             'kegiatan' => 'pengiriman',

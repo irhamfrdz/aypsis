@@ -1,15 +1,16 @@
 <?php
+
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
 
 class Permohonan extends Model
 {
-    use HasFactory, Auditable;
-
     use Auditable;
+    use Auditable, HasFactory;
+
     /**
      * The attributes that are mass assignable.
      *

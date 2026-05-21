@@ -2,24 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Karyawan;
-use App\Models\KaryawanFamilyMember;
-use App\Models\CrewEquipment;
-use App\Models\Divisi;
-use App\Models\Pekerjaan;
-use App\Models\Pajak;
 use App\Models\Bank;
 use App\Models\Cabang;
+use App\Models\CrewEquipment;
+use App\Models\Divisi;
+use App\Models\Karyawan;
 use App\Models\KaryawanApprovalRequest;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
+use App\Models\Pajak;
+use App\Models\Pekerjaan;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 // ...existing code...
 
@@ -32,14 +30,15 @@ class KaryawanController extends Controller
     {
         try {
             $nextNik = Karyawan::generateNextNik();
+
             return response()->json([
                 'success' => true,
-                'nik' => $nextNik
+                'nik' => $nextNik,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to generate NIK'
+                'message' => 'Failed to generate NIK',
             ], 500);
         }
     }
@@ -52,7 +51,7 @@ class KaryawanController extends Controller
         $karyawan = Karyawan::findOrFail($id);
 
         // Hanya untuk divisi ABK (atau sesuaikan kebutuhan)
-        if (!$karyawan->isAbk()) {
+        if (! $karyawan->isAbk()) {
             return redirect()->route('login')->with('error', 'Checklist onboarding crew hanya untuk divisi ABK.');
         }
 
@@ -60,10 +59,10 @@ class KaryawanController extends Controller
         $existingItems = $karyawan->crewChecklists()->pluck('item_name')->toArray();
         $defaultItems = CrewEquipment::getDefaultItems();
         foreach ($defaultItems as $item) {
-            if (!in_array($item, $existingItems)) {
+            if (! in_array($item, $existingItems)) {
                 $karyawan->crewChecklists()->create([
                     'item_name' => $item,
-                    'status' => 'tidak'
+                    'status' => 'tidak',
                 ]);
             }
         }
@@ -117,36 +116,36 @@ class KaryawanController extends Controller
         // Jika ada parameter search, lakukan pencarian
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nik', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
-                  ->orWhere('ktp', 'LIKE', "%{$search}%")
-                  ->orWhere('kk', 'LIKE', "%{$search}%")
-                  ->orWhere('plat', 'LIKE', "%{$search}%")
-                  ->orWhere('email', 'LIKE', "%{$search}%")
-                  ->orWhere('no_hp', 'LIKE', "%{$search}%")
-                  ->orWhere('alamat', 'LIKE', "%{$search}%")
-                  ->orWhere('alamat_lengkap', 'LIKE', "%{$search}%")
-                  ->orWhere('kelurahan', 'LIKE', "%{$search}%")
-                  ->orWhere('kecamatan', 'LIKE', "%{$search}%")
-                  ->orWhere('kabupaten', 'LIKE', "%{$search}%")
-                  ->orWhere('provinsi', 'LIKE', "%{$search}%")
-                  ->orWhere('tempat_lahir', 'LIKE', "%{$search}%")
-                  ->orWhere('agama', 'LIKE', "%{$search}%")
-                  ->orWhere('divisi', 'LIKE', "%{$search}%")
-                  ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
-                  ->orWhere('status_pajak', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_bank', 'LIKE', "%{$search}%")
-                  ->orWhere('bank_cabang', 'LIKE', "%{$search}%")
-                  ->orWhere('akun_bank', 'LIKE', "%{$search}%")
-                  ->orWhere('atas_nama', 'LIKE', "%{$search}%")
-                  ->orWhere('jkn', 'LIKE', "%{$search}%")
-                  ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
-                  ->orWhere('cabang', 'LIKE', "%{$search}%")
-                  ->orWhere('supervisor', 'LIKE', "%{$search}%")
-                  ->orWhere('catatan', 'LIKE', "%{$search}%")
-                  ->orWhere('catatan_pekerjaan', 'LIKE', "%{$search}%");
+                    ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
+                    ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
+                    ->orWhere('ktp', 'LIKE', "%{$search}%")
+                    ->orWhere('kk', 'LIKE', "%{$search}%")
+                    ->orWhere('plat', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('no_hp', 'LIKE', "%{$search}%")
+                    ->orWhere('alamat', 'LIKE', "%{$search}%")
+                    ->orWhere('alamat_lengkap', 'LIKE', "%{$search}%")
+                    ->orWhere('kelurahan', 'LIKE', "%{$search}%")
+                    ->orWhere('kecamatan', 'LIKE', "%{$search}%")
+                    ->orWhere('kabupaten', 'LIKE', "%{$search}%")
+                    ->orWhere('provinsi', 'LIKE', "%{$search}%")
+                    ->orWhere('tempat_lahir', 'LIKE', "%{$search}%")
+                    ->orWhere('agama', 'LIKE', "%{$search}%")
+                    ->orWhere('divisi', 'LIKE', "%{$search}%")
+                    ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('status_pajak', 'LIKE', "%{$search}%")
+                    ->orWhere('nama_bank', 'LIKE', "%{$search}%")
+                    ->orWhere('bank_cabang', 'LIKE', "%{$search}%")
+                    ->orWhere('akun_bank', 'LIKE', "%{$search}%")
+                    ->orWhere('atas_nama', 'LIKE', "%{$search}%")
+                    ->orWhere('jkn', 'LIKE', "%{$search}%")
+                    ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('cabang', 'LIKE', "%{$search}%")
+                    ->orWhere('supervisor', 'LIKE', "%{$search}%")
+                    ->orWhere('catatan', 'LIKE', "%{$search}%")
+                    ->orWhere('catatan_pekerjaan', 'LIKE', "%{$search}%");
             });
         }
 
@@ -154,11 +153,11 @@ class KaryawanController extends Controller
         $sortField = $request->get('sort', 'nama_lengkap');
         $sortDirection = $request->get('direction', 'asc');
         $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'catatan_pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti', 'cabang'];
-        
-        if (!in_array($sortField, $allowedSortFields)) {
+
+        if (! in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
         }
-        if (!in_array($sortDirection, ['asc', 'desc'])) {
+        if (! in_array($sortDirection, ['asc', 'desc'])) {
             $sortDirection = 'asc';
         }
 
@@ -198,10 +197,10 @@ class KaryawanController extends Controller
         // Handle per_page parameter for pagination
         $perPage = (int) $request->get('per_page', 15); // Default 15 per halaman
         $allowedPerPage = [10, 15, 25, 50, 100, 200];
-        
+
         // If show_all is requested, we still want pagination but maybe a larger default?
         // Let's keep it consistent with the user's selection or 15.
-        if (!in_array($perPage, $allowedPerPage)) {
+        if (! in_array($perPage, $allowedPerPage)) {
             $perPage = 15;
         }
 
@@ -217,9 +216,9 @@ class KaryawanController extends Controller
     public function abkIndex(Request $request)
     {
         // Query builder untuk karyawan ABK
-        $query = Karyawan::where(function($q) {
+        $query = Karyawan::where(function ($q) {
             $q->where('divisi', 'ABK')
-              ->orWhere('pekerjaan', 'ABK');
+                ->orWhere('pekerjaan', 'ABK');
         });
 
         // Precompute counts for header summary (filtered for ABK)
@@ -274,12 +273,12 @@ class KaryawanController extends Controller
         // Search logic
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nik', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
-                  ->orWhere('no_hp', 'LIKE', "%{$search}%")
-                  ->orWhere('alamat', 'LIKE', "%{$search}%");
+                    ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
+                    ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
+                    ->orWhere('no_hp', 'LIKE', "%{$search}%")
+                    ->orWhere('alamat', 'LIKE', "%{$search}%");
             });
         }
 
@@ -288,11 +287,11 @@ class KaryawanController extends Controller
         $sortDirection = $request->get('direction', 'asc');
 
         $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'tanggal_masuk', 'tanggal_berhenti'];
-        if (!in_array($sortField, $allowedSortFields)) {
+        if (! in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
         }
 
-        if (!in_array($sortDirection, ['asc', 'desc'])) {
+        if (! in_array($sortDirection, ['asc', 'desc'])) {
             $sortDirection = 'asc';
         }
 
@@ -313,19 +312,19 @@ class KaryawanController extends Controller
         if (function_exists('opcache_reset')) {
             opcache_reset();
         }
-        
+
         // Clear Laravel caches
         \Illuminate\Support\Facades\Cache::flush();
-        
+
         // Force database connection refresh
         \Illuminate\Support\Facades\DB::reconnect();
-        
+
         // Allow caller to specify separator via ?sep=, default to semicolon for Excel compatibility
         $sep = $request->query('sep', ';');
-        
+
         // Decode URL encoded separator
         $sep = urldecode($sep);
-        
+
         // Determine delimiter - force semicolon as default for better Excel compatibility
         $delimiter = ';';
         if ($sep === ',') {
@@ -340,35 +339,35 @@ class KaryawanController extends Controller
         $isTemplate = $request->query('template', false);
 
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
-        $fileName = $isTemplate ? 'template_import_karyawan.csv' : 'karyawans_export_' . date('Ymd_His') . '.csv';
+        $fileName = $isTemplate ? 'template_import_karyawan.csv' : 'karyawans_export_'.date('Ymd_His').'.csv';
 
-        $callback = function() use ($columns, $delimiter, $isTemplate, $request) {
+        $callback = function () use ($columns, $delimiter, $isTemplate, $request) {
             $out = fopen('php://output', 'w');
 
             // Write UTF-8 BOM for Excel recognition
-            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Write header row with proper delimiter using manual method to avoid unwanted quotes
-            fwrite($out, implode($delimiter, $columns) . "\r\n");
+            fwrite($out, implode($delimiter, $columns)."\r\n");
 
             if ($isTemplate) {
                 // Add sample data row for template
                 $sampleData = [
                     '1234567890', // nik
-                    'John', 'John Doe', 'B 1234 ABC', 'john.doe@example.com', '1234567890123456', '1234567890123456', 'Jl. Contoh No. 123', '001/002', 'Kelurahan Contoh', 'Kecamatan Contoh', 'Kabupaten Contoh', 'Provinsi Contoh', '12345', 'Jl. Contoh No. 123, RT 001/RW 002, Kelurahan Contoh', 'Jakarta', '01/Jan/1990', '081234567890', 'L', 'Belum Kawin', 'Islam', 'IT', 'Programmer', '01/Jan/2024', '', '', '', 'Catatan contoh', 'K1', 'Bank BCA', 'Cabang Jakarta Pusat', '1234567890', 'John Doe', '0001234567890', '12345678901234567', 'Jakarta', '', ''
+                    'John', 'John Doe', 'B 1234 ABC', 'john.doe@example.com', '1234567890123456', '1234567890123456', 'Jl. Contoh No. 123', '001/002', 'Kelurahan Contoh', 'Kecamatan Contoh', 'Kabupaten Contoh', 'Provinsi Contoh', '12345', 'Jl. Contoh No. 123, RT 001/RW 002, Kelurahan Contoh', 'Jakarta', '01/Jan/1990', '081234567890', 'L', 'Belum Kawin', 'Islam', 'IT', 'Programmer', '01/Jan/2024', '', '', '', 'Catatan contoh', 'K1', 'Bank BCA', 'Cabang Jakarta Pusat', '1234567890', 'John Doe', '0001234567890', '12345678901234567', 'Jakarta', '', '',
                 ];
-                fwrite($out, implode($delimiter, $sampleData) . "\r\n");
+                fwrite($out, implode($delimiter, $sampleData)."\r\n");
             } else {
                 // Use database transaction to ensure data consistency
-                \Illuminate\Support\Facades\DB::transaction(function() use ($out, $columns, $delimiter, $request) {
+                \Illuminate\Support\Facades\DB::transaction(function () use ($out, $columns, $delimiter, $request) {
                     // Stream rows for actual export - use fresh() to ensure latest data
                     $query = Karyawan::query();
                     $this->applyKaryawanFilters($query, $request);
 
-                    $query->chunk(200, function($rows) use ($out, $columns, $delimiter) {
+                    $query->chunk(200, function ($rows) use ($out, $columns, $delimiter) {
                         foreach ($rows as $r) {
                             $r = Karyawan::find($r->id);
                             $line = [];
@@ -377,23 +376,24 @@ class KaryawanController extends Controller
                                 if ($val instanceof \DateTimeInterface) {
                                     $val = $val->format('d/M/Y');
                                 } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
-                                    if (!empty($val)) {
+                                    if (! empty($val)) {
                                         try {
                                             $ts = strtotime($val);
                                             if ($ts !== false && $ts !== -1) {
                                                 $val = date('d/M/Y', $ts);
                                             }
-                                        } catch (\Throwable $e) {}
+                                        } catch (\Throwable $e) {
+                                        }
                                     } else {
                                         $val = '';
                                     }
                                 }
-                                if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
-                                    $val = "\u{200B}" . $val;
+                                if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && ! empty($val)) {
+                                    $val = "\u{200B}".$val;
                                 }
                                 $line[] = $val;
                             }
-                            fwrite($out, implode($delimiter, $line) . "\r\n");
+                            fwrite($out, implode($delimiter, $line)."\r\n");
                         }
                     });
                 });
@@ -407,7 +407,7 @@ class KaryawanController extends Controller
             'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
             'Pragma' => 'no-cache',
             'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
-            'Last-Modified' => gmdate('D, d M Y H:i:s') . ' GMT'
+            'Last-Modified' => gmdate('D, d M Y H:i:s').' GMT',
         ]);
     }
 
@@ -417,35 +417,35 @@ class KaryawanController extends Controller
         if (function_exists('opcache_reset')) {
             opcache_reset();
         }
-        
+
         // Clear Laravel caches
         \Illuminate\Support\Facades\Cache::flush();
-        
+
         // Force database connection refresh
         \Illuminate\Support\Facades\DB::reconnect();
-        
+
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
-        $fileName = 'karyawans_excel_export_' . date('Ymd_His') . '.csv';
+        $fileName = 'karyawans_excel_export_'.date('Ymd_His').'.csv';
 
-        $callback = function() use ($columns, $request) {
+        $callback = function () use ($columns, $request) {
             $out = fopen('php://output', 'w');
 
             // Write UTF-8 BOM for Excel recognition
-            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Write header row with semicolon delimiter for Excel CSV compatibility
-            fwrite($out, implode(";", $columns) . "\r\n");
+            fwrite($out, implode(';', $columns)."\r\n");
 
             // Use database transaction to ensure data consistency
-            \Illuminate\Support\Facades\DB::transaction(function() use ($out, $columns, $request) {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($out, $columns, $request) {
                 // Stream rows for actual export with proper formatting - apply filters
                 $query = Karyawan::query();
                 $this->applyKaryawanFilters($query, $request);
 
-                $query->chunk(200, function($rows) use ($out, $columns) {
+                $query->chunk(200, function ($rows) use ($out, $columns) {
                     foreach ($rows as $r) {
                         $r = Karyawan::find($r->id);
                         $line = [];
@@ -454,24 +454,25 @@ class KaryawanController extends Controller
                             if ($val instanceof \DateTimeInterface) {
                                 $val = $val->format('d/M/Y');
                             } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
-                                if (!empty($val)) {
+                                if (! empty($val)) {
                                     try {
                                         $ts = strtotime($val);
                                         if ($ts !== false && $ts !== -1) {
                                             $val = date('d/M/Y', $ts);
                                         }
-                                    } catch (\Throwable $e) {}
+                                    } catch (\Throwable $e) {
+                                    }
                                 } else {
                                     $val = '';
                                 }
                             }
-                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
-                                $val = "\u{200B}" . $val;
+                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && ! empty($val)) {
+                                $val = "\u{200B}".$val;
                             }
                             $val = str_replace(["\r", "\n"], ' ', $val);
                             $line[] = $val;
                         }
-                        fwrite($out, implode(";", $line) . "\r\n");
+                        fwrite($out, implode(';', $line)."\r\n");
                     }
                 });
             });
@@ -485,7 +486,7 @@ class KaryawanController extends Controller
             'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
             'Pragma' => 'no-cache',
             'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
-            'Last-Modified' => gmdate('D, d M Y H:i:s') . ' GMT'
+            'Last-Modified' => gmdate('D, d M Y H:i:s').' GMT',
         ]);
     }
 
@@ -494,8 +495,8 @@ class KaryawanController extends Controller
      */
     public function exportEmpty()
     {
-        $karyawan = new Karyawan(); // Empty instance
-        $fileName = 'form_karyawan_kosong_' . date('Ymd_His') . '.xls';
+        $karyawan = new Karyawan; // Empty instance
+        $fileName = 'form_karyawan_kosong_'.date('Ymd_His').'.xls';
 
         return response(view('master-karyawan.export-excel-form', compact('karyawan')))
             ->header('Content-Type', 'application/vnd.ms-excel')
@@ -509,14 +510,13 @@ class KaryawanController extends Controller
     public function exportSingle(Karyawan $karyawan)
     {
         $safeName = preg_replace('/[^a-zA-Z0-9]/', '_', $karyawan->nama_lengkap);
-        $fileName = 'karyawan_' . $safeName . '_' . date('Ymd_His') . '.xls';
+        $fileName = 'karyawan_'.$safeName.'_'.date('Ymd_His').'.xls';
 
         return response(view('master-karyawan.export-excel-form', compact('karyawan')))
             ->header('Content-Type', 'application/vnd.ms-excel')
             ->header('Content-Disposition', "attachment; filename=\"{$fileName}\"")
             ->header('Cache-Control', 'max-age=0');
     }
-
 
     /**
      * Download CSV template for import
@@ -525,7 +525,7 @@ class KaryawanController extends Controller
     {
         // Generate template manually to ensure proper formatting
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         $sampleData = [
@@ -566,7 +566,7 @@ class KaryawanController extends Controller
             "'12345678901234567", // no_ketenagakerjaan - dengan apostrophe untuk memaksa format text
             'Jakarta', // cabang
             '', // nik_supervisor
-            '' // supervisor
+            '', // supervisor
         ];
 
         // Add instruction row
@@ -608,36 +608,36 @@ class KaryawanController extends Controller
             'Format: Text (gunakan apostrophe)', // no_ketenagakerjaan
             'Cabang/lokasi kerja', // cabang
             'NIK supervisor', // nik_supervisor
-            'Nama supervisor' // supervisor
+            'Nama supervisor', // supervisor
         ];
 
         $fileName = 'template_import_karyawan.csv';
 
         // Manual CSV generation for better control
-        $callback = function() use ($columns, $sampleData, $instructionData) {
+        $callback = function () use ($columns, $sampleData, $instructionData) {
             $out = fopen('php://output', 'w');
 
             // Write UTF-8 BOM for Excel recognition
-            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Write header manually with semicolon delimiter
-            fwrite($out, implode(';', $columns) . "\r\n");
+            fwrite($out, implode(';', $columns)."\r\n");
 
             // Write instruction row for format guidance (clean data without quotes)
-            $cleanInstructions = array_map(function($field) {
+            $cleanInstructions = array_map(function ($field) {
                 // Clean any problematic characters
                 return str_replace(["\r", "\n"], ' ', $field);
             }, $instructionData);
 
-            fwrite($out, implode(';', $cleanInstructions) . "\r\n");
+            fwrite($out, implode(';', $cleanInstructions)."\r\n");
 
             // Write sample data manually with semicolon delimiter (clean data without quotes)
-            $cleanData = array_map(function($field) {
+            $cleanData = array_map(function ($field) {
                 // Clean any problematic characters
                 return str_replace(["\r", "\n"], ' ', $field);
             }, $sampleData);
 
-            fwrite($out, implode(';', $cleanData) . "\r\n");
+            fwrite($out, implode(';', $cleanData)."\r\n");
             fclose($out);
         };
 
@@ -653,7 +653,7 @@ class KaryawanController extends Controller
     public function downloadExcelTemplate()
     {
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         $instructionData = [
@@ -695,32 +695,32 @@ class KaryawanController extends Controller
             'Format: Text nomor ketenagakerjaan', // no_ketenagakerjaan
             'Cabang/lokasi kerja', // cabang
             'NIK supervisor', // nik_supervisor
-            'Nama supervisor' // supervisor
+            'Nama supervisor', // supervisor
         ];
 
         // Create Excel-compatible CSV file
         $fileName = 'template_import_karyawan_excel.csv';
 
-        $callback = function() use ($columns, $instructionData) {
+        $callback = function () use ($columns, $instructionData) {
             $out = fopen('php://output', 'w');
 
             // Write UTF-8 BOM for Excel recognition
-            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Write header manually with semicolon delimiter for Excel
-            fwrite($out, implode(';', $columns) . "\r\n");
+            fwrite($out, implode(';', $columns)."\r\n");
 
             // Write instruction row only (no sample data, clean without quotes)
-            $cleanInstructions = array_map(function($field) {
+            $cleanInstructions = array_map(function ($field) {
                 // Clean any problematic characters
                 return str_replace(["\r", "\n"], ' ', $field);
             }, $instructionData);
 
-            fwrite($out, implode(';', $cleanInstructions) . "\r\n");
+            fwrite($out, implode(';', $cleanInstructions)."\r\n");
 
             // Add one empty row for user to start entering data
             $emptyRow = array_fill(0, count($columns), '');
-            fwrite($out, implode(';', $emptyRow) . "\r\n");
+            fwrite($out, implode(';', $emptyRow)."\r\n");
 
             fclose($out);
         };
@@ -737,24 +737,24 @@ class KaryawanController extends Controller
     public function downloadSimpleExcelTemplate()
     {
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         // Create simple Excel-compatible CSV file with headers only
         $fileName = 'template_simple_karyawan_excel.csv';
 
-        $callback = function() use ($columns) {
+        $callback = function () use ($columns) {
             $out = fopen('php://output', 'w');
 
             // Write UTF-8 BOM for Excel recognition
-            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Write header only with semicolon delimiter for Excel
-            fwrite($out, implode(';', $columns) . "\r\n");
+            fwrite($out, implode(';', $columns)."\r\n");
 
             // Add one empty row for user to start entering data
             $emptyRow = array_fill(0, count($columns), '');
-            fwrite($out, implode(';', $emptyRow) . "\r\n");
+            fwrite($out, implode(';', $emptyRow)."\r\n");
 
             fclose($out);
         };
@@ -774,36 +774,36 @@ class KaryawanController extends Controller
         if (function_exists('opcache_reset')) {
             opcache_reset();
         }
-        
+
         // Clear Laravel caches
         \Illuminate\Support\Facades\Cache::flush();
-        
+
         // Force database connection refresh
         \Illuminate\Support\Facades\DB::reconnect();
-        
+
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','cabang','nik_supervisor','supervisor'
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
-        $fileName = 'karyawans_excel_indonesia_' . date('Ymd_His') . '.csv';
+        $fileName = 'karyawans_excel_indonesia_'.date('Ymd_His').'.csv';
 
-        $callback = function() use ($columns) {
+        $callback = function () use ($columns) {
             $out = fopen('php://output', 'w');
 
             // Write UTF-8 BOM for Excel recognition
-            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Write header row using fputcsv with comma delimiter and quotes
             fputcsv($out, $columns, ',', '"');
 
             // Use database transaction to ensure data consistency
-            \Illuminate\Support\Facades\DB::transaction(function() use ($out, $columns) {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($out, $columns) {
                 // Stream rows for actual export with proper formatting - get fresh data
-                Karyawan::chunk(200, function($rows) use ($out, $columns) {
+                Karyawan::chunk(200, function ($rows) use ($out, $columns) {
                     foreach ($rows as $r) {
                         // Get completely fresh instance to ensure we have the latest data
                         $r = Karyawan::find($r->id);
-                        
+
                         $line = [];
                         foreach ($columns as $col) {
                             $val = $r->{$col} ?? '';
@@ -813,7 +813,7 @@ class KaryawanController extends Controller
                                 $val = $val->format('d/M/Y');
                             } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
                                 // Handle date fields - format if not empty, keep empty if null
-                                if (!empty($val)) {
+                                if (! empty($val)) {
                                     try {
                                         $ts = strtotime($val);
                                         if ($ts !== false && $ts !== -1) {
@@ -830,8 +830,8 @@ class KaryawanController extends Controller
 
                             // For numeric fields, add invisible zero-width space to prevent scientific notation
                             // This forces Excel to treat as text without showing visible characters
-                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
-                                $val = "\u{200B}" . $val; // Zero-width space
+                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && ! empty($val)) {
+                                $val = "\u{200B}".$val; // Zero-width space
                             }
 
                             $line[] = $val;
@@ -851,7 +851,7 @@ class KaryawanController extends Controller
             'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
             'Pragma' => 'no-cache',
             'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
-            'Last-Modified' => gmdate('D, d M Y H:i:s') . ' GMT'
+            'Last-Modified' => gmdate('D, d M Y H:i:s').' GMT',
         ]);
     }
 
@@ -875,7 +875,7 @@ class KaryawanController extends Controller
         $pekerjaanByDivisi = [];
         foreach ($pekerjaans as $pekerjaan) {
             $divisi = $pekerjaan->divisi ?? '';
-            if (!isset($pekerjaanByDivisi[$divisi])) {
+            if (! isset($pekerjaanByDivisi[$divisi])) {
                 $pekerjaanByDivisi[$divisi] = [];
             }
             $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
@@ -952,7 +952,7 @@ class KaryawanController extends Controller
         ]);
 
         // Data conversion and processing...
-        
+
         // Convert data to uppercase except email and family_members
         $familyMembers = $validated['family_members'] ?? [];
         unset($validated['family_members']); // Remove from main data
@@ -963,13 +963,13 @@ class KaryawanController extends Controller
             }
         }
 
-        //Simpan data dalam database
+        // Simpan data dalam database
         $karyawan = Karyawan::create($validated);
 
         // Handle family members
-        if (!empty($familyMembers)) {
+        if (! empty($familyMembers)) {
             foreach ($familyMembers as $memberData) {
-                if (!empty($memberData['hubungan']) && !empty($memberData['nama'])) {
+                if (! empty($memberData['hubungan']) && ! empty($memberData['nama'])) {
                     // Convert family member data to uppercase except date fields
                     foreach ($memberData as $key => $value) {
                         if ($value !== null && $key !== 'tanggal_lahir') {
@@ -986,7 +986,8 @@ class KaryawanController extends Controller
             return redirect()->route('master.karyawan.crew-checklist-new', $karyawan->id)
                 ->with('success', 'Data karyawan berhasil ditambahkan. Silakan lengkapi checklist kelengkapan crew.');
         }
-        return redirect()->route('master.karyawan.index')->with('success','Data karyawan berhasil ditambahkan');
+
+        return redirect()->route('master.karyawan.index')->with('success', 'Data karyawan berhasil ditambahkan');
     }
 
     /**
@@ -1015,7 +1016,7 @@ class KaryawanController extends Controller
             $pekerjaanByDivisi = [];
             foreach ($pekerjaans as $pekerjaan) {
                 $divisi = $pekerjaan->divisi ?? '';
-                if (!isset($pekerjaanByDivisi[$divisi])) {
+                if (! isset($pekerjaanByDivisi[$divisi])) {
                     $pekerjaanByDivisi[$divisi] = [];
                 }
                 $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
@@ -1035,7 +1036,7 @@ class KaryawanController extends Controller
         $pekerjaanByDivisi = [];
         foreach ($pekerjaans as $pekerjaan) {
             $divisi = $pekerjaan->divisi ?? '';
-            if (!isset($pekerjaanByDivisi[$divisi])) {
+            if (! isset($pekerjaanByDivisi[$divisi])) {
                 $pekerjaanByDivisi[$divisi] = [];
             }
             $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
@@ -1060,7 +1061,7 @@ class KaryawanController extends Controller
         $pekerjaanByDivisi = [];
         foreach ($pekerjaans as $pekerjaan) {
             $divisi = $pekerjaan->divisi ?? '';
-            if (!isset($pekerjaanByDivisi[$divisi])) {
+            if (! isset($pekerjaanByDivisi[$divisi])) {
                 $pekerjaanByDivisi[$divisi] = [];
             }
             $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
@@ -1148,7 +1149,7 @@ class KaryawanController extends Controller
         }
 
         // Approval logic for specific catatan_pekerjaan (Restrict sensitive edits for specific statuses)
-        $status = strtoupper((string)$karyawan->catatan_pekerjaan);
+        $status = strtoupper((string) $karyawan->catatan_pekerjaan);
         $isRestricted = false;
 
         // Check for specific keywords and phrases requested by USER (including "and similar" variations)
@@ -1190,9 +1191,9 @@ class KaryawanController extends Controller
                 'data_before' => $karyawan->toArray(),
                 'data_after' => [
                     'validated' => $validated,
-                    'family_members' => $familyMembers
+                    'family_members' => $familyMembers,
                 ],
-                'status' => 'pending'
+                'status' => 'pending',
             ]);
 
             return redirect()->route('master.karyawan.index')
@@ -1213,7 +1214,7 @@ class KaryawanController extends Controller
 
                 // Update or create family members
                 foreach ($familyMembers as $memberData) {
-                    if (!empty($memberData['hubungan']) && !empty($memberData['nama'])) {
+                    if (! empty($memberData['hubungan']) && ! empty($memberData['nama'])) {
                         // Convert family member data to uppercase except date fields
                         foreach ($memberData as $key => $value) {
                             if ($value !== null && $key !== 'tanggal_lahir' && $key !== 'id') {
@@ -1221,7 +1222,7 @@ class KaryawanController extends Controller
                             }
                         }
 
-                        if (!empty($memberData['id'])) {
+                        if (! empty($memberData['id'])) {
                             // Update existing family member
                             $familyMember = $karyawan->familyMembers()->find($memberData['id']);
                             if ($familyMember) {
@@ -1337,6 +1338,7 @@ class KaryawanController extends Controller
                 ->with('success', 'Data karyawan berhasil diperbarui. Silakan lengkapi checklist crew.');
         } else {
             Auth::logout();
+
             return redirect()->route('login')->with('success', 'Data karyawan berhasil diperbarui. Silakan login kembali untuk melanjutkan.');
         }
     }
@@ -1347,6 +1349,7 @@ class KaryawanController extends Controller
     public function destroy(Karyawan $karyawan)
     {
         $karyawan->delete();
+
         return redirect()->back()->with('success', 'Data karyawan berhasil dihapus.');
     }
 
@@ -1395,17 +1398,17 @@ class KaryawanController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nik', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
-                  ->orWhere('divisi', 'LIKE', "%{$search}%")
-                  ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
-                  ->orWhere('no_hp', 'LIKE', "%{$search}%")
-                  ->orWhere('email', 'LIKE', "%{$search}%")
-                  ->orWhere('jkn', 'LIKE', "%{$search}%")
-                  ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
-                  ->orWhere('status_pajak', 'LIKE', "%{$search}%");
+                    ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
+                    ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
+                    ->orWhere('divisi', 'LIKE', "%{$search}%")
+                    ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('no_hp', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('jkn', 'LIKE', "%{$search}%")
+                    ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('status_pajak', 'LIKE', "%{$search}%");
             });
         }
 
@@ -1414,17 +1417,18 @@ class KaryawanController extends Controller
         $sortDirection = $request->get('direction', 'asc');
 
         $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
-        if (!in_array($sortField, $allowedSortFields)) {
+        if (! in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
         }
 
-        if (!in_array($sortDirection, ['asc', 'desc'])) {
+        if (! in_array($sortDirection, ['asc', 'desc'])) {
             $sortDirection = 'asc';
         }
 
         $query->orderBy($sortField, $sortDirection);
 
         $karyawans = $query->get();
+
         return view('master-karyawan.print', compact('karyawans'));
     }
 
@@ -1470,17 +1474,17 @@ class KaryawanController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nik', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
-                  ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
-                  ->orWhere('divisi', 'LIKE', "%{$search}%")
-                  ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
-                  ->orWhere('no_hp', 'LIKE', "%{$search}%")
-                  ->orWhere('email', 'LIKE', "%{$search}%")
-                  ->orWhere('jkn', 'LIKE', "%{$search}%")
-                  ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
-                  ->orWhere('status_pajak', 'LIKE', "%{$search}%");
+                    ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
+                    ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
+                    ->orWhere('divisi', 'LIKE', "%{$search}%")
+                    ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('no_hp', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('jkn', 'LIKE', "%{$search}%")
+                    ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('status_pajak', 'LIKE', "%{$search}%");
             });
         }
 
@@ -1489,17 +1493,18 @@ class KaryawanController extends Controller
         $sortDirection = $request->get('direction', 'asc');
 
         $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
-        if (!in_array($sortField, $allowedSortFields)) {
+        if (! in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
         }
 
-        if (!in_array($sortDirection, ['asc', 'desc'])) {
+        if (! in_array($sortDirection, ['asc', 'desc'])) {
             $sortDirection = 'asc';
         }
 
         $query->orderBy($sortField, $sortDirection);
 
         $karyawans = $query->get();
+
         return view('master-karyawan.print-bulk', compact('karyawans'));
     }
 
@@ -1518,13 +1523,14 @@ class KaryawanController extends Controller
     {
         $pdf = Pdf::loadView('master-karyawan.print-single', [
             'karyawan' => $karyawan,
-            'isPdf' => true
+            'isPdf' => true,
         ]);
-        
+
         $pdf->setPaper('a4', 'portrait');
-        
+
         $safeName = preg_replace('/[^a-zA-Z0-9]/', '_', $karyawan->nama_lengkap);
-        return $pdf->download('karyawan_' . $safeName . '_' . date('Ymd_His') . '.pdf');
+
+        return $pdf->download('karyawan_'.$safeName.'_'.date('Ymd_His').'.pdf');
     }
 
     /**
@@ -1532,7 +1538,8 @@ class KaryawanController extends Controller
      */
     public function printEmpty()
     {
-        $karyawan = new Karyawan();
+        $karyawan = new Karyawan;
+
         return view('master-karyawan.print-single', compact('karyawan'));
     }
 
@@ -1560,7 +1567,7 @@ class KaryawanController extends Controller
         // Handle Excel files by converting to CSV first
         if (in_array($extension, ['xlsx', 'xls'])) {
             $csvData = $this->convertExcelToCsv($path, $extension);
-            if (!$csvData) {
+            if (! $csvData) {
                 return redirect()->route('master.karyawan.index')
                     ->with('error', 'Gagal membaca file Excel. Pastikan file tidak corrupt.');
             }
@@ -1603,8 +1610,9 @@ class KaryawanController extends Controller
             $lineNumber = 0;
             while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
                 $lineNumber++;
-                if (!$header) {
+                if (! $header) {
                     $header = array_map('trim', $row);
+
                     continue;
                 }
                 // If row columns don't match header, try to pad or truncate to avoid losing the whole row.
@@ -1618,7 +1626,7 @@ class KaryawanController extends Controller
                 }
 
                 // Normalize header keys to be case-insensitive, use underscores and map common synonyms
-                $normalizedHeader = array_map(function($h){
+                $normalizedHeader = array_map(function ($h) {
                     $k = trim($h);
                     $k = strtolower($k);
                     // convert spaces/hyphens to underscores
@@ -1637,14 +1645,18 @@ class KaryawanController extends Controller
                         'telepon' => 'no_hp',
                         'phone' => 'no_hp',
                         'kodepos' => 'kode_pos',
-                        'kode_pos' => 'kode_pos'
+                        'kode_pos' => 'kode_pos',
                     ];
-                    if (array_key_exists($k, $map)) return $map[$k];
+                    if (array_key_exists($k, $map)) {
+                        return $map[$k];
+                    }
+
                     return $k;
                 }, $header);
                 $dataRaw = array_combine($normalizedHeader, $row);
-                if (!$dataRaw) {
+                if (! $dataRaw) {
                     $failedRows[] = "Baris {$lineNumber}: Gagal parse baris (kombinasi header/row tidak sesuai)";
+
                     continue;
                 }
                 // Use original keys where possible but operate case-insensitively
@@ -1652,14 +1664,17 @@ class KaryawanController extends Controller
                 foreach ($dataRaw as $k => $v) {
                     $data[$k] = $v;
                 }
-                if (!$data) {
+                if (! $data) {
                     $failedRows[] = "Baris {$lineNumber}: Gagal parse data";
+
                     continue;
                 }
 
                 // Function to normalize numeric fields that might be in scientific notation
-                $normalizeNumericField = function($value) {
-                    if (empty($value)) return null;
+                $normalizeNumericField = function ($value) {
+                    if (empty($value)) {
+                        return null;
+                    }
 
                     $value = trim($value);
 
@@ -1671,7 +1686,8 @@ class KaryawanController extends Controller
                     // Check if it's in scientific notation (like 1.23E+15)
                     if (preg_match('/^-?\d*\.?\d*[eE][+-]?\d+$/', $value)) {
                         // Convert scientific notation to regular number
-                        $number = sprintf('%.0f', (float)$value);
+                        $number = sprintf('%.0f', (float) $value);
+
                         return $number;
                     }
 
@@ -1696,17 +1712,18 @@ class KaryawanController extends Controller
 
                 // Use `nik` as unique key to create or update
                 $nik = trim($data['nik'] ?? '');
-                if (!$nik) {
+                if (! $nik) {
                     $failedRows[] = "Baris {$lineNumber}: NIK kosong atau tidak ditemukan";
+
                     continue;
                 }
 
                 // Map only fillable attributes (best-effort) — case-insensitive keys
                 $allowed = [
-                    'nik','nama_lengkap','nama_panggilan','email','tempat_lahir','tanggal_lahir','jenis_kelamin','agama','status_perkawinan','no_hp',
-                    'ktp','kk','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','nik_supervisor','supervisor','cabang','plat',
-                    'alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap',
-                    'nama_bank','bank_cabang','akun_bank','atas_nama','status_pajak','jkn','no_ketenagakerjaan','no_sim','sim_berlaku_mulai','sim_berlaku_sampai','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','catatan_pekerjaan'
+                    'nik', 'nama_lengkap', 'nama_panggilan', 'email', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'agama', 'status_perkawinan', 'no_hp',
+                    'ktp', 'kk', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'nik_supervisor', 'supervisor', 'cabang', 'plat',
+                    'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap',
+                    'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'status_pajak', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan',
                 ];
                 $payload = [];
                 // Build payload using case-insensitive header names
@@ -1716,7 +1733,9 @@ class KaryawanController extends Controller
                         $val = $data[$lc];
                         $val = is_null($val) ? null : trim($val);
                         // convert empty string to null so unique/DATE columns don't get ''
-                        if ($val === '') $val = null;
+                        if ($val === '') {
+                            $val = null;
+                        }
 
                         // Convert to uppercase except for email field
                         if ($val !== null && $col !== 'email') {
@@ -1729,21 +1748,26 @@ class KaryawanController extends Controller
 
                 // Normalize and validate common date formats to Y-m-d for date columns.
                 // Convert empty or unparseable dates to NULL to avoid inserting empty strings into DATE columns.
-                $dateCols = ['tanggal_lahir','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya'];
+                $dateCols = ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'];
 
-                $normalizeDate = function($val) {
-                    $val = trim((string)$val);
-                    if ($val === '') return null;
+                $normalizeDate = function ($val) {
+                    $val = trim((string) $val);
+                    if ($val === '') {
+                        return null;
+                    }
 
                     // already ISO-like
-                    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) return $val;
+                    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) {
+                        return $val;
+                    }
 
                     // Handle dd/mm/yyyy format (17/02/2020)
                     if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $val, $matches)) {
                         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
                         $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
                         $year = $matches[3];
-                        return $year . '-' . $month . '-' . $day;
+
+                        return $year.'-'.$month.'-'.$day;
                     }
 
                     // Handle dd-mm-yyyy format (17-02-2020)
@@ -1751,7 +1775,8 @@ class KaryawanController extends Controller
                         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
                         $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
                         $year = $matches[3];
-                        return $year . '-' . $month . '-' . $day;
+
+                        return $year.'-'.$month.'-'.$day;
                     }
 
                     // Handle dd/mmm/yyyy format (15/Jan/2024)
@@ -1765,11 +1790,11 @@ class KaryawanController extends Controller
                             'jan' => '01', 'feb' => '02', 'mar' => '03', 'apr' => '04',
                             'may' => '05', 'mei' => '05', 'jun' => '06', 'jul' => '07',
                             'aug' => '08', 'agu' => '08', 'sep' => '09', 'oct' => '10',
-                            'okt' => '10', 'nov' => '11', 'dec' => '12', 'des' => '12'
+                            'okt' => '10', 'nov' => '11', 'dec' => '12', 'des' => '12',
                         ];
 
                         if (isset($monthMap[$monthAbbr])) {
-                            return $year . '-' . $monthMap[$monthAbbr] . '-' . $day;
+                            return $year.'-'.$monthMap[$monthAbbr].'-'.$day;
                         }
                     }
 
@@ -1784,11 +1809,11 @@ class KaryawanController extends Controller
                             'jan' => '01', 'feb' => '02', 'mar' => '03', 'apr' => '04',
                             'may' => '05', 'mei' => '05', 'jun' => '06', 'jul' => '07',
                             'aug' => '08', 'agu' => '08', 'sep' => '09', 'oct' => '10',
-                            'okt' => '10', 'nov' => '11', 'dec' => '12', 'des' => '12'
+                            'okt' => '10', 'nov' => '11', 'dec' => '12', 'des' => '12',
                         ];
 
                         if (isset($monthMap[$monthAbbr])) {
-                            return $year . '-' . $monthMap[$monthAbbr] . '-' . $day;
+                            return $year.'-'.$monthMap[$monthAbbr].'-'.$day;
                         }
                     }
 
@@ -1797,27 +1822,31 @@ class KaryawanController extends Controller
 
                     // map Indonesian month names/abbreviations to English so strtotime can parse
                     $map = [
-                        'jan'=>'jan','januari'=>'jan',
-                        'feb'=>'feb','februari'=>'feb',
-                        'mar'=>'mar','maret'=>'mar',
-                        'apr'=>'apr','april'=>'apr',
-                        'mei'=>'may',
-                        'jun'=>'jun','juni'=>'jun',
-                        'jul'=>'jul','juli'=>'jul',
-                        'agu'=>'aug','agustus'=>'aug',
-                        'sep'=>'sep','september'=>'sep',
-                        'okt'=>'oct','oktober'=>'oct',
-                        'nov'=>'nov','november'=>'nov',
-                        'des'=>'dec','desember'=>'dec',
+                        'jan' => 'jan', 'januari' => 'jan',
+                        'feb' => 'feb', 'februari' => 'feb',
+                        'mar' => 'mar', 'maret' => 'mar',
+                        'apr' => 'apr', 'april' => 'apr',
+                        'mei' => 'may',
+                        'jun' => 'jun', 'juni' => 'jun',
+                        'jul' => 'jul', 'juli' => 'jul',
+                        'agu' => 'aug', 'agustus' => 'aug',
+                        'sep' => 'sep', 'september' => 'sep',
+                        'okt' => 'oct', 'oktober' => 'oct',
+                        'nov' => 'nov', 'november' => 'nov',
+                        'des' => 'dec', 'desember' => 'dec',
                     ];
 
-                    $v = preg_replace_callback('/\b([A-Za-z]+)\b/u', function($m) use ($map) {
+                    $v = preg_replace_callback('/\b([A-Za-z]+)\b/u', function ($m) use ($map) {
                         $low = strtolower($m[1]);
+
                         return $map[$low] ?? $m[1];
                     }, $v);
 
                     $ts = strtotime($v);
-                    if ($ts === false) return null;
+                    if ($ts === false) {
+                        return null;
+                    }
+
                     return date('Y-m-d', $ts);
                 };
 
@@ -1831,8 +1860,8 @@ class KaryawanController extends Controller
                 // build a sensible alamat_lengkap automatically.
                 if (empty($payload['alamat_lengkap'])) {
                     $parts = [];
-                    foreach (['alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos'] as $part) {
-                        if (!empty($payload[$part])) {
+                    foreach (['alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos'] as $part) {
+                        if (! empty($payload[$part])) {
                             $parts[] = trim($payload[$part]);
                         }
                     }
@@ -1859,9 +1888,9 @@ class KaryawanController extends Controller
                     // Customize error messages for better user understanding
                     if (strpos($errorMessage, 'Duplicate entry') !== false) {
                         if (strpos($errorMessage, 'email') !== false) {
-                            $failedRows[] = "Baris {$lineNumber}: Email " . ($payload['email'] ?? 'tidak valid') . " sudah digunakan karyawan lain";
+                            $failedRows[] = "Baris {$lineNumber}: Email ".($payload['email'] ?? 'tidak valid').' sudah digunakan karyawan lain';
                         } elseif (strpos($errorMessage, 'ktp') !== false) {
-                            $failedRows[] = "Baris {$lineNumber}: Nomor KTP " . ($payload['ktp'] ?? 'tidak valid') . " sudah digunakan karyawan lain";
+                            $failedRows[] = "Baris {$lineNumber}: Nomor KTP ".($payload['ktp'] ?? 'tidak valid').' sudah digunakan karyawan lain';
                         } else {
                             $failedRows[] = "Baris {$lineNumber}: Data duplikat untuk {$namaLengkap}";
                         }
@@ -1889,8 +1918,8 @@ class KaryawanController extends Controller
             // Show preview of successful imports (first 3)
             if (count($successRows) > 0) {
                 $successPreview = array_slice($successRows, 0, 3);
-                $messages[] = "Data berhasil: " . implode('; ', $successPreview) .
-                    (count($successRows) > 3 ? "; dan " . (count($successRows) - 3) . " lainnya" : "");
+                $messages[] = 'Data berhasil: '.implode('; ', $successPreview).
+                    (count($successRows) > 3 ? '; dan '.(count($successRows) - 3).' lainnya' : '');
             }
         }
 
@@ -1901,12 +1930,12 @@ class KaryawanController extends Controller
 
             // Show detailed error information (first 5)
             $failedPreview = array_slice($failedRows, 0, 5);
-            $messages[] = "Data gagal: " . implode('; ', $failedPreview) .
-                ($totalFailed > 5 ? "; dan " . ($totalFailed - 5) . " error lainnya" : "");
+            $messages[] = 'Data gagal: '.implode('; ', $failedPreview).
+                ($totalFailed > 5 ? '; dan '.($totalFailed - 5).' error lainnya' : '');
         }
 
         // Determine flash message type and redirect
-        if ($hasErrors && !$hasSuccess) {
+        if ($hasErrors && ! $hasSuccess) {
             // All failed
             return redirect()->route('master.karyawan.index')
                 ->with('error', implode("\n", $messages));
@@ -1929,7 +1958,7 @@ class KaryawanController extends Controller
         $karyawan = Karyawan::findOrFail($id);
 
         // Only allow ABK division employees
-        if (!$karyawan->isAbk()) {
+        if (! $karyawan->isAbk()) {
             return redirect()->route('master.karyawan.index')
                 ->with('error', 'Checklist kelengkapan crew hanya untuk divisi ABK.');
         }
@@ -1940,10 +1969,10 @@ class KaryawanController extends Controller
 
         // Create missing default items
         foreach ($defaultItems as $item) {
-            if (!in_array($item, $existingItems)) {
+            if (! in_array($item, $existingItems)) {
                 $karyawan->crewChecklists()->create([
                     'item_name' => $item,
-                    'status' => 'tidak'
+                    'status' => 'tidak',
                 ]);
             }
         }
@@ -1951,8 +1980,8 @@ class KaryawanController extends Controller
         // Reload the checklist items
         $checklistItems = $karyawan->crewChecklists()->orderBy('item_name')->get();
 
-    // Return the simplified new view (old view file removed)
-    return view('master-karyawan.crew-checklist-new', compact('karyawan', 'checklistItems'));
+        // Return the simplified new view (old view file removed)
+        return view('master-karyawan.crew-checklist-new', compact('karyawan', 'checklistItems'));
     }
 
     /**
@@ -1963,7 +1992,7 @@ class KaryawanController extends Controller
         $karyawan = Karyawan::findOrFail($id);
 
         // Only allow ABK division employees
-        if (!$karyawan->isAbk()) {
+        if (! $karyawan->isAbk()) {
             return redirect()->route('master.karyawan.index')
                 ->with('error', 'Checklist kelengkapan crew hanya untuk divisi ABK.');
         }
@@ -1974,10 +2003,10 @@ class KaryawanController extends Controller
 
         // Create missing default items
         foreach ($defaultItems as $item) {
-            if (!in_array($item, $existingItems)) {
+            if (! in_array($item, $existingItems)) {
                 $karyawan->crewChecklists()->create([
                     'item_name' => $item,
-                    'status' => 'tidak'
+                    'status' => 'tidak',
                 ]);
             }
         }
@@ -1995,7 +2024,7 @@ class KaryawanController extends Controller
     {
         $karyawan = Karyawan::findOrFail($id);
 
-        if (!$karyawan->isAbk()) {
+        if (! $karyawan->isAbk()) {
             return redirect()->route('master.karyawan.index')
                 ->with('error', 'Checklist kelengkapan crew hanya untuk divisi ABK.');
         }
@@ -2009,12 +2038,12 @@ class KaryawanController extends Controller
                 Log::debug('updateCrewChecklist incoming request', $request->all());
             } catch (\Throwable $e) {
                 // swallow logging errors to avoid breaking main flow
-                Log::debug('updateCrewChecklist logging failed: ' . $e->getMessage());
+                Log::debug('updateCrewChecklist logging failed: '.$e->getMessage());
             }
 
             // Validate that checklist exists and keep raw data so keys (item IDs) are preserved
             $request->validate([
-                'checklist' => 'required|array'
+                'checklist' => 'required|array',
             ]);
 
             $rawChecklist = $request->input('checklist', []);
@@ -2028,7 +2057,7 @@ class KaryawanController extends Controller
 
             foreach ($rawChecklist as $itemId => $data) {
                 // Normalize empty strings to null so 'nullable' rules accept empty HTML inputs
-                $dataNormalized = array_map(function($v) {
+                $dataNormalized = array_map(function ($v) {
                     return $v === '' ? null : $v;
                 }, $data);
 
@@ -2038,13 +2067,13 @@ class KaryawanController extends Controller
                     'nomor_sertifikat' => 'nullable|string|max:255',
                     'issued_date' => 'nullable|date',
                     'expired_date' => 'nullable|date|after_or_equal:issued_date',
-                    'catatan' => 'nullable|string|max:500'
+                    'catatan' => 'nullable|string|max:500',
                 ])->validate();
 
                 $checklist = $karyawan->crewChecklists()->find($itemId);
 
                 // If checklist not found and item_name provided (new_x), create it
-                if (!$checklist && !empty($rowValidated['item_name'])) {
+                if (! $checklist && ! empty($rowValidated['item_name'])) {
                     $checklist = $karyawan->crewChecklists()->create([
                         'item_name' => $rowValidated['item_name'],
                         'status' => 'tidak',
@@ -2064,7 +2093,7 @@ class KaryawanController extends Controller
                         'nomor_sertifikat' => $nomor,
                         'issued_date' => $issued ?: null,
                         'expired_date' => $expired ?: null,
-                        'catatan' => $rowValidated['catatan'] ?? null
+                        'catatan' => $rowValidated['catatan'] ?? null,
                     ]);
                 }
             }
@@ -2076,6 +2105,7 @@ class KaryawanController extends Controller
             if (request()->routeIs('karyawan.crew-checklist.update') ||
                 str_contains(request()->url(), 'onboarding')) {
                 Auth::logout();
+
                 return redirect()->route('login')
                     ->with('success', 'Checklist kelengkapan crew berhasil diperbarui. Silakan login kembali untuk melanjutkan.');
             }
@@ -2086,7 +2116,7 @@ class KaryawanController extends Controller
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Gagal menyimpan crew checklist untuk karyawan ' . $id . ': ' . $e->getMessage());
+            Log::error('Gagal menyimpan crew checklist untuk karyawan '.$id.': '.$e->getMessage());
 
             return redirect()->route('master.karyawan.crew-checklist-new', $id)
                 ->with('error', 'Gagal menyimpan checklist. Silakan coba lagi atau hubungi admin.')
@@ -2101,7 +2131,7 @@ class KaryawanController extends Controller
     {
         $karyawan = Karyawan::findOrFail($id);
 
-        if (!$karyawan->isAbk()) {
+        if (! $karyawan->isAbk()) {
             return redirect()->route('dashboard')
                 ->with('error', 'Checklist kelengkapan crew hanya untuk divisi ABK.');
         }
@@ -2115,12 +2145,12 @@ class KaryawanController extends Controller
                 Log::debug('updateCrewChecklistOnboarding incoming request', $request->all());
             } catch (\Throwable $e) {
                 // swallow logging errors to avoid breaking main flow
-                Log::debug('updateCrewChecklistOnboarding logging failed: ' . $e->getMessage());
+                Log::debug('updateCrewChecklistOnboarding logging failed: '.$e->getMessage());
             }
 
             // Validate that checklist exists and keep raw data so keys (item IDs) are preserved
             $request->validate([
-                'checklist' => 'required|array'
+                'checklist' => 'required|array',
             ]);
 
             $rawChecklist = $request->input('checklist', []);
@@ -2134,7 +2164,7 @@ class KaryawanController extends Controller
 
             foreach ($rawChecklist as $itemId => $data) {
                 // Normalize empty strings to null so 'nullable' rules accept empty HTML inputs
-                $dataNormalized = array_map(function($v) {
+                $dataNormalized = array_map(function ($v) {
                     return $v === '' ? null : $v;
                 }, $data);
 
@@ -2144,13 +2174,13 @@ class KaryawanController extends Controller
                     'nomor_sertifikat' => 'nullable|string|max:255',
                     'issued_date' => 'nullable|date',
                     'expired_date' => 'nullable|date|after_or_equal:issued_date',
-                    'catatan' => 'nullable|string|max:500'
+                    'catatan' => 'nullable|string|max:500',
                 ])->validate();
 
                 $checklist = $karyawan->crewChecklists()->find($itemId);
 
                 // If checklist not found and item_name provided (new_x), create it
-                if (!$checklist && !empty($rowValidated['item_name'])) {
+                if (! $checklist && ! empty($rowValidated['item_name'])) {
                     $checklist = $karyawan->crewChecklists()->create([
                         'item_name' => $rowValidated['item_name'],
                         'status' => 'tidak',
@@ -2170,7 +2200,7 @@ class KaryawanController extends Controller
                         'nomor_sertifikat' => $nomor,
                         'issued_date' => $issued ?: null,
                         'expired_date' => $expired ?: null,
-                        'catatan' => $rowValidated['catatan'] ?? null
+                        'catatan' => $rowValidated['catatan'] ?? null,
                     ]);
                 }
             }
@@ -2180,12 +2210,13 @@ class KaryawanController extends Controller
             // For onboarding crew checklist completion, logout user and redirect to login
             // This will eventually lead to dashboard which shows "setup permission" message
             Auth::logout();
+
             return redirect()->route('login')
                 ->with('success', 'Checklist kelengkapan crew berhasil diperbarui. Silakan login kembali untuk melanjutkan.');
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Gagal menyimpan crew checklist onboarding untuk karyawan ' . $id . ': ' . $e->getMessage());
+            Log::error('Gagal menyimpan crew checklist onboarding untuk karyawan '.$id.': '.$e->getMessage());
 
             return redirect()->route('karyawan.onboarding-crew-checklist', $id)
                 ->with('error', 'Gagal menyimpan checklist. Silakan coba lagi atau hubungi admin.')
@@ -2200,7 +2231,7 @@ class KaryawanController extends Controller
     {
         $karyawan = Karyawan::findOrFail($id);
 
-        if (!$karyawan->isAbk()) {
+        if (! $karyawan->isAbk()) {
             abort(403, 'Checklist kelengkapan crew hanya untuk divisi ABK.');
         }
 
@@ -2224,7 +2255,8 @@ class KaryawanController extends Controller
                 return $this->convertXlsToCsv($filePath);
             }
         } catch (\Exception $e) {
-            Log::error('Excel conversion error: ' . $e->getMessage());
+            Log::error('Excel conversion error: '.$e->getMessage());
+
             return false;
         }
 
@@ -2236,12 +2268,12 @@ class KaryawanController extends Controller
      */
     private function convertXlsxToCsv($filePath)
     {
-        if (!class_exists('ZipArchive')) {
+        if (! class_exists('ZipArchive')) {
             throw new \Exception('ZipArchive extension not available');
         }
 
-        $zip = new \ZipArchive();
-        if ($zip->open($filePath) !== TRUE) {
+        $zip = new \ZipArchive;
+        if ($zip->open($filePath) !== true) {
             throw new \Exception('Cannot open XLSX file');
         }
 
@@ -2249,7 +2281,7 @@ class KaryawanController extends Controller
         $sharedStrings = [];
         $sharedStringsXml = $zip->getFromName('xl/sharedStrings.xml');
         if ($sharedStringsXml) {
-            $sharedStringsDoc = new \DOMDocument();
+            $sharedStringsDoc = new \DOMDocument;
             $sharedStringsDoc->loadXML($sharedStringsXml);
             $xpath = new \DOMXPath($sharedStringsDoc);
             $nodes = $xpath->query('//t');
@@ -2260,14 +2292,14 @@ class KaryawanController extends Controller
 
         // Read the first worksheet
         $worksheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
-        if (!$worksheetXml) {
+        if (! $worksheetXml) {
             throw new \Exception('Cannot read worksheet data');
         }
 
         $zip->close();
 
         // Parse worksheet XML
-        $worksheetDoc = new \DOMDocument();
+        $worksheetDoc = new \DOMDocument;
         $worksheetDoc->loadXML($worksheetXml);
         $xpath = new \DOMXPath($worksheetDoc);
 
@@ -2301,7 +2333,7 @@ class KaryawanController extends Controller
                         // Check if it's a date (Excel dates are numbers)
                         if ($value > 25569) { // Excel epoch starts 1900-01-01, Unix epoch is 1970-01-01
                             $excelEpoch = new \DateTime('1900-01-01');
-                            $excelEpoch->add(new \DateInterval('P' . intval($value - 2) . 'D')); // -2 for Excel leap year bug
+                            $excelEpoch->add(new \DateInterval('P'.intval($value - 2).'D')); // -2 for Excel leap year bug
                             $value = $excelEpoch->format('Y-m-d');
                         }
                     }
@@ -2323,9 +2355,9 @@ class KaryawanController extends Controller
         // Convert to CSV format
         $csvOutput = '';
         foreach ($rows as $row) {
-            $csvOutput .= '"' . implode('","', array_map(function($cell) {
+            $csvOutput .= '"'.implode('","', array_map(function ($cell) {
                 return str_replace('"', '""', $cell);
-            }, $row)) . "\"\n";
+            }, $row))."\"\n";
         }
 
         return $csvOutput;
@@ -2369,20 +2401,20 @@ class KaryawanController extends Controller
         try {
             // Update catatan pekerjaan
             $karyawan->update([
-                'catatan_pekerjaan' => $validated['catatan_pekerjaan'] ? strtoupper($validated['catatan_pekerjaan']) : null
+                'catatan_pekerjaan' => $validated['catatan_pekerjaan'] ? strtoupper($validated['catatan_pekerjaan']) : null,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Catatan pekerjaan berhasil diperbarui',
                 'data' => [
-                    'catatan_pekerjaan' => $karyawan->fresh()->catatan_pekerjaan
-                ]
+                    'catatan_pekerjaan' => $karyawan->fresh()->catatan_pekerjaan,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memperbarui catatan pekerjaan: ' . $e->getMessage()
+                'message' => 'Gagal memperbarui catatan pekerjaan: '.$e->getMessage(),
             ], 500);
         }
     }

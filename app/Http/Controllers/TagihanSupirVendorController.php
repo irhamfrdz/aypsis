@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class TagihanSupirVendorController extends Controller
@@ -21,13 +20,13 @@ class TagihanSupirVendorController extends Controller
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nama_supir', 'like', '%' . $search . '%')
-                  ->orWhere('dari', 'like', '%' . $search . '%')
-                  ->orWhere('ke', 'like', '%' . $search . '%')
-                  ->orWhere('jenis_kontainer', 'like', '%' . $search . '%')
-                  ->orWhereHas('suratJalan', function ($sq) use ($search) {
-                      $sq->where('no_surat_jalan', 'like', '%' . $search . '%');
-                  });
+                $q->where('nama_supir', 'like', '%'.$search.'%')
+                    ->orWhere('dari', 'like', '%'.$search.'%')
+                    ->orWhere('ke', 'like', '%'.$search.'%')
+                    ->orWhere('jenis_kontainer', 'like', '%'.$search.'%')
+                    ->orWhereHas('suratJalan', function ($sq) use ($search) {
+                        $sq->where('no_surat_jalan', 'like', '%'.$search.'%');
+                    });
             });
         }
 
@@ -86,12 +85,12 @@ class TagihanSupirVendorController extends Controller
         $jenis_kontainer = $suratJalan->size ?? 20;
 
         $pricelists = \App\Models\MasterPricelistVendorSupir::where('status', 'aktif')
-            ->where(function($q) use ($dari, $ke) {
+            ->where(function ($q) use ($dari, $ke) {
                 // Match the strings exactly or loosely
                 $q->where('ke', $ke)
-                  ->orWhere('ke', $dari);
-                  // using original logic of checking 'ke' against tujuan_pengambilan (dari) 
-                  // or tujuan_pengiriman (ke) if they just match 'ke' text in pricelist.
+                    ->orWhere('ke', $dari);
+                // using original logic of checking 'ke' against tujuan_pengambilan (dari)
+                // or tujuan_pengiriman (ke) if they just match 'ke' text in pricelist.
             })
             ->where('jenis_kontainer', $jenis_kontainer)
             ->get();
@@ -104,7 +103,6 @@ class TagihanSupirVendorController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -158,7 +156,7 @@ class TagihanSupirVendorController extends Controller
     public function show($id)
     {
         $tagihanSupirVendor = \App\Models\TagihanSupirVendor::with(['suratJalan', 'creator', 'updater'])->findOrFail($id);
-        
+
         return view('tagihan-supir-vendor.show', compact('tagihanSupirVendor'));
     }
 
@@ -172,14 +170,13 @@ class TagihanSupirVendorController extends Controller
     {
         $tagihanSupirVendor = \App\Models\TagihanSupirVendor::findOrFail($id);
         $vendors = \App\Models\VendorSupir::orderBy('nama_vendor')->get();
-        
+
         return view('tagihan-supir-vendor.edit', compact('tagihanSupirVendor', 'vendors'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
@@ -194,7 +191,7 @@ class TagihanSupirVendorController extends Controller
         ]);
 
         $tagihanSupirVendor = \App\Models\TagihanSupirVendor::findOrFail($id);
-        
+
         $tagihanSupirVendor->update([
             'vendor_id' => $request->vendor_id,
             'nominal' => $request->nominal,

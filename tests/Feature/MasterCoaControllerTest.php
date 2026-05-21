@@ -1,14 +1,13 @@
 <?php
 
-use Tests\TestCase;
 use App\Http\Controllers\MasterCoaController;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class MasterCoaControllerTest extends TestCase
 {
     public function test_download_template()
     {
-        $controller = new MasterCoaController();
+        $controller = new MasterCoaController;
         $response = $controller->downloadTemplate();
 
         $this->assertEquals(200, $response->getStatusCode());

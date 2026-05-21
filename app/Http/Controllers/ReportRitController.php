@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Karyawan;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
-use App\Models\Karyawan;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReportRitController extends Controller
 {
@@ -15,7 +15,7 @@ class ReportRitController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -27,12 +27,12 @@ class ReportRitController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
         // Validasi required tanggal
-        if (!$request->has('start_date') || !$request->has('end_date')) {
+        if (! $request->has('start_date') || ! $request->has('end_date')) {
             return redirect()->route('report.rit.index')
                 ->with('error', 'Tanggal mulai dan tanggal akhir harus diisi');
         }
@@ -43,103 +43,103 @@ class ReportRitController extends Controller
         // Query untuk Surat Jalan biasa - filter hanya yang menggunakan rit
         $querySuratJalan = SuratJalan::where('rit', 'menggunakan_rit')
             // Harus punya checkpoint ATAU tanda terima ATAU status approved
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima')
-                  ->orWhere(function($subQ) {
-                      $subQ->where('kegiatan', 'bongkaran')
-                           ->whereNotNull('tanggal_tanda_terima');
-                  })
-                  ->orWhere('status', 'approved');
+                    ->orWhereHas('tandaTerima')
+                    ->orWhere(function ($subQ) {
+                        $subQ->where('kegiatan', 'bongkaran')
+                            ->whereNotNull('tanggal_tanda_terima');
+                    })
+                    ->orWhere('status', 'approved');
             })
-            ->where(function($q) use ($startDate, $endDate) {
+            ->where(function ($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
-                $q->where(function($subQ) use ($startDate, $endDate) {
+                $q->where(function ($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
-                    $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDate, $endDate) {
+                    $subQ->whereHas('tandaTerima', function ($ttQuery) use ($startDate, $endDate) {
                         $ttQuery->where(\DB::raw('DATE(tanggal)'), '>=', $startDate->toDateString())
-                                ->where(\DB::raw('DATE(tanggal)'), '<=', $endDate->toDateString());
+                            ->where(\DB::raw('DATE(tanggal)'), '<=', $endDate->toDateString());
                     });
                 })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 2. Tanggal tanda terima untuk kegiatan bongkaran
-                    $subQ->where('kegiatan', 'bongkaran')
-                         ->whereNotNull('tanggal_tanda_terima')
-                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
-                })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 3. Filter berdasarkan tanggal checkpoint
-                    $subQ->whereNotNull('tanggal_checkpoint')
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
-                })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 4. Filter berdasarkan tanggal surat jalan - hanya untuk yang approved
-                    $subQ->where('status', 'approved')
-                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
-                });
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 2. Tanggal tanda terima untuk kegiatan bongkaran
+                        $subQ->where('kegiatan', 'bongkaran')
+                            ->whereNotNull('tanggal_tanda_terima')
+                            ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
+                    })
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 3. Filter berdasarkan tanggal checkpoint
+                        $subQ->whereNotNull('tanggal_checkpoint')
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
+                    })
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 4. Filter berdasarkan tanggal surat jalan - hanya untuk yang approved
+                        $subQ->where('status', 'approved')
+                            ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
+                    });
             });
 
         // Query untuk Surat Jalan Bongkaran - filter hanya yang menggunakan rit atau rit null
-        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function($q) {
-                $q->where('rit', 'menggunakan_rit')
-                  ->orWhereNull('rit');
-            })
+        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function ($q) {
+            $q->where('rit', 'menggunakan_rit')
+                ->orWhereNull('rit');
+        })
             // Harus punya checkpoint ATAU tanda terima
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
+                    ->orWhereHas('tandaTerima');
             })
-            ->where(function($q) use ($startDate, $endDate) {
+            ->where(function ($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
-                $q->where(function($subQ) use ($startDate, $endDate) {
+                $q->where(function ($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
-                    $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDate, $endDate) {
+                    $subQ->whereHas('tandaTerima', function ($ttQuery) use ($startDate, $endDate) {
                         $ttQuery->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDate->toDateString())
-                                ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
+                            ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
                     });
                 })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 2. Filter berdasarkan tanggal checkpoint
-                    $subQ->whereNotNull('tanggal_checkpoint')
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
-                });
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 2. Filter berdasarkan tanggal checkpoint
+                        $subQ->whereNotNull('tanggal_checkpoint')
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
+                    });
             });
 
         // Filter tambahan jika ada
         if ($request->filled('search')) {
             $search = $request->search;
-            $querySuratJalan->where(function($q) use ($search) {
+            $querySuratJalan->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('supir2', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('supir2', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
             });
-            
-            $querySuratJalanBongkaran->where(function($q) use ($search) {
+
+            $querySuratJalanBongkaran->where(function ($q) use ($search) {
                 $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('supir2', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('supir2', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('supir')) {
-            $querySuratJalan->where(function($q) use ($request) {
+            $querySuratJalan->where(function ($q) use ($request) {
                 $q->where('supir', 'like', "%{$request->supir}%")
-                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+                    ->orWhere('supir2', 'like', "%{$request->supir}%");
             });
-            
-            $querySuratJalanBongkaran->where(function($q) use ($request) {
+
+            $querySuratJalanBongkaran->where(function ($q) use ($request) {
                 $q->where('supir', 'like', "%{$request->supir}%")
-                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+                    ->orWhere('supir2', 'like', "%{$request->supir}%");
             });
         }
 
@@ -152,14 +152,14 @@ class ReportRitController extends Controller
         $suratJalansBiasa = $querySuratJalan
             ->with(['order', 'pengirimRelation', 'jenisBarangRelation', 'tujuanPengirimanRelation', 'tandaTerima', 'supirKaryawan', 'kenekKaryawan'])
             ->get();
-            
+
         $suratJalansBongkaran = $querySuratJalanBongkaran
             ->with(['tandaTerima', 'supirKaryawan', 'kenekKaryawan'])
             ->get();
 
         // Gabungkan dan transform data agar konsisten
         $allSuratJalans = collect();
-        
+
         // Add surat jalan biasa
         foreach ($suratJalansBiasa as $sj) {
             // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
@@ -185,7 +185,7 @@ class ReportRitController extends Controller
             // Get kenek data from karyawan relation
             $kenekName = $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : $sj->kenek;
             $nikKenek = $sj->kenekKaryawan ? $sj->kenekKaryawan->nik : null;
-            
+
             $allSuratJalans->push([
                 'type' => 'regular',
                 'id' => $sj->id,
@@ -209,7 +209,7 @@ class ReportRitController extends Controller
                 'created_at' => $sj->created_at,
             ]);
         }
-        
+
         // Add surat jalan bongkaran
         foreach ($suratJalansBongkaran as $sjb) {
             // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
@@ -235,7 +235,7 @@ class ReportRitController extends Controller
             // Get kenek data from karyawan relation
             $kenekName = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : $sjb->kenek;
             $nikKenek = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nik : null;
-            
+
             $allSuratJalans->push([
                 'type' => 'bongkaran',
                 'id' => $sjb->id,
@@ -259,17 +259,17 @@ class ReportRitController extends Controller
                 'created_at' => $sjb->created_at,
             ]);
         }
-        
+
         // Sort by tanggal descending, then created_at descending
-        $allSuratJalans = $allSuratJalans->sortByDesc(function($item) {
-            return $item['tanggal_surat_jalan'] . ' ' . $item['created_at'];
+        $allSuratJalans = $allSuratJalans->sortByDesc(function ($item) {
+            return $item['tanggal_surat_jalan'].' '.$item['created_at'];
         });
 
         // Manual pagination
         $perPage = $request->get('per_page', 50);
         $currentPage = $request->get('page', 1);
         $total = $allSuratJalans->count();
-        
+
         $suratJalans = new \Illuminate\Pagination\LengthAwarePaginator(
             $allSuratJalans->forPage($currentPage, $perPage)->values(),
             $total,
@@ -285,13 +285,13 @@ class ReportRitController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
         $request->validate([
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date'
+            'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
         $startDate = Carbon::parse($request->start_date)->startOfDay();
@@ -300,103 +300,103 @@ class ReportRitController extends Controller
         // Query untuk Surat Jalan biasa - filter hanya yang menggunakan rit
         $querySuratJalan = SuratJalan::where('rit', 'menggunakan_rit')
             // Harus punya checkpoint ATAU tanda terima ATAU status approved
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima')
-                  ->orWhere(function($subQ) {
-                      $subQ->where('kegiatan', 'bongkaran')
-                           ->whereNotNull('tanggal_tanda_terima');
-                  })
-                  ->orWhere('status', 'approved');
+                    ->orWhereHas('tandaTerima')
+                    ->orWhere(function ($subQ) {
+                        $subQ->where('kegiatan', 'bongkaran')
+                            ->whereNotNull('tanggal_tanda_terima');
+                    })
+                    ->orWhere('status', 'approved');
             })
-            ->where(function($q) use ($startDate, $endDate) {
+            ->where(function ($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
-                $q->where(function($subQ) use ($startDate, $endDate) {
+                $q->where(function ($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
-                    $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDate, $endDate) {
+                    $subQ->whereHas('tandaTerima', function ($ttQuery) use ($startDate, $endDate) {
                         $ttQuery->where(\DB::raw('DATE(tanggal)'), '>=', $startDate->toDateString())
-                                ->where(\DB::raw('DATE(tanggal)'), '<=', $endDate->toDateString());
+                            ->where(\DB::raw('DATE(tanggal)'), '<=', $endDate->toDateString());
                     });
                 })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 2. Tanggal tanda terima untuk kegiatan bongkaran
-                    $subQ->where('kegiatan', 'bongkaran')
-                         ->whereNotNull('tanggal_tanda_terima')
-                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
-                })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 3. Filter berdasarkan tanggal checkpoint
-                    $subQ->whereNotNull('tanggal_checkpoint')
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
-                })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 4. Filter berdasarkan tanggal surat jalan - hanya untuk yang approved
-                    $subQ->where('status', 'approved')
-                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
-                });
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 2. Tanggal tanda terima untuk kegiatan bongkaran
+                        $subQ->where('kegiatan', 'bongkaran')
+                            ->whereNotNull('tanggal_tanda_terima')
+                            ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
+                    })
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 3. Filter berdasarkan tanggal checkpoint
+                        $subQ->whereNotNull('tanggal_checkpoint')
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
+                    })
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 4. Filter berdasarkan tanggal surat jalan - hanya untuk yang approved
+                        $subQ->where('status', 'approved')
+                            ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
+                    });
             });
 
         // Query untuk Surat Jalan Bongkaran - filter hanya yang menggunakan rit atau rit null
-        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function($q) {
-                $q->where('rit', 'menggunakan_rit')
-                  ->orWhereNull('rit');
-            })
+        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function ($q) {
+            $q->where('rit', 'menggunakan_rit')
+                ->orWhereNull('rit');
+        })
             // Harus punya checkpoint ATAU tanda terima
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
+                    ->orWhereHas('tandaTerima');
             })
-            ->where(function($q) use ($startDate, $endDate) {
+            ->where(function ($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
-                $q->where(function($subQ) use ($startDate, $endDate) {
+                $q->where(function ($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
-                    $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDate, $endDate) {
+                    $subQ->whereHas('tandaTerima', function ($ttQuery) use ($startDate, $endDate) {
                         $ttQuery->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDate->toDateString())
-                                ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
+                            ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
                     });
                 })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 2. Filter berdasarkan tanggal checkpoint
-                    $subQ->whereNotNull('tanggal_checkpoint')
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
-                });
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 2. Filter berdasarkan tanggal checkpoint
+                        $subQ->whereNotNull('tanggal_checkpoint')
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
+                    });
             });
 
         // Filter tambahan jika ada
         if ($request->filled('search')) {
             $search = $request->search;
-            $querySuratJalan->where(function($q) use ($search) {
+            $querySuratJalan->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('supir2', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('supir2', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
             });
-            
-            $querySuratJalanBongkaran->where(function($q) use ($search) {
+
+            $querySuratJalanBongkaran->where(function ($q) use ($search) {
                 $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('supir2', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('supir2', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('supir')) {
-            $querySuratJalan->where(function($q) use ($request) {
+            $querySuratJalan->where(function ($q) use ($request) {
                 $q->where('supir', 'like', "%{$request->supir}%")
-                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+                    ->orWhere('supir2', 'like', "%{$request->supir}%");
             });
-            
-            $querySuratJalanBongkaran->where(function($q) use ($request) {
+
+            $querySuratJalanBongkaran->where(function ($q) use ($request) {
                 $q->where('supir', 'like', "%{$request->supir}%")
-                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+                    ->orWhere('supir2', 'like', "%{$request->supir}%");
             });
         }
 
@@ -413,7 +413,7 @@ class ReportRitController extends Controller
 
         // Gabungkan dan transform data agar konsisten
         $allSuratJalans = collect();
-        
+
         foreach ($suratJalansBiasa as $sj) {
             // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
             if ($sj->supirKaryawan) {
@@ -438,7 +438,7 @@ class ReportRitController extends Controller
             // Get kenek data from karyawan relation
             $kenekName = $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : $sj->kenek;
             $nikKenek = $sj->kenekKaryawan ? $sj->kenekKaryawan->nik : null;
-            
+
             $allSuratJalans->push([
                 'type' => 'regular',
                 'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
@@ -461,7 +461,7 @@ class ReportRitController extends Controller
                 'created_at' => $sj->created_at,
             ]);
         }
-        
+
         foreach ($suratJalansBongkaran as $sjb) {
             // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
             if ($sjb->supirKaryawan) {
@@ -486,7 +486,7 @@ class ReportRitController extends Controller
             // Get kenek data from karyawan relation
             $kenekName = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : $sjb->kenek;
             $nikKenek = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nik : null;
-            
+
             $allSuratJalans->push([
                 'type' => 'bongkaran',
                 'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
@@ -509,9 +509,9 @@ class ReportRitController extends Controller
                 'created_at' => $sjb->created_at,
             ]);
         }
-        
-        $suratJalans = $allSuratJalans->sortByDesc(function($item) {
-            return $item['tanggal_surat_jalan'] . ' ' . $item['created_at'];
+
+        $suratJalans = $allSuratJalans->sortByDesc(function ($item) {
+            return $item['tanggal_surat_jalan'].' '.$item['created_at'];
         })->values();
 
         return view('report-rit.print', compact('suratJalans', 'startDate', 'endDate'));
@@ -521,13 +521,13 @@ class ReportRitController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
         $request->validate([
             'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date'
+            'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
         $startDate = Carbon::parse($request->start_date)->startOfDay();
@@ -536,103 +536,103 @@ class ReportRitController extends Controller
         // Query untuk Surat Jalan biasa - filter hanya yang menggunakan rit
         $querySuratJalan = SuratJalan::where('rit', 'menggunakan_rit')
             // Harus punya checkpoint ATAU tanda terima ATAU status approved
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima')
-                  ->orWhere(function($subQ) {
-                      $subQ->where('kegiatan', 'bongkaran')
-                           ->whereNotNull('tanggal_tanda_terima');
-                  })
-                  ->orWhere('status', 'approved');
+                    ->orWhereHas('tandaTerima')
+                    ->orWhere(function ($subQ) {
+                        $subQ->where('kegiatan', 'bongkaran')
+                            ->whereNotNull('tanggal_tanda_terima');
+                    })
+                    ->orWhere('status', 'approved');
             })
-            ->where(function($q) use ($startDate, $endDate) {
+            ->where(function ($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
-                $q->where(function($subQ) use ($startDate, $endDate) {
+                $q->where(function ($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
-                    $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDate, $endDate) {
+                    $subQ->whereHas('tandaTerima', function ($ttQuery) use ($startDate, $endDate) {
                         $ttQuery->where(\DB::raw('DATE(tanggal)'), '>=', $startDate->toDateString())
-                                ->where(\DB::raw('DATE(tanggal)'), '<=', $endDate->toDateString());
+                            ->where(\DB::raw('DATE(tanggal)'), '<=', $endDate->toDateString());
                     });
                 })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 2. Tanggal tanda terima untuk kegiatan bongkaran
-                    $subQ->where('kegiatan', 'bongkaran')
-                         ->whereNotNull('tanggal_tanda_terima')
-                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
-                })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 3. Filter berdasarkan tanggal checkpoint
-                    $subQ->whereNotNull('tanggal_checkpoint')
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
-                })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 4. Filter berdasarkan tanggal surat jalan - hanya untuk yang approved
-                    $subQ->where('status', 'approved')
-                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
-                });
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 2. Tanggal tanda terima untuk kegiatan bongkaran
+                        $subQ->where('kegiatan', 'bongkaran')
+                            ->whereNotNull('tanggal_tanda_terima')
+                            ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
+                    })
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 3. Filter berdasarkan tanggal checkpoint
+                        $subQ->whereNotNull('tanggal_checkpoint')
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
+                    })
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 4. Filter berdasarkan tanggal surat jalan - hanya untuk yang approved
+                        $subQ->where('status', 'approved')
+                            ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_surat_jalan)'), '<=', $endDate->toDateString());
+                    });
             });
 
         // Query untuk Surat Jalan Bongkaran - filter hanya yang menggunakan rit atau rit null
-        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function($q) {
-                $q->where('rit', 'menggunakan_rit')
-                  ->orWhereNull('rit');
-            })
+        $querySuratJalanBongkaran = SuratJalanBongkaran::where(function ($q) {
+            $q->where('rit', 'menggunakan_rit')
+                ->orWhereNull('rit');
+        })
             // Harus punya checkpoint ATAU tanda terima
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNotNull('tanggal_checkpoint')
-                  ->orWhereHas('tandaTerima');
+                    ->orWhereHas('tandaTerima');
             })
-            ->where(function($q) use ($startDate, $endDate) {
+            ->where(function ($q) use ($startDate, $endDate) {
                 // Filter berdasarkan tanggal dari berbagai sumber (OR conditions)
-                $q->where(function($subQ) use ($startDate, $endDate) {
+                $q->where(function ($subQ) use ($startDate, $endDate) {
                     // 1. Tanggal dari relasi tandaTerima
-                    $subQ->whereHas('tandaTerima', function($ttQuery) use ($startDate, $endDate) {
+                    $subQ->whereHas('tandaTerima', function ($ttQuery) use ($startDate, $endDate) {
                         $ttQuery->where(\DB::raw('DATE(tanggal_tanda_terima)'), '>=', $startDate->toDateString())
-                                ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
+                            ->where(\DB::raw('DATE(tanggal_tanda_terima)'), '<=', $endDate->toDateString());
                     });
                 })
-                ->orWhere(function($subQ) use ($startDate, $endDate) {
-                    // 2. Filter berdasarkan tanggal checkpoint
-                    $subQ->whereNotNull('tanggal_checkpoint')
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
-                         ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
-                });
+                    ->orWhere(function ($subQ) use ($startDate, $endDate) {
+                        // 2. Filter berdasarkan tanggal checkpoint
+                        $subQ->whereNotNull('tanggal_checkpoint')
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '>=', $startDate->toDateString())
+                            ->where(\DB::raw('DATE(tanggal_checkpoint)'), '<=', $endDate->toDateString());
+                    });
             });
 
         // Filter tambahan jika ada
         if ($request->filled('search')) {
             $search = $request->search;
-            $querySuratJalan->where(function($q) use ($search) {
+            $querySuratJalan->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('supir2', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('supir2', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
             });
-            
-            $querySuratJalanBongkaran->where(function($q) use ($search) {
+
+            $querySuratJalanBongkaran->where(function ($q) use ($search) {
                 $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('supir2', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('supir2', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
             });
         }
 
         if ($request->filled('supir')) {
-            $querySuratJalan->where(function($q) use ($request) {
+            $querySuratJalan->where(function ($q) use ($request) {
                 $q->where('supir', 'like', "%{$request->supir}%")
-                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+                    ->orWhere('supir2', 'like', "%{$request->supir}%");
             });
-            
-            $querySuratJalanBongkaran->where(function($q) use ($request) {
+
+            $querySuratJalanBongkaran->where(function ($q) use ($request) {
                 $q->where('supir', 'like', "%{$request->supir}%")
-                  ->orWhere('supir2', 'like', "%{$request->supir}%");
+                    ->orWhere('supir2', 'like', "%{$request->supir}%");
             });
         }
 
@@ -649,7 +649,7 @@ class ReportRitController extends Controller
 
         // Gabungkan dan transform data agar konsisten
         $allSuratJalans = collect();
-        
+
         foreach ($suratJalansBiasa as $sj) {
             // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
             if ($sj->supirKaryawan) {
@@ -674,7 +674,7 @@ class ReportRitController extends Controller
             // Get kenek data from karyawan relation
             $kenekName = $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : $sj->kenek;
             $nikKenek = $sj->kenekKaryawan ? $sj->kenekKaryawan->nik : null;
-            
+
             $allSuratJalans->push([
                 'type' => 'regular',
                 'tanggal_surat_jalan' => $sj->tanggal_surat_jalan,
@@ -697,7 +697,7 @@ class ReportRitController extends Controller
                 'created_at' => $sj->created_at,
             ]);
         }
-        
+
         foreach ($suratJalansBongkaran as $sjb) {
             // Get supir display name - prioritas: nama_panggilan dari relasi, cari manual by nama_lengkap, fallback ke field supir
             if ($sjb->supirKaryawan) {
@@ -722,7 +722,7 @@ class ReportRitController extends Controller
             // Get kenek data from karyawan relation
             $kenekName = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : $sjb->kenek;
             $nikKenek = $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nik : null;
-            
+
             $allSuratJalans->push([
                 'type' => 'bongkaran',
                 'tanggal_surat_jalan' => $sjb->tanggal_surat_jalan,
@@ -745,12 +745,12 @@ class ReportRitController extends Controller
                 'created_at' => $sjb->created_at,
             ]);
         }
-        
-        $suratJalans = $allSuratJalans->sortByDesc(function($item) {
-            return $item['tanggal_surat_jalan'] . ' ' . $item['created_at'];
+
+        $suratJalans = $allSuratJalans->sortByDesc(function ($item) {
+            return $item['tanggal_surat_jalan'].' '.$item['created_at'];
         });
 
-        $filename = 'Report_Rit_' . $startDate->format('d-m-Y') . '_to_' . $endDate->format('d-m-Y') . '.xlsx';
+        $filename = 'Report_Rit_'.$startDate->format('d-m-Y').'_to_'.$endDate->format('d-m-Y').'.xlsx';
 
         return \Excel::download(new \App\Exports\ReportRitExport($suratJalans, $startDate, $endDate), $filename);
     }

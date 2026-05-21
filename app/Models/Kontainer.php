@@ -2,19 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\BtmSewaUnit;
-use App\Models\BtmSewaVendor;
-use App\Models\BtmSewaType;
-use App\Models\BtmSewaSize;
-
-
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
 class Kontainer extends Model
 {
-    use HasFactory;
     use Auditable;
+    use HasFactory;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -38,7 +34,7 @@ class Kontainer extends Model
         'status_gate_in',
         'tanggal_gate_in',
         'terminal_id',
-        'gudangs_id'
+        'gudangs_id',
     ];
 
     /**
@@ -69,7 +65,7 @@ class Kontainer extends Model
         });
 
         static::saved(function ($kontainer) {
-            if (!empty($kontainer->nomor_seri_gabungan)) {
+            if (! empty($kontainer->nomor_seri_gabungan)) {
                 $vendorName = strtoupper($kontainer->vendor ?? 'ZONA');
                 $typeName = strtoupper($kontainer->tipe_kontainer ?? 'DRY');
                 $sizeName = strtoupper($kontainer->ukuran ?? '20');
@@ -90,7 +86,7 @@ class Kontainer extends Model
         });
 
         static::deleted(function ($kontainer) {
-            if (!empty($kontainer->nomor_seri_gabungan)) {
+            if (! empty($kontainer->nomor_seri_gabungan)) {
                 BtmSewaUnit::where('unit_number', $kontainer->nomor_seri_gabungan)->delete();
             }
         });
@@ -151,7 +147,6 @@ class Kontainer extends Model
         return $this->belongsToMany(Permohonan::class, 'permohonan_kontainers');
     }
 
-
     // Gate In relationships
     public function gateIn()
     {
@@ -174,9 +169,10 @@ class Kontainer extends Model
         // Prefer the stored full serial if present so we display exactly what was
         // entered or discovered (`nomor_seri_gabungan`). Fall back to composing
         // from parts for older records.
-        if (!empty($this->nomor_seri_gabungan)) {
+        if (! empty($this->nomor_seri_gabungan)) {
             return $this->nomor_seri_gabungan;
         }
-        return ($this->awalan_kontainer ?? '') . ($this->nomor_seri_kontainer ?? '') . ($this->akhiran_kontainer ?? '');
+
+        return ($this->awalan_kontainer ?? '').($this->nomor_seri_kontainer ?? '').($this->akhiran_kontainer ?? '');
     }
 }

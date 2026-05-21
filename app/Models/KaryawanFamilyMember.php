@@ -18,11 +18,11 @@ class KaryawanFamilyMember extends Model
         'no_telepon',
         'nik_ktp',
         'no_bpjs_kesehatan',
-        'faskes'
+        'faskes',
     ];
 
     protected $casts = [
-        'tanggal_lahir' => 'date'
+        'tanggal_lahir' => 'date',
     ];
 
     public function karyawan()

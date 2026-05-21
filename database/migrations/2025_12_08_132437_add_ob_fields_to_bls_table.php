@@ -12,13 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bls', function (Blueprint $table) {
-            if (!Schema::hasColumn('bls', 'supir_id')) {
+            if (! Schema::hasColumn('bls', 'supir_id')) {
                 $table->foreignId('supir_id')->nullable()->constrained('karyawans')->after('supir_ob');
             }
-            if (!Schema::hasColumn('bls', 'tanggal_ob')) {
+            if (! Schema::hasColumn('bls', 'tanggal_ob')) {
                 $table->timestamp('tanggal_ob')->nullable()->after('supir_id');
             }
-            if (!Schema::hasColumn('bls', 'catatan_ob')) {
+            if (! Schema::hasColumn('bls', 'catatan_ob')) {
                 $table->text('catatan_ob')->nullable()->after('tanggal_ob');
             }
         });

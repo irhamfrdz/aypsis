@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Models\Divisi;
+use App\Models\Karyawan;
+use App\Models\Pekerjaan;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Karyawan;
-use App\Models\Divisi;
-use App\Models\Pekerjaan;
-use App\Http\Controllers\KaryawanController;
 
 class AuthController extends Controller
 {
@@ -43,6 +41,7 @@ class AuthController extends Controller
             // Rejected users are denied.
             if ($user->status === 'rejected') {
                 Auth::logout();
+
                 return back()->withErrors(['username' => 'Akun Anda telah ditolak oleh administrator. Silakan hubungi admin untuk informasi lebih lanjut.']);
             }
 
@@ -61,7 +60,7 @@ class AuthController extends Controller
                 $pekerjaanByDivisi = [];
                 foreach ($pekerjaans as $pekerjaan) {
                     $divisi = $pekerjaan->divisi ?? '';
-                    if (!isset($pekerjaanByDivisi[$divisi])) {
+                    if (! isset($pekerjaanByDivisi[$divisi])) {
                         $pekerjaanByDivisi[$divisi] = [];
                     }
                     $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
@@ -73,6 +72,7 @@ class AuthController extends Controller
             // Any other non-approved status should be blocked.
             if ($user->status !== 'approved') {
                 Auth::logout();
+
                 return back()->withErrors(['username' => 'Akun Anda masih menunggu persetujuan administrator. Silakan hubungi admin untuk aktivasi akun.']);
             }
 
@@ -175,8 +175,8 @@ class AuthController extends Controller
             if (empty($validated['status'])) {
                 $validated['status'] = 'pending';
             }
-            if (!empty($request->alasan_pendaftaran)) {
-                $validated['catatan'] = ($validated['catatan'] ?? '') . ' Registrasi mandiri: ' . $request->alasan_pendaftaran;
+            if (! empty($request->alasan_pendaftaran)) {
+                $validated['catatan'] = ($validated['catatan'] ?? '').' Registrasi mandiri: '.$request->alasan_pendaftaran;
             }
             $karyawan = \App\Models\Karyawan::create($validated);
             // Link user to karyawan (pastikan instance Eloquent)
@@ -189,7 +189,6 @@ class AuthController extends Controller
                 $user->save();
             }
 
-
             // Jika ABK, redirect ke checklist crew (route khusus onboarding)
             if (method_exists($karyawan, 'isAbk') && $karyawan->isAbk()) {
                 return redirect()->route('karyawan.onboarding-crew-checklist', $karyawan->id)
@@ -201,9 +200,11 @@ class AuthController extends Controller
 
             // Logout and redirect to login for non-ABK
             Auth::logout();
+
             return redirect()->route('login')->with('success', 'Data karyawan berhasil disimpan. Akun Anda menunggu persetujuan administrator untuk dapat digunakan.');
         } catch (\Exception $e) {
             Log::error('registerKaryawan failed', ['error' => $e->getMessage(), 'input' => $request->all()]);
+
             return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi atau hubungi administrator.');
         }
     }

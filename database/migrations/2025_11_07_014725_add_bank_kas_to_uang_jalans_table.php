@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('uang_jalans', function (Blueprint $table) {
             // Add column only if it doesn't exist
-            if (!Schema::hasColumn('uang_jalans', 'bank_kas')) {
+            if (! Schema::hasColumn('uang_jalans', 'bank_kas')) {
                 $table->string('bank_kas', 255)->nullable()->after('nomor_kas_bank');
             }
         });

@@ -3,8 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\StockKontainer;
-use App\Models\Kontainer;
 use Illuminate\Support\Facades\DB;
 
 class ValidateDuplicateKontainers extends Command
@@ -31,20 +29,21 @@ class ValidateDuplicateKontainers extends Command
         $this->info('Checking for duplicate kontainer numbers...');
 
         // Find duplicates
-        $duplicates = DB::select("
+        $duplicates = DB::select('
             SELECT sk.nomor_seri_gabungan, sk.status as stock_status, k.status as kontainer_status
             FROM stock_kontainers sk
             INNER JOIN kontainers k ON sk.nomor_seri_gabungan = k.nomor_seri_gabungan
             WHERE sk.nomor_seri_gabungan IS NOT NULL
             AND k.nomor_seri_gabungan IS NOT NULL
-        ");
+        ');
 
         if (empty($duplicates)) {
             $this->info('✅ No duplicate kontainer numbers found.');
+
             return 0;
         }
 
-        $this->warn('🔍 Found ' . count($duplicates) . ' duplicate kontainer numbers:');
+        $this->warn('🔍 Found '.count($duplicates).' duplicate kontainer numbers:');
 
         $headers = ['Nomor Kontainer', 'Stock Status', 'Kontainer Status', 'Action Needed'];
         $rows = [];
@@ -55,7 +54,7 @@ class ValidateDuplicateKontainers extends Command
                 $duplicate->nomor_seri_gabungan,
                 $duplicate->stock_status,
                 $duplicate->kontainer_status,
-                $actionNeeded
+                $actionNeeded,
             ];
         }
 

@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -57,12 +55,12 @@ return new class extends Migration
 
         // Remove role permissions first
         DB::table('role_permissions')
-          ->whereIn('permission_id', function($query) use ($permissions) {
-              $query->select('id')
+            ->whereIn('permission_id', function ($query) use ($permissions) {
+                $query->select('id')
                     ->from('permissions')
                     ->whereIn('name', $permissions);
-          })
-          ->delete();
+            })
+            ->delete();
 
         // Remove permissions
         DB::table('permissions')->whereIn('name', $permissions)->delete();

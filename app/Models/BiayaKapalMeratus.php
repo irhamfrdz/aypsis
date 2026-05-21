@@ -1,13 +1,13 @@
 <?php
- 
+
 namespace App\Models;
- 
+
 use Illuminate\Database\Eloquent\Model;
- 
+
 class BiayaKapalMeratus extends Model
 {
     protected $table = 'biaya_kapal_meratus';
- 
+
     protected $fillable = [
         'biaya_kapal_id',
         'kapal',
@@ -34,7 +34,7 @@ class BiayaKapalMeratus extends Model
         'is_muat',
         'is_bongkar',
     ];
- 
+
     protected $casts = [
         'kuantitas' => 'decimal:2',
         'harga' => 'decimal:2',
@@ -50,7 +50,7 @@ class BiayaKapalMeratus extends Model
         'is_muat' => 'boolean',
         'is_bongkar' => 'boolean',
     ];
- 
+
     /**
      * Relationship to BiayaKapal
      */
@@ -58,29 +58,29 @@ class BiayaKapalMeratus extends Model
     {
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');
     }
- 
+
     /**
      * Accessor for formatted sub_total
      */
     public function getFormattedSubTotalAttribute()
     {
-        return 'Rp ' . number_format((float) $this->sub_total, 0, ',', '.');
+        return 'Rp '.number_format((float) $this->sub_total, 0, ',', '.');
     }
- 
+
     /**
      * Accessor for formatted grand_total
      */
     public function getFormattedGrandTotalAttribute()
     {
-        return 'Rp ' . number_format((float) $this->grand_total, 0, ',', '.');
+        return 'Rp '.number_format((float) $this->grand_total, 0, ',', '.');
     }
- 
+
     /**
      * Accessor for formatted pph
      */
     public function getFormattedPphAttribute()
     {
-        return 'Rp ' . number_format((float) $this->pph, 0, ',', '.');
+        return 'Rp '.number_format((float) $this->pph, 0, ',', '.');
     }
 
     /**
@@ -88,7 +88,7 @@ class BiayaKapalMeratus extends Model
      */
     public function getFormattedPpnAttribute()
     {
-        return 'Rp ' . number_format((float) $this->ppn, 0, ',', '.');
+        return 'Rp '.number_format((float) $this->ppn, 0, ',', '.');
     }
 
     /**
@@ -96,6 +96,6 @@ class BiayaKapalMeratus extends Model
      */
     public function getFormattedAdjustmentAttribute()
     {
-        return 'Rp ' . number_format((float) $this->adjustment, 0, ',', '.');
+        return 'Rp '.number_format((float) $this->adjustment, 0, ',', '.');
     }
 }

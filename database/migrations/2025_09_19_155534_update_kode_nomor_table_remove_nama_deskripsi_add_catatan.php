@@ -20,7 +20,7 @@ return new class extends Migration
                 $table->dropColumn('deskripsi');
             }
             // Only add catatan if it doesn't exist
-            if (!Schema::hasColumn('kode_nomor', 'catatan')) {
+            if (! Schema::hasColumn('kode_nomor', 'catatan')) {
                 $table->text('catatan')->nullable()->after('kode');
             }
         });
@@ -35,10 +35,10 @@ return new class extends Migration
             if (Schema::hasColumn('kode_nomor', 'catatan')) {
                 $table->dropColumn('catatan');
             }
-            if (!Schema::hasColumn('kode_nomor', 'nama')) {
+            if (! Schema::hasColumn('kode_nomor', 'nama')) {
                 $table->string('nama')->after('kode');
             }
-            if (!Schema::hasColumn('kode_nomor', 'deskripsi')) {
+            if (! Schema::hasColumn('kode_nomor', 'deskripsi')) {
                 $table->text('deskripsi')->nullable()->after('nama');
             }
         });

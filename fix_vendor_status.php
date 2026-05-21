@@ -2,7 +2,6 @@
 
 use App\Models\PranotaInvoiceVendorSupir;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
@@ -18,7 +17,7 @@ try {
 
     foreach ($pranotas as $pranota) {
         $status = $pranota->status_pembayaran;
-        
+
         if ($pranota->invoiceTagihanVendors) {
             foreach ($pranota->invoiceTagihanVendors as $invoice) {
                 if ($invoice->status_pembayaran !== $status) {
@@ -44,5 +43,5 @@ try {
     echo "Selesai! Berhasil memperbaiki status pada $count record Tagihan/Invoice.\n";
 } catch (\Exception $e) {
     DB::rollBack();
-    echo "Terjadi kesalahan: " . $e->getMessage() . "\n";
+    echo 'Terjadi kesalahan: '.$e->getMessage()."\n";
 }

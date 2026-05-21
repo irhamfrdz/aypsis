@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('surat_jalan_bongkarans', function (Blueprint $table) {
             // Add nama_kapal column if it doesn't exist
-            if (!Schema::hasColumn('surat_jalan_bongkarans', 'nama_kapal')) {
+            if (! Schema::hasColumn('surat_jalan_bongkarans', 'nama_kapal')) {
                 $table->string('nama_kapal')->nullable()->after('aktifitas');
             }
-            
+
             // Drop kapal_id column if it exists
             if (Schema::hasColumn('surat_jalan_bongkarans', 'kapal_id')) {
                 $table->dropColumn('kapal_id');
@@ -31,10 +31,10 @@ return new class extends Migration
     {
         Schema::table('surat_jalan_bongkarans', function (Blueprint $table) {
             // Add back kapal_id
-            if (!Schema::hasColumn('surat_jalan_bongkarans', 'kapal_id')) {
+            if (! Schema::hasColumn('surat_jalan_bongkarans', 'kapal_id')) {
                 $table->unsignedBigInteger('kapal_id')->nullable()->after('aktifitas');
             }
-            
+
             // Drop nama_kapal
             if (Schema::hasColumn('surat_jalan_bongkarans', 'nama_kapal')) {
                 $table->dropColumn('nama_kapal');

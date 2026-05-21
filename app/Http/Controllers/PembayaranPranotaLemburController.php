@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PembayaranPranotaLembur;
-use App\Models\PranotaLembur;
 use App\Models\Coa;
 use App\Models\NomorTerakhir;
+use App\Models\PembayaranPranotaLembur;
+use App\Models\PranotaLembur;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,9 +34,9 @@ class PembayaranPranotaLemburController extends Controller
     public function index(Request $request)
     {
         $query = PranotaLembur::with([
-            'pembayaranPranotaLemburs', 
-            'creator', 
-            'updater'
+            'pembayaranPranotaLemburs',
+            'creator',
+            'updater',
         ]);
 
         // Filter by status pembayaran
@@ -60,7 +60,7 @@ class PembayaranPranotaLemburController extends Controller
         $statuses = [
             'unpaid' => 'Belum Dibayar',
             'paid' => 'Sudah Dibayar',
-            'cancelled' => 'Dibatalkan'
+            'cancelled' => 'Dibatalkan',
         ];
 
         return view('pembayaran-pranota-lembur.index', compact('pranotaList', 'statuses'));
@@ -82,7 +82,7 @@ class PembayaranPranotaLemburController extends Controller
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $pranotaLemburQuery->whereBetween('tanggal_pranota', [
                 $request->start_date,
-                $request->end_date
+                $request->end_date,
             ]);
         }
 
@@ -97,13 +97,13 @@ class PembayaranPranotaLemburController extends Controller
             ->get();
 
         // Get akun COA for bank selection
-        $akunCoa = Coa::where(function($q) {
-                        $q->where('tipe_akun', 'LIKE', '%bank%')
-                          ->orWhere('nama_akun', 'LIKE', '%bank%')
-                          ->orWhere('nama_akun', 'LIKE', '%kas%');
-                      })
-                      ->orderBy('nama_akun')
-                      ->get();
+        $akunCoa = Coa::where(function ($q) {
+            $q->where('tipe_akun', 'LIKE', '%bank%')
+                ->orWhere('nama_akun', 'LIKE', '%bank%')
+                ->orWhere('nama_akun', 'LIKE', '%kas%');
+        })
+            ->orderBy('nama_akun')
+            ->get();
 
         // Generate nomor pembayaran using SIS modul
         $nomorPembayaran = $this->generateNomorPembayaranSIS();
@@ -129,7 +129,7 @@ class PembayaranPranotaLemburController extends Controller
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string',
-            'nomor_cetakan' => 'nullable|integer|min:1|max:9'
+            'nomor_cetakan' => 'nullable|integer|min:1|max:9',
         ]);
 
         DB::beginTransaction();
@@ -137,17 +137,17 @@ class PembayaranPranotaLemburController extends Controller
         try {
             // Get SIS modul from nomor_terakhir
             $modulSis = NomorTerakhir::where('modul', 'SIS')->firstOrFail();
-            
+
             // Generate new payment number and increment
             $nomorPembayaran = $this->generateNomorPembayaranSIS();
-            
+
             // Update nomor_terakhir for SIS modul
             $modulSis->increment('nomor_terakhir');
 
             // Prepare payment data
             $paymentData = $validated;
             unset($paymentData['pranota_lembur_ids']);
-            
+
             $paymentData['nomor_pembayaran'] = $nomorPembayaran;
             $paymentData['status_pembayaran'] = PembayaranPranotaLembur::STATUS_PAID;
             $paymentData['created_by'] = Auth::id();
@@ -159,7 +159,7 @@ class PembayaranPranotaLemburController extends Controller
             // Process each selected pranota
             foreach ($validated['pranota_lembur_ids'] as $pranotaId) {
                 $pranota = PranotaLembur::findOrFail($pranotaId);
-                
+
                 // Attach pranota to payment via pivot table
                 $pembayaran->pranotaLemburs()->attach($pranotaId, [
                     'subtotal' => $pranota->total_setelah_adjustment,
@@ -170,7 +170,7 @@ class PembayaranPranotaLemburController extends Controller
                 // Update pranota status to paid
                 $pranota->update([
                     'status' => PranotaLembur::STATUS_PAID,
-                    'updated_by' => Auth::id()
+                    'updated_by' => Auth::id(),
                 ]);
             }
 
@@ -178,11 +178,11 @@ class PembayaranPranotaLemburController extends Controller
             $totalPembayaran = $validated['total_tagihan_setelah_penyesuaian'] ?? $validated['total_pembayaran'];
             $bankName = $validated['bank'];
             $jenisTransaksi = $validated['jenis_transaksi'];
-            $keterangan = "Pembayaran Pranota Lembur - " . $nomorPembayaran;
+            $keterangan = 'Pembayaran Pranota Lembur - '.$nomorPembayaran;
 
             // Use Biaya Lembur Jakarta as default if not found
             $biayaAccount = 'Biaya Lembur Jakarta';
-            if (!Coa::where('nama_akun', $biayaAccount)->exists()) {
+            if (! Coa::where('nama_akun', $biayaAccount)->exists()) {
                 // Fallback to searching any Biaya Lembur if Jakarta doesn't exist
                 $fallbackCoa = Coa::where('nama_akun', 'LIKE', 'Biaya Lembur%')->first();
                 if ($fallbackCoa) {
@@ -213,12 +213,13 @@ class PembayaranPranotaLemburController extends Controller
             DB::commit();
 
             return redirect()->route('pembayaran-pranota-lembur.index')
-                           ->with('success', 'Pembayaran ' . $nomorPembayaran . ' berhasil disimpan.');
+                ->with('success', 'Pembayaran '.$nomorPembayaran.' berhasil disimpan.');
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error creating Pembayaran Pranota Lembur: ' . $e->getMessage());
-            return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: ' . $e->getMessage());
+            Log::error('Error creating Pembayaran Pranota Lembur: '.$e->getMessage());
+
+            return back()->withInput()->with('error', 'Gagal menyimpan pembayaran: '.$e->getMessage());
         }
     }
 
@@ -228,6 +229,7 @@ class PembayaranPranotaLemburController extends Controller
     public function show(PembayaranPranotaLembur $pembayaranPranotaLembur)
     {
         $pembayaranPranotaLembur->load(['pranotaLemburs', 'createdBy', 'updatedBy']);
+
         return view('pembayaran-pranota-lembur.show', compact('pembayaranPranotaLembur'));
     }
 
@@ -243,13 +245,13 @@ class PembayaranPranotaLemburController extends Controller
 
         $pembayaranPranotaLembur->load(['pranotaLemburs.suratJalans', 'pranotaLemburs.suratJalanBongkarans']);
 
-        $akunCoa = Coa::where(function($q) {
-                        $q->where('tipe_akun', 'LIKE', '%bank%')
-                          ->orWhere('nama_akun', 'LIKE', '%bank%')
-                          ->orWhere('nama_akun', 'LIKE', '%kas%');
-                      })
-                      ->orderBy('nama_akun')
-                      ->get();
+        $akunCoa = Coa::where(function ($q) {
+            $q->where('tipe_akun', 'LIKE', '%bank%')
+                ->orWhere('nama_akun', 'LIKE', '%bank%')
+                ->orWhere('nama_akun', 'LIKE', '%kas%');
+        })
+            ->orderBy('nama_akun')
+            ->get();
 
         return view('pembayaran-pranota-lembur.edit', compact('pembayaranPranotaLembur', 'akunCoa'));
     }
@@ -281,7 +283,8 @@ class PembayaranPranotaLemburController extends Controller
             return redirect()->route('pembayaran-pranota-lembur.index')
                 ->with('success', 'Pembayaran berhasil diperbarui.');
         } catch (\Exception $e) {
-            Log::error('Error updating Pembayaran Pranota Lembur: ' . $e->getMessage());
+            Log::error('Error updating Pembayaran Pranota Lembur: '.$e->getMessage());
+
             return back()->withInput()->with('error', 'Gagal memperbarui pembayaran.');
         }
     }
@@ -316,7 +319,8 @@ class PembayaranPranotaLemburController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting Pembayaran Pranota Lembur: ' . $e->getMessage());
+            Log::error('Error deleting Pembayaran Pranota Lembur: '.$e->getMessage());
+
             return back()->with('error', 'Gagal menghapus pembayaran.');
         }
     }
@@ -330,7 +334,7 @@ class PembayaranPranotaLemburController extends Controller
             ['modul' => 'SIS'],
             [
                 'nomor_terakhir' => 0,
-                'keterangan' => 'Nomor Pembayaran'
+                'keterangan' => 'Nomor Pembayaran',
             ]
         );
 
@@ -338,7 +342,7 @@ class PembayaranPranotaLemburController extends Controller
         $bulan = $now->format('m');
         $tahun = $now->format('y');
         $runningNumber = str_pad($modulSis->nomor_terakhir + 1, 6, '0', STR_PAD_LEFT);
-        
+
         return "SIS-{$bulan}-{$tahun}-{$runningNumber}";
     }
 
@@ -349,14 +353,15 @@ class PembayaranPranotaLemburController extends Controller
     {
         try {
             $nomorPembayaran = $this->generateNomorPembayaranSIS();
+
             return response()->json([
                 'success' => true,
-                'nomor_pembayaran' => $nomorPembayaran
+                'nomor_pembayaran' => $nomorPembayaran,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }

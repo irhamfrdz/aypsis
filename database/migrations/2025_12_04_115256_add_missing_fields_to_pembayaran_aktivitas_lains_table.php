@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('nomor_voyage')->nullable()->after('nomor_polisi');
             $table->string('penerima')->nullable()->after('nomor_voyage');
             $table->bigInteger('akun_bank_id')->unsigned()->nullable()->after('akun_coa_id');
-            
+
             // Add foreign key for akun_bank_id
             $table->foreign('akun_bank_id')->references('id')->on('akun_coa')->onDelete('set null');
         });
@@ -32,14 +32,14 @@ return new class extends Migration
         Schema::table('pembayaran_aktivitas_lains', function (Blueprint $table) {
             // Drop foreign key first
             $table->dropForeign(['akun_bank_id']);
-            
+
             // Drop columns
             $table->dropColumn([
                 'sub_jenis_kendaraan',
-                'nomor_polisi', 
+                'nomor_polisi',
                 'nomor_voyage',
                 'penerima',
-                'akun_bank_id'
+                'akun_bank_id',
             ]);
         });
     }

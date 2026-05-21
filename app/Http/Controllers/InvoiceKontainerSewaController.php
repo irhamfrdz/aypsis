@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\InvoiceKontainerSewa;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class InvoiceKontainerSewaController extends Controller
@@ -17,12 +16,12 @@ class InvoiceKontainerSewaController extends Controller
 
         // Filter by nomor invoice
         if ($request->filled('nomor_invoice')) {
-            $query->where('nomor_invoice', 'like', '%' . $request->nomor_invoice . '%');
+            $query->where('nomor_invoice', 'like', '%'.$request->nomor_invoice.'%');
         }
 
         // Filter by vendor
         if ($request->filled('vendor')) {
-            $query->where('vendor_name', 'like', '%' . $request->vendor . '%');
+            $query->where('vendor_name', 'like', '%'.$request->vendor.'%');
         }
 
         // Filter by status
@@ -56,7 +55,7 @@ class InvoiceKontainerSewaController extends Controller
     {
         // Check if auto-generate flag is set
         $autoGenerate = $request->has('auto_generate_number') && $request->auto_generate_number;
-        
+
         // Prepare validation rules
         $validationRules = [
             'tanggal_invoice' => 'required|date',
@@ -72,12 +71,12 @@ class InvoiceKontainerSewaController extends Controller
             'tagihan_ids' => 'nullable|array',
             'tagihan_ids.*' => 'exists:daftar_tagihan_kontainer_sewa,id',
         ];
-        
+
         // Add nomor_invoice validation only if not auto-generating
-        if (!$autoGenerate) {
+        if (! $autoGenerate) {
             $validationRules['nomor_invoice'] = 'required|string|unique:invoices_kontainer_sewa,nomor_invoice';
         }
-        
+
         // Add nomor_invoice_vendor validation if provided
         if ($request->has('nomor_invoice_vendor')) {
             $validationRules['nomor_invoice_vendor'] = 'required|string';
@@ -89,7 +88,7 @@ class InvoiceKontainerSewaController extends Controller
         try {
             // Generate invoice number if auto-generate is enabled
             $nomorInvoice = $autoGenerate ? $this->generateInvoiceNumber() : $request->nomor_invoice;
-            
+
             $invoice = InvoiceKontainerSewa::create([
                 'nomor_invoice' => $nomorInvoice,
                 'tanggal_invoice' => $request->tanggal_invoice,
@@ -114,49 +113,49 @@ class InvoiceKontainerSewaController extends Controller
                             'tagihan_id' => $tagihanId,
                             'jumlah' => $tagihan->grand_total ?? 0,
                         ]);
-                        
+
                         // Update tagihan with invoice_id and vendor info if provided
                         $updateData = ['invoice_id' => $invoice->id];
-                        
+
                         // Update vendor info if provided
                         if ($request->has('nomor_invoice_vendor')) {
                             $updateData['invoice_vendor'] = $request->nomor_invoice_vendor;
                             $updateData['tanggal_vendor'] = $request->tanggal_invoice;
                         }
-                        
+
                         $tagihan->update($updateData);
                     }
                 }
             }
 
             \DB::commit();
-            
+
             // Check if request is AJAX
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => $autoGenerate 
+                    'message' => $autoGenerate
                         ? "Invoice berhasil dibuat dengan nomor: {$nomorInvoice}"
                         : 'Invoice berhasil dibuat',
                     'invoice' => $invoice,
-                    'invoice_number' => $nomorInvoice
+                    'invoice_number' => $nomorInvoice,
                 ]);
             }
-            
+
             return redirect()->route('invoice-tagihan-sewa.index')
                 ->with('success', 'Invoice berhasil dibuat.');
         } catch (\Exception $e) {
             \DB::rollback();
-            
+
             // Check if request is AJAX
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal membuat invoice: ' . $e->getMessage()
+                    'message' => 'Gagal membuat invoice: '.$e->getMessage(),
                 ], 422);
             }
-            
-            return back()->with('error', 'Gagal membuat invoice: ' . $e->getMessage())
+
+            return back()->with('error', 'Gagal membuat invoice: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -197,7 +196,7 @@ class InvoiceKontainerSewaController extends Controller
         $invoice = InvoiceKontainerSewa::findOrFail($id);
 
         $request->validate([
-            'nomor_invoice' => 'required|string|unique:invoices_kontainer_sewa,nomor_invoice,' . $id,
+            'nomor_invoice' => 'required|string|unique:invoices_kontainer_sewa,nomor_invoice,'.$id,
             'tanggal_invoice' => 'required|date',
             'vendor_name' => 'nullable|string',
             'subtotal' => 'required|numeric|min:0',
@@ -227,11 +226,13 @@ class InvoiceKontainerSewaController extends Controller
             ]);
 
             \DB::commit();
+
             return redirect()->route('invoice-tagihan-sewa.index')
                 ->with('success', 'Invoice berhasil diupdate.');
         } catch (\Exception $e) {
             \DB::rollback();
-            return back()->with('error', 'Gagal update invoice: ' . $e->getMessage())
+
+            return back()->with('error', 'Gagal update invoice: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -243,22 +244,23 @@ class InvoiceKontainerSewaController extends Controller
     {
         try {
             $invoice = InvoiceKontainerSewa::findOrFail($id);
-            
+
             \DB::beginTransaction();
-            
+
             // Remove invoice_id from related tagihan
             \App\Models\DaftarTagihanKontainerSewa::where('invoice_id', $id)
                 ->update(['invoice_id' => null]);
-            
+
             $invoice->delete();
-            
+
             \DB::commit();
-            
+
             return redirect()->route('invoice-tagihan-sewa.index')
                 ->with('success', 'Invoice berhasil dihapus.');
         } catch (\Exception $e) {
             \DB::rollback();
-            return back()->with('error', 'Gagal menghapus invoice: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menghapus invoice: '.$e->getMessage());
         }
     }
 
@@ -281,7 +283,7 @@ class InvoiceKontainerSewaController extends Controller
                     // Remove invoice_id from related tagihan
                     \App\Models\DaftarTagihanKontainerSewa::where('invoice_id', $id)
                         ->update(['invoice_id' => null]);
-                    
+
                     $invoice->delete();
                     $count++;
                 }
@@ -293,7 +295,8 @@ class InvoiceKontainerSewaController extends Controller
                 ->with('success', "Berhasil menghapus {$count} invoice.");
         } catch (\Exception $e) {
             \DB::rollback();
-            return back()->with('error', 'Gagal menghapus invoice: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menghapus invoice: '.$e->getMessage());
         }
     }
 
@@ -308,11 +311,11 @@ class InvoiceKontainerSewaController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (!$nomorTerakhir) {
+            if (! $nomorTerakhir) {
                 $nomorTerakhir = \App\Models\NomorTerakhir::create([
                     'modul' => 'PMS',
                     'nomor_terakhir' => 1,
-                    'keterangan' => 'Pranota Kontainer Sewa'
+                    'keterangan' => 'Pranota Kontainer Sewa',
                 ]);
                 $nomorBaru = 1;
             } else {
@@ -326,7 +329,7 @@ class InvoiceKontainerSewaController extends Controller
             $tahun = date('y'); // 2 digit tahun
             $nomorUrut = str_pad($nomorBaru, 6, '0', STR_PAD_LEFT); // 6 digit nomor
 
-            return $kodeModul . $bulan . $tahun . $nomorUrut;
+            return $kodeModul.$bulan.$tahun.$nomorUrut;
         });
     }
 
@@ -348,15 +351,15 @@ class InvoiceKontainerSewaController extends Controller
             $result = [];
             foreach ($invoices as $invoice) {
                 $items = [];
-                
+
                 if ($invoice->items) {
                     foreach ($invoice->items as $item) {
                         $tagihan = $item->tagihan ?? null;
-                        
+
                         if ($tagihan) {
                             // Use vendor_name from invoice or tagihan
                             $vendorName = $invoice->vendor_name ?? '-';
-                            
+
                             $items[] = [
                                 'id' => $item->id,
                                 'tagihan_id' => $tagihan->id,
@@ -392,17 +395,17 @@ class InvoiceKontainerSewaController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal: ' . implode(', ', $e->errors()['invoice_ids'] ?? ['Data tidak valid']),
+                'message' => 'Validasi gagal: '.implode(', ', $e->errors()['invoice_ids'] ?? ['Data tidak valid']),
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Error in invoice details: ' . $e->getMessage(), [
+            \Log::error('Error in invoice details: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
+                'request' => $request->all(),
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memuat data invoice: ' . $e->getMessage(),
+                'message' => 'Gagal memuat data invoice: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -429,14 +432,14 @@ class InvoiceKontainerSewaController extends Controller
             if ($invoices->isEmpty()) {
                 throw new \Exception('Invoice tidak ditemukan');
             }
-            
+
             // Calculate totals and collect tagihan IDs
             $totalAmount = 0;
             $tagihanIds = [];
-            
+
             foreach ($invoices as $invoice) {
                 $totalAmount += $invoice->total ?? 0;
-                
+
                 if ($invoice->items) {
                     foreach ($invoice->items as $item) {
                         if ($item->tagihan) {
@@ -462,7 +465,7 @@ class InvoiceKontainerSewaController extends Controller
                 'tanggal_pranota' => $tanggalPranota->format('Y-m-d'),
                 'due_date' => $dueDate->format('Y-m-d'),
                 'status' => 'unpaid',
-                'keterangan' => 'Pranota dibuat dari ' . count($request->invoice_ids) . ' invoice',
+                'keterangan' => 'Pranota dibuat dari '.count($request->invoice_ids).' invoice',
             ]);
 
             // Update invoices with pranota_id
@@ -486,20 +489,21 @@ class InvoiceKontainerSewaController extends Controller
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             \DB::rollback();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal: ' . implode(', ', array_map(fn($errors) => implode(', ', $errors), $e->errors())),
+                'message' => 'Validasi gagal: '.implode(', ', array_map(fn ($errors) => implode(', ', $errors), $e->errors())),
             ], 422);
         } catch (\Exception $e) {
             \DB::rollback();
-            \Log::error('Error creating pranota from invoice: ' . $e->getMessage(), [
+            \Log::error('Error creating pranota from invoice: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
+                'request' => $request->all(),
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat pranota: ' . $e->getMessage(),
+                'message' => 'Gagal membuat pranota: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -513,12 +517,12 @@ class InvoiceKontainerSewaController extends Controller
         $currentMonth = date('m');
         $currentYear = date('y');
         $prefix = "MS-{$currentMonth}{$currentYear}-";
-        
+
         // Get the last invoice number for current month/year
-        $lastInvoice = InvoiceKontainerSewa::where('nomor_invoice', 'like', $prefix . '%')
+        $lastInvoice = InvoiceKontainerSewa::where('nomor_invoice', 'like', $prefix.'%')
             ->orderBy('nomor_invoice', 'desc')
             ->first();
-        
+
         if ($lastInvoice) {
             // Extract the sequence number from the last invoice
             $lastNumber = str_replace($prefix, '', $lastInvoice->nomor_invoice);
@@ -526,10 +530,10 @@ class InvoiceKontainerSewaController extends Controller
         } else {
             $nextNumber = 1;
         }
-        
+
         // Format with 7 digits padding
         $sequence = str_pad($nextNumber, 7, '0', STR_PAD_LEFT);
-        
-        return $prefix . $sequence;
+
+        return $prefix.$sequence;
     }
 }

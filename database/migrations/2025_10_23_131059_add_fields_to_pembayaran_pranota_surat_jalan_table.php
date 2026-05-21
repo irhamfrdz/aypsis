@@ -36,7 +36,7 @@ return new class extends Migration
                 'total_pembayaran',
                 'total_tagihan_penyesuaian',
                 'total_tagihan_setelah_penyesuaian',
-                'alasan_penyesuaian'
+                'alasan_penyesuaian',
             ]);
         });
     }

@@ -2,17 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Models\NomorTerakhir;
-use App\Traits\Auditable;
 
 class PerbaikanKontainer extends Model
 {
-    use HasFactory, Auditable;
-
     use Auditable;
+    use Auditable, HasFactory;
+
     protected $table = 'perbaikan_kontainers';
 
     protected $fillable = [
@@ -75,8 +74,8 @@ class PerbaikanKontainer extends Model
     public function pranotaPerbaikanKontainers(): BelongsToMany
     {
         return $this->belongsToMany(PranotaPerbaikanKontainer::class, 'pranota_perbaikan_kontainer_items')
-                    ->withPivot('biaya_item', 'catatan_item')
-                    ->withTimestamps();
+            ->withPivot('biaya_item', 'catatan_item')
+            ->withTimestamps();
     }
 
     // Scopes
@@ -98,7 +97,7 @@ class PerbaikanKontainer extends Model
     // Accessors & Mutators
     public function getStatusColorAttribute()
     {
-        return match($this->status_perbaikan) {
+        return match ($this->status_perbaikan) {
             'belum_masuk_pranota' => 'bg-yellow-100 text-yellow-800',
             'sudah_masuk_pranota' => 'bg-blue-100 text-blue-800',
             'sudah_dibayar' => 'bg-green-100 text-green-800',
@@ -108,7 +107,7 @@ class PerbaikanKontainer extends Model
 
     public function getStatusLabelAttribute()
     {
-        return match($this->status_perbaikan) {
+        return match ($this->status_perbaikan) {
             'belum_masuk_pranota' => 'Belum Masuk Pranota',
             'sudah_masuk_pranota' => 'Sudah Masuk Pranota',
             'sudah_dibayar' => 'Sudah Dibayar',
@@ -143,7 +142,7 @@ class PerbaikanKontainer extends Model
             'inspection' => 'Inspeksi',
             'replacement' => 'Penggantian Part',
             'cleaning' => 'Pembersihan',
-            'other' => 'Lainnya'
+            'other' => 'Lainnya',
         ];
     }
 
@@ -152,7 +151,7 @@ class PerbaikanKontainer extends Model
         return [
             'belum_masuk_pranota' => 'Belum Masuk Pranota',
             'sudah_masuk_pranota' => 'Sudah Masuk Pranota',
-            'sudah_dibayar' => 'Sudah Dibayar'
+            'sudah_dibayar' => 'Sudah Dibayar',
         ];
     }
 
@@ -169,13 +168,13 @@ class PerbaikanKontainer extends Model
 
         // Get next nomor tagihan from master nomor terakhir dengan modul PMS
         $nomorTerakhir = NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             throw new \Exception('Modul PMS tidak ditemukan di master nomor terakhir.');
         }
         $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
         $nomorTerakhir->nomor_terakhir = $nextNumber;
         $nomorTerakhir->save();
 
-        return "PMS{$cetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+        return "PMS{$cetakan}{$bulan}{$tahun}".str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
     }
 }

@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class PembayaranPranotaKontainer extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $table = 'pembayaran_pranota_kontainer';
 
     protected $fillable = [
@@ -31,7 +30,7 @@ class PembayaranPranotaKontainer extends Model
         'disetujui_oleh',
         'tanggal_persetujuan',
         'dp_payment_id',
-        'dp_amount'
+        'dp_amount',
     ];
 
     protected $casts = [
@@ -41,7 +40,7 @@ class PembayaranPranotaKontainer extends Model
         'total_pembayaran' => 'decimal:2',
         'penyesuaian' => 'decimal:2',
         'total_setelah_penyesuaian' => 'decimal:2',
-        'dp_amount' => 'decimal:2'
+        'dp_amount' => 'decimal:2',
     ];
 
     /**
@@ -94,7 +93,7 @@ class PembayaranPranotaKontainer extends Model
      */
     public function getStatusBadgeClass()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'bg-yellow-100 text-yellow-800',
             'approved' => 'bg-green-100 text-green-800',
             'rejected' => 'bg-red-100 text-red-800',
@@ -107,7 +106,7 @@ class PembayaranPranotaKontainer extends Model
      */
     public function getStatusText()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'Menunggu Persetujuan',
             'approved' => 'Disetujui',
             'rejected' => 'Ditolak',
@@ -115,7 +114,7 @@ class PembayaranPranotaKontainer extends Model
         };
     }
 
-        /**
+    /**
      * Generate nomor pembayaran untuk preview (tanpa update ke database)
      *
      * Format: [kode bank]-[1 digit cetakan]-[2 digit tahun]-[2 digit bulan]-[6 digit nomor terakhir]
@@ -130,7 +129,7 @@ class PembayaranPranotaKontainer extends Model
 
         // Get next nomor pembayaran from master nomor terakhir dengan modul nomor_pembayaran
         $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'nomor_pembayaran')->lockForUpdate()->first();
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             throw new \Exception('Modul nomor_pembayaran tidak ditemukan di master nomor terakhir.');
         }
 
@@ -153,7 +152,7 @@ class PembayaranPranotaKontainer extends Model
 
         // Get and update nomor terakhir from master nomor terakhir dengan modul nomor_pembayaran
         $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'nomor_pembayaran')->lockForUpdate()->first();
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             throw new \Exception('Modul nomor_pembayaran tidak ditemukan di master nomor terakhir.');
         }
 

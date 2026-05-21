@@ -1,15 +1,16 @@
 <?php
+
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class PembayaranPranotaSupir extends Model
 {
     use Auditable;
 
     protected $table = 'pembayaran_pranota_supir';
+
     protected $guarded = [];
 
     protected $casts = [
@@ -44,7 +45,7 @@ class PembayaranPranotaSupir extends Model
 
         // Get next nomor pembayaran from master nomor terakhir dengan modul nomor_pembayaran
         $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'nomor_pembayaran')->lockForUpdate()->first();
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             throw new \Exception('Modul nomor_pembayaran tidak ditemukan di master nomor terakhir.');
         }
 
@@ -67,7 +68,7 @@ class PembayaranPranotaSupir extends Model
 
         // Get and update nomor terakhir from master nomor terakhir dengan modul nomor_pembayaran
         $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'nomor_pembayaran')->lockForUpdate()->first();
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             throw new \Exception('Modul nomor_pembayaran tidak ditemukan di master nomor terakhir.');
         }
 

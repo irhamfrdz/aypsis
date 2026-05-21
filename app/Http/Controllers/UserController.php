@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Karyawan;
 use App\Models\Permission;
-use App\Helpers\PermissionMatrixHelper;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
@@ -18,29 +17,28 @@ class UserController extends Controller
      *
      * @return \Illuminate\View\View
      */
-
     public function index(Request $request)
     {
         $query = User::with('karyawan');
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('username', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhereHas('karyawan', function ($karyawanQuery) use ($searchTerm) {
-                      $karyawanQuery->where('nama_lengkap', 'LIKE', '%' . $searchTerm . '%')
-                                   ->orWhere('nik', 'LIKE', '%' . $searchTerm . '%')
-                                   ->orWhere('divisi', 'LIKE', '%' . $searchTerm . '%')
-                                   ->orWhere('pekerjaan', 'LIKE', '%' . $searchTerm . '%');
-                  });
+                $q->where('username', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhereHas('karyawan', function ($karyawanQuery) use ($searchTerm) {
+                        $karyawanQuery->where('nama_lengkap', 'LIKE', '%'.$searchTerm.'%')
+                            ->orWhere('nik', 'LIKE', '%'.$searchTerm.'%')
+                            ->orWhere('divisi', 'LIKE', '%'.$searchTerm.'%')
+                            ->orWhere('pekerjaan', 'LIKE', '%'.$searchTerm.'%');
+                    });
             });
         }
 
         // Handle per page parameter
         $perPage = $request->get('per_page', 15);
         $perPage = in_array($perPage, [10, 25, 50, 100]) ? $perPage : 15;
-        
+
         $users = $query->paginate($perPage)->withQueryString();
 
         return view('master-user.index', compact('users'));
@@ -51,7 +49,6 @@ class UserController extends Controller
      *
      * @return \Illuminate\View\View
      */
-
     public function create()
     {
         // Mengambil semua izin yang tersedia dari tabel permission
@@ -67,15 +64,13 @@ class UserController extends Controller
     /**
      * Menyimpan pengguna baru ke dalam database.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
-
     public function store(Request $request)
     {
         $request->validate([
-            'username'=>'required|string|max:255|unique:users',
-            'password'=>'required|string|min:8|confirmed',
+            'username' => 'required|string|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
             'karyawan_id' => 'nullable|exists:karyawans,id',
             'simple_permissions' => 'nullable|array', // Legacy support
             'permissions' => 'nullable|array', // New matrix permissions
@@ -83,15 +78,15 @@ class UserController extends Controller
 
         $user = User::create([
             'username' => $request->username,
-            'password'=> Hash::make($request->password),
+            'password' => Hash::make($request->password),
             'karyawan_id' => $request->karyawan_id,
         ]);
 
         // Handle permissions - prioritize new matrix format
         $permissionIds = [];
-        if ($request->has('permissions') && !empty($request->permissions)) {
+        if ($request->has('permissions') && ! empty($request->permissions)) {
             $permissionIds = $this->convertMatrixPermissionsToIds($request->permissions);
-        } elseif ($request->has('simple_permissions') && !empty($request->simple_permissions)) {
+        } elseif ($request->has('simple_permissions') && ! empty($request->simple_permissions)) {
             // Fallback to simple permissions
             $permissionIds = $this->convertSimplePermissionsToIds($request->simple_permissions);
         }
@@ -124,15 +119,12 @@ class UserController extends Controller
     /**
      * Memperbarui data pengguna yang ada di database.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\RedirectResponse
      */
-
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'username' => 'required|string|max:255|unique:users,username,'.$user->id,
             'password' => 'nullable|string|min:8|confirmed',
             'karyawan_id' => 'nullable|exists:karyawans,id',
             'simple_permissions' => 'nullable|array', // Legacy support
@@ -142,7 +134,7 @@ class UserController extends Controller
         $user->username = $request->username;
         $user->karyawan_id = $request->karyawan_id;
 
-        if($request->password){
+        if ($request->password) {
             $user->password = Hash::make($request->password);
         }
 
@@ -150,28 +142,29 @@ class UserController extends Controller
 
         // Handle permissions - prioritize new matrix format
         $permissionIds = [];
-        if ($request->has('permissions') && !empty($request->permissions)) {
+        if ($request->has('permissions') && ! empty($request->permissions)) {
             try {
                 // Add debug logging for operational modules
-                Log::info('Processing permission matrix for user: ' . $user->username, [
-                    'permissions_input' => $request->permissions
+                Log::info('Processing permission matrix for user: '.$user->username, [
+                    'permissions_input' => $request->permissions,
                 ]);
 
                 $permissionIds = $this->convertMatrixPermissionsToIds($request->permissions);
 
-                Log::info('Converted permission IDs for user: ' . $user->username, [
+                Log::info('Converted permission IDs for user: '.$user->username, [
                     'permission_ids' => $permissionIds,
-                    'count' => count($permissionIds)
+                    'count' => count($permissionIds),
                 ]);
 
             } catch (\Exception $e) {
-                Log::error('Error converting matrix permissions for user: ' . $user->username, [
+                Log::error('Error converting matrix permissions for user: '.$user->username, [
                     'error' => $e->getMessage(),
-                    'input' => $request->permissions
+                    'input' => $request->permissions,
                 ]);
-                return redirect()->back()->with('error', 'Error processing permissions: ' . $e->getMessage())->withInput();
+
+                return redirect()->back()->with('error', 'Error processing permissions: '.$e->getMessage())->withInput();
             }
-        } elseif ($request->has('simple_permissions') && !empty($request->simple_permissions)) {
+        } elseif ($request->has('simple_permissions') && ! empty($request->simple_permissions)) {
             // Fallback to simple permissions
             $permissionIds = $this->convertSimplePermissionsToIds($request->simple_permissions);
         }
@@ -179,22 +172,21 @@ class UserController extends Controller
         // Memperbarui izin pengguna
         $user->permissions()->sync($permissionIds);
 
-        return redirect()->route('master.user.index')->with('success','Pengguna berhasil diperbarui!');
+        return redirect()->route('master.user.index')->with('success', 'Pengguna berhasil diperbarui!');
     }
 
     /**
      * Menghapus pengguna dari database.
      *
-     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\RedirectResponse
      */
-
     public function destroy(User $user)
     {
-        //Menghapus relasi izin sebelum menghapus pengguna
+        // Menghapus relasi izin sebelum menghapus pengguna
         $user->permissions()->detach();
         $user->delete();
-        return redirect()->route('master.user.index')->with('success','Pengguna berhsail dihapus!');
+
+        return redirect()->route('master.user.index')->with('success', 'Pengguna berhsail dihapus!');
     }
 
     /**
@@ -213,7 +205,7 @@ class UserController extends Controller
         }
 
         // Check password
-        if (!$request->password || !Hash::check($request->password, $user->password)) {
+        if (! $request->password || ! Hash::check($request->password, $user->password)) {
             return redirect()->back()->with('error', 'Password salah atau tidak diisi. Gagal mereset permission.');
         }
 
@@ -224,7 +216,7 @@ class UserController extends Controller
             $kiky = User::where('username', 'kiky')->first();
             $kikyId = $kiky ? $kiky->id : null;
 
-            if (!$kikyId) {
+            if (! $kikyId) {
                 throw new \Exception("User 'kiky' tidak ditemukan.");
             }
 
@@ -238,15 +230,14 @@ class UserController extends Controller
             return redirect()->back()->with('success', 'Semua permission user (kecuali Kiky) berhasil dihapus!');
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
     /**
      * Assign permissions from a template to a user.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\JsonResponse
      */
     public function assignTemplate(Request $request, User $user)
@@ -258,7 +249,7 @@ class UserController extends Controller
         $templates = config('permission_templates', []);
         $templateKey = $request->template;
 
-        if (!isset($templates[$templateKey])) {
+        if (! isset($templates[$templateKey])) {
             return response()->json(['error' => 'Template not found'], 404);
         }
 
@@ -273,14 +264,13 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Template permissions assigned successfully',
-            'assigned_count' => count($permissionIds)
+            'assigned_count' => count($permissionIds),
         ]);
     }
 
     /**
      * Bulk assign permissions to multiple users.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function bulkAssignPermissions(Request $request)
@@ -314,14 +304,13 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Permissions {$action}ed for {$affectedCount} users",
-            'affected_users' => $affectedCount
+            'affected_users' => $affectedCount,
         ]);
     }
 
     /**
      * Get user's current permissions for AJAX requests.
      *
-     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\JsonResponse
      */
     public function getUserPermissions(User $user)
@@ -335,15 +324,12 @@ class UserController extends Controller
                 'username' => $user->username,
             ],
             'permissions' => $permissions,
-            'count' => $permissions->count()
+            'count' => $permissions->count(),
         ]);
     }
 
     /**
      * Convert permission names to matrix format for the view
-     *
-     * @param array $permissionNames
-     * @return array
      */
     private function convertPermissionsToMatrix(array $permissionNames): array
     {
@@ -351,13 +337,14 @@ class UserController extends Controller
 
         foreach ($permissionNames as $permissionName) {
             // Skip if not a string
-            if (!is_string($permissionName)) {
+            if (! is_string($permissionName)) {
                 continue;
             }
 
             // Special handling for master-karyawan-approval (exact match)
             if ($permissionName === 'master-karyawan-approval') {
                 $matrixPermissions['master-karyawan-approval']['view'] = true;
+
                 continue;
             }
 
@@ -369,12 +356,12 @@ class UserController extends Controller
 
                 // Handle 4-part permissions: master.karyawan.import.store
                 if (count($parts) == 4 && $parts[0] === 'master') {
-                    $module = $parts[0] . '-' . $parts[1]; // master-karyawan
+                    $module = $parts[0].'-'.$parts[1]; // master-karyawan
                     $action = $parts[2]; // import
                     $subaction = $parts[3]; // store
 
                     // Initialize module array if not exists
-                    if (!isset($matrixPermissions[$module])) {
+                    if (! isset($matrixPermissions[$module])) {
                         $matrixPermissions[$module] = [];
                     }
 
@@ -393,11 +380,11 @@ class UserController extends Controller
 
                 if (count($parts) >= 3 && $parts[0] === 'master') {
                     // For master.karyawan.index format
-                    $module = $parts[0] . '-' . $parts[1]; // master-karyawan
+                    $module = $parts[0].'-'.$parts[1]; // master-karyawan
                     $action = $parts[2]; // index
 
                     // Initialize module array if not exists
-                    if (!isset($matrixPermissions[$module])) {
+                    if (! isset($matrixPermissions[$module])) {
                         $matrixPermissions[$module] = [];
                     }
 
@@ -415,11 +402,12 @@ class UserController extends Controller
                         'import' => 'import',
                         'approve' => 'approve',
                         'template' => 'template',
-                        'single' => 'print'
+                        'single' => 'print',
                     ];
 
                     $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                     $matrixPermissions[$module][$mappedAction] = true;
+
                     continue; // Skip other patterns
                 } elseif (count($parts) >= 2) {
                     // Special handling for master-vendor-bengkel permissions
@@ -428,7 +416,7 @@ class UserController extends Controller
                         $action = $parts[1]; // view, create, update, delete
 
                         // Initialize module array if not exists
-                        if (!isset($matrixPermissions[$module])) {
+                        if (! isset($matrixPermissions[$module])) {
                             $matrixPermissions[$module] = [];
                         }
 
@@ -437,11 +425,12 @@ class UserController extends Controller
                             'view' => 'view',
                             'create' => 'create',
                             'update' => 'update',
-                            'delete' => 'delete'
+                            'delete' => 'delete',
                         ];
 
                         $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                         $matrixPermissions[$module][$mappedAction] = true;
+
                         continue; // Skip other patterns
                     }
 
@@ -493,7 +482,7 @@ class UserController extends Controller
                     } elseif ($module === 'tagihan-kontainer-sewa') {
                         // Handle tagihan-kontainer-sewa permissions
                         if ($action === 'group' && isset($parts[2])) {
-                            $action = 'group_' . $parts[2];
+                            $action = 'group_'.$parts[2];
                         }
                     } elseif ($module === 'perbaikan-kontainer') {
                         // Handle perbaikan-kontainer permissions
@@ -502,7 +491,7 @@ class UserController extends Controller
                     }
 
                     // Initialize module array if not exists
-                    if (!isset($matrixPermissions[$module])) {
+                    if (! isset($matrixPermissions[$module])) {
                         $matrixPermissions[$module] = [];
                     }
 
@@ -519,11 +508,12 @@ class UserController extends Controller
                         'export' => 'export',
                         'import' => 'import',
                         'approve' => 'approve',
-                        'history' => 'history'
+                        'history' => 'history',
                     ];
 
                     $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                     $matrixPermissions[$module][$mappedAction] = true;
+
                     continue; // Skip other patterns
                 }
             }
@@ -536,18 +526,19 @@ class UserController extends Controller
                     $action = $parts[1]; // view or approve
 
                     // Initialize module array if not exists
-                    if (!isset($matrixPermissions[$module])) {
+                    if (! isset($matrixPermissions[$module])) {
                         $matrixPermissions[$module] = [];
                     }
 
                     // Map database actions to matrix actions
                     $actionMap = [
                         'view' => 'view',
-                        'approve' => 'approve'
+                        'approve' => 'approve',
                     ];
 
                     $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                     $matrixPermissions[$module][$mappedAction] = true;
+
                     continue; // Skip other patterns
                 }
             }
@@ -558,7 +549,7 @@ class UserController extends Controller
                 $action = str_replace('approval-surat-jalan-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -568,11 +559,12 @@ class UserController extends Controller
                     'approve' => 'approve',
                     'reject' => 'reject',
                     'print' => 'print',
-                    'export' => 'export'
+                    'export' => 'export',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -582,7 +574,7 @@ class UserController extends Controller
                 $action = str_replace('approval-order-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -590,16 +582,17 @@ class UserController extends Controller
                 $actionMap = [
                     'view' => 'view',
                     'create' => 'create',
-                    'update' => 'update', 
+                    'update' => 'update',
                     'delete' => 'delete',
                     'approve' => 'approve',
                     'reject' => 'reject',
                     'print' => 'print',
-                    'export' => 'export'
+                    'export' => 'export',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -609,7 +602,7 @@ class UserController extends Controller
                 $action = str_replace('approval-tanda-terima-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -617,15 +610,14 @@ class UserController extends Controller
                 $actionMap = [
                     'view' => 'view',
                     'upload' => 'create',
-                    'approve' => 'approve'
+                    'approve' => 'approve',
                 ];
-
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
-
 
             // OPERATIONAL MODULES: Handle operational management permissions (order-management, surat-jalan, etc.)
             // IMPORTANT: More specific (longer) prefixes MUST come before shorter ones.
@@ -726,19 +718,16 @@ class UserController extends Controller
                 'kontainer-sewa-final' => 'kontainer-sewa-final',
                 'kwitansi' => 'kwitansi',
                 'master-buruh' => 'master-buruh',
-                'biaya-bensin' => 'biaya-bensin'
+                'biaya-bensin' => 'biaya-bensin',
             ];
 
-
-
-
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
-                if (strpos($permissionName, $permissionPrefix . '-') === 0) {
+                if (strpos($permissionName, $permissionPrefix.'-') === 0) {
                     $module = $moduleKey; // Use module key for matrix (order-management)
-                    $action = str_replace($permissionPrefix . '-', '', $permissionName);
+                    $action = str_replace($permissionPrefix.'-', '', $permissionName);
 
                     // Initialize module array if not exists
-                    if (!isset($matrixPermissions[$module])) {
+                    if (! isset($matrixPermissions[$module])) {
                         $matrixPermissions[$module] = [];
                     }
 
@@ -752,11 +741,12 @@ class UserController extends Controller
                         'print' => 'print',
                         'export' => 'export',
                         'approve' => 'approve',
-                        'reject' => 'reject'
+                        'reject' => 'reject',
                     ];
 
                     $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                     $matrixPermissions[$module][$mappedAction] = true;
+
                     continue 2; // Skip to next permissionName
                 }
             }
@@ -776,16 +766,17 @@ class UserController extends Controller
                 }
 
                 // Only process if it's NOT an action permission
-                if (!$isActionPermission) {
+                if (! $isActionPermission) {
                     $module = $permissionName;
 
                     // Initialize module array if not exists
-                    if (!isset($matrixPermissions[$module])) {
+                    if (! isset($matrixPermissions[$module])) {
                         $matrixPermissions[$module] = [];
                     }
 
                     // Set access permission to true for master permissions
                     $matrixPermissions[$module]['access'] = true;
+
                     continue; // Skip other patterns
                 }
             }
@@ -795,11 +786,12 @@ class UserController extends Controller
                 $module = 'user-approval';
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
                 $matrixPermissions[$module]['view'] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -809,7 +801,7 @@ class UserController extends Controller
                 $action = str_replace('tagihan-kontainer-sewa-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -820,11 +812,12 @@ class UserController extends Controller
                     'edit' => 'update',
                     'update' => 'update',
                     'destroy' => 'delete',
-                    'export' => 'export'
+                    'export' => 'export',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -834,7 +827,7 @@ class UserController extends Controller
                 $action = str_replace('pranota-kontainer-sewa-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -846,11 +839,12 @@ class UserController extends Controller
                     'update' => 'update',
                     'delete' => 'delete',
                     'print' => 'print',
-                    'export' => 'export'
+                    'export' => 'export',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -860,7 +854,7 @@ class UserController extends Controller
                 $action = str_replace('vendor-kontainer-sewa-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -872,11 +866,12 @@ class UserController extends Controller
                     'update' => 'update',
                     'delete' => 'delete',
                     'export' => 'export',
-                    'print' => 'print'
+                    'print' => 'print',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -886,7 +881,7 @@ class UserController extends Controller
                 $action = str_replace('master-pelayanan-pelabuhan-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -896,11 +891,12 @@ class UserController extends Controller
                     'create' => 'create',
                     'edit' => 'update',
                     'update' => 'update',
-                    'delete' => 'delete'
+                    'delete' => 'delete',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -910,7 +906,7 @@ class UserController extends Controller
                 $action = str_replace('tagihan-perbaikan-kontainer-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -922,11 +918,12 @@ class UserController extends Controller
                     'delete' => 'delete',
                     'approve' => 'approve',
                     'print' => 'print',
-                    'export' => 'export'
+                    'export' => 'export',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -936,18 +933,19 @@ class UserController extends Controller
                 $action = str_replace('audit-log-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
                 // Map audit log actions
                 $actionMap = [
                     'view' => 'view',
-                    'export' => 'export'
+                    'export' => 'export',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -957,7 +955,7 @@ class UserController extends Controller
                 $action = str_replace('bl-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -970,11 +968,12 @@ class UserController extends Controller
                     'delete' => 'delete',
                     'print' => 'print',
                     'export' => 'export',
-                    'approve' => 'approve'
+                    'approve' => 'approve',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -984,17 +983,18 @@ class UserController extends Controller
                 $action = str_replace('ob-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
                 // Map OB actions (currently only view is supported)
                 $actionMap = [
-                    'view' => 'view'
+                    'view' => 'view',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -1004,7 +1004,7 @@ class UserController extends Controller
                 $action = str_replace('biaya-kapal-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -1019,11 +1019,12 @@ class UserController extends Controller
                     'destroy' => 'delete',
                     'approve' => 'approve',
                     'print' => 'print',
-                    'export' => 'export'
+                    'export' => 'export',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -1033,7 +1034,7 @@ class UserController extends Controller
                 $action = str_replace('pembayaran-biaya-kapal-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -1043,11 +1044,12 @@ class UserController extends Controller
                     'create' => 'create',
                     'edit' => 'update',
                     'update' => 'update',
-                    'delete' => 'delete'
+                    'delete' => 'delete',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -1057,7 +1059,7 @@ class UserController extends Controller
                 $action = str_replace('master-kapal-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -1071,11 +1073,12 @@ class UserController extends Controller
                     'delete' => 'delete',
                     'destroy' => 'delete',
                     'print' => 'print',
-                    'export' => 'export'
+                    'export' => 'export',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -1085,7 +1088,7 @@ class UserController extends Controller
                 $action = str_replace('pranota-rit-kenek-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -1098,11 +1101,12 @@ class UserController extends Controller
                     'delete' => 'delete',
                     'print' => 'print',
                     'export' => 'export',
-                    'approve' => 'approve'
+                    'approve' => 'approve',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -1112,7 +1116,7 @@ class UserController extends Controller
                 $action = str_replace('pranota-rit-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -1125,11 +1129,12 @@ class UserController extends Controller
                     'delete' => 'delete',
                     'print' => 'print',
                     'export' => 'export',
-                    'approve' => 'approve'
+                    'approve' => 'approve',
                 ];
 
                 $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                 $matrixPermissions[$module][$mappedAction] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -1279,7 +1284,7 @@ class UserController extends Controller
                             // For master-vendor-supir-view, extract the action
                             $action = str_replace('vendor-supir-', '', $action);
                             $module = 'master-vendor-supir';
-                        } 
+                        }
                         // Special handling for master-vendor-asuransi permissions
                         elseif (strpos($action, 'vendor-asuransi-') === 0) {
                             $action = str_replace('vendor-asuransi-', '', $action);
@@ -1306,7 +1311,7 @@ class UserController extends Controller
                                 $subModule = substr($action, 0, $lastPos);
                                 $subAction = substr($action, $lastPos + 1);
                                 if ($subModule !== '') {
-                                    $module = $module . '-' . $subModule; // e.g. master-kelola-bbm
+                                    $module = $module.'-'.$subModule; // e.g. master-kelola-bbm
                                     $action = $subAction; // e.g. view
                                 }
                             }
@@ -1576,7 +1581,7 @@ class UserController extends Controller
                     }
 
                     // Initialize module array if not exists
-                    if (!isset($matrixPermissions[$module])) {
+                    if (! isset($matrixPermissions[$module])) {
                         $matrixPermissions[$module] = [];
                     }
 
@@ -1592,11 +1597,12 @@ class UserController extends Controller
                         'print' => 'print',
                         'export' => 'export',
                         'import' => 'import',
-                        'approve' => 'approve'
+                        'approve' => 'approve',
                     ];
 
                     $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                     $matrixPermissions[$module][$mappedAction] = true;
+
                     continue; // Skip other patterns
                 }
             }
@@ -1606,7 +1612,7 @@ class UserController extends Controller
                 $module = $permissionName;
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -1622,7 +1628,7 @@ class UserController extends Controller
                     $action = $parts[1];
 
                     // Initialize module array if not exists
-                    if (!isset($matrixPermissions[$module])) {
+                    if (! isset($matrixPermissions[$module])) {
                         $matrixPermissions[$module] = [];
                     }
 
@@ -1649,6 +1655,7 @@ class UserController extends Controller
                         $permissionIds[] = $modulePermDot->id;
                     }
                 }
+
                 continue; // Skip other patterns
             }
 
@@ -1657,11 +1664,12 @@ class UserController extends Controller
                 $module = 'user-approval';
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
                 $matrixPermissions[$module]['view'] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -1670,11 +1678,12 @@ class UserController extends Controller
                 $module = 'storage';
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
                 $matrixPermissions[$module]['local'] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -1684,7 +1693,7 @@ class UserController extends Controller
                 $action = str_replace('dashboard-', '', $permissionName);
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
@@ -1693,6 +1702,7 @@ class UserController extends Controller
                 if (in_array($action, $dashboardActions)) {
                     $matrixPermissions[$module]['view'] = true; // Map all dashboard permissions to view
                 }
+
                 continue; // Skip other patterns
             }
 
@@ -1701,11 +1711,12 @@ class UserController extends Controller
                 $module = 'dashboard';
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
                 $matrixPermissions[$module]['view'] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -1714,11 +1725,12 @@ class UserController extends Controller
                 $module = 'system';
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
                 $matrixPermissions[$module]['dashboard'] = true;
+
                 continue; // Skip other patterns
             }
 
@@ -1728,11 +1740,12 @@ class UserController extends Controller
                 $module = 'auth';
 
                 // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
+                if (! isset($matrixPermissions[$module])) {
                     $matrixPermissions[$module] = [];
                 }
 
                 $matrixPermissions[$module][$permissionName] = true;
+
                 continue; // Skip other patterns
             }
         }
@@ -1740,14 +1753,14 @@ class UserController extends Controller
         // Special handling: If user has approval-dashboard, also show approval-tugas permissions in matrix
         if (in_array('approval-dashboard', $permissionNames)) {
             // Initialize approval-tugas-1 if not exists
-            if (!isset($matrixPermissions['approval-tugas-1'])) {
+            if (! isset($matrixPermissions['approval-tugas-1'])) {
                 $matrixPermissions['approval-tugas-1'] = [];
             }
             // Set view permission for approval-tugas-1
             $matrixPermissions['approval-tugas-1']['view'] = true;
 
             // Initialize approval-tugas-2 if not exists
-            if (!isset($matrixPermissions['approval-tugas-2'])) {
+            if (! isset($matrixPermissions['approval-tugas-2'])) {
                 $matrixPermissions['approval-tugas-2'] = [];
             }
             // Set view permission for approval-tugas-2
@@ -1759,9 +1772,6 @@ class UserController extends Controller
 
     /**
      * Convert matrix permissions to permission IDs (Accurate style)
-     *
-     * @param array $matrixPermissions
-     * @return array
      */
     private function convertMatrixPermissionsToIds(array $matrixPermissions): array
     {
@@ -1769,7 +1779,9 @@ class UserController extends Controller
 
         foreach ($matrixPermissions as $module => $actions) {
             // Skip if no actions are selected for this module
-            if (!is_array($actions)) continue;
+            if (! is_array($actions)) {
+                continue;
+            }
 
             // Handle dashboard module permissions (simple single permission)
             if ($module === 'dashboard') {
@@ -1788,6 +1800,7 @@ class UserController extends Controller
                         $permissionIds[] = $dashboardViewPerm->id;
                     }
                 }
+
                 continue;
             }
 
@@ -1802,6 +1815,7 @@ class UserController extends Controller
                         $permissionIds[] = $permission->id;
                     }
                 }
+
                 // Note: if dashboard is not enabled (unchecked), it won't be added to $permissionIds
                 // This ensures sync() will remove it from user permissions
                 continue;
@@ -1815,9 +1829,9 @@ class UserController extends Controller
                         $permissionIds[] = $perm->id;
                     }
                 }
+
                 continue;
             }
-
 
             foreach ($actions as $action => $value) {
                 // Only process checked permissions (value = true or 1)
@@ -1829,6 +1843,7 @@ class UserController extends Controller
                         $modulePerm = Permission::where('name', $module)->first();
                         if ($modulePerm) {
                             $permissionIds[] = $modulePerm->id;
+
                             continue; // done with this action
                         }
 
@@ -1836,6 +1851,7 @@ class UserController extends Controller
                         $modulePermDot = Permission::where('name', $dotModule)->first();
                         if ($modulePermDot) {
                             $permissionIds[] = $modulePermDot->id;
+
                             continue; // done with this action
                         }
                     }
@@ -1850,7 +1866,7 @@ class UserController extends Controller
                         'import' => ['import'],
                         'approve' => ['approve'],
                         'access' => ['access'],
-                        'main' => ['main'] // Add main action mapping
+                        'main' => ['main'], // Add main action mapping
                     ];
 
                     $possibleActions = isset($actionMap[$action]) ? $actionMap[$action] : [$action];
@@ -1876,7 +1892,7 @@ class UserController extends Controller
                                     'delete' => 'master-karyawan-delete',
                                     'print' => 'master-karyawan-print',
                                     'export' => 'master-karyawan-export',
-                                    'import' => 'master-karyawan-import'
+                                    'import' => 'master-karyawan-import',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -1885,6 +1901,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
 
@@ -1894,6 +1911,7 @@ class UserController extends Controller
                                         if ($fourDotPermission) {
                                             $permissionIds[] = $fourDotPermission->id;
                                             $found = true;
+
                                             continue;
                                         }
                                     } elseif ($action === 'print') {
@@ -1901,6 +1919,7 @@ class UserController extends Controller
                                         if ($fourDotPermission) {
                                             $permissionIds[] = $fourDotPermission->id;
                                             $found = true;
+
                                             continue;
                                         }
                                     }
@@ -1916,7 +1935,7 @@ class UserController extends Controller
                                     'update' => 'master-kapal-update',
                                     'delete' => 'master-kapal-delete',
                                     'print' => 'master-kapal-print',
-                                    'export' => 'master-kapal-export'
+                                    'export' => 'master-kapal-export',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -1925,6 +1944,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
 
@@ -1935,7 +1955,7 @@ class UserController extends Controller
                                         'update' => 'master-kapal.edit',
                                         'delete' => 'master-kapal.delete',
                                         'print' => 'master-kapal.print',
-                                        'export' => 'master-kapal.export'
+                                        'export' => 'master-kapal.export',
                                     ];
 
                                     if (isset($dotActionMap[$action])) {
@@ -1944,6 +1964,7 @@ class UserController extends Controller
                                         if ($dotPermission) {
                                             $permissionIds[] = $dotPermission->id;
                                             $found = true;
+
                                             continue;
                                         }
                                     }
@@ -1959,7 +1980,7 @@ class UserController extends Controller
                                     'update' => 'master-kontainer-update',
                                     'delete' => 'master-kontainer-delete',
                                     'print' => 'master-kontainer-print',
-                                    'export' => 'master-kontainer-export'
+                                    'export' => 'master-kontainer-export',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -1968,6 +1989,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -1982,7 +2004,7 @@ class UserController extends Controller
                                     'update' => 'master-tujuan-update',
                                     'delete' => 'master-tujuan-delete',
                                     'print' => 'master-tujuan-print',
-                                    'export' => 'master-tujuan-export'
+                                    'export' => 'master-tujuan-export',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -1991,6 +2013,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2005,7 +2028,7 @@ class UserController extends Controller
                                     'update' => 'master-kegiatan-update',
                                     'delete' => 'master-kegiatan-delete',
                                     'print' => 'master-kegiatan-print',
-                                    'export' => 'master-kegiatan-export'
+                                    'export' => 'master-kegiatan-export',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2014,6 +2037,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2028,7 +2052,7 @@ class UserController extends Controller
                                     'update' => 'master-mobil-update',
                                     'delete' => 'master-mobil-delete',
                                     'print' => 'master-mobil-print',
-                                    'export' => 'master-mobil-export'
+                                    'export' => 'master-mobil-export',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2037,6 +2061,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2049,7 +2074,7 @@ class UserController extends Controller
                                     'view' => 'master-pengirim-penerima-view',
                                     'create' => 'master-pengirim-penerima-create',
                                     'update' => 'master-pengirim-penerima-update',
-                                    'delete' => 'master-pengirim-penerima-delete'
+                                    'delete' => 'master-pengirim-penerima-delete',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2058,6 +2083,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2072,7 +2098,7 @@ class UserController extends Controller
                                     'update' => 'master-permission-update',
                                     'delete' => 'master-permission-delete',
                                     'print' => 'master-permission-print',
-                                    'export' => 'master-permission-export'
+                                    'export' => 'master-permission-export',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2081,6 +2107,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2095,7 +2122,7 @@ class UserController extends Controller
                                     'update' => 'master-mobil-update',
                                     'delete' => 'master-mobil-delete',
                                     'print' => 'master-mobil-print',
-                                    'export' => 'master-mobil-export'
+                                    'export' => 'master-mobil-export',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2104,6 +2131,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2116,7 +2144,7 @@ class UserController extends Controller
                                     'view' => 'master-pelayanan-pelabuhan-view',
                                     'create' => 'master-pelayanan-pelabuhan-create',
                                     'update' => 'master-pelayanan-pelabuhan-edit',
-                                    'delete' => 'master-pelayanan-pelabuhan-delete'
+                                    'delete' => 'master-pelayanan-pelabuhan-delete',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2125,6 +2153,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2139,7 +2168,7 @@ class UserController extends Controller
                                     'update' => 'master-kode-nomor-update',
                                     'delete' => 'master-kode-nomor-delete',
                                     'print' => 'master-kode-nomor-print',
-                                    'export' => 'master-kode-nomor-export'
+                                    'export' => 'master-kode-nomor-export',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2148,6 +2177,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2162,7 +2192,7 @@ class UserController extends Controller
                                     'update' => 'master-pelabuhan-update',
                                     'delete' => 'master-pelabuhan-delete',
                                     'print' => 'master-pelabuhan-print',
-                                    'export' => 'master-pelabuhan-export'
+                                    'export' => 'master-pelabuhan-export',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2171,6 +2201,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2183,7 +2214,7 @@ class UserController extends Controller
                                     'view' => 'master-dokumen-perijinan-kapal-view',
                                     'create' => 'master-dokumen-perijinan-kapal-create',
                                     'update' => 'master-dokumen-perijinan-kapal-update',
-                                    'delete' => 'master-dokumen-perijinan-kapal-delete'
+                                    'delete' => 'master-dokumen-perijinan-kapal-delete',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2192,6 +2223,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2204,7 +2236,7 @@ class UserController extends Controller
                                     'view' => 'master-sertifikat-kapal-view',
                                     'create' => 'master-sertifikat-kapal-create',
                                     'update' => 'master-sertifikat-kapal-update',
-                                    'delete' => 'master-sertifikat-kapal-delete'
+                                    'delete' => 'master-sertifikat-kapal-delete',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2213,6 +2245,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2225,6 +2258,7 @@ class UserController extends Controller
                                 if ($directPermission) {
                                     $permissionIds[] = $directPermission->id;
                                     $found = true;
+
                                     continue; // Skip to next action
                                 }
                             }
@@ -2236,7 +2270,7 @@ class UserController extends Controller
                                     'view' => 'master-vendor-supir-view',
                                     'create' => 'master-vendor-supir-create',
                                     'update' => 'master-vendor-supir-update',
-                                    'delete' => 'master-vendor-supir-delete'
+                                    'delete' => 'master-vendor-supir-delete',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2245,6 +2279,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2257,7 +2292,7 @@ class UserController extends Controller
                                     'view' => 'master-stock-kontainer-view',
                                     'create' => 'master-stock-kontainer-create',
                                     'update' => 'master-stock-kontainer-update',
-                                    'delete' => 'master-stock-kontainer-delete'
+                                    'delete' => 'master-stock-kontainer-delete',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2266,6 +2301,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2278,7 +2314,7 @@ class UserController extends Controller
                                     'view' => 'master-nomor-terakhir-view',
                                     'create' => 'master-nomor-terakhir-create',
                                     'update' => 'master-nomor-terakhir-update',
-                                    'delete' => 'master-nomor-terakhir-delete'
+                                    'delete' => 'master-nomor-terakhir-delete',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2287,6 +2323,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2301,7 +2338,7 @@ class UserController extends Controller
                                     'update' => 'master-divisi-update',
                                     'delete' => 'master-divisi-delete',
                                     'print' => 'master-divisi-print',
-                                    'export' => 'master-divisi-export'
+                                    'export' => 'master-divisi-export',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2310,6 +2347,7 @@ class UserController extends Controller
                                     if ($directPermission) {
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
+
                                         continue; // Skip to next action
                                     }
                                 }
@@ -2327,7 +2365,7 @@ class UserController extends Controller
                                     'export' => 'master-user-export',
                                     'approve' => 'master-user-approve',
                                     'suspend' => 'master-user-suspend',
-                                    'activate' => 'master-user-activate'
+                                    'activate' => 'master-user-activate',
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -2345,7 +2383,7 @@ class UserController extends Controller
                                         'update' => 'master.user.edit',
                                         'delete' => 'master.user.destroy',
                                         'print' => 'master.user.print',
-                                        'export' => 'master.user.export'
+                                        'export' => 'master.user.export',
                                     ];
 
                                     if (isset($legacyActionMap[$action])) {
@@ -2373,7 +2411,7 @@ class UserController extends Controller
                                 'delete' => 'pergerakan-kapal-delete',
                                 'approve' => 'pergerakan-kapal-approve',
                                 'print' => 'pergerakan-kapal-print',
-                                'export' => 'pergerakan-kapal-export'
+                                'export' => 'pergerakan-kapal-export',
                             ];
 
                             if (isset($actionMap[$action])) {
@@ -2382,6 +2420,7 @@ class UserController extends Controller
                                 if ($directPermission) {
                                     $permissionIds[] = $directPermission->id;
                                     $found = true;
+
                                     continue; // Skip to next action
                                 }
                             }
@@ -2397,7 +2436,7 @@ class UserController extends Controller
                                 'delete' => 'pergerakan-kontainer-delete',
                                 'approve' => 'pergerakan-kontainer-approve',
                                 'print' => 'pergerakan-kontainer-print',
-                                'export' => 'pergerakan-kontainer-export'
+                                'export' => 'pergerakan-kontainer-export',
                             ];
 
                             if (isset($actionMap[$action])) {
@@ -2406,6 +2445,7 @@ class UserController extends Controller
                                 if ($directPermission) {
                                     $permissionIds[] = $directPermission->id;
                                     $found = true;
+
                                     continue; // Skip to next action
                                 }
                             }
@@ -2418,7 +2458,7 @@ class UserController extends Controller
                                 'view' => 'karyawan-tidak-tetap-view',
                                 'create' => 'karyawan-tidak-tetap-create',
                                 'update' => 'karyawan-tidak-tetap-update',
-                                'delete' => 'karyawan-tidak-tetap-delete'
+                                'delete' => 'karyawan-tidak-tetap-delete',
                             ];
 
                             if (isset($actionMap[$action])) {
@@ -2427,38 +2467,39 @@ class UserController extends Controller
                                 if ($directPermission) {
                                     $permissionIds[] = $directPermission->id;
                                     $found = true;
+
                                     continue; // Skip to next action
                                 }
                             }
                         }
 
                         if (strpos($module, 'master-') === 0) {
-                                foreach ($possibleActions as $dbAction) {
-                                    // 1. Cek master-karyawan-view (format yang benar untuk database)
-                                    $permissionDash = Permission::where('name', $module . '-' . $dbAction)->first();
-                                    if ($permissionDash) {
-                                        $permissionIds[] = $permissionDash->id;
-                                        $found = true;
-                                        error_log("PATCH SUCCESS: Found {$module}-{$dbAction} with ID {$permissionDash->id}");
-                                        break;
-                                    }
-                                    // 2. Fallback ke master-karyawan-view (legacy format)
-                                    $permissionDot = Permission::where('name', $baseModule . '-' . $subModule . '-' . $dbAction)->first();
-                                    if ($permissionDot) {
-                                        $permissionIds[] = $permissionDot->id;
-                                        $found = true;
-                                        error_log("PATCH FALLBACK: Found {$baseModule}-{$subModule}-{$dbAction} with ID {$permissionDot->id}");
-                                        break;
-                                    }
+                            foreach ($possibleActions as $dbAction) {
+                                // 1. Cek master-karyawan-view (format yang benar untuk database)
+                                $permissionDash = Permission::where('name', $module.'-'.$dbAction)->first();
+                                if ($permissionDash) {
+                                    $permissionIds[] = $permissionDash->id;
+                                    $found = true;
+                                    error_log("PATCH SUCCESS: Found {$module}-{$dbAction} with ID {$permissionDash->id}");
+                                    break;
                                 }
+                                // 2. Fallback ke master-karyawan-view (legacy format)
+                                $permissionDot = Permission::where('name', $baseModule.'-'.$subModule.'-'.$dbAction)->first();
+                                if ($permissionDot) {
+                                    $permissionIds[] = $permissionDot->id;
+                                    $found = true;
+                                    error_log("PATCH FALLBACK: Found {$baseModule}-{$subModule}-{$dbAction} with ID {$permissionDot->id}");
+                                    break;
+                                }
+                            }
 
                             // Special handling for pricelist (different pattern)
-                            if (!$found && $subModule === 'pricelist' && isset($moduleParts[2])) {
+                            if (! $found && $subModule === 'pricelist' && isset($moduleParts[2])) {
                                 $remainingParts = array_slice($moduleParts, 2);
                                 $fullSubModule = implode('-', $remainingParts); // sewa-kontainer
 
                                 foreach ($possibleActions as $dbAction) {
-                                    $permissionName = $baseModule . '-' . $subModule . '-' . $fullSubModule . '-' . $dbAction;
+                                    $permissionName = $baseModule.'-'.$subModule.'-'.$fullSubModule.'-'.$dbAction;
                                     $permission = Permission::where('name', $permissionName)->first();
 
                                     if ($permission) {
@@ -2470,13 +2511,14 @@ class UserController extends Controller
                             }
 
                             // If not found, try master-submodule pattern for simple permissions
-                            if (!$found && in_array($action, ['view', 'access'])) {
-                                $permissionName = $baseModule . '-' . $subModule;
+                            if (! $found && in_array($action, ['view', 'access'])) {
+                                $permissionName = $baseModule.'-'.$subModule;
                                 $permission = Permission::where('name', $permissionName)->first();
 
                                 if ($permission) {
                                     $permissionIds[] = $permission->id;
                                     $found = true;
+
                                     continue;
                                 }
                             }
@@ -2493,7 +2535,7 @@ class UserController extends Controller
                             'view' => 'master-lwbp-lama-view',
                             'create' => 'master-lwbp-lama-create',
                             'update' => 'master-lwbp-lama-update',
-                            'delete' => 'master-lwbp-lama-delete'
+                            'delete' => 'master-lwbp-lama-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2502,6 +2544,7 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
+
                                 continue;
                             }
                         }
@@ -2516,7 +2559,7 @@ class UserController extends Controller
                             'update' => 'master-pekerjaan-update',
                             'delete' => 'master-pekerjaan-destroy',
                             'print' => 'master-pekerjaan-print',
-                            'export' => 'master-pekerjaan-export'
+                            'export' => 'master-pekerjaan-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2536,7 +2579,7 @@ class UserController extends Controller
                             'view' => 'master-pajak-view',
                             'create' => 'master-pajak-create',
                             'update' => 'master-pajak-update',
-                            'delete' => 'master-pajak-destroy'
+                            'delete' => 'master-pajak-destroy',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2556,7 +2599,7 @@ class UserController extends Controller
                             'view' => 'master-bank-view',
                             'create' => 'master-bank-create',
                             'update' => 'master-bank-update',
-                            'delete' => 'master-bank-destroy'
+                            'delete' => 'master-bank-destroy',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2578,7 +2621,7 @@ class UserController extends Controller
                             'update' => 'master-kapal.edit',
                             'delete' => 'master-kapal.delete',
                             'print' => 'master-kapal.print',
-                            'export' => 'master-kapal.export'
+                            'export' => 'master-kapal.export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2598,7 +2641,7 @@ class UserController extends Controller
                             'view' => 'master-coa-view',
                             'create' => 'master-coa-create',
                             'update' => 'master-coa-update',
-                            'delete' => 'master-coa-delete'
+                            'delete' => 'master-coa-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2618,7 +2661,7 @@ class UserController extends Controller
                             'view' => 'master-tipe-akun-view',
                             'create' => 'master-tipe-akun-create',
                             'update' => 'master-tipe-akun-update',
-                            'delete' => 'master-tipe-akun-delete'
+                            'delete' => 'master-tipe-akun-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2638,7 +2681,7 @@ class UserController extends Controller
                             'view' => 'master-cabang-view',
                             'create' => 'master-cabang-create',
                             'update' => 'master-cabang-update',
-                            'delete' => 'master-cabang-delete'
+                            'delete' => 'master-cabang-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2658,7 +2701,7 @@ class UserController extends Controller
                             'view' => 'master-vendor-bengkel.view',
                             'create' => 'master-vendor-bengkel.create',
                             'update' => 'master-vendor-bengkel.update',
-                            'delete' => 'master-vendor-bengkel.delete'
+                            'delete' => 'master-vendor-bengkel.delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2678,7 +2721,7 @@ class UserController extends Controller
                             'view' => 'master-vendor-asuransi-view',
                             'create' => 'master-vendor-asuransi-create',
                             'update' => 'master-vendor-asuransi-update',
-                            'delete' => 'master-vendor-asuransi-delete'
+                            'delete' => 'master-vendor-asuransi-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2698,7 +2741,7 @@ class UserController extends Controller
                             'view' => 'master-vendor-amprahan-view',
                             'create' => 'master-vendor-amprahan-create',
                             'update' => 'master-vendor-amprahan-update',
-                            'delete' => 'master-vendor-amprahan-delete'
+                            'delete' => 'master-vendor-amprahan-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2718,7 +2761,7 @@ class UserController extends Controller
                             'view' => 'asuransi-tanda-terima-multi-view',
                             'create' => 'asuransi-tanda-terima-multi-create',
                             'update' => 'asuransi-tanda-terima-multi-update',
-                            'delete' => 'asuransi-tanda-terima-multi-delete'
+                            'delete' => 'asuransi-tanda-terima-multi-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2738,7 +2781,7 @@ class UserController extends Controller
                             'view' => 'asuransi-tanda-terima-view',
                             'create' => 'asuransi-tanda-terima-create',
                             'update' => 'asuransi-tanda-terima-update',
-                            'delete' => 'asuransi-tanda-terima-delete'
+                            'delete' => 'asuransi-tanda-terima-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2758,7 +2801,7 @@ class UserController extends Controller
                             'view' => 'master-pricelist-sewa-kontainer-view',
                             'create' => 'master-pricelist-sewa-kontainer-create',
                             'update' => 'master-pricelist-sewa-kontainer-update',
-                            'delete' => 'master-pricelist-sewa-kontainer-delete'
+                            'delete' => 'master-pricelist-sewa-kontainer-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2778,7 +2821,7 @@ class UserController extends Controller
                             'view' => 'master-pricelist-ob-view',
                             'create' => 'master-pricelist-ob-create',
                             'update' => 'master-pricelist-ob-update',
-                            'delete' => 'master-pricelist-ob-delete'
+                            'delete' => 'master-pricelist-ob-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2798,7 +2841,7 @@ class UserController extends Controller
                             'view' => 'master-pricelist-freight-view',
                             'create' => 'master-pricelist-freight-create',
                             'update' => 'master-pricelist-freight-update',
-                            'delete' => 'master-pricelist-freight-delete'
+                            'delete' => 'master-pricelist-freight-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2818,7 +2861,7 @@ class UserController extends Controller
                             'view' => 'master-pricelist-cat-view',
                             'create' => 'master-pricelist-cat-create',
                             'update' => 'master-pricelist-cat-update',
-                            'delete' => 'master-pricelist-cat-delete'
+                            'delete' => 'master-pricelist-cat-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2838,7 +2881,7 @@ class UserController extends Controller
                             'view' => 'master-pricelist-kanisir-ban-view',
                             'create' => 'master-pricelist-kanisir-ban-create',
                             'update' => 'master-pricelist-kanisir-ban-update',
-                            'delete' => 'master-pricelist-kanisir-ban-delete'
+                            'delete' => 'master-pricelist-kanisir-ban-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2858,7 +2901,7 @@ class UserController extends Controller
                             'view' => 'master-pricelist-lolo-view',
                             'create' => 'master-pricelist-lolo-create',
                             'update' => 'master-pricelist-lolo-update',
-                            'delete' => 'master-pricelist-lolo-delete'
+                            'delete' => 'master-pricelist-lolo-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2878,7 +2921,7 @@ class UserController extends Controller
                             'view' => 'master-pricelist-biaya-storage-view',
                             'create' => 'master-pricelist-biaya-storage-create',
                             'update' => 'master-pricelist-biaya-storage-update',
-                            'delete' => 'master-pricelist-biaya-storage-delete'
+                            'delete' => 'master-pricelist-biaya-storage-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2898,7 +2941,7 @@ class UserController extends Controller
                             'view' => 'master-pricelist-meratus-view',
                             'create' => 'master-pricelist-meratus-create',
                             'update' => 'master-pricelist-meratus-update',
-                            'delete' => 'master-pricelist-meratus-delete'
+                            'delete' => 'master-pricelist-meratus-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2918,7 +2961,7 @@ class UserController extends Controller
                             'view' => 'master-pricelist-tujuan-kontainer-sewa-view',
                             'create' => 'master-pricelist-tujuan-kontainer-sewa-create',
                             'update' => 'master-pricelist-tujuan-kontainer-sewa-update',
-                            'delete' => 'master-pricelist-tujuan-kontainer-sewa-delete'
+                            'delete' => 'master-pricelist-tujuan-kontainer-sewa-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2927,6 +2970,7 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
+
                                 continue;
                             }
                         }
@@ -2939,7 +2983,7 @@ class UserController extends Controller
                             'view' => 'master-pricelist-temas-view',
                             'create' => 'master-pricelist-temas-create',
                             'update' => 'master-pricelist-temas-update',
-                            'delete' => 'master-pricelist-temas-delete'
+                            'delete' => 'master-pricelist-temas-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2959,7 +3003,7 @@ class UserController extends Controller
                             'view' => 'master-pricelist-tanto-view',
                             'create' => 'master-pricelist-tanto-create',
                             'update' => 'master-pricelist-tanto-update',
-                            'delete' => 'master-pricelist-tanto-delete'
+                            'delete' => 'master-pricelist-tanto-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2979,7 +3023,7 @@ class UserController extends Controller
                             'view' => 'master-pengirim-view',
                             'create' => 'master-pengirim-create',
                             'update' => 'master-pengirim-update',
-                            'delete' => 'master-pengirim-delete'
+                            'delete' => 'master-pengirim-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2999,7 +3043,7 @@ class UserController extends Controller
                             'view' => 'master-jenis-barang-view',
                             'create' => 'master-jenis-barang-create',
                             'update' => 'master-jenis-barang-update',
-                            'delete' => 'master-jenis-barang-delete'
+                            'delete' => 'master-jenis-barang-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3019,7 +3063,7 @@ class UserController extends Controller
                             'view' => 'master-gudang-amprahan-view',
                             'create' => 'master-gudang-amprahan-create',
                             'edit' => 'master-gudang-amprahan-update',
-                            'delete' => 'master-gudang-amprahan-delete'
+                            'delete' => 'master-gudang-amprahan-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3028,6 +3072,7 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
+
                                 continue; // Skip to next action
                             }
                         }
@@ -3040,7 +3085,7 @@ class UserController extends Controller
                             'view' => 'master-term-view',
                             'create' => 'master-term-create',
                             'update' => 'master-term-update',
-                            'delete' => 'master-term-delete'
+                            'delete' => 'master-term-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3056,10 +3101,10 @@ class UserController extends Controller
                     // Handle amprahan permissions explicitly
                     if (($module === 'stock-amprahan' || $module === 'belanja-amprahan') && in_array($action, ['view', 'create', 'update', 'delete'])) {
                         $actionMap = [
-                            'view' => $module . '-view',
-                            'create' => $module . '-create',
-                            'update' => $module . '-update',
-                            'delete' => $module . '-delete'
+                            'view' => $module.'-view',
+                            'create' => $module.'-create',
+                            'update' => $module.'-update',
+                            'delete' => $module.'-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3079,7 +3124,7 @@ class UserController extends Controller
                             'view' => 'master-tujuan-kirim-view',
                             'create' => 'master-tujuan-kirim-create',
                             'update' => 'master-tujuan-kirim-update',
-                            'delete' => 'master-tujuan-kirim-delete'
+                            'delete' => 'master-tujuan-kirim-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3121,7 +3166,7 @@ class UserController extends Controller
                             'update' => 'user-approval-update',
                             'delete' => 'user-approval-delete',
                             'print' => 'user-approval-print',
-                            'export' => 'user-approval-export'
+                            'export' => 'user-approval-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3140,7 +3185,7 @@ class UserController extends Controller
                             // Only process if the action from form matches the current dbAction
                             if ($action === $dbAction) {
                                 // Use dash notation (pranota-supir-view)
-                                $permissionName = $module . '-' . $dbAction;
+                                $permissionName = $module.'-'.$dbAction;
                                 $permission = Permission::where('name', $permissionName)->first();
 
                                 if ($permission) {
@@ -3157,7 +3202,7 @@ class UserController extends Controller
                         foreach ($possibleActions as $dbAction) {
                             // Only process if the action from form matches the current dbAction
                             if ($action === $dbAction) {
-                                $permissionName = 'pranota-rit-kenek-' . $dbAction;
+                                $permissionName = 'pranota-rit-kenek-'.$dbAction;
                                 $permission = Permission::where('name', $permissionName)->first();
 
                                 if ($permission) {
@@ -3172,7 +3217,7 @@ class UserController extends Controller
                     // Special handling for pembayaran-pranota-tagihan-kontainer
                     if ($module === 'pembayaran-pranota-tagihan-kontainer') {
                         foreach ($possibleActions as $dbAction) {
-                            $permissionName = 'pembayaran-pranota-tagihan-kontainer-' . $dbAction;
+                            $permissionName = 'pembayaran-pranota-tagihan-kontainer-'.$dbAction;
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -3187,7 +3232,7 @@ class UserController extends Controller
                     // Special handling for pranota-tagihan-kontainer (uses dot notation)
                     if ($module === 'pranota-tagihan-kontainer') {
                         foreach ($possibleActions as $dbAction) {
-                            $permissionName = 'pranota-tagihan-kontainer.' . $dbAction;
+                            $permissionName = 'pranota-tagihan-kontainer.'.$dbAction;
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -3200,7 +3245,7 @@ class UserController extends Controller
                     // Special handling for pembayaran-pranota-kontainer
                     if ($module === 'pembayaran-pranota-kontainer') {
                         foreach ($possibleActions as $dbAction) {
-                            $permissionName = 'pembayaran-pranota-kontainer-' . $dbAction;
+                            $permissionName = 'pembayaran-pranota-kontainer-'.$dbAction;
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -3222,11 +3267,11 @@ class UserController extends Controller
                             'update' => 'update',
                             'delete' => 'delete',
                             'print' => 'print',
-                            'export' => 'export'
+                            'export' => 'export',
                         ];
 
                         if (isset($actionMap[$action])) {
-                            $permissionName = 'pembayaran-pranota-cat-' . $actionMap[$action];
+                            $permissionName = 'pembayaran-pranota-cat-'.$actionMap[$action];
                             error_log("DEBUG: Looking for permission: $permissionName");
                             $permission = Permission::where('name', $permissionName)->first();
                             if ($permission) {
@@ -3234,7 +3279,7 @@ class UserController extends Controller
                                 $found = true;
                                 error_log("DEBUG: Found permission ID: {$permission->id}");
                             } else {
-                                error_log("DEBUG: Permission not found");
+                                error_log('DEBUG: Permission not found');
                             }
                         }
                     }
@@ -3249,11 +3294,11 @@ class UserController extends Controller
                             'delete' => 'delete',
                             'approve' => 'approve',
                             'print' => 'print',
-                            'export' => 'export'
+                            'export' => 'export',
                         ];
 
                         if (isset($actionMap[$action])) {
-                            $permissionName = 'pembayaran-pranota-surat-jalan-' . $actionMap[$action];
+                            $permissionName = 'pembayaran-pranota-surat-jalan-'.$actionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
@@ -3272,28 +3317,28 @@ class UserController extends Controller
                             'delete' => 'delete',
                             'approve' => 'approve',
                             'print' => 'print',
-                            'export' => 'export'
+                            'export' => 'export',
                         ];
 
                         if (isset($actionMap[$action])) {
-                            $permissionName = 'pembayaran-pranota-uang-jalan-' . $actionMap[$action];
+                            $permissionName = 'pembayaran-pranota-uang-jalan-'.$actionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
-                            
+
                             Log::info('Processing pembayaran-pranota-uang-jalan permission', [
                                 'module' => $module,
                                 'action' => $action,
                                 'mapped_action' => $actionMap[$action],
                                 'permission_name' => $permissionName,
                                 'permission_found' => $permission ? true : false,
-                                'permission_id' => $permission ? $permission->id : null
+                                'permission_id' => $permission ? $permission->id : null,
                             ]);
-                            
+
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
                                 $found = true;
                             } else {
                                 Log::warning('Permission not found in database', [
-                                    'permission_name' => $permissionName
+                                    'permission_name' => $permissionName,
                                 ]);
                             }
                         }
@@ -3306,11 +3351,11 @@ class UserController extends Controller
                             'view' => 'view',
                             'create' => 'create',
                             'update' => 'edit',
-                            'delete' => 'delete'
+                            'delete' => 'delete',
                         ];
 
                         if (isset($actionMap[$action])) {
-                            $permissionName = 'pembayaran-pranota-stock-' . $actionMap[$action];
+                            $permissionName = 'pembayaran-pranota-stock-'.$actionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
@@ -3327,11 +3372,11 @@ class UserController extends Controller
                             'delete' => 'delete',
                             'approve' => 'approve',
                             'print' => 'print',
-                            'export' => 'export'
+                            'export' => 'export',
                         ];
 
                         if (isset($actionMap[$action])) {
-                            $permissionName = 'pembayaran-pranota-rit-kenek-' . $actionMap[$action];
+                            $permissionName = 'pembayaran-pranota-rit-kenek-'.$actionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
@@ -3349,11 +3394,11 @@ class UserController extends Controller
                             'delete' => 'delete',
                             'approve' => 'approve',
                             'print' => 'print',
-                            'export' => 'export'
+                            'export' => 'export',
                         ];
 
                         if (isset($actionMap[$action])) {
-                            $permissionName = 'pembayaran-pranota-rit-' . $actionMap[$action];
+                            $permissionName = 'pembayaran-pranota-rit-'.$actionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
@@ -3362,7 +3407,6 @@ class UserController extends Controller
                         }
                     }
 
-
                     // Special handling for perbaikan-kontainer module
                     if ($module === 'perbaikan-kontainer') {
                         // For perbaikan-kontainer, map matrix actions directly to permission names
@@ -3370,11 +3414,11 @@ class UserController extends Controller
                             'view' => 'view',
                             'create' => 'create',
                             'update' => 'update',
-                            'delete' => 'delete'
+                            'delete' => 'delete',
                         ];
 
                         if (isset($directActionMap[$action])) {
-                            $permissionName = 'perbaikan-kontainer-' . $directActionMap[$action];
+                            $permissionName = 'perbaikan-kontainer-'.$directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -3385,7 +3429,7 @@ class UserController extends Controller
 
                         // Always assign perbaikan-kontainer-view when any perbaikan-kontainer action is checked
                         $viewPermission = Permission::where('name', 'perbaikan-kontainer-view')->first();
-                        if ($viewPermission && !in_array($viewPermission->id, $permissionIds)) {
+                        if ($viewPermission && ! in_array($viewPermission->id, $permissionIds)) {
                             $permissionIds[] = $viewPermission->id;
                         }
                     }
@@ -3399,7 +3443,7 @@ class UserController extends Controller
                             'update' => 'pranota-perbaikan-kontainer-update',
                             'delete' => 'pranota-perbaikan-kontainer-delete',
                             'print' => 'pranota-perbaikan-kontainer-print',
-                            'export' => 'pranota-perbaikan-kontainer-export'
+                            'export' => 'pranota-perbaikan-kontainer-export',
                         ];
 
                         if (isset($directActionMap[$action])) {
@@ -3422,11 +3466,11 @@ class UserController extends Controller
                             'update' => 'update',
                             'delete' => 'delete',
                             'print' => 'print',
-                            'export' => 'export'
+                            'export' => 'export',
                         ];
 
                         if (isset($directActionMap[$action])) {
-                            $permissionName = 'pembayaran-pranota-perbaikan-kontainer-' . $directActionMap[$action];
+                            $permissionName = 'pembayaran-pranota-perbaikan-kontainer-'.$directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -3446,7 +3490,7 @@ class UserController extends Controller
                             'delete' => 'biaya-kapal-delete',
                             'approve' => 'biaya-kapal-approve',
                             'print' => 'biaya-kapal-print',
-                            'export' => 'biaya-kapal-export'
+                            'export' => 'biaya-kapal-export',
                         ];
 
                         if (isset($directActionMap[$action])) {
@@ -3467,7 +3511,7 @@ class UserController extends Controller
                             'view' => 'biaya-bensin-view',
                             'create' => 'biaya-bensin-create',
                             'update' => 'biaya-bensin-update',
-                            'delete' => 'biaya-bensin-delete'
+                            'delete' => 'biaya-bensin-delete',
                         ];
 
                         if (isset($directActionMap[$action])) {
@@ -3481,7 +3525,6 @@ class UserController extends Controller
                         }
                     }
 
-
                     // Special handling for pembayaran-biaya-kapal module
                     if ($module === 'pembayaran-biaya-kapal') {
                         // For pembayaran-biaya-kapal, map matrix actions directly to permission names
@@ -3489,7 +3532,7 @@ class UserController extends Controller
                             'view' => 'pembayaran-biaya-kapal-view',
                             'create' => 'pembayaran-biaya-kapal-create',
                             'update' => 'pembayaran-biaya-kapal-edit',
-                            'delete' => 'pembayaran-biaya-kapal-delete'
+                            'delete' => 'pembayaran-biaya-kapal-delete',
                         ];
 
                         if (isset($directActionMap[$action])) {
@@ -3499,7 +3542,7 @@ class UserController extends Controller
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
                                 $found = true;
-                            } else if ($action === 'update') {
+                            } elseif ($action === 'update') {
                                 // Fallback: try update if edit not found
                                 $fallback = Permission::where('name', 'pembayaran-biaya-kapal-update')->first();
                                 if ($fallback) {
@@ -3520,11 +3563,11 @@ class UserController extends Controller
                             'delete' => 'delete',
                             'approve' => 'approve',
                             'print' => 'print',
-                            'export' => 'export'
+                            'export' => 'export',
                         ];
 
                         if (isset($directActionMap[$action])) {
-                            $permissionName = 'tagihan-perbaikan-kontainer-' . $directActionMap[$action];
+                            $permissionName = 'tagihan-perbaikan-kontainer-'.$directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -3540,7 +3583,7 @@ class UserController extends Controller
                         $directActionMap = [
                             'view' => 'checkpoint-kontainer-keluar-view',
                             'create' => 'checkpoint-kontainer-keluar-create',
-                            'delete' => 'checkpoint-kontainer-keluar-delete'
+                            'delete' => 'checkpoint-kontainer-keluar-delete',
                         ];
 
                         if (isset($directActionMap[$action])) {
@@ -3560,7 +3603,7 @@ class UserController extends Controller
                         $directActionMap = [
                             'view' => 'checkpoint-kontainer-masuk-view',
                             'create' => 'checkpoint-kontainer-masuk-create',
-                            'delete' => 'checkpoint-kontainer-masuk-delete'
+                            'delete' => 'checkpoint-kontainer-masuk-delete',
                         ];
 
                         if (isset($directActionMap[$action])) {
@@ -3583,11 +3626,11 @@ class UserController extends Controller
                             'update' => 'update',
                             'delete' => 'delete',
                             'print' => 'print',
-                            'export' => 'export'
+                            'export' => 'export',
                         ];
 
                         if (isset($directActionMap[$action])) {
-                            $permissionName = 'permohonan-memo-' . $directActionMap[$action];
+                            $permissionName = 'permohonan-memo-'.$directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -3601,7 +3644,7 @@ class UserController extends Controller
                     if ($module === 'permohonan') {
                         foreach ($possibleActions as $dbAction) {
                             // Use dash notation (permohonan-create)
-                            $permissionName = $module . '-' . $dbAction;
+                            $permissionName = $module.'-'.$dbAction;
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -3612,7 +3655,7 @@ class UserController extends Controller
                         }
 
                         // Also add the simple 'permohonan' permission if any action is checked
-                        if (!$found) {
+                        if (! $found) {
                             $simplePermission = Permission::where('name', $module)->first();
                             if ($simplePermission) {
                                 $permissionIds[] = $simplePermission->id;
@@ -3628,7 +3671,7 @@ class UserController extends Controller
                                 $permission = Permission::where('name', 'profile-show')->first();
                             } elseif ($dbAction === 'update') {
                                 $permission = Permission::where('name', 'profile-edit')->first();
-                                if (!$permission) {
+                                if (! $permission) {
                                     $permission = Permission::where('name', 'profile-update-account')->first();
                                 }
                             } elseif ($dbAction === 'delete') {
@@ -3687,7 +3730,7 @@ class UserController extends Controller
                                 $permission = Permission::where('name', 'approval-mass-process')->first();
                             } elseif ($dbAction === 'create') {
                                 $permission = Permission::where('name', 'approval-create')->first();
-                                if (!$permission) {
+                                if (! $permission) {
                                     $permission = Permission::where('name', 'approval-store')->first();
                                 }
                             } elseif ($dbAction === 'riwayat') {
@@ -3713,7 +3756,7 @@ class UserController extends Controller
                         // Map action to correct permission name
                         $actionMap = [
                             'view' => 'approval-tugas-1.view',
-                            'approve' => 'approval-tugas-1.approve'
+                            'approve' => 'approval-tugas-1.approve',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3722,6 +3765,7 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
+
                                 continue; // Skip to next action
                             }
                         }
@@ -3732,7 +3776,7 @@ class UserController extends Controller
                         // Map action to correct permission name
                         $actionMap = [
                             'view' => 'approval-tugas-2.view',
-                            'approve' => 'approval-tugas-2.approve'
+                            'approve' => 'approval-tugas-2.approve',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3741,6 +3785,7 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
+
                                 continue; // Skip to next action
                             }
                         }
@@ -3784,7 +3829,7 @@ class UserController extends Controller
                             }
 
                             // Use dash notation (tagihan-kontainer-view)
-                            $permissionName = $module . '-' . $dbAction;
+                            $permissionName = $module.'-'.$dbAction;
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -3799,7 +3844,7 @@ class UserController extends Controller
                     if ($module === 'tagihan-cat') {
                         foreach ($possibleActions as $dbAction) {
                             // Use dash notation (tagihan-cat-view)
-                            $permissionName = $module . '-' . $dbAction;
+                            $permissionName = $module.'-'.$dbAction;
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -3814,7 +3859,7 @@ class UserController extends Controller
                     if ($module === 'pranota-cat') {
                         foreach ($possibleActions as $dbAction) {
                             // Use dash notation (pranota-cat-view)
-                            $permissionName = $module . '-' . $dbAction;
+                            $permissionName = $module.'-'.$dbAction;
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -3835,7 +3880,7 @@ class UserController extends Controller
                             'delete' => 'aktivitas-lainnya-delete',
                             'approve' => 'aktivitas-lainnya-approve',
                             'print' => 'aktivitas-lainnya-print',
-                            'export' => 'aktivitas-lainnya-export'
+                            'export' => 'aktivitas-lainnya-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3855,7 +3900,7 @@ class UserController extends Controller
                             'create' => 'pembayaran-aktivitas-lain-create',
                             'update' => 'pembayaran-aktivitas-lain-update',
                             'delete' => 'pembayaran-aktivitas-lain-delete',
-                            'approve' => 'pembayaran-aktivitas-lain-approve'
+                            'approve' => 'pembayaran-aktivitas-lain-approve',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3874,7 +3919,7 @@ class UserController extends Controller
                             'view' => 'invoice-aktivitas-lain-view',
                             'create' => 'invoice-aktivitas-lain-create',
                             'update' => 'invoice-aktivitas-lain-update',
-                            'delete' => 'invoice-aktivitas-lain-delete'
+                            'delete' => 'invoice-aktivitas-lain-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3896,7 +3941,7 @@ class UserController extends Controller
                             'delete' => 'pranota-uang-rit-kenek-delete',
                             'approve' => 'pranota-uang-rit-kenek-approve',
                             'print' => 'pranota-uang-rit-kenek-print',
-                            'export' => 'pranota-uang-rit-kenek-export'
+                            'export' => 'pranota-uang-rit-kenek-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3918,7 +3963,7 @@ class UserController extends Controller
                             'delete' => 'pranota-uang-rit-delete',
                             'approve' => 'pranota-uang-rit-approve',
                             'print' => 'pranota-uang-rit-print',
-                            'export' => 'pranota-uang-rit-export'
+                            'export' => 'pranota-uang-rit-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -3936,7 +3981,7 @@ class UserController extends Controller
                             'view' => 'kontainer-sewa-final-view',
                             'create' => 'kontainer-sewa-final-create',
                             'update' => 'kontainer-sewa-final-update',
-                            'delete' => 'kontainer-sewa-final-delete'
+                            'delete' => 'kontainer-sewa-final-delete',
                         ];
 
                         if (isset($directActionMap[$action])) {
@@ -3956,7 +4001,7 @@ class UserController extends Controller
                             'view' => 'master-buruh-view',
                             'create' => 'master-buruh-create',
                             'update' => 'master-buruh-update',
-                            'delete' => 'master-buruh-delete'
+                            'delete' => 'master-buruh-delete',
                         ];
 
                         if (isset($directActionMap[$action])) {
@@ -3980,7 +4025,7 @@ class UserController extends Controller
                             'delete' => 'pranota-ob-delete',
                             'approve' => 'pranota-ob-approve',
                             'print' => 'pranota-ob-print',
-                            'export' => 'pranota-ob-export'
+                            'export' => 'pranota-ob-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4001,7 +4046,7 @@ class UserController extends Controller
                             'update' => 'pembayaran-pranota-uang-jalan-bongkaran-update',
                             'delete' => 'pembayaran-pranota-uang-jalan-bongkaran-delete',
                             'approve' => 'pembayaran-pranota-uang-jalan-bongkaran-approve',
-                            'mark-paid' => 'pembayaran-pranota-uang-jalan-bongkaran-mark-paid'
+                            'mark-paid' => 'pembayaran-pranota-uang-jalan-bongkaran-mark-paid',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4023,7 +4068,7 @@ class UserController extends Controller
                             'delete' => 'pembayaran-pranota-uang-jalan-batam-delete',
                             'approve' => 'pembayaran-pranota-uang-jalan-batam-approve',
                             'print' => 'pembayaran-pranota-uang-jalan-batam-print',
-                            'export' => 'pembayaran-pranota-uang-jalan-batam-export'
+                            'export' => 'pembayaran-pranota-uang-jalan-batam-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4045,7 +4090,7 @@ class UserController extends Controller
                             'delete' => 'pembayaran-uang-muka-delete',
                             'approve' => 'pembayaran-uang-muka-approve',
                             'print' => 'pembayaran-uang-muka-print',
-                            'export' => 'pembayaran-uang-muka-export'
+                            'export' => 'pembayaran-uang-muka-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4067,7 +4112,7 @@ class UserController extends Controller
                             'delete' => 'realisasi-uang-muka-delete',
                             'approve' => 'realisasi-uang-muka-approve',
                             'print' => 'realisasi-uang-muka-print',
-                            'export' => 'realisasi-uang-muka-export'
+                            'export' => 'realisasi-uang-muka-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4089,7 +4134,7 @@ class UserController extends Controller
                             'delete' => 'pembayaran-ob-delete',
                             'approve' => 'pembayaran-ob-approve',
                             'print' => 'pembayaran-ob-print',
-                            'export' => 'pembayaran-ob-export'
+                            'export' => 'pembayaran-ob-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4109,7 +4154,7 @@ class UserController extends Controller
                             'create' => 'tagihan-kontainer-sewa-create',
                             'update' => 'tagihan-kontainer-sewa-update',
                             'delete' => 'tagihan-kontainer-sewa-destroy',
-                            'export' => 'tagihan-kontainer-sewa-export'
+                            'export' => 'tagihan-kontainer-sewa-export',
                             // Note: 'approve' and 'print' permissions don't exist in database for this module
                         ];
 
@@ -4133,7 +4178,7 @@ class UserController extends Controller
                             'update' => 'pranota-kontainer-sewa-update',
                             'delete' => 'pranota-kontainer-sewa-delete',
                             'print' => 'pranota-kontainer-sewa-print',
-                            'export' => 'pranota-kontainer-sewa-export'
+                            'export' => 'pranota-kontainer-sewa-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4147,7 +4192,7 @@ class UserController extends Controller
                                 // because routes use pranota-kontainer-sewa-edit for both edit and update actions
                                 if ($action === 'update') {
                                     $editPermission = Permission::where('name', 'pranota-kontainer-sewa-edit')->first();
-                                    if ($editPermission && !in_array($editPermission->id, $permissionIds)) {
+                                    if ($editPermission && ! in_array($editPermission->id, $permissionIds)) {
                                         $permissionIds[] = $editPermission->id;
                                     }
                                 }
@@ -4164,7 +4209,7 @@ class UserController extends Controller
                             'update' => 'vendor-kontainer-sewa-edit',
                             'delete' => 'vendor-kontainer-sewa-delete',
                             'export' => 'vendor-kontainer-sewa-export',
-                            'print' => 'vendor-kontainer-sewa-print'
+                            'print' => 'vendor-kontainer-sewa-print',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4178,9 +4223,9 @@ class UserController extends Controller
 
                     // OPERATIONAL MODULES: Handle operational management permissions explicitly
                     if ($module === 'order-management' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
-                        Log::info("Processing order-management permission", [
+                        Log::info('Processing order-management permission', [
                             'module' => $module,
-                            'action' => $action
+                            'action' => $action,
                         ]);
 
                         $actionMap = [
@@ -4189,7 +4234,7 @@ class UserController extends Controller
                             'update' => 'order-update',
                             'delete' => 'order-delete',
                             'print' => 'order-print',
-                            'export' => 'order-export'
+                            'export' => 'order-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4198,13 +4243,13 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
-                                Log::info("Found order permission", [
+                                Log::info('Found order permission', [
                                     'permission_name' => $permissionName,
-                                    'permission_id' => $directPermission->id
+                                    'permission_id' => $directPermission->id,
                                 ]);
                             } else {
-                                Log::warning("Order permission not found in database", [
-                                    'permission_name' => $permissionName
+                                Log::warning('Order permission not found in database', [
+                                    'permission_name' => $permissionName,
                                 ]);
                             }
                         }
@@ -4218,7 +4263,7 @@ class UserController extends Controller
                             'update' => 'surat-jalan-update',
                             'delete' => 'surat-jalan-delete',
                             'print' => 'surat-jalan-print',
-                            'export' => 'surat-jalan-export'
+                            'export' => 'surat-jalan-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4239,7 +4284,7 @@ class UserController extends Controller
                             'update' => 'surat-jalan-bongkaran-update',
                             'delete' => 'surat-jalan-bongkaran-delete',
                             'print' => 'surat-jalan-bongkaran-print',
-                            'export' => 'surat-jalan-bongkaran-export'
+                            'export' => 'surat-jalan-bongkaran-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4260,7 +4305,7 @@ class UserController extends Controller
                             'update' => 'uang-jalan-bongkaran-update',
                             'delete' => 'uang-jalan-bongkaran-delete',
                             'print' => 'uang-jalan-bongkaran-print',
-                            'export' => 'uang-jalan-bongkaran-export'
+                            'export' => 'uang-jalan-bongkaran-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4280,7 +4325,7 @@ class UserController extends Controller
                             'update' => 'surat-jalan-kontainer-sewa-update',
                             'delete' => 'surat-jalan-kontainer-sewa-delete',
                             'print' => 'surat-jalan-kontainer-sewa-print',
-                            'export' => 'surat-jalan-kontainer-sewa-export'
+                            'export' => 'surat-jalan-kontainer-sewa-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4298,7 +4343,7 @@ class UserController extends Controller
                             'view' => 'order-batam-view',
                             'create' => 'order-batam-create',
                             'update' => 'order-batam-update',
-                            'delete' => 'order-batam-delete'
+                            'delete' => 'order-batam-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4317,7 +4362,7 @@ class UserController extends Controller
                             'view' => 'langsir-batam-view',
                             'create' => 'langsir-batam-create',
                             'update' => 'langsir-batam-update',
-                            'delete' => 'langsir-batam-delete'
+                            'delete' => 'langsir-batam-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4338,7 +4383,7 @@ class UserController extends Controller
                             'update' => ['tanda-terima-update', 'tanda-terima-edit'], // Both update and edit permissions
                             'delete' => 'tanda-terima-delete',
                             'print' => 'tanda-terima-print',
-                            'export' => 'tanda-terima-export'
+                            'export' => 'tanda-terima-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4361,7 +4406,7 @@ class UserController extends Controller
                             'update' => 'tanda-terima-bongkaran-update',
                             'delete' => 'tanda-terima-bongkaran-delete',
                             'print' => 'tanda-terima-bongkaran-print',
-                            'export' => 'tanda-terima-bongkaran-export'
+                            'export' => 'tanda-terima-bongkaran-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4382,7 +4427,7 @@ class UserController extends Controller
                             'update' => 'gate-in-update',
                             'delete' => 'gate-in-delete',
                             'print' => 'gate-in-print',
-                            'export' => 'gate-in-export'
+                            'export' => 'gate-in-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4403,7 +4448,7 @@ class UserController extends Controller
                             'update' => 'pranota-surat-jalan-update',
                             'delete' => 'pranota-surat-jalan-delete',
                             'print' => 'pranota-surat-jalan-print',
-                            'export' => 'pranota-surat-jalan-export'
+                            'export' => 'pranota-surat-jalan-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4425,7 +4470,7 @@ class UserController extends Controller
                             'delete' => 'uang-jalan-delete',
                             'approve' => 'uang-jalan-approve',
                             'print' => 'uang-jalan-print',
-                            'export' => 'uang-jalan-export'
+                            'export' => 'uang-jalan-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4447,7 +4492,7 @@ class UserController extends Controller
                             'delete' => 'uang-jalan-batam-delete',
                             'approve' => 'uang-jalan-batam-approve',
                             'print' => 'uang-jalan-batam-print',
-                            'export' => 'uang-jalan-batam-export'
+                            'export' => 'uang-jalan-batam-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4469,7 +4514,7 @@ class UserController extends Controller
                             'delete' => 'pranota-uang-jalan-delete',
                             'approve' => 'pranota-uang-jalan-approve',
                             'print' => 'pranota-uang-jalan-print',
-                            'export' => 'pranota-uang-jalan-export'
+                            'export' => 'pranota-uang-jalan-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4491,7 +4536,7 @@ class UserController extends Controller
                             'delete' => 'pranota-uang-jalan-bongkaran-delete',
                             'approve' => 'pranota-uang-jalan-bongkaran-approve',
                             'print' => 'pranota-uang-jalan-bongkaran-print',
-                            'export' => 'pranota-uang-jalan-bongkaran-export'
+                            'export' => 'pranota-uang-jalan-bongkaran-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4513,7 +4558,7 @@ class UserController extends Controller
                             'delete' => 'pranota-lembur-delete',
                             'approve' => 'pranota-lembur-approve',
                             'print' => 'pranota-lembur-print',
-                            'export' => 'pranota-lembur-export'
+                            'export' => 'pranota-lembur-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4535,7 +4580,7 @@ class UserController extends Controller
                             'delete' => 'pranota-uang-jalan-batam-delete',
                             'approve' => 'pranota-uang-jalan-batam-approve',
                             'print' => 'pranota-uang-jalan-batam-print',
-                            'export' => 'pranota-uang-jalan-batam-export'
+                            'export' => 'pranota-uang-jalan-batam-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4554,7 +4599,7 @@ class UserController extends Controller
                             'view' => 'pranota-uang-rit-batam-view',
                             'create' => 'pranota-uang-rit-batam-create',
                             'update' => 'pranota-uang-rit-batam-update',
-                            'delete' => 'pranota-uang-rit-batam-delete'
+                            'delete' => 'pranota-uang-rit-batam-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4573,7 +4618,7 @@ class UserController extends Controller
                             'view' => 'tagihan-supir-vendor-view',
                             'create' => 'tagihan-supir-vendor-create',
                             'update' => 'tagihan-supir-vendor-update',
-                            'delete' => 'tagihan-supir-vendor-delete'
+                            'delete' => 'tagihan-supir-vendor-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4592,7 +4637,7 @@ class UserController extends Controller
                             'view' => 'invoice-tagihan-vendor-view',
                             'create' => 'invoice-tagihan-vendor-create',
                             'update' => 'invoice-tagihan-vendor-update',
-                            'delete' => 'invoice-tagihan-vendor-delete'
+                            'delete' => 'invoice-tagihan-vendor-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4611,7 +4656,7 @@ class UserController extends Controller
                             'view' => 'pranota-invoice-vendor-supir-view',
                             'create' => 'pranota-invoice-vendor-supir-create',
                             'update' => 'pranota-invoice-vendor-supir-update',
-                            'delete' => 'pranota-invoice-vendor-supir-delete'
+                            'delete' => 'pranota-invoice-vendor-supir-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4629,7 +4674,7 @@ class UserController extends Controller
                         $actionMap = [
                             'view' => 'pembayaran-pranota-invoice-vendor-supir-view',
                             'create' => 'pembayaran-pranota-invoice-vendor-supir-create',
-                            'delete' => 'pembayaran-pranota-invoice-vendor-supir-delete'
+                            'delete' => 'pembayaran-pranota-invoice-vendor-supir-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4650,7 +4695,7 @@ class UserController extends Controller
                             'update' => 'tanda-terima-bongkaran-batam-update',
                             'delete' => 'tanda-terima-bongkaran-batam-delete',
                             'print' => 'tanda-terima-bongkaran-batam-print',
-                            'export' => 'tanda-terima-bongkaran-batam-export'
+                            'export' => 'tanda-terima-bongkaran-batam-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4670,7 +4715,7 @@ class UserController extends Controller
                             'approve' => 'approval-surat-jalan-approve',
                             'reject' => 'approval-surat-jalan-reject',
                             'print' => 'approval-surat-jalan-print',
-                            'export' => 'approval-surat-jalan-export'
+                            'export' => 'approval-surat-jalan-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4693,7 +4738,7 @@ class UserController extends Controller
                             'approve' => 'approval-order-approve',
                             'reject' => 'approval-order-reject',
                             'print' => 'approval-order-print',
-                            'export' => 'approval-order-export'
+                            'export' => 'approval-order-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4711,9 +4756,8 @@ class UserController extends Controller
                         $actionMap = [
                             'view' => 'approval-tanda-terima-view',
                             'create' => 'approval-tanda-terima-upload',
-                            'approve' => 'approval-tanda-terima-approve'
+                            'approve' => 'approval-tanda-terima-approve',
                         ];
-
 
                         if (isset($actionMap[$action])) {
                             $permissionName = $actionMap[$action];
@@ -4725,7 +4769,6 @@ class UserController extends Controller
                         }
                     }
 
-
                     // Handle BL (Bill of Lading) permissions explicitly
                     if ($module === 'bl' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export', 'approve'])) {
                         $actionMap = [
@@ -4735,7 +4778,7 @@ class UserController extends Controller
                             'delete' => 'bl-delete',
                             'print' => 'bl-print',
                             'export' => 'bl-export',
-                            'approve' => 'bl-approve'
+                            'approve' => 'bl-approve',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4744,7 +4787,7 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
-                            } else if ($action === 'update') {
+                            } elseif ($action === 'update') {
                                 // Fallback: try bl-update if bl-edit not found
                                 $fallbackPermission = Permission::where('name', 'bl-update')->first();
                                 if ($fallbackPermission) {
@@ -4771,7 +4814,7 @@ class UserController extends Controller
                             'view' => 'ob-antar-gudang-view',
                             'create' => 'ob-antar-gudang-create',
                             'update' => 'ob-antar-gudang-update',
-                            'delete' => 'ob-antar-gudang-delete'
+                            'delete' => 'ob-antar-gudang-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4793,7 +4836,7 @@ class UserController extends Controller
                             'delete' => 'pranota-rit-delete',
                             'print' => 'pranota-rit-print',
                             'export' => 'pranota-rit-export',
-                            'approve' => 'pranota-rit-approve'
+                            'approve' => 'pranota-rit-approve',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4802,7 +4845,7 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
-                            } else if ($action === 'update') {
+                            } elseif ($action === 'update') {
                                 // Fallback: try pranota-rit-update if pranota-rit-edit not found
                                 $fallbackPermission = Permission::where('name', 'pranota-rit-update')->first();
                                 if ($fallbackPermission) {
@@ -4822,7 +4865,7 @@ class UserController extends Controller
                             'delete' => 'pranota-rit-kenek-delete',
                             'print' => 'pranota-rit-kenek-print',
                             'export' => 'pranota-rit-kenek-export',
-                            'approve' => 'pranota-rit-kenek-approve'
+                            'approve' => 'pranota-rit-kenek-approve',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4831,7 +4874,7 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
-                            } else if ($action === 'update') {
+                            } elseif ($action === 'update') {
                                 // Fallback: try pranota-rit-kenek-update if pranota-rit-kenek-edit not found
                                 $fallbackPermission = Permission::where('name', 'pranota-rit-kenek-update')->first();
                                 if ($fallbackPermission) {
@@ -4841,14 +4884,14 @@ class UserController extends Controller
                             }
                         }
                     }
-                    
+
                     // Handle pranota-stock permissions explicitly
                     if ($module === 'pranota-stock' && in_array($action, ['view', 'create', 'print', 'delete'])) {
                         $actionMap = [
                             'view' => 'pranota-stock-view',
                             'create' => 'pranota-stock-create',
                             'print' => 'pranota-stock-print',
-                            'delete' => 'pranota-stock-delete'
+                            'delete' => 'pranota-stock-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4857,6 +4900,7 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
+
                                 continue; // Skip to next action
                             }
                         }
@@ -4866,7 +4910,7 @@ class UserController extends Controller
                     if ($module === 'audit-log' && in_array($action, ['view', 'export'])) {
                         $actionMap = [
                             'view' => 'audit-log-view',
-                            'export' => 'audit-log-export'
+                            'export' => 'audit-log-export',
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -4878,7 +4922,6 @@ class UserController extends Controller
                             }
                         }
                     }
-
 
                     // Handle monitoring-cek-kendaraan permissions explicitly
                     if ($module === 'monitoring-cek-kendaraan' && in_array($action, ['view'])) {
@@ -4929,11 +4972,11 @@ class UserController extends Controller
                     }
 
                     // If not master module or not found above, try other patterns
-                    if (!$found) {
+                    if (! $found) {
 
                         // Pattern 1: module-action (dash notation) - try this first as many permissions use dash
                         foreach ($possibleActions as $dbAction) {
-                            $permissionName2 = $module . '-' . $dbAction;
+                            $permissionName2 = $module.'-'.$dbAction;
                             $permission2 = Permission::where('name', $permissionName2)->first();
 
                             if ($permission2) {
@@ -4944,9 +4987,9 @@ class UserController extends Controller
                         }
 
                         // Pattern 3: action-module (alternative format)
-                        if (!$found) {
+                        if (! $found) {
                             foreach ($possibleActions as $dbAction) {
-                                $permissionName3 = $dbAction . '-' . $module;
+                                $permissionName3 = $dbAction.'-'.$module;
                                 $permission3 = Permission::where('name', $permissionName3)->first();
 
                                 if ($permission3) {
@@ -4958,7 +5001,7 @@ class UserController extends Controller
                         }
 
                         // Pattern 4: module only (for simple permissions)
-                        if (!$found && ($action === 'view' || $action === 'access')) {
+                        if (! $found && ($action === 'view' || $action === 'access')) {
                             $permission4 = Permission::where('name', $module)->first();
                             if ($permission4) {
                                 $permissionIds[] = $permission4->id;
@@ -4967,13 +5010,13 @@ class UserController extends Controller
                         }
 
                         // Pattern 5: Try common variations as fallback
-                        if (!$found) {
+                        if (! $found) {
                             // Try common variations with dash-first preference
                             $commonVariations = [
-                                $module . '-' . $action,
-                                $action . '-' . $module,
+                                $module.'-'.$action,
+                                $action.'-'.$module,
                                 $module,
-                                $action
+                                $action,
                             ];
 
                             foreach ($commonVariations as $variation) {
@@ -5012,7 +5055,7 @@ class UserController extends Controller
             // If any permohonan action is checked, also add the simple 'permohonan' permission
             if ($hasPermohonanAction) {
                 $simplePermission = Permission::where('name', 'permohonan')->first();
-                if ($simplePermission && !in_array($simplePermission->id, $permissionIds)) {
+                if ($simplePermission && ! in_array($simplePermission->id, $permissionIds)) {
                     $permissionIds[] = $simplePermission->id;
                 }
             }
@@ -5028,7 +5071,7 @@ class UserController extends Controller
                 }
             }
         }
-        if (!$hasApprovalTugasPermission && isset($matrixPermissions['approval-tugas-2']) && is_array($matrixPermissions['approval-tugas-2'])) {
+        if (! $hasApprovalTugasPermission && isset($matrixPermissions['approval-tugas-2']) && is_array($matrixPermissions['approval-tugas-2'])) {
             foreach ($matrixPermissions['approval-tugas-2'] as $action => $value) {
                 if ($value == '1' || $value === true) {
                     $hasApprovalTugasPermission = true;
@@ -5036,7 +5079,7 @@ class UserController extends Controller
                 }
             }
         }
-        if (!$hasApprovalTugasPermission && isset($matrixPermissions['approval-tanda-terima']) && is_array($matrixPermissions['approval-tanda-terima'])) {
+        if (! $hasApprovalTugasPermission && isset($matrixPermissions['approval-tanda-terima']) && is_array($matrixPermissions['approval-tanda-terima'])) {
             foreach ($matrixPermissions['approval-tanda-terima'] as $action => $value) {
                 if ($value == '1' || $value === true) {
                     $hasApprovalTugasPermission = true;
@@ -5045,11 +5088,10 @@ class UserController extends Controller
             }
         }
 
-
         // If user has any approval-tugas permission, also give them approval-dashboard
         if ($hasApprovalTugasPermission) {
             $dashboardPermission = Permission::where('name', 'approval-dashboard')->first();
-            if ($dashboardPermission && !in_array($dashboardPermission->id, $permissionIds)) {
+            if ($dashboardPermission && ! in_array($dashboardPermission->id, $permissionIds)) {
                 $permissionIds[] = $dashboardPermission->id;
             }
         }
@@ -5059,9 +5101,6 @@ class UserController extends Controller
 
     /**
      * Convert simple permission names to permission IDs
-     *
-     * @param array $simplePermissions
-     * @return array
      */
     private function convertSimplePermissionsToIds(array $simplePermissions): array
     {
@@ -5082,7 +5121,6 @@ class UserController extends Controller
     /**
      * Get user's permissions for copying (without middleware for AJAX use).
      *
-     * @param  \App\Models\User  $user
      * @return \Illuminate\Http\JsonResponse
      */
     public function getUserPermissionsForCopy(User $user)
@@ -5098,9 +5136,9 @@ class UserController extends Controller
             'simple_permissions' => $permissions, // Keep legacy format for backward compatibility
             'user' => [
                 'id' => $user->id,
-                'username' => $user->username
+                'username' => $user->username,
             ],
-            'count' => count($permissions)
+            'count' => count($permissions),
         ]);
     }
 

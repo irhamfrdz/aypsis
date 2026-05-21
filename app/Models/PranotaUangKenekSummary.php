@@ -15,7 +15,7 @@ class PranotaUangKenekSummary extends Model
         'total_uang_kenek',
         'hutang',
         'tabungan',
-        'grand_total_kenek'
+        'grand_total_kenek',
     ];
 
     protected $casts = [

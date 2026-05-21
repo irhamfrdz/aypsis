@@ -23,7 +23,7 @@ class InvoiceAktivitasLainUtility extends Model
         'pph',
         'ppn',
         'grand_total',
-        'keterangan'
+        'keterangan',
     ];
 
     public function invoiceAktivitasLain()

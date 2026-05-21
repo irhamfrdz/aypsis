@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\PranotaOb;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ReportPranotaObController extends Controller
 {
@@ -27,7 +26,7 @@ class ReportPranotaObController extends Controller
     public function view(Request $request)
     {
         // Validasi required tanggal
-        if (!$request->has('dari_tanggal') || !$request->has('sampai_tanggal')) {
+        if (! $request->has('dari_tanggal') || ! $request->has('sampai_tanggal')) {
             return redirect()->route('report.pranota-ob.index')
                 ->with('error', 'Tanggal mulai dan tanggal akhir harus diisi');
         }
@@ -68,7 +67,7 @@ class ReportPranotaObController extends Controller
 
         // Group items by voyage
         $groupedByVoyage = $items->groupBy('no_voyage');
-        
+
         $totalKeseluruhan = $items->sum('total_biaya');
 
         return view('reports.pranota-ob.view', compact('groupedByVoyage', 'totalKeseluruhan', 'dariTanggal', 'sampaiTanggal'));
@@ -80,7 +79,7 @@ class ReportPranotaObController extends Controller
     public function print(Request $request)
     {
         // Validasi required tanggal
-        if (!$request->has('dari_tanggal') || !$request->has('sampai_tanggal')) {
+        if (! $request->has('dari_tanggal') || ! $request->has('sampai_tanggal')) {
             return redirect()->route('report.pranota-ob.index')
                 ->with('error', 'Tanggal mulai dan tanggal akhir harus diisi');
         }
@@ -121,7 +120,7 @@ class ReportPranotaObController extends Controller
 
         // Group items by voyage
         $groupedByVoyage = $items->groupBy('no_voyage');
-        
+
         $totalKeseluruhan = $items->sum('total_biaya');
 
         return view('reports.pranota-ob.print', compact('groupedByVoyage', 'totalKeseluruhan', 'dariTanggal', 'sampaiTanggal'));
@@ -171,12 +170,12 @@ class ReportPranotaObController extends Controller
 
         // Flatten items for simple listing
         $allItems = $items;
-        
+
         // Build container details for each item
         $containerDetails = [];
         foreach ($allItems as $item) {
-            $key = $item->pranota_id . '_' . $item->supir;
-            
+            $key = $item->pranota_id.'_'.$item->supir;
+
             // Get detailed container info for this supir from this pranota
             $details = \DB::table('pranota_ob_items')
                 ->where('pranota_ob_id', $item->pranota_id)
@@ -185,13 +184,13 @@ class ReportPranotaObController extends Controller
                 ->where('biaya', '>', 0)
                 ->select('size', 'status')
                 ->get();
-            
+
             // Count containers by size and status
             $counts = [];
             foreach ($details as $detail) {
                 $size = strtolower($detail->size ?? '');
                 $status = strtolower($detail->status ?? 'full');
-                
+
                 // Normalize size (20ft, 20, 20 ft, etc -> 20ft)
                 if (preg_match('/20/', $size)) {
                     $size = '20ft';
@@ -200,37 +199,37 @@ class ReportPranotaObController extends Controller
                 } else {
                     $size = $detail->size ?? 'unknown';
                 }
-                
+
                 // Normalize status
-                if (!in_array($status, ['full', 'empty'])) {
+                if (! in_array($status, ['full', 'empty'])) {
                     $status = 'full'; // default
                 }
-                
-                $sizeStatusKey = $size . '_' . $status;
-                if (!isset($counts[$sizeStatusKey])) {
+
+                $sizeStatusKey = $size.'_'.$status;
+                if (! isset($counts[$sizeStatusKey])) {
                     $counts[$sizeStatusKey] = 0;
                 }
                 $counts[$sizeStatusKey]++;
             }
-            
+
             // Build keterangan string like "20ft full 5x, 40ft empty 3x"
             $keteranganParts = [];
             foreach ($counts as $sizeStatus => $count) {
-                list($sz, $st) = explode('_', $sizeStatus);
-                $keteranganParts[] = $sz . ' ' . $st . ' ' . $count . 'x';
+                [$sz, $st] = explode('_', $sizeStatus);
+                $keteranganParts[] = $sz.' '.$st.' '.$count.'x';
             }
             $containerDetails[$key] = implode(', ', $keteranganParts);
         }
 
         // Create new Spreadsheet
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
-        
+
         // Set document properties
         $spreadsheet->getProperties()
             ->setCreator('AYPSIS')
             ->setTitle('Report Pranota OB')
-            ->setSubject('Report Pranota OB ' . $request->dari_tanggal . ' to ' . $request->sampai_tanggal);
+            ->setSubject('Report Pranota OB '.$request->dari_tanggal.' to '.$request->sampai_tanggal);
 
         // Set header row
         $sheet->setCellValue('A1', 'No');
@@ -241,16 +240,16 @@ class ReportPranotaObController extends Controller
         $sheet->setCellValue('F1', 'Supir');
         $sheet->setCellValue('G1', 'Total');
         $sheet->setCellValue('H1', 'Keterangan');
-        
+
         // Style header
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
         ];
         $sheet->getStyle('A1:H1')->applyFromArray($headerStyle);
-        
+
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(8);
         $sheet->getColumnDimension('B')->setWidth(15);
@@ -268,61 +267,61 @@ class ReportPranotaObController extends Controller
         // Loop through all items directly without grouping
         foreach ($allItems as $item) {
             // Skip items with invalid supir or zero total
-            if (!$item->supir || $item->total_biaya <= 0) {
+            if (! $item->supir || $item->total_biaya <= 0) {
                 continue;
             }
-            
+
             $totalKeseluruhan += $item->total_biaya;
-            
+
             // Use nama_lengkap if available, otherwise fallback to supir (panggilan)
             $displayName = $item->nama_lengkap ?? $item->supir;
-            
+
             // Get keterangan for this item
-            $keteranganKey = $item->pranota_id . '_' . $item->supir;
+            $keteranganKey = $item->pranota_id.'_'.$item->supir;
             $keterangan = $containerDetails[$keteranganKey] ?? '-';
 
-            $sheet->setCellValue('A' . $row, $no++);
-            $sheet->setCellValue('B' . $row, Carbon::parse($item->tanggal_ob)->format('d/m/Y'));
-            $sheet->setCellValue('C' . $row, $item->no_voyage ?? '-');
-            $sheet->setCellValue('D' . $row, $item->nomor_pranota ?? '-');
-            $sheet->setCellValue('E' . $row, $item->nik ?? '-');
-            $sheet->setCellValue('F' . $row, $displayName);
-            $sheet->setCellValue('G' . $row, 'Rp ' . number_format($item->total_biaya, 0, ',', '.'));
-            $sheet->setCellValue('H' . $row, $keterangan);
-            
+            $sheet->setCellValue('A'.$row, $no++);
+            $sheet->setCellValue('B'.$row, Carbon::parse($item->tanggal_ob)->format('d/m/Y'));
+            $sheet->setCellValue('C'.$row, $item->no_voyage ?? '-');
+            $sheet->setCellValue('D'.$row, $item->nomor_pranota ?? '-');
+            $sheet->setCellValue('E'.$row, $item->nik ?? '-');
+            $sheet->setCellValue('F'.$row, $displayName);
+            $sheet->setCellValue('G'.$row, 'Rp '.number_format($item->total_biaya, 0, ',', '.'));
+            $sheet->setCellValue('H'.$row, $keterangan);
+
             // Style data rows with alternating colors
             $bgColor = ($row % 2 == 0) ? 'F2F2F2' : 'FFFFFF';
-            $sheet->getStyle('A' . $row . ':H' . $row)->applyFromArray([
+            $sheet->getStyle('A'.$row.':H'.$row)->applyFromArray([
                 'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $bgColor]],
-                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
             ]);
-            $sheet->getStyle('G' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-            
+            $sheet->getStyle('G'.$row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
             $row++;
         }
 
         // Add total keseluruhan row
-        $sheet->setCellValue('F' . $row, 'TOTAL KESELURUHAN:');
-        $sheet->setCellValue('G' . $row, 'Rp ' . number_format($totalKeseluruhan, 0, ',', '.'));
+        $sheet->setCellValue('F'.$row, 'TOTAL KESELURUHAN:');
+        $sheet->setCellValue('G'.$row, 'Rp '.number_format($totalKeseluruhan, 0, ',', '.'));
         $totalStyle = [
             'font' => ['bold' => true, 'size' => 12],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FFC000']],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_MEDIUM]]
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_MEDIUM]],
         ];
-        $sheet->getStyle('A' . $row . ':H' . $row)->applyFromArray($totalStyle);
-        $sheet->getStyle('F' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('G' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('A'.$row.':H'.$row)->applyFromArray($totalStyle);
+        $sheet->getStyle('F'.$row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('G'.$row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
         // Create Excel file
-        $filename = 'Report_Pranota_OB_' . $request->dari_tanggal . '_to_' . $request->sampai_tanggal . '.xlsx';
-        
+        $filename = 'Report_Pranota_OB_'.$request->dari_tanggal.'_to_'.$request->sampai_tanggal.'.xlsx';
+
         $writer = new Xlsx($spreadsheet);
-        
+
         // Set headers for download
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Disposition: attachment; filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
-        
+
         $writer->save('php://output');
         exit;
     }

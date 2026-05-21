@@ -26,10 +26,10 @@ return new class extends Migration
     {
         Schema::table('pricelist_uang_jalan_batam', function (Blueprint $table) {
             $table->dropColumn([
-                'tarif_20ft_full_base', 
-                'tarif_20ft_empty_base', 
-                'tarif_40ft_full_base', 
-                'tarif_40ft_empty_base'
+                'tarif_20ft_full_base',
+                'tarif_20ft_empty_base',
+                'tarif_40ft_full_base',
+                'tarif_40ft_empty_base',
             ]);
         });
     }

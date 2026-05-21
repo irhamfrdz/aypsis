@@ -13,7 +13,7 @@ class Gudang extends Model
         'nama_gudang',
         'lokasi',
         'keterangan',
-        'status'
+        'status',
     ];
 
     protected $casts = [

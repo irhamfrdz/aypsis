@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Exports\ReportSuratJalanExport;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ReportSuratJalanExport;
 
 class ReportSuratJalanController extends Controller
 {
@@ -16,7 +16,7 @@ class ReportSuratJalanController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -27,7 +27,7 @@ class ReportSuratJalanController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -40,21 +40,21 @@ class ReportSuratJalanController extends Controller
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
         // Query Surat Jalan (Muatan)
-        $querySj = SuratJalan::where(function($q) use ($startDate, $endDate) {
+        $querySj = SuratJalan::where(function ($q) use ($startDate, $endDate) {
             $q->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-              ->orWhereHas('tandaTerima', function($tt) use ($startDate, $endDate) {
-                  $tt->whereBetween('tanggal', [$startDate, $endDate]);
-              })
-              ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
+                ->orWhereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+                    $tt->whereBetween('tanggal', [$startDate, $endDate]);
+                })
+                ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
         });
 
         // Query Surat Jalan Bongkaran
-        $querySjb = SuratJalanBongkaran::where(function($q) use ($startDate, $endDate) {
+        $querySjb = SuratJalanBongkaran::where(function ($q) use ($startDate, $endDate) {
             $q->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-              ->orWhereHas('tandaTerima', function($tt) use ($startDate, $endDate) {
-                  $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
-              })
-              ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
+                ->orWhereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+                    $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
+                })
+                ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
         });
 
         $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'supirKaryawan', 'kenekKaryawan', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
@@ -91,7 +91,7 @@ class ReportSuratJalanController extends Controller
                 'status' => $sj->status ?? 'Open',
                 'uang_jalan' => $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0,
                 'nomor_bukti' => $nomorBukti,
-                'original_data' => $sj
+                'original_data' => $sj,
             ]);
         }
 
@@ -124,7 +124,7 @@ class ReportSuratJalanController extends Controller
                 'status' => $sjb->status ?? 'Open',
                 'uang_jalan' => $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0,
                 'nomor_bukti' => $nomorBukti,
-                'original_data' => $sjb
+                'original_data' => $sjb,
             ]);
         }
 
@@ -137,7 +137,7 @@ class ReportSuratJalanController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user->can('surat-jalan-view')) {
+        if (! $user->can('surat-jalan-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -150,21 +150,21 @@ class ReportSuratJalanController extends Controller
         $endDate = Carbon::parse($request->end_date)->endOfDay();
 
         // Query Surat Jalan (Muatan)
-        $querySj = SuratJalan::where(function($q) use ($startDate, $endDate) {
+        $querySj = SuratJalan::where(function ($q) use ($startDate, $endDate) {
             $q->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-              ->orWhereHas('tandaTerima', function($tt) use ($startDate, $endDate) {
-                  $tt->whereBetween('tanggal', [$startDate, $endDate]);
-              })
-              ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
+                ->orWhereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+                    $tt->whereBetween('tanggal', [$startDate, $endDate]);
+                })
+                ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
         });
 
         // Query Surat Jalan Bongkaran
-        $querySjb = SuratJalanBongkaran::where(function($q) use ($startDate, $endDate) {
+        $querySjb = SuratJalanBongkaran::where(function ($q) use ($startDate, $endDate) {
             $q->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-              ->orWhereHas('tandaTerima', function($tt) use ($startDate, $endDate) {
-                  $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
-              })
-              ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
+                ->orWhereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+                    $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
+                })
+                ->orWhereBetween('tanggal_checkpoint', [$startDate, $endDate]);
         });
 
         $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'supirKaryawan', 'kenekKaryawan', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'])->get();
@@ -203,7 +203,7 @@ class ReportSuratJalanController extends Controller
                 'status' => $sj->status ?? 'Open',
                 'uang_jalan' => $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0,
                 'nomor_bukti' => $nomorBukti,
-                'original_data' => $sj
+                'original_data' => $sj,
             ]);
         }
 
@@ -238,13 +238,14 @@ class ReportSuratJalanController extends Controller
                 'status' => $sjb->status ?? 'Open',
                 'uang_jalan' => $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0,
                 'nomor_bukti' => $nomorBukti,
-                'original_data' => $sjb
+                'original_data' => $sjb,
             ]);
         }
 
         $data = $data->sortBy('tanggal');
 
-        $fileName = 'report-surat-jalan-' . $startDate->format('Y-m-d') . '-to-' . $endDate->format('Y-m-d') . '.xlsx';
+        $fileName = 'report-surat-jalan-'.$startDate->format('Y-m-d').'-to-'.$endDate->format('Y-m-d').'.xlsx';
+
         return Excel::download(new ReportSuratJalanExport($data, $startDate, $endDate), $fileName);
     }
 }

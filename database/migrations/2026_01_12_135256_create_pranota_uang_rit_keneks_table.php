@@ -20,26 +20,26 @@ return new class extends Migration
             $table->text('no_surat_jalan'); // Nomor surat jalan (bisa multiple, dipisah koma)
             $table->text('kenek_nama'); // Nama kenek (bisa multiple, dipisah koma)
             $table->string('no_plat')->nullable(); // Nomor polisi kendaraan
-            
+
             // Kolom uang
             $table->decimal('uang_jalan', 15, 2)->default(0); // Uang jalan
             $table->decimal('uang_rit', 15, 2)->default(0); // Total uang rit
             $table->decimal('uang_rit_kenek', 15, 2)->default(0); // Uang rit khusus kenek
             $table->decimal('total_rit', 15, 2)->default(0); // Total rit
             $table->decimal('total_uang', 15, 2)->default(0); // Total uang (uang_jalan + uang_rit)
-            
+
             // Kolom potongan
             $table->decimal('total_hutang', 15, 2)->default(0); // Total hutang kenek
             $table->decimal('total_tabungan', 15, 2)->default(0); // Total tabungan kenek
             $table->decimal('total_bpjs', 15, 2)->default(0); // Total BPJS kenek
             $table->decimal('grand_total_bersih', 15, 2)->default(0); // Grand total setelah potongan
-            
+
             $table->text('keterangan')->nullable(); // Keterangan tambahan
-            
+
             // Status workflow
             $table->enum('status', ['draft', 'submitted', 'approved', 'paid', 'cancelled'])->default('draft');
             $table->date('tanggal_bayar')->nullable(); // Tanggal pembayaran
-            
+
             // Audit fields
             $table->unsignedBigInteger('created_by')->nullable(); // User yang membuat
             $table->unsignedBigInteger('updated_by')->nullable(); // User yang mengupdate

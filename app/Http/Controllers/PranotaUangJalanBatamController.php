@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UangJalanBatam;
-use App\Models\PranotaUangJalanBatam;
 use App\Models\NomorTerakhir;
+use App\Models\PranotaUangJalanBatam;
+use App\Models\UangJalanBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
-use Maatwebsite\Excel\Facades\Excel;
+
 // use App\Exports\PranotaUangJalanBatamExport; // Will create if needed
 
 class PranotaUangJalanBatamController extends Controller
@@ -23,7 +22,7 @@ class PranotaUangJalanBatamController extends Controller
         $user = Auth::user();
 
         // Check permission - using existing logic style
-        if (!$this->hasPermission($user, 'pranota-uang-jalan-batam-view')) {
+        if (! $this->hasPermission($user, 'pranota-uang-jalan-batam-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota uang jalan batam.');
         }
 
@@ -34,11 +33,11 @@ class PranotaUangJalanBatamController extends Controller
         // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_pranota', 'like', "%{$search}%")
-                  ->orWhereHas('uangJalanBatams', function($sq) use ($search) {
-                      $sq->where('nomor_uang_jalan', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('uangJalanBatams', function ($sq) use ($search) {
+                        $sq->where('nomor_uang_jalan', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -72,7 +71,7 @@ class PranotaUangJalanBatamController extends Controller
     {
         $user = Auth::user();
 
-        if (!$this->hasPermission($user, 'pranota-uang-jalan-batam-create')) {
+        if (! $this->hasPermission($user, 'pranota-uang-jalan-batam-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat pranota uang jalan batam.');
         }
 
@@ -93,7 +92,7 @@ class PranotaUangJalanBatamController extends Controller
     {
         $user = Auth::user();
 
-        if (!$this->hasPermission($user, 'pranota-uang-jalan-batam-create')) {
+        if (! $this->hasPermission($user, 'pranota-uang-jalan-batam-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat pranota uang jalan batam.');
         }
 
@@ -135,7 +134,7 @@ class PranotaUangJalanBatamController extends Controller
 
             // Track IDs for easier updates
             $ids = $selectedUangJalans->pluck('id')->toArray();
-            
+
             // Attach
             $pranota->uangJalanBatams()->attach($ids);
 
@@ -143,13 +142,15 @@ class PranotaUangJalanBatamController extends Controller
             UangJalanBatam::whereIn('id', $ids)->update(['status' => 'sudah_masuk_pranota']);
 
             DB::commit();
+
             return redirect()->route('pranota-uang-jalan-batam.index')
-                ->with('success', 'Pranota Uang Jalan Batam berhasil dibuat: ' . $nomorPranota);
+                ->with('success', 'Pranota Uang Jalan Batam berhasil dibuat: '.$nomorPranota);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating pranota ujal batam: ' . $e->getMessage());
-            return back()->with('error', 'Gagal membuat pranota: ' . $e->getMessage())->withInput();
+            Log::error('Error creating pranota ujal batam: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal membuat pranota: '.$e->getMessage())->withInput();
         }
     }
 
@@ -158,11 +159,12 @@ class PranotaUangJalanBatamController extends Controller
      */
     public function show(PranotaUangJalanBatam $pranotaUangJalanBatam)
     {
-        if (!$this->hasPermission(Auth::user(), 'pranota-uang-jalan-batam-view')) {
+        if (! $this->hasPermission(Auth::user(), 'pranota-uang-jalan-batam-view')) {
             abort(403);
         }
 
         $pranotaUangJalanBatam->load(['uangJalanBatams.suratJalanBatam', 'creator']);
+
         return view('pranota-uang-jalan-batam.show', compact('pranotaUangJalanBatam'));
     }
 
@@ -171,11 +173,12 @@ class PranotaUangJalanBatamController extends Controller
      */
     public function print(PranotaUangJalanBatam $pranotaUangJalanBatam)
     {
-        if (!$this->hasPermission(Auth::user(), 'pranota-uang-jalan-batam-view')) {
+        if (! $this->hasPermission(Auth::user(), 'pranota-uang-jalan-batam-view')) {
             abort(403);
         }
 
         $pranotaUangJalanBatam->load(['uangJalanBatams.suratJalanBatam', 'creator']);
+
         return view('pranota-uang-jalan-batam.print', compact('pranotaUangJalanBatam'));
     }
 
@@ -184,7 +187,7 @@ class PranotaUangJalanBatamController extends Controller
      */
     public function destroy(PranotaUangJalanBatam $pranotaUangJalanBatam)
     {
-        if (!$this->hasPermission(Auth::user(), 'pranota-uang-jalan-batam-delete')) {
+        if (! $this->hasPermission(Auth::user(), 'pranota-uang-jalan-batam-delete')) {
             abort(403);
         }
 
@@ -200,9 +203,11 @@ class PranotaUangJalanBatamController extends Controller
             $pranotaUangJalanBatam->delete();
 
             DB::commit();
+
             return redirect()->route('pranota-uang-jalan-batam.index')->with('success', 'Pranota berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', 'Gagal menghapus pranota.');
         }
     }
@@ -217,14 +222,14 @@ class PranotaUangJalanBatamController extends Controller
 
         $nomorTerakhir = NomorTerakhir::where('modul', 'PUJBTM')->lockForUpdate()->first();
 
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             $nomorTerakhir = NomorTerakhir::create(['modul' => 'PUJBTM', 'nomor_terakhir' => 0, 'keterangan' => 'Pranota Uang Jalan Batam']);
         }
 
         $next = $nomorTerakhir->nomor_terakhir + 1;
         $nomorTerakhir->update(['nomor_terakhir' => $next]);
 
-        return "PUJBTM-{$bulan}{$tahun}-" . str_pad($next, 6, '0', STR_PAD_LEFT);
+        return "PUJBTM-{$bulan}{$tahun}-".str_pad($next, 6, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -232,13 +237,17 @@ class PranotaUangJalanBatamController extends Controller
      */
     private function hasPermission($user, $permission)
     {
-        if (!$user) return false;
-        if (in_array($user->role, ["admin", "user_admin"])) return true;
+        if (! $user) {
+            return false;
+        }
+        if (in_array($user->role, ['admin', 'user_admin'])) {
+            return true;
+        }
 
-        return DB::table("user_permissions")
-            ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-            ->where("user_permissions.user_id", $user->id)
-            ->where("permissions.name", $permission)
+        return DB::table('user_permissions')
+            ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+            ->where('user_permissions.user_id', $user->id)
+            ->where('permissions.name', $permission)
             ->exists();
     }
 }

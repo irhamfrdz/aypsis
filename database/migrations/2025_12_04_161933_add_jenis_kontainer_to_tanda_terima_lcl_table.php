@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('tanda_terima_lcl', function (Blueprint $table) {
             $table->enum('jenis_kontainer', ['HC', 'STD', 'RF', 'OT', 'FR', 'Dry Container'])
-                  ->nullable()
-                  ->after('nomor_seal');
+                ->nullable()
+                ->after('nomor_seal');
         });
     }
 

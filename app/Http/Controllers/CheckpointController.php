@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Permohonan;
 use App\Models\Kontainer;
+use App\Models\Permohonan;
 use App\Models\Prospek;
 use Illuminate\Http\Request; // Menggunakan Request standar
 use Illuminate\Support\Facades\Auth;
@@ -20,21 +20,21 @@ class CheckpointController extends Controller
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
         $user->load('karyawan'); // Eager load karyawan relationship
-        
-        if (!$user->isSupir()) {
+
+        if (! $user->isSupir()) {
             Log::warning('Checkpoint create (permohonan) blocked - user is not supir', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null]);
             abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
         }
 
         // Otorisasi: Pastikan supir yang login adalah yang ditugaskan
-        if (!$user->karyawan || $user->karyawan->id !== $permohonan->supir_id) {
+        if (! $user->karyawan || $user->karyawan->id !== $permohonan->supir_id) {
             Log::warning('Checkpoint create (permohonan) access denied - supir mismatch', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null, 'karyawan_id' => $user->karyawan->id ?? null, 'permohonan_id' => $permohonan->id ?? null, 'permohonan_supir_id' => $permohonan->supir_id ?? null]);
             abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
         }
 
         // Get kegiatan name from master kegiatan if available
         $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)
-                        ->value('nama_kegiatan') ?? $permohonan->kegiatan;
+            ->value('nama_kegiatan') ?? $permohonan->kegiatan;
 
         $kegiatanLower = strtolower($kegiatanName);
         $isAntarKontainerSewa = (stripos($kegiatanLower, 'antar') !== false &&
@@ -45,12 +45,12 @@ class CheckpointController extends Controller
         if ($isAntarKontainerSewa) {
             // Untuk antar kontainer sewa, filter berdasarkan ukuran dan status tidak tersedia
             $kontainerList = Kontainer::where('ukuran', $permohonan->ukuran)
-                                    ->where('status', 'Tidak Tersedia')
-                                    ->orderBy('nomor_seri_gabungan')
-                                    ->get();
+                ->where('status', 'Tidak Tersedia')
+                ->orderBy('nomor_seri_gabungan')
+                ->get();
         } else {
             // Untuk kegiatan lain, ambil kontainer sesuai vendor dan kondisi lainnya
-            if (in_array($permohonan->vendor_perusahaan, ['ZONA','DPE','SOC'])) {
+            if (in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
                 // Untuk vendor ini, filter kontainer approved/tagihan group jika tarik sewa
                 $isTarikSewa = (stripos($kegiatanLower, 'tarik') !== false && stripos($kegiatanLower, 'sewa') !== false)
                     || (stripos($kegiatanLower, 'pengambilan') !== false);
@@ -58,45 +58,45 @@ class CheckpointController extends Controller
                 if ($isTarikSewa) {
                     // Untuk tarik kontainer sewa, ambil kontainer dari daftar tagihan yang sedang ongoing
                     $sewaKontainerNumbers = DB::table('daftar_tagihan_kontainer_sewa')
-                                              ->where('status', 'ongoing')
-                                              ->where('size', $permohonan->ukuran)
-                                              ->pluck('nomor_kontainer')
-                                              ->toArray();
+                        ->where('status', 'ongoing')
+                        ->where('size', $permohonan->ukuran)
+                        ->pluck('nomor_kontainer')
+                        ->toArray();
 
-                    if (!empty($sewaKontainerNumbers)) {
+                    if (! empty($sewaKontainerNumbers)) {
                         $kontainerList = Kontainer::whereIn('nomor_seri_gabungan', $sewaKontainerNumbers)
-                                                ->where('ukuran', $permohonan->ukuran)
-                                                ->orderBy('nomor_seri_gabungan')
-                                                ->get();
+                            ->where('ukuran', $permohonan->ukuran)
+                            ->orderBy('nomor_seri_gabungan')
+                            ->get();
                     } else {
                         // Jika tidak ada kontainer dalam tagihan sewa, ambil kontainer yang sedang disewa
                         $kontainerList = Kontainer::where('ukuran', $permohonan->ukuran)
-                                                ->whereNotNull('tanggal_masuk_sewa')
-                                                ->where(function($query) {
-                                                    $query->whereNull('tanggal_selesai_sewa')
-                                                          ->orWhere('tanggal_selesai_sewa', '>=', now());
-                                                })
-                                                ->orderBy('nomor_seri_gabungan')
-                                                ->get();
+                            ->whereNotNull('tanggal_masuk_sewa')
+                            ->where(function ($query) {
+                                $query->whereNull('tanggal_selesai_sewa')
+                                    ->orWhere('tanggal_selesai_sewa', '>=', now());
+                            })
+                            ->orderBy('nomor_seri_gabungan')
+                            ->get();
                     }
                 } else {
                     $kontainerList = Kontainer::where('ukuran', $permohonan->ukuran)
-                                            ->orderBy('nomor_seri_gabungan')
-                                            ->get();
+                        ->orderBy('nomor_seri_gabungan')
+                        ->get();
                 }
             } else {
                 // Untuk vendor lain, filter berdasarkan ukuran
                 $kontainerList = Kontainer::where('ukuran', $permohonan->ukuran)
-                                        ->orderBy('nomor_seri_gabungan')
-                                        ->get();
+                    ->orderBy('nomor_seri_gabungan')
+                    ->get();
             }
         }
 
         // Ambil stock kontainer berdasarkan ukuran permohonan (20ft atau 40ft)
         $stockKontainers = \App\Models\StockKontainer::where('ukuran', $permohonan->ukuran)
-                                                    ->where('status', '!=', 'inactive')
-                                                    ->orderBy('nomor_seri_gabungan')
-                                                    ->get();
+            ->where('status', '!=', 'inactive')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
 
         // Ambil data gudangs untuk dropdown gudang tujuan
         $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
@@ -111,7 +111,7 @@ class CheckpointController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
         }
 
@@ -137,7 +137,7 @@ class CheckpointController extends Controller
 
         // Tambahkan validasi untuk nomor_kontainer hanya jika kontainer belum diinput sebelumnya dan bukan cargo.
         if ($permohonan->kontainers->isEmpty() && strtolower($permohonan->tipe ?? '') !== 'cargo') {
-            $rules['nomor_kontainer'] = ['required', 'array', 'size:' . $permohonan->jumlah_kontainer];
+            $rules['nomor_kontainer'] = ['required', 'array', 'size:'.$permohonan->jumlah_kontainer];
 
             // Check if this is a container repair activity or antar sewa activity
             $kegiatanLower = strtolower($permohonan->kegiatan ?? '');
@@ -155,12 +155,12 @@ class CheckpointController extends Controller
         DB::beginTransaction();
         try {
             // Jika nomor kontainer di-submit, proses dan hubungkan ke permohonan
-            if ($permohonan->kontainers->isEmpty() && !empty($validated['nomor_kontainer'])) {
+            if ($permohonan->kontainers->isEmpty() && ! empty($validated['nomor_kontainer'])) {
                 $kontainerIds = [];
 
                 // Resolve kegiatan name untuk deteksi yang akurat
                 $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)
-                               ->value('nama_kegiatan') ?? $permohonan->kegiatan;
+                    ->value('nama_kegiatan') ?? $permohonan->kegiatan;
 
                 // Determine if this permohonan is a return of sewa containers
                 $kegiatanLower = strtolower($kegiatanName ?? ($permohonan->kegiatan ?? ''));
@@ -183,9 +183,9 @@ class CheckpointController extends Controller
                     $kontainer = Kontainer::firstWhere('nomor_seri_gabungan', $nomorRaw)
                         ?? Kontainer::firstWhere('nomor_seri_gabungan', $nomorLookup);
 
-                    if (!$kontainer) {
+                    if (! $kontainer) {
                         // For non-special activities, check if this should be allowed
-                        if (!$isPerbaikanKontainer && !$isAntarSewa && !in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
+                        if (! $isPerbaikanKontainer && ! $isAntarSewa && ! in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
                             throw new \Exception("Kontainer {$nomorRaw} tidak ditemukan dalam sistem. Pastikan nomor kontainer sudah terdaftar.");
                         }
 
@@ -227,7 +227,7 @@ class CheckpointController extends Controller
                 $permohonan->kontainers()->sync($kontainerIds);
 
                 // Update status stock kontainer berdasarkan jenis kegiatan
-                if (!empty($validated['nomor_kontainer'])) {
+                if (! empty($validated['nomor_kontainer'])) {
                     foreach ($validated['nomor_kontainer'] as $nomor) {
                         $nomorRaw = trim($nomor);
 
@@ -240,7 +240,7 @@ class CheckpointController extends Controller
                             $oldGudangId = $kontainer->gudangs_id;
                             $kontainer->update(['gudangs_id' => null]);
                             Log::info("Kontainer {$nomorRaw} gudangs_id set to null - dalam perjalanan");
-                            
+
                             // Log history
                             \App\Models\HistoryKontainer::create([
                                 'nomor_kontainer' => $nomorRaw,
@@ -253,7 +253,7 @@ class CheckpointController extends Controller
                                 'created_by' => Auth::id(),
                             ]);
                         }
-                        
+
                         if ($stockKontainer) {
                             $oldGudangId = $stockKontainer->gudangs_id;
                             $stockKontainer->update(['gudangs_id' => null]);
@@ -270,7 +270,7 @@ class CheckpointController extends Controller
                                 'keterangan' => 'Dalam Perjalanan (Checkpoint)',
                                 'created_by' => Auth::id(),
                             ]);
-                            
+
                             if ($isAntarKontainerPerbaikan) {
                                 // Untuk antar kontainer perbaikan, status menjadi maintenance
                                 $stockKontainer->update(['status' => 'maintenance']);
@@ -291,7 +291,7 @@ class CheckpointController extends Controller
                                 $stockKontainer->update(['status' => 'available']);
                                 Log::info("Stock kontainer {$nomorRaw} status updated to available - return sewa");
 
-                            } elseif (!$isPerbaikanKontainer && !$isAntarSewa) {
+                            } elseif (! $isPerbaikanKontainer && ! $isAntarSewa) {
                                 // Untuk kegiatan lain (selain perbaikan), status menjadi rented
                                 $stockKontainer->update(['status' => 'rented']);
                                 Log::info("Stock kontainer {$nomorRaw} status updated to rented");
@@ -305,21 +305,21 @@ class CheckpointController extends Controller
             $imagePaths = [];
             if ($request->hasFile('gambar')) {
                 foreach ($request->file('gambar') as $index => $image) {
-                    $filename = time() . '_' . $index . '_checkpoint_' . $image->getClientOriginalName();
+                    $filename = time().'_'.$index.'_checkpoint_'.$image->getClientOriginalName();
                     $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
                     $imagePaths[] = $imagePath;
                 }
             }
             // Store as JSON array if multiple files, or null if none
-            $imagePath = !empty($imagePaths) ? json_encode($imagePaths) : null;
+            $imagePath = ! empty($imagePaths) ? json_encode($imagePaths) : null;
 
             // Handle multiple seals for checkpoint
             $noSealData = null;
-            if (!empty($validated['no_seal']) && is_array($validated['no_seal'])) {
-                $noSealArray = array_filter($validated['no_seal'], function($seal) {
-                    return !empty(trim($seal));
+            if (! empty($validated['no_seal']) && is_array($validated['no_seal'])) {
+                $noSealArray = array_filter($validated['no_seal'], function ($seal) {
+                    return ! empty(trim($seal));
                 }); // Filter out empty seals
-                $noSealData = !empty($noSealArray) ? implode(', ', $noSealArray) : null;
+                $noSealData = ! empty($noSealArray) ? implode(', ', $noSealArray) : null;
             }
 
             // Simpan data checkpoint
@@ -330,13 +330,13 @@ class CheckpointController extends Controller
                 'tanggal_checkpoint' => $request->input('tanggal_checkpoint') ?? now()->format('Y-m-d'),
                 'gambar' => $imagePath,
             ];
-            
+
             // Add no_seal to catatan if provided
             if ($noSealData) {
-                $checkpointData['catatan'] = ($checkpointData['catatan'] ?? 'Checkpoint dibuat oleh supir.') . 
-                                           " | No. Seal: " . $noSealData;
+                $checkpointData['catatan'] = ($checkpointData['catatan'] ?? 'Checkpoint dibuat oleh supir.').
+                                           ' | No. Seal: '.$noSealData;
             }
-            
+
             $permohonan->checkpoints()->create($checkpointData);
 
             // Update permohonan quick-access fields for driver checkpoint and supir (if not already set)
@@ -351,7 +351,7 @@ class CheckpointController extends Controller
                 $permohonan->save();
             } catch (\Exception $e) {
                 // Non-fatal: don't block on failing to save quick-access fields
-                Log::warning('Failed to update permohonan quick-access checkpoint fields: ' . $e->getMessage());
+                Log::warning('Failed to update permohonan quick-access checkpoint fields: '.$e->getMessage());
             }
 
             // Update status permohonan menjadi 'Proses'
@@ -359,10 +359,12 @@ class CheckpointController extends Controller
             $permohonan->save();
 
             DB::commit();
+
             return redirect()->route('supir.checkpoint.create', $permohonan)->with('success', 'Checkpoint berhasil diperbarui!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyimpan: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', 'Gagal menyimpan: '.$e->getMessage())->withInput();
         }
     }
 
@@ -374,8 +376,8 @@ class CheckpointController extends Controller
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
         $user->load('karyawan'); // Eager load karyawan relationship
-        
-        if (!$user->isSupir()) {
+
+        if (! $user->isSupir()) {
             Log::warning('Checkpoint create (surat jalan) blocked - user is not supir', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null]);
             abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
         }
@@ -391,20 +393,20 @@ class CheckpointController extends Controller
             strcasecmp($userName, $suratJalan->supir) !== 0 &&
             strcasecmp($user->username, $suratJalan->supir) !== 0) {
             Log::warning('Checkpoint create (surat jalan) access denied - supir mismatch', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null, 'user_name' => $userName, 'surat_jalan_id' => $suratJalan->id ?? null, 'surat_jalan_supir' => $suratJalan->supir]);
-            abort(403, 'Anda tidak memiliki akses ke surat jalan ini. User: ' . $userName . ', Surat Jalan Supir: ' . $suratJalan->supir);
+            abort(403, 'Anda tidak memiliki akses ke surat jalan ini. User: '.$userName.', Surat Jalan Supir: '.$suratJalan->supir);
         }
 
         // Untuk surat jalan, ambil kontainer dengan status Tersedia
         $kontainerList = Kontainer::where('ukuran', $suratJalan->size)
-                                ->where('status', 'Tersedia')
-                                ->orderBy('nomor_seri_gabungan')
-                                ->get();
+            ->where('status', 'Tersedia')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
 
         // Ambil stock kontainer berdasarkan ukuran surat jalan (20ft atau 40ft)
         $stockKontainers = \App\Models\StockKontainer::where('ukuran', $suratJalan->size)
-                                                    ->where('status', '!=', 'inactive')
-                                                    ->orderBy('nomor_seri_gabungan')
-                                                    ->get();
+            ->where('status', '!=', 'inactive')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
 
         // Ambil data gudangs untuk dropdown gudang tujuan
         $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
@@ -419,7 +421,7 @@ class CheckpointController extends Controller
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
         }
 
@@ -433,7 +435,7 @@ class CheckpointController extends Controller
             strcasecmp($userNama, $suratJalan->supir) !== 0 &&
             strcasecmp($userName, $suratJalan->supir) !== 0 &&
             strcasecmp($user->username, $suratJalan->supir) !== 0) {
-            abort(403, 'Anda tidak memiliki akses ke surat jalan ini. User: ' . $userName . ', Surat Jalan Supir: ' . $suratJalan->supir);
+            abort(403, 'Anda tidak memiliki akses ke surat jalan ini. User: '.$userName.', Surat Jalan Supir: '.$suratJalan->supir);
         }
 
         // Validasi input - berbeda untuk cargo dan non-cargo
@@ -469,13 +471,13 @@ class CheckpointController extends Controller
             $imagePaths = [];
             if ($request->hasFile('gambar')) {
                 foreach ($request->file('gambar') as $index => $image) {
-                    $filename = time() . '_' . $index . '_surat_jalan_checkpoint_' . $image->getClientOriginalName();
+                    $filename = time().'_'.$index.'_surat_jalan_checkpoint_'.$image->getClientOriginalName();
                     $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
                     $imagePaths[] = $imagePath;
                 }
             }
             // Store as JSON array if multiple files, or null if none
-            $imagePath = !empty($imagePaths) ? json_encode($imagePaths) : null;
+            $imagePath = ! empty($imagePaths) ? json_encode($imagePaths) : null;
 
             // Update surat jalan dengan nomor kontainer dan status
             $updateData = [
@@ -493,26 +495,26 @@ class CheckpointController extends Controller
                 // For non-cargo, use provided container numbers
                 $nomorKontainers = implode(', ', $request->nomor_kontainer ?? []);
                 $updateData['no_kontainer'] = $nomorKontainers;
-                
+
                 // Handle multiple seals - join with comma if multiple provided
                 $noSealArray = $request->no_seal ?? [];
-                $noSealArray = array_filter($noSealArray, function($seal) {
-                    return !empty(trim($seal));
+                $noSealArray = array_filter($noSealArray, function ($seal) {
+                    return ! empty(trim($seal));
                 }); // Filter out empty seals
-                $updateData['no_seal'] = !empty($noSealArray) ? implode(', ', $noSealArray) : null;
+                $updateData['no_seal'] = ! empty($noSealArray) ? implode(', ', $noSealArray) : null;
             }
 
             $suratJalan->update($updateData);
 
             // Update gudangs_id to null for kontainers and stock_kontainers
-            if (strtolower($suratJalan->tipe_kontainer ?? '') !== 'cargo' && !empty($request->nomor_kontainer)) {
+            if (strtolower($suratJalan->tipe_kontainer ?? '') !== 'cargo' && ! empty($request->nomor_kontainer)) {
                 // Get nama gudang untuk tujuan_pengiriman
                 $gudangTujuan = \App\Models\Gudang::find($request->gudang_tujuan_id);
                 $namaGudangTujuan = $gudangTujuan ? $gudangTujuan->nama_gudang : ($suratJalan->tujuan_pengiriman ?? $suratJalan->order->tujuan_kirim ?? null);
-                
+
                 foreach ($request->nomor_kontainer as $nomor) {
                     $nomorRaw = trim($nomor);
-                    
+
                     // Update kontainer
                     $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
                     if ($kontainer) {
@@ -528,11 +530,11 @@ class CheckpointController extends Controller
                             'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
                             'asal_gudang_id' => $oldGudangId,
                             'gudang_id' => $request->gudang_tujuan_id,
-                            'keterangan' => 'Dalam Perjalanan (Checkpoint SJ: ' . $suratJalan->no_surat_jalan . ')',
+                            'keterangan' => 'Dalam Perjalanan (Checkpoint SJ: '.$suratJalan->no_surat_jalan.')',
                             'created_by' => Auth::id(),
                         ]);
                     }
-                    
+
                     // Update stock kontainer
                     $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
                     if ($stockKontainer) {
@@ -548,11 +550,11 @@ class CheckpointController extends Controller
                             'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
                             'asal_gudang_id' => $oldGudangId,
                             'gudang_id' => $request->gudang_tujuan_id,
-                            'keterangan' => 'Dalam Perjalanan (Checkpoint SJ: ' . $suratJalan->no_surat_jalan . ')',
+                            'keterangan' => 'Dalam Perjalanan (Checkpoint SJ: '.$suratJalan->no_surat_jalan.')',
                             'created_by' => Auth::id(),
                         ]);
                     }
-                    
+
                     // Create kontainer_perjalanans record
                     \App\Models\KontainerPerjalanan::create([
                         'surat_jalan_id' => $suratJalan->id,
@@ -569,7 +571,7 @@ class CheckpointController extends Controller
                         'catatan_keluar' => $request->catatan,
                         'created_by' => Auth::id(),
                     ]);
-                    
+
                     Log::info("Created kontainer_perjalanans record for {$nomorRaw}");
                 }
             }
@@ -579,21 +581,21 @@ class CheckpointController extends Controller
                 ->where('approval_level', 'approval')
                 ->first();
 
-            if (!$existingApproval) {
+            if (! $existingApproval) {
                 \App\Models\SuratJalanApproval::create([
                     'surat_jalan_id' => $suratJalan->id,
                     'approval_level' => 'approval',
                     'status' => 'pending',
                 ]);
-                
+
                 Log::info('Surat jalan approval record created at checkpoint:', [
                     'surat_jalan_id' => $suratJalan->id,
-                    'approval_level' => 'approval'
+                    'approval_level' => 'approval',
                 ]);
             } else {
                 Log::info('Surat jalan approval record already exists, skipping creation:', [
                     'surat_jalan_id' => $suratJalan->id,
-                    'existing_approval_id' => $existingApproval->id
+                    'existing_approval_id' => $existingApproval->id,
                 ]);
             }
 
@@ -605,7 +607,7 @@ class CheckpointController extends Controller
                 'no_seal' => $request->no_seal,
                 'catatan' => $request->catatan,
                 'surat_jalan_vendor' => $request->surat_jalan_vendor,
-                'approval_already_exists' => $existingApproval ? true : false
+                'approval_already_exists' => $existingApproval ? true : false,
             ]);
 
             DB::commit();
@@ -616,8 +618,9 @@ class CheckpointController extends Controller
             return redirect()->route('supir.dashboard')->with('success', 'Checkpoint surat jalan berhasil disimpan dan telah dikirim ke approval tugas 1 dan 2!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error storing surat jalan checkpoint: ' . $e->getMessage());
-            return back()->with('error', 'Gagal menyimpan checkpoint: ' . $e->getMessage())->withInput();
+            Log::error('Error storing surat jalan checkpoint: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal menyimpan checkpoint: '.$e->getMessage())->withInput();
         }
     }
 
@@ -631,21 +634,22 @@ class CheckpointController extends Controller
             if (strtoupper($suratJalan->tipe_kontainer ?? '') !== 'FCL') {
                 Log::info('Surat jalan bukan FCL, skip update prospek', [
                     'surat_jalan_id' => $suratJalan->id,
-                    'tipe_kontainer' => $suratJalan->tipe_kontainer
+                    'tipe_kontainer' => $suratJalan->tipe_kontainer,
                 ]);
+
                 return;
             }
 
             // Cari prospek dengan pencarian bertingkat berdasarkan prioritas
             $prospeks = collect();
-            
+
             // Prioritas 1: Cari berdasarkan surat_jalan_id (paling akurat)
             $prospeks = Prospek::where('status', Prospek::STATUS_AKTIF)
                 ->where('surat_jalan_id', $suratJalan->id)
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->whereNull('nomor_kontainer')
-                          ->orWhere('nomor_kontainer', '')
-                          ->orWhere('nomor_kontainer', 'CARGO');
+                        ->orWhere('nomor_kontainer', '')
+                        ->orWhere('nomor_kontainer', 'CARGO');
                 })
                 ->orderBy('created_at', 'asc') // Order by created_at ascending untuk update sesuai urutan dibuat
                 ->get();
@@ -654,14 +658,14 @@ class CheckpointController extends Controller
             if ($prospeks->isEmpty() && $suratJalan->no_surat_jalan) {
                 $prospeks = Prospek::where('status', Prospek::STATUS_AKTIF)
                     ->where('no_surat_jalan', $suratJalan->no_surat_jalan)
-                    ->where(function($query) {
+                    ->where(function ($query) {
                         $query->whereNull('nomor_kontainer')
-                              ->orWhere('nomor_kontainer', '')
-                              ->orWhere('nomor_kontainer', 'CARGO');
+                            ->orWhere('nomor_kontainer', '')
+                            ->orWhere('nomor_kontainer', 'CARGO');
                     })
                     ->whereBetween('tanggal', [
                         now()->subDays(7)->format('Y-m-d'),
-                        now()->addDays(7)->format('Y-m-d')
+                        now()->addDays(7)->format('Y-m-d'),
                     ])
                     ->orderBy('created_at', 'asc')
                     ->get();
@@ -670,15 +674,15 @@ class CheckpointController extends Controller
             // Jika masih tidak ditemukan, cari berdasarkan keterangan yang mengandung nomor surat jalan
             if ($prospeks->isEmpty() && $suratJalan->no_surat_jalan) {
                 $prospeks = Prospek::where('status', Prospek::STATUS_AKTIF)
-                    ->where('keterangan', 'LIKE', '%Surat Jalan: ' . $suratJalan->no_surat_jalan . ' |%')
-                    ->where(function($query) {
+                    ->where('keterangan', 'LIKE', '%Surat Jalan: '.$suratJalan->no_surat_jalan.' |%')
+                    ->where(function ($query) {
                         $query->whereNull('nomor_kontainer')
-                              ->orWhere('nomor_kontainer', '')
-                              ->orWhere('nomor_kontainer', 'CARGO');
+                            ->orWhere('nomor_kontainer', '')
+                            ->orWhere('nomor_kontainer', 'CARGO');
                     })
                     ->whereBetween('tanggal', [
                         now()->subDays(7)->format('Y-m-d'),
-                        now()->addDays(7)->format('Y-m-d')
+                        now()->addDays(7)->format('Y-m-d'),
                     ])
                     ->orderBy('created_at', 'asc')
                     ->get();
@@ -692,15 +696,15 @@ class CheckpointController extends Controller
                 'prospek_found' => $prospeks->count(),
                 'nomor_kontainer_baru' => $nomorKontainer,
                 'search_surat_jalan_id' => $suratJalan->id,
-                'search_no_surat_jalan' => $suratJalan->no_surat_jalan
+                'search_no_surat_jalan' => $suratJalan->no_surat_jalan,
             ]);
 
             if ($prospeks->isEmpty()) {
                 // Cari semua prospek dengan status aktif untuk debugging
                 $allProspeks = Prospek::where('status', Prospek::STATUS_AKTIF)
-                    ->where(function($query) use ($suratJalan) {
+                    ->where(function ($query) use ($suratJalan) {
                         $query->where('nama_supir', $suratJalan->supir)
-                              ->orWhere('pt_pengirim', $suratJalan->pengirim);
+                            ->orWhere('pt_pengirim', $suratJalan->pengirim);
                     })
                     ->whereDate('tanggal', '>=', now()->subDays(3)->format('Y-m-d'))
                     ->select('id', 'nama_supir', 'pt_pengirim', 'nomor_kontainer', 'keterangan', 'tanggal')
@@ -712,31 +716,33 @@ class CheckpointController extends Controller
                     'supir' => $suratJalan->supir,
                     'pengirim' => $suratJalan->pengirim,
                     'nomor_kontainer_baru' => $nomorKontainer,
-                    'all_prospeks_debug' => $allProspeks->toArray()
+                    'all_prospeks_debug' => $allProspeks->toArray(),
                 ]);
+
                 return;
             }
 
             // Hitung berapa banyak nomor kontainer yang diinput
             $nomorKontainerArray = is_array($nomorKontainer) ? array_filter($nomorKontainer) : [];
             $jumlahKontainerInput = count($nomorKontainerArray);
-            
+
             // Jika tidak ada nomor kontainer yang diinput, skip update
             if ($jumlahKontainerInput === 0) {
                 Log::info('Tidak ada nomor kontainer yang diinput, skip update prospek');
+
                 return;
             }
 
             Log::info('Jumlah kontainer yang akan diupdate', [
                 'jumlah_prospek_ditemukan' => $prospeks->count(),
                 'jumlah_kontainer_input' => $jumlahKontainerInput,
-                'nomor_kontainer_array' => $nomorKontainerArray
+                'nomor_kontainer_array' => $nomorKontainerArray,
             ]);
 
             // Update hanya sejumlah prospek sesuai dengan jumlah kontainer yang diinput
             $updatedCount = 0;
             $prospeksToUpdate = $prospeks->take($jumlahKontainerInput);
-            
+
             foreach ($prospeksToUpdate as $index => $prospek) {
                 // Ambil nomor kontainer dan seal yang sesuai untuk prospek ini
                 $nomorKontainerIni = isset($nomorKontainerArray[$index]) ? $nomorKontainerArray[$index] : $nomorKontainerArray[0];
@@ -746,7 +752,7 @@ class CheckpointController extends Controller
                 $prospek->update([
                     'nomor_kontainer' => $nomorKontainerIni,
                     'no_seal' => $noSealIni,
-                    'updated_by' => Auth::id()
+                    'updated_by' => Auth::id(),
                 ]);
                 $updatedCount++;
 
@@ -759,11 +765,11 @@ class CheckpointController extends Controller
                     'nomor_kontainer_baru' => $nomorKontainerIni,
                     'no_seal' => $noSealIni,
                     'supir' => $suratJalan->supir,
-                    'pengirim' => $suratJalan->pengirim
+                    'pengirim' => $suratJalan->pengirim,
                 ]);
             }
 
-            Log::info('Total prospek yang diupdate: ' . $updatedCount);
+            Log::info('Total prospek yang diupdate: '.$updatedCount);
 
         } catch (\Exception $e) {
             // Log error tapi jangan fail proses checkpoint
@@ -771,7 +777,7 @@ class CheckpointController extends Controller
                 'surat_jalan_id' => $suratJalan->id,
                 'no_surat_jalan' => $suratJalan->no_surat_jalan,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
@@ -782,12 +788,12 @@ class CheckpointController extends Controller
     public function createSuratJalanBongkaran($id)
     {
         $suratJalanBongkaran = \App\Models\SuratJalanBongkaran::findOrFail($id);
-        
+
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
         $user->load('karyawan'); // Eager load karyawan relationship
-        
-        if (!$user->isSupir()) {
+
+        if (! $user->isSupir()) {
             Log::warning('Checkpoint create (surat jalan bongkaran) blocked - user is not supir', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null]);
             abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
         }
@@ -803,20 +809,20 @@ class CheckpointController extends Controller
             strcasecmp($userName, $suratJalanBongkaran->supir) !== 0 &&
             strcasecmp($user->username, $suratJalanBongkaran->supir) !== 0) {
             Log::warning('Checkpoint create (surat jalan bongkaran) access denied - supir mismatch', ['user_id' => $user->id ?? null, 'username' => $user->username ?? null, 'user_name' => $userName, 'surat_jalan_bongkaran_id' => $suratJalanBongkaran->id ?? null, 'surat_jalan_bongkaran_supir' => $suratJalanBongkaran->supir]);
-            abort(403, 'Anda tidak memiliki akses ke surat jalan bongkaran ini. User: ' . $userName . ', Surat Jalan Bongkaran Supir: ' . $suratJalanBongkaran->supir);
+            abort(403, 'Anda tidak memiliki akses ke surat jalan bongkaran ini. User: '.$userName.', Surat Jalan Bongkaran Supir: '.$suratJalanBongkaran->supir);
         }
 
         // Untuk surat jalan bongkaran, ambil kontainer dengan status Tersedia
         $kontainerList = Kontainer::where('ukuran', $suratJalanBongkaran->size)
-                                ->where('status', 'Tersedia')
-                                ->orderBy('nomor_seri_gabungan')
-                                ->get();
+            ->where('status', 'Tersedia')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
 
         // Ambil stock kontainer berdasarkan ukuran surat jalan bongkaran
         $stockKontainers = \App\Models\StockKontainer::where('ukuran', $suratJalanBongkaran->size)
-                                                    ->where('status', '!=', 'inactive')
-                                                    ->orderBy('nomor_seri_gabungan')
-                                                    ->get();
+            ->where('status', '!=', 'inactive')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
 
         // Ambil data gudangs untuk dropdown gudang tujuan
         $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
@@ -827,7 +833,7 @@ class CheckpointController extends Controller
             'kontainerList' => $kontainerList,
             'stockKontainers' => $stockKontainers,
             'gudangs' => $gudangs,
-            'isBongkaran' => true
+            'isBongkaran' => true,
         ]);
     }
 
@@ -837,10 +843,10 @@ class CheckpointController extends Controller
     public function storeSuratJalanBongkaran(Request $request, $id)
     {
         $suratJalanBongkaran = \App\Models\SuratJalanBongkaran::findOrFail($id);
-        
+
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
-        if (!$user->isSupir()) {
+        if (! $user->isSupir()) {
             abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
         }
 
@@ -853,7 +859,7 @@ class CheckpointController extends Controller
             strcasecmp($userNama, $suratJalanBongkaran->supir) !== 0 &&
             strcasecmp($userName, $suratJalanBongkaran->supir) !== 0 &&
             strcasecmp($user->username, $suratJalanBongkaran->supir) !== 0) {
-            abort(403, 'Anda tidak memiliki akses ke surat jalan bongkaran ini. User: ' . $userName . ', Surat Jalan Bongkaran Supir: ' . $suratJalanBongkaran->supir);
+            abort(403, 'Anda tidak memiliki akses ke surat jalan bongkaran ini. User: '.$userName.', Surat Jalan Bongkaran Supir: '.$suratJalanBongkaran->supir);
         }
 
         // Validasi input - similar to regular surat jalan
@@ -889,13 +895,13 @@ class CheckpointController extends Controller
             $imagePaths = [];
             if ($request->hasFile('gambar')) {
                 foreach ($request->file('gambar') as $index => $image) {
-                    $filename = time() . '_' . $index . '_surat_jalan_bongkaran_checkpoint_' . $image->getClientOriginalName();
+                    $filename = time().'_'.$index.'_surat_jalan_bongkaran_checkpoint_'.$image->getClientOriginalName();
                     $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
                     $imagePaths[] = $imagePath;
                 }
             }
             // Store as JSON array if multiple files, or null if none
-            $imagePath = !empty($imagePaths) ? json_encode($imagePaths) : null;
+            $imagePath = ! empty($imagePaths) ? json_encode($imagePaths) : null;
 
             // Update surat jalan bongkaran dengan nomor kontainer dan tanggal checkpoint
             $updateData = [
@@ -913,22 +919,22 @@ class CheckpointController extends Controller
                 // For non-cargo, use provided container numbers
                 $nomorKontainers = implode(', ', $request->nomor_kontainer ?? []);
                 $updateData['no_kontainer'] = $nomorKontainers;
-                
+
                 // Handle multiple seals - join with comma if multiple provided
                 $noSealArray = $request->no_seal ?? [];
-                $noSealArray = array_filter($noSealArray, function($seal) {
-                    return !empty(trim($seal));
+                $noSealArray = array_filter($noSealArray, function ($seal) {
+                    return ! empty(trim($seal));
                 }); // Filter out empty seals
-                $updateData['no_seal'] = !empty($noSealArray) ? implode(', ', $noSealArray) : null;
+                $updateData['no_seal'] = ! empty($noSealArray) ? implode(', ', $noSealArray) : null;
             }
 
             $suratJalanBongkaran->update($updateData);
 
             // Update gudangs_id to null for kontainers and stock_kontainers
-            if (strtolower($suratJalanBongkaran->tipe_kontainer ?? '') !== 'cargo' && !empty($request->nomor_kontainer)) {
+            if (strtolower($suratJalanBongkaran->tipe_kontainer ?? '') !== 'cargo' && ! empty($request->nomor_kontainer)) {
                 foreach ($request->nomor_kontainer as $nomor) {
                     $nomorRaw = trim($nomor);
-                    
+
                     // Update kontainer
                     $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
                     if ($kontainer) {
@@ -944,11 +950,11 @@ class CheckpointController extends Controller
                             'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
                             'asal_gudang_id' => $oldGudangId,
                             'gudang_id' => $request->gudang_tujuan_id,
-                            'keterangan' => 'Dalam Perjalanan (Checkpoint Bongkaran ID: ' . $id . ')',
+                            'keterangan' => 'Dalam Perjalanan (Checkpoint Bongkaran ID: '.$id.')',
                             'created_by' => Auth::id(),
                         ]);
                     }
-                    
+
                     // Update stock kontainer
                     $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
                     if ($stockKontainer) {
@@ -964,11 +970,11 @@ class CheckpointController extends Controller
                             'tanggal_kegiatan' => $request->tanggal_checkpoint ?? now(),
                             'asal_gudang_id' => $oldGudangId,
                             'gudang_id' => $request->gudang_tujuan_id,
-                            'keterangan' => 'Dalam Perjalanan (Checkpoint Bongkaran ID: ' . $id . ')',
+                            'keterangan' => 'Dalam Perjalanan (Checkpoint Bongkaran ID: '.$id.')',
                             'created_by' => Auth::id(),
                         ]);
                     }
-                    
+
                     // Note: For surat_jalan_bongkaran, we don't have a direct surat_jalan_id
                     // So we skip creating kontainer_perjalanans record for bongkaran
                     // Unless we have a relationship or want to extend the model
@@ -983,7 +989,7 @@ class CheckpointController extends Controller
                 'no_seal' => $request->no_seal,
                 'catatan' => $request->catatan,
                 'surat_jalan_vendor' => $request->surat_jalan_vendor,
-                'tanggal_checkpoint' => $request->tanggal_checkpoint
+                'tanggal_checkpoint' => $request->tanggal_checkpoint,
             ]);
 
             DB::commit();
@@ -991,8 +997,9 @@ class CheckpointController extends Controller
             return redirect()->route('supir.dashboard')->with('success', 'Checkpoint surat jalan bongkaran berhasil disimpan!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error storing surat jalan bongkaran checkpoint: ' . $e->getMessage());
-            return back()->with('error', 'Gagal menyimpan checkpoint: ' . $e->getMessage())->withInput();
+            Log::error('Error storing surat jalan bongkaran checkpoint: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal menyimpan checkpoint: '.$e->getMessage())->withInput();
         }
     }
 }

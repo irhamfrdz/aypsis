@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class PranotaSuratJalan extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $table = 'pranota_surat_jalans';
 
     protected $fillable = [
@@ -103,8 +102,9 @@ class PranotaSuratJalan extends Model
     public function scopeByMonth($query, $month, $year = null)
     {
         $year = $year ?: date('Y');
+
         return $query->whereMonth('tanggal_pranota', $month)
-                    ->whereYear('tanggal_pranota', $year);
+            ->whereYear('tanggal_pranota', $year);
     }
 
     /**
@@ -112,7 +112,7 @@ class PranotaSuratJalan extends Model
      */
     public function getFormattedTotalAmountAttribute()
     {
-        return 'Rp ' . number_format((float) $this->total_amount, 0, ',', '.');
+        return 'Rp '.number_format((float) $this->total_amount, 0, ',', '.');
     }
 
     /**

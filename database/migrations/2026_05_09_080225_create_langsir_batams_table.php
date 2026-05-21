@@ -28,7 +28,7 @@ return new class extends Migration
             $table->unsignedBigInteger('input_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            
+
             $table->foreign('input_by')->references('id')->on('users')->onDelete('set null');
         });
     }

@@ -19,11 +19,11 @@ class VendorInvoiceController extends Controller
 
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_invoice', 'like', "%{$search}%")
-                  ->orWhereHas('vendor', function($v) use ($search) {
-                      $v->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('vendor', function ($v) use ($search) {
+                        $v->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -35,6 +35,7 @@ class VendorInvoiceController extends Controller
     public function create()
     {
         $vendors = VendorKontainerSewa::where('status', 'ACTIVE')->get();
+
         return view('vendor-invoice.create', compact('vendors'));
     }
 
@@ -53,21 +54,24 @@ class VendorInvoiceController extends Controller
 
         try {
             VendorInvoice::create($validated);
+
             return redirect()->route('vendor-invoice.index')->with('success', 'Invoice berhasil dicatat.');
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Gagal mencatat invoice: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Gagal mencatat invoice: '.$e->getMessage());
         }
     }
 
     public function show(VendorInvoice $vendorInvoice)
     {
         $vendorInvoice->load('vendor');
+
         return view('vendor-invoice.show', compact('vendorInvoice'));
     }
 
     public function edit(VendorInvoice $vendorInvoice)
     {
         $vendors = VendorKontainerSewa::where('status', 'ACTIVE')->get();
+
         return view('vendor-invoice.edit', compact('vendorInvoice', 'vendors'));
     }
 
@@ -75,7 +79,7 @@ class VendorInvoiceController extends Controller
     {
         $validated = $request->validate([
             'vendor_id' => 'required|exists:vendor_kontainer_sewas,id',
-            'no_invoice' => 'required|string|unique:vendor_invoices,no_invoice,' . $vendorInvoice->id,
+            'no_invoice' => 'required|string|unique:vendor_invoices,no_invoice,'.$vendorInvoice->id,
             'tgl_invoice' => 'required|date',
             'total_dpp' => 'required|numeric|min:0',
             'total_ppn' => 'required|numeric|min:0',
@@ -86,9 +90,10 @@ class VendorInvoiceController extends Controller
 
         try {
             $vendorInvoice->update($validated);
+
             return redirect()->route('vendor-invoice.index')->with('success', 'Invoice berhasil diperbarui.');
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Gagal memperbarui invoice: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Gagal memperbarui invoice: '.$e->getMessage());
         }
     }
 
@@ -96,9 +101,10 @@ class VendorInvoiceController extends Controller
     {
         try {
             $vendorInvoice->delete();
+
             return redirect()->route('vendor-invoice.index')->with('success', 'Invoice berhasil dihapus.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus invoice: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus invoice: '.$e->getMessage());
         }
     }
 }

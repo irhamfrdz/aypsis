@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('tanda_terima_dimensi_items')) {
+        if (! Schema::hasTable('tanda_terima_dimensi_items')) {
             Schema::create('tanda_terima_dimensi_items', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tanda_terima_tanpa_surat_jalan_id');
@@ -24,9 +24,9 @@ return new class extends Migration
                 $table->timestamps();
 
                 $table->foreign('tanda_terima_tanpa_surat_jalan_id', 'fk_dimensi_items_tanda_terima')
-                      ->references('id')
-                      ->on('tanda_terima_tanpa_surat_jalan')
-                      ->onDelete('cascade');
+                    ->references('id')
+                    ->on('tanda_terima_tanpa_surat_jalan')
+                    ->onDelete('cascade');
 
                 $table->index(['tanda_terima_tanpa_surat_jalan_id', 'urutan'], 'idx_dimensi_items_sj_urutan');
             });

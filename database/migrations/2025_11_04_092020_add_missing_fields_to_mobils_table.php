@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('mobils', function (Blueprint $table) {
             // Make nomor_polisi nullable and remove unique constraint if needed
             $table->string('nomor_polisi')->nullable()->change();
-            
+
             // Add missing fields from CSV import
             $table->string('pemakai')->nullable()->after('atas_nama');
             $table->string('asuransi')->nullable()->after('pemakai');
@@ -32,7 +32,7 @@ return new class extends Migration
         Schema::table('mobils', function (Blueprint $table) {
             // Remove added fields
             $table->dropColumn(['pemakai', 'asuransi', 'jatuh_tempo_asuransi', 'warna_plat', 'catatan']);
-            
+
             // Revert nomor_polisi back to not nullable (be careful with existing data)
             $table->string('nomor_polisi')->nullable(false)->change();
         });

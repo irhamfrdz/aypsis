@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('bls', function (Blueprint $table) {
             $table->enum('status_bongkar', ['Sudah Bongkar', 'Belum Bongkar'])
-                  ->default('Belum Bongkar')
-                  ->after('id'); // Sesuaikan posisi kolom sesuai kebutuhan
+                ->default('Belum Bongkar')
+                ->after('id'); // Sesuaikan posisi kolom sesuai kebutuhan
         });
     }
 

@@ -2,11 +2,9 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\TandaTerimaTanpaSuratJalan;
-use App\Models\TandaTerimaDimensiItem;
-use App\Models\Term;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\TestCase;
 
 class TandaTerimaTanpaSuratJalanTest extends TestCase
 {
@@ -32,7 +30,7 @@ class TandaTerimaTanpaSuratJalanTest extends TestCase
             'estimasi_naik_kapal' => 'Test Kapal',
             'no_tanda_terima' => TandaTerimaTanpaSuratJalan::generateNoTandaTerima(),
             'created_by' => 'Test User',
-            'status' => 'draft'
+            'status' => 'draft',
         ];
 
         $tandaTerima = TandaTerimaTanpaSuratJalan::create($data);
@@ -56,12 +54,12 @@ class TandaTerimaTanpaSuratJalanTest extends TestCase
             'jumlah_barang',
             'satuan_barang',
             'supir',
-            'tujuan_pengiriman'
+            'tujuan_pengiriman',
         ];
 
         // Each required field should be present
         foreach ($requiredFields as $field) {
-            $this->assertContains($field, (new TandaTerimaTanpaSuratJalan())->getFillable());
+            $this->assertContains($field, (new TandaTerimaTanpaSuratJalan)->getFillable());
         }
     }
 
@@ -116,10 +114,10 @@ class TandaTerimaTanpaSuratJalanTest extends TestCase
             'catatan',
             'status',
             'created_by',
-            'updated_by'
+            'updated_by',
         ];
 
-        $fillableFields = (new TandaTerimaTanpaSuratJalan())->getFillable();
+        $fillableFields = (new TandaTerimaTanpaSuratJalan)->getFillable();
 
         foreach ($formFields as $field) {
             $this->assertContains(

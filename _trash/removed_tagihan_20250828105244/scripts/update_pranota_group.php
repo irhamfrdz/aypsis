@@ -1,8 +1,9 @@
 <?php
+
 // scripts/update_pranota_group.php
 // Usage: php scripts/update_pranota_group.php [PRANOTA_ID_or_NOMOR] [NEW_GROUP_CODE]
-require __DIR__ . '/../vendor/autoload.php';
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
@@ -15,8 +16,8 @@ try {
     DB::beginTransaction();
 
     // Try to locate by numeric id first
-    if (ctype_digit((string)$target)) {
-        $pr = DB::select('select id, group_code, periode, vendor from tagihan_kontainer_sewa where id = ? limit 1', [(int)$target]);
+    if (ctype_digit((string) $target)) {
+        $pr = DB::select('select id, group_code, periode, vendor from tagihan_kontainer_sewa where id = ? limit 1', [(int) $target]);
     } else {
         $pr = DB::select('select id, group_code, periode, vendor from tagihan_kontainer_sewa where group_code = ? limit 1', [$target]);
     }

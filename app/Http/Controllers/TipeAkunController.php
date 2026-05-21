@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\TipeAkun;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class TipeAkunController extends Controller
 {
@@ -16,11 +15,11 @@ class TipeAkunController extends Controller
         $query = TipeAkun::query();
 
         // Search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('tipe_akun', 'LIKE', "%{$search}%")
-                  ->orWhere('catatan', 'LIKE', "%{$search}%");
+                    ->orWhere('catatan', 'LIKE', "%{$search}%");
             });
         }
 
@@ -44,7 +43,7 @@ class TipeAkunController extends Controller
     {
         $request->validate([
             'tipe_akun' => 'required|string|max:255',
-            'catatan' => 'nullable|string|max:500'
+            'catatan' => 'nullable|string|max:500',
         ]);
 
         TipeAkun::create($request->all());
@@ -76,7 +75,7 @@ class TipeAkunController extends Controller
     {
         $request->validate([
             'tipe_akun' => 'required|string|max:255',
-            'catatan' => 'nullable|string|max:500'
+            'catatan' => 'nullable|string|max:500',
         ]);
 
         $tipeAkun->update($request->all());

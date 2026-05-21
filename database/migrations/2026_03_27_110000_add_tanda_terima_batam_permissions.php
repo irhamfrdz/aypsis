@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -15,25 +13,25 @@ return new class extends Migration
         $permissions = [
             [
                 'name' => 'tanda-terima-batam-view',
-                'description' => 'Akses Menu Tanda Terima Batam'
+                'description' => 'Akses Menu Tanda Terima Batam',
             ],
             [
                 'name' => 'tanda-terima-batam-create',
-                'description' => 'Membuat Tanda Terima Batam'
+                'description' => 'Membuat Tanda Terima Batam',
             ],
             [
                 'name' => 'tanda-terima-batam-update',
-                'description' => 'Mengupdate Tanda Terima Batam'
+                'description' => 'Mengupdate Tanda Terima Batam',
             ],
             [
                 'name' => 'tanda-terima-batam-delete',
-                'description' => 'Menghapus Tanda Terima Batam'
+                'description' => 'Menghapus Tanda Terima Batam',
             ],
         ];
 
         foreach ($permissions as $permission) {
             $exists = DB::table('permissions')->where('name', $permission['name'])->exists();
-            if (!$exists) {
+            if (! $exists) {
                 DB::table('permissions')->insert([
                     'name' => $permission['name'],
                     'description' => $permission['description'],

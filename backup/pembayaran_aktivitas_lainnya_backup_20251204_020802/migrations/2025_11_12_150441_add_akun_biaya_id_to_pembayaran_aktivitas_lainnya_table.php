@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pembayaran_aktivitas_lainnya', function (Blueprint $table) {
-            if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'akun_biaya_id')) {
+            if (! Schema::hasColumn('pembayaran_aktivitas_lainnya', 'akun_biaya_id')) {
                 $table->unsignedBigInteger('akun_biaya_id')->nullable()->after('nomor_accurate');
                 $table->foreign('akun_biaya_id')->references('id')->on('akun_coa')->onDelete('set null');
             }

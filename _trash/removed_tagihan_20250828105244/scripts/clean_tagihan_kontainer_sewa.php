@@ -1,4 +1,5 @@
 <?php
+
 // Clean tagihan_kontainer_sewa data. Use with caution.
 // Usage: php scripts/clean_tagihan_kontainer_sewa.php --mode=soft|hard --yes
 // soft: soft-delete all rows (sets deleted_at). hard: permanently delete rows and pivots.
@@ -13,16 +14,16 @@ foreach ($argv as $arg) {
 }
 $mode = $opts['mode'] ?? 'soft';
 $confirm = isset($opts['yes']);
-if (!$confirm) {
+if (! $confirm) {
     echo "Refusing to run without --yes. Use --mode=soft|hard --yes\n";
     exit(1);
 }
 
-$env = @parse_ini_file(__DIR__ . '/../.env');
+$env = @parse_ini_file(__DIR__.'/../.env');
 $dbConnection = $env['DB_CONNECTION'] ?? 'mysql';
 if ($dbConnection === 'sqlite') {
-    $dbPath = __DIR__ . '/../' . ($env['DB_DATABASE'] ?? 'database/database.sqlite');
-    $pdo = new PDO('sqlite:' . $dbPath);
+    $dbPath = __DIR__.'/../'.($env['DB_DATABASE'] ?? 'database/database.sqlite');
+    $pdo = new PDO('sqlite:'.$dbPath);
 } else {
     $host = $env['DB_HOST'] ?? '127.0.0.1';
     $port = $env['DB_PORT'] ?? '3306';
@@ -40,8 +41,8 @@ if ($mode === 'soft') {
     echo "Soft-deleted tagihan_kontainer_sewa (updated deleted_at).\n";
 } elseif ($mode === 'hard') {
     // delete pivot rows then delete tagihan rows
-    $pdo->exec("DELETE FROM tagihan_kontainer_sewa_kontainers");
-    $pdo->exec("DELETE FROM tagihan_kontainer_sewa");
+    $pdo->exec('DELETE FROM tagihan_kontainer_sewa_kontainers');
+    $pdo->exec('DELETE FROM tagihan_kontainer_sewa');
     echo "Hard-deleted all tagihan_kontainer_sewa and pivot rows.\n";
 } else {
     echo "Unknown mode: $mode\n";

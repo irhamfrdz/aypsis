@@ -28,7 +28,7 @@ class TestPembayaranAktivitasLain extends Command
         $this->info('Testing penyimpanan data pembayaran aktivitas lain...');
 
         $data = [
-            'nomor' => 'TEST' . time(),
+            'nomor' => 'TEST'.time(),
             'tanggal' => '2025-12-09',
             'jenis_aktivitas' => 'Pembayaran Adjusment Uang Jalan',
             'jenis_penyesuaian' => 'pengurangan',
@@ -45,20 +45,20 @@ class TestPembayaranAktivitasLain extends Command
 
         try {
             $pembayaran = \App\Models\PembayaranAktivitasLain::create($data);
-            $this->info('✅ Data berhasil disimpan dengan ID: ' . $pembayaran->id);
-            $this->info('📋 Jenis aktivitas: ' . $pembayaran->jenis_aktivitas);
-            $this->info('📋 Jenis penyesuaian: ' . $pembayaran->jenis_penyesuaian);
-            $this->info('📋 Tipe penyesuaian: ' . json_encode($pembayaran->tipe_penyesuaian));
-            $this->info('📋 Jumlah: ' . $pembayaran->jumlah);
+            $this->info('✅ Data berhasil disimpan dengan ID: '.$pembayaran->id);
+            $this->info('📋 Jenis aktivitas: '.$pembayaran->jenis_aktivitas);
+            $this->info('📋 Jenis penyesuaian: '.$pembayaran->jenis_penyesuaian);
+            $this->info('📋 Tipe penyesuaian: '.json_encode($pembayaran->tipe_penyesuaian));
+            $this->info('📋 Jumlah: '.$pembayaran->jumlah);
 
             // Test retrieval
             $retrieved = \App\Models\PembayaranAktivitasLain::find($pembayaran->id);
             $this->info('🔄 Data berhasil diambil kembali:');
-            $this->info('📋 Tipe penyesuaian (retrieved): ' . json_encode($retrieved->tipe_penyesuaian));
+            $this->info('📋 Tipe penyesuaian (retrieved): '.json_encode($retrieved->tipe_penyesuaian));
 
         } catch (\Exception $e) {
-            $this->error('❌ Error: ' . $e->getMessage());
-            $this->error('Stack trace: ' . $e->getTraceAsString());
+            $this->error('❌ Error: '.$e->getMessage());
+            $this->error('Stack trace: '.$e->getTraceAsString());
         }
     }
 }

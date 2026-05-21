@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('kontainers', function (Blueprint $table) {
             // Drop foreign key first if it exists
             $table->dropForeign(['terminal_id']);
-            
+
             // Then drop the columns
             $table->dropColumn(['status_gate_in', 'tanggal_gate_in', 'terminal_id']);
         });
@@ -29,7 +29,7 @@ return new class extends Migration
             $table->string('status_gate_in')->nullable();
             $table->date('tanggal_gate_in')->nullable();
             $table->unsignedBigInteger('terminal_id')->nullable();
-            
+
             // Restore foreign key
             $table->foreign('terminal_id')->references('id')->on('terminals')->onDelete('set null');
         });

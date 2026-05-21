@@ -1,9 +1,8 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -20,14 +19,14 @@ return new class extends Migration
 
         // Cek dan hapus dari role_has_permissions jika table ada
         if (Schema::hasTable('role_has_permissions')) {
-            DB::table('role_has_permissions')->whereIn('permission_id', function($query) {
+            DB::table('role_has_permissions')->whereIn('permission_id', function ($query) {
                 $query->select('id')->from('permissions')->where('name', 'like', '%prospek-kapal%');
             })->delete();
         }
 
         // Cek dan hapus dari model_has_permissions jika table ada
         if (Schema::hasTable('model_has_permissions')) {
-            DB::table('model_has_permissions')->whereIn('permission_id', function($query) {
+            DB::table('model_has_permissions')->whereIn('permission_id', function ($query) {
                 $query->select('id')->from('permissions')->where('name', 'like', '%prospek-kapal%');
             })->delete();
         }

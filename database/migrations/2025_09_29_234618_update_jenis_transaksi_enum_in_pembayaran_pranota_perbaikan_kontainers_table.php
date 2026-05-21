@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('pembayaran_pranota_perbaikan_kontainers', function (Blueprint $table) {
             // Add jenis_transaksi column if it doesn't exist
-            if (!Schema::hasColumn('pembayaran_pranota_perbaikan_kontainers', 'jenis_transaksi')) {
+            if (! Schema::hasColumn('pembayaran_pranota_perbaikan_kontainers', 'jenis_transaksi')) {
                 $table->enum('jenis_transaksi', ['Debit', 'Kredit'])->default('Debit')->after('nominal_pembayaran');
             } else {
                 // If column exists, just change the enum values

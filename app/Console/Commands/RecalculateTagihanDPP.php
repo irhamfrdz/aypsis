@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\MasterPricelistSewaKontainer;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class RecalculateTagihanDPP extends Command
 {
@@ -49,6 +49,7 @@ class RecalculateTagihanDPP extends Command
 
         if ($tagihans->isEmpty()) {
             $this->error('No tagihan found with the specified criteria.');
+
             return 1;
         }
 
@@ -65,22 +66,22 @@ class RecalculateTagihanDPP extends Command
                 if (abs($newCalculation['dpp'] - $oldDpp) > 0.01) { // Use small threshold for float comparison
                     $this->line("Container: {$tagihan->nomor_kontainer}, Periode: {$tagihan->periode}");
                     $this->line("  Tarif: {$tagihan->tarif}");
-                    $this->line("  Old DPP: " . number_format($oldDpp, 2));
-                    $this->line("  New DPP: " . number_format($newCalculation['dpp'], 2));
-                    $this->line("  New PPN: " . number_format($newCalculation['ppn'], 2));
-                    $this->line("  New PPH: " . number_format($newCalculation['pph'], 2));
-                    $this->line("  New Total: " . number_format($newCalculation['grand_total'], 2));
+                    $this->line('  Old DPP: '.number_format($oldDpp, 2));
+                    $this->line('  New DPP: '.number_format($newCalculation['dpp'], 2));
+                    $this->line('  New PPN: '.number_format($newCalculation['ppn'], 2));
+                    $this->line('  New PPH: '.number_format($newCalculation['pph'], 2));
+                    $this->line('  New Total: '.number_format($newCalculation['grand_total'], 2));
 
-                    if (!$dryRun) {
+                    if (! $dryRun) {
                         $tagihan->update([
                             'dpp' => $newCalculation['dpp'],
                             'ppn' => $newCalculation['ppn'],
                             'pph' => $newCalculation['pph'],
                             'grand_total' => $newCalculation['grand_total'],
                         ]);
-                        $this->info("  ✓ Updated");
+                        $this->info('  ✓ Updated');
                     } else {
-                        $this->info("  (Dry run - not updated)");
+                        $this->info('  (Dry run - not updated)');
                     }
 
                     $updated++;
@@ -88,7 +89,7 @@ class RecalculateTagihanDPP extends Command
                     $this->line("Container: {$tagihan->nomor_kontainer}, Periode: {$tagihan->periode} - No change needed");
                 }
             } catch (\Exception $e) {
-                $this->error("Error processing {$tagihan->nomor_kontainer} periode {$tagihan->periode}: " . $e->getMessage());
+                $this->error("Error processing {$tagihan->nomor_kontainer} periode {$tagihan->periode}: ".$e->getMessage());
                 $errors++;
             }
         }
@@ -99,7 +100,7 @@ class RecalculateTagihanDPP extends Command
         $this->info("Errors: {$errors}");
 
         if ($dryRun) {
-            $this->warn("This was a dry run. Use without --dry-run to actually update the data.");
+            $this->warn('This was a dry run. Use without --dry-run to actually update the data.');
         }
 
         return 0;
@@ -167,6 +168,7 @@ class RecalculateTagihanDPP extends Command
             try {
                 $startDate = Carbon::parse($tagihan->tanggal_awal);
                 $endDate = Carbon::parse($tagihan->tanggal_akhir);
+
                 return $startDate->diffInDays($endDate) + 1; // +1 karena termasuk hari pertama
             } catch (\Exception $e) {
                 // If parsing fails, fall back to masa calculation
@@ -180,6 +182,7 @@ class RecalculateTagihanDPP extends Command
                 if (count($parts) === 2) {
                     $startDate = Carbon::parse($parts[0]);
                     $endDate = Carbon::parse($parts[1]);
+
                     return $startDate->diffInDays($endDate) + 1; // +1 karena termasuk hari pertama
                 }
             } catch (\Exception $e) {

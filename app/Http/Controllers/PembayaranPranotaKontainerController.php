@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coa;
 use App\Models\PembayaranPranotaKontainer;
 use App\Models\PembayaranPranotaKontainerItem;
 use App\Models\PranotaTagihanKontainerSewa;
-use App\Models\Coa;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PembayaranPranotaKontainerController extends Controller
@@ -20,6 +20,7 @@ class PembayaranPranotaKontainerController extends Controller
     {
         $this->coaTransactionService = $coaTransactionService;
     }
+
     /**
      * Display a listing of payments
      */
@@ -38,7 +39,7 @@ class PembayaranPranotaKontainerController extends Controller
     public function create(Request $request)
     {
         // If pranota_ids are provided (from pranota index page), redirect to payment form
-        if ($request->has('pranota_ids') && !empty($request->pranota_ids)) {
+        if ($request->has('pranota_ids') && ! empty($request->pranota_ids)) {
             return $this->showPaymentForm($request);
         }
 
@@ -54,12 +55,12 @@ class PembayaranPranotaKontainerController extends Controller
             ->get();
 
         // Get akun_coa data for bank selection - only kas/bank type
-        $akunCoa = Coa::where(function($query) {
-                $query->where('tipe_akun', 'Kas/Bank')
-                      ->orWhere('tipe_akun', 'Bank/Kas')
-                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
-                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
-            })
+        $akunCoa = Coa::where(function ($query) {
+            $query->where('tipe_akun', 'Kas/Bank')
+                ->orWhere('tipe_akun', 'Bank/Kas')
+                ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+        })
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
@@ -73,7 +74,7 @@ class PembayaranPranotaKontainerController extends Controller
     {
         $request->validate([
             'pranota_ids' => 'required|array|min:1',
-            'pranota_ids.*' => 'exists:pranota_tagihan_kontainer_sewa,id'
+            'pranota_ids.*' => 'exists:pranota_tagihan_kontainer_sewa,id',
         ]);
 
         $pranotaIds = $request->input('pranota_ids');
@@ -91,12 +92,12 @@ class PembayaranPranotaKontainerController extends Controller
         $totalPembayaran = $pranotaList->sum('total_amount');
 
         // Get akun_coa data for bank selection - only kas/bank type
-        $akunCoa = Coa::where(function($query) {
-                $query->where('tipe_akun', 'Kas/Bank')
-                      ->orWhere('tipe_akun', 'Bank/Kas')
-                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
-                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
-            })
+        $akunCoa = Coa::where(function ($query) {
+            $query->where('tipe_akun', 'Kas/Bank')
+                ->orWhere('tipe_akun', 'Bank/Kas')
+                ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+        })
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
@@ -120,7 +121,7 @@ class PembayaranPranotaKontainerController extends Controller
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string',
             'selected_dp_id' => 'nullable|exists:pembayaran_aktivitas_lainnya,id',
-            'selected_dp_amount' => 'nullable|numeric'
+            'selected_dp_amount' => 'nullable|numeric',
         ]);
 
         try {
@@ -147,7 +148,7 @@ class PembayaranPranotaKontainerController extends Controller
                 'penyesuaian' => $penyesuaian,
                 'dp_amount' => $dpAmount,
                 'selected_dp_id' => $request->input('selected_dp_id'),
-                'calculation_result' => ($totalPembayaran + $penyesuaian) - $dpAmount
+                'calculation_result' => ($totalPembayaran + $penyesuaian) - $dpAmount,
             ]);
 
             // Create pembayaran record
@@ -168,7 +169,7 @@ class PembayaranPranotaKontainerController extends Controller
                 'disetujui_oleh' => Auth::id(),
                 'tanggal_persetujuan' => now(),
                 'dp_payment_id' => $request->selected_dp_id,
-                'dp_amount' => $dpAmount
+                'dp_amount' => $dpAmount,
             ]);
 
             // Create payment items and update pranota status
@@ -176,7 +177,7 @@ class PembayaranPranotaKontainerController extends Controller
                 PembayaranPranotaKontainerItem::create([
                     'pembayaran_pranota_kontainer_id' => $pembayaran->id,
                     'pranota_id' => $pranota->id,
-                    'amount' => $pranota->total_amount
+                    'amount' => $pranota->total_amount,
                 ]);
 
                 // Update pranota status to paid
@@ -184,7 +185,7 @@ class PembayaranPranotaKontainerController extends Controller
 
                 // Update status_pranota to 'paid' for all related tagihan kontainer sewa items
                 $tagihanIds = $pranota->tagihan_kontainer_sewa_ids;
-                if (is_array($tagihanIds) && !empty($tagihanIds)) {
+                if (is_array($tagihanIds) && ! empty($tagihanIds)) {
                     \App\Models\DaftarTagihanKontainerSewa::whereIn('id', $tagihanIds)
                         ->update(['status_pranota' => 'paid']);
                 }
@@ -194,9 +195,9 @@ class PembayaranPranotaKontainerController extends Controller
             $totalAkhir = ($totalPembayaran + $penyesuaian) - $dpAmount;
             $tanggalTransaksi = $request->tanggal_kas;
 
-            $keterangan = "Pembayaran Pranota Kontainer - " . $request->nomor_pembayaran;
+            $keterangan = 'Pembayaran Pranota Kontainer - '.$request->nomor_pembayaran;
             if ($request->keterangan) {
-                $keterangan .= " | " . $request->keterangan;
+                $keterangan .= ' | '.$request->keterangan;
             }
 
             // Catat transaksi ke akun bank (kredit - mengurangi saldo bank)
@@ -225,14 +226,15 @@ class PembayaranPranotaKontainerController extends Controller
             DB::commit();
 
             $message = "Pembayaran berhasil dibuat dengan nomor: {$request->nomor_pembayaran}. ";
-            $message .= "Total pranota: " . count($pranotaIds) . ". ";
-            $message .= "Status: Sudah dibayar.";
+            $message .= 'Total pranota: '.count($pranotaIds).'. ';
+            $message .= 'Status: Sudah dibayar.';
 
             return redirect()->route('pembayaran-pranota-kontainer.index')->with('success', $message);
 
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->withInput()->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage());
+
+            return redirect()->back()->withInput()->with('error', 'Gagal membuat pembayaran: '.$e->getMessage());
         }
     }
 
@@ -245,7 +247,7 @@ class PembayaranPranotaKontainerController extends Controller
             'items.pranota',
             'pembuatPembayaran',
             'penyetujuPembayaran',
-            'dpPayment'
+            'dpPayment',
         ])->findOrFail($id);
 
         return view('pembayaran-pranota-kontainer.show', compact('pembayaran'));
@@ -260,7 +262,7 @@ class PembayaranPranotaKontainerController extends Controller
             'items.pranota',
             'pembuatPembayaran',
             'penyetujuPembayaran',
-            'dpPayment'
+            'dpPayment',
         ])->findOrFail($id);
 
         // Get COA transactions related to this payment
@@ -280,7 +282,7 @@ class PembayaranPranotaKontainerController extends Controller
         $pembayaran = PembayaranPranotaKontainer::with([
             'items.pranota',
             'pembuatPembayaran',
-            'penyetujuPembayaran'
+            'penyetujuPembayaran',
         ])->findOrFail($id);
 
         return view('pembayaran-pranota-kontainer.edit', compact('pembayaran'));
@@ -304,7 +306,7 @@ class PembayaranPranotaKontainerController extends Controller
                 'jenis_transaksi' => 'required|in:Debit,Kredit',
                 'total_pembayaran' => 'required|numeric|min:0',
                 'total_tagihan_penyesuaian' => 'nullable|numeric',
-                'keterangan' => 'nullable|string'
+                'keterangan' => 'nullable|string',
             ]);
 
             // Calculate old and new total
@@ -348,7 +350,7 @@ class PembayaranPranotaKontainerController extends Controller
                         'old_total' => $oldTotal,
                         'new_total' => $newTotal,
                         'difference' => $difference,
-                        'new_balance' => $biayaSewaKontainerCoa->saldo
+                        'new_balance' => $biayaSewaKontainerCoa->saldo,
                     ]);
                 }
             }
@@ -363,7 +365,7 @@ class PembayaranPranotaKontainerController extends Controller
                 'total_tagihan_penyesuaian' => $request->total_tagihan_penyesuaian ?? 0,
                 'total_tagihan_setelah_penyesuaian' => $newTotal,
                 'keterangan' => $request->keterangan,
-                'diupdate_oleh' => Auth::id()
+                'diupdate_oleh' => Auth::id(),
             ]);
 
             DB::commit();
@@ -373,9 +375,10 @@ class PembayaranPranotaKontainerController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Gagal mengupdate pembayaran: ' . $e->getMessage());
+                ->with('error', 'Gagal mengupdate pembayaran: '.$e->getMessage());
         }
     }
 
@@ -413,8 +416,9 @@ class PembayaranPranotaKontainerController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect()->back()
-                ->with('error', 'Gagal menghapus pembayaran: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus pembayaran: '.$e->getMessage());
         }
     }
 
@@ -429,7 +433,7 @@ class PembayaranPranotaKontainerController extends Controller
             $pembayaran = PembayaranPranotaKontainer::findOrFail($pembayaranId);
             $item = $pembayaran->items()->where('pranota_id', $pranotaId)->first();
 
-            if (!$item) {
+            if (! $item) {
                 return response()->json(['error' => 'Pranota tidak ditemukan dalam pembayaran ini'], 404);
             }
 
@@ -446,7 +450,7 @@ class PembayaranPranotaKontainerController extends Controller
             $newTotal = $pembayaran->items()->sum('amount');
             $pembayaran->update([
                 'total_pembayaran' => $newTotal,
-                'total_tagihan_setelah_penyesuaian' => $newTotal + ($pembayaran->total_tagihan_penyesuaian ?? 0)
+                'total_tagihan_setelah_penyesuaian' => $newTotal + ($pembayaran->total_tagihan_penyesuaian ?? 0),
             ]);
 
             DB::commit();
@@ -455,12 +459,13 @@ class PembayaranPranotaKontainerController extends Controller
                 'success' => true,
                 'message' => 'Pranota berhasil dihapus dari pembayaran',
                 'new_total' => number_format($newTotal, 0, ',', '.'),
-                'new_final_total' => number_format($newTotal + ($pembayaran->total_tagihan_penyesuaian ?? 0), 0, ',', '.')
+                'new_final_total' => number_format($newTotal + ($pembayaran->total_tagihan_penyesuaian ?? 0), 0, ',', '.'),
             ]);
 
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['error' => 'Gagal menghapus pranota: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Gagal menghapus pranota: '.$e->getMessage()], 500);
         }
     }
 
@@ -477,13 +482,13 @@ class PembayaranPranotaKontainerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'nomor_pembayaran' => $nomorPembayaran
+                'nomor_pembayaran' => $nomorPembayaran,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -505,13 +510,13 @@ class PembayaranPranotaKontainerController extends Controller
                 ->with(['bank', 'creator'])
                 ->orderBy('created_at', 'desc')
                 ->get()
-                ->map(function($payment) {
+                ->map(function ($payment) {
                     return [
                         'id' => $payment->id,
                         'nomor_pembayaran' => $payment->nomor_pembayaran,
                         'tanggal_pembayaran' => \Carbon\Carbon::parse($payment->tanggal_pembayaran)->format('d/m/Y'),
                         'total_pembayaran' => $payment->total_pembayaran,
-                        'total_formatted' => 'Rp ' . number_format((float)$payment->total_pembayaran, 0, ',', '.'),
+                        'total_formatted' => 'Rp '.number_format((float) $payment->total_pembayaran, 0, ',', '.'),
                         'bank_name' => $payment->bank->nama_akun ?? '-',
                         'aktivitas_pembayaran' => $payment->aktivitas_pembayaran,
                         'creator_name' => $payment->creator->username ?? '-',
@@ -520,13 +525,13 @@ class PembayaranPranotaKontainerController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $dpPayments
+                'data' => $dpPayments,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching DP payments: ' . $e->getMessage()
+                'message' => 'Error fetching DP payments: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -540,15 +545,15 @@ class PembayaranPranotaKontainerController extends Controller
             $pembayaran = PembayaranPranotaKontainer::with([
                 'pembuatPembayaran',
                 'penyetujuPembayaran',
-                'items.pranota'
+                'items.pranota',
             ])
-            ->where('nomor_pembayaran', $nomorPembayaran)
-            ->first();
+                ->where('nomor_pembayaran', $nomorPembayaran)
+                ->first();
 
-            if (!$pembayaran) {
+            if (! $pembayaran) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Pembayaran tidak ditemukan'
+                    'message' => 'Pembayaran tidak ditemukan',
                 ], 404);
             }
 
@@ -561,7 +566,7 @@ class PembayaranPranotaKontainerController extends Controller
                 $pranota = $item->pranota;
 
                 // Add pranota to list (avoid duplicates)
-                if ($pranota && !in_array($pranota->id, $pranotaIds)) {
+                if ($pranota && ! in_array($pranota->id, $pranotaIds)) {
                     $pranotaIds[] = $pranota->id;
 
                     // Get tagihan items (tagihanKontainerSewaItems adalah method, bukan relasi)
@@ -577,7 +582,7 @@ class PembayaranPranotaKontainerController extends Controller
                         'no_invoice' => $pranota->no_invoice,
                         'tanggal_pranota' => $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/m/Y') : null,
                         'jumlah_tagihan' => $jumlahTagihan,
-                        'total_amount' => $totalAmount
+                        'total_amount' => $totalAmount,
                     ];
 
                     // Collect all tagihan for this pranota
@@ -601,7 +606,7 @@ class PembayaranPranotaKontainerController extends Controller
                             'dpp' => $tagihan->dpp ?? 0,
                             'ppn' => $tagihan->ppn ?? 0,
                             'pph' => $tagihan->pph ?? 0,
-                            'total_biaya' => $tagihan->grand_total ?? 0 // Kolom 'grand_total' bukan 'total_biaya'
+                            'total_biaya' => $tagihan->grand_total ?? 0, // Kolom 'grand_total' bukan 'total_biaya'
                         ];
                     }
                 }
@@ -613,19 +618,20 @@ class PembayaranPranotaKontainerController extends Controller
                 'bank' => $pembayaran->bank ?? '-', // bank adalah string nama akun, bukan relasi
                 'total_tagihan_setelah_penyesuaian' => $pembayaran->total_tagihan_setelah_penyesuaian,
                 'pranota_list' => $pranotaList,
-                'tagihan_list' => $tagihanList
+                'tagihan_list' => $tagihanList,
             ];
 
             return response()->json([
                 'success' => true,
-                'data' => $data
+                'data' => $data,
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error getting payment detail: ' . $e->getMessage());
+            Log::error('Error getting payment detail: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat mengambil detail pembayaran'
+                'message' => 'Terjadi kesalahan saat mengambil detail pembayaran',
             ], 500);
         }
     }

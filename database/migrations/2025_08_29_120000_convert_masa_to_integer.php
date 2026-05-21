@@ -1,10 +1,10 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
-use Carbon\Carbon;
 
 return new class extends Migration
 {
@@ -32,11 +32,13 @@ return new class extends Migration
         try {
             $rows = DB::table('daftar_tagihan_kontainer_sewa')->select('id', 'tanggal_awal', 'tanggal_akhir')->get();
             foreach ($rows as $r) {
-                if (empty($r->tanggal_awal)) continue;
+                if (empty($r->tanggal_awal)) {
+                    continue;
+                }
                 try {
                     $start = Carbon::parse($r->tanggal_awal);
                     $endCandidate = $start->copy()->addMonthsNoOverflow(1)->subDay();
-                    if (!empty($r->tanggal_akhir)) {
+                    if (! empty($r->tanggal_akhir)) {
                         $tk = Carbon::parse($r->tanggal_akhir);
                         $end = $tk->lessThan($endCandidate) ? $tk : $endCandidate;
                     } else {
@@ -44,7 +46,7 @@ return new class extends Migration
                     }
                     $startStr = strtolower($start->locale('id')->isoFormat('D MMMM YYYY'));
                     $endStr = strtolower($end->locale('id')->isoFormat('D MMMM YYYY'));
-                    $masaStr = $startStr . ' - ' . $endStr;
+                    $masaStr = $startStr.' - '.$endStr;
                     DB::table('daftar_tagihan_kontainer_sewa')->where('id', $r->id)->update(['masa' => $masaStr]);
                 } catch (\Exception $e) {
                     // ignore row-level parse errors

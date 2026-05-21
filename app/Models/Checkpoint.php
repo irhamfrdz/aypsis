@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class Checkpoint extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     /**
      * The attributes that are mass assignable.
      *
@@ -39,4 +38,3 @@ class Checkpoint extends Model
         return $this->belongsTo(Permohonan::class);
     }
 }
-

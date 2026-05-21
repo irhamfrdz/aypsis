@@ -23,7 +23,7 @@ class PranotaUangJalanBatam extends Model
         'status_pembayaran',
         'catatan',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
@@ -32,14 +32,16 @@ class PranotaUangJalanBatam extends Model
         'penyesuaian' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        'deleted_at' => 'datetime'
+        'deleted_at' => 'datetime',
     ];
 
     /**
      * Status pembayaran constants
      */
     const STATUS_UNPAID = 'unpaid';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_CANCELLED = 'cancelled';
 
     /**
@@ -48,7 +50,7 @@ class PranotaUangJalanBatam extends Model
     public function uangJalanBatams()
     {
         return $this->belongsToMany(UangJalanBatam::class, 'pranota_uang_jalan_batam_items', 'pranota_uang_jalan_batam_id', 'uang_jalan_batam_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -75,6 +77,7 @@ class PranotaUangJalanBatam extends Model
         if ($status) {
             return $query->where('status_pembayaran', $status);
         }
+
         return $query;
     }
 
@@ -115,7 +118,7 @@ class PranotaUangJalanBatam extends Model
      */
     public function getFormattedTotalAttribute()
     {
-        return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
+        return 'Rp '.number_format($this->total_amount, 0, ',', '.');
     }
 
     /**
@@ -123,7 +126,7 @@ class PranotaUangJalanBatam extends Model
      */
     public function getFormattedPenyesuaianAttribute()
     {
-        return 'Rp ' . number_format($this->penyesuaian, 0, ',', '.');
+        return 'Rp '.number_format($this->penyesuaian, 0, ',', '.');
     }
 
     /**
@@ -139,7 +142,7 @@ class PranotaUangJalanBatam extends Model
      */
     public function getFormattedTotalWithPenyesuaianAttribute()
     {
-        return 'Rp ' . number_format($this->total_with_penyesuaian, 0, ',', '.');
+        return 'Rp '.number_format($this->total_with_penyesuaian, 0, ',', '.');
     }
 
     /**
@@ -157,19 +160,19 @@ class PranotaUangJalanBatam extends Model
     public static function generateNomorPranota()
     {
         $date = now()->format('Ymd');
-        $prefix = 'PRN-UJBTM-' . $date . '-';
-        
-        $lastRecord = static::withTrashed()->where('nomor_pranota', 'LIKE', $prefix . '%')
-                           ->orderBy('nomor_pranota', 'desc')
-                           ->first();
-        
+        $prefix = 'PRN-UJBTM-'.$date.'-';
+
+        $lastRecord = static::withTrashed()->where('nomor_pranota', 'LIKE', $prefix.'%')
+            ->orderBy('nomor_pranota', 'desc')
+            ->first();
+
         $runningNumber = 1;
-        
+
         if ($lastRecord) {
             $lastNumber = str_replace($prefix, '', $lastRecord->nomor_pranota);
             $runningNumber = intval($lastNumber) + 1;
         }
-        
-        return $prefix . str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
+
+        return $prefix.str_pad($runningNumber, 4, '0', STR_PAD_LEFT);
     }
 }

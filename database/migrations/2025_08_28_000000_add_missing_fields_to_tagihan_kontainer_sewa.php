@@ -14,25 +14,25 @@ class AddMissingFieldsToTagihanKontainerSewa extends Migration
     public function up()
     {
         Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
-            if (!Schema::hasColumn('tagihan_kontainer_sewa', 'nomor_kontainer')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa', 'nomor_kontainer')) {
                 $table->text('nomor_kontainer')->nullable()->after('harga');
             }
-            if (!Schema::hasColumn('tagihan_kontainer_sewa', 'dpp')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa', 'dpp')) {
                 $table->decimal('dpp', 15, 2)->nullable()->after('nomor_kontainer');
             }
-            if (!Schema::hasColumn('tagihan_kontainer_sewa', 'ppn')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa', 'ppn')) {
                 $table->decimal('ppn', 15, 2)->nullable()->after('dpp');
             }
-            if (!Schema::hasColumn('tagihan_kontainer_sewa', 'pph')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa', 'pph')) {
                 $table->decimal('pph', 15, 2)->nullable()->after('ppn');
             }
-            if (!Schema::hasColumn('tagihan_kontainer_sewa', 'grand_total')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa', 'grand_total')) {
                 $table->decimal('grand_total', 15, 2)->nullable()->after('pph');
             }
-            if (!Schema::hasColumn('tagihan_kontainer_sewa', 'nomor_pranota')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa', 'nomor_pranota')) {
                 $table->string('nomor_pranota')->nullable()->after('group_code');
             }
-            if (!Schema::hasColumn('tagihan_kontainer_sewa', 'is_pranota')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa', 'is_pranota')) {
                 $table->boolean('is_pranota')->default(false)->after('nomor_pranota');
             }
         });

@@ -19,14 +19,14 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('pembayaran_pranota_uang_jalan_bongkaran_id', 'fk_ppujb_items_pembayaran')
-                  ->references('id')
-                  ->on('pembayaran_pranota_uang_jalan_bongkarans')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('pembayaran_pranota_uang_jalan_bongkarans')
+                ->onDelete('cascade');
 
             $table->foreign('pranota_uang_jalan_bongkaran_id', 'fk_ppujb_items_pranota')
-                  ->references('id')
-                  ->on('pranota_uang_jalan_bongkarans')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('pranota_uang_jalan_bongkarans')
+                ->onDelete('cascade');
 
             // Indexes
             $table->index(['pembayaran_pranota_uang_jalan_bongkaran_id'], 'idx_pembayaran_bongkaran_id');

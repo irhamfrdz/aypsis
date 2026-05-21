@@ -2,8 +2,8 @@
 
 define('LARAVEL_START', microtime(true));
 
-require __DIR__ . '/../../vendor/autoload.php';
-$app = require_once __DIR__ . '/../../bootstrap/app.php';
+require __DIR__.'/../../vendor/autoload.php';
+$app = require_once __DIR__.'/../../bootstrap/app.php';
 
 use App\Models\PranotaLembur;
 use Illuminate\Support\Facades\DB;
@@ -41,12 +41,12 @@ try {
         $newTotal = DB::table('pranota_lembur_surat_jalan')
             ->where('pranota_lembur_id', $p->id)
             ->sum('total_biaya');
-        
+
         $p->total_biaya = $newTotal;
         $p->total_setelah_adjustment = $newTotal + ($p->adjustment ?? 0);
         $p->save();
-        
-        echo "  * Pranota {$p->nomor_pranota} diperbarui: Total Rp " . number_format($p->total_setelah_adjustment, 0, ',', '.') . "\n";
+
+        echo "  * Pranota {$p->nomor_pranota} diperbarui: Total Rp ".number_format($p->total_setelah_adjustment, 0, ',', '.')."\n";
     }
 
     DB::commit();
@@ -54,5 +54,5 @@ try {
 
 } catch (\Exception $e) {
     DB::rollBack();
-    echo "Gagal memperbaiki data: " . $e->getMessage() . "\n";
+    echo 'Gagal memperbaiki data: '.$e->getMessage()."\n";
 }

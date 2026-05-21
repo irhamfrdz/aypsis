@@ -2,17 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-
-use App\Traits\Auditable;
 class GateIn extends Model
 {
+    use Auditable;
     use HasFactory, SoftDeletes;
 
-    use Auditable;
     protected $fillable = [
         'nomor_gate_in',
         'pelabuhan',
@@ -24,11 +23,11 @@ class GateIn extends Model
         'tanggal_gate_in',
         'user_id',
         'keterangan',
-        'status'
+        'status',
     ];
 
     protected $casts = [
-        'tanggal_gate_in' => 'datetime'
+        'tanggal_gate_in' => 'datetime',
     ];
 
     // Relationships

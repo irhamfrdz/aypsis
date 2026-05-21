@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PergerakanKapal;
+use App\Models\Karyawan;
 use App\Models\MasterKapal;
 use App\Models\MasterTujuanKirim;
-use App\Models\Karyawan;
+use App\Models\PergerakanKapal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -113,7 +113,7 @@ class PergerakanKapalController extends Controller
         PergerakanKapal::create($validated);
 
         return redirect()->route('pergerakan-kapal.index')
-                        ->with('success', 'Data pergerakan kapal berhasil dibuat.');
+            ->with('success', 'Data pergerakan kapal berhasil dibuat.');
     }
 
     /**
@@ -172,7 +172,7 @@ class PergerakanKapalController extends Controller
         $pergerakanKapal->update($validated);
 
         return redirect()->route('pergerakan-kapal.index')
-                        ->with('success', 'Data pergerakan kapal berhasil diupdate.');
+            ->with('success', 'Data pergerakan kapal berhasil diupdate.');
     }
 
     /**
@@ -183,7 +183,7 @@ class PergerakanKapalController extends Controller
         $pergerakanKapal->delete();
 
         return redirect()->route('pergerakan-kapal.index')
-                        ->with('success', 'Data pergerakan kapal berhasil dihapus.');
+            ->with('success', 'Data pergerakan kapal berhasil dihapus.');
     }
 
     /**
@@ -195,13 +195,13 @@ class PergerakanKapalController extends Controller
         $tujuanAsal = $request->tujuan_asal;
         $tujuanTujuan = $request->tujuan_tujuan;
 
-        if (!$namaKapal || !$tujuanAsal || !$tujuanTujuan) {
+        if (! $namaKapal || ! $tujuanAsal || ! $tujuanTujuan) {
             return response()->json(['error' => 'Missing required parameters'], 400);
         }
 
         // Ambil nickname dari master kapal (2 digit)
         $masterKapal = MasterKapal::where('nama_kapal', $namaKapal)->first();
-        if (!$masterKapal || !$masterKapal->nickname) {
+        if (! $masterKapal || ! $masterKapal->nickname) {
             return response()->json(['error' => 'Nickname kapal tidak ditemukan'], 400);
         }
         $nicknameKapal = strtoupper(substr($masterKapal->nickname, 0, 2));
@@ -229,14 +229,14 @@ class PergerakanKapalController extends Controller
             'Denpasar' => 'D',
             'Jayapura' => 'Y',
             'Sorong' => 'O',
-            'Ambon' => 'A'
+            'Ambon' => 'A',
         ];
 
         // Ambil kota tujuan asal dan tujuan kirim
         $tujuanAsalData = MasterTujuanKirim::where('nama_tujuan', $tujuanAsal)->first();
         $tujuanTujuanData = MasterTujuanKirim::where('nama_tujuan', $tujuanTujuan)->first();
 
-        if (!$tujuanAsalData || !$tujuanTujuanData) {
+        if (! $tujuanAsalData || ! $tujuanTujuanData) {
             return response()->json(['error' => 'Data tujuan tidak ditemukan'], 400);
         }
 
@@ -266,11 +266,11 @@ class PergerakanKapalController extends Controller
         $pergerakanKapal->update([
             'status' => 'approved',
             'approved_by' => Auth::user()->name,
-            'approved_at' => now()
+            'approved_at' => now(),
         ]);
 
         return redirect()->route('pergerakan-kapal.index')
-                        ->with('success', 'Data pergerakan kapal berhasil disetujui.');
+            ->with('success', 'Data pergerakan kapal berhasil disetujui.');
     }
 
     /**
@@ -321,13 +321,13 @@ class PergerakanKapalController extends Controller
         $pergerakanKapals = $query->orderBy('tanggal_sandar', 'desc')->get();
 
         // Export to CSV
-        $filename = 'pergerakan_kapal_' . date('Y-m-d_H-i-s') . '.csv';
+        $filename = 'pergerakan_kapal_'.date('Y-m-d_H-i-s').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($pergerakanKapals) {
+        $callback = function () use ($pergerakanKapals) {
             $file = fopen('php://output', 'w');
 
             // CSV Headers
@@ -341,7 +341,7 @@ class PergerakanKapalController extends Controller
                 'Tanggal Labuh',
                 'Tanggal Berangkat',
                 'Status',
-                'Keterangan'
+                'Keterangan',
             ]);
 
             // Data rows
@@ -356,7 +356,7 @@ class PergerakanKapalController extends Controller
                     $item->tanggal_labuh ? $item->tanggal_labuh->format('Y-m-d') : '',
                     $item->tanggal_berangkat ? $item->tanggal_berangkat->format('Y-m-d') : '',
                     $item->status,
-                    $item->keterangan
+                    $item->keterangan,
                 ]);
             }
 

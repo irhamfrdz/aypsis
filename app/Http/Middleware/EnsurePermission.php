@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class EnsurePermission
 {
@@ -17,8 +17,8 @@ class EnsurePermission
     {
         /** @var User|null $user */
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             abort(403, 'Access denied. Please login first.');
         }
 
@@ -33,8 +33,8 @@ class EnsurePermission
             }
         }
 
-        if (!$hasPermission) {
-            abort(403, "Access denied. You don't have permission: " . str_replace('|', ' or ', $permissions));
+        if (! $hasPermission) {
+            abort(403, "Access denied. You don't have permission: ".str_replace('|', ' or ', $permissions));
         }
 
         return $next($request);

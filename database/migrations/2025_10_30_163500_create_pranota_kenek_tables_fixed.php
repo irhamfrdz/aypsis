@@ -12,22 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         // Skip users table - already exists
-        
+
         // Check if surat_jalans table needs columns updated
         if (Schema::hasTable('surat_jalans')) {
             // Add missing columns if they don't exist
             Schema::table('surat_jalans', function (Blueprint $table) {
-                if (!Schema::hasColumn('surat_jalans', 'uang_rit_kenek')) {
+                if (! Schema::hasColumn('surat_jalans', 'uang_rit_kenek')) {
                     $table->decimal('uang_rit_kenek', 15, 2)->default(50000);
                 }
-                if (!Schema::hasColumn('surat_jalans', 'status_pembayaran_uang_rit_kenek')) {
+                if (! Schema::hasColumn('surat_jalans', 'status_pembayaran_uang_rit_kenek')) {
                     $table->enum('status_pembayaran_uang_rit_kenek', ['belum_dibayar', 'sudah_masuk_pranota', 'sudah_dibayar'])->default('belum_dibayar');
                 }
             });
         }
 
         // Create pranota_uang_keneks table (updated structure)
-        if (!Schema::hasTable('pranota_uang_keneks')) {
+        if (! Schema::hasTable('pranota_uang_keneks')) {
             Schema::create('pranota_uang_keneks', function (Blueprint $table) {
                 $table->id();
                 $table->string('no_pranota')->unique();
@@ -63,7 +63,7 @@ return new class extends Migration
         }
 
         // Create pranota_uang_kenek_details table
-        if (!Schema::hasTable('pranota_uang_kenek_details')) {
+        if (! Schema::hasTable('pranota_uang_kenek_details')) {
             Schema::create('pranota_uang_kenek_details', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('pranota_uang_kenek_id');
@@ -87,7 +87,7 @@ return new class extends Migration
         }
 
         // Create pranota_uang_kenek_summary table
-        if (!Schema::hasTable('pranota_uang_kenek_summary')) {
+        if (! Schema::hasTable('pranota_uang_kenek_summary')) {
             Schema::create('pranota_uang_kenek_summary', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('pranota_uang_kenek_id');
@@ -105,7 +105,7 @@ return new class extends Migration
                 // Indexes
                 $table->index('pranota_uang_kenek_id');
                 $table->index('kenek_nama');
-                
+
                 // Unique constraint to prevent duplicate kenek in same pranota
                 $table->unique(['pranota_uang_kenek_id', 'kenek_nama'], 'unique_pranota_kenek');
             });

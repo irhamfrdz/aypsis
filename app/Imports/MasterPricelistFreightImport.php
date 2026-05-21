@@ -3,16 +3,18 @@
 namespace App\Imports;
 
 use App\Models\MasterPricelistFreight;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
-use Illuminate\Support\Facades\Log;
 
-class MasterPricelistFreightImport implements ToModel, WithHeadingRow, SkipsEmptyRows
+class MasterPricelistFreightImport implements SkipsEmptyRows, ToModel, WithHeadingRow
 {
     private $successCount = 0;
+
     private $errorCount = 0;
+
     private $errors = [];
+
     private $rowNumber = 0;
 
     public function model(array $row)
@@ -39,6 +41,7 @@ class MasterPricelistFreightImport implements ToModel, WithHeadingRow, SkipsEmpt
             if (empty($namaBarang)) {
                 $this->errorCount++;
                 $this->errors[] = "Baris {$this->rowNumber}: Nama Barang harus diisi";
+
                 return null;
             }
 
@@ -55,10 +58,12 @@ class MasterPricelistFreightImport implements ToModel, WithHeadingRow, SkipsEmpt
                     'keterangan' => $keterangan,
                 ]);
                 $this->successCount++;
+
                 return null;
             }
 
             $this->successCount++;
+
             return new MasterPricelistFreight([
                 'nama_barang' => $namaBarang,
                 'lokasi' => $lokasi,
@@ -70,7 +75,8 @@ class MasterPricelistFreightImport implements ToModel, WithHeadingRow, SkipsEmpt
 
         } catch (\Exception $e) {
             $this->errorCount++;
-            $this->errors[] = "Baris {$this->rowNumber}: Error - " . $e->getMessage();
+            $this->errors[] = "Baris {$this->rowNumber}: Error - ".$e->getMessage();
+
             return null;
         }
     }
@@ -80,7 +86,7 @@ class MasterPricelistFreightImport implements ToModel, WithHeadingRow, SkipsEmpt
         foreach ($possibleKeys as $key) {
             // Normalize key for comparison (lowercase and underscore)
             $normalizedKey = str_replace(' ', '_', strtolower($key));
-            
+
             // Search in keys of $row
             foreach ($row as $rowKey => $rowValue) {
                 if (str_replace(' ', '_', strtolower($rowKey)) === $normalizedKey) {
@@ -88,24 +94,31 @@ class MasterPricelistFreightImport implements ToModel, WithHeadingRow, SkipsEmpt
                 }
             }
         }
+
         return '';
     }
 
     private function cleanNumber($value)
     {
-        if ($value === null || $value === '') return 0;
-        $cleaned = preg_replace('/[^\d,.-]/', '', (string)$value);
+        if ($value === null || $value === '') {
+            return 0;
+        }
+        $cleaned = preg_replace('/[^\d,.-]/', '', (string) $value);
         $cleaned = str_replace(',', '.', $cleaned);
+
         return (float) $cleaned;
     }
 
     private function normalizeLokasi($value)
     {
-        if (empty($value)) return null;
+        if (empty($value)) {
+            return null;
+        }
         $val = trim(strtolower((string) $value));
         if (in_array(ucfirst($val), ['Jakarta', 'Batam', 'Pinang'])) {
             return ucfirst($val);
         }
+
         return ucfirst($val);
     }
 
@@ -115,6 +128,7 @@ class MasterPricelistFreightImport implements ToModel, WithHeadingRow, SkipsEmpt
         if ($val === 'aktif' || $val === 'active' || $val === '1' || $val === 'yes') {
             return 'Aktif';
         }
+
         return 'Tidak Aktif';
     }
 

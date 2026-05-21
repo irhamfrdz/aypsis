@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up()
     {
-        if (!Schema::hasColumn('tagihan_kontainer_sewa', 'masa')) {
+        if (! Schema::hasColumn('tagihan_kontainer_sewa', 'masa')) {
             Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
                 $table->string('masa', 255)->nullable()->after('group_code');
             });

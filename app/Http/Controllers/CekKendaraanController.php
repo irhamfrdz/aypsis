@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\CekKendaraanDailyExport;
+use App\Exports\CekKendaraanWeeklyExport;
 use App\Models\CekKendaraan;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\CekKendaraanDailyExport;
-use App\Exports\CekKendaraanWeeklyExport;
-use Carbon\Carbon;
 
 class CekKendaraanController extends Controller
 {
@@ -17,13 +17,14 @@ class CekKendaraanController extends Controller
         $cekKendaraans = CekKendaraan::with(['mobil', 'karyawan'])
             ->latest()
             ->paginate(15);
-            
+
         return view('cek-kendaraan.index', compact('cekKendaraans'));
     }
 
     public function show(CekKendaraan $cekKendaraan)
     {
         $cekKendaraan->load(['mobil', 'karyawan']);
+
         return view('cek-kendaraan.show', compact('cekKendaraan'));
     }
 
@@ -31,7 +32,7 @@ class CekKendaraanController extends Controller
     {
         $date = $request->get('date', date('Y-m-d'));
         $cabang = $request->get('cabang');
-        
+
         // Use the same definition of Supir as User::isSupir()
         // Divisi is 'SUPIR' or 'DRIVER'
         $query = \App\Models\Karyawan::whereIn(DB::raw('UPPER(TRIM(pekerjaan))'), ['SUPIR TRUCK', 'SUPIR TRAILER'])
@@ -42,11 +43,11 @@ class CekKendaraanController extends Controller
         }
 
         $drivers = $query->orderBy('nama_lengkap')->get();
-            
+
         $checksForDate = CekKendaraan::whereDate('tanggal', $date)
             ->get()
             ->groupBy('karyawan_id');
-            
+
         return view('cek-kendaraan.daily', compact('drivers', 'checksForDate', 'date', 'cabang'));
     }
 
@@ -54,7 +55,7 @@ class CekKendaraanController extends Controller
     {
         $date = $request->get('date', date('Y-m-d'));
         $cabang = $request->get('cabang');
-        
+
         $query = \App\Models\Karyawan::whereIn(DB::raw('UPPER(TRIM(pekerjaan))'), ['SUPIR TRUCK', 'SUPIR TRAILER'])
             ->whereNull('tanggal_berhenti');
 
@@ -63,13 +64,13 @@ class CekKendaraanController extends Controller
         }
 
         $drivers = $query->orderBy('nama_lengkap')->get();
-            
+
         $checksForDate = CekKendaraan::whereDate('tanggal', $date)
             ->get()
             ->groupBy('karyawan_id');
 
-        $fileName = 'Laporan_Cek_Kendaraan_' . ($cabang ?: 'Semua') . '_' . $date . '.xlsx';
-        
+        $fileName = 'Laporan_Cek_Kendaraan_'.($cabang ?: 'Semua').'_'.$date.'.xlsx';
+
         return Excel::download(new CekKendaraanDailyExport($drivers, $checksForDate, $date), $fileName);
     }
 
@@ -132,7 +133,7 @@ class CekKendaraanController extends Controller
                 return $item->tanggal->format('Y-m-d');
             }]);
 
-        $fileName = 'Laporan_Cek_Kendaraan_Mingguan_' . ($cabang ?: 'Semua') . '_' . $weekStart->format('Y-m-d') . '_ke_' . $weekEnd->format('Y-m-d') . '.xlsx';
+        $fileName = 'Laporan_Cek_Kendaraan_Mingguan_'.($cabang ?: 'Semua').'_'.$weekStart->format('Y-m-d').'_ke_'.$weekEnd->format('Y-m-d').'.xlsx';
 
         return Excel::download(new CekKendaraanWeeklyExport($drivers, $checksForWeek, $weekStart), $fileName);
     }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Gudang;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -29,23 +29,24 @@ class StockKontainerPergudangController extends Controller
             ->pluck('total', 'gudangs_id');
 
         // Map data for display
-        $data = $gudangs->map(function($gudang) use ($kontainerCounts, $stockCounts) {
+        $data = $gudangs->map(function ($gudang) use ($kontainerCounts, $stockCounts) {
             $sewaCount = $kontainerCounts[$gudang->id] ?? 0;
             $stockCount = $stockCounts[$gudang->id] ?? 0;
+
             return [
                 'id' => $gudang->id,
                 'nama_gudang' => $gudang->nama_gudang,
                 'lokasi' => $gudang->lokasi,
                 'total_sewa' => $sewaCount,
                 'total_stock' => $stockCount,
-                'total_gabungan' => $sewaCount + $stockCount
+                'total_gabungan' => $sewaCount + $stockCount,
             ];
         });
 
         // Add a "Tanpa Gudang" record for items without a warehouse
         $unassignedSewa = Kontainer::whereNull('gudangs_id')->count();
         $unassignedStock = StockKontainer::whereNull('gudangs_id')->count();
-        
+
         if ($unassignedSewa > 0 || $unassignedStock > 0) {
             $data->push([
                 'id' => null,
@@ -53,7 +54,7 @@ class StockKontainerPergudangController extends Controller
                 'lokasi' => '-',
                 'total_sewa' => $unassignedSewa,
                 'total_stock' => $unassignedStock,
-                'total_gabungan' => $unassignedSewa + $unassignedStock
+                'total_gabungan' => $unassignedSewa + $unassignedStock,
             ]);
         }
 
@@ -66,7 +67,7 @@ class StockKontainerPergudangController extends Controller
         $gudang = null;
         if ($id !== 'none' && $id != '') {
             $gudang = Gudang::find($id);
-            if (!$gudang) {
+            if (! $gudang) {
                 return redirect()->route('master.kontainer.stock-pergudang')->with('error', 'Gudang tidak ditemukan.');
             }
         }
@@ -82,8 +83,9 @@ class StockKontainerPergudangController extends Controller
             } else {
                 $querySewa->where('gudangs_id', $id);
             }
-            $sewas = $querySewa->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status')->get()->map(function($i) {
+            $sewas = $querySewa->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status')->get()->map(function ($i) {
                 $i->tipe_sumber = 'Sewa';
+
                 return $i;
             });
         }
@@ -97,8 +99,9 @@ class StockKontainerPergudangController extends Controller
             } else {
                 $queryStock->where('gudangs_id', $id);
             }
-            $stocks = $queryStock->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status')->get()->map(function($i) {
+            $stocks = $queryStock->select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status')->get()->map(function ($i) {
                 $i->tipe_sumber = 'Stock';
+
                 return $i;
             });
         }
@@ -109,7 +112,7 @@ class StockKontainerPergudangController extends Controller
         // Fetch entry dates from HistoryKontainer
         $containerNumbers = $allContainers->pluck('nomor_seri_gabungan')->toArray();
         $gudangIdForHistory = ($id === 'none' || $id == '') ? null : $id;
-        
+
         $historySub = \App\Models\HistoryKontainer::whereIn('nomor_kontainer', $containerNumbers)
             ->where('gudang_id', $gudangIdForHistory)
             ->select('nomor_kontainer', DB::raw('MAX(tanggal_kegiatan) as tanggal_masuk'))
@@ -130,9 +133,9 @@ class StockKontainerPergudangController extends Controller
         if ($id !== 'none' && $id != '') {
             $gudang = Gudang::find($id);
         }
-        
+
         $namaGudangStr = $gudang ? $gudang->nama_gudang : 'Tanpa Gudang';
-        $fileName = 'Daftar_Kontainer_' . str_replace([' ', '/', '\\'], '_', $namaGudangStr) . '_' . date('Ymd_His') . '.xlsx';
+        $fileName = 'Daftar_Kontainer_'.str_replace([' ', '/', '\\'], '_', $namaGudangStr).'_'.date('Ymd_His').'.xlsx';
 
         return Excel::download(new \App\Exports\GudangKontainerExport($id, $type), $fileName);
     }
@@ -140,9 +143,9 @@ class StockKontainerPergudangController extends Controller
     public function downloadTemplate()
     {
         $headers = ['Nomor Kontainer'];
-        
+
         // Use a simple CSV output for the template
-        $callback = function() use ($headers) {
+        $callback = function () use ($headers) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $headers);
             // Add some example rows
@@ -152,11 +155,11 @@ class StockKontainerPergudangController extends Controller
         };
 
         return response()->stream($callback, 200, [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=template_sync_kontainer.csv",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=template_sync_kontainer.csv',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
         ]);
     }
 
@@ -174,7 +177,7 @@ class StockKontainerPergudangController extends Controller
         if ($request->hasFile('file_excel')) {
             try {
                 $data = Excel::toArray([], $request->file('file_excel'));
-                if (!empty($data) && count($data) > 0) {
+                if (! empty($data) && count($data) > 0) {
                     foreach ($data[0] as $row) {
                         $val = trim($row[0] ?? '');
                         if ($val && strtolower($val) !== 'nomor kontainer' && strtolower($val) !== 'no kontainer') {
@@ -183,7 +186,7 @@ class StockKontainerPergudangController extends Controller
                     }
                 }
             } catch (\Exception $e) {
-                return redirect()->back()->with('error', 'Gagal membaca file Excel/CSV. Pastikan format file benar. Error: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Gagal membaca file Excel/CSV. Pastikan format file benar. Error: '.$e->getMessage());
             }
         }
 
@@ -192,7 +195,9 @@ class StockKontainerPergudangController extends Controller
             $textNumbers = preg_split('/[\n,\r\s]+/', $request->container_numbers);
             foreach ($textNumbers as $n) {
                 $trimmed = trim($n);
-                if ($trimmed) $inputNumbers[] = $trimmed;
+                if ($trimmed) {
+                    $inputNumbers[] = $trimmed;
+                }
             }
         }
 
@@ -204,11 +209,11 @@ class StockKontainerPergudangController extends Controller
 
         // 1. Identify "excess" containers (In DB for this warehouse, but NOT in uploaded list)
         // We do this by finding all containers currently in this warehouse and checking if they are in the input
-        
+
         // Sewa Containers
         $sewasInWarehouse = \App\Models\Kontainer::where('gudangs_id', $gudangId)->get();
         foreach ($sewasInWarehouse as $sewa) {
-            if (!in_array($sewa->nomor_seri_gabungan, $inputNumbers)) {
+            if (! in_array($sewa->nomor_seri_gabungan, $inputNumbers)) {
                 $oldGudangId = $sewa->gudangs_id;
                 $sewa->update(['gudangs_id' => null]);
 
@@ -221,7 +226,7 @@ class StockKontainerPergudangController extends Controller
                     'asal_gudang_id' => $oldGudangId,
                     'gudang_id' => null,
                     'keterangan' => 'Sync Kontainer: Dihapus dari gudang (tidak ada dalam list sync)',
-                    'created_by' => \Illuminate\Support\Facades\Auth::id()
+                    'created_by' => \Illuminate\Support\Facades\Auth::id(),
                 ]);
             }
         }
@@ -229,7 +234,7 @@ class StockKontainerPergudangController extends Controller
         // Stock Containers
         $stocksInWarehouse = \App\Models\StockKontainer::where('gudangs_id', $gudangId)->get();
         foreach ($stocksInWarehouse as $stock) {
-            if (!in_array($stock->nomor_seri_gabungan, $inputNumbers)) {
+            if (! in_array($stock->nomor_seri_gabungan, $inputNumbers)) {
                 $oldGudangId = $stock->gudangs_id;
                 $stock->update(['gudangs_id' => null]);
 
@@ -242,7 +247,7 @@ class StockKontainerPergudangController extends Controller
                     'asal_gudang_id' => $oldGudangId,
                     'gudang_id' => null,
                     'keterangan' => 'Sync Kontainer (Stock): Dihapus dari gudang (tidak ada dalam list sync)',
-                    'created_by' => \Illuminate\Support\Facades\Auth::id()
+                    'created_by' => \Illuminate\Support\Facades\Auth::id(),
                 ]);
             }
         }
@@ -266,12 +271,13 @@ class StockKontainerPergudangController extends Controller
                             'asal_gudang_id' => $oldGudangId,
                             'gudang_id' => $gudangId,
                             'keterangan' => 'Sync Kontainer: Dipindahkan ke gudang via Sync',
-                            'created_by' => \Illuminate\Support\Facades\Auth::id()
+                            'created_by' => \Illuminate\Support\Facades\Auth::id(),
                         ]);
                     }
+
                     continue;
                 }
-                
+
                 // Then Stock
                 $stock = \App\Models\StockKontainer::where('nomor_seri_gabungan', 'like', "%$number%")->first();
                 if ($stock) {
@@ -288,7 +294,7 @@ class StockKontainerPergudangController extends Controller
                             'asal_gudang_id' => $oldGudangId,
                             'gudang_id' => $gudangId,
                             'keterangan' => 'Sync Kontainer (Stock): Dipindahkan ke gudang via Sync',
-                            'created_by' => \Illuminate\Support\Facades\Auth::id()
+                            'created_by' => \Illuminate\Support\Facades\Auth::id(),
                         ]);
                     }
                 }

@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MobilTemplateExport;
+use App\Imports\MobilImport;
 use App\Models\Mobil;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\MobilImport;
-use App\Exports\MobilTemplateExport;
-use Exception;
 
 class MasterMobilImportController extends Controller
 {
@@ -20,16 +20,14 @@ class MasterMobilImportController extends Controller
     public function downloadTemplate()
     {
         try {
-            $fileName = 'template_master_asset_' . date('Y-m-d_H-i-s') . '.xlsx';
-            
+            $fileName = 'template_master_asset_'.date('Y-m-d_H-i-s').'.xlsx';
+
             return Excel::download(new MobilTemplateExport, $fileName);
 
         } catch (Exception $e) {
-            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mendownload template: '.$e->getMessage());
         }
     }
-
-
 
     /**
      * Import data master kendaraan dari Excel
@@ -42,12 +40,12 @@ class MasterMobilImportController extends Controller
                 'required',
                 'file',
                 'mimes:xlsx,xls',
-                'max:10240' // 10MB
-            ]
+                'max:10240', // 10MB
+            ],
         ], [
             'excel_file.required' => 'File Excel harus dipilih.',
             'excel_file.mimes' => 'File harus berformat .xlsx atau .xls',
-            'excel_file.max' => 'Ukuran file maksimal 10MB.'
+            'excel_file.max' => 'Ukuran file maksimal 10MB.',
         ]);
 
         if ($validator->fails()) {
@@ -56,11 +54,11 @@ class MasterMobilImportController extends Controller
 
         try {
             $file = $request->file('excel_file');
-            
+
             // Read Excel file using Maatwebsite Excel
             $importData = Excel::toArray(new MobilImport, $file);
             $excelData = $importData[0]; // Get first sheet data
-            
+
             $header = array_shift($excelData); // Remove header row
 
             $stats = [
@@ -69,7 +67,7 @@ class MasterMobilImportController extends Controller
                 'errors' => 0,
                 'skipped' => 0,
                 'error_details' => [],
-                'warnings' => []
+                'warnings' => [],
             ];
 
             DB::beginTransaction();
@@ -111,27 +109,28 @@ class MasterMobilImportController extends Controller
                     if (empty($kodeAktiva) && empty($nomorPolisi)) {
                         $stats['skipped']++;
                         $stats['warnings'][] = "Baris {$rowNumber}: Tidak ada kode aktiva dan nomor polisi, dilewati.";
+
                         continue;
                     }
 
                     // Find karyawan by NIK if provided
                     $karyawanId = null;
-                    if (!empty($nik)) {
+                    if (! empty($nik)) {
                         $karyawanQuery = \App\Models\Karyawan::where('nik', $nik);
-                        
+
                         // Filter berdasarkan cabang user yang login
                         $currentUser = auth()->user();
                         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang) {
                             $userCabang = $currentUser->karyawan->cabang;
                             $karyawanQuery->where('cabang', $userCabang);
                         }
-                        
+
                         $karyawan = $karyawanQuery->first();
-                        
+
                         if ($karyawan) {
                             $karyawanId = $karyawan->id;
                             // Update plat karyawan only if nomor polisi exists
-                            if (!empty($nomorPolisi)) {
+                            if (! empty($nomorPolisi)) {
                                 $karyawan->update(['plat' => $nomorPolisi]);
                             }
                         } else {
@@ -151,9 +150,9 @@ class MasterMobilImportController extends Controller
 
                     // Check if mobil already exists - prioritize by kode_aktiva, fallback to nomor_polisi
                     $existingMobil = null;
-                    if (!empty($kodeAktiva)) {
+                    if (! empty($kodeAktiva)) {
                         $existingMobil = Mobil::where('kode_no', $kodeAktiva)->first();
-                    } elseif (!empty($nomorPolisi)) {
+                    } elseif (! empty($nomorPolisi)) {
                         $existingMobil = Mobil::where('nomor_polisi', $nomorPolisi)->first();
                     }
 
@@ -164,7 +163,7 @@ class MasterMobilImportController extends Controller
                         'lokasi' => $lokasi ?: null,
                         'merek' => $merek ?: null,
                         'jenis' => $jenis ?: null,
-                        'tahun_pembuatan' => is_numeric($tahunPembuatan) ? (int)$tahunPembuatan : null,
+                        'tahun_pembuatan' => is_numeric($tahunPembuatan) ? (int) $tahunPembuatan : null,
                         'bpkb' => $bpkb ?: null,
                         'no_mesin' => $noMesin ?: null,
                         'nomor_rangka' => $noRangka ?: null,
@@ -179,7 +178,7 @@ class MasterMobilImportController extends Controller
                         'warna_plat' => $warnaPlat ?: null,
                         'catatan' => $catatan ?: null,
                         'karyawan_id' => $karyawanId,
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ];
 
                     if ($existingMobil) {
@@ -195,14 +194,14 @@ class MasterMobilImportController extends Controller
 
                 } catch (Exception $e) {
                     $stats['errors']++;
-                    $stats['error_details'][] = "Baris {$rowNumber}: " . $e->getMessage();
+                    $stats['error_details'][] = "Baris {$rowNumber}: ".$e->getMessage();
                 }
             }
 
             DB::commit();
 
             // Prepare success message
-            $message = "Import selesai! ";
+            $message = 'Import selesai! ';
             if ($stats['success'] > 0) {
                 $message .= "{$stats['success']} data baru berhasil ditambahkan. ";
             }
@@ -219,12 +218,12 @@ class MasterMobilImportController extends Controller
             $redirectResponse = back()->with('success', $message);
 
             // Add error details if any
-            if (!empty($stats['error_details'])) {
+            if (! empty($stats['error_details'])) {
                 $redirectResponse = $redirectResponse->with('import_errors', $stats['error_details']);
             }
 
             // Add warnings if any
-            if (!empty($stats['warnings'])) {
+            if (! empty($stats['warnings'])) {
                 $redirectResponse = $redirectResponse->with('import_warnings', $stats['warnings']);
             }
 
@@ -232,7 +231,8 @@ class MasterMobilImportController extends Controller
 
         } catch (Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Error saat import: ' . $e->getMessage());
+
+            return back()->with('error', 'Error saat import: '.$e->getMessage());
         }
     }
 
@@ -261,13 +261,14 @@ class MasterMobilImportController extends Controller
                 // Convert 2-digit year to 4-digit
                 $year = $date->format('Y');
                 if (strlen($year) == 2) {
-                    $yearInt = (int)$year;
+                    $yearInt = (int) $year;
                     if ($yearInt < 50) {
                         $date->setDate(2000 + $yearInt, $date->format('m'), $date->format('d'));
                     } else {
                         $date->setDate(1900 + $yearInt, $date->format('m'), $date->format('d'));
                     }
                 }
+
                 return $date->format('Y-m-d');
             }
         }
@@ -282,7 +283,7 @@ class MasterMobilImportController extends Controller
     {
         try {
             $format = $request->get('format', 'excel');
-            
+
             // Build query dengan filter yang sama seperti index
             $query = Mobil::with('karyawan');
 
@@ -304,11 +305,11 @@ class MasterMobilImportController extends Controller
                     'asuransi' => 'tanggal_jatuh_tempo_asuransi',
                     'pajak_stnk' => 'pajak_stnk',
                     'pajak_kir' => 'pajak_kir',
-                    'pajak_plat' => 'pajak_plat'
+                    'pajak_plat' => 'pajak_plat',
                 ];
-                
+
                 $field = $fieldMap[$request->jenis_tanggal] ?? null;
-                
+
                 if ($field) {
                     if ($request->filled('tanggal_dari') && $request->filled('tanggal_sampai')) {
                         $query->whereBetween($field, [$request->tanggal_dari, $request->tanggal_sampai]);
@@ -323,22 +324,22 @@ class MasterMobilImportController extends Controller
             // Apply search filter if exists
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('kode_no', 'like', "%{$search}%")
-                      ->orWhere('nomor_polisi', 'like', "%{$search}%")
-                      ->orWhere('no_kir', 'like', "%{$search}%")
-                      ->orWhere('merek', 'like', "%{$search}%")
-                      ->orWhere('jenis', 'like', "%{$search}%")
-                      ->orWhere('lokasi', 'like', "%{$search}%")
-                      ->orWhere('no_mesin', 'like', "%{$search}%")
-                      ->orWhere('nomor_rangka', 'like', "%{$search}%")
-                      ->orWhere('bpkb', 'like', "%{$search}%")
-                      ->orWhere('atas_nama', 'like', "%{$search}%")
-                      ->orWhere('pemakai', 'like', "%{$search}%")
-                      ->orWhereHas('karyawan', function($subQ) use ($search) {
-                          $subQ->where('nama_lengkap', 'like', "%{$search}%")
-                               ->orWhere('nik', 'like', "%{$search}%");
-                      });
+                        ->orWhere('nomor_polisi', 'like', "%{$search}%")
+                        ->orWhere('no_kir', 'like', "%{$search}%")
+                        ->orWhere('merek', 'like', "%{$search}%")
+                        ->orWhere('jenis', 'like', "%{$search}%")
+                        ->orWhere('lokasi', 'like', "%{$search}%")
+                        ->orWhere('no_mesin', 'like', "%{$search}%")
+                        ->orWhere('nomor_rangka', 'like', "%{$search}%")
+                        ->orWhere('bpkb', 'like', "%{$search}%")
+                        ->orWhere('atas_nama', 'like', "%{$search}%")
+                        ->orWhere('pemakai', 'like', "%{$search}%")
+                        ->orWhereHas('karyawan', function ($subQ) use ($search) {
+                            $subQ->where('nama_lengkap', 'like', "%{$search}%")
+                                ->orWhere('nik', 'like', "%{$search}%");
+                        });
                 });
             }
 
@@ -347,7 +348,8 @@ class MasterMobilImportController extends Controller
             switch ($format) {
                 case 'excel':
                     // Use Maatwebsite Excel (XLSX) to export where possible
-                    $fileName = 'master_mobil_' . date('Y-m-d_H-i-s') . '.xlsx';
+                    $fileName = 'master_mobil_'.date('Y-m-d_H-i-s').'.xlsx';
+
                     return Excel::download(new \App\Exports\MobilExport($mobils), $fileName);
                 case 'csv':
                     return $this->exportToCsv($mobils, $request);
@@ -358,7 +360,7 @@ class MasterMobilImportController extends Controller
             }
 
         } catch (Exception $e) {
-            return back()->with('error', 'Error saat export: ' . $e->getMessage());
+            return back()->with('error', 'Error saat export: '.$e->getMessage());
         }
     }
 
@@ -368,28 +370,28 @@ class MasterMobilImportController extends Controller
     private function exportToExcel($mobils, $request)
     {
         $searchTerm = $request->get('search', '');
-        $fileName = 'master_mobil_' . date('Y-m-d_H-i-s') . '.csv';
-        
+        $fileName = 'master_mobil_'.date('Y-m-d_H-i-s').'.csv';
+
         if ($searchTerm) {
-            $fileName = 'master_mobil_search_' . date('Y-m-d_H-i-s') . '.csv';
+            $fileName = 'master_mobil_search_'.date('Y-m-d_H-i-s').'.csv';
         }
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
         ];
 
-        $callback = function() use ($mobils) {
+        $callback = function () use ($mobils) {
             $file = fopen('php://output', 'w');
-            
+
             // Add BOM for UTF-8
-            fputs($file, "\xEF\xBB\xBF");
+            fwrite($file, "\xEF\xBB\xBF");
 
             // Headers
             fputcsv($file, [
                 'No',
                 'Kode Aktiva',
-                'Nomor Polisi', 
+                'Nomor Polisi',
                 'Nickname',
                 'NIK Karyawan',
                 'Nama Karyawan',
@@ -411,7 +413,7 @@ class MasterMobilImportController extends Controller
                 'Warna Plat',
                 'Catatan',
                 'Dibuat Tanggal',
-                'Diperbarui Tanggal'
+                'Diperbarui Tanggal',
             ], '|');
 
             // Data rows
@@ -465,14 +467,14 @@ class MasterMobilImportController extends Controller
     private function exportToPdf($mobils, $request)
     {
         $searchTerm = $request->get('search', '');
-        
+
         // Data untuk PDF
         $data = [
             'mobils' => $mobils,
             'search' => $searchTerm,
             'total' => $mobils->count(),
             'exported_at' => now()->format('d F Y H:i:s'),
-            'exported_by' => auth()->user()->name ?? 'System'
+            'exported_by' => auth()->user()->name ?? 'System',
         ];
 
         // Generate PDF menggunakan view
@@ -480,9 +482,9 @@ class MasterMobilImportController extends Controller
         $pdf->loadView('exports.mobil-pdf', $data);
         $pdf->setPaper('a4', 'landscape');
 
-        $fileName = 'master_mobil_' . date('Y-m-d_H-i-s') . '.pdf';
+        $fileName = 'master_mobil_'.date('Y-m-d_H-i-s').'.pdf';
         if ($searchTerm) {
-            $fileName = 'master_mobil_search_' . date('Y-m-d_H-i-s') . '.pdf';
+            $fileName = 'master_mobil_search_'.date('Y-m-d_H-i-s').'.pdf';
         }
 
         return $pdf->download($fileName);

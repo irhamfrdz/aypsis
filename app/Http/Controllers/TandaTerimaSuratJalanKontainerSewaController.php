@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\TandaTerimaSuratJalanKontainerSewa;
-use App\Models\SuratJalanKontainerSewa;
 use App\Models\Karyawan;
-use Illuminate\Support\Facades\DB;
+use App\Models\SuratJalanKontainerSewa;
+use App\Models\TandaTerimaSuratJalanKontainerSewa;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class TandaTerimaSuratJalanKontainerSewaController extends Controller
@@ -22,15 +21,15 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
             $now = now();
             $bulan = $now->format('m');
             $tahun = $now->format('y');
-            
+
             // Get last tanda terima for current month/year
             $lastTandaTerima = TandaTerimaSuratJalanKontainerSewa::whereYear('created_at', $now->year)
                 ->whereMonth('created_at', $now->month)
                 ->orderBy('id', 'desc')
                 ->first();
-            
+
             $nextNumber = 1;
-            
+
             if ($lastTandaTerima && $lastTandaTerima->nomor_tanda_terima) {
                 // Extract running number from format TTKSMMYYXXXXXX (14 characters)
                 $nomorTerima = $lastTandaTerima->nomor_tanda_terima;
@@ -39,18 +38,18 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
                     $nextNumber = $lastRunningNumber + 1;
                 }
             }
-            
+
             return response()->json([
                 'success' => true,
                 'next_number' => $nextNumber,
                 'bulan' => $bulan,
-                'tahun' => $tahun
+                'tahun' => $tahun,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
-                'next_number' => 1
+                'next_number' => 1,
             ], 500);
         }
     }
@@ -61,18 +60,18 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
     public function index(Request $request)
     {
         $tipe = $request->get('tipe', 'surat_jalan'); // default: surat_jalan
-        
+
         if ($tipe === 'tanda_terima') {
             $query = TandaTerimaSuratJalanKontainerSewa::with(['suratJalanKontainerSewa']);
 
             // Search filter
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor_tanda_terima', 'LIKE', "%{$search}%")
-                      ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
-                      ->orWhere('nomor_surat_jalan', 'LIKE', "%{$search}%")
-                      ->orWhere('supir', 'LIKE', "%{$search}%");
+                        ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
+                        ->orWhere('nomor_surat_jalan', 'LIKE', "%{$search}%")
+                        ->orWhere('supir', 'LIKE', "%{$search}%");
                 });
             }
 
@@ -88,13 +87,13 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
             }
 
             $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
-            
+
             // Get supirs for dropdown modal
             $supirs = Karyawan::select('id', 'nama_panggilan', 'plat')
                 ->where('divisi', 'supir')
                 ->orderBy('nama_panggilan')
                 ->get();
-            
+
             return view('tanda-terima-surat-jalan-kontainer-sewa.index', compact('tandaTerimas', 'supirs'));
         } else {
             // Pending Surat Jalan
@@ -103,11 +102,11 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
             // Search filter
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%")
-                      ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
-                      ->orWhere('supir', 'LIKE', "%{$search}%")
-                      ->orWhere('vendor', 'LIKE', "%{$search}%");
+                        ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
+                        ->orWhere('supir', 'LIKE', "%{$search}%")
+                        ->orWhere('vendor', 'LIKE', "%{$search}%");
                 });
             }
 
@@ -117,7 +116,7 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
                     $query->whereHas('items'); // wait, SuratJalanKontainerSewa has one-to-one or one-to-many? Let's check relation
                 }
             }
-            
+
             // For pending tab, show those status = 'aktif'
             $query->where('status', 'aktif');
 
@@ -177,23 +176,23 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
         ]);
 
         // Ensure at least one checkbox is selected
-        if (!$request->boolean('lembur') && !$request->boolean('nginap') && !$request->boolean('tidak_lembur_nginap')) {
+        if (! $request->boolean('lembur') && ! $request->boolean('nginap') && ! $request->boolean('tidak_lembur_nginap')) {
             return redirect()->back()->withInput()->withErrors([
-                'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).'
+                'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
             ]);
         }
 
         DB::beginTransaction();
         try {
             $suratJalan = SuratJalanKontainerSewa::findOrFail($validated['surat_jalan_kontainer_sewa_id']);
-            
+
             $validated['nomor_surat_jalan'] = $suratJalan->nomor_surat_jalan;
             $validated['nomor_kontainer'] = $suratJalan->nomor_kontainer;
             $validated['tipe_kontainer'] = $suratJalan->tipe_kontainer;
             $validated['ukuran'] = $suratJalan->ukuran;
             $validated['kegiatan'] = $suratJalan->tipe; // 'pengambilan' or 'pengembalian'
             $validated['status'] = 'completed';
-            
+
             $validated['lembur'] = $request->boolean('lembur');
             $validated['nginap'] = $request->boolean('nginap');
             $validated['tidak_lembur_nginap'] = $request->boolean('tidak_lembur_nginap');
@@ -214,7 +213,7 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
                 'status' => 'selesai',
                 'supir' => $validated['supir'],
                 'no_plat' => $validated['no_plat'],
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
 
             DB::commit();
@@ -225,10 +224,11 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error storing Tanda Terima Surat Jalan Kontainer Sewa: ' . $e->getMessage());
+            Log::error('Error storing Tanda Terima Surat Jalan Kontainer Sewa: '.$e->getMessage());
+
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -248,9 +248,9 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
     public function edit($id)
     {
         $tandaTerima = TandaTerimaSuratJalanKontainerSewa::findOrFail($id);
-        
+
         $suratJalans = SuratJalanKontainerSewa::orderBy('nomor_surat_jalan', 'desc')->get();
-            
+
         $supirs = Karyawan::where('divisi', 'supir')
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'plat']);
@@ -264,7 +264,7 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_surat_jalan_kontainer_sewas,nomor_tanda_terima,' . $id,
+            'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_surat_jalan_kontainer_sewas,nomor_tanda_terima,'.$id,
             'tanggal_tanda_terima' => 'required|date',
             'no_seal' => 'nullable|string|max:255',
             'supir' => 'nullable|string|max:255',
@@ -276,16 +276,16 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
         ]);
 
         // Ensure at least one checkbox is selected
-        if (!$request->boolean('lembur') && !$request->boolean('nginap') && !$request->boolean('tidak_lembur_nginap')) {
+        if (! $request->boolean('lembur') && ! $request->boolean('nginap') && ! $request->boolean('tidak_lembur_nginap')) {
             return redirect()->back()->withInput()->withErrors([
-                'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).'
+                'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
             ]);
         }
 
         DB::beginTransaction();
         try {
             $tandaTerima = TandaTerimaSuratJalanKontainerSewa::findOrFail($id);
-            
+
             $validated['lembur'] = $request->boolean('lembur');
             $validated['nginap'] = $request->boolean('nginap');
             $validated['tidak_lembur_nginap'] = $request->boolean('tidak_lembur_nginap');
@@ -300,7 +300,7 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
                     $suratJalan->update([
                         'supir' => $validated['supir'] ?: $suratJalan->supir,
                         'no_plat' => $validated['no_plat'] ?: $suratJalan->no_plat,
-                        'updated_by' => Auth::id()
+                        'updated_by' => Auth::id(),
                     ]);
                 }
             }
@@ -313,10 +313,11 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating Tanda Terima Surat Jalan Kontainer Sewa: ' . $e->getMessage());
+            Log::error('Error updating Tanda Terima Surat Jalan Kontainer Sewa: '.$e->getMessage());
+
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -328,14 +329,14 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
         DB::beginTransaction();
         try {
             $tandaTerima = TandaTerimaSuratJalanKontainerSewa::findOrFail($id);
-            
+
             // Revert related Surat Jalan Kontainer Sewa status to 'aktif'
             if ($tandaTerima->surat_jalan_kontainer_sewa_id) {
                 $suratJalan = SuratJalanKontainerSewa::find($tandaTerima->surat_jalan_kontainer_sewa_id);
                 if ($suratJalan) {
                     $suratJalan->update([
                         'status' => 'aktif',
-                        'updated_by' => Auth::id()
+                        'updated_by' => Auth::id(),
                     ]);
                 }
             }
@@ -350,9 +351,10 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error destroying Tanda Terima Surat Jalan Kontainer Sewa: ' . $e->getMessage());
+            Log::error('Error destroying Tanda Terima Surat Jalan Kontainer Sewa: '.$e->getMessage());
+
             return back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 

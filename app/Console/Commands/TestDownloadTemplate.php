@@ -2,13 +2,13 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Http\Controllers\KontainerImportController;
-use Illuminate\Http\Request;
+use Illuminate\Console\Command;
 
 class TestDownloadTemplate extends Command
 {
     protected $signature = 'test:download-template';
+
     protected $description = 'Test download template functionality';
 
     public function handle()
@@ -16,7 +16,7 @@ class TestDownloadTemplate extends Command
         $this->info('=== TEST DOWNLOAD TEMPLATE ===');
 
         try {
-            $controller = new KontainerImportController();
+            $controller = new KontainerImportController;
             $response = $controller->downloadTemplate();
 
             // Get content
@@ -41,8 +41,8 @@ class TestDownloadTemplate extends Command
                 $this->info('✓ Header format correct');
             } else {
                 $this->error('✗ Header format incorrect');
-                $this->error('Expected: ' . implode(';', $expectedHeader));
-                $this->error('Actual: ' . implode(';', $header));
+                $this->error('Expected: '.implode(';', $expectedHeader));
+                $this->error('Actual: '.implode(';', $header));
             }
 
             // Check if file has only header (clean template)
@@ -53,11 +53,13 @@ class TestDownloadTemplate extends Command
             }
 
         } catch (\Exception $e) {
-            $this->error('Error: ' . $e->getMessage());
+            $this->error('Error: '.$e->getMessage());
+
             return 1;
         }
 
         $this->info('=== TEST DOWNLOAD SELESAI ===');
+
         return 0;
     }
 }

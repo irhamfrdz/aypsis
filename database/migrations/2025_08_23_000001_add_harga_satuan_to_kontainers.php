@@ -10,7 +10,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('kontainers')) {
             Schema::table('kontainers', function (Blueprint $table) {
-                if (!Schema::hasColumn('kontainers', 'harga_satuan')) {
+                if (! Schema::hasColumn('kontainers', 'harga_satuan')) {
                     // store as decimal with generous precision
                     $table->decimal('harga_satuan', 15, 2)->nullable()->after('status');
                 }

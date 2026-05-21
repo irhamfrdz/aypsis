@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\TandaTerimaBongkaran;
-use App\Models\SuratJalanBongkaran;
 use App\Models\Gudang;
+use App\Models\Karyawan;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
-use App\Models\Karyawan;
+use App\Models\SuratJalanBongkaran;
+use App\Models\TandaTerimaBongkaran;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class TandaTerimaBongkaranController extends Controller
@@ -23,15 +22,15 @@ class TandaTerimaBongkaranController extends Controller
             $now = now();
             $bulan = $now->format('m');
             $tahun = $now->format('y');
-            
+
             // Get last tanda terima for current month/year
             $lastTandaTerima = TandaTerimaBongkaran::whereYear('created_at', $now->year)
                 ->whereMonth('created_at', $now->month)
                 ->orderBy('id', 'desc')
                 ->first();
-            
+
             $nextNumber = 1;
-            
+
             if ($lastTandaTerima && $lastTandaTerima->nomor_tanda_terima) {
                 // Extract running number from format TTBMMYYXXXXXX (13 characters)
                 $nomorTerima = $lastTandaTerima->nomor_tanda_terima;
@@ -41,18 +40,18 @@ class TandaTerimaBongkaranController extends Controller
                     $nextNumber = $lastRunningNumber + 1;
                 }
             }
-            
+
             return response()->json([
                 'success' => true,
                 'next_number' => $nextNumber,
                 'bulan' => $bulan,
-                'tahun' => $tahun
+                'tahun' => $tahun,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
-                'next_number' => 1
+                'next_number' => 1,
             ], 500);
         }
     }
@@ -63,7 +62,7 @@ class TandaTerimaBongkaranController extends Controller
     public function index(Request $request)
     {
         $tipe = $request->get('tipe', 'surat_jalan'); // default: surat_jalan
-        
+
         if ($tipe === 'tanda_terima') {
             // Query for Tanda Terima Bongkaran
             $query = TandaTerimaBongkaran::with(['suratJalanBongkaran', 'gudang']);
@@ -71,12 +70,12 @@ class TandaTerimaBongkaranController extends Controller
             // Search filter
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor_tanda_terima', 'LIKE', "%{$search}%")
-                      ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
-                      ->orWhereHas('suratJalanBongkaran', function($q) use ($search) {
-                          $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%");
-                      });
+                        ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
+                        ->orWhereHas('suratJalanBongkaran', function ($q) use ($search) {
+                            $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%");
+                        });
                 });
             }
 
@@ -97,7 +96,7 @@ class TandaTerimaBongkaranController extends Controller
             }
 
             $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(20);
-            
+
             // Get gudangs and karyawans for modal dropdown (needed for both views)
             $gudangs = Gudang::where('status', 'aktif')
                 ->orderBy('nama_gudang')
@@ -118,7 +117,7 @@ class TandaTerimaBongkaranController extends Controller
                 ->where('divisi', 'krani')
                 ->orderBy('nama_panggilan')
                 ->get();
-            
+
             return view('tanda-terima-bongkaran.index', compact('tandaTerimas', 'gudangs', 'supirs', 'kranis'));
         } else {
             // Query for Surat Jalan Bongkaran
@@ -127,12 +126,12 @@ class TandaTerimaBongkaranController extends Controller
             // Search filter
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%")
-                      ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
-                      ->orWhere('no_seal', 'LIKE', "%{$search}%")
-                      ->orWhere('no_bl', 'LIKE', "%{$search}%")
-                      ->orWhere('pengirim', 'LIKE', "%{$search}%");
+                        ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
+                        ->orWhere('no_seal', 'LIKE', "%{$search}%")
+                        ->orWhere('no_bl', 'LIKE', "%{$search}%")
+                        ->orWhere('pengirim', 'LIKE', "%{$search}%");
                 });
             }
 
@@ -219,11 +218,11 @@ class TandaTerimaBongkaranController extends Controller
         ]);
 
         // Ensure at least one checkbox is selected
-        if (!$request->boolean('lembur') && !$request->boolean('nginap') && !$request->boolean('tidak_lembur_nginap')) {
+        if (! $request->boolean('lembur') && ! $request->boolean('nginap') && ! $request->boolean('tidak_lembur_nginap')) {
             return redirect()->back()->withInput()->withErrors([
                 'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
                 'nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
-                'tidak_lembur_nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).'
+                'tidak_lembur_nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
             ]);
         }
 
@@ -232,12 +231,12 @@ class TandaTerimaBongkaranController extends Controller
 
             // Get additional data from surat jalan
             $suratJalan = SuratJalanBongkaran::findOrFail($validated['surat_jalan_bongkaran_id']);
-            
+
             $validated['no_kontainer'] = $suratJalan->no_kontainer;
             $validated['no_seal'] = $suratJalan->no_seal;
             $validated['kegiatan'] = $suratJalan->kegiatan ?? 'bongkar'; // default to 'bongkar' if null
             $validated['status'] = 'completed';
-            
+
             // Ensure boolean values
             $validated['lembur'] = $request->boolean('lembur');
             $validated['nginap'] = $request->boolean('nginap');
@@ -252,18 +251,18 @@ class TandaTerimaBongkaranController extends Controller
             if (empty($suratJalan->tanggal_checkpoint)) {
                 $updateData['tanggal_checkpoint'] = $validated['tanggal_tanda_terima'];
             }
-            if (!empty($validated['supir'])) {
+            if (! empty($validated['supir'])) {
                 $updateData['supir'] = $validated['supir'];
             }
-            if (!empty($validated['kenek'])) {
+            if (! empty($validated['kenek'])) {
                 $updateData['kenek'] = $validated['kenek'];
             }
-            
+
             // Update lembur/nginap fields on surat jalan as well
             $updateData['lembur'] = $validated['lembur'];
             $updateData['nginap'] = $validated['nginap'];
             $updateData['tidak_lembur_nginap'] = $validated['tidak_lembur_nginap'];
-            
+
             $suratJalan->update($updateData);
 
             // Update gudangs_id pada table kontainers berdasarkan no_kontainer
@@ -281,8 +280,8 @@ class TandaTerimaBongkaranController extends Controller
                         'tanggal_kegiatan' => $validated['tanggal_tanda_terima'],
                         'asal_gudang_id' => $asalGudangId,
                         'gudang_id' => $validated['gudang_id'],
-                        'keterangan' => 'Masuk via Tanda Terima Bongkaran: ' . $validated['nomor_tanda_terima'],
-                        'created_by' => \Illuminate\Support\Facades\Auth::id()
+                        'keterangan' => 'Masuk via Tanda Terima Bongkaran: '.$validated['nomor_tanda_terima'],
+                        'created_by' => \Illuminate\Support\Facades\Auth::id(),
                     ]);
                 }
             }
@@ -302,8 +301,8 @@ class TandaTerimaBongkaranController extends Controller
                         'tanggal_kegiatan' => $validated['tanggal_tanda_terima'],
                         'asal_gudang_id' => $asalGudangId,
                         'gudang_id' => $validated['gudang_id'],
-                        'keterangan' => 'Masuk via Tanda Terima Bongkaran (Stock): ' . $validated['nomor_tanda_terima'],
-                        'created_by' => \Illuminate\Support\Facades\Auth::id()
+                        'keterangan' => 'Masuk via Tanda Terima Bongkaran (Stock): '.$validated['nomor_tanda_terima'],
+                        'created_by' => \Illuminate\Support\Facades\Auth::id(),
                     ]);
                 }
             }
@@ -316,9 +315,10 @@ class TandaTerimaBongkaranController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -340,7 +340,7 @@ class TandaTerimaBongkaranController extends Controller
         $suratJalans = SuratJalanBongkaran::with(['bl'])
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         $gudangs = Gudang::where('status', 'aktif')
             ->orderBy('nama_gudang')
             ->get();
@@ -354,7 +354,7 @@ class TandaTerimaBongkaranController extends Controller
     public function update(Request $request, TandaTerimaBongkaran $tandaTerimaBongkaran)
     {
         $validated = $request->validate([
-            'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_bongkarans,nomor_tanda_terima,' . $tandaTerimaBongkaran->id,
+            'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_bongkarans,nomor_tanda_terima,'.$tandaTerimaBongkaran->id,
             'tanggal_tanda_terima' => 'required|date',
             'gudang_id' => 'required|exists:gudangs,id',
             'surat_jalan_bongkaran_id' => 'required|exists:surat_jalan_bongkarans,id',
@@ -369,11 +369,11 @@ class TandaTerimaBongkaranController extends Controller
         ]);
 
         // Ensure at least one checkbox is selected
-        if (!$request->boolean('lembur') && !$request->boolean('nginap') && !$request->boolean('tidak_lembur_nginap')) {
+        if (! $request->boolean('lembur') && ! $request->boolean('nginap') && ! $request->boolean('tidak_lembur_nginap')) {
             return redirect()->back()->withInput()->withErrors([
                 'lembur' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
                 'nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
-                'tidak_lembur_nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).'
+                'tidak_lembur_nginap' => 'Harap pilih minimal satu opsi (Lembur, Nginap, atau Tidak Lembur & Nginap).',
             ]);
         }
 
@@ -395,7 +395,7 @@ class TandaTerimaBongkaranController extends Controller
                     $sjUpdate['lembur'] = $validated['lembur'];
                     $sjUpdate['nginap'] = $validated['nginap'];
                     $sjUpdate['tidak_lembur_nginap'] = $validated['tidak_lembur_nginap'];
-                    
+
                     $suratJalan->update($sjUpdate);
                 }
             }
@@ -408,9 +408,10 @@ class TandaTerimaBongkaranController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -428,7 +429,7 @@ class TandaTerimaBongkaranController extends Controller
 
         } catch (\Exception $e) {
             return back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 

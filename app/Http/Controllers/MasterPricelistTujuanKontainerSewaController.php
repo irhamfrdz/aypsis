@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\MasterPricelistTujuanKontainerSewa;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class MasterPricelistTujuanKontainerSewaController extends Controller
 {
@@ -18,7 +17,7 @@ class MasterPricelistTujuanKontainerSewaController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where('tujuan', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                ->orWhere('keterangan', 'like', "%{$search}%");
         }
 
         $pricelists = $query->orderBy('tujuan')->paginate(20);
@@ -58,6 +57,7 @@ class MasterPricelistTujuanKontainerSewaController extends Controller
     public function show($id)
     {
         $pricelist = MasterPricelistTujuanKontainerSewa::findOrFail($id);
+
         return view('master-pricelist-tujuan-kontainer-sewa.show', compact('pricelist'));
     }
 
@@ -67,6 +67,7 @@ class MasterPricelistTujuanKontainerSewaController extends Controller
     public function edit($id)
     {
         $pricelist = MasterPricelistTujuanKontainerSewa::findOrFail($id);
+
         return view('master-pricelist-tujuan-kontainer-sewa.edit', compact('pricelist'));
     }
 

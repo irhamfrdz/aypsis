@@ -18,7 +18,7 @@ return new class extends Migration
         });
 
         Schema::table('master_pricelist_biaya_storages', function (Blueprint $table) {
-            if (!Schema::hasColumn('master_pricelist_biaya_storages', 'tarif_massa_2')) {
+            if (! Schema::hasColumn('master_pricelist_biaya_storages', 'tarif_massa_2')) {
                 $table->decimal('tarif_massa_2', 15, 2)->after('tarif_massa_1')->nullable();
             }
         });

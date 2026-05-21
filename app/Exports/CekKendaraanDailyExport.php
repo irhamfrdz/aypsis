@@ -3,16 +3,18 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class CekKendaraanDailyExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class CekKendaraanDailyExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     protected $drivers;
+
     protected $checksForDate;
+
     protected $date;
 
     public function __construct($drivers, $checksForDate, $date)
@@ -31,7 +33,7 @@ class CekKendaraanDailyExport implements FromCollection, WithHeadings, WithMappi
     {
         return [
             ['LAPORAN CEK KENDARAAN HARIAN'],
-            ['Tanggal: ' . \Carbon\Carbon::parse($this->date)->format('d F Y')],
+            ['Tanggal: '.\Carbon\Carbon::parse($this->date)->format('d F Y')],
             [''],
             [
                 'No',
@@ -42,8 +44,8 @@ class CekKendaraanDailyExport implements FromCollection, WithHeadings, WithMappi
                 'Kendaraan',
                 'Odometer',
                 'Jam Cek',
-                'Status'
-            ]
+                'Status',
+            ],
         ];
     }
 
@@ -54,17 +56,17 @@ class CekKendaraanDailyExport implements FromCollection, WithHeadings, WithMappi
 
         $driverChecks = $this->checksForDate->get($driver->id);
         $check = $driverChecks ? $driverChecks->first() : null;
-        
+
         return [
             $no,
             $driver->nama_lengkap,
             $driver->nik ?? '-',
             $driver->pekerjaan ?? '-',
             $check ? ($check->mobil->nomor_polisi ?? '-') : '-',
-            $check ? (($check->mobil->merk ?? '') . ' ' . ($check->mobil->tipe ?? '')) : '-',
+            $check ? (($check->mobil->merk ?? '').' '.($check->mobil->tipe ?? '')) : '-',
             $check && $check->odometer ? number_format($check->odometer, 0, ',', '.') : '-',
-            $check ? \Carbon\Carbon::parse($check->jam)->format('H:i') . ' WIB' : '-',
-            $check ? 'SELESAI' : 'BELUM CEK'
+            $check ? \Carbon\Carbon::parse($check->jam)->format('H:i').' WIB' : '-',
+            $check ? 'SELESAI' : 'BELUM CEK',
         ];
     }
 
@@ -75,7 +77,7 @@ class CekKendaraanDailyExport implements FromCollection, WithHeadings, WithMappi
             2 => ['font' => ['bold' => true]],
             4 => ['font' => ['bold' => true], 'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => ['rgb' => 'E2E8F0']
+                'startColor' => ['rgb' => 'E2E8F0'],
             ]],
         ];
     }

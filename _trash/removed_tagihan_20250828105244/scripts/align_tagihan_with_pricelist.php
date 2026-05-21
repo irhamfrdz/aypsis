@@ -1,7 +1,8 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
+
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
@@ -11,13 +12,15 @@ $rows = \DB::table('tagihan_kontainer_sewa')->get();
 $updated = 0;
 foreach ($rows as $r) {
     $tanggal = $r->tanggal_harga_awal ? Carbon::parse($r->tanggal_harga_awal)->format('Y-m-d') : null;
-    if (!$tanggal) continue;
+    if (! $tanggal) {
+        continue;
+    }
 
     $master = \DB::table('master_pricelist_sewa_kontainers')
         ->where('vendor', $r->vendor)
         ->where('ukuran_kontainer', $r->ukuran_kontainer)
         ->where('tanggal_harga_awal', '<=', $tanggal)
-        ->where(function($q) use ($tanggal) {
+        ->where(function ($q) use ($tanggal) {
             $q->whereNull('tanggal_harga_akhir')->orWhere('tanggal_harga_akhir', '>=', $tanggal);
         })
         ->orderBy('tanggal_harga_awal', 'desc')

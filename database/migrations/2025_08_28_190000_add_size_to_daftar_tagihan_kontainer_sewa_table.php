@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasTable('daftar_tagihan_kontainer_sewa') && !Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'size')) {
+        if (Schema::hasTable('daftar_tagihan_kontainer_sewa') && ! Schema::hasColumn('daftar_tagihan_kontainer_sewa', 'size')) {
             Schema::table('daftar_tagihan_kontainer_sewa', function (Blueprint $table) {
                 $table->string('size')->nullable()->after('nomor_kontainer');
             });

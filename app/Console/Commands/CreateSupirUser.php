@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\User;
 use App\Models\Karyawan;
+use App\Models\User;
+use Illuminate\Console\Command;
 
 class CreateSupirUser extends Command
 {
@@ -29,8 +29,9 @@ class CreateSupirUser extends Command
     {
         $karyawan = Karyawan::where('nama_lengkap', 'JONI')->first();
 
-        if (!$karyawan) {
+        if (! $karyawan) {
             $this->error('Karyawan JONI not found');
+
             return 1;
         }
 
@@ -38,13 +39,13 @@ class CreateSupirUser extends Command
 
         $user = User::where('karyawan_id', $karyawan->id)->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->info('Creating user for karyawan JONI...');
             $user = User::create([
                 'username' => 'joni',
                 'password' => bcrypt('password'),
                 'karyawan_id' => $karyawan->id,
-                'status' => 'approved'
+                'status' => 'approved',
             ]);
             $this->info("User created with username: {$user->username}");
         } else {
@@ -52,6 +53,7 @@ class CreateSupirUser extends Command
         }
 
         $this->info("User name accessor: {$user->name}");
+
         return 0;
     }
 }

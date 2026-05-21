@@ -12,21 +12,21 @@ DB::beginTransaction();
 
 try {
     // 1. Cari semua Surat Jalan (Reguler) dalam range tanggal tersebut
-    $sjIds = SuratJalan::where(function($q) use ($startDate, $endDate) {
-            $q->whereBetween(DB::raw('DATE(tanggal_checkpoint)'), [$startDate, $endDate])
-              ->orWhereHas('tandaTerima', function($tt) use ($startDate, $endDate) {
-                  $tt->whereBetween(DB::raw('DATE(tanggal)'), [$startDate, $endDate]);
-              });
-        })
+    $sjIds = SuratJalan::where(function ($q) use ($startDate, $endDate) {
+        $q->whereBetween(DB::raw('DATE(tanggal_checkpoint)'), [$startDate, $endDate])
+            ->orWhereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+                $tt->whereBetween(DB::raw('DATE(tanggal)'), [$startDate, $endDate]);
+            });
+    })
         ->pluck('id');
 
     // 2. Cari semua Surat Jalan (Bongkaran) dalam range tanggal tersebut
-    $sjbIds = SuratJalanBongkaran::where(function($q) use ($startDate, $endDate) {
-            $q->whereBetween(DB::raw('DATE(tanggal_checkpoint)'), [$startDate, $endDate])
-              ->orWhereHas('tandaTerima', function($tt) use ($startDate, $endDate) {
-                  $tt->whereBetween(DB::raw('DATE(tanggal_tanda_terima)'), [$startDate, $endDate]);
-              });
-        })
+    $sjbIds = SuratJalanBongkaran::where(function ($q) use ($startDate, $endDate) {
+        $q->whereBetween(DB::raw('DATE(tanggal_checkpoint)'), [$startDate, $endDate])
+            ->orWhereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+                $tt->whereBetween(DB::raw('DATE(tanggal_tanda_terima)'), [$startDate, $endDate]);
+            });
+    })
         ->pluck('id');
 
     // 3. Cari Pranota yang mereferensikan Surat Jalan tersebut
@@ -34,14 +34,14 @@ try {
         ->orWhereIn('surat_jalan_bongkaran_id', $sjbIds)
         ->get();
 
-    echo "Ditemukan " . $pranotas->count() . " Pranota yang berisi Surat Jalan dalam range tersebut.\n";
+    echo 'Ditemukan '.$pranotas->count()." Pranota yang berisi Surat Jalan dalam range tersebut.\n";
 
     foreach ($pranotas as $pranota) {
         $noPranota = $pranota->no_pranota;
-        
+
         // Reset status SJ di dalam Pranota ini
         $noSuratJalanList = explode(', ', $pranota->no_surat_jalan);
-        $cleanNoList = array_map(function($val) {
+        $cleanNoList = array_map(function ($val) {
             return str_replace(' (Bongkaran)', '', trim($val));
         }, $noSuratJalanList);
 
@@ -51,7 +51,7 @@ try {
         // Hapus data detail dan pranota
         DB::table('pranota_uang_rit_supir_details')->where('no_pranota', $noPranota)->delete();
         $pranota->delete();
-        
+
         echo "Berhasil mereset Pranota: $noPranota\n";
     }
 
@@ -65,5 +65,5 @@ try {
 
 } catch (\Exception $e) {
     DB::rollBack();
-    echo "Terjadi kesalahan: " . $e->getMessage() . "\n";
+    echo 'Terjadi kesalahan: '.$e->getMessage()."\n";
 }

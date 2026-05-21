@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\DaftarTagihanKontainerSewa;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class UpdateKontainerPeriods extends Command
 {
@@ -42,6 +42,7 @@ class UpdateKontainerPeriods extends Command
 
         if ($ongoingContainers->isEmpty()) {
             $this->info('✅ No ongoing containers found (all containers have end dates)');
+
             return Command::SUCCESS;
         }
 
@@ -66,7 +67,7 @@ class UpdateKontainerPeriods extends Command
                 // Update hanya jika periode yang dihitung lebih besar
                 if ($calculatedPeriode > $currentPeriode) {
                     $this->line(sprintf(
-                        "📊 %s: %s -> %s (Start: %s, %d months)",
+                        '📊 %s: %s -> %s (Start: %s, %d months)',
                         $container->nomor_kontainer ?? 'Unknown',
                         $currentPeriode,
                         $calculatedPeriode,
@@ -74,14 +75,14 @@ class UpdateKontainerPeriods extends Command
                         $monthsDiff
                     ));
 
-                    if (!$isDryRun) {
+                    if (! $isDryRun) {
                         $container->update(['periode' => $calculatedPeriode]);
                     }
 
                     $updated++;
                 } else {
                     $this->comment(sprintf(
-                        "⏭️  %s: Period %s unchanged (calculated: %s)",
+                        '⏭️  %s: Period %s unchanged (calculated: %s)',
                         $container->nomor_kontainer ?? 'Unknown',
                         $currentPeriode,
                         $calculatedPeriode
@@ -91,7 +92,7 @@ class UpdateKontainerPeriods extends Command
 
             } catch (\Exception $e) {
                 $this->error(sprintf(
-                    "❌ Error processing %s: %s",
+                    '❌ Error processing %s: %s',
                     $container->nomor_kontainer ?? 'Unknown',
                     $e->getMessage()
                 ));
@@ -102,14 +103,14 @@ class UpdateKontainerPeriods extends Command
         $this->newLine();
 
         if ($isDryRun) {
-            $this->info("🔍 DRY RUN SUMMARY:");
+            $this->info('🔍 DRY RUN SUMMARY:');
             $this->info("  📈 Would update: {$updated} containers");
             $this->info("  ⏭️  Would skip: {$skipped} containers");
             $this->info("  ❌ Errors: {$errors} containers");
             $this->newLine();
-            $this->comment("💡 Run without --dry-run to apply changes");
+            $this->comment('💡 Run without --dry-run to apply changes');
         } else {
-            $this->info("✅ UPDATE COMPLETED:");
+            $this->info('✅ UPDATE COMPLETED:');
             $this->info("  📈 Updated: {$updated} containers");
             $this->info("  ⏭️  Skipped: {$skipped} containers");
             $this->info("  ❌ Errors: {$errors} containers");

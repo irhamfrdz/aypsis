@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\PricelistRit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class MasterPricelistRitImportController extends Controller
 {
@@ -17,26 +17,26 @@ class MasterPricelistRitImportController extends Controller
     public function downloadTemplate()
     {
         try {
-            $fileName = 'template_master_pricelist_rit_' . date('Y-m-d_H-i-s') . '.csv';
+            $fileName = 'template_master_pricelist_rit_'.date('Y-m-d_H-i-s').'.csv';
 
             // Headers for CSV
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ];
 
             // CSV content dengan header dan contoh data
             $csvData = [
                 ['Tujuan', 'Tarif', 'Status', 'Keterangan'],
                 ['Supir', '500000', 'Aktif', 'Tarif uang rit supir'],
-                ['Kenek', '300000', 'Aktif', 'Tarif uang rit kenek']
+                ['Kenek', '300000', 'Aktif', 'Tarif uang rit kenek'],
             ];
 
-            $callback = function() use ($csvData) {
+            $callback = function () use ($csvData) {
                 $file = fopen('php://output', 'w');
 
                 // Add BOM for UTF-8
-                fputs($file, "\xEF\xBB\xBF");
+                fwrite($file, "\xEF\xBB\xBF");
 
                 // Set CSV dengan semicolon delimiter
                 foreach ($csvData as $row) {
@@ -49,7 +49,7 @@ class MasterPricelistRitImportController extends Controller
             return Response::stream($callback, 200, $headers);
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mendownload template: '.$e->getMessage());
         }
     }
 
@@ -64,12 +64,12 @@ class MasterPricelistRitImportController extends Controller
                 'required',
                 'file',
                 'mimes:csv,txt',
-                'max:5120' // 5MB
-            ]
+                'max:5120', // 5MB
+            ],
         ], [
             'csv_file.required' => 'File CSV harus dipilih.',
             'csv_file.mimes' => 'File harus berformat .csv',
-            'csv_file.max' => 'Ukuran file maksimal 5MB.'
+            'csv_file.max' => 'Ukuran file maksimal 5MB.',
         ]);
 
         if ($validator->fails()) {
@@ -82,8 +82,8 @@ class MasterPricelistRitImportController extends Controller
 
             // Read CSV file with semicolon delimiter
             $csvData = [];
-            if (($handle = fopen($path, 'r')) !== FALSE) {
-                while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
+            if (($handle = fopen($path, 'r')) !== false) {
+                while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                     $csvData[] = $data;
                 }
                 fclose($handle);
@@ -103,7 +103,7 @@ class MasterPricelistRitImportController extends Controller
                 'errors' => 0,
                 'skipped' => 0,
                 'error_details' => [],
-                'warnings' => []
+                'warnings' => [],
             ];
 
             DB::beginTransaction();
@@ -120,6 +120,7 @@ class MasterPricelistRitImportController extends Controller
                 if (count($row) < 3) {
                     $stats['errors']++;
                     $stats['error_details'][] = "Baris {$rowNumber}: Data tidak lengkap (minimal Tujuan, Tarif, dan Status)";
+
                     continue;
                 }
 
@@ -133,40 +134,45 @@ class MasterPricelistRitImportController extends Controller
                     if (empty($tujuan)) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Tujuan tidak boleh kosong";
+
                         continue;
                     }
 
                     // Validate tujuan
                     $validTujuan = ['Supir', 'Kenek'];
-                    if (!in_array($tujuan, $validTujuan)) {
+                    if (! in_array($tujuan, $validTujuan)) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Tujuan harus 'Supir' atau 'Kenek'";
+
                         continue;
                     }
 
                     if (empty($tarif)) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Tarif tidak boleh kosong";
+
                         continue;
                     }
 
                     // Validate status
                     $validStatus = ['Aktif', 'Tidak Aktif'];
-                    if (!in_array($status, $validStatus)) {
+                    if (! in_array($status, $validStatus)) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Status harus 'Aktif' atau 'Tidak Aktif'";
+
                         continue;
                     }
 
                     // Validate tarif
-                    if (!is_numeric(str_replace(',', '', $tarif))) {
+                    if (! is_numeric(str_replace(',', '', $tarif))) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Tarif harus berupa angka";
+
                         continue;
                     }
 
                     // Clean tarif value
-                    $tarif = (float)str_replace(',', '', $tarif);
+                    $tarif = (float) str_replace(',', '', $tarif);
 
                     // Check if pricelist already exists (based on tujuan)
                     $existingPricelist = PricelistRit::where('tujuan', $tujuan)->first();
@@ -177,7 +183,7 @@ class MasterPricelistRitImportController extends Controller
                         'status' => $status,
                         'keterangan' => $keterangan,
                         'updated_by' => Auth::id(),
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ];
 
                     if ($existingPricelist) {
@@ -194,22 +200,22 @@ class MasterPricelistRitImportController extends Controller
 
                 } catch (\Exception $e) {
                     $stats['errors']++;
-                    $stats['error_details'][] = "Baris {$rowNumber}: " . $e->getMessage();
+                    $stats['error_details'][] = "Baris {$rowNumber}: ".$e->getMessage();
                 }
             }
 
             DB::commit();
 
             // Prepare summary message
-            $message = "Import selesai! ";
+            $message = 'Import selesai! ';
             $message .= "Berhasil: {$stats['success']}, ";
             $message .= "Diupdate: {$stats['updated']}, ";
             $message .= "Error: {$stats['errors']}";
 
-            if (!empty($stats['error_details'])) {
-                $message .= "<br><strong>Detail Error:</strong><br>" . implode('<br>', array_slice($stats['error_details'], 0, 10));
+            if (! empty($stats['error_details'])) {
+                $message .= '<br><strong>Detail Error:</strong><br>'.implode('<br>', array_slice($stats['error_details'], 0, 10));
                 if (count($stats['error_details']) > 10) {
-                    $message .= "<br>... dan " . (count($stats['error_details']) - 10) . " error lainnya";
+                    $message .= '<br>... dan '.(count($stats['error_details']) - 10).' error lainnya';
                 }
             }
 
@@ -221,7 +227,8 @@ class MasterPricelistRitImportController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Error saat import: ' . $e->getMessage());
+
+            return back()->with('error', 'Error saat import: '.$e->getMessage());
         }
     }
 }

@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-
-use App\Traits\Auditable;
 class CoaTransaction extends Model
 {
     use Auditable;
@@ -20,14 +19,14 @@ class CoaTransaction extends Model
         'debit',
         'kredit',
         'saldo',
-        'created_by'
+        'created_by',
     ];
 
     protected $casts = [
         'tanggal_transaksi' => 'date',
         'debit' => 'decimal:2',
         'kredit' => 'decimal:2',
-        'saldo' => 'decimal:2'
+        'saldo' => 'decimal:2',
     ];
 
     /**

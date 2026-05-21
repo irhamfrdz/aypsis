@@ -10,8 +10,8 @@ class KwitansiDetail extends Model
     use HasFactory;
 
     protected $fillable = [
-        'kwitansi_id', 'item_kode', 'item_description', 'qty', 'unit_price', 
-        'amount', 'no_bl', 'no_sj'
+        'kwitansi_id', 'item_kode', 'item_description', 'qty', 'unit_price',
+        'amount', 'no_bl', 'no_sj',
     ];
 
     public function kwitansi()

@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
 
 class ProspekBatam extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'prospek_batams';
 
@@ -38,7 +38,7 @@ class ProspekBatam extends Model
         'keterangan',
         'status',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
@@ -47,12 +47,14 @@ class ProspekBatam extends Model
         'total_ton' => 'decimal:3',
         'total_volume' => 'decimal:3',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
     ];
 
     // Status constants
     const STATUS_AKTIF = 'aktif';
+
     const STATUS_SUDAH_MUAT = 'sudah_muat';
+
     const STATUS_BATAL = 'batal';
 
     public static function getStatusOptions()
@@ -60,7 +62,7 @@ class ProspekBatam extends Model
         return [
             self::STATUS_AKTIF => 'Aktif',
             self::STATUS_SUDAH_MUAT => 'Sudah Muat',
-            self::STATUS_BATAL => 'Batal'
+            self::STATUS_BATAL => 'Batal',
         ];
     }
 
@@ -103,7 +105,7 @@ class ProspekBatam extends Model
         });
 
         static::updated(function (self $prospek) {
-            if (($prospek->isDirty('surat_jalan_batam_id') || $prospek->isDirty('no_surat_jalan')) && !$prospek->tanda_terima_batam_id) {
+            if (($prospek->isDirty('surat_jalan_batam_id') || $prospek->isDirty('no_surat_jalan')) && ! $prospek->tanda_terima_batam_id) {
                 $prospek->autoLinkTandaTerima();
             }
         });
@@ -126,7 +128,7 @@ class ProspekBatam extends Model
         }
 
         // Jika tidak ditemukan, cari berdasarkan no_surat_jalan
-        if (!$tandaTerima && $this->no_surat_jalan) {
+        if (! $tandaTerima && $this->no_surat_jalan) {
             $tandaTerima = \App\Models\TandaTerimaBatam::where('no_surat_jalan', $this->no_surat_jalan)->first();
         }
 

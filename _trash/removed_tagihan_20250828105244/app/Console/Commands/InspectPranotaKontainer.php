@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 class InspectPranotaKontainer extends Command
 {
     protected $signature = 'pranota:inspect {--id=} {--nomor=} {--fix : Actually delete pivot rows for the container} {--force : Skip confirmation when running --fix}';
+
     protected $description = 'Inspect and optionally clean pranota/pivot rows for a container (tagihan_kontainer_sewa_kontainers)';
 
     public function handle()
@@ -15,12 +16,13 @@ class InspectPranotaKontainer extends Command
         $id = $this->option('id');
         $nomor = $this->option('nomor');
 
-        if (!$id && !$nomor) {
+        if (! $id && ! $nomor) {
             $this->error('Provide --id=<kontainer_id> or --nomor=<container_number>');
+
             return 1;
         }
 
-        if (!$id) {
+        if (! $id) {
             // Try common columns used for container numbering
             $kontQuery = DB::table('kontainers')
                 ->where('nomor_seri_gabungan', $nomor)
@@ -28,8 +30,9 @@ class InspectPranotaKontainer extends Command
                 ->orWhereRaw("CONCAT(IFNULL(awalan_kontainer,''), IFNULL(nomor_seri_kontainer,''), IFNULL(akhiran_kontainer,'')) = ?", [$nomor]);
 
             $kont = $kontQuery->first();
-            if (!$kont) {
+            if (! $kont) {
                 $this->error("No kontainer found with nomor = $nomor (checked nomor_seri_gabungan, nomor_seri_kontainer, and awalan+nomor+akhiran)");
+
                 return 2;
             }
             $id = $kont->id;
@@ -92,8 +95,9 @@ class InspectPranotaKontainer extends Command
                 $this->warn('Running in --fix mode with --force: skipping interactive confirmation.');
             } else {
                 $confirm = $this->confirm('Are you sure you want to delete all pivot rows for this kontainer?');
-                if (!$confirm) {
+                if (! $confirm) {
                     $this->info('Aborted by user. No changes made.');
+
                     return 0;
                 }
             }
@@ -108,6 +112,7 @@ class InspectPranotaKontainer extends Command
         }
 
         $this->info('Done.');
+
         return 0;
     }
 }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('vendor')->nullable()->after('lokasi');
             $table->renameColumn('biaya', 'tarif');
             $table->string('status')->default('Aktif')->after('keterangan');
-            
+
             // Allow existing columns to be nullable if they are to be replaced by the new structure
             $table->unsignedBigInteger('pelabuhan_asal_id')->nullable()->change();
             $table->unsignedBigInteger('pelabuhan_tujuan_id')->nullable()->change();

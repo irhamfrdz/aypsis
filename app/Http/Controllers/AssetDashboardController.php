@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Mobil;
 use Carbon\Carbon;
 
@@ -15,55 +14,55 @@ class AssetDashboardController extends Controller
     {
         $today = Carbon::today();
         $thirtyDaysLater = $today->copy()->addDays(30);
-        
+
         // ASURANSI - tanggal_jatuh_tempo_asuransi
         $asuransiExpiring = Mobil::whereNotNull('tanggal_jatuh_tempo_asuransi')
             ->whereDate('tanggal_jatuh_tempo_asuransi', '>=', $today)
             ->whereDate('tanggal_jatuh_tempo_asuransi', '<=', $thirtyDaysLater)
             ->orderBy('tanggal_jatuh_tempo_asuransi', 'asc')
             ->get();
-        
+
         $asuransiExpired = Mobil::whereNotNull('tanggal_jatuh_tempo_asuransi')
             ->whereDate('tanggal_jatuh_tempo_asuransi', '<', $today)
             ->orderBy('tanggal_jatuh_tempo_asuransi', 'desc')
             ->get();
-        
+
         // PLAT/STNK - pajak_stnk
         $platExpiring = Mobil::whereNotNull('pajak_stnk')
             ->whereDate('pajak_stnk', '>=', $today)
             ->whereDate('pajak_stnk', '<=', $thirtyDaysLater)
             ->orderBy('pajak_stnk', 'asc')
             ->get();
-        
+
         $platExpired = Mobil::whereNotNull('pajak_stnk')
             ->whereDate('pajak_stnk', '<', $today)
             ->orderBy('pajak_stnk', 'desc')
             ->get();
-        
+
         // KIR - pajak_kir
         $kirExpiring = Mobil::whereNotNull('pajak_kir')
             ->whereDate('pajak_kir', '>=', $today)
             ->whereDate('pajak_kir', '<=', $thirtyDaysLater)
             ->orderBy('pajak_kir', 'asc')
             ->get();
-        
+
         $kirExpired = Mobil::whereNotNull('pajak_kir')
             ->whereDate('pajak_kir', '<', $today)
             ->orderBy('pajak_kir', 'desc')
             ->get();
-        
+
         // PAJAK - pajak_plat
         $pajakExpiring = Mobil::whereNotNull('pajak_plat')
             ->whereDate('pajak_plat', '>=', $today)
             ->whereDate('pajak_plat', '<=', $thirtyDaysLater)
             ->orderBy('pajak_plat', 'asc')
             ->get();
-        
+
         $pajakExpired = Mobil::whereNotNull('pajak_plat')
             ->whereDate('pajak_plat', '<', $today)
             ->orderBy('pajak_plat', 'desc')
             ->get();
-        
+
         // Statistics for each type
         $stats = [
             'asuransi' => [
@@ -91,7 +90,7 @@ class AssetDashboardController extends Controller
                 'no_date' => Mobil::whereNull('pajak_plat')->count(),
             ],
         ];
-        
+
         // Collections for each type
         $expiringAssets = [
             'asuransi' => $asuransiExpiring,
@@ -99,14 +98,14 @@ class AssetDashboardController extends Controller
             'kir' => $kirExpiring,
             'pajak' => $pajakExpiring,
         ];
-        
+
         $expiredAssets = [
             'asuransi' => $asuransiExpired,
             'plat' => $platExpired,
             'kir' => $kirExpired,
             'pajak' => $pajakExpired,
         ];
-        
+
         return view('dashboards.asset-expiry', compact('expiringAssets', 'expiredAssets', 'stats'));
     }
 }

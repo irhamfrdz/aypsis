@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Pranota extends Model
 {
     protected $table = 'pranotalist';
+
     protected $fillable = [
         'nomor_pranota',
         'tanggal_pranota',
@@ -15,37 +16,37 @@ class Pranota extends Model
         'total_amount',
         'jumlah_tagihan',
         'status',
-        'keterangan'
+        'keterangan',
     ];
 
     protected $casts = [
         'tagihan_ids' => 'array',
         'tanggal_pranota' => 'date',
-        'total_amount' => 'decimal:2'
+        'total_amount' => 'decimal:2',
     ];
 
     // Factory methods for creating specific types of pranota
     public static function forKontainerSewa()
     {
-        return new PranotaTagihanKontainerSewa();
+        return new PranotaTagihanKontainerSewa;
     }
 
     public static function forSuratJalan()
     {
-        return new PranotaSuratJalan();
+        return new PranotaSuratJalan;
     }
 
     public static function forUangJalan()
     {
-        return new PranotaUangJalan();
+        return new PranotaUangJalan;
     }
-
 
     public function getTagihanItems()
     {
         if (empty($this->tagihan_ids)) {
             return collect();
         }
+
         return \App\Models\DaftarTagihanKontainerSewa::whereIn('id', $this->tagihan_ids)->get();
     }
 
@@ -54,6 +55,7 @@ class Pranota extends Model
         if (empty($this->tagihan_ids)) {
             return collect();
         }
+
         return \App\Models\DaftarTagihanKontainerSewa::whereIn('id', $this->tagihan_ids)->get();
     }
 
@@ -69,9 +71,9 @@ class Pranota extends Model
             return $catItems->sum('realisasi_biaya');
         }
 
-
         // If no CAT or perbaikan items, check kontainer sewa items
         $tagihanItems = $this->getTagihanItems();
+
         return $tagihanItems->sum('grand_total');
     }
 
@@ -107,9 +109,9 @@ class Pranota extends Model
         if (empty($this->tagihan_ids)) {
             return collect();
         }
+
         return \App\Models\DaftarTagihanKontainerSewa::whereIn('id', $this->tagihan_ids);
     }
-
 
     public function getLatestPayment()
     {
@@ -189,6 +191,7 @@ class Pranota extends Model
                 return \Carbon\Carbon::parse($payment->tanggal_persetujuan);
             }
         }
+
         return null;
     }
 
@@ -209,6 +212,7 @@ class Pranota extends Model
     public function getRemainingAmount()
     {
         $totalPaid = $this->getTotalPaidAmount();
+
         return max(0, $this->total_amount - $totalPaid);
     }
 
@@ -219,7 +223,7 @@ class Pranota extends Model
 
     public function canCreatePayment()
     {
-        return $this->status === 'unpaid' && !$this->hasPaymentPending();
+        return $this->status === 'unpaid' && ! $this->hasPaymentPending();
     }
 
     public function tagihanCat()

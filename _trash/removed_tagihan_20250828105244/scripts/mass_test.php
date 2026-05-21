@@ -3,8 +3,8 @@
 // scripts/mass_test.php
 // Bootstraps Laravel and runs a minimal massProcess simulation for permohonan id 6.
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
+$app = require_once __DIR__.'/../bootstrap/app.php';
 
 // Bootstrap kernel
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -49,11 +49,9 @@ try {
 
     // Show pivot rows count
     $rows = \DB::table('tagihan_kontainer_sewa_kontainers')->where('tagihan_id', $tag->id)->get();
-    echo "Pivot rows for tagihan {$tag->id}: " . $rows->count() . "\n";
+    echo "Pivot rows for tagihan {$tag->id}: ".$rows->count()."\n";
 
 } catch (Exception $e) {
-    echo "Exception: " . $e->getMessage() . "\n";
-    echo $e->getTraceAsString() . "\n";
+    echo 'Exception: '.$e->getMessage()."\n";
+    echo $e->getTraceAsString()."\n";
 }
-
-

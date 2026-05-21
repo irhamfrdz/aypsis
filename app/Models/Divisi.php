@@ -2,20 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Divisi extends Model
 {
-    use HasFactory, Auditable;
-
     use Auditable;
+    use Auditable, HasFactory;
+
     protected $fillable = [
         'nama_divisi',
         'kode_divisi',
         'deskripsi',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [
@@ -38,9 +38,9 @@ class Divisi extends Model
     public function scopeSearch($query, $search)
     {
         return $query->where(function ($q) use ($search) {
-            $q->where('nama_divisi', 'LIKE', '%' . $search . '%')
-              ->orWhere('kode_divisi', 'LIKE', '%' . $search . '%')
-              ->orWhere('deskripsi', 'LIKE', '%' . $search . '%');
+            $q->where('nama_divisi', 'LIKE', '%'.$search.'%')
+                ->orWhere('kode_divisi', 'LIKE', '%'.$search.'%')
+                ->orWhere('deskripsi', 'LIKE', '%'.$search.'%');
         });
     }
 }

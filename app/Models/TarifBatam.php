@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class TarifBatam extends Model
 {
@@ -21,7 +21,7 @@ class TarifBatam extends Model
         '40ft_antar_lokasi',
         'masa_berlaku',
         'keterangan',
-        'status'
+        'status',
     ];
 
     protected $casts = [

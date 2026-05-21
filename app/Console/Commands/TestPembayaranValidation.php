@@ -30,12 +30,13 @@ class TestPembayaranValidation extends Command
         // Get available pranota
         $pranota = \App\Models\PranotaPerbaikanKontainer::where('status', 'belum_dibayar')->first();
 
-        if (!$pranota) {
+        if (! $pranota) {
             $this->error('No available pranota for testing');
+
             return;
         }
 
-        $this->info("Found pranota ID: {$pranota->id} with total biaya: " . ($pranota->total_biaya ?? 0));
+        $this->info("Found pranota ID: {$pranota->id} with total biaya: ".($pranota->total_biaya ?? 0));
 
         // Test validation data
         $testData = [
@@ -65,6 +66,7 @@ class TestPembayaranValidation extends Command
             foreach ($validator->errors()->all() as $error) {
                 $this->error("  - {$error}");
             }
+
             return 1;
         }
 
@@ -81,10 +83,10 @@ class TestPembayaranValidation extends Command
             foreach ($pranotaIds as $pranotaId) {
                 $pranotaItem = \App\Models\PranotaPerbaikanKontainer::findOrFail($pranotaId);
                 $totalPembayaran += $pranotaItem->total_biaya ?? 0;
-                $this->info("Pranota {$pranotaId}: Rp " . number_format($pranotaItem->total_biaya ?? 0, 0, ',', '.'));
+                $this->info("Pranota {$pranotaId}: Rp ".number_format($pranotaItem->total_biaya ?? 0, 0, ',', '.'));
             }
 
-            $this->info("Total pembayaran: Rp " . number_format($totalPembayaran, 0, ',', '.'));
+            $this->info('Total pembayaran: Rp '.number_format($totalPembayaran, 0, ',', '.'));
 
             // Test creating payment record (without actually saving)
             $paymentData = [
@@ -109,12 +111,14 @@ class TestPembayaranValidation extends Command
             $this->info('Model created successfully (not saved)');
 
         } catch (\Exception $e) {
-            $this->error('Error during storage test: ' . $e->getMessage());
-            $this->error('File: ' . $e->getFile() . ' Line: ' . $e->getLine());
+            $this->error('Error during storage test: '.$e->getMessage());
+            $this->error('File: '.$e->getFile().' Line: '.$e->getLine());
+
             return 1;
         }
 
         $this->info('All tests passed!');
+
         return 0;
     }
 }

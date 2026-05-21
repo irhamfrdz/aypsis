@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::table('kontainer_perjalanans', function (Blueprint $table) {
             // Tambahkan kolom gudang_tujuan_id setelah kolom tujuan_pengiriman
             $table->unsignedBigInteger('gudang_tujuan_id')->nullable()->after('tujuan_pengiriman');
-            
+
             // Tambahkan foreign key ke tabel gudangs
             $table->foreign('gudang_tujuan_id')
-                  ->references('id')
-                  ->on('gudangs')
-                  ->onDelete('set null');
+                ->references('id')
+                ->on('gudangs')
+                ->onDelete('set null');
         });
     }
 

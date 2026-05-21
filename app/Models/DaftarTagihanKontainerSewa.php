@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class DaftarTagihanKontainerSewa extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $table = 'daftar_tagihan_kontainer_sewa';
 
     protected $fillable = [
@@ -73,7 +72,7 @@ class DaftarTagihanKontainerSewa extends Model
      */
     public function calculateGrandTotal()
     {
-        // First, recalculate PPN and PPH based on current DPP 
+        // First, recalculate PPN and PPH based on current DPP
         $this->recalculateTaxes();
 
         $dpp = floatval($this->dpp ?? 0);
@@ -112,13 +111,18 @@ class DaftarTagihanKontainerSewa extends Model
     // Numeric days derived from masa string when needed
     public function getMasaDaysAttribute()
     {
-        if (empty($this->masa)) return null;
+        if (empty($this->masa)) {
+            return null;
+        }
         // try to parse pattern 'D MMMM YYYY - D MMMM YYYY' and compute diffInDays
         try {
             $parts = explode(' - ', $this->masa);
-            if (count($parts) !== 2) return null;
+            if (count($parts) !== 2) {
+                return null;
+            }
             $s = \Carbon\Carbon::parse($parts[0]);
             $e = \Carbon\Carbon::parse($parts[1]);
+
             return $s->diffInDays($e);
         } catch (\Exception $e) {
             return null;
@@ -153,7 +157,7 @@ class DaftarTagihanKontainerSewa extends Model
     public function masterPricelist()
     {
         return $this->hasOne(MasterPricelistSewaKontainer::class, 'ukuran_kontainer', 'size')
-                    ->where('vendor', $this->vendor);
+            ->where('vendor', $this->vendor);
     }
 
     /**
@@ -162,7 +166,7 @@ class DaftarTagihanKontainerSewa extends Model
      */
     public function getPranotaRecordAttribute()
     {
-        if (!$this->pranota_id) {
+        if (! $this->pranota_id) {
             return null;
         }
 

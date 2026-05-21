@@ -2,10 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\User;
-use App\Models\SuratJalan;
 use App\Models\Checkpoint;
+use App\Models\SuratJalan;
+use Illuminate\Console\Command;
 
 class TestUploadGambar extends Command
 {
@@ -33,9 +32,10 @@ class TestUploadGambar extends Command
         // Check if checkpoint-images directory exists
         $path = storage_path('app/public/checkpoint-images');
         if (is_dir($path)) {
-            $this->info('✅ Directory checkpoint-images exists: ' . $path);
+            $this->info('✅ Directory checkpoint-images exists: '.$path);
         } else {
             $this->error('❌ Directory checkpoint-images does not exist');
+
             return 1;
         }
 
@@ -52,7 +52,7 @@ class TestUploadGambar extends Command
 
         try {
             // Test checkpoints table
-            $checkpoint = new Checkpoint();
+            $checkpoint = new Checkpoint;
             $fillable = $checkpoint->getFillable();
             if (in_array('gambar', $fillable)) {
                 $this->info('✅ Checkpoints table has gambar field in fillable');
@@ -61,7 +61,7 @@ class TestUploadGambar extends Command
             }
 
             // Test surat_jalans table
-            $suratJalan = new SuratJalan();
+            $suratJalan = new SuratJalan;
             $fillable = $suratJalan->getFillable();
             if (in_array('gambar_checkpoint', $fillable)) {
                 $this->info('✅ SuratJalans table has gambar_checkpoint field in fillable');
@@ -70,7 +70,8 @@ class TestUploadGambar extends Command
             }
 
         } catch (\Exception $e) {
-            $this->error('Error checking models: ' . $e->getMessage());
+            $this->error('Error checking models: '.$e->getMessage());
+
             return 1;
         }
 

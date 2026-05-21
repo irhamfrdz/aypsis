@@ -17,19 +17,19 @@ class PricelistRitController extends Controller
 
         // Filter by tujuan
         if ($request->filled('tujuan')) {
-            $query->where('tujuan', 'like', '%' . $request->tujuan . '%');
+            $query->where('tujuan', 'like', '%'.$request->tujuan.'%');
         }
 
         // Filter by keterangan
         if ($request->filled('keterangan')) {
-            $query->where('keterangan', 'like', '%' . $request->keterangan . '%');
+            $query->where('keterangan', 'like', '%'.$request->keterangan.'%');
         }
 
         // Filter by search (general search)
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('tujuan', 'like', '%' . $request->search . '%')
-                  ->orWhere('keterangan', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('tujuan', 'like', '%'.$request->search.'%')
+                    ->orWhere('keterangan', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -43,7 +43,8 @@ class PricelistRitController extends Controller
      */
     public function create()
     {
-        $pricelist = new PricelistRit();
+        $pricelist = new PricelistRit;
+
         return view('master-pricelist-rit.create', compact('pricelist'));
     }
 
@@ -69,7 +70,7 @@ class PricelistRitController extends Controller
         ]);
 
         return redirect()->route('master.pricelist-rit.index')
-                        ->with('success', 'Pricelist Rit berhasil ditambahkan.');
+            ->with('success', 'Pricelist Rit berhasil ditambahkan.');
     }
 
     /**
@@ -109,7 +110,7 @@ class PricelistRitController extends Controller
         ]);
 
         return redirect()->route('master.pricelist-rit.index')
-                        ->with('success', 'Pricelist Rit berhasil diupdate.');
+            ->with('success', 'Pricelist Rit berhasil diupdate.');
     }
 
     /**
@@ -120,6 +121,6 @@ class PricelistRitController extends Controller
         $pricelistRit->delete();
 
         return redirect()->route('master.pricelist-rit.index')
-                        ->with('success', 'Pricelist Rit berhasil dihapus.');
+            ->with('success', 'Pricelist Rit berhasil dihapus.');
     }
 }

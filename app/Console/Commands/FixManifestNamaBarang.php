@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Manifest;
+use Illuminate\Console\Command;
 
 class FixManifestNamaBarang extends Command
 {
@@ -27,41 +27,45 @@ class FixManifestNamaBarang extends Command
     public function handle()
     {
         $this->info('Memulai perbaikan nama barang pada tabel Manifest...');
-        
+
         $manifests = Manifest::whereNotNull('prospek_id')->get();
         $updatedCount = 0;
-        
+
         $this->output->progressStart($manifests->count());
-        
+
         foreach ($manifests as $manifest) {
             $this->output->progressAdvance();
-            
+
             $prospek = $manifest->prospek;
             if ($prospek && $prospek->tandaTerima) {
                 $tt = $prospek->tandaTerima;
-                
+
                 $itemNames = [];
-                if (!empty($tt->dimensi_items) && is_array($tt->dimensi_items)) {
+                if (! empty($tt->dimensi_items) && is_array($tt->dimensi_items)) {
                     foreach ($tt->dimensi_items as $item) {
-                        if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                        if (! empty($item['nama_barang'])) {
+                            $itemNames[] = $item['nama_barang'];
+                        }
                     }
-                } elseif (!empty($tt->dimensi_details) && is_array($tt->dimensi_details)) {
+                } elseif (! empty($tt->dimensi_details) && is_array($tt->dimensi_details)) {
                     foreach ($tt->dimensi_details as $item) {
-                        if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                        if (! empty($item['nama_barang'])) {
+                            $itemNames[] = $item['nama_barang'];
+                        }
                     }
-                } elseif (!empty($tt->nama_barang)) {
+                } elseif (! empty($tt->nama_barang)) {
                     if (is_array($tt->nama_barang)) {
                         $itemNames = $tt->nama_barang;
                     } elseif (is_string($tt->nama_barang) && $tt->nama_barang !== 'null') {
                         $itemNames[] = $tt->nama_barang;
                     }
                 }
-                
-                if (!empty($itemNames)) {
+
+                if (! empty($itemNames)) {
                     $newName = implode(', ', $itemNames);
-                    
+
                     // Cek jika berbeda dengan yang ada sekarang
-                    if ($manifest->nama_barang !== $newName && !empty($newName)) {
+                    if ($manifest->nama_barang !== $newName && ! empty($newName)) {
                         $manifest->nama_barang = $newName;
                         // Update nomor_tanda_terima juga sekalian kalau kosong
                         if (empty($manifest->nomor_tanda_terima)) {
@@ -73,7 +77,7 @@ class FixManifestNamaBarang extends Command
                 }
             }
         }
-        
+
         $this->output->progressFinish();
         $this->info("Berhasil memperbarui {$updatedCount} data manifest!");
     }

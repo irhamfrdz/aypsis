@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('pembayaran_aktivitas_lains', function (Blueprint $table) {
             // Drop foreign key constraint first
             $table->dropForeign(['approved_by']);
-            
+
             // Drop approval related columns
             $table->dropColumn(['status', 'approved_by', 'approved_at']);
         });

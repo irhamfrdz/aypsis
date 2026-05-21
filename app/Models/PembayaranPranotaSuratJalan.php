@@ -44,14 +44,20 @@ class PembayaranPranotaSuratJalan extends Model
 
     // Constants for status
     const STATUS_PENDING = 'pending';
+
     const STATUS_PAID = 'paid';
+
     const STATUS_PARTIAL = 'partial';
+
     const STATUS_CANCELLED = 'cancelled';
 
     // Constants for payment methods
     const METHOD_CASH = 'cash';
+
     const METHOD_TRANSFER = 'transfer';
+
     const METHOD_CHECK = 'check';
+
     const METHOD_GIRO = 'giro';
 
     /**
@@ -151,7 +157,8 @@ class PembayaranPranotaSuratJalan extends Model
     public function getFormattedAmountAttribute()
     {
         $amount = $this->total_tagihan_setelah_penyesuaian ?? $this->total_pembayaran ?? 0;
-        return 'Rp ' . number_format((float) $amount, 2, ',', '.');
+
+        return 'Rp '.number_format((float) $amount, 2, ',', '.');
     }
 
     /**

@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\PembayaranOb;
-use App\Models\PembayaranUangMuka;
-use App\Models\PembayaranPranotaSupir;
-use App\Models\PembayaranPranotaKontainer;
-use App\Models\PembayaranPranotaCat;
-
 use App\Models\PembayaranAktivitasLainnya;
+use App\Models\PembayaranOb;
+use App\Models\PembayaranPranotaCat;
+use App\Models\PembayaranPranotaKontainer;
+use App\Models\PembayaranPranotaSupir;
+use App\Models\PembayaranUangMuka;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class ReportPembayaranController extends Controller
 {
@@ -57,7 +55,7 @@ class ReportPembayaranController extends Controller
         $summary = [
             'total_pembayaran' => 0,
             'total_transaksi' => 0,
-            'breakdown' => []
+            'breakdown' => [],
         ];
 
         // Array semua model pembayaran dengan label dan kolom tanggal
@@ -68,7 +66,7 @@ class ReportPembayaranController extends Controller
             'pranota_kontainer' => ['model' => PembayaranPranotaKontainer::class, 'label' => 'Pembayaran Pranota Kontainer', 'date_column' => 'tanggal_pembayaran'],
             'pranota_cat' => ['model' => PembayaranPranotaCat::class, 'label' => 'Pembayaran Pranota CAT', 'date_column' => 'tanggal_kas'],
 
-            'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran']
+            'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran'],
         ];
 
         foreach ($paymentModels as $key => $config) {
@@ -106,6 +104,7 @@ class ReportPembayaranController extends Controller
                 // Tambahkan label jenis untuk setiap item
                 $pembayaran = $pembayaran->map(function ($item) use ($config) {
                     $item->jenis_label = $config['label'];
+
                     return $item;
                 });
 
@@ -115,7 +114,7 @@ class ReportPembayaranController extends Controller
                 $summary['breakdown'][$key] = [
                     'label' => $config['label'],
                     'total' => $pembayaran->sum('total_pembayaran'),
-                    'count' => $pembayaran->count()
+                    'count' => $pembayaran->count(),
                 ];
             }
         }
@@ -157,7 +156,7 @@ class ReportPembayaranController extends Controller
             'pranota_kontainer' => ['model' => PembayaranPranotaKontainer::class, 'label' => 'Pembayaran Pranota Kontainer', 'date_column' => 'tanggal_pembayaran'],
             'pranota_cat' => ['model' => PembayaranPranotaCat::class, 'label' => 'Pembayaran Pranota CAT', 'date_column' => 'tanggal_kas'],
 
-            'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran']
+            'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran'],
         ];
 
         foreach ($paymentModels as $key => $config) {
@@ -189,6 +188,7 @@ class ReportPembayaranController extends Controller
                 // Tambahkan label jenis untuk setiap item
                 $pembayaran = $pembayaran->map(function ($item) use ($config) {
                     $item->jenis_label = $config['label'];
+
                     return $item;
                 });
 
@@ -200,18 +200,18 @@ class ReportPembayaranController extends Controller
             return $item->tanggal_pembayaran ?? $item->tanggal_kas ?? '1900-01-01';
         });
 
-        $filename = 'report_pembayaran_' . $startDate . '_to_' . $endDate . '.csv';
+        $filename = 'report_pembayaran_'.$startDate.'_to_'.$endDate.'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ];
 
-        $callback = function() use ($allPembayaran) {
+        $callback = function () use ($allPembayaran) {
             $handle = fopen('php://output', 'w');
 
             // Write UTF-8 BOM
-            fwrite($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fwrite($handle, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Header columns
             fputcsv($handle, [
@@ -224,7 +224,7 @@ class ReportPembayaranController extends Controller
                 'Status',
                 'Dibuat Oleh',
                 'Disetujui Oleh',
-                'Keterangan'
+                'Keterangan',
             ], ';');
 
             // Data rows
@@ -234,12 +234,12 @@ class ReportPembayaranController extends Controller
                     isset($item->tanggal_pembayaran) ? Carbon::parse($item->tanggal_pembayaran)->format('d/m/Y') : (isset($item->tanggal_kas) ? Carbon::parse($item->tanggal_kas)->format('d/m/Y') : '-'),
                     $item->nomor_pembayaran,
                     $item->jenis_label ?? 'Unknown',
-                    number_format((float)($item->total_pembayaran ?? $item->nominal_pembayaran ?? 0), 0, ',', '.'),
-                    isset($item->kasBankAkun) && $item->kasBankAkun ? ($item->kasBankAkun->nomor_akun . ' - ' . $item->kasBankAkun->nama_akun) : (isset($item->bank) && is_object($item->bank) && $item->bank ? ($item->bank->nomor_akun . ' - ' . $item->bank->nama_akun) : (isset($item->bank) && is_string($item->bank) ? $item->bank : '-')),
+                    number_format((float) ($item->total_pembayaran ?? $item->nominal_pembayaran ?? 0), 0, ',', '.'),
+                    isset($item->kasBankAkun) && $item->kasBankAkun ? ($item->kasBankAkun->nomor_akun.' - '.$item->kasBankAkun->nama_akun) : (isset($item->bank) && is_object($item->bank) && $item->bank ? ($item->bank->nomor_akun.' - '.$item->bank->nama_akun) : (isset($item->bank) && is_string($item->bank) ? $item->bank : '-')),
                     ucfirst($item->status ?? 'pending'),
                     (isset($item->pembuatPembayaran) && $item->pembuatPembayaran) ? $item->pembuatPembayaran->name : '-',
                     $item->penyetujuPembayaran ? $item->penyetujuPembayaran->name : '-',
-                    $item->keterangan ?? '-'
+                    $item->keterangan ?? '-',
                 ], ';');
             }
 
@@ -260,7 +260,7 @@ class ReportPembayaranController extends Controller
         $summary = [
             'total_pembayaran' => 0,
             'total_transaksi' => 0,
-            'breakdown' => []
+            'breakdown' => [],
         ];
 
         // Array semua model pembayaran dengan label dan kolom tanggal (sama dengan index)
@@ -271,7 +271,7 @@ class ReportPembayaranController extends Controller
             'pranota_kontainer' => ['model' => PembayaranPranotaKontainer::class, 'label' => 'Pembayaran Pranota Kontainer', 'date_column' => 'tanggal_pembayaran'],
             'pranota_cat' => ['model' => PembayaranPranotaCat::class, 'label' => 'Pembayaran Pranota CAT', 'date_column' => 'tanggal_kas'],
 
-            'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran']
+            'aktivitas_lainnya' => ['model' => PembayaranAktivitasLainnya::class, 'label' => 'Pembayaran Aktivitas Lainnya', 'date_column' => 'tanggal_pembayaran'],
         ];
 
         foreach ($paymentModels as $key => $config) {
@@ -303,6 +303,7 @@ class ReportPembayaranController extends Controller
                 // Tambahkan label jenis untuk setiap item
                 $pembayaran = $pembayaran->map(function ($item) use ($config) {
                     $item->jenis_label = $config['label'];
+
                     return $item;
                 });
 
@@ -312,7 +313,7 @@ class ReportPembayaranController extends Controller
                 $summary['breakdown'][$key] = [
                     'label' => $config['label'],
                     'total' => $pembayaran->sum('total_pembayaran'),
-                    'count' => $pembayaran->count()
+                    'count' => $pembayaran->count(),
                 ];
             }
         }

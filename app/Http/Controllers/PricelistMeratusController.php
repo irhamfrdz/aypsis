@@ -11,12 +11,12 @@ class PricelistMeratusController extends Controller
     {
         $query = PricelistMeratus::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('jenis_biaya', 'like', "%{$search}%")
-                  ->orWhere('size', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%");
+                    ->orWhere('size', 'like', "%{$search}%")
+                    ->orWhere('lokasi', 'like', "%{$search}%");
             });
         }
 
@@ -49,13 +49,14 @@ class PricelistMeratusController extends Controller
     public function edit($id)
     {
         $pricelistMeratus = PricelistMeratus::findOrFail($id);
+
         return view('master.pricelist-meratus.edit', compact('pricelistMeratus'));
     }
 
     public function update(Request $request, $id)
     {
         $pricelistMeratus = PricelistMeratus::findOrFail($id);
-        
+
         $request->validate([
             'jenis_biaya' => 'required|string|max:255',
             'lokasi' => 'nullable|string|max:255',

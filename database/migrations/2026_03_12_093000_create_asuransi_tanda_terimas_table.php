@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -16,12 +15,12 @@ return new class extends Migration
         Schema::create('asuransi_tanda_terimas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('vendor_asuransi_id')->constrained('vendor_asuransi')->onDelete('cascade');
-            
+
             // Link to the source receipts (at least one should be filled)
             $table->unsignedBigInteger('tanda_terima_id')->nullable();
             $table->unsignedBigInteger('tanda_terima_tanpa_sj_id')->nullable();
             $table->unsignedBigInteger('tanda_terima_lcl_id')->nullable();
-            
+
             $table->string('nomor_polis')->nullable();
             $table->date('tanggal_polis')->nullable();
             $table->decimal('nilai_pertanggungan', 15, 2)->default(0);
@@ -29,7 +28,7 @@ return new class extends Migration
             $table->string('asuransi_path')->nullable();
             $table->text('keterangan')->nullable();
             $table->enum('status', ['Aktif', 'Selesai', 'Batal'])->default('Aktif');
-            
+
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();

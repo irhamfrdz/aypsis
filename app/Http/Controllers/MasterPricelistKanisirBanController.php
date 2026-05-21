@@ -11,6 +11,7 @@ class MasterPricelistKanisirBanController extends Controller
     public function index()
     {
         $pricelists = MasterPricelistKanisirBan::latest()->paginate(15);
+
         return view('master.pricelist-kanisir-ban.index', compact('pricelists'));
     }
 
@@ -31,7 +32,7 @@ class MasterPricelistKanisirBanController extends Controller
         ]);
 
         MasterPricelistKanisirBan::create(array_merge($request->all(), [
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]));
 
         return redirect()->route('master.pricelist-kanisir-ban.index')->with('success', 'Pricelist Kanisir Ban berhasil ditambahkan');
@@ -40,6 +41,7 @@ class MasterPricelistKanisirBanController extends Controller
     public function edit($id)
     {
         $pricelist = MasterPricelistKanisirBan::findOrFail($id);
+
         return view('master.pricelist-kanisir-ban.edit', compact('pricelist'));
     }
 
@@ -57,7 +59,7 @@ class MasterPricelistKanisirBanController extends Controller
         ]);
 
         $pricelist->update(array_merge($request->all(), [
-            'updated_by' => Auth::id()
+            'updated_by' => Auth::id(),
         ]));
 
         return redirect()->route('master.pricelist-kanisir-ban.index')->with('success', 'Pricelist Kanisir Ban berhasil diperbarui');

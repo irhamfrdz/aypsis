@@ -13,6 +13,7 @@ class PricelistSewaKontainerController extends Controller
     public function index()
     {
         $pricelists = PricelistSewaKontainer::latest()->paginate(10);
+
         return view('master-pricelist-sewa-kontainer.index', compact('pricelists'));
     }
 
@@ -42,7 +43,7 @@ class PricelistSewaKontainerController extends Controller
         PricelistSewaKontainer::create($validated);
 
         return redirect()->route('master.pricelist-sewa-kontainer.index')
-                         ->with('success', 'Pricelist sewa kontainer berhasil ditambahkan.');
+            ->with('success', 'Pricelist sewa kontainer berhasil ditambahkan.');
     }
 
     /**
@@ -71,7 +72,7 @@ class PricelistSewaKontainerController extends Controller
         $pricelistSewaKontainer->update($validated);
 
         return redirect()->route('master.pricelist-sewa-kontainer.index')
-                         ->with('success', 'Pricelist sewa kontainer berhasil diperbarui.');
+            ->with('success', 'Pricelist sewa kontainer berhasil diperbarui.');
     }
 
     /**
@@ -82,6 +83,6 @@ class PricelistSewaKontainerController extends Controller
         $pricelistSewaKontainer->delete();
 
         return redirect()->route('master.pricelist-sewa-kontainer.index')
-                         ->with('success', 'Pricelist sewa kontainer berhasil dihapus.');
+            ->with('success', 'Pricelist sewa kontainer berhasil dihapus.');
     }
 }

@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pranota;
 use App\Models\DaftarTagihanKontainerSewa;
-use App\Models\TagihanCat;
 use App\Models\PembayaranPranota;
 use App\Models\PembayaranPranotaItem;
+use App\Models\Pranota;
+use App\Models\TagihanCat;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class PranotaController extends Controller
 {
@@ -22,7 +22,7 @@ class PranotaController extends Controller
         $request->validate([
             'no_invoice' => 'nullable|string',
             'keterangan' => 'nullable|string',
-            'tagihan_cat_id' => 'nullable|exists:tagihan_cats,id'
+            'tagihan_cat_id' => 'nullable|exists:tagihan_cats,id',
         ]);
 
         try {
@@ -31,7 +31,7 @@ class PranotaController extends Controller
             $noInvoice = $request->input('no_invoice');
             $tagihanCatId = $request->input('tagihan_cat_id');
 
-            if (!$noInvoice) {
+            if (! $noInvoice) {
                 // Generate nomor pranota with format: PTK + 1 digit cetakan + 2 digit tahun + 2 digit bulan + 6 digit running number
                 $nomorCetakan = 1; // Default
                 $tahun = Carbon::now()->format('y'); // 2 digit year
@@ -72,28 +72,29 @@ class PranotaController extends Controller
                 'jumlah_tagihan' => $jumlahTagihan,
                 'total_amount' => $totalAmount,
                 'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
-                'due_date' => Carbon::now()->addDays(30)->format('Y-m-d')
+                'due_date' => Carbon::now()->addDays(30)->format('Y-m-d'),
             ]);
 
             DB::commit();
 
-            return redirect()->route('pranota.index')->with('success', 'Pranota berhasil dibuat dengan nomor: ' . $pranota->no_invoice);
+            return redirect()->route('pranota.index')->with('success', 'Pranota berhasil dibuat dengan nomor: '.$pranota->no_invoice);
 
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Gagal membuat pranota: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal membuat pranota: '.$e->getMessage());
         }
     }
 
     /**
      * Store bulk pranota from selected tagihan items
      */
-public function bulkStore(Request $request)
+    public function bulkStore(Request $request)
     {
         $request->validate([
             'selected_ids' => 'required|array|min:1',
             'selected_ids.*' => 'exists:daftar_tagihan_kontainer_sewa,id',
-            'nomor_cetakan' => 'nullable|integer|min:1|max:9' // Optional, default 1
+            'nomor_cetakan' => 'nullable|integer|min:1|max:9', // Optional, default 1
         ]);
 
         try {
@@ -125,12 +126,12 @@ public function bulkStore(Request $request)
             $pranota = Pranota::create([
                 'no_invoice' => $noInvoice,
                 'total_amount' => 0, // Will be calculated and updated below
-                'keterangan' => 'Pranota bulk untuk ' . count($request->selected_ids) . ' tagihan',
+                'keterangan' => 'Pranota bulk untuk '.count($request->selected_ids).' tagihan',
                 'status' => 'unpaid',
                 'tagihan_ids' => $request->selected_ids,
                 'jumlah_tagihan' => count($request->selected_ids),
                 'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
-                'due_date' => Carbon::now()->addDays(30)->format('Y-m-d')
+                'due_date' => Carbon::now()->addDays(30)->format('Y-m-d'),
             ]);
 
             // Update total amount using model method
@@ -141,19 +142,20 @@ public function bulkStore(Request $request)
                 ->update([
                     'status_pranota' => 'included',
                     'pranota_id' => $pranota->id,
-                    'updated_at' => Carbon::now()
+                    'updated_at' => Carbon::now(),
                 ]);
 
             DB::commit();
 
             return redirect()->back()->with('success',
-                'Pranota bulk berhasil dibuat dengan nomor: ' . $pranota->no_invoice .
-                ' untuk ' . count($request->selected_ids) . ' tagihan (Total: Rp ' . number_format($pranota->total_amount ?? 0, 2, ',', '.') . ')'
+                'Pranota bulk berhasil dibuat dengan nomor: '.$pranota->no_invoice.
+                ' untuk '.count($request->selected_ids).' tagihan (Total: Rp '.number_format($pranota->total_amount ?? 0, 2, ',', '.').')'
             );
 
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Gagal membuat pranota bulk: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal membuat pranota bulk: '.$e->getMessage());
         }
     }
 
@@ -169,7 +171,7 @@ public function bulkStore(Request $request)
             'tanggal_pranota' => 'required|date',
             'supplier' => 'required|string',
             'realisasi_biaya_total' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
         ]);
 
         try {
@@ -186,13 +188,13 @@ public function bulkStore(Request $request)
             $pranota = Pranota::create([
                 'no_invoice' => $request->nomor_pranota,
                 'total_amount' => $request->realisasi_biaya_total,
-                'keterangan' => $request->keterangan ?: 'Pranota untuk tagihan CAT - ' . $tagihanCatItems->pluck('nomor_kontainer')->join(', '),
+                'keterangan' => $request->keterangan ?: 'Pranota untuk tagihan CAT - '.$tagihanCatItems->pluck('nomor_kontainer')->join(', '),
                 'supplier' => $request->supplier,
                 'status' => 'unpaid',
                 'tagihan_ids' => $request->tagihan_cat_ids,
                 'jumlah_tagihan' => count($request->tagihan_cat_ids),
                 'tanggal_pranota' => $request->tanggal_pranota,
-                'due_date' => Carbon::parse($request->tanggal_pranota)->addDays(30)->format('Y-m-d')
+                'due_date' => Carbon::parse($request->tanggal_pranota)->addDays(30)->format('Y-m-d'),
             ]);
 
             // Attach tagihan CAT items to pranota via pivot table
@@ -202,23 +204,24 @@ public function bulkStore(Request $request)
             TagihanCat::whereIn('id', $request->tagihan_cat_ids)
                 ->update([
                     'status' => 'masuk pranota',
-                    'updated_at' => Carbon::now()
+                    'updated_at' => Carbon::now(),
                 ]);
 
             DB::commit();
 
             return redirect()->back()->with('success',
-                'Pranota berhasil dibuat dengan nomor: ' . $pranota->no_invoice .
-                ' untuk ' . count($request->tagihan_cat_ids) . ' tagihan CAT (Total: Rp ' . number_format($pranota->total_amount ?? 0, 2, ',', '.') . ')'
+                'Pranota berhasil dibuat dengan nomor: '.$pranota->no_invoice.
+                ' untuk '.count($request->tagihan_cat_ids).' tagihan CAT (Total: Rp '.number_format($pranota->total_amount ?? 0, 2, ',', '.').')'
             );
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Error creating pranota from tagihan CAT: ' . $e->getMessage(), [
+            Log::error('Error creating pranota from tagihan CAT: '.$e->getMessage(), [
                 'request_data' => $request->all(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            return redirect()->back()->with('error', 'Gagal membuat pranota dari tagihan CAT: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal membuat pranota dari tagihan CAT: '.$e->getMessage());
         }
     }
 
@@ -244,12 +247,12 @@ public function bulkStore(Request $request)
      */
     public function index(Request $request)
     {
-        $query = Pranota::with(['pembayaranKontainer' => function($query) {
+        $query = Pranota::with(['pembayaranKontainer' => function ($query) {
             $query->orderBy('created_at', 'desc');
         }])
-        ->whereNotNull('tagihan_ids') // Only pranota that have tagihan_ids
-        ->where('tagihan_ids', '!=', '[]') // Exclude empty arrays
-        ->orderBy('created_at', 'desc');
+            ->whereNotNull('tagihan_ids') // Only pranota that have tagihan_ids
+            ->where('tagihan_ids', '!=', '[]') // Exclude empty arrays
+            ->orderBy('created_at', 'desc');
 
         // Apply filters
         if ($request->filled('status')) {
@@ -266,10 +269,10 @@ public function bulkStore(Request $request)
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_invoice', 'like', "%{$search}%")
-                  ->orWhere('supplier', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('supplier', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
@@ -287,7 +290,7 @@ public function bulkStore(Request $request)
 
         // Direct query instead of using model method to avoid undefined method error
         $tagihanItems = collect();
-        if (!empty($pranota->tagihan_ids)) {
+        if (! empty($pranota->tagihan_ids)) {
             $tagihanItems = DaftarTagihanKontainerSewa::whereIn('id', $pranota->tagihan_ids)->get();
         }
 
@@ -300,7 +303,7 @@ public function bulkStore(Request $request)
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:unpaid,paid'
+            'status' => 'required|in:unpaid,paid',
         ]);
 
         try {
@@ -314,24 +317,26 @@ public function bulkStore(Request $request)
             $pranota->save();
 
             // Update status tagihan berdasarkan status pranota
-            if (!empty($pranota->tagihan_ids)) {
+            if (! empty($pranota->tagihan_ids)) {
                 $tagihanStatus = $this->getTagihanStatusFromPranota($newStatus);
 
                 DaftarTagihanKontainerSewa::whereIn('id', $pranota->tagihan_ids)
                     ->update([
                         'status_pranota' => $tagihanStatus,
-                        'updated_at' => Carbon::now()
+                        'updated_at' => Carbon::now(),
                     ]);
             }
 
             DB::commit();
 
             $statusText = $this->getStatusText($newStatus);
+
             return redirect()->back()->with('success', "Status pranota berhasil diupdate menjadi: {$statusText}");
 
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Gagal mengupdate status: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal mengupdate status: '.$e->getMessage());
         }
     }
 
@@ -376,12 +381,12 @@ public function bulkStore(Request $request)
             $pranota = Pranota::findOrFail($id);
 
             // Reset tagihan items status
-            if (!empty($pranota->tagihan_ids)) {
+            if (! empty($pranota->tagihan_ids)) {
                 DaftarTagihanKontainerSewa::whereIn('id', $pranota->tagihan_ids)
                     ->update([
                         'status_pranota' => null,
                         'pranota_id' => null,
-                        'updated_at' => Carbon::now()
+                        'updated_at' => Carbon::now(),
                     ]);
             }
 
@@ -393,7 +398,8 @@ public function bulkStore(Request $request)
 
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Gagal menghapus pranota: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal menghapus pranota: '.$e->getMessage());
         }
     }
 
@@ -406,7 +412,7 @@ public function bulkStore(Request $request)
 
         // Direct query instead of using model method to avoid undefined method error
         $tagihanItems = collect();
-        if (!empty($pranota->tagihan_ids)) {
+        if (! empty($pranota->tagihan_ids)) {
             $tagihanItems = \App\Models\DaftarTagihanKontainerSewa::whereIn('id', $pranota->tagihan_ids)->get();
         }
 
@@ -418,12 +424,12 @@ public function bulkStore(Request $request)
      */
     public function indexCat(Request $request)
     {
-        $query = Pranota::with(['pembayaranKontainer' => function($query) {
+        $query = Pranota::with(['pembayaranKontainer' => function ($query) {
             $query->orderBy('created_at', 'desc');
         }])
-        ->whereNotNull('tagihan_ids') // Only pranota that have tagihan_ids
-        ->where('tagihan_ids', '!=', '[]') // Exclude empty arrays
-        ->orderBy('created_at', 'desc');
+            ->whereNotNull('tagihan_ids') // Only pranota that have tagihan_ids
+            ->where('tagihan_ids', '!=', '[]') // Exclude empty arrays
+            ->orderBy('created_at', 'desc');
 
         // Apply filters
         if ($request->filled('status')) {
@@ -440,10 +446,10 @@ public function bulkStore(Request $request)
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('no_invoice', 'like', "%{$search}%")
-                  ->orWhere('supplier', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('supplier', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
@@ -461,7 +467,7 @@ public function bulkStore(Request $request)
 
         // Get tagihan CAT items
         $tagihanItems = collect();
-        if (!empty($pranota->tagihan_ids)) {
+        if (! empty($pranota->tagihan_ids)) {
             $tagihanItems = \App\Models\TagihanCat::whereIn('id', $pranota->tagihan_ids)->get();
         }
 
@@ -477,7 +483,7 @@ public function bulkStore(Request $request)
 
         // Get tagihan CAT items
         $tagihanItems = collect();
-        if (!empty($pranota->tagihan_ids)) {
+        if (! empty($pranota->tagihan_ids)) {
             $tagihanItems = \App\Models\TagihanCat::whereIn('id', $pranota->tagihan_ids)->get();
         }
 
@@ -492,7 +498,7 @@ public function bulkStore(Request $request)
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'required|integer|exists:pranotas,id',
-            'status' => 'required|string|in:unpaid,approved,in_progress,completed,cancelled'
+            'status' => 'required|string|in:unpaid,approved,in_progress,completed,cancelled',
         ]);
 
         try {
@@ -502,13 +508,13 @@ public function bulkStore(Request $request)
             // Update status for selected pranota
             Pranota::whereIn('id', $ids)->update([
                 'status' => $status,
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
 
-            return redirect()->back()->with('success', count($ids) . ' pranota berhasil diupdate status menjadi ' . $status);
+            return redirect()->back()->with('success', count($ids).' pranota berhasil diupdate status menjadi '.$status);
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal mengupdate status pranota: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal mengupdate status pranota: '.$e->getMessage());
         }
     }
 
@@ -523,7 +529,7 @@ public function bulkStore(Request $request)
             'payment_date' => 'required|date',
             'payment_method' => 'required|string',
             'reference_number' => 'nullable|string',
-            'payment_notes' => 'nullable|string'
+            'payment_notes' => 'nullable|string',
         ]);
 
         try {
@@ -536,7 +542,7 @@ public function bulkStore(Request $request)
             $totalAmount = $pranotas->sum('total_amount');
 
             // Generate payment number
-            $paymentNumber = 'PP-' . date('Ymd') . '-' . str_pad(PembayaranPranota::count() + 1, 4, '0', STR_PAD_LEFT);
+            $paymentNumber = 'PP-'.date('Ymd').'-'.str_pad(PembayaranPranota::count() + 1, 4, '0', STR_PAD_LEFT);
 
             // Create main payment record
             $pembayaran = PembayaranPranota::create([
@@ -548,7 +554,7 @@ public function bulkStore(Request $request)
                 'penyesuaian' => 0,
                 'total_setelah_penyesuaian' => $totalAmount,
                 'keterangan' => $request->input('payment_notes') ?: 'Pembayaran bulk pranota CAT',
-                'status' => 'approved' // Auto-approve bulk payments
+                'status' => 'approved', // Auto-approve bulk payments
             ]);
 
             // Create payment items for each pranota
@@ -556,23 +562,24 @@ public function bulkStore(Request $request)
                 PembayaranPranotaItem::create([
                     'pembayaran_pranota_id' => $pembayaran->id,
                     'pranota_id' => $pranota->id,
-                    'amount' => $pranota->total_amount
+                    'amount' => $pranota->total_amount,
                 ]);
             }
 
             // Update pranota status to paid
             Pranota::whereIn('id', $ids)->update([
                 'status' => 'paid',
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
 
             DB::commit();
 
-            return redirect()->back()->with('success', count($ids) . ' pranota berhasil diproses pembayarannya dengan nomor pembayaran: ' . $paymentNumber);
+            return redirect()->back()->with('success', count($ids).' pranota berhasil diproses pembayarannya dengan nomor pembayaran: '.$paymentNumber);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal memproses pembayaran pranota: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal memproses pembayaran pranota: '.$e->getMessage());
         }
     }
 }

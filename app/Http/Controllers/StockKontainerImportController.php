@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\StockKontainer;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 
 class StockKontainerImportController extends Controller
 {
@@ -17,22 +17,22 @@ class StockKontainerImportController extends Controller
     public function downloadTemplate()
     {
         try {
-            $fileName = 'template_stock_kontainer_' . date('Y-m-d_H-i-s') . '.csv';
+            $fileName = 'template_stock_kontainer_'.date('Y-m-d_H-i-s').'.csv';
 
             // Headers for CSV
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
             ];
 
             // CSV content - header template dengan format yang jelas
             $csvData = [
                 ['Awalan Kontainer (4 karakter)', 'Nomor Seri Kontainer (6 digit)', 'Akhiran Kontainer (1 digit)', 'Nomor Seri Gabungan (11 karakter)', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan (opsional)', 'Keterangan (opsional)'],
                 ['ABCD', '123456', 'X', 'ABCD123456X', '20', 'Dry Container', 'available', '2020', 'Contoh data - hapus baris ini'],
-                ['EFGH', '789012', 'Y', 'EFGH789012Y', '40', 'Reefer Container', 'rented', '', 'Tahun kosong juga boleh - hapus baris ini']
+                ['EFGH', '789012', 'Y', 'EFGH789012Y', '40', 'Reefer Container', 'rented', '', 'Tahun kosong juga boleh - hapus baris ini'],
             ];
 
-            $callback = function() use ($csvData) {
+            $callback = function () use ($csvData) {
                 $file = fopen('php://output', 'w');
 
                 // Set CSV dengan semicolon delimiter
@@ -46,7 +46,7 @@ class StockKontainerImportController extends Controller
             return Response::stream($callback, 200, $headers);
 
         } catch (Exception $e) {
-            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mendownload template: '.$e->getMessage());
         }
     }
 
@@ -61,12 +61,12 @@ class StockKontainerImportController extends Controller
                 'required',
                 'file',
                 'mimes:csv,txt',
-                'max:5120' // 5MB
-            ]
+                'max:5120', // 5MB
+            ],
         ], [
             'excel_file.required' => 'File CSV harus dipilih.',
             'excel_file.mimes' => 'File harus berformat .csv',
-            'excel_file.max' => 'Ukuran file maksimal 5MB.'
+            'excel_file.max' => 'Ukuran file maksimal 5MB.',
         ]);
 
         if ($validator->fails()) {
@@ -79,8 +79,8 @@ class StockKontainerImportController extends Controller
 
             // Read CSV file with semicolon delimiter
             $csvData = [];
-            if (($handle = fopen($path, 'r')) !== FALSE) {
-                while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
+            if (($handle = fopen($path, 'r')) !== false) {
+                while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                     $csvData[] = $data;
                 }
                 fclose($handle);
@@ -94,7 +94,7 @@ class StockKontainerImportController extends Controller
                 ['Nomor Kontainer', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan'],
                 ['Nomor Kontainer (11 karakter, contoh: ABCD123456X)', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan'],
                 // Format baru
-                ['Awalan Kontainer (4 karakter)', 'Nomor Seri Kontainer (6 digit)', 'Akhiran Kontainer (1 digit)', 'Nomor Seri Gabungan (11 karakter)', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan']
+                ['Awalan Kontainer (4 karakter)', 'Nomor Seri Kontainer (6 digit)', 'Akhiran Kontainer (1 digit)', 'Nomor Seri Gabungan (11 karakter)', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan'],
             ];
 
             $headerValid = false;
@@ -107,7 +107,7 @@ class StockKontainerImportController extends Controller
                 }
             }
 
-            if (!$headerValid) {
+            if (! $headerValid) {
                 return back()->with('error', 'Format header CSV tidak sesuai template. Gunakan template yang telah disediakan.');
             }
 
@@ -117,7 +117,7 @@ class StockKontainerImportController extends Controller
                 'errors' => 0,
                 'skipped' => 0,
                 'error_details' => [],
-                'warnings' => []
+                'warnings' => [],
             ];
 
             DB::beginTransaction();
@@ -137,6 +137,7 @@ class StockKontainerImportController extends Controller
                 if (count($row) < $minColumns) {
                     $stats['errors']++;
                     $stats['error_details'][] = "Baris {$rowNumber}: Data tidak lengkap";
+
                     continue;
                 }
 
@@ -157,24 +158,28 @@ class StockKontainerImportController extends Controller
                         if (strlen($awalan) != 4) {
                             $stats['errors']++;
                             $stats['error_details'][] = "Baris {$rowNumber}: Awalan kontainer harus 4 karakter";
+
                             continue;
                         }
-                        if (strlen($nomor_seri) != 6 || !is_numeric($nomor_seri)) {
+                        if (strlen($nomor_seri) != 6 || ! is_numeric($nomor_seri)) {
                             $stats['errors']++;
                             $stats['error_details'][] = "Baris {$rowNumber}: Nomor seri kontainer harus 6 digit angka";
+
                             continue;
                         }
                         if (strlen($akhiran) != 1) {
                             $stats['errors']++;
                             $stats['error_details'][] = "Baris {$rowNumber}: Akhiran kontainer harus 1 karakter";
+
                             continue;
                         }
 
                         // Validasi konsistensi nomor gabungan
-                        $expectedGabungan = $awalan . $nomor_seri . $akhiran;
+                        $expectedGabungan = $awalan.$nomor_seri.$akhiran;
                         if ($nomorKontainer !== $expectedGabungan) {
                             $stats['errors']++;
                             $stats['error_details'][] = "Baris {$rowNumber}: Nomor gabungan ({$nomorKontainer}) tidak sesuai dengan komponen ({$expectedGabungan})";
+
                             continue;
                         }
                     } else {
@@ -190,6 +195,7 @@ class StockKontainerImportController extends Controller
                         if (strlen($nomorKontainer) != 11) {
                             $stats['errors']++;
                             $stats['error_details'][] = "Baris {$rowNumber}: Nomor kontainer harus 11 karakter (format: ABCD123456X)";
+
                             continue;
                         }
 
@@ -203,6 +209,7 @@ class StockKontainerImportController extends Controller
                     if (empty($nomorKontainer)) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Nomor kontainer tidak boleh kosong";
+
                         continue;
                     }
 
@@ -210,26 +217,29 @@ class StockKontainerImportController extends Controller
                     if (strlen($nomorKontainer) != 11) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Nomor gabungan kontainer harus 11 karakter";
+
                         continue;
                     }
 
                     // Validate status
                     $validStatuses = ['available', 'rented', 'maintenance', 'damaged', 'inactive'];
-                    if (!empty($status) && !in_array(strtolower($status), $validStatuses)) {
+                    if (! empty($status) && ! in_array(strtolower($status), $validStatuses)) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Status harus salah satu dari: available, rented, maintenance, damaged, inactive";
+
                         continue;
                     }
 
                     // Validate tahun pembuatan (if provided)
-                    if (!empty($tahunPembuatan) && (!is_numeric($tahunPembuatan) || $tahunPembuatan < 1900 || $tahunPembuatan > date('Y'))) {
+                    if (! empty($tahunPembuatan) && (! is_numeric($tahunPembuatan) || $tahunPembuatan < 1900 || $tahunPembuatan > date('Y'))) {
                         $stats['errors']++;
-                        $stats['error_details'][] = "Baris {$rowNumber}: Tahun pembuatan harus berupa angka antara 1900 - " . date('Y');
+                        $stats['error_details'][] = "Baris {$rowNumber}: Tahun pembuatan harus berupa angka antara 1900 - ".date('Y');
+
                         continue;
                     }
 
                     // Konversi tahun pembuatan ke null jika kosong
-                    $tahunPembuatanFinal = !empty($tahunPembuatan) && is_numeric($tahunPembuatan) ? intval($tahunPembuatan) : null;
+                    $tahunPembuatanFinal = ! empty($tahunPembuatan) && is_numeric($tahunPembuatan) ? intval($tahunPembuatan) : null;
 
                     // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer
                     $existingWithSameSerialAndSuffix = StockKontainer::where('nomor_seri_kontainer', $nomor_seri)
@@ -285,7 +295,7 @@ class StockKontainerImportController extends Controller
                             'tipe_kontainer' => $tipeKontainer ?: $existingStock->tipe_kontainer,
                             'tahun_pembuatan' => $tahunPembuatanFinal ?: $existingStock->tahun_pembuatan,
                             'keterangan' => $keterangan ?: $existingStock->keterangan,
-                            'updated_at' => now()
+                            'updated_at' => now(),
                         ];
 
                         // Gunakan status yang sudah divalidasi
@@ -306,7 +316,7 @@ class StockKontainerImportController extends Controller
                             'keterangan' => $keterangan,
                             'status' => $finalStatus,
                             'created_at' => now(),
-                            'updated_at' => now()
+                            'updated_at' => now(),
                         ];
 
                         StockKontainer::create($createData);
@@ -315,14 +325,14 @@ class StockKontainerImportController extends Controller
 
                 } catch (Exception $e) {
                     $stats['errors']++;
-                    $stats['error_details'][] = "Baris {$rowNumber}: " . $e->getMessage();
+                    $stats['error_details'][] = "Baris {$rowNumber}: ".$e->getMessage();
                 }
             }
 
             DB::commit();
 
             // Build success message
-            $message = "Import berhasil! ";
+            $message = 'Import berhasil! ';
             if ($stats['success'] > 0) {
                 $message .= "Ditambahkan: {$stats['success']} stock kontainer, ";
             }
@@ -331,10 +341,10 @@ class StockKontainerImportController extends Controller
             }
             if ($stats['errors'] > 0) {
                 $message .= "Error: {$stats['errors']} baris. ";
-                if (!empty($stats['error_details'])) {
-                    $message .= "Error detail: " . implode(', ', array_slice($stats['error_details'], 0, 5));
+                if (! empty($stats['error_details'])) {
+                    $message .= 'Error detail: '.implode(', ', array_slice($stats['error_details'], 0, 5));
                     if (count($stats['error_details']) > 5) {
-                        $message .= " (dan " . (count($stats['error_details']) - 5) . " error lainnya)";
+                        $message .= ' (dan '.(count($stats['error_details']) - 5).' error lainnya)';
                     }
                 }
             }
@@ -342,15 +352,15 @@ class StockKontainerImportController extends Controller
             $successMessage = trim($message, ', ');
 
             // Tambahkan warnings jika ada
-            if (!empty($stats['warnings'])) {
-                $warningMessage = "Peringatan: " . implode(' | ', array_slice($stats['warnings'], 0, 3));
+            if (! empty($stats['warnings'])) {
+                $warningMessage = 'Peringatan: '.implode(' | ', array_slice($stats['warnings'], 0, 3));
                 if (count($stats['warnings']) > 3) {
-                    $warningMessage .= " (dan " . (count($stats['warnings']) - 3) . " peringatan lainnya)";
+                    $warningMessage .= ' (dan '.(count($stats['warnings']) - 3).' peringatan lainnya)';
                 }
 
                 return back()->with([
                     'success' => $successMessage,
-                    'warning' => $warningMessage
+                    'warning' => $warningMessage,
                 ]);
             }
 
@@ -358,7 +368,8 @@ class StockKontainerImportController extends Controller
 
         } catch (Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan saat import: '.$e->getMessage());
         }
     }
 }

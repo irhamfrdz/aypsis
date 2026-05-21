@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -354,7 +352,7 @@ return new class extends Migration
             DB::table('permissions')->insertOrIgnore($chunk);
         }
 
-        echo "Total permissions created: " . count($permissions) . "\n";
+        echo 'Total permissions created: '.count($permissions)."\n";
     }
 
     /**
@@ -418,7 +416,7 @@ return new class extends Migration
             'realisasi-uang-muka-view', 'realisasi-uang-muka-create', 'realisasi-uang-muka-edit', 'realisasi-uang-muka-delete',
             'aktivitas-lainnya-view', 'aktivitas-lainnya-create', 'aktivitas-lainnya-update', 'aktivitas-lainnya-delete', 'aktivitas-lainnya-approve',
             'vendor-kontainer-sewa-view', 'vendor-kontainer-sewa-create', 'vendor-kontainer-sewa-edit', 'vendor-kontainer-sewa-delete',
-            'profile-update', 'profile-delete'
+            'profile-update', 'profile-delete',
         ];
 
         DB::table('permissions')->whereIn('name', $permissions)->delete();

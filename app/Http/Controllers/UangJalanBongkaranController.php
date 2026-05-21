@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MasterPricelistUangJalan;
 use App\Models\SuratJalanBongkaran;
 use App\Models\UangJalanBongkaran;
-use App\Models\MasterPricelistUangJalan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class UangJalanBongkaranController extends Controller
 {
@@ -36,11 +35,11 @@ class UangJalanBongkaranController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('keterangan', 'like', "%{$search}%")
-                  ->orWhereHas('suratJalanBongkaran', function ($suratJalanQuery) use ($search) {
-                      $suratJalanQuery->where('nomor_surat_jalan', 'like', "%{$search}%")
-                                      ->orWhere('supir', 'like', "%{$search}%")
-                                      ->orWhere('no_plat', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('suratJalanBongkaran', function ($suratJalanQuery) use ($search) {
+                        $suratJalanQuery->where('nomor_surat_jalan', 'like', "%{$search}%")
+                            ->orWhere('supir', 'like', "%{$search}%")
+                            ->orWhere('no_plat', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -78,7 +77,7 @@ class UangJalanBongkaranController extends Controller
 
         if ($request->has('surat_jalan_bongkaran_id')) {
             $suratJalanBongkaran = SuratJalanBongkaran::find($request->surat_jalan_bongkaran_id);
-            
+
             // Calculate uang jalan from pricelist if available, otherwise use existing value
             if ($suratJalanBongkaran) {
                 $calculatedUangJalan = $this->calculateUangJalanFromPricelist($suratJalanBongkaran);
@@ -114,7 +113,7 @@ class UangJalanBongkaranController extends Controller
             'alasan_penyesuaian' => 'nullable|string|max:255',
             'jumlah_penyesuaian' => 'nullable|numeric',
             'memo' => 'nullable|string',
-            'status' => 'required|in:belum_dibayar,belum_masuk_pranota,sudah_masuk_pranota,lunas,dibatalkan'
+            'status' => 'required|in:belum_dibayar,belum_masuk_pranota,sudah_masuk_pranota,lunas,dibatalkan',
         ]);
 
         // Hitung subtotal
@@ -134,7 +133,7 @@ class UangJalanBongkaranController extends Controller
         UangJalanBongkaran::create($validatedData);
 
         return redirect()->route('uang-jalan-bongkaran.index')
-                        ->with('success', 'Uang jalan bongkaran berhasil dibuat.');
+            ->with('success', 'Uang jalan bongkaran berhasil dibuat.');
     }
 
     /**
@@ -171,7 +170,7 @@ class UangJalanBongkaranController extends Controller
             'alasan_penyesuaian' => 'nullable|string|max:255',
             'jumlah_penyesuaian' => 'nullable|numeric',
             'memo' => 'nullable|string',
-            'status' => 'required|in:belum_dibayar,belum_masuk_pranota,sudah_masuk_pranota,lunas,dibatalkan'
+            'status' => 'required|in:belum_dibayar,belum_masuk_pranota,sudah_masuk_pranota,lunas,dibatalkan',
         ]);
 
         // Hitung subtotal
@@ -190,7 +189,7 @@ class UangJalanBongkaranController extends Controller
         $uangJalanBongkaran->update($validatedData);
 
         return redirect()->route('uang-jalan-bongkaran.index')
-                        ->with('success', 'Uang jalan bongkaran berhasil diperbarui.');
+            ->with('success', 'Uang jalan bongkaran berhasil diperbarui.');
     }
 
     /**
@@ -201,7 +200,7 @@ class UangJalanBongkaranController extends Controller
         $uangJalanBongkaran->delete();
 
         return redirect()->route('uang-jalan-bongkaran.index')
-                        ->with('success', 'Uang jalan bongkaran berhasil dihapus.');
+            ->with('success', 'Uang jalan bongkaran berhasil dihapus.');
     }
 
     /**
@@ -219,9 +218,9 @@ class UangJalanBongkaranController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%");
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%");
             });
         }
 
@@ -266,10 +265,10 @@ class UangJalanBongkaranController extends Controller
             ->where(function ($query) use ($dari, $ke) {
                 $query->where(function ($q) use ($dari, $ke) {
                     $q->where('dari', 'LIKE', "%{$dari}%")
-                      ->where('ke', 'LIKE', "%{$ke}%");
+                        ->where('ke', 'LIKE', "%{$ke}%");
                 })->orWhere(function ($q) use ($dari, $ke) {
                     $q->where('dari', 'LIKE', "%{$ke}%")
-                      ->where('ke', 'LIKE', "%{$dari}%");
+                        ->where('ke', 'LIKE', "%{$dari}%");
                 });
             })
             ->first();

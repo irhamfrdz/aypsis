@@ -5,14 +5,15 @@ namespace App\Exports;
 use App\Models\Prospek;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class ProspekExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $filters;
+
     protected $prospekIds;
 
     public function __construct(array $filters = [], array $prospekIds = [])
@@ -24,63 +25,63 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
     public function collection()
     {
         // If prospekIds provided, export only those
-        if (!empty($this->prospekIds)) {
+        if (! empty($this->prospekIds)) {
             $query = Prospek::with(['suratJalan'])->whereIn('id', $this->prospekIds);
         } else {
             $query = Prospek::with(['suratJalan'])->orderBy('created_at', 'desc');
 
-            if (!empty($this->filters['status'])) {
+            if (! empty($this->filters['status'])) {
                 if ($this->filters['status'] == 'sudah_muat_no_voyage') {
                     $query->where('status', 'sudah_muat')
-                          ->where(function($q) {
-                              $q->whereNull('no_voyage')->orWhere('no_voyage', '');
-                          });
+                        ->where(function ($q) {
+                            $q->whereNull('no_voyage')->orWhere('no_voyage', '');
+                        });
                 } else {
                     $query->where('status', $this->filters['status']);
                 }
             }
-            if (!empty($this->filters['tipe'])) {
+            if (! empty($this->filters['tipe'])) {
                 $query->where('tipe', $this->filters['tipe']);
             }
-            if (!empty($this->filters['ukuran'])) {
+            if (! empty($this->filters['ukuran'])) {
                 $query->where('ukuran', $this->filters['ukuran']);
             }
-            if (!empty($this->filters['tujuan'])) {
-                $query->where('tujuan_pengiriman', 'like', '%' . $this->filters['tujuan'] . '%');
+            if (! empty($this->filters['tujuan'])) {
+                $query->where('tujuan_pengiriman', 'like', '%'.$this->filters['tujuan'].'%');
             }
-            if (!empty($this->filters['tanggal_dari']) && !empty($this->filters['tanggal_sampai'])) {
+            if (! empty($this->filters['tanggal_dari']) && ! empty($this->filters['tanggal_sampai'])) {
                 $query->whereBetween('tanggal', [$this->filters['tanggal_dari'], $this->filters['tanggal_sampai']]);
             }
-            if (!empty($this->filters['search'])) {
+            if (! empty($this->filters['search'])) {
                 $search = $this->filters['search'];
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('nama_supir', 'like', "%{$search}%")
-                      ->orWhere('barang', 'like', "%{$search}%")
-                      ->orWhere('pt_pengirim', 'like', "%{$search}%")
-                      ->orWhere('nomor_kontainer', 'like', "%{$search}%")
-                      ->orWhere('no_seal', 'like', "%{$search}%")
-                      ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
-                      ->orWhere('nama_kapal', 'like', "%{$search}%")
-                      ->orWhere('no_surat_jalan', 'like', "%{$search}%")
-                      ->orWhere('no_voyage', 'like', "%{$search}%");
+                        ->orWhere('barang', 'like', "%{$search}%")
+                        ->orWhere('pt_pengirim', 'like', "%{$search}%")
+                        ->orWhere('nomor_kontainer', 'like', "%{$search}%")
+                        ->orWhere('no_seal', 'like', "%{$search}%")
+                        ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
+                        ->orWhere('nama_kapal', 'like', "%{$search}%")
+                        ->orWhere('no_surat_jalan', 'like', "%{$search}%")
+                        ->orWhere('no_voyage', 'like', "%{$search}%");
                 });
             }
 
-            if (!empty($this->filters['show_duplicates']) && $this->filters['show_duplicates'] == '1') {
+            if (! empty($this->filters['show_duplicates']) && $this->filters['show_duplicates'] == '1') {
                 $duplicateNos = Prospek::select('no_surat_jalan')
                     ->whereNotNull('no_surat_jalan')
                     ->where('no_surat_jalan', '!=', '')
                     ->groupBy('no_surat_jalan')
                     ->havingRaw('COUNT(no_surat_jalan) > 1')
                     ->pluck('no_surat_jalan');
-                
+
                 $query->whereIn('no_surat_jalan', $duplicateNos);
             }
         }
 
         $prospeks = $query->get();
 
-        $rows = $prospeks->map(function($p, $index) {
+        $rows = $prospeks->map(function ($p, $index) {
             return [
                 $index + 1, // Nomor urut
                 $p->nama_supir ?? '-', // Nama supir
@@ -93,7 +94,7 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
                 $p->nomor_kontainer,
                 $p->no_seal,
                 $p->tujuan_pengiriman ?? '-',
-                (in_array($p->status, ['aktif', '', null]) ? '-' : ($p->no_voyage ?? '-'))
+                (in_array($p->status, ['aktif', '', null]) ? '-' : ($p->no_voyage ?? '-')),
             ];
         });
 
@@ -114,17 +115,17 @@ class ProspekExport implements FromCollection, WithHeadings, ShouldAutoSize, Wit
             'No. Kontainer',
             'No. Seal',
             'Tujuan',
-            'Voyage'
+            'Voyage',
         ];
     }
 
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $sheet->getStyle('A1:L1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            }
+            },
         ];
     }
 }

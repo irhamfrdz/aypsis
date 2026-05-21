@@ -1,15 +1,13 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Perbaikan: Migration sebelumnya salah konversi volume.
      * Recalculate volume berdasarkan dimensi yang sudah benar.
      */
@@ -17,7 +15,7 @@ return new class extends Migration
     {
         // Recalculate semua volume berdasarkan dimensi yang ada
         // Ini lebih aman daripada asumsi kalkulasi balik
-        DB::statement("
+        DB::statement('
             UPDATE tanda_terima_lcl_items 
             SET meter_kubik = panjang * lebar * tinggi
             WHERE panjang IS NOT NULL 
@@ -26,8 +24,8 @@ return new class extends Migration
                 AND panjang > 0 
                 AND lebar > 0 
                 AND tinggi > 0
-        ");
-        
+        ');
+
         echo 'Volume recalculated for all LCL items based on current dimensions.';
     }
 

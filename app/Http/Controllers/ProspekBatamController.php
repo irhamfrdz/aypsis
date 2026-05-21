@@ -2,19 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProspekBatamExport;
+use App\Models\MasterKapal;
 use App\Models\ProspekBatam;
 use App\Models\User;
-use App\Models\MasterKapal;
-use App\Models\NaikKapal;
-use App\Models\Bl;
-use App\Exports\ProspekBatamExport;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProspekBatamController extends Controller
 {
@@ -30,8 +25,8 @@ class ProspekBatamController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$this->hasProspekPermission($user, 'prospek-batam-view')) {
-                abort(403, "Tidak memiliki akses ke halaman prospek batam");
+            if (! $this->hasProspekPermission($user, 'prospek-batam-view')) {
+                abort(403, 'Tidak memiliki akses ke halaman prospek batam');
             }
 
             $query = ProspekBatam::with(['creator', 'updater', 'bls', 'suratJalan'])->orderBy('created_at', 'desc');
@@ -40,9 +35,9 @@ class ProspekBatamController extends Controller
             if ($request->filled('status')) {
                 if ($request->status == 'sudah_muat_no_voyage') {
                     $query->where('status', 'sudah_muat')
-                          ->where(function($q) {
-                              $q->whereNull('no_voyage')->orWhere('no_voyage', '');
-                          });
+                        ->where(function ($q) {
+                            $q->whereNull('no_voyage')->orWhere('no_voyage', '');
+                        });
                 } else {
                     $query->where('status', $request->status);
                 }
@@ -55,7 +50,7 @@ class ProspekBatamController extends Controller
 
             // Filter berdasarkan tujuan
             if ($request->filled('tujuan')) {
-                $query->where('tujuan_pengiriman', 'like', '%' . $request->tujuan . '%');
+                $query->where('tujuan_pengiriman', 'like', '%'.$request->tujuan.'%');
             }
 
             // Filter berdasarkan ukuran
@@ -72,15 +67,15 @@ class ProspekBatamController extends Controller
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
-                                $q->where('nama_supir', 'like', '%' . $search . '%')
-                                    ->orWhere('no_surat_jalan', 'like', '%' . $search . '%')
-                      ->orWhere('barang', 'like', '%' . $search . '%')
-                      ->orWhere('pt_pengirim', 'like', '%' . $search . '%')
-                      ->orWhere('nomor_kontainer', 'like', '%' . $search . '%')
-                      ->orWhere('no_seal', 'like', '%' . $search . '%')
-                      ->orWhere('tujuan_pengiriman', 'like', '%' . $search . '%')
-                      ->orWhere('nama_kapal', 'like', '%' . $search . '%')
-                      ->orWhere('no_voyage', 'like', '%' . $search . '%');
+                    $q->where('nama_supir', 'like', '%'.$search.'%')
+                        ->orWhere('no_surat_jalan', 'like', '%'.$search.'%')
+                        ->orWhere('barang', 'like', '%'.$search.'%')
+                        ->orWhere('pt_pengirim', 'like', '%'.$search.'%')
+                        ->orWhere('nomor_kontainer', 'like', '%'.$search.'%')
+                        ->orWhere('no_seal', 'like', '%'.$search.'%')
+                        ->orWhere('tujuan_pengiriman', 'like', '%'.$search.'%')
+                        ->orWhere('nama_kapal', 'like', '%'.$search.'%')
+                        ->orWhere('no_voyage', 'like', '%'.$search.'%');
                 });
             }
 
@@ -92,14 +87,14 @@ class ProspekBatamController extends Controller
                     ->groupBy('no_surat_jalan')
                     ->havingRaw('COUNT(no_surat_jalan) > 1')
                     ->pluck('no_surat_jalan');
-                
+
                 $query->whereIn('no_surat_jalan', $duplicateNos);
             }
 
             // Allow configurable rows per page, default to 15. Validate allowed values to prevent abuse.
             $allowedPerPage = [10, 25, 50, 100];
             $perPage = (int) $request->get('per_page', 10);
-            if (!in_array($perPage, $allowedPerPage)) {
+            if (! in_array($perPage, $allowedPerPage)) {
                 $perPage = 10;
             }
 
@@ -110,9 +105,9 @@ class ProspekBatamController extends Controller
 
             // Statistik untuk summary cards - use the same filtered query
             $totalBelumMuat = (clone $filteredQuery)->where(function ($q) {
-                    $q->whereNull('status')
-                        ->orWhere('status', '')
-                        ->orWhere('status', 'aktif');
+                $q->whereNull('status')
+                    ->orWhere('status', '')
+                    ->orWhere('status', 'aktif');
             })->count();
 
             $totalSudahMuat = (clone $filteredQuery)->where('status', 'sudah_muat')->count();
@@ -130,8 +125,9 @@ class ProspekBatamController extends Controller
             return view('prospek-batam.index', compact('prospeks', 'totalBelumMuat', 'totalSudahMuat', 'totalBatal'));
 
         } catch (\Exception $e) {
-            Log::error('Error loading data prospek batam: ' . $e->getMessage());
-            return back()->with('error', 'Error loading data prospek batam: ' . $e->getMessage());
+            Log::error('Error loading data prospek batam: '.$e->getMessage());
+
+            return back()->with('error', 'Error loading data prospek batam: '.$e->getMessage());
         }
     }
 
@@ -147,7 +143,7 @@ class ProspekBatamController extends Controller
             $prospekIds = explode(',', $prospekIds);
         }
 
-        return Excel::download(new ProspekBatamExport($filters, $prospekIds), 'prospek_batam_' . now()->format('YmdHis') . '.xlsx');
+        return Excel::download(new ProspekBatamExport($filters, $prospekIds), 'prospek_batam_'.now()->format('YmdHis').'.xlsx');
     }
 
     /**
@@ -157,8 +153,8 @@ class ProspekBatamController extends Controller
     {
         $prospek = ProspekBatam::findOrFail($id);
         $user = Auth::user();
-        if (!$this->hasProspekPermission($user, 'prospek-batam-view')) {
-            abort(403, "Tidak memiliki akses untuk melihat detail prospek batam");
+        if (! $this->hasProspekPermission($user, 'prospek-batam-view')) {
+            abort(403, 'Tidak memiliki akses untuk melihat detail prospek batam');
         }
 
         $prospek->load(['creator', 'updater']);
@@ -173,12 +169,12 @@ class ProspekBatamController extends Controller
     {
         $prospek = ProspekBatam::findOrFail($id);
         $user = Auth::user();
-        if (!$this->hasProspekPermission($user, 'prospek-batam-edit')) {
-            abort(403, "Tidak memiliki akses untuk mengedit prospek batam");
+        if (! $this->hasProspekPermission($user, 'prospek-batam-edit')) {
+            abort(403, 'Tidak memiliki akses untuk mengedit prospek batam');
         }
 
         $prospek->load(['suratJalan', 'tandaTerima', 'creator', 'updater']);
-        
+
         // Get master data for dropdowns
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
 
@@ -192,8 +188,8 @@ class ProspekBatamController extends Controller
     {
         $prospek = ProspekBatam::findOrFail($id);
         $user = Auth::user();
-        if (!$this->hasProspekPermission($user, 'prospek-batam-edit')) {
-            abort(403, "Tidak memiliki akses untuk mengedit prospek batam");
+        if (! $this->hasProspekPermission($user, 'prospek-batam-edit')) {
+            abort(403, 'Tidak memiliki akses untuk mengedit prospek batam');
         }
 
         $validated = $request->validate([
@@ -228,7 +224,7 @@ class ProspekBatamController extends Controller
         }
 
         $validated['updated_by'] = $user->id;
-        
+
         $prospek->update($validated);
 
         return redirect()->route('prospek-batam.index')
@@ -243,19 +239,19 @@ class ProspekBatamController extends Controller
         $prospek = ProspekBatam::findOrFail($id);
         try {
             $user = Auth::user();
-            if (!$this->hasProspekPermission($user, 'prospek-batam-edit')) {
+            if (! $this->hasProspekPermission($user, 'prospek-batam-edit')) {
                 return response()->json(['error' => 'Tidak memiliki akses untuk mengubah data prospek batam'], 403);
             }
 
             $request->validate([
-                'no_seal' => 'required|string|max:255'
+                'no_seal' => 'required|string|max:255',
             ]);
 
             $oldSeal = $prospek->no_seal;
-            
+
             $prospek->update([
                 'no_seal' => $request->no_seal,
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
 
             // Log the update
@@ -264,7 +260,7 @@ class ProspekBatamController extends Controller
                 'old_seal' => $oldSeal,
                 'new_seal' => $request->no_seal,
                 'updated_by' => Auth::user()->name,
-                'supir' => $prospek->nama_supir
+                'supir' => $prospek->nama_supir,
             ]);
 
             return response()->json([
@@ -272,22 +268,22 @@ class ProspekBatamController extends Controller
                 'message' => 'Nomor seal berhasil diperbarui',
                 'data' => [
                     'id' => $prospek->id,
-                    'no_seal' => $prospek->no_seal
-                ]
+                    'no_seal' => $prospek->no_seal,
+                ],
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'error' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             Log::error('Error updating seal (inline edit) batam', [
                 'prospek_id' => $prospek->id ?? null,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
-            return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Terjadi kesalahan: '.$e->getMessage()], 500);
         }
     }
 
@@ -299,19 +295,19 @@ class ProspekBatamController extends Controller
         $prospek = ProspekBatam::findOrFail($id);
         try {
             $user = Auth::user();
-            if (!$this->hasProspekPermission($user, 'prospek-batam-edit')) {
+            if (! $this->hasProspekPermission($user, 'prospek-batam-edit')) {
                 return response()->json(['error' => 'Tidak memiliki akses untuk mengubah status prospek batam'], 403);
             }
 
             $request->validate([
-                'status' => 'required|string|in:aktif,sudah_muat,batal'
+                'status' => 'required|string|in:aktif,sudah_muat,batal',
             ]);
 
             $oldStatus = $prospek->status;
-            
+
             $prospek->update([
                 'status' => $request->status,
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
 
             // Log the update
@@ -321,7 +317,7 @@ class ProspekBatamController extends Controller
                 'old_status' => $oldStatus,
                 'new_status' => $request->status,
                 'updated_by' => Auth::user()->name,
-                'supir' => $prospek->nama_supir
+                'supir' => $prospek->nama_supir,
             ]);
 
             return response()->json([
@@ -330,19 +326,19 @@ class ProspekBatamController extends Controller
                 'data' => [
                     'id' => $prospek->id,
                     'status' => $prospek->status,
-                    'old_status' => $oldStatus
-                ]
+                    'old_status' => $oldStatus,
+                ],
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'error' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             Log::error('Error updating status batam', [
                 'prospek_id' => $prospek->id ?? null,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return response()->json(['error' => 'Terjadi kesalahan saat memperbarui status'], 500);
@@ -357,11 +353,11 @@ class ProspekBatamController extends Controller
         $prospek = ProspekBatam::findOrFail($id);
         try {
             $user = Auth::user();
-            
+
             // Check permission
-            if (!$this->hasProspekPermission($user, 'prospek-batam-delete')) {
+            if (! $this->hasProspekPermission($user, 'prospek-batam-delete')) {
                 return response()->json([
-                    'error' => 'Anda tidak memiliki izin untuk menghapus prospek batam'
+                    'error' => 'Anda tidak memiliki izin untuk menghapus prospek batam',
                 ], 403);
             }
 
@@ -388,23 +384,23 @@ class ProspekBatamController extends Controller
             Log::info('Prospek batam deleted', [
                 'prospek_data' => $prospekData,
                 'deleted_by' => $user->username,
-                'deleted_at' => now()
+                'deleted_at' => now(),
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Prospek batam berhasil dihapus'
+                'message' => 'Prospek batam berhasil dihapus',
             ]);
 
         } catch (\Exception $e) {
             Log::error('Error deleting prospek batam', [
                 'prospek_id' => $prospek->id ?? null,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return response()->json([
-                'error' => 'Terjadi kesalahan saat menghapus prospek batam: ' . $e->getMessage()
+                'error' => 'Terjadi kesalahan saat menghapus prospek batam: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -412,9 +408,15 @@ class ProspekBatamController extends Controller
     /**
      * Check if user has specific prospek permission
      */
-    private function hasProspekPermission($user, $permission) {
-        if (!$user) return false;
-        if ($user->isAdmin()) return true;
+    private function hasProspekPermission($user, $permission)
+    {
+        if (! $user) {
+            return false;
+        }
+        if ($user->isAdmin()) {
+            return true;
+        }
+
         return $user->can($permission);
     }
 }

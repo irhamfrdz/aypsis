@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class VendorAmprahan extends Model
@@ -17,7 +16,7 @@ class VendorAmprahan extends Model
         'nama_toko',
         'alamat_toko',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [

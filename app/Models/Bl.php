@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
 
 class Bl extends Model
 {
@@ -17,7 +16,7 @@ class Bl extends Model
         parent::boot();
 
         static::saving(function ($bl) {
-            $bl->max_tv = max((float)$bl->tonnage, (float)$bl->volume);
+            $bl->max_tv = max((float) $bl->tonnage, (float) $bl->volume);
         });
     }
 

@@ -21,10 +21,10 @@ return new class extends Migration
     public function down()
     {
         Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
-            if (!Schema::hasColumn('tagihan_kontainer_sewa', 'masa_awal')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa', 'masa_awal')) {
                 $table->date('masa_awal')->nullable()->after('tanggal_harga_awal');
             }
-            if (!Schema::hasColumn('tagihan_kontainer_sewa', 'masa_akhir')) {
+            if (! Schema::hasColumn('tagihan_kontainer_sewa', 'masa_akhir')) {
                 $table->date('masa_akhir')->nullable()->after('tanggal_harga_akhir');
             }
         });

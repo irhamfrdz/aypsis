@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SuratJalan;
-use App\Models\PranotaSuratJalan;
 use App\Models\NomorTerakhir;
+use App\Models\PranotaSuratJalan;
+use App\Models\SuratJalan;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class PranotaSuratJalanController extends Controller
 {
@@ -21,7 +21,7 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-view')) {
+        if (! $this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota surat jalan.');
         }
 
@@ -32,11 +32,11 @@ class PranotaSuratJalanController extends Controller
         // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_pranota', 'like', "%{$search}%")
-                  ->orWhereHas('suratJalans', function($sq) use ($search) {
-                      $sq->where('nomor_surat_jalan', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('suratJalans', function ($sq) use ($search) {
+                        $sq->where('nomor_surat_jalan', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -71,7 +71,7 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-create')) {
+        if (! $this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat pranota surat jalan.');
         }
 
@@ -92,7 +92,7 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-create')) {
+        if (! $this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat pranota surat jalan.');
         }
 
@@ -142,13 +142,15 @@ class PranotaSuratJalanController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('pranota-surat-jalan.index')
-                ->with('success', 'Pranota surat jalan berhasil dibuat dengan nomor: ' . $nomorPranota);
+                ->with('success', 'Pranota surat jalan berhasil dibuat dengan nomor: '.$nomorPranota);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating pranota surat jalan: ' . $e->getMessage());
-            return back()->with('error', 'Gagal membuat pranota surat jalan: ' . $e->getMessage())
+            Log::error('Error creating pranota surat jalan: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal membuat pranota surat jalan: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -161,7 +163,7 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-view')) {
+        if (! $this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota surat jalan.');
         }
 
@@ -179,7 +181,7 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-update')) {
+        if (! $this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-update')) {
             abort(403, 'Anda tidak memiliki akses untuk mengubah pranota surat jalan.');
         }
 
@@ -201,7 +203,7 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-update')) {
+        if (! $this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-update')) {
             abort(403, 'Anda tidak memiliki akses untuk mengubah pranota surat jalan.');
         }
 
@@ -234,8 +236,9 @@ class PranotaSuratJalanController extends Controller
                 ->with('success', 'Pranota surat jalan berhasil diperbarui.');
 
         } catch (\Exception $e) {
-            Log::error('Error updating pranota surat jalan: ' . $e->getMessage());
-            return back()->with('error', 'Gagal memperbarui pranota surat jalan: ' . $e->getMessage())
+            Log::error('Error updating pranota surat jalan: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal memperbarui pranota surat jalan: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -248,7 +251,7 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-delete')) {
+        if (! $this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-delete')) {
             abort(403, 'Anda tidak memiliki akses untuk menghapus pranota surat jalan.');
         }
 
@@ -274,13 +277,15 @@ class PranotaSuratJalanController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('pranota-surat-jalan.index')
                 ->with('success', 'Pranota surat jalan berhasil dihapus.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting pranota surat jalan: ' . $e->getMessage());
-            return back()->with('error', 'Gagal menghapus pranota surat jalan: ' . $e->getMessage());
+            Log::error('Error deleting pranota surat jalan: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal menghapus pranota surat jalan: '.$e->getMessage());
         }
     }
 
@@ -296,12 +301,12 @@ class PranotaSuratJalanController extends Controller
         // Get or create nomor terakhir for PSJ module
         $nomorTerakhir = NomorTerakhir::where('modul', 'PSJ')->lockForUpdate()->first();
 
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             // Create new record if not exists
             $nomorTerakhir = NomorTerakhir::create([
                 'modul' => 'PSJ',
                 'nomor_terakhir' => 0,
-                'keterangan' => 'Pranota Surat Jalan'
+                'keterangan' => 'Pranota Surat Jalan',
             ]);
         }
 
@@ -355,18 +360,20 @@ class PranotaSuratJalanController extends Controller
      */
     private function hasPranotaSuratJalanPermission($user, $permission)
     {
-        if (!$user) return false;
+        if (! $user) {
+            return false;
+        }
 
         // Admin and user_admin always have access
-        if (in_array($user->role, ["admin", "user_admin"])) {
+        if (in_array($user->role, ['admin', 'user_admin'])) {
             return true;
         }
 
         try {
-            return DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", $permission)
+            return DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', $permission)
                 ->exists();
         } catch (\Exception $e) {
             return false;

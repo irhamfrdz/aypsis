@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\Auditable;
 
 class MerkBan extends Model
 {
-    use SoftDeletes;
     use Auditable;
+    use SoftDeletes;
 
     protected $fillable = [
         'nama',

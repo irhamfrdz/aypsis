@@ -24,11 +24,11 @@ return new class extends Migration
             $table->string('reference_type')->nullable(); // 'pembayaran_aktivitas_lain', 'pembayaran_pranota', etc
             $table->bigInteger('reference_id')->unsigned()->nullable();
             $table->timestamps();
-            
+
             // Foreign keys
             $table->foreign('pembayaran_aktivitas_lain_id')->references('id')->on('pembayaran_aktivitas_lains')->onDelete('cascade');
             $table->foreign('akun_coa_id')->references('id')->on('akun_coa')->onDelete('cascade');
-            
+
             // Indexes for better performance
             $table->index(['tanggal', 'akun_coa_id']);
             $table->index(['reference_type', 'reference_id']);

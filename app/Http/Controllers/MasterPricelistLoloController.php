@@ -18,18 +18,16 @@ class MasterPricelistLoloController extends Controller
             $query->where('size', $request->size);
         }
 
-
-
         if ($request->filled('vendor')) {
-            $query->where('vendor', 'like', '%' . $request->vendor . '%');
+            $query->where('vendor', 'like', '%'.$request->vendor.'%');
         }
 
         if ($request->filled('nama_biaya')) {
-            $query->where('nama_biaya', 'like', '%' . $request->nama_biaya . '%');
+            $query->where('nama_biaya', 'like', '%'.$request->nama_biaya.'%');
         }
 
         if ($request->filled('lokasi')) {
-            $query->where('lokasi', 'like', '%' . $request->lokasi . '%');
+            $query->where('lokasi', 'like', '%'.$request->lokasi.'%');
         }
 
         if ($request->filled('status')) {
@@ -37,7 +35,7 @@ class MasterPricelistLoloController extends Controller
         }
 
         $pricelists = $query->orderBy('created_at', 'desc')->paginate(20);
-        
+
         return view('master.pricelist-lolo.index', compact('pricelists'));
     }
 

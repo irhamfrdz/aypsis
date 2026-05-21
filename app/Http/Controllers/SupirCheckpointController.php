@@ -1,7 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Kontainer;
 use App\Models\Permohonan;
 
@@ -29,7 +29,7 @@ class SupirCheckpointController extends Controller
                     ->pluck('id')
                     ->toArray();
 
-                if (!empty($permIds)) {
+                if (! empty($permIds)) {
                     // select kontainers that are linked via permohonan_kontainers to these permohonan ids
                     $kontainerList = \DB::table('permohonan_kontainers')
                         ->join('kontainers', 'permohonan_kontainers.kontainer_id', '=', 'kontainers.id')

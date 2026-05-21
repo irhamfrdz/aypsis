@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('prospek', function (Blueprint $table) {
             $table->unsignedBigInteger('tanda_terima_id')->nullable()->after('surat_jalan_id')->comment('ID tanda terima terkait');
-            
+
             // Add foreign key constraint
             $table->foreign('tanda_terima_id')->references('id')->on('tanda_terimas')->onDelete('set null');
-            
+
             // Add index for better performance
             $table->index('tanda_terima_id');
         });

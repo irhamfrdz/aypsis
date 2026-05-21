@@ -4,13 +4,13 @@ namespace App\Exports;
 
 // Use collect() helper instead of importing Collection to avoid name conflicts
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class MobilExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class MobilExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $rows;
 
@@ -80,7 +80,7 @@ class MobilExport implements FromCollection, WithHeadings, ShouldAutoSize, WithE
             'Warna Plat',
             'Catatan',
             'Dibuat Tanggal',
-            'Diperbarui Tanggal'
+            'Diperbarui Tanggal',
         ];
     }
 
@@ -90,9 +90,9 @@ class MobilExport implements FromCollection, WithHeadings, ShouldAutoSize, WithE
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $highestRow = $sheet->getHighestRow();
-                $sheet->getStyle("A1:Z1")->getFont()->setBold(true);
+                $sheet->getStyle('A1:Z1')->getFont()->setBold(true);
                 $sheet->getStyle("A1:Z{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-            }
+            },
         ];
     }
 }

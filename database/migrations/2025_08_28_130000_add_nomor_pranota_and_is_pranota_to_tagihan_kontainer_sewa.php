@@ -8,12 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasColumn('tagihan_kontainer_sewa', 'nomor_pranota') || !Schema::hasColumn('tagihan_kontainer_sewa', 'is_pranota')) {
+        if (! Schema::hasColumn('tagihan_kontainer_sewa', 'nomor_pranota') || ! Schema::hasColumn('tagihan_kontainer_sewa', 'is_pranota')) {
             Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
-                if (!Schema::hasColumn('tagihan_kontainer_sewa', 'nomor_pranota')) {
+                if (! Schema::hasColumn('tagihan_kontainer_sewa', 'nomor_pranota')) {
                     $table->string('nomor_pranota')->nullable()->after('nomor_kontainer');
                 }
-                if (!Schema::hasColumn('tagihan_kontainer_sewa', 'is_pranota')) {
+                if (! Schema::hasColumn('tagihan_kontainer_sewa', 'is_pranota')) {
                     $table->boolean('is_pranota')->default(false)->after('nomor_pranota');
                 }
             });

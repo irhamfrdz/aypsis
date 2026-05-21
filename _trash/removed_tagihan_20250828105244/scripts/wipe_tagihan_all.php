@@ -1,7 +1,8 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
+
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
@@ -17,10 +18,10 @@ try {
 
     // reset auto-increment (MySQL)
     try {
-        \DB::statement("ALTER TABLE tagihan_kontainer_sewa AUTO_INCREMENT = 1");
-        \DB::statement("ALTER TABLE tagihan_kontainer_sewa_kontainers AUTO_INCREMENT = 1");
+        \DB::statement('ALTER TABLE tagihan_kontainer_sewa AUTO_INCREMENT = 1');
+        \DB::statement('ALTER TABLE tagihan_kontainer_sewa_kontainers AUTO_INCREMENT = 1');
     } catch (Exception $e) {
-        echo "Warning: failed to reset AUTO_INCREMENT: " . $e->getMessage() . "\n";
+        echo 'Warning: failed to reset AUTO_INCREMENT: '.$e->getMessage()."\n";
     }
 
     $afterTagihan = \DB::table('tagihan_kontainer_sewa')->count();
@@ -30,5 +31,5 @@ try {
     echo "After: tagihan=$afterTagihan, pivots=$afterPivots\n";
     echo "Wipe Tagihan DB - DONE\n";
 } catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
+    echo 'Error: '.$e->getMessage()."\n";
 }

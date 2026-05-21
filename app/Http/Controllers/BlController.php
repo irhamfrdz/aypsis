@@ -3,22 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bl;
+use App\Models\Kontainer;
+use App\Models\MasterKapal;
 use App\Models\Prospek;
+use App\Models\StockKontainer;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaTanpaSuratJalan;
 use Carbon\Carbon;
-use App\Models\MasterKapal;
-use App\Models\StockKontainer;
-use App\Models\Kontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Font;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class BlController extends Controller
 {
@@ -33,18 +32,18 @@ class BlController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        
+
         // Check permission (you may want to adjust this based on your permission system)
-        if (!in_array($user->role, ["admin", "user_admin"])) {
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
             // Check specific permissions if needed
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-view")
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-view')
                 ->exists();
-            
-            if (!$hasPermission) {
-                abort(403, "Tidak memiliki akses untuk melihat data BL");
+
+            if (! $hasPermission) {
+                abort(403, 'Tidak memiliki akses untuk melihat data BL');
             }
         }
 
@@ -55,7 +54,7 @@ class BlController extends Controller
             'kapal' => $request->get('kapal'),
             'voyage' => $request->get('voyage'),
             'search' => $request->get('search'),
-            'all_params' => $request->all()
+            'all_params' => $request->all(),
         ]);
 
         $query = Bl::with(['prospek.suratJalan']);
@@ -63,12 +62,12 @@ class BlController extends Controller
         // Filter berdasarkan search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_bl', 'like', "%{$search}%")
-                  ->orWhere('nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('no_voyage', 'like', "%{$search}%")
-                  ->orWhere('nama_kapal', 'like', "%{$search}%")
-                  ->orWhere('nama_barang', 'like', "%{$search}%");
+                    ->orWhere('nomor_kontainer', 'like', "%{$search}%")
+                    ->orWhere('no_voyage', 'like', "%{$search}%")
+                    ->orWhere('nama_kapal', 'like', "%{$search}%")
+                    ->orWhere('nama_barang', 'like', "%{$search}%");
             });
         }
 
@@ -80,7 +79,7 @@ class BlController extends Controller
             $query->where(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
             \Log::info("Filter by kapal (flexible): {$kapal} -> pattern: {$kapalPattern}");
         }
-        
+
         // Filter berdasarkan nama_kapal (dari select page)
         if ($request->filled('nama_kapal')) {
             $namaKapal = trim($request->nama_kapal);
@@ -96,7 +95,7 @@ class BlController extends Controller
             $query->where('no_voyage', $voyage);
             \Log::info("Filter by voyage (exact): {$voyage}");
         }
-        
+
         // Filter berdasarkan no_voyage (dari select page)
         if ($request->filled('no_voyage')) {
             $noVoyage = trim($request->no_voyage);
@@ -106,17 +105,17 @@ class BlController extends Controller
 
         // Filter berdasarkan tanpa_size
         if ($request->filled('tanpa_size') && $request->tanpa_size == '1') {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->whereNull('size_kontainer')
-                  ->orWhere('size_kontainer', '');
+                    ->orWhere('size_kontainer', '');
             });
-            \Log::info("Filter by tanpa_size: active");
+            \Log::info('Filter by tanpa_size: active');
         }
 
         // Sort berdasarkan parameter
         $sortBy = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');
-        
+
         $allowedSorts = ['created_at', 'nomor_bl', 'nomor_kontainer', 'nama_kapal', 'no_voyage', 'nama_barang', 'tonnage', 'volume', 'max_tv'];
         if (in_array($sortBy, $allowedSorts)) {
             $query->orderBy($sortBy, $sortDirection);
@@ -130,9 +129,9 @@ class BlController extends Controller
         // Calculate unique container sizes for the current filter
         $sizeCounts = [
             '20ft' => 0,
-            '40ft' => 0
+            '40ft' => 0,
         ];
-        
+
         $cloneQuery = clone $query;
         $uniqueContainers = $cloneQuery->reorder() // Clear previous group by conflicting orderings
             ->select('nomor_kontainer', 'size_kontainer')
@@ -140,12 +139,12 @@ class BlController extends Controller
             ->where('nomor_kontainer', '!=', '')
             ->groupBy('nomor_kontainer', 'size_kontainer')
             ->get();
-            
+
         $sizeCounts['20ft'] = $uniqueContainers->where('size_kontainer', '20')->count();
         $sizeCounts['40ft'] = $uniqueContainers->where('size_kontainer', '40')->count();
 
         $bls = $query->paginate(15)->withQueryString();
-        
+
         \Log::info("BL Query Results: {$bls->count()} records found, Total: {$bls->total()}");
 
         return view('bl.index', compact('bls', 'sizeCounts'));
@@ -157,55 +156,55 @@ class BlController extends Controller
     public function select()
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-view")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-view')
                 ->exists();
-            
-            if (!$hasPermission) {
-                abort(403, "Tidak memiliki akses untuk membuat BL");
+
+            if (! $hasPermission) {
+                abort(403, 'Tidak memiliki akses untuk membuat BL');
             }
         }
 
         // Get ships from master data
         $masterKapals = MasterKapal::orderBy('nama_kapal')->get();
-        
+
         return view('bl.select', compact('masterKapals'));
     }
 
     public function getVoyageByKapal(Request $request)
     {
         $namaKapal = $request->input('nama_kapal');
-        
-        if (!$namaKapal) {
+
+        if (! $namaKapal) {
             return response()->json([
                 'success' => false,
-                'message' => 'Nama kapal tidak ditemukan'
+                'message' => 'Nama kapal tidak ditemukan',
             ]);
         }
-        
+
         // Hapus "KM." atau "KM" dari awal nama kapal untuk pencarian yang lebih fleksibel
         $kapalClean = preg_replace('/^KM\.?\s*/i', '', $namaKapal);
-        
+
         // Ambil voyage unik dari tabel bls berdasarkan nama kapal
         // Gunakan LIKE untuk menangani perbedaan format (KM. vs KM)
-        $voyages = Bl::where(function($query) use ($namaKapal, $kapalClean) {
-                $query->where('nama_kapal', $namaKapal)
-                      ->orWhere('nama_kapal', 'like', '%' . $kapalClean . '%');
-            })
+        $voyages = Bl::where(function ($query) use ($namaKapal, $kapalClean) {
+            $query->where('nama_kapal', $namaKapal)
+                ->orWhere('nama_kapal', 'like', '%'.$kapalClean.'%');
+        })
             ->whereNotNull('no_voyage')
             ->distinct()
             ->orderBy('no_voyage', 'desc')
             ->pluck('no_voyage')
             ->toArray();
-        
+
         return response()->json([
             'success' => true,
-            'voyages' => $voyages
+            'voyages' => $voyages,
         ]);
     }
 
@@ -215,24 +214,24 @@ class BlController extends Controller
     public function create(Request $request)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-create")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-create')
                 ->exists();
-            
-            if (!$hasPermission) {
-                abort(403, "Tidak memiliki akses untuk membuat BL");
+
+            if (! $hasPermission) {
+                abort(403, 'Tidak memiliki akses untuk membuat BL');
             }
         }
 
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
 
-        if (!$namaKapal || !$noVoyage) {
+        if (! $namaKapal || ! $noVoyage) {
             return redirect()->route('bl.select')->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu');
         }
 
@@ -245,17 +244,17 @@ class BlController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-create")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-create')
                 ->exists();
-            
-            if (!$hasPermission) {
-                abort(403, "Tidak memiliki akses untuk membuat BL");
+
+            if (! $hasPermission) {
+                abort(403, 'Tidak memiliki akses untuk membuat BL');
             }
         }
 
@@ -283,16 +282,16 @@ class BlController extends Controller
             $data['created_by'] = Auth::id();
             $data['updated_by'] = Auth::id();
             $data['status_bongkar'] = 'Belum Bongkar';
-            
+
             $bl = Bl::create($data);
 
             return redirect()->route('bl.index', [
                 'nama_kapal' => $bl->nama_kapal,
-                'no_voyage' => $bl->no_voyage
+                'no_voyage' => $bl->no_voyage,
             ])->with('success', "BL dengan nomor kontainer {$bl->nomor_kontainer} berhasil dibuat.");
-            
+
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'Gagal menyimpan BL: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Gagal menyimpan BL: '.$e->getMessage());
         }
     }
 
@@ -302,21 +301,22 @@ class BlController extends Controller
     public function show(Bl $bl)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-view")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-view')
                 ->exists();
-            
-            if (!$hasPermission) {
-                abort(403, "Tidak memiliki akses untuk melihat detail BL");
+
+            if (! $hasPermission) {
+                abort(403, 'Tidak memiliki akses untuk melihat detail BL');
             }
         }
 
         $bl->load('prospek');
+
         return view('bl.show', compact('bl'));
     }
 
@@ -326,16 +326,16 @@ class BlController extends Controller
     public function updateNomorBl(Request $request, Bl $bl)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-edit")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-edit')
                 ->exists();
-            
-            if (!$hasPermission) {
+
+            if (! $hasPermission) {
                 return response()->json(['error' => 'Tidak memiliki akses untuk mengupdate BL'], 403);
             }
         }
@@ -347,18 +347,18 @@ class BlController extends Controller
 
         try {
             $bl->update([
-                'nomor_bl' => $request->nomor_bl
+                'nomor_bl' => $request->nomor_bl,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Nomor BL berhasil diupdate',
-                'nomor_bl' => $bl->nomor_bl ?: '-'
+                'nomor_bl' => $bl->nomor_bl ?: '-',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengupdate nomor BL: ' . $e->getMessage()
+                'message' => 'Gagal mengupdate nomor BL: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -369,16 +369,16 @@ class BlController extends Controller
     public function updateStatusBongkar(Request $request, Bl $bl)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-edit")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-edit')
                 ->exists();
-            
-            if (!$hasPermission) {
+
+            if (! $hasPermission) {
                 return response()->json(['error' => 'Tidak memiliki akses untuk mengupdate BL'], 403);
             }
         }
@@ -390,18 +390,18 @@ class BlController extends Controller
 
         try {
             $bl->update([
-                'status_bongkar' => $request->status_bongkar
+                'status_bongkar' => $request->status_bongkar,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Status bongkar berhasil diupdate',
-                'status_bongkar' => $bl->status_bongkar
+                'status_bongkar' => $bl->status_bongkar,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengupdate status bongkar: ' . $e->getMessage()
+                'message' => 'Gagal mengupdate status bongkar: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -412,16 +412,16 @@ class BlController extends Controller
     public function updateSizeKontainer(Request $request, Bl $bl)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-edit")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-edit')
                 ->exists();
-            
-            if (!$hasPermission) {
+
+            if (! $hasPermission) {
                 return response()->json(['error' => 'Tidak memiliki akses untuk mengupdate BL'], 403);
             }
         }
@@ -433,18 +433,18 @@ class BlController extends Controller
 
         try {
             $bl->update([
-                'size_kontainer' => $request->size_kontainer
+                'size_kontainer' => $request->size_kontainer,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Size kontainer berhasil diupdate',
-                'size_kontainer' => $bl->size_kontainer
+                'size_kontainer' => $bl->size_kontainer,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengupdate size kontainer: ' . $e->getMessage()
+                'message' => 'Gagal mengupdate size kontainer: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -455,13 +455,13 @@ class BlController extends Controller
     public function bulkUpdateSize(Request $request)
     {
         $user = Auth::user();
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-edit")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-edit')
                 ->exists();
-            if (!$hasPermission) {
+            if (! $hasPermission) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
             }
         }
@@ -475,33 +475,34 @@ class BlController extends Controller
             $nama_kapal = $request->nama_kapal;
             $no_voyage = $request->no_voyage;
 
-            Log::info("BulkUpdateSize start", ['nama_kapal' => $nama_kapal, 'no_voyage' => $no_voyage]);
+            Log::info('BulkUpdateSize start', ['nama_kapal' => $nama_kapal, 'no_voyage' => $no_voyage]);
 
             // Use same flexible logic as index()
             $kapalPattern = str_replace('.', '', $nama_kapal);
-            
-            $bls = Bl::where(function($q) use ($nama_kapal, $kapalPattern) {
-                    $q->where('nama_kapal', $nama_kapal)
-                      ->orWhere(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
-                })
+
+            $bls = Bl::where(function ($q) use ($nama_kapal, $kapalPattern) {
+                $q->where('nama_kapal', $nama_kapal)
+                    ->orWhere(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
+            })
                 ->where('no_voyage', $no_voyage)
                 ->get();
 
-            Log::info("BulkUpdateSize: Found " . $bls->count() . " BL records");
+            Log::info('BulkUpdateSize: Found '.$bls->count().' BL records');
 
             $updatedCount = 0;
             $notFoundCount = 0;
             $alreadyMatchCount = 0;
 
             foreach ($bls as $bl) {
-                if (!$bl->nomor_kontainer) {
+                if (! $bl->nomor_kontainer) {
                     Log::info("BL ID {$bl->id} has no container number");
+
                     continue;
                 }
-                
+
                 $nomorKontainer = trim($bl->nomor_kontainer);
                 $ukuran = null;
-                
+
                 // Seek in StockKontainer
                 $stock = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
                 if ($stock) {
@@ -509,7 +510,7 @@ class BlController extends Controller
                     $source = 'Stock';
                 }
 
-                if (!$ukuran) {
+                if (! $ukuran) {
                     // Seek in Kontainer
                     $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
                     if ($kontainer) {
@@ -521,7 +522,7 @@ class BlController extends Controller
                 if ($ukuran) {
                     // Normalize ukuran: strip "ft" or " feet" and trim
                     $normalizedUkuran = trim(str_ireplace(['ft', 'feet', ' '], '', $ukuran));
-                    
+
                     if ($bl->size_kontainer != $normalizedUkuran) {
                         Log::info("Updating BL ID {$bl->id} container {$nomorKontainer}: {$bl->size_kontainer} -> {$normalizedUkuran} (from {$source})");
                         $bl->update(['size_kontainer' => $normalizedUkuran]);
@@ -536,22 +537,23 @@ class BlController extends Controller
                 }
             }
 
-            Log::info("BulkUpdateSize finished", [
-                'updated' => $updatedCount, 
-                'already_match' => $alreadyMatchCount, 
-                'not_found' => $notFoundCount
+            Log::info('BulkUpdateSize finished', [
+                'updated' => $updatedCount,
+                'already_match' => $alreadyMatchCount,
+                'not_found' => $notFoundCount,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => "Selesai. {$updatedCount} size diperbarui, {$alreadyMatchCount} sudah sesuai, {$notFoundCount} tidak ditemukan di master.",
-                'updated_count' => $updatedCount
+                'updated_count' => $updatedCount,
             ]);
         } catch (\Exception $e) {
-            Log::error('Error in bulkUpdateSize: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Log::error('Error in bulkUpdateSize: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -562,38 +564,38 @@ class BlController extends Controller
     public function validateContainers(Request $request)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-edit")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-edit')
                 ->exists();
-            
-            if (!$hasPermission) {
+
+            if (! $hasPermission) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
         }
 
         $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'exists:bls,id'
+            'ids.*' => 'exists:bls,id',
         ]);
 
         $bls = Bl::whereIn('id', $request->ids)->get();
-        
+
         // Check if all selected items have the same container number
         $containerNumbers = $bls->pluck('nomor_kontainer')->filter()->unique();
         $hasDifferentContainers = $containerNumbers->count() > 1;
-        
+
         // Check if any items don't have container numbers
-        $hasNoContainer = $bls->whereNull('nomor_kontainer')->count() > 0 || 
+        $hasNoContainer = $bls->whereNull('nomor_kontainer')->count() > 0 ||
                          $bls->where('nomor_kontainer', '')->count() > 0;
-        
+
         $containerInfo = '';
         if ($hasDifferentContainers) {
-            $containerInfo = "Nomor kontainer yang ditemukan:\n" . $containerNumbers->implode("\n");
+            $containerInfo = "Nomor kontainer yang ditemukan:\n".$containerNumbers->implode("\n");
         }
 
         return response()->json([
@@ -601,10 +603,10 @@ class BlController extends Controller
             'has_different_containers' => $hasDifferentContainers,
             'has_no_container' => $hasNoContainer,
             'container_info' => $containerInfo,
-            'selected_count' => $bls->count()
+            'selected_count' => $bls->count(),
         ]);
     }
-    
+
     /**
      * Get PT Pengirim list from tanda_terima based on selected BL container numbers
      */
@@ -612,25 +614,25 @@ class BlController extends Controller
     {
         try {
             $ids = $request->input('ids', []);
-            
+
             if (empty($ids)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada BL yang dipilih.'
+                    'message' => 'Tidak ada BL yang dipilih.',
                 ]);
             }
-            
+
             // Get BLs and their container numbers
             $bls = Bl::whereIn('id', $ids)->get();
             $nomorKontainers = $bls->pluck('nomor_kontainer')->filter()->unique()->values();
-            
+
             if ($nomorKontainers->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'BL yang dipilih tidak memiliki nomor kontainer.'
+                    'message' => 'BL yang dipilih tidak memiliki nomor kontainer.',
                 ]);
             }
-            
+
             // Query from tanda_terimas table (regular tanda terima)
             $ptListTerimas = \DB::table('tanda_terimas')
                 ->select(
@@ -647,7 +649,7 @@ class BlController extends Controller
                 ->where('nama_barang', '!=', '')
                 ->groupBy('pengirim', 'nama_barang')
                 ->get();
-            
+
             // Query from tanda_terimas_lcl - join with kontainer pivot and items
             $ptListLcl = \DB::table('tanda_terimas_lcl as tt')
                 ->join('tanda_terima_lcl_kontainer_pivot as pivot', 'tt.id', '=', 'pivot.tanda_terima_lcl_id')
@@ -666,7 +668,7 @@ class BlController extends Controller
                 ->where('items.nama_barang', '!=', '')
                 ->groupBy('tt.nama_pengirim', 'items.nama_barang')
                 ->get();
-            
+
             // Query from tanda_terima_tanpa_surat_jalan table
             $ptListTanpaSJ = \DB::table('tanda_terima_tanpa_surat_jalan')
                 ->select(
@@ -683,14 +685,14 @@ class BlController extends Controller
                 ->where('nama_barang', '!=', '')
                 ->groupBy('pengirim', 'nama_barang')
                 ->get();
-            
+
             // Merge all results
             $ptList = $ptListTerimas->merge($ptListLcl)->merge($ptListTanpaSJ);
-            
+
             // Group by pengirim and nama_barang again after merge to combine duplicates
-            $ptListGrouped = $ptList->groupBy(function($item) {
-                return $item->pengirim . '|' . $item->nama_barang;
-            })->map(function($group) {
+            $ptListGrouped = $ptList->groupBy(function ($item) {
+                return $item->pengirim.'|'.$item->nama_barang;
+            })->map(function ($group) {
                 return [
                     'pengirim' => $group->first()->pengirim,
                     'nama_barang' => $group->first()->nama_barang,
@@ -699,20 +701,20 @@ class BlController extends Controller
                     'total_volume' => round($group->sum('total_volume'), 2),
                 ];
             })->values()->sortBy('pengirim')->values();
-            
+
             return response()->json([
                 'success' => true,
                 'pt_list' => $ptListGrouped,
-                'container_numbers' => $nomorKontainers
+                'container_numbers' => $nomorKontainers,
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error in getPtPengirim: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            \Log::error('Error in getPtPengirim: '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage()
+                'message' => 'Error: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -723,16 +725,16 @@ class BlController extends Controller
     public function bulkSplit(Request $request)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-edit")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-edit')
                 ->exists();
-            
-            if (!$hasPermission) {
+
+            if (! $hasPermission) {
                 return redirect()->back()->with('split_error', 'Tidak memiliki akses untuk melakukan operasi ini.');
             }
         }
@@ -740,87 +742,90 @@ class BlController extends Controller
         $request->validate([
             'ids' => 'required|string',
             'pt_pengirim' => 'required|string',
-            'keterangan' => 'required|string|max:1000'
+            'keterangan' => 'required|string|max:1000',
         ]);
 
         $ids = json_decode($request->input('ids'), true);
-        
+
         if (empty($ids)) {
             return redirect()->back()->with('split_error', 'Tidak ada item yang dipilih.');
         }
 
         $ptPengirim = $request->pt_pengirim;
-        
+
         // Get BL data that matches the selected PT Pengirim from the selected BLs
         $ptMatchingBl = Bl::whereIn('id', $ids)
-            ->where(function($query) use ($ptPengirim) {
+            ->where(function ($query) use ($ptPengirim) {
                 $query->where('pengirim', $ptPengirim)
-                      ->orWhereHas('prospek', function($q) use ($ptPengirim) {
-                          $q->where('pengirim', $ptPengirim);
-                      });
+                    ->orWhereHas('prospek', function ($q) use ($ptPengirim) {
+                        $q->where('pengirim', $ptPengirim);
+                    });
             })
             ->whereNotNull('tonnage')
             ->whereNotNull('volume')
             ->first();
-        
-        if (!$ptMatchingBl) {
-            return redirect()->back()->with('split_error', 'Tidak ada data BL yang sesuai dengan PT Pengirim "' . $ptPengirim . '" yang dipilih. Pastikan BL yang dipilih memiliki data PT Pengirim tersebut.');
+
+        if (! $ptMatchingBl) {
+            return redirect()->back()->with('split_error', 'Tidak ada data BL yang sesuai dengan PT Pengirim "'.$ptPengirim.'" yang dipilih. Pastikan BL yang dipilih memiliki data PT Pengirim tersebut.');
         }
-        
+
         // Get tonnage, volume, nama_barang, and term from the matching BL
         $tonnageDipindah = $ptMatchingBl->tonnage;
         $volumeDipindah = $ptMatchingBl->volume;
-        $namaBarangDipindah = $ptMatchingBl->nama_barang ?? 'Barang ' . $ptPengirim;
+        $namaBarangDipindah = $ptMatchingBl->nama_barang ?? 'Barang '.$ptPengirim;
         $termBaru = $ptMatchingBl->term ?? null;
-        
+
         $newBlNumbers = [];
         $errors = [];
         $warnings = [];
-        
+
         DB::beginTransaction();
-        
+
         try {
             // Get ALL BLs with the same container number from selected BL
             $firstSelectedBl = Bl::whereIn('id', $ids)->first();
-            
-            if (!$firstSelectedBl) {
+
+            if (! $firstSelectedBl) {
                 DB::rollBack();
+
                 return redirect()->route('bl.index')
                     ->with('split_error', 'BL yang dipilih tidak ditemukan.');
             }
-            
+
             $nomorKontainer = $firstSelectedBl->nomor_kontainer;
-            
-            if (!$nomorKontainer) {
+
+            if (! $nomorKontainer) {
                 DB::rollBack();
+
                 return redirect()->route('bl.index')
                     ->with('split_error', 'BL tidak memiliki nomor kontainer.');
             }
-            
+
             // Get the specific BL record that has the selected PT Pengirim
             $blWithPtPengirim = Bl::where('nomor_kontainer', $nomorKontainer)
                 ->where('nama_kapal', $firstSelectedBl->nama_kapal)
                 ->where('no_voyage', $firstSelectedBl->no_voyage)
                 ->where('pengirim', $ptPengirim)
                 ->first();
-            
-            if (!$blWithPtPengirim) {
+
+            if (! $blWithPtPengirim) {
                 DB::rollBack();
+
                 return redirect()->route('bl.index')
-                    ->with('split_error', 'Tidak ditemukan BL dengan PT Pengirim "' . $ptPengirim . '" di kontainer ini.');
+                    ->with('split_error', 'Tidak ditemukan BL dengan PT Pengirim "'.$ptPengirim.'" di kontainer ini.');
             }
-            
+
             // Generate new BL number with suffix
             $baseNomorBl = $firstSelectedBl->nomor_bl ?: 'BL-AUTO';
             $counter = 1;
-            $newNomorBl = $baseNomorBl . '-SPLIT' . $counter;
-            
+            $newNomorBl = $baseNomorBl.'-SPLIT'.$counter;
+
             // Check if BL number already exists, if so increment counter
             while (Bl::where('nomor_bl', $newNomorBl)->exists()) {
                 $counter++;
-                $newNomorBl = $baseNomorBl . '-SPLIT' . $counter;
+                $newNomorBl = $baseNomorBl.'-SPLIT'.$counter;
             }
-            
+
             // Create new BL record - copy the BL with selected PT Pengirim
             $newBl = Bl::create([
                 'nomor_bl' => $newNomorBl,
@@ -841,35 +846,35 @@ class BlController extends Controller
                 'satuan' => $blWithPtPengirim->satuan,
                 'term' => $blWithPtPengirim->term,
                 'prospek_id' => $blWithPtPengirim->prospek_id,
-                'keterangan' => $request->keterangan . ' [Dipecah dari kontainer: ' . $nomorKontainer . ' - PT: ' . $ptPengirim . ']',
+                'keterangan' => $request->keterangan.' [Dipecah dari kontainer: '.$nomorKontainer.' - PT: '.$ptPengirim.']',
                 'created_by' => Auth::id(),
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
-            
+
             // Delete the original BL record with the selected PT Pengirim
             // because it has been moved to the new BL
             $blWithPtPengirim->delete();
-            
+
             $newBlNumbers[] = $newNomorBl;
-            
+
             DB::commit();
-            
+
             if (empty($newBlNumbers)) {
                 return redirect()->route('bl.index', $request->query())
                     ->with('split_error', 'Tidak ada BL yang dapat dipecah.');
             }
-            
-            $successMessage = 'Berhasil memecah BL dengan data PT ' . $ptPengirim . ' ke BL baru dengan nomor ' . $newNomorBl . '.';
-            
+
+            $successMessage = 'Berhasil memecah BL dengan data PT '.$ptPengirim.' ke BL baru dengan nomor '.$newNomorBl.'.';
+
             return redirect()->route('bl.index', $request->query())
                 ->with('split_success', $successMessage)
                 ->with('new_bl_numbers', $newBlNumbers);
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return redirect()->route('bl.index', $request->query())
-                ->with('split_error', 'Terjadi kesalahan saat memecah BL: ' . $e->getMessage())
+                ->with('split_error', 'Terjadi kesalahan saat memecah BL: '.$e->getMessage())
                 ->with('split_errors', [$e->getMessage()]);
         }
     }
@@ -880,16 +885,16 @@ class BlController extends Controller
     public function getByKapalVoyage(Request $request)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-view")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-view')
                 ->exists();
-            
-            if (!$hasPermission) {
+
+            if (! $hasPermission) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
         }
@@ -908,7 +913,7 @@ class BlController extends Controller
         return response()->json([
             'success' => true,
             'data' => $bls,
-            'count' => $bls->count()
+            'count' => $bls->count(),
         ]);
     }
 
@@ -917,9 +922,9 @@ class BlController extends Controller
      */
     public function downloadTemplate()
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
-        
+
         // Set document properties
         $spreadsheet->getProperties()
             ->setCreator('Aypsis System')
@@ -952,7 +957,7 @@ class BlController extends Controller
             'V1' => 'Tanggal Muat',
             'W1' => 'Jam Muat',
             'X1' => 'Prospek ID',
-            'Y1' => 'Keterangan'
+            'Y1' => 'Keterangan',
         ];
 
         // Set headers with styling
@@ -969,8 +974,8 @@ class BlController extends Controller
         // Add example data
         $exampleData = [
             [
-                'BL-' . date('Ymd') . '-001',
-                'CONT' . date('Ymd') . '001',
+                'BL-'.date('Ymd').'-001',
+                'CONT'.date('Ymd').'001',
                 'SEAL001',
                 'KM SINAR HARAPAN',
                 'SH001',
@@ -993,11 +998,11 @@ class BlController extends Controller
                 date('Y-m-d'),
                 '08:00',
                 1,
-                'Contoh data BL untuk import'
+                'Contoh data BL untuk import',
             ],
             [
-                'BL-' . date('Ymd') . '-002',
-                'CONT' . date('Ymd') . '002',
+                'BL-'.date('Ymd').'-002',
+                'CONT'.date('Ymd').'002',
                 'SEAL002',
                 'KM CAHAYA LAUT',
                 'CL002',
@@ -1020,15 +1025,15 @@ class BlController extends Controller
                 date('Y-m-d'),
                 '14:30',
                 2,
-                'Contoh data BL kedua'
-            ]
+                'Contoh data BL kedua',
+            ],
         ];
 
         $row = 2;
         foreach ($exampleData as $data) {
             $col = 'A';
             foreach ($data as $value) {
-                $sheet->setCellValue($col . $row, $value);
+                $sheet->setCellValue($col.$row, $value);
                 $col++;
             }
             $row++;
@@ -1042,7 +1047,7 @@ class BlController extends Controller
         // Add instructions sheet
         $instructionSheet = $spreadsheet->createSheet();
         $instructionSheet->setTitle('Petunjuk');
-        
+
         $instructions = [
             ['PETUNJUK PENGGUNAAN TEMPLATE IMPORT BL'],
             [''],
@@ -1063,14 +1068,14 @@ class BlController extends Controller
             ['- Hapus baris contoh sebelum import'],
             ['- Pastikan format sesuai dengan petunjuk'],
             ['- Status bongkar otomatis akan diset "Belum Bongkar"'],
-            ['- Periksa data sebelum melakukan import']
+            ['- Periksa data sebelum melakukan import'],
         ];
 
         $row = 1;
         foreach ($instructions as $instruction) {
-            $instructionSheet->setCellValue('A' . $row, $instruction[0]);
+            $instructionSheet->setCellValue('A'.$row, $instruction[0]);
             if ($row === 1) {
-                $instructionSheet->getStyle('A' . $row)->getFont()->setBold(true)->setSize(14);
+                $instructionSheet->getStyle('A'.$row)->getFont()->setBold(true)->setSize(14);
             }
             $row++;
         }
@@ -1080,14 +1085,14 @@ class BlController extends Controller
         $spreadsheet->setActiveSheetIndex(0);
 
         // Create Excel file
-        $filename = 'template_bl_' . date('Y-m-d') . '.xlsx';
-        
+        $filename = 'template_bl_'.date('Y-m-d').'.xlsx';
+
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
-        
+
         $writer->save('php://output');
         exit;
     }
@@ -1098,68 +1103,68 @@ class BlController extends Controller
     public function import(Request $request)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-create")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-create')
                 ->exists();
-            
-            if (!$hasPermission) {
+
+            if (! $hasPermission) {
                 return redirect()->back()->with('error', 'Tidak memiliki akses untuk import BL');
             }
         }
 
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
         ], [
             'file.required' => 'File wajib dipilih',
             'file.mimes' => 'Format file harus .xlsx, .xls, atau .csv',
-            'file.max' => 'Ukuran file maksimal 10MB'
+            'file.max' => 'Ukuran file maksimal 10MB',
         ]);
 
         try {
             $file = $request->file('file');
             $extension = $file->getClientOriginalExtension();
-            
+
             $importedCount = 0;
             $errors = [];
             $warnings = []; // Non-blocking issues, e.g., container size not found in DB
             $rowNumber = 1;
             // Map nomorKontainer => array of pengirim seen for that nomor
             $containerNumbersSeen = [];
-            
+
             // Get next cargo number for auto-generated container numbers
             $lastCargoNumber = Bl::where('nomor_kontainer', 'LIKE', 'CARGO-%')
                 ->orderBy('nomor_kontainer', 'desc')
                 ->value('nomor_kontainer');
-            
+
             $nextCargoNumber = 1;
             if ($lastCargoNumber) {
                 $parts = explode('-', $lastCargoNumber);
                 if (count($parts) > 1 && is_numeric($parts[1])) {
-                    $nextCargoNumber = (int)$parts[1] + 1;
+                    $nextCargoNumber = (int) $parts[1] + 1;
                 }
             }
 
             \Log::info('Starting BL import', ['extension' => $extension, 'file' => $file->getClientOriginalName(), 'nextCargoNumber' => $nextCargoNumber]);
 
-                if ($extension === 'csv') {
+            if ($extension === 'csv') {
                 // Handle CSV import with semicolon delimiter
                 $handle = fopen($file->getRealPath(), 'r');
-                
-                if (!$handle) {
+
+                if (! $handle) {
                     throw new \Exception('Tidak dapat membuka file CSV');
                 }
-                
+
                 // Read header row and build header map for robust mapping
                 $header = fgetcsv($handle, 0, ';');
                 // Normalize header values for basic validation
-                $normalizedHeader = array_map(function($h) {
+                $normalizedHeader = array_map(function ($h) {
                     return strtolower(trim(preg_replace('/\s+/', ' ', $h ?? '')));
-                }, (array)$header);
+                }, (array) $header);
 
                 // Build header -> index map
                 $headerMap = [];
@@ -1178,38 +1183,41 @@ class BlController extends Controller
                     $found = false;
                     foreach ($normalizedHeader as $h) {
                         if (strpos($h, $keyword) !== false) {
-                            $found = true; break;
+                            $found = true;
+                            break;
                         }
                     }
-                    if (!$found) {
-                        $errors[] = "Header CSV tidak mengandung kolom yang mengindikasikan '{$keyword}' - periksa nama kolom: " . implode(', ', $header);
+                    if (! $found) {
+                        $errors[] = "Header CSV tidak mengandung kolom yang mengindikasikan '{$keyword}' - periksa nama kolom: ".implode(', ', $header);
                     }
                 }
                 $rowNumber++;
-                
+
                 \Log::info('CSV Header', ['header' => $header]);
 
                 while (($row = fgetcsv($handle, 0, ';')) !== false) {
                     try {
                         // Skip completely empty rows
-                        $filteredRow = array_filter($row, function($value) {
-                            return !empty(trim($value));
+                        $filteredRow = array_filter($row, function ($value) {
+                            return ! empty(trim($value));
                         });
-                        
+
                         if (empty($filteredRow)) {
                             $rowNumber++;
+
                             continue;
                         }
-                        
+
                         \Log::info("Row $rowNumber data", ['row' => $row, 'count' => count($row)]);
-                        
+
                         // Pastikan array memiliki minimal 15 kolom
                         if (count($row) < 15) {
-                            $errors[] = "Baris {$rowNumber}: Format CSV tidak lengkap (hanya " . count($row) . " kolom, minimal 15 kolom). Header: " . implode(', ', array_map('trim', (array)$header));
+                            $errors[] = "Baris {$rowNumber}: Format CSV tidak lengkap (hanya ".count($row).' kolom, minimal 15 kolom). Header: '.implode(', ', array_map('trim', (array) $header));
                             $rowNumber++;
+
                             continue;
                         }
-                        
+
                         // Use headerMap when available to locate columns robustly
                         // 0: nomor_bl
                         // 1: nomor_kontainer
@@ -1235,12 +1243,13 @@ class BlController extends Controller
                         // 21: jam_muat
                         // 22: prospek_id
                         // 23: keterangan
-                        
-                        $getCol = function($aliases, $defaultIndex = null) use ($row, $headerMap) {
-                            foreach ((array)$aliases as $alias) {
+
+                        $getCol = function ($aliases, $defaultIndex = null) use ($row, $headerMap) {
+                            foreach ((array) $aliases as $alias) {
                                 $key = strtolower(trim(preg_replace('/\s+/', ' ', $alias)));
                                 if (array_key_exists($key, $headerMap)) {
                                     $idx = $headerMap[$key];
+
                                     return isset($row[$idx]) ? trim($row[$idx]) : null;
                                 }
                             }
@@ -1248,6 +1257,7 @@ class BlController extends Controller
                             if (is_numeric($defaultIndex) && isset($row[$defaultIndex])) {
                                 return trim($row[$defaultIndex]);
                             }
+
                             return null;
                         };
 
@@ -1258,8 +1268,8 @@ class BlController extends Controller
                         $sizeKontainerFromFile = $getCol(['ukuran kontainer', 'ukuran_kontainer', 'ukuran kontainer*', 'size kontainer'], 13);
 
                         // Prepare short row preview for diagnostics
-                        $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-') ;
-                        
+                        $rowPreview = 'nomor_kontainer='.($nomorKontainer ?? '-').', nama_kapal='.($namaKapal ?? '-').', no_voyage='.($noVoyage ?? '-');
+
                         // Auto-generate container number if empty - fill with literal 'cargo'
                         if (empty($nomorKontainer)) {
                             $nomorKontainer = 'cargo';
@@ -1268,14 +1278,15 @@ class BlController extends Controller
                         // Check duplicate container numbers within the same uploaded file
                         // Allow same nomor_kontainer if pengirim is different
                         $pengirim = $getCol(['pengirim', 'pengirim*'], 8) ?: '';
-                        if (!empty($nomorKontainer)) {
+                        if (! empty($nomorKontainer)) {
                             $existingPengirimList = $containerNumbersSeen[$nomorKontainer] ?? [];
                             // Normalize pengirim for comparison
                             $normalizedPengirim = mb_strtolower(trim($pengirim ?? ''));
                             $matchFound = false;
                             foreach ($existingPengirimList as $ep) {
                                 if (mb_strtolower(trim($ep)) === $normalizedPengirim) {
-                                    $matchFound = true; break;
+                                    $matchFound = true;
+                                    break;
                                 }
                             }
                             if ($matchFound) {
@@ -1286,18 +1297,19 @@ class BlController extends Controller
                             // Record the pengirim occurrence regardless to keep track of duplicates
                             $containerNumbersSeen[$nomorKontainer][] = $pengirim;
                         }
-                        
+
                         // Auto-fill size kontainer from database if not provided in file; allow using file size if present
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
                         if (empty($autoFilledSize['size'])) {
                             // Do not block import even if size not found — treat as a warning and proceed with NULL size
                             $warnings[] = "Baris {$rowNumber}: ukuran kontainer tidak ditemukan di database untuk nomor {$nomorKontainer} dan tidak ada ukuran yang disertakan pada file. Data akan tetap disimpan tanpa ukuran. ({$rowPreview})";
                         }
-                        
+
                         // Validate required fields (now only kapal and voyage since container is auto-generated)
                         if (empty($namaKapal) || empty($noVoyage)) {
                             $errors[] = "Baris {$rowNumber}: Nama Kapal dan No Voyage wajib diisi ({$rowPreview})";
                             $rowNumber++;
+
                             continue;
                         }
 
@@ -1307,29 +1319,29 @@ class BlController extends Controller
                         $tonnageRaw = $getCol(['tonnage', 'tonnage (ton)', 'tonnage*'], 14);
                         if (isset($tonnageRaw) && $tonnageRaw !== '') {
                             $tonnageStr = str_replace(['.', ','], ['', '.'], trim($tonnageRaw));
-                            if (!is_numeric($tonnageStr)) {
+                            if (! is_numeric($tonnageStr)) {
                                 $errors[] = "Baris {$rowNumber}: Nilai tonnage tidak valid ('{$tonnageRaw}') ({$rowPreview})";
                                 $tonnage = null;
                             } else {
-                                $tonnage = (float)$tonnageStr;
+                                $tonnage = (float) $tonnageStr;
                             }
                         }
-                        
+
                         $volume = null;
                         $volumeRaw = $getCol(['volume', 'volume (m³)', 'volume*'], 15);
                         if (isset($volumeRaw) && $volumeRaw !== '') {
                             $volumeStr = str_replace(['.', ','], ['', '.'], trim($volumeRaw));
-                            if (!is_numeric($volumeStr)) {
+                            if (! is_numeric($volumeStr)) {
                                 $errors[] = "Baris {$rowNumber}: Nilai volume tidak valid ('{$volumeRaw}') ({$rowPreview})";
                                 $volume = null;
                             } else {
-                                $volume = (float)$volumeStr;
+                                $volume = (float) $volumeStr;
                             }
                         }
 
                         // Check tanggal_muat (if present) parsing
                         $tanggalMuatRaw = $getCol(['tanggal muat', 'tanggal_muat'], 20);
-                        if (!empty($tanggalMuatRaw)) {
+                        if (! empty($tanggalMuatRaw)) {
                             try {
                                 $tanggalMuat = Carbon::parse($tanggalMuatRaw);
                             } catch (\Exception $e) {
@@ -1339,15 +1351,15 @@ class BlController extends Controller
 
                         // Validate prospek_id if provided
                         $prospekId = $getCol(['prospek id', 'prospek_id'], 22);
-                        if (!empty($prospekId)) {
+                        if (! empty($prospekId)) {
                             $prospekId = trim($prospekId);
-                            if (!is_numeric($prospekId) || !Prospek::find($prospekId)) {
+                            if (! is_numeric($prospekId) || ! Prospek::find($prospekId)) {
                                 $errors[] = "Baris {$rowNumber}: Prospek dengan ID '{$prospekId}' tidak ditemukan ({$rowPreview})";
                             }
                         }
 
                         // For debugging convenience, prepare a short row preview for possible error messages
-                        $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-');
+                        $rowPreview = 'nomor_kontainer='.($nomorKontainer ?? '-').', nama_kapal='.($namaKapal ?? '-').', no_voyage='.($noVoyage ?? '-');
 
                         // Create BL record
                         Bl::create([
@@ -1369,30 +1381,30 @@ class BlController extends Controller
                             'tonnage' => $tonnage,
                             'volume' => $volume,
                             'satuan' => $getCol(['satuan'], 17) ?: null,
-                            'kuantitas' => $getCol(['kuantitas'], 18) ? (int)$getCol(['kuantitas'], 18) : null,
+                            'kuantitas' => $getCol(['kuantitas'], 18) ? (int) $getCol(['kuantitas'], 18) : null,
                             'term' => $getCol(['term'], 19) ?: null,
                             'supir_ob' => $getCol(['supir ob', 'supir_ob'], 20) ?: null,
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
                         // Update status prospek jika kontainer ada di prospek
-                        if (!empty($nomorKontainer) && $nomorKontainer !== 'cargo') {
+                        if (! empty($nomorKontainer) && $nomorKontainer !== 'cargo') {
                             Prospek::where('nomor_kontainer', $nomorKontainer)
                                 ->where('status', '!=', Prospek::STATUS_SUDAH_MUAT)
                                 ->update([
                                     'status' => Prospek::STATUS_SUDAH_MUAT,
-                                    'updated_by' => Auth::id()
+                                    'updated_by' => Auth::id(),
                                 ]);
                         }
 
                         $importedCount++;
                     } catch (\Exception $e) {
-                        $errors[] = "Baris {$rowNumber}: " . $e->getMessage() . " ({$rowPreview})";
+                        $errors[] = "Baris {$rowNumber}: ".$e->getMessage()." ({$rowPreview})";
                     }
-                    
+
                     $rowNumber++;
                 }
-                
+
                 fclose($handle);
             } else {
                 // Handle Excel import using PhpSpreadsheet
@@ -1407,7 +1419,7 @@ class BlController extends Controller
                 for ($col = 1; $col <= $highestColumnIndex; $col++) {
                     $headerVal = $worksheet->getCellByColumnAndRow($col, 1)->getValue();
                     if ($headerVal !== null) {
-                        $clean = strtolower(trim(preg_replace('/\s+/', ' ', (string)$headerVal)));
+                        $clean = strtolower(trim(preg_replace('/\s+/', ' ', (string) $headerVal)));
                         // Remove asterisk markers and parentheses content, replace _ and - with space
                         $clean = str_replace('*', '', $clean);
                         $clean = preg_replace('/\s*\([^\)]*\)\s*/', ' ', $clean);
@@ -1417,14 +1429,16 @@ class BlController extends Controller
                     }
                 }
 
-                $getXlsCell = function($aliases, $fallbackCell) use ($worksheet, $xlsHeaderMap) {
-                    foreach ((array)$aliases as $alias) {
+                $getXlsCell = function ($aliases, $fallbackCell) use ($worksheet, $xlsHeaderMap) {
+                    foreach ((array) $aliases as $alias) {
                         $key = strtolower(trim(preg_replace('/\s+/', ' ', $alias)));
                         if (isset($xlsHeaderMap[$key])) {
                             $col = $xlsHeaderMap[$key];
+
                             return $worksheet->getCell("{$col}{ROW}")->getValue();
                         }
                     }
+
                     // replace {ROW} at call time
                     return null;
                 };
@@ -1465,13 +1479,13 @@ class BlController extends Controller
                         }
 
                         // Prepare short row preview for diagnostics
-                        $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-') ;
+                        $rowPreview = 'nomor_kontainer='.($nomorKontainer ?? '-').', nama_kapal='.($namaKapal ?? '-').', no_voyage='.($noVoyage ?? '-');
 
                         // Skip empty rows
                         if (empty($namaKapal) && empty($noVoyage)) {
                             continue;
                         }
-                        
+
                         // Auto-generate container number if empty - fill with literal 'cargo'
                         if (empty($nomorKontainer)) {
                             $nomorKontainer = 'cargo';
@@ -1486,13 +1500,14 @@ class BlController extends Controller
                         } else {
                             $pengirim = $worksheet->getCell("I{$row}")->getValue();
                         }
-                        if (!empty($nomorKontainer)) {
+                        if (! empty($nomorKontainer)) {
                             $existingPengirimList = $containerNumbersSeen[$nomorKontainer] ?? [];
                             $normalizedPengirim = mb_strtolower(trim($pengirim ?? ''));
                             $matchFound = false;
                             foreach ($existingPengirimList as $ep) {
                                 if (mb_strtolower(trim($ep)) === $normalizedPengirim) {
-                                    $matchFound = true; break;
+                                    $matchFound = true;
+                                    break;
                                 }
                             }
                             if ($matchFound) {
@@ -1503,7 +1518,7 @@ class BlController extends Controller
                             // Record the pengirim occurrence regardless to keep track of duplicates
                             $containerNumbersSeen[$nomorKontainer][] = $pengirim;
                         }
-                        
+
                         // Auto-fill size kontainer from database if not provided in file; allow using file size if present
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
                         if (empty($autoFilledSize['size'])) {
@@ -1514,6 +1529,7 @@ class BlController extends Controller
                         // Validate required fields (now only kapal and voyage since container is auto-generated)
                         if (empty($namaKapal) || empty($noVoyage)) {
                             $errors[] = "Baris {$row}: Nama Kapal dan No Voyage wajib diisi ({$rowPreview})";
+
                             continue;
                         }
 
@@ -1526,12 +1542,12 @@ class BlController extends Controller
                             $rawTonnage = $worksheet->getCell("O{$row}")->getValue();
                         }
                         $tonnage = null;
-                        if (!empty($rawTonnage)) {
+                        if (! empty($rawTonnage)) {
                             $tonnageStr = str_replace(['.', ','], ['', '.'], trim($rawTonnage));
-                            if (!is_numeric($tonnageStr)) {
+                            if (! is_numeric($tonnageStr)) {
                                 $errors[] = "Baris {$row}: Nilai tonnage tidak valid ('{$rawTonnage}') ({$rowPreview})";
                             } else {
-                                $tonnage = (float)$tonnageStr;
+                                $tonnage = (float) $tonnageStr;
                             }
                         }
 
@@ -1543,12 +1559,12 @@ class BlController extends Controller
                             $rawVolume = $worksheet->getCell("P{$row}")->getValue();
                         }
                         $volume = null;
-                        if (!empty($rawVolume)) {
+                        if (! empty($rawVolume)) {
                             $volumeStr = str_replace(['.', ','], ['', '.'], trim($rawVolume));
-                            if (!is_numeric($volumeStr)) {
+                            if (! is_numeric($volumeStr)) {
                                 $errors[] = "Baris {$row}: Nilai volume tidak valid ('{$rawVolume}') ({$rowPreview})";
                             } else {
-                                $volume = (float)$volumeStr;
+                                $volume = (float) $volumeStr;
                             }
                         }
 
@@ -1560,7 +1576,7 @@ class BlController extends Controller
                         } else {
                             $tanggalMuatCell = $worksheet->getCell("U{$row}")->getValue();
                         }
-                        if (!empty($tanggalMuatCell)) {
+                        if (! empty($tanggalMuatCell)) {
                             try {
                                 Carbon::parse($tanggalMuatCell);
                             } catch (\Exception $e) {
@@ -1576,9 +1592,9 @@ class BlController extends Controller
                         } else {
                             $prospekCell = $worksheet->getCell("W{$row}")->getValue();
                         }
-                        if (!empty($prospekCell)) {
+                        if (! empty($prospekCell)) {
                             $prospekId = trim($prospekCell);
-                            if (!is_numeric($prospekId) || !Prospek::find($prospekId)) {
+                            if (! is_numeric($prospekId) || ! Prospek::find($prospekId)) {
                                 $errors[] = "Baris {$row}: Prospek dengan ID '{$prospekCell}' tidak ditemukan ({$rowPreview})";
                             }
                         }
@@ -1592,17 +1608,17 @@ class BlController extends Controller
                             $kuantitasRaw = $worksheet->getCell("S{$row}")->getValue();
                         }
                         $kuantitas = null;
-                        if (!empty($kuantitasRaw) && is_numeric($kuantitasRaw)) {
-                            $kuantitas = (int)$kuantitasRaw;
+                        if (! empty($kuantitasRaw) && is_numeric($kuantitasRaw)) {
+                            $kuantitas = (int) $kuantitasRaw;
                         }
 
                         // For debugging convenience, prepare a short row preview for possible error messages
-                        $rowPreview = 'nomor_kontainer=' . ($nomorKontainer ?? '-') . ', nama_kapal=' . ($namaKapal ?? '-') . ', no_voyage=' . ($noVoyage ?? '-');
+                        $rowPreview = 'nomor_kontainer='.($nomorKontainer ?? '-').', nama_kapal='.($namaKapal ?? '-').', no_voyage='.($noVoyage ?? '-');
 
                         // Handle tanggal_berangkat - convert Excel serial date to MySQL date
                         $tanggalBerangkatRaw = (isset($xlsHeaderMap['tanggal berangkat']) ? ($worksheet->getCell("{$xlsHeaderMap['tanggal berangkat']}{$row}")->getValue() ?: null) : ($worksheet->getCell("F{$row}")->getValue() ?: null));
                         $tanggalBerangkat = null;
-                        if (!empty($tanggalBerangkatRaw)) {
+                        if (! empty($tanggalBerangkatRaw)) {
                             try {
                                 // Check if it's an Excel serial date number
                                 if (is_numeric($tanggalBerangkatRaw)) {
@@ -1612,7 +1628,7 @@ class BlController extends Controller
                                     $tanggalBerangkat = Carbon::parse($tanggalBerangkatRaw)->format('Y-m-d');
                                 }
                             } catch (\Exception $e) {
-                                \Log::warning("Baris {$row}: Gagal konversi tanggal berangkat '{$tanggalBerangkatRaw}': " . $e->getMessage());
+                                \Log::warning("Baris {$row}: Gagal konversi tanggal berangkat '{$tanggalBerangkatRaw}': ".$e->getMessage());
                                 $tanggalBerangkat = null;
                             }
                         }
@@ -1644,40 +1660,41 @@ class BlController extends Controller
                         ]);
 
                         // Update status prospek jika kontainer ada di prospek
-                        if (!empty($nomorKontainer) && $nomorKontainer !== 'cargo') {
+                        if (! empty($nomorKontainer) && $nomorKontainer !== 'cargo') {
                             Prospek::where('nomor_kontainer', $nomorKontainer)
                                 ->where('status', '!=', Prospek::STATUS_SUDAH_MUAT)
                                 ->update([
                                     'status' => Prospek::STATUS_SUDAH_MUAT,
-                                    'updated_by' => Auth::id()
+                                    'updated_by' => Auth::id(),
                                 ]);
                         }
 
                         $importedCount++;
                     } catch (\Exception $e) {
-                        $errors[] = "Baris {$row}: " . $e->getMessage() . " ({$rowPreview})";
+                        $errors[] = "Baris {$row}: ".$e->getMessage()." ({$rowPreview})";
                     }
                 }
             }
 
             $message = "Berhasil import {$importedCount} data BL.";
-            
+
             \Log::info('Import completed', [
                 'imported' => $importedCount,
                 'errors' => count($errors),
-                'error_details' => $errors
+                'error_details' => $errors,
             ]);
-            
-            if (!empty($errors)) {
+
+            if (! empty($errors)) {
                 $errorCount = count($errors);
-                
+
                 if ($importedCount > 0) {
                     // Partial success - some imported, some failed
                     \Log::warning("Partial import success: {$importedCount} imported, {$errorCount} failed");
                     $firstErrors = array_slice($errors, 0, 3);
                     $firstErrorsMsg = implode('; ', $firstErrors);
                     $moreErrors = max(0, $errorCount - count($firstErrors));
-                    $detailsSummary = $firstErrorsMsg . ($moreErrors > 0 ? "; dan {$moreErrors} error lainnya" : '');
+                    $detailsSummary = $firstErrorsMsg.($moreErrors > 0 ? "; dan {$moreErrors} error lainnya" : '');
+
                     return redirect()->route('bl.index')
                         ->with('warning', "Import selesai dengan peringatan: {$importedCount} data berhasil diimport, {$errorCount} data gagal. Contoh error: {$detailsSummary}")
                         ->with('import_errors', $errors)
@@ -1687,6 +1704,7 @@ class BlController extends Controller
                     \Log::error("Import completely failed: {$errorCount} errors");
                     $firstErrors = array_slice($errors, 0, 5);
                     $firstErrorsMsg = implode('; ', $firstErrors);
+
                     return redirect()->route('bl.index')
                         ->with('error', "Import gagal! Tidak ada data yang berhasil diimport. Total {$errorCount} error. Contoh: {$firstErrorsMsg}")
                         ->with('import_errors', $errors)
@@ -1694,28 +1712,31 @@ class BlController extends Controller
                 }
             }
 
-            if (empty($errors) && !empty($warnings)) {
+            if (empty($errors) && ! empty($warnings)) {
                 // All rows imported but with non-blocking warnings (e.g., size not found). Show as a warning message.
                 $warningCount = count($warnings);
                 $firstWarnings = array_slice($warnings, 0, 3);
                 $firstWarningsMsg = implode('; ', $firstWarnings);
                 $moreWarnings = max(0, $warningCount - count($firstWarnings));
-                $detailsSummary = $firstWarningsMsg . ($moreWarnings > 0 ? "; dan {$moreWarnings} peringatan lainnya" : '');
+                $detailsSummary = $firstWarningsMsg.($moreWarnings > 0 ? "; dan {$moreWarnings} peringatan lainnya" : '');
+
                 return redirect()->route('bl.index')
                     ->with('warning', "Import selesai dengan peringatan: {$importedCount} data berhasil diimport, {$warningCount} peringatan. Contoh peringatan: {$detailsSummary}")
                     ->with('import_warnings', $warnings);
             }
 
             \Log::info("Import fully successful: {$importedCount} records");
+
             return redirect()->route('bl.index')->with('success', $message);
 
         } catch (\Exception $e) {
             \Log::error('Import exception caught', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return redirect()->back()
-                ->with('error', 'Gagal import data: ' . $e->getMessage())
+                ->with('error', 'Gagal import data: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -1726,11 +1747,11 @@ class BlController extends Controller
     public function getShips()
     {
         $ships = Bl::whereNotNull('nama_kapal')
-                   ->distinct()
-                   ->pluck('nama_kapal')
-                   ->sort()
-                   ->values();
-        
+            ->distinct()
+            ->pluck('nama_kapal')
+            ->sort()
+            ->values();
+
         return response()->json(['ships' => $ships]);
     }
 
@@ -1740,12 +1761,12 @@ class BlController extends Controller
     public function getVoyages(Request $request)
     {
         $voyages = Bl::where('nama_kapal', $request->nama_kapal)
-                     ->whereNotNull('no_voyage')
-                     ->distinct()
-                     ->pluck('no_voyage')
-                     ->sort()
-                     ->values();
-        
+            ->whereNotNull('no_voyage')
+            ->distinct()
+            ->pluck('no_voyage')
+            ->sort()
+            ->values();
+
         return response()->json(['voyages' => $voyages]);
     }
 
@@ -1755,17 +1776,17 @@ class BlController extends Controller
     public function export(Request $request)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-view")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-view')
                 ->exists();
-            
-            if (!$hasPermission) {
-                abort(403, "Tidak memiliki akses untuk export data BL");
+
+            if (! $hasPermission) {
+                abort(403, 'Tidak memiliki akses untuk export data BL');
             }
         }
 
@@ -1774,12 +1795,12 @@ class BlController extends Controller
         // Filter berdasarkan search (Matched with index logic)
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_bl', 'like', "%{$search}%")
-                  ->orWhere('nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('no_voyage', 'like', "%{$search}%")
-                  ->orWhere('nama_kapal', 'like', "%{$search}%")
-                  ->orWhere('nama_barang', 'like', "%{$search}%");
+                    ->orWhere('nomor_kontainer', 'like', "%{$search}%")
+                    ->orWhere('no_voyage', 'like', "%{$search}%")
+                    ->orWhere('nama_kapal', 'like', "%{$search}%")
+                    ->orWhere('nama_barang', 'like', "%{$search}%");
             });
         }
 
@@ -1789,7 +1810,7 @@ class BlController extends Controller
             $kapalPattern = str_replace('.', '', $kapal);
             $query->where(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
         }
-        
+
         // Filter berdasarkan nama_kapal (Matched with index logic)
         if ($request->filled('nama_kapal')) {
             $namaKapal = trim($request->nama_kapal);
@@ -1802,7 +1823,7 @@ class BlController extends Controller
             $voyage = trim($request->voyage);
             $query->where('no_voyage', $voyage);
         }
-        
+
         // Filter berdasarkan no_voyage (Matched with index logic)
         if ($request->filled('no_voyage')) {
             $noVoyage = trim($request->no_voyage);
@@ -1852,19 +1873,19 @@ class BlController extends Controller
             'created_by' => 'Created By',
             'updated_by' => 'Updated By',
             'created_at' => 'Tanggal Dibuat',
-            'updated_at' => 'Tanggal Update'
+            'updated_at' => 'Tanggal Update',
         ];
 
         // Get selected columns
         $selectedColumns = $request->input('columns', array_keys($availableColumns));
-        
+
         // Create filename with filters
-        $filename = 'bl_export_' . date('Y-m-d_H-i-s');
+        $filename = 'bl_export_'.date('Y-m-d_H-i-s');
         if ($request->filled('nama_kapal')) {
-            $filename .= '_' . str_replace(' ', '_', $request->nama_kapal);
+            $filename .= '_'.str_replace(' ', '_', $request->nama_kapal);
         }
         if ($request->filled('no_voyage')) {
-            $filename .= '_voyage_' . $request->no_voyage;
+            $filename .= '_voyage_'.$request->no_voyage;
         }
         $filename .= '.xlsx';
 
@@ -1878,7 +1899,7 @@ class BlController extends Controller
     private function createExcelExport($bls, $availableColumns, $selectedColumns, $filename)
     {
         // Create new spreadsheet
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Data BL');
 
@@ -1891,16 +1912,16 @@ class BlController extends Controller
         // Write headers to first row
         $col = 'A';
         foreach ($headers as $header) {
-            $sheet->setCellValue($col . '1', $header);
-            
+            $sheet->setCellValue($col.'1', $header);
+
             // Style header
-            $sheet->getStyle($col . '1')->getFont()->setBold(true);
-            $sheet->getStyle($col . '1')->getFill()
+            $sheet->getStyle($col.'1')->getFont()->setBold(true);
+            $sheet->getStyle($col.'1')->getFill()
                 ->setFillType(Fill::FILL_SOLID)
                 ->getStartColor()->setARGB('FFE6E6E6');
-            $sheet->getStyle($col . '1')->getAlignment()
+            $sheet->getStyle($col.'1')->getAlignment()
                 ->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            
+
             $col++;
         }
 
@@ -1933,7 +1954,7 @@ class BlController extends Controller
                         $value = $bl->tanggal_ob ? $bl->tanggal_ob->format('d/m/Y H:i') : '';
                         break;
                     case 'tanggal_berangkat':
-                         // tanggal_berangkat is usually string, but check if it casts to date
+                        // tanggal_berangkat is usually string, but check if it casts to date
                         $value = $bl->tanggal_berangkat ? Carbon::parse($bl->tanggal_berangkat)->format('d/m/Y') : '';
                         break;
                     case 'created_at':
@@ -1955,14 +1976,14 @@ class BlController extends Controller
                         $value = $bl->createdBy ? $bl->createdBy->name : ($bl->created_by ?? '');
                         break;
                     case 'updated_by':
-                         $value = $bl->updatedBy ? $bl->updatedBy->name : ($bl->updated_by ?? '');
+                        $value = $bl->updatedBy ? $bl->updatedBy->name : ($bl->updated_by ?? '');
                         break;
                     case 'supir_id':
                         // If we want to show the supir's name for supir_id, we can, but columns list says "Supir ID"
                         // However, user probably prefers name if available.
                         // But we also have 'supir_ob' column which is string.
                         // Let's output supir->name for supir_id if relation exists, else id.
-                         $value = $bl->supir ? $bl->supir->nama : ($bl->supir_id ?? '');
+                        $value = $bl->supir ? $bl->supir->nama : ($bl->supir_id ?? '');
                         break;
                     default:
                         // Handle all other fields safely
@@ -1973,8 +1994,8 @@ class BlController extends Controller
                         }
                         break;
                 }
-                
-                $sheet->setCellValue($col . $row, $value);
+
+                $sheet->setCellValue($col.$row, $value);
                 $col++;
             }
             $row++;
@@ -1987,15 +2008,15 @@ class BlController extends Controller
 
         // Create Excel writer
         $writer = new Xlsx($spreadsheet);
-        
+
         // Set headers for download
-        $filename = 'BL_Export_' . date('Y-m-d_H-i-s') . '.xlsx';
-        
-        return response()->stream(function() use ($writer) {
+        $filename = 'BL_Export_'.date('Y-m-d_H-i-s').'.xlsx';
+
+        return response()->stream(function () use ($writer) {
             $writer->save('php://output');
         }, 200, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment;filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment;filename="'.$filename.'"',
             'Cache-Control' => 'max-age=0',
         ]);
     }
@@ -2010,19 +2031,19 @@ class BlController extends Controller
         // 1. Tanda Terima (FCL) via Prospek
         if ($bl->prospek && $bl->prospek->tandaTerima) {
             $tt = $bl->prospek->tandaTerima;
-            $sources[] = '[TT] ' . ($tt->no_surat_jalan ?? 'ID:' . $tt->id);
+            $sources[] = '[TT] '.($tt->no_surat_jalan ?? 'ID:'.$tt->id);
         }
 
         // 2. Tanda Terima LCL via nomor kontainer
         if ($bl->nomor_kontainer) {
             $containers = array_filter(array_map('trim', explode(',', $bl->nomor_kontainer)));
-            if (!empty($containers)) {
+            if (! empty($containers)) {
                 $ttLcls = TandaTerimaLcl::whereHas('kontainerPivot', function ($q) use ($containers) {
                     $q->whereIn('nomor_kontainer', $containers);
                 })->get();
 
                 foreach ($ttLcls as $ttLcl) {
-                    $sources[] = '[LCL] ' . ($ttLcl->nomor_tanda_terima ?? 'ID:' . $ttLcl->id);
+                    $sources[] = '[LCL] '.($ttLcl->nomor_tanda_terima ?? 'ID:'.$ttLcl->id);
                 }
             }
         }
@@ -2033,20 +2054,20 @@ class BlController extends Controller
                 $noTttsj = trim($matches[1]);
                 $tttsj = TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $noTttsj)->first();
                 if ($tttsj) {
-                    $sources[] = '[TTTSJ] ' . $tttsj->no_tanda_terima;
+                    $sources[] = '[TTTSJ] '.$tttsj->no_tanda_terima;
                 }
             }
         }
 
         // 4. Fallback CARGO tanpa surat jalan
-        if (empty($sources) && $bl->prospek && strtoupper($bl->prospek->tipe ?? '') === 'CARGO' && !($bl->prospek->tanda_terima_id ?? null)) {
+        if (empty($sources) && $bl->prospek && strtoupper($bl->prospek->tipe ?? '') === 'CARGO' && ! ($bl->prospek->tanda_terima_id ?? null)) {
             $tttsj = TandaTerimaTanpaSuratJalan::where('pengirim', $bl->prospek->pt_pengirim)
                 ->where('supir', $bl->prospek->nama_supir)
                 ->where('tujuan_pengiriman', $bl->prospek->tujuan_pengiriman)
                 ->orderBy('created_at', 'desc')
                 ->first();
             if ($tttsj) {
-                $sources[] = '[TTTSJ] ' . $tttsj->no_tanda_terima;
+                $sources[] = '[TTTSJ] '.$tttsj->no_tanda_terima;
             }
         }
 
@@ -2059,10 +2080,10 @@ class BlController extends Controller
     private function getContainerSize($nomorKontainer, $sizeFromFile = null)
     {
         // If size is already provided in file, use it
-        if (!empty($sizeFromFile)) {
+        if (! empty($sizeFromFile)) {
             return [
                 'size' => trim($sizeFromFile),
-                'warning' => null
+                'warning' => null,
             ];
         }
 
@@ -2070,7 +2091,7 @@ class BlController extends Controller
         if (stripos($nomorKontainer, 'cargo') === 0) {
             return [
                 'size' => null,
-                'warning' => null
+                'warning' => null,
             ];
         }
 
@@ -2078,12 +2099,12 @@ class BlController extends Controller
 
         // First, try to find in stock_kontainers table
         $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-        
-        if (!$stockKontainer) {
+
+        if (! $stockKontainer) {
             // Try searching by parts if the number is formatted or needs parsing
             $cleanNomor = str_replace([' ', '-'], '', $nomorKontainer);
-            \Log::info("Clean nomor: {$cleanNomor}, length: " . strlen($cleanNomor));
-            
+            \Log::info("Clean nomor: {$cleanNomor}, length: ".strlen($cleanNomor));
+
             if (strlen($cleanNomor) === 11) {
                 // Standard format: ABCD1234567 (4+6+1)
                 $awalan = substr($cleanNomor, 0, 4);
@@ -2095,13 +2116,13 @@ class BlController extends Controller
                 $seri = substr($cleanNomor, 4, 5);
                 $akhiran = substr($cleanNomor, 9, 1);
             } else {
-                \Log::info("Unsupported nomor format length: " . strlen($cleanNomor));
+                \Log::info('Unsupported nomor format length: '.strlen($cleanNomor));
                 $awalan = $seri = $akhiran = null;
             }
-            
+
             if ($awalan && $seri && $akhiran) {
                 \Log::info("Searching by parts: awalan={$awalan}, seri={$seri}, akhiran={$akhiran}");
-                
+
                 $stockKontainer = StockKontainer::where('awalan_kontainer', $awalan)
                     ->where('nomor_seri_kontainer', $seri)
                     ->where('akhiran_kontainer', $akhiran)
@@ -2110,11 +2131,11 @@ class BlController extends Controller
         }
 
         if ($stockKontainer) {
-            \Log::info("Found in stock_kontainers: " . ($stockKontainer->ukuran ?? 'NULL'));
+            \Log::info('Found in stock_kontainers: '.($stockKontainer->ukuran ?? 'NULL'));
             if ($stockKontainer->ukuran) {
                 return [
                     'size' => $stockKontainer->ukuran,
-                    'warning' => null
+                    'warning' => null,
                 ];
             }
         }
@@ -2122,11 +2143,11 @@ class BlController extends Controller
         // If not found in stock_kontainers, try kontainers table
         // Note: kontainers table uses 'nomor_seri_gabungan' and 'ukuran' columns
         $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-        
-        if (!$kontainer) {
+
+        if (! $kontainer) {
             // Try searching by parts
             $cleanNomor = str_replace([' ', '-'], '', $nomorKontainer);
-            
+
             if (strlen($cleanNomor) === 11) {
                 $awalan = substr($cleanNomor, 0, 4);
                 $seri = substr($cleanNomor, 4, 6);
@@ -2138,7 +2159,7 @@ class BlController extends Controller
             } else {
                 $awalan = $seri = $akhiran = null;
             }
-            
+
             if ($awalan && $seri && $akhiran) {
                 $kontainer = Kontainer::where('awalan_kontainer', $awalan)
                     ->where('nomor_seri_kontainer', $seri)
@@ -2146,13 +2167,13 @@ class BlController extends Controller
                     ->first();
             }
         }
-        
+
         if ($kontainer) {
-            \Log::info("Found in kontainers: " . ($kontainer->ukuran ?? 'NULL'));
+            \Log::info('Found in kontainers: '.($kontainer->ukuran ?? 'NULL'));
             if ($kontainer->ukuran) {
                 return [
                     'size' => $kontainer->ukuran,
-                    'warning' => null
+                    'warning' => null,
                 ];
             }
         }
@@ -2162,7 +2183,7 @@ class BlController extends Controller
         // If container not found in either table, do not stop import — return the size from file if provided, otherwise null
         return [
             'size' => $sizeFromFile ? trim($sizeFromFile) : null,
-            'warning' => null
+            'warning' => null,
         ];
     }
 
@@ -2172,13 +2193,13 @@ class BlController extends Controller
     public function bulkUpdateVolumeTonnage(Request $request)
     {
         $user = Auth::user();
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-edit")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-edit')
                 ->exists();
-            if (!$hasPermission) {
+            if (! $hasPermission) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
             }
         }
@@ -2195,17 +2216,17 @@ class BlController extends Controller
             if ($request->all_filtered) {
                 $nama_kapal = $request->nama_kapal;
                 $no_voyage = $request->no_voyage;
-                
+
                 // Use same flexible logic as index()
                 $kapalPattern = str_replace('.', '', $nama_kapal);
-                $bls = Bl::where(function($q) use ($nama_kapal, $kapalPattern) {
-                        $q->where('nama_kapal', $nama_kapal)
-                          ->orWhere(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
-                    })
+                $bls = Bl::where(function ($q) use ($nama_kapal, $kapalPattern) {
+                    $q->where('nama_kapal', $nama_kapal)
+                        ->orWhere(DB::raw('REPLACE(nama_kapal, ".", "")'), 'LIKE', "%{$kapalPattern}%");
+                })
                     ->where('no_voyage', $no_voyage)
                     ->get();
-                    
-                Log::info("BulkUpdateTV AllFiltered: Found " . $bls->count() . " BL records for {$nama_kapal} Voy {$no_voyage}");
+
+                Log::info('BulkUpdateTV AllFiltered: Found '.$bls->count()." BL records for {$nama_kapal} Voy {$no_voyage}");
             } else {
                 $ids = $request->ids;
                 $bls = Bl::whereIn('id', $ids)->get();
@@ -2223,19 +2244,21 @@ class BlController extends Controller
                     if ($tt && ($tt->tonase > 0 || $tt->meter_kubik > 0)) {
                         $foundData = [
                             'tonnage' => $tt->tonase,
-                            'volume' => $tt->meter_kubik
+                            'volume' => $tt->meter_kubik,
                         ];
                     }
                 }
 
-                if (!$foundData) {
+                if (! $foundData) {
                     $nomorKontainer = $bl->nomor_kontainer;
-                    if (!$nomorKontainer) continue;
+                    if (! $nomorKontainer) {
+                        continue;
+                    }
 
                     $pengirim = $bl->pengirim ?: ($bl->prospek ? $bl->prospek->pt_pengirim : null);
-                    
+
                     // Fallback to matching by container and pengirim
-                    
+
                     // 2. Check Tanda Terima LCL
                     $ttLclItem = \DB::table('tanda_terimas_lcl as tt')
                         ->join('tanda_terima_lcl_kontainer_pivot as pivot', 'tt.id', '=', 'pivot.tanda_terima_lcl_id')
@@ -2245,7 +2268,7 @@ class BlController extends Controller
                             \DB::raw('COALESCE(SUM(items.meter_kubik), 0) as total_volume')
                         )
                         ->where('pivot.nomor_kontainer', $nomorKontainer)
-                        ->when($pengirim, function($q) use ($pengirim) {
+                        ->when($pengirim, function ($q) use ($pengirim) {
                             return $q->where('tt.nama_pengirim', 'like', "%{$pengirim}%");
                         })
                         ->groupBy('tt.id')
@@ -2255,15 +2278,15 @@ class BlController extends Controller
                     if ($ttLclItem && ($ttLclItem->total_tonnage > 0 || $ttLclItem->total_volume > 0)) {
                         $foundData = [
                             'tonnage' => $ttLclItem->total_tonnage,
-                            'volume' => $ttLclItem->total_volume
+                            'volume' => $ttLclItem->total_volume,
                         ];
                     }
 
                     // 3. Check Tanda Terima Tanpa Surat Jalan
-                    if (!$foundData) {
+                    if (! $foundData) {
                         $tttsj = \DB::table('tanda_terima_tanpa_surat_jalan')
                             ->where('no_kontainer', $nomorKontainer)
-                            ->when($pengirim, function($q) use ($pengirim) {
+                            ->when($pengirim, function ($q) use ($pengirim) {
                                 return $q->where('pengirim', 'like', "%{$pengirim}%");
                             })
                             ->orderBy('created_at', 'desc')
@@ -2272,16 +2295,16 @@ class BlController extends Controller
                         if ($tttsj && ($tttsj->tonase > 0 || $tttsj->meter_kubik > 0)) {
                             $foundData = [
                                 'tonnage' => $tttsj->tonase,
-                                'volume' => $tttsj->meter_kubik
+                                'volume' => $tttsj->meter_kubik,
                             ];
                         }
                     }
 
                     // 4. Regular Tanda Terima (last resort if not linked via prospek)
-                    if (!$foundData) {
+                    if (! $foundData) {
                         $tt = \DB::table('tanda_terimas')
                             ->where('no_kontainer', $nomorKontainer)
-                            ->when($pengirim, function($q) use ($pengirim) {
+                            ->when($pengirim, function ($q) use ($pengirim) {
                                 return $q->where('pengirim', 'like', "%{$pengirim}%");
                             })
                             ->orderBy('created_at', 'desc')
@@ -2290,7 +2313,7 @@ class BlController extends Controller
                         if ($tt && ($tt->tonase > 0 || $tt->meter_kubik > 0)) {
                             $foundData = [
                                 'tonnage' => $tt->tonase,
-                                'volume' => $tt->meter_kubik
+                                'volume' => $tt->meter_kubik,
                             ];
                         }
                     }
@@ -2299,7 +2322,7 @@ class BlController extends Controller
                 if ($foundData) {
                     $bl->update([
                         'tonnage' => $foundData['tonnage'],
-                        'volume' => $foundData['volume']
+                        'volume' => $foundData['volume'],
                     ]);
                     $updatedCount++;
                 } else {
@@ -2309,14 +2332,15 @@ class BlController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Proses selesai. {$updatedCount} data BL diperbarui. " . ($notFoundCount > 0 ? "{$notFoundCount} data tidak ditemukan referensinya." : "")
+                'message' => "Proses selesai. {$updatedCount} data BL diperbarui. ".($notFoundCount > 0 ? "{$notFoundCount} data tidak ditemukan referensinya." : ''),
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error in bulkUpdateVolumeTonnage: ' . $e->getMessage());
+            \Log::error('Error in bulkUpdateVolumeTonnage: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -2327,17 +2351,17 @@ class BlController extends Controller
     public function edit(Bl $bl)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-edit")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-edit')
                 ->exists();
-            
-            if (!$hasPermission) {
-                abort(403, "Tidak memiliki akses untuk mengedit data BL");
+
+            if (! $hasPermission) {
+                abort(403, 'Tidak memiliki akses untuk mengedit data BL');
             }
         }
 
@@ -2350,17 +2374,17 @@ class BlController extends Controller
     public function update(Request $request, Bl $bl)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-edit")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-edit')
                 ->exists();
-            
-            if (!$hasPermission) {
-                abort(403, "Tidak memiliki akses untuk mengupdate data BL");
+
+            if (! $hasPermission) {
+                abort(403, 'Tidak memiliki akses untuk mengupdate data BL');
             }
         }
 
@@ -2391,10 +2415,10 @@ class BlController extends Controller
         try {
             $validated['updated_by'] = $user->id;
             $bl->update($validated);
-            
+
             return redirect()->route('bl.show', $bl)->with('success', 'Data BL berhasil diupdate.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal mengupdate data BL: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Gagal mengupdate data BL: '.$e->getMessage())->withInput();
         }
     }
 
@@ -2404,27 +2428,27 @@ class BlController extends Controller
     public function destroy(Request $request, Bl $bl)
     {
         $user = Auth::user();
-        
+
         // Check permission
-        if (!in_array($user->role, ["admin", "user_admin"])) {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", "bl-delete")
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-delete')
                 ->exists();
-            
-            if (!$hasPermission) {
+
+            if (! $hasPermission) {
                 return redirect()->back()->with('error', 'Tidak memiliki akses untuk menghapus data BL');
             }
         }
 
         try {
-            $nomorBl = $bl->nomor_bl ?? 'BL #' . $bl->id;
+            $nomorBl = $bl->nomor_bl ?? 'BL #'.$bl->id;
             $bl->delete();
-            
+
             return redirect()->route('bl.index', $request->query())->with('success', "Data BL {$nomorBl} berhasil dihapus.");
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menghapus data BL: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menghapus data BL: '.$e->getMessage());
         }
     }
 }

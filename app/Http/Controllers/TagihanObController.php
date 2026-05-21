@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TagihanOb;
 use App\Models\Bl;
 use App\Models\MasterPricelistOb;
+use App\Models\TagihanOb;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -17,15 +17,15 @@ class TagihanObController extends Controller
     public function indexAntarGudang(Request $request)
     {
         // Allow access if user has either tagihan-ob-view OR the specific antar-gudang permission
-        if (!Auth::user()->can('tagihan-ob-view') && !Auth::user()->can('tagihan-ob-antar-gudang-view')) {
+        if (! Auth::user()->can('tagihan-ob-view') && ! Auth::user()->can('tagihan-ob-antar-gudang-view')) {
             abort(403);
         }
-        
+
         $request->merge([
             'kapal' => 'ANTAR GUDANG',
-            'voyage' => 'ANTAR GUDANG'
+            'voyage' => 'ANTAR GUDANG',
         ]);
-        
+
         return $this->index($request);
     }
 
@@ -34,24 +34,24 @@ class TagihanObController extends Controller
      */
     public function index(Request $request)
     {
-        if (!Auth::user()->can('tagihan-ob-view') && !Auth::user()->can('tagihan-ob-antar-gudang-view')) {
+        if (! Auth::user()->can('tagihan-ob-view') && ! Auth::user()->can('tagihan-ob-antar-gudang-view')) {
             $this->authorize('tagihan-ob-view');
         }
-        
+
         // Check if kapal and voyage are provided
-        if (!$request->has(['kapal', 'voyage'])) {
+        if (! $request->has(['kapal', 'voyage'])) {
             return $this->selectKapalVoyage();
         }
-        
+
         $tagihanOb = TagihanOb::with(['bl', 'creator'])
-                        ->where('kapal', $request->kapal)
-                        ->where('voyage', $request->voyage)
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(20);
+            ->where('kapal', $request->kapal)
+            ->where('voyage', $request->voyage)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
         return view('tagihan-ob.index', compact('tagihanOb'))
-                ->with('selectedKapal', $request->kapal)
-                ->with('selectedVoyage', $request->voyage);
+            ->with('selectedKapal', $request->kapal)
+            ->with('selectedVoyage', $request->voyage);
     }
 
     /**
@@ -59,19 +59,19 @@ class TagihanObController extends Controller
      */
     public function selectKapalVoyage()
     {
-        if (!Auth::user()->can('tagihan-ob-view') && !Auth::user()->can('tagihan-ob-antar-gudang-view')) {
+        if (! Auth::user()->can('tagihan-ob-view') && ! Auth::user()->can('tagihan-ob-antar-gudang-view')) {
             $this->authorize('tagihan-ob-view');
         }
-        
+
         // Ambil data kapal dan voyage dari pergerakan kapal
         $pergerakanKapals = \App\Models\PergerakanKapal::whereNotNull('voyage')
-                                                       ->where('voyage', '!=', '')
-                                                       ->orderBy('nama_kapal')
-                                                       ->orderBy('voyage')
-                                                       ->get();
+            ->where('voyage', '!=', '')
+            ->orderBy('nama_kapal')
+            ->orderBy('voyage')
+            ->get();
 
         // Group voyage by kapal name
-        $voyageByKapal = $pergerakanKapals->groupBy('nama_kapal')->map(function($group) {
+        $voyageByKapal = $pergerakanKapals->groupBy('nama_kapal')->map(function ($group) {
             return $group->pluck('voyage')->unique()->sort()->values();
         });
 
@@ -84,14 +84,14 @@ class TagihanObController extends Controller
     public function create(Request $request)
     {
         $this->authorize('tagihan-ob-create');
-        
+
         $bls = Bl::orderBy('nomor_bl')->get();
         $pricelist = MasterPricelistOb::all();
-        
+
         // Pre-fill kapal and voyage if provided
         $prefilledKapal = $request->get('kapal');
         $prefilledVoyage = $request->get('voyage');
-        
+
         return view('tagihan-ob.create', compact('bls', 'pricelist', 'prefilledKapal', 'prefilledVoyage'));
     }
 
@@ -101,7 +101,7 @@ class TagihanObController extends Controller
     public function store(Request $request)
     {
         $this->authorize('tagihan-ob-create');
-        
+
         $validated = $request->validate([
             'kapal' => 'required|string|max:255',
             'voyage' => 'required|string|max:255',
@@ -114,23 +114,24 @@ class TagihanObController extends Controller
         ]);
 
         try {
-            $tagihan = new TagihanOb();
+            $tagihan = new TagihanOb;
             $tagihan->fill($validated);
             $tagihan->created_by = Auth::id();
-            
+
             // Calculate biaya from pricelist
             $biaya = $tagihan->calculateBiayaFromPricelist();
             $tagihan->biaya = $biaya;
-            
+
             $tagihan->save();
 
             return redirect()->route('tagihan-ob.index')
-                           ->with('success', 'Tagihan OB berhasil dibuat');
-                           
+                ->with('success', 'Tagihan OB berhasil dibuat');
+
         } catch (\Exception $e) {
-            Log::error('Error creating TagihanOb: ' . $e->getMessage());
+            Log::error('Error creating TagihanOb: '.$e->getMessage());
+
             return back()->withInput()
-                        ->with('error', 'Gagal membuat tagihan OB: ' . $e->getMessage());
+                ->with('error', 'Gagal membuat tagihan OB: '.$e->getMessage());
         }
     }
 
@@ -140,9 +141,9 @@ class TagihanObController extends Controller
     public function show(TagihanOb $tagihanOb)
     {
         $this->authorize('tagihan-ob-view');
-        
+
         $tagihanOb->load(['bl', 'creator']);
-        
+
         return view('tagihan-ob.show', compact('tagihanOb'));
     }
 
@@ -152,10 +153,10 @@ class TagihanObController extends Controller
     public function edit(TagihanOb $tagihanOb)
     {
         $this->authorize('tagihan-ob-update');
-        
+
         $bls = Bl::orderBy('nomor_bl')->get();
         $pricelist = MasterPricelistOb::all();
-        
+
         return view('tagihan-ob.edit', compact('tagihanOb', 'bls', 'pricelist'));
     }
 
@@ -165,7 +166,7 @@ class TagihanObController extends Controller
     public function update(Request $request, TagihanOb $tagihanOb)
     {
         $this->authorize('tagihan-ob-update');
-        
+
         $validated = $request->validate([
             'kapal' => 'required|string|max:255',
             'voyage' => 'required|string|max:255',
@@ -179,20 +180,21 @@ class TagihanObController extends Controller
 
         try {
             $tagihanOb->fill($validated);
-            
+
             // Recalculate biaya if needed
             $biaya = $tagihanOb->calculateBiayaFromPricelist();
             $tagihanOb->biaya = $biaya;
-            
+
             $tagihanOb->save();
 
             return redirect()->route('tagihan-ob.index')
-                           ->with('success', 'Tagihan OB berhasil diupdate');
-                           
+                ->with('success', 'Tagihan OB berhasil diupdate');
+
         } catch (\Exception $e) {
-            Log::error('Error updating TagihanOb: ' . $e->getMessage());
+            Log::error('Error updating TagihanOb: '.$e->getMessage());
+
             return back()->withInput()
-                        ->with('error', 'Gagal mengupdate tagihan OB: ' . $e->getMessage());
+                ->with('error', 'Gagal mengupdate tagihan OB: '.$e->getMessage());
         }
     }
 
@@ -202,16 +204,17 @@ class TagihanObController extends Controller
     public function destroy(TagihanOb $tagihanOb)
     {
         $this->authorize('tagihan-ob-delete');
-        
+
         try {
             $tagihanOb->delete();
-            
+
             return redirect()->route('tagihan-ob.index')
-                           ->with('success', 'Tagihan OB berhasil dihapus');
-                           
+                ->with('success', 'Tagihan OB berhasil dihapus');
+
         } catch (\Exception $e) {
-            Log::error('Error deleting TagihanOb: ' . $e->getMessage());
-            return back()->with('error', 'Gagal menghapus tagihan OB: ' . $e->getMessage());
+            Log::error('Error deleting TagihanOb: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal menghapus tagihan OB: '.$e->getMessage());
         }
     }
 
@@ -221,19 +224,19 @@ class TagihanObController extends Controller
     public function createFromObMuat(Request $request)
     {
         $this->authorize('tagihan-ob-create');
-        
+
         $validated = $request->validate([
             'bl_id' => 'required|exists:bls,id',
-            'kegiatan' => 'required|string|in:tarik isi,tarik kosong'
+            'kegiatan' => 'required|string|in:tarik isi,tarik kosong',
         ]);
 
         try {
             $bl = Bl::findOrFail($validated['bl_id']);
-            
+
             // Determine status kontainer based on kegiatan
             $statusKontainer = $validated['kegiatan'] === 'tarik isi' ? 'full' : 'empty';
-            
-            $tagihan = new TagihanOb();
+
+            $tagihan = new TagihanOb;
             $tagihan->kapal = $bl->kapal ?? '';
             $tagihan->voyage = $bl->voyage ?? '';
             $tagihan->nomor_kontainer = $bl->nomor_kontainer ?? '';
@@ -242,24 +245,25 @@ class TagihanObController extends Controller
             $tagihan->status_kontainer = $statusKontainer;
             $tagihan->bl_id = $bl->id;
             $tagihan->created_by = Auth::id();
-            
+
             // Calculate biaya from pricelist
             $biaya = $tagihan->calculateBiayaFromPricelist();
             $tagihan->biaya = $biaya;
-            
+
             $tagihan->save();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Tagihan OB berhasil dibuat dari OB Muat',
-                'data' => $tagihan
+                'data' => $tagihan,
             ]);
-            
+
         } catch (\Exception $e) {
-            Log::error('Error creating TagihanOb from OB Muat: ' . $e->getMessage());
+            Log::error('Error creating TagihanOb from OB Muat: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal membuat tagihan OB: ' . $e->getMessage()
+                'message' => 'Gagal membuat tagihan OB: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -270,105 +274,105 @@ class TagihanObController extends Controller
     public function updateField(Request $request, TagihanOb $tagihanOb)
     {
         $this->authorize('tagihan-ob-update');
-        
+
         try {
             $field = $request->input('field');
             $value = $request->input('value');
-            
+
             // Debug logging
             Log::info('UpdateField Debug', [
                 'field' => $field,
                 'raw_value' => $value,
                 'value_type' => gettype($value),
-                'request_all' => $request->all()
+                'request_all' => $request->all(),
             ]);
-            
+
             // Validate allowed fields
             $allowedFields = ['nama_supir', 'nomor_kontainer', 'biaya'];
-            if (!in_array($field, $allowedFields)) {
+            if (! in_array($field, $allowedFields)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Field tidak diizinkan untuk diubah.'
+                    'message' => 'Field tidak diizinkan untuk diubah.',
                 ], 400);
             }
-            
+
             // Field-specific validation and casting
             if ($field === 'nama_supir') {
                 $request->validate([
-                    'value' => 'required|string|max:255'
+                    'value' => 'required|string|max:255',
                 ]);
                 $finalValue = trim($value);
             } elseif ($field === 'nomor_kontainer') {
                 $request->validate([
-                    'value' => 'required|string|max:255'
+                    'value' => 'required|string|max:255',
                 ]);
                 $finalValue = trim($value);
             } elseif ($field === 'biaya') {
                 $request->validate([
-                    'value' => 'required|numeric|min:0'
+                    'value' => 'required|numeric|min:0',
                 ]);
                 // Ensure we store as integer/float correctly
                 $finalValue = floatval($value);
-                
+
                 Log::info('Biaya validation passed', [
                     'field' => $field,
                     'original_value' => $value,
                     'final_value' => $finalValue,
-                    'final_value_type' => gettype($finalValue)
+                    'final_value_type' => gettype($finalValue),
                 ]);
             } else {
                 $finalValue = $value;
             }
-            
+
             // Update the field
             $tagihanOb->{$field} = $finalValue;
-            
+
             $tagihanOb->save();
-            
+
             Log::info('Field updated in database', [
                 'field' => $field,
                 'old_value' => $tagihanOb->getOriginal($field),
-                'new_value' => $tagihanOb->{$field}
+                'new_value' => $tagihanOb->{$field},
             ]);
-            
+
             // Format response value for display
             $formattedValue = $finalValue;
             if ($field === 'biaya') {
                 $formattedValue = number_format($finalValue, 0, ',', '.');
             }
-            
+
             Log::info('Tagihan OB field updated via inline edit', [
                 'tagihan_ob_id' => $tagihanOb->id,
                 'field' => $field,
                 'old_value' => $tagihanOb->getOriginal($field),
                 'new_value' => $finalValue,
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
-            
+
             $response = [
                 'success' => true,
                 'message' => 'Data berhasil diperbarui.',
                 'formatted_value' => $formattedValue,
-                'raw_value' => $finalValue
+                'raw_value' => $finalValue,
             ];
-            
+
             return response()->json($response);
-            
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal: ' . implode(', ', $e->validator->errors()->all())
+                'message' => 'Validasi gagal: '.implode(', ', $e->validator->errors()->all()),
             ], 422);
         } catch (\Exception $e) {
-            Log::error('Error updating tagihan ob field: ' . $e->getMessage(), [
+            Log::error('Error updating tagihan ob field: '.$e->getMessage(), [
                 'tagihan_ob_id' => $tagihanOb->id,
                 'field' => $field,
-                'value' => $value
+                'value' => $value,
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat menyimpan data.'
+                'message' => 'Terjadi kesalahan saat menyimpan data.',
             ], 500);
         }
     }

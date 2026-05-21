@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\MerkBan;
 use Illuminate\Http\Request;
 
@@ -15,9 +14,9 @@ class MerkBanController extends Controller
     {
         $query = MerkBan::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
-            $query->where('nama', 'LIKE', '%' . $searchTerm . '%');
+            $query->where('nama', 'LIKE', '%'.$searchTerm.'%');
         }
 
         $merkBans = $query->paginate(15);
@@ -54,6 +53,7 @@ class MerkBanController extends Controller
     public function show(string $id)
     {
         $merkBan = MerkBan::findOrFail($id);
+
         return view('master-merk-ban.show', compact('merkBan'));
     }
 
@@ -63,6 +63,7 @@ class MerkBanController extends Controller
     public function edit(string $id)
     {
         $merkBan = MerkBan::findOrFail($id);
+
         return view('master-merk-ban.edit', compact('merkBan'));
     }
 

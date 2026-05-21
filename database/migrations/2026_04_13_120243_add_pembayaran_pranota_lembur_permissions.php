@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -18,7 +16,7 @@ return new class extends Migration
             ['name' => 'pembayaran-pranota-lembur-delete', 'description' => 'Menghapus pembayaran pranota lembur'],
             ['name' => 'pembayaran-pranota-lembur-approve', 'description' => 'Menyetujui pembayaran pranota lembur'],
             ['name' => 'pembayaran-pranota-lembur-print', 'description' => 'Mencetak pembayaran pranota lembur'],
-            ['name' => 'pembayaran-pranota-lembur-export', 'description' => 'Mengexport pembayaran pranota lembur']
+            ['name' => 'pembayaran-pranota-lembur-export', 'description' => 'Mengexport pembayaran pranota lembur'],
         ];
 
         // Insert permissions
@@ -28,7 +26,7 @@ return new class extends Migration
                 [
                     'description' => $permission['description'],
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]
             );
         }
@@ -37,7 +35,7 @@ return new class extends Migration
         $adminUsers = DB::table('users')
             ->whereIn('username', ['admin', 'administrator', 'superadmin', 'kiky'])
             ->get();
-        
+
         $permissionIds = DB::table('permissions')
             ->whereIn('name', array_column($permissions, 'name'))
             ->pluck('id');
@@ -64,7 +62,7 @@ return new class extends Migration
             'pembayaran-pranota-lembur-delete',
             'pembayaran-pranota-lembur-approve',
             'pembayaran-pranota-lembur-print',
-            'pembayaran-pranota-lembur-export'
+            'pembayaran-pranota-lembur-export',
         ];
 
         $permissionIds = DB::table('permissions')

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('uang_jalans', function (Blueprint $table) {
             // Add column only if it doesn't exist
-            if (!Schema::hasColumn('uang_jalans', 'tanggal_uang_jalan')) {
+            if (! Schema::hasColumn('uang_jalans', 'tanggal_uang_jalan')) {
                 $table->date('tanggal_uang_jalan')->nullable()->after('nomor_uang_jalan');
             }
         });

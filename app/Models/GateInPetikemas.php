@@ -16,12 +16,12 @@ class GateInPetikemas extends Model
         'no_petikemas',
         's_t_s',
         'estimasi',
-        'estimasi_biaya'
+        'estimasi_biaya',
     ];
 
     protected $casts = [
         'estimasi' => 'date',
-        'estimasi_biaya' => 'decimal:2'
+        'estimasi_biaya' => 'decimal:2',
     ];
 
     /**

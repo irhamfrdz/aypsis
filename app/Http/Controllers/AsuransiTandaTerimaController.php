@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\AsuransiTandaTerima;
-use App\Models\VendorAsuransi;
-use App\Models\TandaTerima;
-use App\Models\TandaTerimaTanpaSuratJalan;
-use App\Models\TandaTerimaLcl;
 use App\Models\MasterKapal;
+use App\Models\TandaTerima;
+use App\Models\TandaTerimaLcl;
+use App\Models\TandaTerimaTanpaSuratJalan;
+use App\Models\VendorAsuransi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class AsuransiTandaTerimaController extends Controller
 {
@@ -20,9 +20,9 @@ class AsuransiTandaTerimaController extends Controller
         $search = $request->search;
         $dari_tanggal = $request->dari_tanggal;
         $sampai_tanggal = $request->sampai_tanggal;
-        
+
         $unionQuery = $this->getReceiptsQuery($search, $dari_tanggal, $sampai_tanggal);
-        
+
         $receipts = DB::table(DB::raw("({$unionQuery->toSql()}) as combined_receipts"))
             ->mergeBindings($unionQuery)
             ->orderBy('created_at', 'desc')
@@ -39,42 +39,44 @@ class AsuransiTandaTerimaController extends Controller
     public function exportRequest(Request $request)
     {
         $selectedIds = json_decode($request->selected_ids, true);
-        if (!$selectedIds) return back()->with('error', 'Tidak ada data terpilih.');
+        if (! $selectedIds) {
+            return back()->with('error', 'Tidak ada data terpilih.');
+        }
 
         $idsByType = [
             'tt' => [],
             'tttsj' => [],
-            'lcl' => []
+            'lcl' => [],
         ];
 
         foreach ($selectedIds as $item) {
-            list($type, $id) = explode('_', $item);
+            [$type, $id] = explode('_', $item);
             $idsByType[$type][] = $id;
         }
 
         $receipts = collect();
 
         // 1. Regular Tanda Terima
-        if (!empty($idsByType['tt'])) {
+        if (! empty($idsByType['tt'])) {
             $ttItems = DB::table('tanda_terimas')
                 ->leftJoin('surat_jalans', 'tanda_terimas.surat_jalan_id', '=', 'surat_jalans.id')
                 ->leftJoin('asuransi_tanda_terimas', 'tanda_terimas.id', '=', 'asuransi_tanda_terimas.tanda_terima_id')
                 ->select(
-                    'tanda_terimas.id', 
-                    DB::raw("'tt' as type"), 
-                    'tanda_terimas.no_surat_jalan as number', 
-                    'tanda_terimas.tanggal as date', 
-                    'tanda_terimas.pengirim', 
-                    'tanda_terimas.penerima', 
-                    'tanda_terimas.no_kontainer', 
+                    'tanda_terimas.id',
+                    DB::raw("'tt' as type"),
+                    'tanda_terimas.no_surat_jalan as number',
+                    'tanda_terimas.tanggal as date',
+                    'tanda_terimas.pengirim',
+                    'tanda_terimas.penerima',
+                    'tanda_terimas.no_kontainer',
                     'tanda_terimas.size as size_tanda_terima',
                     'surat_jalans.size as size_surat_jalan',
                     'tanda_terimas.tipe_kontainer as tipe_kontainer_tt',
                     'surat_jalans.tipe_kontainer as tipe_kontainer_sj',
                     'tanda_terimas.nama_barang as raw_nama_barang',
                     'tanda_terimas.dimensi_details as raw_dimensi_details',
-                    DB::raw('COALESCE(tanda_terimas.nama_barang, surat_jalans.jenis_barang) as fallback_nama_barang'), 
-                    DB::raw('COALESCE(tanda_terimas.jumlah, surat_jalans.jumlah_kontainer) as fallback_kuantitas'), 
+                    DB::raw('COALESCE(tanda_terimas.nama_barang, surat_jalans.jenis_barang) as fallback_nama_barang'),
+                    DB::raw('COALESCE(tanda_terimas.jumlah, surat_jalans.jumlah_kontainer) as fallback_kuantitas'),
                     'tanda_terimas.satuan as fallback_satuan',
                     'tanda_terimas.tujuan_pengiriman',
                     'tanda_terimas.estimasi_nama_kapal as ship_name',
@@ -86,56 +88,56 @@ class AsuransiTandaTerimaController extends Controller
                 )
                 ->whereIn('tanda_terimas.id', $idsByType['tt'])
                 ->get();
-            
+
             foreach ($ttItems as $main) {
                 $items = [];
                 // Check dimensi_details which carries multi-items info
                 if ($main->raw_dimensi_details) {
                     $decoded = json_decode($main->raw_dimensi_details, true);
-                    if (is_array($decoded) && !empty($decoded)) {
+                    if (is_array($decoded) && ! empty($decoded)) {
                         $items = $decoded;
                     }
                 }
-                
+
                 // Fallback to nama_barang if no dimensi_details
                 if (empty($items)) {
                     $nama = $main->raw_nama_barang ?: $main->fallback_nama_barang;
                     if (is_string($nama) && (str_starts_with($nama, '[') || str_starts_with($nama, '{'))) {
-                         $decoded = json_decode($nama, true);
-                         if (is_array($decoded)) {
-                             foreach ($decoded as $idx => $str) {
-                                 $items[] = [
-                                     'nama_barang' => $str, 
-                                     'jumlah' => ($idx == 0 ? $main->fallback_kuantitas : 1), 
-                                     'satuan' => $main->fallback_satuan ?: 'UNIT'
-                                 ];
-                             }
-                         }
+                        $decoded = json_decode($nama, true);
+                        if (is_array($decoded)) {
+                            foreach ($decoded as $idx => $str) {
+                                $items[] = [
+                                    'nama_barang' => $str,
+                                    'jumlah' => ($idx == 0 ? $main->fallback_kuantitas : 1),
+                                    'satuan' => $main->fallback_satuan ?: 'UNIT',
+                                ];
+                            }
+                        }
                     }
                 }
-                
+
                 if (empty($items)) {
                     $items[] = [
-                        'nama_barang' => $main->raw_nama_barang ?: $main->fallback_nama_barang, 
-                        'jumlah' => $main->fallback_kuantitas, 
-                        'satuan' => $main->fallback_satuan
+                        'nama_barang' => $main->raw_nama_barang ?: $main->fallback_nama_barang,
+                        'jumlah' => $main->fallback_kuantitas,
+                        'satuan' => $main->fallback_satuan,
                     ];
                 }
-                
+
                 foreach ($items as $idx => $item) {
                     $row = clone $main;
                     $row->nama_barang = $item['nama_barang'] ?? ($main->raw_nama_barang ?: $main->fallback_nama_barang);
                     $row->kuantitas = $item['jumlah'] ?? $main->fallback_kuantitas;
                     $row->satuan = $item['satuan'] ?? $main->fallback_satuan;
-                    
+
                     $tipe = strtolower($main->tipe_kontainer_tt ?? ($main->tipe_kontainer_sj ?? ''));
                     if ($tipe == 'cargo') {
                         $row->container_size_label = 'CONT. LCL';
                     } else {
                         $size = $main->size_tanda_terima ?? ($main->size_surat_jalan ?? '20');
-                        $row->container_size_label = 'CONT.' . str_replace('"', '', $size) . '" ISI';
+                        $row->container_size_label = 'CONT.'.str_replace('"', '', $size).'" ISI';
                     }
-                    
+
                     if ($idx > 0) {
                         $row->amount = 0;
                         $row->rate = 0;
@@ -146,20 +148,20 @@ class AsuransiTandaTerimaController extends Controller
         }
 
         // 2. Tanda Terima Tanpa Surat Jalan
-        if (!empty($idsByType['tttsj'])) {
+        if (! empty($idsByType['tttsj'])) {
             $tttsjItems = DB::table('tanda_terima_tanpa_surat_jalan')
                 ->leftJoin('asuransi_tanda_terimas', 'tanda_terima_tanpa_surat_jalan.id', '=', 'asuransi_tanda_terimas.tanda_terima_tanpa_sj_id')
                 ->select(
-                    'tanda_terima_tanpa_surat_jalan.id', 
-                    DB::raw("'tttsj' as type"), 
-                    'no_tanda_terima as number', 
-                    'tanggal_tanda_terima as date', 
-                    'pengirim', 
-                    'penerima', 
-                    'no_kontainer', 
+                    'tanda_terima_tanpa_surat_jalan.id',
+                    DB::raw("'tttsj' as type"),
+                    'no_tanda_terima as number',
+                    'tanggal_tanda_terima as date',
+                    'pengirim',
+                    'penerima',
+                    'no_kontainer',
                     'size_kontainer as size_tttsj',
-                    DB::raw('COALESCE(nama_barang, jenis_barang) as fallback_nama_barang'), 
-                    'jumlah_barang as fallback_kuantitas', 
+                    DB::raw('COALESCE(nama_barang, jenis_barang) as fallback_nama_barang'),
+                    'jumlah_barang as fallback_kuantitas',
                     'satuan_barang as fallback_satuan',
                     'tujuan_pengiriman',
                     DB::raw('NULL as ship_name'),
@@ -171,20 +173,20 @@ class AsuransiTandaTerimaController extends Controller
                 )
                 ->whereIn('tanda_terima_tanpa_surat_jalan.id', $idsByType['tttsj'])
                 ->get();
-            
+
             foreach ($tttsjItems as $main) {
                 $items = DB::table('tanda_terima_dimensi_items')
                     ->where('tanda_terima_tanpa_surat_jalan_id', $main->id)
                     ->orderBy('item_order')
                     ->get();
-                
+
                 if ($items->isEmpty()) {
                     $row = clone $main;
                     $row->nama_barang = $main->fallback_nama_barang;
                     $row->kuantitas = $main->fallback_kuantitas;
                     $row->satuan = $main->fallback_satuan;
                     $size = $main->size_tttsj ?? '20';
-                    $row->container_size_label = 'CONT.' . str_replace('"', '', $size) . '" ISI';
+                    $row->container_size_label = 'CONT.'.str_replace('"', '', $size).'" ISI';
                     $receipts->push($row);
                 } else {
                     foreach ($items as $idx => $item) {
@@ -193,8 +195,11 @@ class AsuransiTandaTerimaController extends Controller
                         $row->kuantitas = $item->jumlah;
                         $row->satuan = $item->satuan;
                         $size = $main->size_tttsj ?? '20';
-                        $row->container_size_label = 'CONT.' . str_replace('"', '', $size) . '" ISI';
-                        if ($idx > 0) { $row->amount = 0; $row->rate = 0; }
+                        $row->container_size_label = 'CONT.'.str_replace('"', '', $size).'" ISI';
+                        if ($idx > 0) {
+                            $row->amount = 0;
+                            $row->rate = 0;
+                        }
                         $receipts->push($row);
                     }
                 }
@@ -202,21 +207,21 @@ class AsuransiTandaTerimaController extends Controller
         }
 
         // 3. Tanda Terima LCL
-        if (!empty($idsByType['lcl'])) {
+        if (! empty($idsByType['lcl'])) {
             $lclItems = DB::table('tanda_terimas_lcl')
-                ->leftJoin('tanda_terima_lcl_kontainer_pivot', function($join) {
+                ->leftJoin('tanda_terima_lcl_kontainer_pivot', function ($join) {
                     $join->on('tanda_terimas_lcl.id', '=', 'tanda_terima_lcl_kontainer_pivot.tanda_terima_lcl_id')
                         ->whereRaw('tanda_terima_lcl_kontainer_pivot.id = (SELECT MAX(id) FROM tanda_terima_lcl_kontainer_pivot WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id)');
                 })
                 ->leftJoin('asuransi_tanda_terimas', 'tanda_terimas_lcl.id', '=', 'asuransi_tanda_terimas.tanda_terima_lcl_id')
                 ->leftJoin('master_tujuan_kirim', 'tanda_terimas_lcl.tujuan_pengiriman_id', '=', 'master_tujuan_kirim.id')
                 ->select(
-                    'tanda_terimas_lcl.id', 
-                    DB::raw("'lcl' as type"), 
-                    'nomor_tanda_terima as number', 
-                    'tanggal_tanda_terima as date', 
-                    'nama_pengirim as pengirim', 
-                    'nama_penerima as penerima', 
+                    'tanda_terimas_lcl.id',
+                    DB::raw("'lcl' as type"),
+                    'nomor_tanda_terima as number',
+                    'tanggal_tanda_terima as date',
+                    'nama_pengirim as pengirim',
+                    'nama_penerima as penerima',
                     'master_tujuan_kirim.nama_tujuan as tujuan_pengiriman',
                     DB::raw('COALESCE(tanda_terima_lcl_kontainer_pivot.nomor_kontainer, tanda_terimas_lcl.nomor_kontainer) as no_kontainer'),
                     DB::raw('NULL as ship_name'),
@@ -228,13 +233,13 @@ class AsuransiTandaTerimaController extends Controller
                 )
                 ->whereIn('tanda_terimas_lcl.id', $idsByType['lcl'])
                 ->get();
-            
+
             foreach ($lclItems as $main) {
                 $items = DB::table('tanda_terima_lcl_items')
                     ->where('tanda_terima_lcl_id', $main->id)
                     ->orderBy('item_number')
                     ->get();
-                
+
                 if ($items->isEmpty()) {
                     $row = clone $main;
                     $row->nama_barang = '-';
@@ -249,7 +254,10 @@ class AsuransiTandaTerimaController extends Controller
                         $row->kuantitas = $item->jumlah;
                         $row->satuan = $item->satuan;
                         $row->container_size_label = 'CONT. LCL';
-                        if ($idx > 0) { $row->amount = 0; $row->rate = 0; }
+                        if ($idx > 0) {
+                            $row->amount = 0;
+                            $row->rate = 0;
+                        }
                         $receipts->push($row);
                     }
                 }
@@ -264,8 +272,8 @@ class AsuransiTandaTerimaController extends Controller
         }
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\InsuranceRequestExport($receipts, $vendor, $request->ship_name, $request->request_date), 
-            'request-asuransi-' . date('Y-m-d') . '.xlsx'
+            new \App\Exports\InsuranceRequestExport($receipts, $vendor, $request->ship_name, $request->request_date),
+            'request-asuransi-'.date('Y-m-d').'.xlsx'
         );
     }
 
@@ -279,9 +287,9 @@ class AsuransiTandaTerimaController extends Controller
         if ($selected_ids && is_string($selected_ids)) {
             $selected_ids = json_decode($selected_ids, true);
         }
-        
+
         $unionQuery = $this->getReceiptsQuery($search, $dari_tanggal, $sampai_tanggal, $selected_ids);
-        
+
         $receipts = DB::table(DB::raw("({$unionQuery->toSql()}) as combined_receipts"))
             ->mergeBindings($unionQuery)
             ->orderBy('created_at', 'desc')
@@ -291,15 +299,15 @@ class AsuransiTandaTerimaController extends Controller
         $this->attachInsuranceAndFormatData($receipts);
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\AsuransiTandaTerimaExport($receipts), 
-            'asuransi-tanda-terima-' . date('Y-m-d') . '.xlsx'
+            new \App\Exports\AsuransiTandaTerimaExport($receipts),
+            'asuransi-tanda-terima-'.date('Y-m-d').'.xlsx'
         );
     }
 
     private function attachInsuranceAndFormatData($receipts)
     {
         $items = $receipts instanceof \Illuminate\Pagination\LengthAwarePaginator ? $receipts->items() : $receipts;
-        
+
         $ids = [
             'tt' => collect($items)->where('type', 'tt')->pluck('id')->toArray(),
             'tttsj' => collect($items)->where('type', 'tttsj')->pluck('id')->toArray(),
@@ -311,10 +319,16 @@ class AsuransiTandaTerimaController extends Controller
             ->orWhereIn('tanda_terima_lcl_id', $ids['lcl'])
             ->with('vendorAsuransi')
             ->get()
-            ->groupBy(function($item) {
-                if ($item->tanda_terima_id) return "tt_{$item->tanda_terima_id}";
-                if ($item->tanda_terima_tanpa_sj_id) return "tttsj_{$item->tanda_terima_tanpa_sj_id}";
-                if ($item->tanda_terima_lcl_id) return "lcl_{$item->tanda_terima_lcl_id}";
+            ->groupBy(function ($item) {
+                if ($item->tanda_terima_id) {
+                    return "tt_{$item->tanda_terima_id}";
+                }
+                if ($item->tanda_terima_tanpa_sj_id) {
+                    return "tttsj_{$item->tanda_terima_tanpa_sj_id}";
+                }
+                if ($item->tanda_terima_lcl_id) {
+                    return "lcl_{$item->tanda_terima_lcl_id}";
+                }
             });
 
         foreach ($items as $receipt) {
@@ -324,14 +338,14 @@ class AsuransiTandaTerimaController extends Controller
             // Format nama_barang for regular tt if it came from jenis_barang but dimensi_details has real data
             if ($receipt->type == 'tt' && $receipt->raw_dimensi_details) {
                 $decodedDetails = json_decode($receipt->raw_dimensi_details, true);
-                if (is_array($decodedDetails) && !empty($decodedDetails)) {
+                if (is_array($decodedDetails) && ! empty($decodedDetails)) {
                     $names = [];
                     foreach ($decodedDetails as $detail) {
-                        if (!empty($detail['nama_barang'])) {
+                        if (! empty($detail['nama_barang'])) {
                             $names[] = $detail['nama_barang'];
                         }
                     }
-                    if (!empty($names)) {
+                    if (! empty($names)) {
                         // Create JSON array string which is expected by the blade view
                         $receipt->nama_barang = json_encode($names);
                     }
@@ -347,7 +361,7 @@ class AsuransiTandaTerimaController extends Controller
             $idsByType = ['tt' => [], 'tttsj' => [], 'lcl' => []];
             foreach ($selected_ids as $item) {
                 if (strpos($item, '_') !== false) {
-                    list($type, $id) = explode('_', $item);
+                    [$type, $id] = explode('_', $item);
                     if (isset($idsByType[$type])) {
                         $idsByType[$type][] = $id;
                     }
@@ -360,22 +374,22 @@ class AsuransiTandaTerimaController extends Controller
             ->leftJoin('asuransi_tanda_terimas', 'tanda_terimas.id', '=', 'asuransi_tanda_terimas.tanda_terima_id')
             ->leftJoin('vendor_asuransi', 'asuransi_tanda_terimas.vendor_asuransi_id', '=', 'vendor_asuransi.id')
             ->select(
-                'tanda_terimas.id', 
-                DB::raw("'tt' as type"), 
-                'tanda_terimas.no_surat_jalan as number', 
-                'tanda_terimas.tanggal as date', 
-                'tanda_terimas.pengirim', 
-                'tanda_terimas.penerima', 
-                'tanda_terimas.no_kontainer', 
-                DB::raw('COALESCE(tanda_terimas.nama_barang, surat_jalans.jenis_barang) as nama_barang'), 
+                'tanda_terimas.id',
+                DB::raw("'tt' as type"),
+                'tanda_terimas.no_surat_jalan as number',
+                'tanda_terimas.tanggal as date',
+                'tanda_terimas.pengirim',
+                'tanda_terimas.penerima',
+                'tanda_terimas.no_kontainer',
+                DB::raw('COALESCE(tanda_terimas.nama_barang, surat_jalans.jenis_barang) as nama_barang'),
                 'tanda_terimas.dimensi_details as raw_dimensi_details',
-                DB::raw('COALESCE(tanda_terimas.jumlah, surat_jalans.jumlah_kontainer) as kuantitas'), 
-                'tanda_terimas.satuan', 
-                'tanda_terimas.created_at', 
+                DB::raw('COALESCE(tanda_terimas.jumlah, surat_jalans.jumlah_kontainer) as kuantitas'),
+                'tanda_terimas.satuan',
+                'tanda_terimas.created_at',
                 DB::raw('NULL as deleted_at')
             )
-            ->when($search, function($q) use ($search) {
-                $q->where(function($sub) use ($search) {
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
                     $sub->where('tanda_terimas.no_surat_jalan', 'like', "%{$search}%")
                         ->orWhere('tanda_terimas.no_kontainer', 'like', "%{$search}%")
                         ->orWhere('tanda_terimas.pengirim', 'like', "%{$search}%")
@@ -386,14 +400,14 @@ class AsuransiTandaTerimaController extends Controller
                         ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
                 });
             })
-            ->when($dari_tanggal, function($q) use ($dari_tanggal) {
+            ->when($dari_tanggal, function ($q) use ($dari_tanggal) {
                 return $q->whereDate('tanda_terimas.tanggal', '>=', $dari_tanggal);
             })
-            ->when($sampai_tanggal, function($q) use ($sampai_tanggal) {
+            ->when($sampai_tanggal, function ($q) use ($sampai_tanggal) {
                 return $q->whereDate('tanda_terimas.tanggal', '<=', $sampai_tanggal);
             })
-            ->when($idsByType, function($q) use ($idsByType) {
-                return !empty($idsByType['tt']) ? $q->whereIn('tanda_terimas.id', $idsByType['tt']) : $q->whereRaw('1=0');
+            ->when($idsByType, function ($q) use ($idsByType) {
+                return ! empty($idsByType['tt']) ? $q->whereIn('tanda_terimas.id', $idsByType['tt']) : $q->whereRaw('1=0');
             });
 
         // Tanda Terima Tanpa SJ
@@ -401,22 +415,22 @@ class AsuransiTandaTerimaController extends Controller
             ->leftJoin('asuransi_tanda_terimas', 'tanda_terima_tanpa_surat_jalan.id', '=', 'asuransi_tanda_terimas.tanda_terima_tanpa_sj_id')
             ->leftJoin('vendor_asuransi', 'asuransi_tanda_terimas.vendor_asuransi_id', '=', 'vendor_asuransi.id')
             ->select(
-                'tanda_terima_tanpa_surat_jalan.id', 
-                DB::raw("'tttsj' as type"), 
-                'tanda_terima_tanpa_surat_jalan.no_tanda_terima as number', 
-                'tanda_terima_tanpa_surat_jalan.tanggal_tanda_terima as date', 
-                'tanda_terima_tanpa_surat_jalan.pengirim', 
-                'tanda_terima_tanpa_surat_jalan.penerima', 
-                'tanda_terima_tanpa_surat_jalan.no_kontainer', 
-                DB::raw('COALESCE(tanda_terima_tanpa_surat_jalan.nama_barang, tanda_terima_tanpa_surat_jalan.jenis_barang) as nama_barang'), 
+                'tanda_terima_tanpa_surat_jalan.id',
+                DB::raw("'tttsj' as type"),
+                'tanda_terima_tanpa_surat_jalan.no_tanda_terima as number',
+                'tanda_terima_tanpa_surat_jalan.tanggal_tanda_terima as date',
+                'tanda_terima_tanpa_surat_jalan.pengirim',
+                'tanda_terima_tanpa_surat_jalan.penerima',
+                'tanda_terima_tanpa_surat_jalan.no_kontainer',
+                DB::raw('COALESCE(tanda_terima_tanpa_surat_jalan.nama_barang, tanda_terima_tanpa_surat_jalan.jenis_barang) as nama_barang'),
                 DB::raw('NULL as raw_dimensi_details'),
-                'tanda_terima_tanpa_surat_jalan.jumlah_barang as kuantitas', 
-                'tanda_terima_tanpa_surat_jalan.satuan_barang as satuan', 
-                'tanda_terima_tanpa_surat_jalan.created_at', 
+                'tanda_terima_tanpa_surat_jalan.jumlah_barang as kuantitas',
+                'tanda_terima_tanpa_surat_jalan.satuan_barang as satuan',
+                'tanda_terima_tanpa_surat_jalan.created_at',
                 DB::raw('NULL as deleted_at')
             )
-            ->when($search, function($q) use ($search) {
-                $q->where(function($sub) use ($search) {
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
                     $sub->where('tanda_terima_tanpa_surat_jalan.no_tanda_terima', 'like', "%{$search}%")
                         ->orWhere('tanda_terima_tanpa_surat_jalan.pengirim', 'like', "%{$search}%")
                         ->orWhere('tanda_terima_tanpa_surat_jalan.penerima', 'like', "%{$search}%")
@@ -427,14 +441,14 @@ class AsuransiTandaTerimaController extends Controller
                         ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
                 });
             })
-            ->when($dari_tanggal, function($q) use ($dari_tanggal) {
+            ->when($dari_tanggal, function ($q) use ($dari_tanggal) {
                 return $q->whereDate('tanda_terima_tanpa_surat_jalan.tanggal_tanda_terima', '>=', $dari_tanggal);
             })
-            ->when($sampai_tanggal, function($q) use ($sampai_tanggal) {
+            ->when($sampai_tanggal, function ($q) use ($sampai_tanggal) {
                 return $q->whereDate('tanda_terima_tanpa_surat_jalan.tanggal_tanda_terima', '<=', $sampai_tanggal);
             })
-            ->when($idsByType, function($q) use ($idsByType) {
-                return !empty($idsByType['tttsj']) ? $q->whereIn('tanda_terima_tanpa_surat_jalan.id', $idsByType['tttsj']) : $q->whereRaw('1=0');
+            ->when($idsByType, function ($q) use ($idsByType) {
+                return ! empty($idsByType['tttsj']) ? $q->whereIn('tanda_terima_tanpa_surat_jalan.id', $idsByType['tttsj']) : $q->whereRaw('1=0');
             });
 
         // Tanda Terima LCL
@@ -443,56 +457,61 @@ class AsuransiTandaTerimaController extends Controller
             ->leftJoin('asuransi_tanda_terimas', 'tanda_terimas_lcl.id', '=', 'asuransi_tanda_terimas.tanda_terima_lcl_id')
             ->leftJoin('vendor_asuransi', 'asuransi_tanda_terimas.vendor_asuransi_id', '=', 'vendor_asuransi.id')
             ->select(
-                'tanda_terimas_lcl.id', 
-                DB::raw("'lcl' as type"), 
-                'tanda_terimas_lcl.nomor_tanda_terima as number', 
-                'tanda_terimas_lcl.tanggal_tanda_terima as date', 
-                'tanda_terimas_lcl.nama_pengirim as pengirim', 
-                'tanda_terimas_lcl.nama_penerima as penerima', 
+                'tanda_terimas_lcl.id',
+                DB::raw("'lcl' as type"),
+                'tanda_terimas_lcl.nomor_tanda_terima as number',
+                'tanda_terimas_lcl.tanggal_tanda_terima as date',
+                'tanda_terimas_lcl.nama_pengirim as pengirim',
+                'tanda_terimas_lcl.nama_penerima as penerima',
                 DB::raw('GROUP_CONCAT(DISTINCT tanda_terima_lcl_kontainer_pivot.nomor_kontainer SEPARATOR ", ") as no_kontainer'),
                 DB::raw('(SELECT GROUP_CONCAT(nama_barang SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as nama_barang'),
                 DB::raw('NULL as raw_dimensi_details'),
                 DB::raw('(SELECT SUM(jumlah) FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as kuantitas'),
                 DB::raw('(SELECT GROUP_CONCAT(DISTINCT satuan SEPARATOR ", ") FROM tanda_terima_lcl_items WHERE tanda_terima_lcl_id = tanda_terimas_lcl.id) as satuan'),
-                'tanda_terimas_lcl.created_at', 
+                'tanda_terimas_lcl.created_at',
                 'tanda_terimas_lcl.deleted_at'
             )
             ->whereNull('tanda_terimas_lcl.deleted_at')
             ->groupBy('tanda_terimas_lcl.id', 'type', 'number', 'date', 'pengirim', 'penerima', 'tanda_terimas_lcl.created_at', 'tanda_terimas_lcl.deleted_at')
-            ->when($search, function($q) use ($search) {
-                $q->where(function($sub) use ($search) {
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
                     $sub->where('tanda_terimas_lcl.nomor_tanda_terima', 'like', "%{$search}%")
-                       ->orWhere('tanda_terimas_lcl.nama_pengirim', 'like', "%{$search}%")
-                       ->orWhere('tanda_terimas_lcl.nama_penerima', 'like', "%{$search}%")
-                       ->orWhere('tanda_terima_lcl_kontainer_pivot.nomor_kontainer', 'like', "%{$search}%")
-                       ->orWhere('asuransi_tanda_terimas.nomor_polis', 'like', "%{$search}%")
-                       ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
+                        ->orWhere('tanda_terimas_lcl.nama_pengirim', 'like', "%{$search}%")
+                        ->orWhere('tanda_terimas_lcl.nama_penerima', 'like', "%{$search}%")
+                        ->orWhere('tanda_terima_lcl_kontainer_pivot.nomor_kontainer', 'like', "%{$search}%")
+                        ->orWhere('asuransi_tanda_terimas.nomor_polis', 'like', "%{$search}%")
+                        ->orWhere('vendor_asuransi.nama_asuransi', 'like', "%{$search}%");
                 });
             })
-            ->when($dari_tanggal, function($q) use ($dari_tanggal) {
+            ->when($dari_tanggal, function ($q) use ($dari_tanggal) {
                 return $q->whereDate('tanda_terimas_lcl.tanggal_tanda_terima', '>=', $dari_tanggal);
             })
-            ->when($sampai_tanggal, function($q) use ($sampai_tanggal) {
+            ->when($sampai_tanggal, function ($q) use ($sampai_tanggal) {
                 return $q->whereDate('tanda_terimas_lcl.tanggal_tanda_terima', '<=', $sampai_tanggal);
             })
-            ->when($idsByType, function($q) use ($idsByType) {
-                return !empty($idsByType['lcl']) ? $q->whereIn('tanda_terimas_lcl.id', $idsByType['lcl']) : $q->whereRaw('1=0');
+            ->when($idsByType, function ($q) use ($idsByType) {
+                return ! empty($idsByType['lcl']) ? $q->whereIn('tanda_terimas_lcl.id', $idsByType['lcl']) : $q->whereRaw('1=0');
             });
+
         return $tt->union($tttsj)->union($lcl);
     }
 
     public function create(Request $request)
     {
         $vendors = VendorAsuransi::orderBy('nama_asuransi')->get();
-        
+
         $selectedType = $request->type;
         $selectedId = $request->id;
-        
+
         $selectedReceipt = null;
         if ($selectedType && $selectedId) {
-            if ($selectedType == 'tt') $selectedReceipt = TandaTerima::find($selectedId);
-            elseif ($selectedType == 'tttsj') $selectedReceipt = TandaTerimaTanpaSuratJalan::find($selectedId);
-            elseif ($selectedType == 'lcl') $selectedReceipt = TandaTerimaLcl::find($selectedId);
+            if ($selectedType == 'tt') {
+                $selectedReceipt = TandaTerima::find($selectedId);
+            } elseif ($selectedType == 'tttsj') {
+                $selectedReceipt = TandaTerimaTanpaSuratJalan::find($selectedId);
+            } elseif ($selectedType == 'lcl') {
+                $selectedReceipt = TandaTerimaLcl::find($selectedId);
+            }
         }
 
         $tandaTerimas = TandaTerima::latest()->limit(20)->get();
@@ -518,12 +537,12 @@ class AsuransiTandaTerimaController extends Controller
 
         $data = $request->only([
             'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 'keterangan',
-            'nomor_urut', 'nama_kapal', 'nomor_voyage'
+            'nomor_urut', 'nama_kapal', 'nomor_voyage',
         ]);
-        
+
         $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
         $rate = $request->asuransi_rate ?? ($vendor->tarif ?? 0);
-        
+
         $data['nilai_barang'] = $request->nilai_barang;
         $data['asuransi_rate'] = $rate;
         $data['premi'] = $request->nilai_barang * ($rate / 100);
@@ -554,6 +573,7 @@ class AsuransiTandaTerimaController extends Controller
     public function show(AsuransiTandaTerima $asuransiTandaTerima)
     {
         $asuransiTandaTerima->load(['vendorAsuransi', 'tandaTerima', 'tandaTerimaTanpaSj', 'tandaTerimaLcl', 'creator', 'updater']);
+
         return view('asuransi-tanda-terima.show', compact('asuransiTandaTerima'));
     }
 
@@ -561,6 +581,7 @@ class AsuransiTandaTerimaController extends Controller
     {
         $vendors = VendorAsuransi::orderBy('nama_asuransi')->get();
         $masterKapals = MasterKapal::orderBy('nama_kapal')->get();
+
         return view('asuransi-tanda-terima.edit', compact('asuransiTandaTerima', 'vendors', 'masterKapals'));
     }
 
@@ -577,7 +598,7 @@ class AsuransiTandaTerimaController extends Controller
 
         $data = $request->only([
             'vendor_asuransi_id', 'nomor_polis', 'tanggal_polis', 'keterangan',
-            'nomor_urut', 'nama_kapal', 'nomor_voyage'
+            'nomor_urut', 'nama_kapal', 'nomor_voyage',
         ]);
 
         $vendor = VendorAsuransi::find($request->vendor_asuransi_id);
@@ -610,6 +631,7 @@ class AsuransiTandaTerimaController extends Controller
             Storage::disk('public')->delete($asuransiTandaTerima->asuransi_path);
         }
         $asuransiTandaTerima->delete();
+
         return redirect()->route('asuransi-tanda-terima.index')->with('success', 'Data asuransi berhasil dihapus.');
     }
 
@@ -633,7 +655,7 @@ class AsuransiTandaTerimaController extends Controller
             if ($tt) {
                 $details['no_kontainer'] = $tt->no_kontainer ?? ($tt->suratJalan->no_kontainer ?? '-');
                 $details['no_surat_jalan'] = $tt->no_surat_jalan ?? '-';
-                
+
                 // Logic for Cargo type
                 $tipeKontainer = strtolower($tt->tipe_kontainer ?? ($tt->suratJalan->tipe_kontainer ?? ''));
                 if ($tipeKontainer == 'cargo') {
@@ -650,27 +672,27 @@ class AsuransiTandaTerimaController extends Controller
                     if (is_string($dimensiItems)) {
                         $dimensiItems = json_decode($dimensiItems, true);
                     }
-                    if (is_array($dimensiItems) && !empty($dimensiItems)) {
+                    if (is_array($dimensiItems) && ! empty($dimensiItems)) {
                         $names = [];
                         foreach ($dimensiItems as $item) {
-                            if (!empty($item['nama_barang'])) {
+                            if (! empty($item['nama_barang'])) {
                                 $names[] = $item['nama_barang'];
                             }
                         }
-                        if (!empty($names)) {
+                        if (! empty($names)) {
                             $namaBarang = implode(', ', $names);
                         }
                     }
                 }
-                
+
                 if (is_array($namaBarang)) {
                     $namaBarang = implode(', ', $namaBarang);
                 }
 
                 $details['nama_barang'] = $namaBarang ?: ($tt->suratJalan->jenis_barang ?? '-');
-                $details['jumlah_barang'] = (string)($tt->jumlah ?? ($tt->suratJalan->jumlah_kontainer ?? '-'));
+                $details['jumlah_barang'] = (string) ($tt->jumlah ?? ($tt->suratJalan->jumlah_kontainer ?? '-'));
                 $details['satuan'] = $tt->satuan ?? '-';
-                
+
                 // Get ship info from Tanda Terima or related Prospek
                 $details['nama_kapal'] = $tt->estimasi_nama_kapal ?? '-';
                 $prospek = $tt->prospeks()->first();
@@ -683,25 +705,29 @@ class AsuransiTandaTerimaController extends Controller
 
                 // Images
                 $images = $tt->gambar_checkpoint;
-                if (is_string($images)) $images = json_decode($images, true);
+                if (is_string($images)) {
+                    $images = json_decode($images, true);
+                }
                 if (is_array($images)) {
                     foreach ($images as $img) {
                         if ($img) {
                             $path = str_replace('public/', '', $img);
-                            $details['images'][] = '/storage/' . $path;
+                            $details['images'][] = '/storage/'.$path;
                         }
                     }
                 }
-                
+
                 // SJ Images fallback
                 if (empty($details['images']) && $tt->suratJalan && $tt->suratJalan->gambar_checkpoint) {
                     $sjImages = $tt->suratJalan->gambar_checkpoint;
-                    if (is_string($sjImages)) $sjImages = json_decode($sjImages, true);
+                    if (is_string($sjImages)) {
+                        $sjImages = json_decode($sjImages, true);
+                    }
                     if (is_array($sjImages)) {
                         foreach ($sjImages as $img) {
                             if ($img) {
                                 $path = str_replace('public/', '', $img);
-                                $details['images'][] = '/storage/' . $path;
+                                $details['images'][] = '/storage/'.$path;
                             }
                         }
                     }
@@ -713,18 +739,20 @@ class AsuransiTandaTerimaController extends Controller
                 $details['no_kontainer'] = $tttsj->no_kontainer ?? '-';
                 $details['no_surat_jalan'] = $tttsj->nomor_surat_jalan_customer ?? '-';
                 $details['nama_barang'] = $tttsj->nama_barang ?? '-';
-                $details['jumlah_barang'] = (string)($tttsj->jumlah_barang ?? '-');
+                $details['jumlah_barang'] = (string) ($tttsj->jumlah_barang ?? '-');
                 $details['satuan'] = $tttsj->satuan_barang ?? '-';
                 $details['size_kontainer'] = $tttsj->size_kontainer ?? '-';
 
                 // Images
                 $images = $tttsj->gambar_tanda_terima;
-                if (is_string($images)) $images = json_decode($images, true);
+                if (is_string($images)) {
+                    $images = json_decode($images, true);
+                }
                 if (is_array($images)) {
                     foreach ($images as $img) {
                         if ($img) {
                             $path = str_replace('public/', '', $img);
-                            $details['images'][] = '/storage/' . $path;
+                            $details['images'][] = '/storage/'.$path;
                         }
                     }
                 }
@@ -735,18 +763,20 @@ class AsuransiTandaTerimaController extends Controller
                 $details['no_kontainer'] = $lcl->nomor_kontainer ?? '-';
                 $details['no_surat_jalan'] = $lcl->no_surat_jalan_customer ?? '-';
                 $details['nama_barang'] = $lcl->items->pluck('nama_barang')->filter()->unique()->implode(', ') ?: '-';
-                $details['jumlah_barang'] = (string)($lcl->items->sum('jumlah') ?: '-');
+                $details['jumlah_barang'] = (string) ($lcl->items->sum('jumlah') ?: '-');
                 $details['satuan'] = $lcl->items->pluck('satuan')->filter()->unique()->implode(', ') ?: '-';
                 $details['size_kontainer'] = $lcl->kontainerPivot->pluck('size_kontainer')->filter()->unique()->implode(', ') ?: '-';
 
                 // Images
                 $images = $lcl->gambar_surat_jalan;
-                if (is_string($images)) $images = json_decode($images, true);
+                if (is_string($images)) {
+                    $images = json_decode($images, true);
+                }
                 if (is_array($images)) {
                     foreach ($images as $img) {
                         if ($img) {
                             $path = str_replace('public/', '', $img);
-                            $details['images'][] = '/storage/' . $path;
+                            $details['images'][] = '/storage/'.$path;
                         }
                     }
                 }
@@ -756,4 +786,3 @@ class AsuransiTandaTerimaController extends Controller
         return response()->json($details);
     }
 }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            

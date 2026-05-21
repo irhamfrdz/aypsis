@@ -27,7 +27,7 @@ class UangJalanBatam extends Model
         'jumlah_total',
         'memo',
         'status',
-        'created_by'
+        'created_by',
     ];
 
     protected $casts = [
@@ -39,7 +39,7 @@ class UangJalanBatam extends Model
         'jumlah_parkir' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'jumlah_penyesuaian' => 'decimal:2',
-        'jumlah_total' => 'decimal:2'
+        'jumlah_total' => 'decimal:2',
     ];
 
     /**
@@ -64,9 +64,9 @@ class UangJalanBatam extends Model
     public function pranotaUangJalanBatams()
     {
         return $this->belongsToMany(
-            PranotaUangJalanBatam::class, 
-            'pranota_uang_jalan_batam_items', 
-            'uang_jalan_batam_id', 
+            PranotaUangJalanBatam::class,
+            'pranota_uang_jalan_batam_items',
+            'uang_jalan_batam_id',
             'pranota_uang_jalan_batam_id'
         )->withTimestamps();
     }
@@ -79,6 +79,7 @@ class UangJalanBatam extends Model
         if ($status && $status !== 'all') {
             return $query->where('status', $status);
         }
+
         return $query;
     }
 
@@ -93,6 +94,7 @@ class UangJalanBatam extends Model
         if ($tanggalSampai) {
             $query->whereDate('tanggal_uang_jalan', '<=', $tanggalSampai);
         }
+
         return $query;
     }
 
@@ -106,7 +108,7 @@ class UangJalanBatam extends Model
             'belum_masuk_pranota' => 'Belum Masuk Pranota',
             'sudah_masuk_pranota' => 'Sudah Masuk Pranota',
             'lunas' => 'Lunas',
-            'dibatalkan' => 'Dibatalkan'
+            'dibatalkan' => 'Dibatalkan',
         ];
     }
 
@@ -119,19 +121,19 @@ class UangJalanBatam extends Model
         $now = now();
         $month = $now->format('m');
         $year = $now->format('y');
-        
+
         $lastRecord = static::withTrashed()->whereNotNull('nomor_uang_jalan')
-                           ->where('nomor_uang_jalan', 'LIKE', 'UJBTM%')
-                           ->orderByRaw('CAST(SUBSTRING(nomor_uang_jalan, -6) AS UNSIGNED) DESC')
-                           ->first();
-        
+            ->where('nomor_uang_jalan', 'LIKE', 'UJBTM%')
+            ->orderByRaw('CAST(SUBSTRING(nomor_uang_jalan, -6) AS UNSIGNED) DESC')
+            ->first();
+
         $runningNumber = 1;
-        
+
         if ($lastRecord && $lastRecord->nomor_uang_jalan) {
             $lastNumber = substr($lastRecord->nomor_uang_jalan, -6);
             $runningNumber = intval($lastNumber) + 1;
         }
-        
-        return 'UJBTM' . $month . $year . str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
+
+        return 'UJBTM'.$month.$year.str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
     }
 }

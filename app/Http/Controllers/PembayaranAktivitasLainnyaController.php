@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PembayaranAktivitasLainnya;
 use App\Models\Coa;
+use App\Models\PembayaranAktivitasLainnya;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class PembayaranAktivitasLainnyaController extends Controller
 {
@@ -35,16 +34,16 @@ class PembayaranAktivitasLainnyaController extends Controller
 
         // Filter berdasarkan nomor voyage
         if ($request->filled('nomor_voyage')) {
-            $query->where('nomor_voyage', 'like', '%' . $request->nomor_voyage . '%');
+            $query->where('nomor_voyage', 'like', '%'.$request->nomor_voyage.'%');
         }
 
         // Search
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('nomor_pembayaran', 'like', '%' . $request->search . '%')
-                  ->orWhere('aktivitas_pembayaran', 'like', '%' . $request->search . '%')
-                  ->orWhere('nomor_voyage', 'like', '%' . $request->search . '%')
-                  ->orWhere('nama_kapal', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('nomor_pembayaran', 'like', '%'.$request->search.'%')
+                    ->orWhere('aktivitas_pembayaran', 'like', '%'.$request->search.'%')
+                    ->orWhere('nomor_voyage', 'like', '%'.$request->search.'%')
+                    ->orWhere('nama_kapal', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -73,13 +72,13 @@ class PembayaranAktivitasLainnyaController extends Controller
         // Fetch master supir (karyawan) untuk dropdown nama supir
         $masterSupir = \App\Models\Karyawan::whereNotNull('nama_lengkap')
             ->where('nama_lengkap', '!=', '')
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('divisi', 'LIKE', '%supir%')
-                      ->orWhere('divisi', 'LIKE', '%Supir%')
-                      ->orWhere('divisi', 'LIKE', '%SUPIR%')
-                      ->orWhere('pekerjaan', 'LIKE', '%supir%')
-                      ->orWhere('pekerjaan', 'LIKE', '%Supir%')
-                      ->orWhere('pekerjaan', 'LIKE', '%SUPIR%');
+                    ->orWhere('divisi', 'LIKE', '%Supir%')
+                    ->orWhere('divisi', 'LIKE', '%SUPIR%')
+                    ->orWhere('pekerjaan', 'LIKE', '%supir%')
+                    ->orWhere('pekerjaan', 'LIKE', '%Supir%')
+                    ->orWhere('pekerjaan', 'LIKE', '%SUPIR%');
             })
             ->orderBy('nama_lengkap')
             ->get();
@@ -129,7 +128,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             'pilih_bank.required' => 'Pilihan bank wajib dipilih.',
             'akun_biaya_id.required' => 'Akun biaya wajib dipilih.',
             'total_pembayaran.required' => 'Total pembayaran wajib diisi.',
-            'total_pembayaran.min' => 'Total pembayaran harus lebih dari 0.'
+            'total_pembayaran.min' => 'Total pembayaran harus lebih dari 0.',
         ]);
 
         try {
@@ -172,19 +171,20 @@ class PembayaranAktivitasLainnyaController extends Controller
             Log::info('Pembayaran aktivitas lainnya berhasil dibuat', [
                 'nomor_pembayaran' => $nomorPembayaran,
                 'amount' => $totalPembayaran,
-                'jenis_transaksi' => $request->jenis_transaksi
+                'jenis_transaksi' => $request->jenis_transaksi,
             ]);
 
             DB::commit();
 
             return redirect()->route('pembayaran-aktivitas-lainnya.index')
-                ->with('success', 'Pembayaran berhasil disimpan dengan nomor: ' . $pembayaran->nomor_pembayaran);
+                ->with('success', 'Pembayaran berhasil disimpan dengan nomor: '.$pembayaran->nomor_pembayaran);
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to create pembayaran aktivitas lainnya', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage())
+                ->with('error', 'Gagal membuat pembayaran: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -195,6 +195,7 @@ class PembayaranAktivitasLainnyaController extends Controller
     public function show(PembayaranAktivitasLainnya $pembayaranAktivitasLainnya)
     {
         $pembayaranAktivitasLainnya->load(['creator', 'approver', 'akunBank', 'akunBiaya', 'supirList.supir']);
+
         return view('pembayaran-aktivitas-lainnya.show', compact('pembayaranAktivitasLainnya'));
     }
 
@@ -321,8 +322,9 @@ class PembayaranAktivitasLainnyaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to update pembayaran aktivitas lainnya', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal mengupdate pembayaran: ' . $e->getMessage())
+                ->with('error', 'Gagal mengupdate pembayaran: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -364,8 +366,9 @@ class PembayaranAktivitasLainnyaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to delete pembayaran aktivitas lainnya', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Gagal menghapus pembayaran: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus pembayaran: '.$e->getMessage());
         }
     }
 
@@ -392,7 +395,8 @@ class PembayaranAktivitasLainnyaController extends Controller
             return redirect()->back()->with('success', 'Pembayaran berhasil diapprove.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal approve pembayaran: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal approve pembayaran: '.$e->getMessage());
         }
     }
 
@@ -417,7 +421,8 @@ class PembayaranAktivitasLainnyaController extends Controller
             return redirect()->back()->with('success', 'Pembayaran berhasil ditandai sebagai paid.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal menandai sebagai paid: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal menandai sebagai paid: '.$e->getMessage());
         }
     }
 }

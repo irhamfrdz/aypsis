@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -22,8 +20,8 @@ return new class extends Migration
         foreach ($permissions as $permission) {
             // Check if permission already exists to avoid duplicates
             $existing = DB::table('permissions')->where('name', $permission['name'])->first();
-            
-            if (!$existing) {
+
+            if (! $existing) {
                 $permissionId = DB::table('permissions')->insertGetId(array_merge($permission, [
                     'created_at' => now(),
                     'updated_at' => now(),

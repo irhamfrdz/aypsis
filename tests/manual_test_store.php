@@ -1,14 +1,14 @@
 <?php
-// Manual test to call PranotaUangRitController@store
-require __DIR__ . '/../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../bootstrap/app.php';
+// Manual test to call PranotaUangRitController@store
+require __DIR__.'/../vendor/autoload.php';
+
+$app = require_once __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\PranotaUangRitController;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 
 try {
     echo "Starting manual store test...\n";
@@ -37,7 +37,7 @@ try {
     // For test, we set created_by via simulating a user id in Auth facade by binding a dummy user
     \Auth::shouldReceive('id')->andReturn(1);
 
-    $controller = new PranotaUangRitController();
+    $controller = new PranotaUangRitController;
 
     // Call store
     $response = $controller->store($request);
@@ -46,8 +46,8 @@ try {
 
 } catch (\Exception $e) {
     echo "Exception caught:\n";
-    echo $e->getMessage() . "\n";
-    echo $e->getTraceAsString() . "\n";
+    echo $e->getMessage()."\n";
+    echo $e->getTraceAsString()."\n";
 }
 
 echo "Done.\n";

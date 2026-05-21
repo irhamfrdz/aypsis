@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-
-
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
 class PembayaranOb extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $table = 'pembayaran_obs';
 
     protected $fillable = [
@@ -88,6 +87,7 @@ class PembayaranOb extends Model
     public function calculateTotalPembayaran()
     {
         $jumlahSupir = count($this->supir_ids ?? []);
+
         return $jumlahSupir * $this->jumlah_per_supir;
     }
 
@@ -102,7 +102,7 @@ class PembayaranOb extends Model
 
         // Get COA info untuk kode bank
         $coa = \App\Models\Coa::find($coaId);
-        if (!$coa) {
+        if (! $coa) {
             throw new \Exception('COA tidak ditemukan.');
         }
 
@@ -114,7 +114,7 @@ class PembayaranOb extends Model
             ->lockForUpdate()
             ->first();
 
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             throw new \Exception('Modul nomor_pembayaran tidak ditemukan di master nomor terakhir.');
         }
 

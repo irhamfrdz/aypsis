@@ -33,6 +33,7 @@ class FixDuplicateManifests extends Command
 
         if ($duplicates->isEmpty()) {
             $this->info('No duplicate manifests found.');
+
             return;
         }
 
@@ -53,14 +54,14 @@ class FixDuplicateManifests extends Command
 
             // Keep the first one (latest ID), delete the rest
             $keepId = array_shift($ids);
-            
-            if (!empty($ids)) {
+
+            if (! empty($ids)) {
                 $deleted = \Illuminate\Support\Facades\DB::table('manifests')
                     ->whereIn('id', $ids)
                     ->delete();
-                
+
                 $this->line("  - Kept ID: $keepId");
-                $this->line("  - Deleted IDs: " . implode(', ', $ids));
+                $this->line('  - Deleted IDs: '.implode(', ', $ids));
                 $totalDeleted += $deleted;
             }
         }

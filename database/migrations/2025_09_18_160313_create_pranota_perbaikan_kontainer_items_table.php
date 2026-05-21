@@ -21,11 +21,11 @@ return new class extends Migration
 
             // Foreign keys with custom names
             $table->foreign('pranota_perbaikan_kontainer_id', 'fk_pranota_items_pranota')
-                  ->references('id')->on('pranota_perbaikan_kontainers')
-                  ->onDelete('cascade');
+                ->references('id')->on('pranota_perbaikan_kontainers')
+                ->onDelete('cascade');
             $table->foreign('perbaikan_kontainer_id', 'fk_pranota_items_perbaikan')
-                  ->references('id')->on('perbaikan_kontainers')
-                  ->onDelete('cascade');
+                ->references('id')->on('perbaikan_kontainers')
+                ->onDelete('cascade');
 
             // Unique constraint with custom name
             $table->unique(['pranota_perbaikan_kontainer_id', 'perbaikan_kontainer_id'], 'unique_pranota_perbaikan_item');

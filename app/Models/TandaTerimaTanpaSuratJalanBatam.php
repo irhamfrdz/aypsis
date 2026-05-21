@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\AsuransiManageable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\AsuransiManageable;
 
 class TandaTerimaTanpaSuratJalanBatam extends Model
 {
-    use HasFactory, AsuransiManageable;
+    use AsuransiManageable, HasFactory;
 
     protected $table = 'tanda_terima_tanpa_surat_jalan_batams';
 
@@ -94,9 +94,9 @@ class TandaTerimaTanpaSuratJalanBatam extends Model
 
         // Get last number for current month
         $lastRecord = self::whereYear('tanggal_tanda_terima', $year)
-                         ->whereMonth('tanggal_tanda_terima', $month)
-                         ->orderBy('no_tanda_terima', 'desc')
-                         ->first();
+            ->whereMonth('tanggal_tanda_terima', $month)
+            ->orderBy('no_tanda_terima', 'desc')
+            ->first();
 
         if ($lastRecord) {
             // Extract number from last record
@@ -106,7 +106,7 @@ class TandaTerimaTanpaSuratJalanBatam extends Model
             $newNumber = 1;
         }
 
-        return 'TTTSJB/' . $year . '/' . $month . '/' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        return 'TTTSJB/'.$year.'/'.$month.'/'.str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -122,14 +122,14 @@ class TandaTerimaTanpaSuratJalanBatam extends Model
      */
     public function scopeSearch($query, $search)
     {
-        return $query->where(function($q) use ($search) {
+        return $query->where(function ($q) use ($search) {
             $q->where('no_tanda_terima', 'like', "%{$search}%")
-              ->orWhere('penerima', 'like', "%{$search}%")
-              ->orWhere('pengirim', 'like', "%{$search}%")
-              ->orWhere('jenis_barang', 'like', "%{$search}%")
-              ->orWhere('no_kontainer', 'like', "%{$search}%")
-              ->orWhere('nama_barang', 'like', "%{$search}%")
-              ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
+                ->orWhere('penerima', 'like', "%{$search}%")
+                ->orWhere('pengirim', 'like', "%{$search}%")
+                ->orWhere('jenis_barang', 'like', "%{$search}%")
+                ->orWhere('no_kontainer', 'like', "%{$search}%")
+                ->orWhere('nama_barang', 'like', "%{$search}%")
+                ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
         });
     }
 

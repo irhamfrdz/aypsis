@@ -36,7 +36,7 @@ class PelamarKaryawan extends Model
         'email',
         'kontak_darurat',
         'cv_path',
-        'status'
+        'status',
     ];
 
     protected $casts = [

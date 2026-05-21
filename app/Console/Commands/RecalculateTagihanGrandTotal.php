@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\PranotaTagihanKontainerSewa;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class RecalculateTagihanGrandTotal extends Command
@@ -30,25 +30,27 @@ class RecalculateTagihanGrandTotal extends Command
     {
         $startTime = now();
         $this->info('🔄 Starting Grand Total Recalculation for Tagihan Kontainer Sewa...');
-        $this->info('Started at: ' . $startTime->format('Y-m-d H:i:s'));
+        $this->info('Started at: '.$startTime->format('Y-m-d H:i:s'));
         $this->newLine();
 
         // Get total count
         $totalCount = DaftarTagihanKontainerSewa::count();
-        
+
         if ($totalCount === 0) {
             $this->warn('No tagihan found in database.');
-            $this->info('Completed at: ' . now()->format('Y-m-d H:i:s'));
+            $this->info('Completed at: '.now()->format('Y-m-d H:i:s'));
+
             return 0;
         }
 
         $this->info("Found {$totalCount} tagihan records.");
-        
+
         // Show confirmation only if not forced
-        if (!$this->option('force')) {
+        if (! $this->option('force')) {
             $this->newLine();
-            if (!$this->confirm('Do you want to proceed with recalculation?', true)) {
+            if (! $this->confirm('Do you want to proceed with recalculation?', true)) {
                 $this->warn('Operation cancelled.');
+
                 return 1;
             }
         }
@@ -58,8 +60,8 @@ class RecalculateTagihanGrandTotal extends Command
         // Create progress bar (skip for non-interactive/scheduled mode)
         $progressBar = null;
         $isForced = $this->option('force');
-        
-        if (!$isForced) {
+
+        if (! $isForced) {
             $progressBar = $this->output->createProgressBar($totalCount);
             $progressBar->start();
         }
@@ -81,10 +83,10 @@ class RecalculateTagihanGrandTotal extends Command
 
                         // Recalculate taxes
                         $tagihan->recalculateTaxes();
-                        
+
                         // Calculate new grand total (this will be done automatically in save)
                         $tagihan->calculateGrandTotal();
-                        
+
                         // Check if changed
                         if (abs($oldGrandTotal - $tagihan->grand_total) > 0.01) {
                             // Save without triggering boot again
@@ -99,7 +101,7 @@ class RecalculateTagihanGrandTotal extends Command
                         $errors[] = [
                             'id' => $tagihan->id,
                             'container' => $tagihan->nomor_kontainer,
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
                         ];
                     }
 
@@ -121,10 +123,10 @@ class RecalculateTagihanGrandTotal extends Command
 
             // Display results
             $this->info('✅ Recalculation completed!');
-            $this->info('Completed at: ' . $endTime->format('Y-m-d H:i:s'));
-            $this->info('Duration: ' . $duration . ' seconds');
+            $this->info('Completed at: '.$endTime->format('Y-m-d H:i:s'));
+            $this->info('Duration: '.$duration.' seconds');
             $this->newLine();
-            
+
             $this->table(
                 ['Status', 'Count'],
                 [
@@ -140,13 +142,13 @@ class RecalculateTagihanGrandTotal extends Command
                 $this->error("⚠️  {$errorCount} errors occurred during recalculation:");
                 $this->table(
                     ['ID', 'Container', 'Error'],
-                    array_map(function($error) {
+                    array_map(function ($error) {
                         return [$error['id'], $error['container'], $error['error']];
                     }, array_slice($errors, 0, 10)) // Show first 10 errors
                 );
-                
+
                 if (count($errors) > 10) {
-                    $this->warn('... and ' . (count($errors) - 10) . ' more errors.');
+                    $this->warn('... and '.(count($errors) - 10).' more errors.');
                 }
             }
 
@@ -154,21 +156,21 @@ class RecalculateTagihanGrandTotal extends Command
             if ($updatedCount > 0) {
                 $this->newLine();
                 $this->info('🔄 Updating pranota total amounts...');
-                
+
                 $affectedPranotaIds = DaftarTagihanKontainerSewa::whereNotNull('pranota_id')
                     ->distinct()
                     ->pluck('pranota_id');
-                
+
                 $pranotaUpdatedCount = 0;
-                
+
                 foreach ($affectedPranotaIds as $pranotaId) {
                     $pranota = PranotaTagihanKontainerSewa::find($pranotaId);
-                    
+
                     if ($pranota) {
                         $oldTotal = $pranota->total_amount;
                         $newTotal = DaftarTagihanKontainerSewa::where('pranota_id', $pranotaId)
                             ->sum('grand_total');
-                        
+
                         if (abs($oldTotal - $newTotal) > 0.01) {
                             $pranota->total_amount = $newTotal;
                             $pranota->jumlah_tagihan = DaftarTagihanKontainerSewa::where('pranota_id', $pranotaId)->count();
@@ -177,7 +179,7 @@ class RecalculateTagihanGrandTotal extends Command
                         }
                     }
                 }
-                
+
                 $this->info("✅ Updated {$pranotaUpdatedCount} pranota records.");
             }
 
@@ -188,8 +190,9 @@ class RecalculateTagihanGrandTotal extends Command
 
         } catch (\Exception $e) {
             DB::rollback();
-            $this->error('❌ Error during recalculation: ' . $e->getMessage());
-            $this->info('Completed at: ' . now()->format('Y-m-d H:i:s'));
+            $this->error('❌ Error during recalculation: '.$e->getMessage());
+            $this->info('Completed at: '.now()->format('Y-m-d H:i:s'));
+
             return 1;
         }
     }

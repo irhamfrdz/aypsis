@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up()
     {
         // create a safe migration to drop the tagihan tables and any dependent tables/constraints
@@ -27,7 +28,7 @@ return new class extends Migration {
     public function down()
     {
         // recreate minimal structure to restore tables if needed for rollbacks
-        if (!Schema::hasTable('tagihan_kontainer_sewa')) {
+        if (! Schema::hasTable('tagihan_kontainer_sewa')) {
             Schema::create('tagihan_kontainer_sewa', function (Blueprint $table) {
                 $table->id();
                 $table->string('vendor')->nullable();
@@ -43,7 +44,7 @@ return new class extends Migration {
             });
         }
 
-        if (!Schema::hasTable('tagihan_kontainer_sewa_kontainers')) {
+        if (! Schema::hasTable('tagihan_kontainer_sewa_kontainers')) {
             Schema::create('tagihan_kontainer_sewa_kontainers', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tagihan_id')->nullable();

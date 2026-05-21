@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('master_kegiatans', function (Blueprint $table) {
             // Check if column doesn't exist before adding
-            if (!Schema::hasColumn('master_kegiatans', 'type')) {
+            if (! Schema::hasColumn('master_kegiatans', 'type')) {
                 $table->string('type', 50)->nullable()->after('nama_kegiatan')->comment('Tipe/jenis kegiatan');
             }
         });

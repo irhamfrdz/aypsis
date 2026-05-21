@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Gudang;
-use App\Models\StockKontainer;
-use App\Models\Kontainer;
 use App\Models\Karyawan;
-use App\Models\TagihanOb;
+use App\Models\Kontainer;
 use App\Models\MasterPricelistOb;
+use App\Models\StockKontainer;
+use App\Models\TagihanOb;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -30,8 +30,8 @@ class ObAntarGudangController extends Controller
     public function index(Request $request)
     {
         $gudangId = $request->input('gudang_id');
-        
-        if (!$gudangId) {
+
+        if (! $gudangId) {
             return redirect()->route('ob-antar-gudang.select')
                 ->with('error', 'Silakan pilih gudang terlebih dahulu.');
         }
@@ -47,13 +47,13 @@ class ObAntarGudangController extends Controller
 
         // Query stock_kontainers for this gudang
         $stockKontainersQuery = StockKontainer::where('gudangs_id', $gudangId);
-        
+
         if ($search) {
-            $stockKontainersQuery->where(function($q) use ($search) {
+            $stockKontainersQuery->where(function ($q) use ($search) {
                 $q->where('nomor_seri_gabungan', 'like', "%{$search}%")
-                  ->orWhere('awalan_kontainer', 'like', "%{$search}%")
-                  ->orWhere('nomor_seri_kontainer', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('awalan_kontainer', 'like', "%{$search}%")
+                    ->orWhere('nomor_seri_kontainer', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
@@ -76,13 +76,13 @@ class ObAntarGudangController extends Controller
 
         // Query kontainers for this gudang
         $kontainersQuery = Kontainer::where('gudangs_id', $gudangId);
-        
+
         if ($search) {
-            $kontainersQuery->where(function($q) use ($search) {
+            $kontainersQuery->where(function ($q) use ($search) {
                 $q->where('nomor_seri_gabungan', 'like', "%{$search}%")
-                  ->orWhere('awalan_kontainer', 'like', "%{$search}%")
-                  ->orWhere('nomor_seri_kontainer', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('awalan_kontainer', 'like', "%{$search}%")
+                    ->orWhere('nomor_seri_kontainer', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
@@ -110,13 +110,13 @@ class ObAntarGudangController extends Controller
 
         // Size breakdown
         $stockSizes = StockKontainer::where('gudangs_id', $gudangId)
-            ->selectRaw("ukuran, COUNT(*) as total")
+            ->selectRaw('ukuran, COUNT(*) as total')
             ->groupBy('ukuran')
             ->pluck('total', 'ukuran')
             ->toArray();
-            
+
         $kontainerSizes = Kontainer::where('gudangs_id', $gudangId)
-            ->selectRaw("ukuran, COUNT(*) as total")
+            ->selectRaw('ukuran, COUNT(*) as total')
             ->groupBy('ukuran')
             ->pluck('total', 'ukuran')
             ->toArray();
@@ -171,7 +171,7 @@ class ObAntarGudangController extends Controller
             $gudangTujuan = Gudang::find($validated['gudang_tujuan_id']);
             $pricelist = MasterPricelistOb::find($validated['pricelist_id']);
 
-            $tagihan = new TagihanOb();
+            $tagihan = new TagihanOb;
             $tagihan->kapal = 'ANTAR GUDANG';
             $tagihan->voyage = 'ANTAR GUDANG';
             $tagihan->kegiatan = 'ANTAR GUDANG';
@@ -180,21 +180,21 @@ class ObAntarGudangController extends Controller
             $tagihan->nama_supir = $validated['nama_supir'];
             $tagihan->status_kontainer = $pricelist->status_kontainer;
             $tagihan->barang = 'KOSONGAN / ISI (ANTAR GUDANG)';
-            $tagihan->keterangan = $validated['keterangan'] 
-                ?? ('Antar Gudang: ' . ($gudangAsal->nama_gudang ?? '-') . ' → ' . ($gudangTujuan->nama_gudang ?? '-'));
+            $tagihan->keterangan = $validated['keterangan']
+                ?? ('Antar Gudang: '.($gudangAsal->nama_gudang ?? '-').' → '.($gudangTujuan->nama_gudang ?? '-'));
             $tagihan->created_by = Auth::id();
 
             // Gunakan harga langsung dari pricelist yang dipilih
             $tagihan->biaya = $pricelist->biaya;
-            
+
             $tagihan->save();
 
             // Update gudang_id pada kontainer terkait (pindahkan ke gudang tujuan)
             if ($validated['source'] === 'stock') {
                 $stockModel = StockKontainer::where('gudangs_id', $validated['gudang_id'])
-                    ->where(function($q) use ($validated) {
+                    ->where(function ($q) use ($validated) {
                         $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
-                          ->orWhere(DB::raw("CONCAT(awalan_kontainer, nomor_seri_kontainer)"), $validated['nomor_kontainer']);
+                            ->orWhere(DB::raw('CONCAT(awalan_kontainer, nomor_seri_kontainer)'), $validated['nomor_kontainer']);
                     })->first();
 
                 if ($stockModel) {
@@ -209,15 +209,15 @@ class ObAntarGudangController extends Controller
                         'tanggal_kegiatan' => now(),
                         'asal_gudang_id' => $asalGudangId,
                         'gudang_id' => $validated['gudang_tujuan_id'],
-                        'keterangan' => 'OB Antar Gudang: ' . ($gudangAsal->nama_gudang ?? '-') . ' -> ' . ($gudangTujuan->nama_gudang ?? '-'),
+                        'keterangan' => 'OB Antar Gudang: '.($gudangAsal->nama_gudang ?? '-').' -> '.($gudangTujuan->nama_gudang ?? '-'),
                         'created_by' => Auth::id(),
                     ]);
                 }
             } else {
                 $kontainerModel = Kontainer::where('gudangs_id', $validated['gudang_id'])
-                    ->where(function($q) use ($validated) {
+                    ->where(function ($q) use ($validated) {
                         $q->where('nomor_seri_gabungan', $validated['nomor_kontainer'])
-                          ->orWhere(DB::raw("CONCAT(awalan_kontainer, nomor_seri_kontainer)"), $validated['nomor_kontainer']);
+                            ->orWhere(DB::raw('CONCAT(awalan_kontainer, nomor_seri_kontainer)'), $validated['nomor_kontainer']);
                     })->first();
 
                 if ($kontainerModel) {
@@ -232,7 +232,7 @@ class ObAntarGudangController extends Controller
                         'tanggal_kegiatan' => now(),
                         'asal_gudang_id' => $asalGudangId,
                         'gudang_id' => $validated['gudang_tujuan_id'],
-                        'keterangan' => 'OB Antar Gudang: ' . ($gudangAsal->nama_gudang ?? '-') . ' -> ' . ($gudangTujuan->nama_gudang ?? '-'),
+                        'keterangan' => 'OB Antar Gudang: '.($gudangAsal->nama_gudang ?? '-').' -> '.($gudangTujuan->nama_gudang ?? '-'),
                         'created_by' => Auth::id(),
                     ]);
                 }
@@ -240,10 +240,11 @@ class ObAntarGudangController extends Controller
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Tagihan OB Antar Gudang berhasil dibuat. Kontainer ' . $validated['nomor_kontainer'] . ' dipindahkan ke ' . ($gudangTujuan->nama_gudang ?? 'gudang tujuan') . '.');
+            return redirect()->back()->with('success', 'Tagihan OB Antar Gudang berhasil dibuat. Kontainer '.$validated['nomor_kontainer'].' dipindahkan ke '.($gudangTujuan->nama_gudang ?? 'gudang tujuan').'.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal membuat tagihan: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal membuat tagihan: '.$e->getMessage());
         }
     }
 }

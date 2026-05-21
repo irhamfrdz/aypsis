@@ -41,7 +41,7 @@ return new class extends Migration
                 'status_gate_in',
                 'tanggal_gate_in',
                 'terminal_id',
-                'service_id'
+                'service_id',
             ]);
         });
     }

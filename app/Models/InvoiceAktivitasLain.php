@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
 
 class InvoiceAktivitasLain extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'invoice_aktivitas_lain';
 
@@ -51,7 +51,7 @@ class InvoiceAktivitasLain extends Model
         'pbm_detail',
         'created_by',
         'approved_by',
-        'approved_at'
+        'approved_at',
     ];
 
     protected $casts = [
@@ -63,7 +63,7 @@ class InvoiceAktivitasLain extends Model
         'grand_total' => 'decimal:2',
         'biaya_materai' => 'decimal:2',
         'biaya_adjustment' => 'decimal:2',
-        'approved_at' => 'datetime'
+        'approved_at' => 'datetime',
     ];
 
     /**
@@ -117,7 +117,7 @@ class InvoiceAktivitasLain extends Model
             'invoice_aktivitas_lain_id',
             'pembayaran_invoice_aktivitas_lain_id'
         )->withPivot('jumlah_dibayar')
-          ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -125,12 +125,12 @@ class InvoiceAktivitasLain extends Model
      */
     public function getBlDetailsArrayAttribute()
     {
-        if (!$this->bl_details) {
+        if (! $this->bl_details) {
             return [];
         }
 
         $blDetails = json_decode($this->bl_details, true);
-        if (!is_array($blDetails)) {
+        if (! is_array($blDetails)) {
             return [];
         }
 
@@ -146,7 +146,7 @@ class InvoiceAktivitasLain extends Model
                         'nomor_kontainer' => $manifest->nomor_kontainer,
                         'no_voyage' => $manifest->no_voyage,
                         'nama_kapal' => $manifest->nama_kapal,
-                        'pengirim' => $manifest->pengirim
+                        'pengirim' => $manifest->pengirim,
                     ];
                 }
             } elseif (isset($item['bl_id'])) {
@@ -159,7 +159,7 @@ class InvoiceAktivitasLain extends Model
                         'nomor_kontainer' => $manifest->nomor_kontainer,
                         'no_voyage' => $manifest->no_voyage,
                         'nama_kapal' => $manifest->nama_kapal,
-                        'pengirim' => $manifest->pengirim
+                        'pengirim' => $manifest->pengirim,
                     ];
                 }
             }
@@ -213,12 +213,12 @@ class InvoiceAktivitasLain extends Model
      */
     public function getBarangDetailArrayAttribute()
     {
-        if (!$this->barang_detail) {
+        if (! $this->barang_detail) {
             return [];
         }
 
         $barangDetail = json_decode($this->barang_detail, true);
-        if (!is_array($barangDetail)) {
+        if (! is_array($barangDetail)) {
             return [];
         }
 
@@ -234,7 +234,7 @@ class InvoiceAktivitasLain extends Model
                         'size' => $pricelist->size,
                         'tipe' => $pricelist->tipe,
                         'tarif' => $pricelist->tarif,
-                        'subtotal' => ($item['jumlah'] ?? 0) * $pricelist->tarif
+                        'subtotal' => ($item['jumlah'] ?? 0) * $pricelist->tarif,
                     ];
                 }
             }
@@ -242,20 +242,21 @@ class InvoiceAktivitasLain extends Model
 
         return $result;
     }
-    
+
     /**
      * Accessor untuk detail pembayaran array
      */
     public function getDetailPembayaranArrayAttribute()
     {
-        if (!$this->detail_pembayaran) {
+        if (! $this->detail_pembayaran) {
             return [];
         }
 
         $detailPembayaran = json_decode($this->detail_pembayaran, true);
-        if (!is_array($detailPembayaran)) {
+        if (! is_array($detailPembayaran)) {
             return [];
         }
+
         return $detailPembayaran;
     }
 
@@ -264,12 +265,12 @@ class InvoiceAktivitasLain extends Model
      */
     public function getPbmDetailArrayAttribute()
     {
-        if (!$this->pbm_detail) {
+        if (! $this->pbm_detail) {
             return [];
         }
 
         $pbmDetail = json_decode($this->pbm_detail, true);
-        if (!is_array($pbmDetail)) {
+        if (! is_array($pbmDetail)) {
             return [];
         }
 

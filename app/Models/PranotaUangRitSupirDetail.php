@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Model;
 
 class PranotaUangRitSupirDetail extends Model
 {
@@ -51,7 +50,7 @@ class PranotaUangRitSupirDetail extends Model
         if ($value !== null) {
             return $value;
         }
-        
+
         // Otherwise, calculate it
         return $this->total_uang_supir - $this->hutang - $this->tabungan - $this->bpjs;
     }
@@ -62,6 +61,6 @@ class PranotaUangRitSupirDetail extends Model
     public function pranotaUangRits()
     {
         return $this->hasMany(PranotaUangRit::class, 'no_pranota', 'no_pranota')
-                    ->where('supir_nama', $this->supir_nama);
+            ->where('supir_nama', $this->supir_nama);
     }
 }

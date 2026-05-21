@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -17,7 +15,7 @@ return new class extends Migration
             ['name' => 'surat-jalan-batam-create', 'description' => 'Membuat Surat Jalan Batam'],
             ['name' => 'surat-jalan-batam-update', 'description' => 'Mengubah Surat Jalan Batam'],
             ['name' => 'surat-jalan-batam-delete', 'description' => 'Menghapus Surat Jalan Batam'],
-            ['name' => 'surat-jalan-batam-export', 'description' => 'Export data Surat Jalan Batam']
+            ['name' => 'surat-jalan-batam-export', 'description' => 'Export data Surat Jalan Batam'],
         ];
 
         // Insert permissions
@@ -27,7 +25,7 @@ return new class extends Migration
                 [
                     'description' => $permission['description'] ?? null,
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]
             );
         }
@@ -58,7 +56,7 @@ return new class extends Migration
             'surat-jalan-batam-create',
             'surat-jalan-batam-update',
             'surat-jalan-batam-delete',
-            'surat-jalan-batam-export'
+            'surat-jalan-batam-export',
         ];
 
         $adminRole = DB::table('roles')->where('name', 'like', '%administrator%')->orWhere('name', 'like', '%admin%')->first();

@@ -23,7 +23,7 @@ class DropBpjsJamsostekFromKaryawans extends Migration
      */
     public function down()
     {
-        if (!Schema::hasColumn('karyawans', 'bpjs_jamsostek')) {
+        if (! Schema::hasColumn('karyawans', 'bpjs_jamsostek')) {
             Schema::table('karyawans', function (Blueprint $table) {
                 $table->string('bpjs_jamsostek')->nullable()->after('jkn');
             });

@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\InvoiceAktivitasLain;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
 use App\Models\UangJalan;
 use App\Models\UangJalanAdjustment;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class SyncInvoiceAdjustments extends Command
@@ -32,7 +32,7 @@ class SyncInvoiceAdjustments extends Command
     public function handle()
     {
         $dryRun = $this->option('dry-run');
-        
+
         $invoices = InvoiceAktivitasLain::where('jenis_aktivitas', 'Pembayaran Adjustment Uang Jalan')
             ->where('jenis_penyesuaian', 'penambahan')
             ->get();
@@ -41,17 +41,18 @@ class SyncInvoiceAdjustments extends Command
 
         foreach ($invoices as $invoice) {
             $this->warn("Processing Invoice: {$invoice->nomor_invoice} (ID: {$invoice->id})");
-            
+
             $sjId = $invoice->surat_jalan_id;
-            if (!$sjId) {
-                $this->error("  No Surat Jalan ID found for this invoice. Skipping.");
+            if (! $sjId) {
+                $this->error('  No Surat Jalan ID found for this invoice. Skipping.');
+
                 continue;
             }
 
             // Determine source (regular or bongkar)
             $source = $invoice->surat_jalan_source;
             $sj = null;
-            
+
             if ($source === 'bongkar') {
                 $sj = SuratJalanBongkaran::find($sjId);
             } elseif ($source === 'regular') {
@@ -69,16 +70,18 @@ class SyncInvoiceAdjustments extends Command
                 }
             }
 
-            if (!$sj) {
+            if (! $sj) {
                 $this->error("  Associated Surat Jalan (ID: {$sjId}) not found in database. Skipping.");
+
                 continue;
             }
 
             $this->info("  Found SJ: {$sj->no_surat_jalan} (Source: {$source})");
 
             $details = json_decode($invoice->tipe_penyesuaian, true);
-            if (!is_array($details)) {
-                $this->warn("  No tipe_penyesuaian details found. Skipping.");
+            if (! is_array($details)) {
+                $this->warn('  No tipe_penyesuaian details found. Skipping.');
+
                 continue;
             }
 
@@ -90,7 +93,7 @@ class SyncInvoiceAdjustments extends Command
                 'kawalan' => 0,
                 'krani' => 0,
                 'retur galon' => 0,
-                'adjustment' => 0
+                'adjustment' => 0,
             ];
 
             foreach ($details as $detail) {
@@ -106,13 +109,14 @@ class SyncInvoiceAdjustments extends Command
             }
 
             if ($totalAdjustment <= 0) {
-                $this->warn("  Total adjustment is 0 or invalid. Skipping.");
+                $this->warn('  Total adjustment is 0 or invalid. Skipping.');
+
                 continue;
             }
 
             if ($dryRun) {
                 $this->info("  [DRY RUN] Would increment SJ uang_jalan ({$sj->uang_jalan}) by {$totalAdjustment}");
-                $this->info("  [DRY RUN] Breakdown: " . json_encode($updates));
+                $this->info('  [DRY RUN] Breakdown: '.json_encode($updates));
             } else {
                 try {
                     DB::transaction(function () use ($sj, $source, $sjId, $totalAdjustment, $updates, $invoice) {
@@ -122,18 +126,18 @@ class SyncInvoiceAdjustments extends Command
                         // Find Uang Jalan Record
                         $field = $source === 'bongkar' ? 'surat_jalan_bongkaran_id' : 'surat_jalan_id';
                         $uj = UangJalan::where($field, $sjId)->first();
-                        
+
                         if ($uj) {
                             // Update Uang Jalan breakdown
                             $uj->increment('jumlah_mel', $updates['mel']);
                             $uj->increment('jumlah_parkir', $updates['parkir']);
                             $uj->increment('jumlah_pelancar', $updates['pelancar']);
                             $uj->increment('jumlah_kawalan', $updates['kawalan']);
-                            
+
                             // Map remaining adjustment components to 'jumlah_penyesuaian' (adjustment field in UangJalan)
                             $generalAdjustment = $updates['adjustment'] + $updates['krani'] + $updates['retur galon'];
                             $uj->increment('jumlah_penyesuaian', $generalAdjustment);
-                            
+
                             $uj->increment('jumlah_total', $totalAdjustment);
 
                             // Create Adjustment Entry in audit table
@@ -149,17 +153,17 @@ class SyncInvoiceAdjustments extends Command
                                 'jumlah_kawalan' => $updates['kawalan'],
                                 'alasan_penyesuaian' => "Sync dari Invoice Aktivitas Lain: {$invoice->nomor_invoice}",
                                 'memo' => $invoice->deskripsi,
-                                'created_by' => $invoice->created_by ?? 1
+                                'created_by' => $invoice->created_by ?? 1,
                             ]);
                         }
                     });
-                    $this->info("  Status SUCCESS: Database synchronized.");
+                    $this->info('  Status SUCCESS: Database synchronized.');
                 } catch (\Exception $e) {
                     $this->error("  Status FAILED: {$e->getMessage()}");
                 }
             }
         }
 
-        $this->info("Sync operation completed.");
+        $this->info('Sync operation completed.');
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\KaryawanTidakTetap;
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class KaryawanTidakTetapController extends Controller
@@ -17,11 +16,11 @@ class KaryawanTidakTetapController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'LIKE', "%{$search}%")
-                  ->orWhere('nik', 'LIKE', "%{$search}%")
-                  ->orWhere('divisi', 'LIKE', "%{$search}%")
-                  ->orWhere('pekerjaan', 'LIKE', "%{$search}%");
+                    ->orWhere('nik', 'LIKE', "%{$search}%")
+                    ->orWhere('divisi', 'LIKE', "%{$search}%")
+                    ->orWhere('pekerjaan', 'LIKE', "%{$search}%");
             });
         }
 
@@ -37,6 +36,7 @@ class KaryawanTidakTetapController extends Controller
     {
         $pekerjaans = \App\Models\Pekerjaan::all();
         $pajaks = \App\Models\Pajak::all();
+
         return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks'));
     }
 
@@ -95,7 +95,7 @@ class KaryawanTidakTetapController extends Controller
     public function update(Request $request, KaryawanTidakTetap $karyawanTidakTetap)
     {
         $validated = $request->validate([
-            'nik' => 'required|string|max:50|unique:karyawan_tidak_tetaps,nik,' . $karyawanTidakTetap->id,
+            'nik' => 'required|string|max:50|unique:karyawan_tidak_tetaps,nik,'.$karyawanTidakTetap->id,
             'nama_lengkap' => 'required|string|max:255',
             'nama_panggilan' => 'nullable|string|max:100',
             'divisi' => 'nullable|string|max:100',
@@ -136,10 +136,10 @@ class KaryawanTidakTetapController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv'
+            'file' => 'required|mimes:xlsx,xls,csv',
         ]);
 
-        $import = new \App\Imports\KaryawanTidakTetapImport();
+        $import = new \App\Imports\KaryawanTidakTetapImport;
         $result = $import->import($request->file('file'));
 
         if ($result === false) {
@@ -147,9 +147,10 @@ class KaryawanTidakTetapController extends Controller
         }
 
         $message = "Berhasil mengimport {$result['success_count']} data.";
-        
-        if (!empty($result['errors'])) {
-            $message .= " Namun terdapat " . count($result['errors']) . " error.";
+
+        if (! empty($result['errors'])) {
+            $message .= ' Namun terdapat '.count($result['errors']).' error.';
+
             return redirect()->route('karyawan-tidak-tetap.index')
                 ->with('success', $message)
                 ->with('import_errors', $result['errors']);
@@ -161,7 +162,7 @@ class KaryawanTidakTetapController extends Controller
 
     public function downloadTemplate()
     {
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         $headers = [
@@ -183,17 +184,17 @@ class KaryawanTidakTetapController extends Controller
             'Kode Pos',
             'Email',
             'Tanggal Masuk (YYYY-MM-DD)',
-            'Status Pajak'
+            'Status Pajak',
         ];
 
         // Set Headers
         foreach ($headers as $index => $header) {
             $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
-            $sheet->setCellValue($column . '1', $header);
-            
+            $sheet->setCellValue($column.'1', $header);
+
             // Make header bold
-            $sheet->getStyle($column . '1')->getFont()->setBold(true);
-            
+            $sheet->getStyle($column.'1')->getFont()->setBold(true);
+
             // Auto size column
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
@@ -218,19 +219,19 @@ class KaryawanTidakTetapController extends Controller
             '14240',
             'budi@example.com',
             '2024-01-01',
-            'TK/0'
+            'TK/0',
         ];
 
         foreach ($exampleData as $index => $value) {
             $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($index + 1);
-            $sheet->setCellValue($column . '2', $value);
+            $sheet->setCellValue($column.'2', $value);
         }
 
         // Create Excel file in temp directory
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $fileName = 'template_import_karyawan_tidak_tetap.xlsx';
-        $tempFile = sys_get_temp_dir() . '/' . $fileName;
-        
+        $tempFile = sys_get_temp_dir().'/'.$fileName;
+
         $writer->save($tempFile);
 
         return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
@@ -239,6 +240,7 @@ class KaryawanTidakTetapController extends Controller
     public function printSingle(KaryawanTidakTetap $karyawanTidakTetap)
     {
         $karyawan = $karyawanTidakTetap;
+
         return view('karyawan-tidak-tetap.print-single', compact('karyawan'));
     }
 }

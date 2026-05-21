@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasColumn('permohonans', 'tanggal_checkpoint_supir')) {
+        if (! Schema::hasColumn('permohonans', 'tanggal_checkpoint_supir')) {
             Schema::table('permohonans', function (Blueprint $table) {
                 $table->date('tanggal_checkpoint_supir')->nullable()->after('status');
             });

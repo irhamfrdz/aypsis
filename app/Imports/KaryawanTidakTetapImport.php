@@ -10,6 +10,7 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 class KaryawanTidakTetapImport
 {
     protected $errors = [];
+
     protected $successCount = 0;
 
     public function import($file)
@@ -18,6 +19,7 @@ class KaryawanTidakTetapImport
 
         if (empty($data)) {
             $this->errors[] = 'File kosong atau tidak dapat dibaca';
+
             return false;
         }
 
@@ -30,7 +32,7 @@ class KaryawanTidakTetapImport
 
         return [
             'success_count' => $this->successCount,
-            'errors' => $this->errors
+            'errors' => $this->errors,
         ];
     }
 
@@ -55,7 +57,8 @@ class KaryawanTidakTetapImport
 
             return $data;
         } catch (\Exception $e) {
-            $this->errors[] = 'Error membaca file Excel: ' . $e->getMessage();
+            $this->errors[] = 'Error membaca file Excel: '.$e->getMessage();
+
             return [];
         }
     }
@@ -85,7 +88,7 @@ class KaryawanTidakTetapImport
 
         $nik = trim($row[0] ?? '');
         $namaLengkap = trim($row[1] ?? '');
-        
+
         // Skip empty rows
         if (empty($nik) && empty($namaLengkap)) {
             return;
@@ -110,7 +113,7 @@ class KaryawanTidakTetapImport
         $statusPajak = trim($row[18] ?? '');
 
         // Handle Date
-        if (!empty($tanggalMasuk)) {
+        if (! empty($tanggalMasuk)) {
             if (is_numeric($tanggalMasuk)) {
                 $tanggalMasuk = Date::excelToDateTimeObject($tanggalMasuk)->format('Y-m-d');
             } else {
@@ -127,16 +130,17 @@ class KaryawanTidakTetapImport
             'nik' => $nik,
             'nama_lengkap' => $namaLengkap,
             'email' => $email,
-            'nik_ktp' => $nikKtp
+            'nik_ktp' => $nikKtp,
         ], [
             'nik' => 'required|unique:karyawan_tidak_tetaps,nik',
             'nama_lengkap' => 'required',
             'email' => 'nullable|email',
-            'nik_ktp' => 'nullable|numeric'
+            'nik_ktp' => 'nullable|numeric',
         ]);
 
         if ($validator->fails()) {
-            $this->errors[] = "Baris {$rowNumber} (NIK: {$nik}): " . implode(', ', $validator->errors()->all());
+            $this->errors[] = "Baris {$rowNumber} (NIK: {$nik}): ".implode(', ', $validator->errors()->all());
+
             return;
         }
 
@@ -165,7 +169,7 @@ class KaryawanTidakTetapImport
 
             $this->successCount++;
         } catch (\Exception $e) {
-            $this->errors[] = "Baris {$rowNumber}: Gagal menyimpan data - " . $e->getMessage();
+            $this->errors[] = "Baris {$rowNumber}: Gagal menyimpan data - ".$e->getMessage();
         }
     }
 

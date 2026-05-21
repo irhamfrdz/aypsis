@@ -23,7 +23,7 @@ class TtLclBatamKontainerPivot extends Model
         'split_tonase',
         'split_keterangan',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [

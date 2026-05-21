@@ -15,9 +15,9 @@ class PricelistCatController extends Controller
     {
         $query = PricelistCat::with(['creator', 'updater']);
 
-                // Filter by vendor
+        // Filter by vendor
         if ($request->filled('vendor')) {
-            $query->where('vendor', 'like', '%' . $request->vendor . '%');
+            $query->where('vendor', 'like', '%'.$request->vendor.'%');
         }
 
         // Filter by jenis_cat
@@ -32,9 +32,9 @@ class PricelistCatController extends Controller
 
         // Filter by search (general search)
         if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('vendor', 'like', '%' . $request->search . '%')
-                  ->orWhere('ukuran_kontainer', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('vendor', 'like', '%'.$request->search.'%')
+                    ->orWhere('ukuran_kontainer', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -48,7 +48,8 @@ class PricelistCatController extends Controller
      */
     public function create()
     {
-        $pricelist = new PricelistCat();
+        $pricelist = new PricelistCat;
+
         return view('master-pricelist-cat.create', compact('pricelist'));
     }
 
@@ -74,7 +75,7 @@ class PricelistCatController extends Controller
         ]);
 
         return redirect()->route('master.pricelist-cat.index')
-                        ->with('success', 'Pricelist CAT berhasil ditambahkan.');
+            ->with('success', 'Pricelist CAT berhasil ditambahkan.');
     }
 
     /**
@@ -114,7 +115,7 @@ class PricelistCatController extends Controller
         ]);
 
         return redirect()->route('master.pricelist-cat.index')
-                        ->with('success', 'Pricelist CAT berhasil diupdate.');
+            ->with('success', 'Pricelist CAT berhasil diupdate.');
     }
 
     /**
@@ -125,6 +126,6 @@ class PricelistCatController extends Controller
         $pricelistCat->delete();
 
         return redirect()->route('master.pricelist-cat.index')
-                        ->with('success', 'Pricelist CAT berhasil dihapus.');
+            ->with('success', 'Pricelist CAT berhasil dihapus.');
     }
 }

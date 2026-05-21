@@ -20,10 +20,10 @@ class MasterGudangBanController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama_gudang', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('lokasi', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
@@ -54,7 +54,7 @@ class MasterGudangBanController extends Controller
             'nama_gudang' => 'required|string|max:255',
             'lokasi' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
-            'status' => 'required|in:aktif,nonaktif'
+            'status' => 'required|in:aktif,nonaktif',
         ]);
 
         $validated['created_by'] = auth()->id();
@@ -71,6 +71,7 @@ class MasterGudangBanController extends Controller
     public function show($id)
     {
         $masterGudangBan = MasterGudangBan::findOrFail($id);
+
         return view('master-gudang-ban.show', compact('masterGudangBan'));
     }
 
@@ -80,6 +81,7 @@ class MasterGudangBanController extends Controller
     public function edit($id)
     {
         $masterGudangBan = MasterGudangBan::findOrFail($id);
+
         return view('master-gudang-ban.edit', compact('masterGudangBan'));
     }
 
@@ -89,12 +91,12 @@ class MasterGudangBanController extends Controller
     public function update(Request $request, $id)
     {
         $masterGudangBan = MasterGudangBan::findOrFail($id);
-        
+
         $validated = $request->validate([
             'nama_gudang' => 'required|string|max:255',
             'lokasi' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
-            'status' => 'required|in:aktif,nonaktif'
+            'status' => 'required|in:aktif,nonaktif',
         ]);
 
         $validated['updated_by'] = auth()->id();
@@ -123,7 +125,7 @@ class MasterGudangBanController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:xlsx,xls|max:2048'
+            'file' => 'required|mimes:xlsx,xls|max:2048',
         ]);
 
         try {
@@ -147,21 +149,21 @@ class MasterGudangBanController extends Controller
                         'nama_gudang' => $row[0] ?? '',
                         'lokasi' => $row[1] ?? '',
                         'keterangan' => $row[2] ?? null,
-                        'status' => in_array(strtolower($row[3] ?? ''), ['aktif', 'nonaktif']) 
-                                    ? strtolower($row[3]) 
+                        'status' => in_array(strtolower($row[3] ?? ''), ['aktif', 'nonaktif'])
+                                    ? strtolower($row[3])
                                     : 'aktif',
-                        'created_by' => auth()->id()
+                        'created_by' => auth()->id(),
                     ]);
                     $imported++;
                 } catch (\Exception $e) {
-                    $errors[] = "Baris " . ($index + 2) . ": " . $e->getMessage();
+                    $errors[] = 'Baris '.($index + 2).': '.$e->getMessage();
                 }
             }
 
             if (count($errors) > 0) {
                 return redirect()->route('master-gudang-ban.index')
                     ->with('success', "{$imported} data berhasil diimport")
-                    ->with('error', "Beberapa data gagal: " . implode(", ", array_slice($errors, 0, 3)));
+                    ->with('error', 'Beberapa data gagal: '.implode(', ', array_slice($errors, 0, 3)));
             }
 
             return redirect()->route('master-gudang-ban.index')
@@ -169,7 +171,7 @@ class MasterGudangBanController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->route('master-gudang-ban.index')
-                ->with('error', 'Gagal import data: ' . $e->getMessage());
+                ->with('error', 'Gagal import data: '.$e->getMessage());
         }
     }
 
@@ -178,7 +180,7 @@ class MasterGudangBanController extends Controller
      */
     public function template()
     {
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set headers
@@ -209,7 +211,7 @@ class MasterGudangBanController extends Controller
         $filename = 'template_master_gudang_ban.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
         header('Cache-Control: max-age=0');
 
         $writer->save('php://output');

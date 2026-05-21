@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('vendor_kontainer_sewas', function (Blueprint $table) {
-            if (!Schema::hasColumn('vendor_kontainer_sewas', 'name')) {
+            if (! Schema::hasColumn('vendor_kontainer_sewas', 'name')) {
                 $table->string('name')->after('id');
             }
-            if (!Schema::hasColumn('vendor_kontainer_sewas', 'npwp')) {
+            if (! Schema::hasColumn('vendor_kontainer_sewas', 'npwp')) {
                 $table->string('npwp')->nullable()->after('name');
             }
-            if (!Schema::hasColumn('vendor_kontainer_sewas', 'tax_ppn_percent')) {
+            if (! Schema::hasColumn('vendor_kontainer_sewas', 'tax_ppn_percent')) {
                 $table->decimal('tax_ppn_percent', 5, 2)->default(11.00)->after('npwp');
             }
-            if (!Schema::hasColumn('vendor_kontainer_sewas', 'tax_pph_percent')) {
+            if (! Schema::hasColumn('vendor_kontainer_sewas', 'tax_pph_percent')) {
                 $table->decimal('tax_pph_percent', 5, 2)->default(2.00)->after('tax_ppn_percent');
             }
 
@@ -40,7 +40,7 @@ return new class extends Migration
                 $columnsToDrop[] = 'catatan';
             }
 
-            if (!empty($columnsToDrop)) {
+            if (! empty($columnsToDrop)) {
                 $table->dropColumn($columnsToDrop);
             }
         });

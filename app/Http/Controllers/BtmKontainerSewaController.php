@@ -131,7 +131,7 @@ class BtmKontainerSewaController extends Controller
             'size_id' => $data['size_id'],
         ];
 
-        if (!empty($data['id'])) {
+        if (! empty($data['id'])) {
             $unit = BtmSewaUnit::findOrFail($data['id']);
             $unit->update($payload);
         } else {
@@ -174,7 +174,7 @@ class BtmKontainerSewaController extends Controller
             'billing_mode' => $data['billing_mode'],
         ];
 
-        if (!empty($data['id'])) {
+        if (! empty($data['id'])) {
             $trx = BtmSewaTransaction::findOrFail($data['id']);
             $trx->update($payload);
         } else {
@@ -241,11 +241,11 @@ class BtmKontainerSewaController extends Controller
             $dateIn = $this->normalizeDate($parts[1]);
             $dateOut = isset($parts[2]) ? $this->normalizeDate($parts[2]) : null;
             $mode = isset($parts[3]) ? strtoupper($parts[3]) : 'B';
-            if (!in_array($mode, ['B', 'H'], true)) {
+            if (! in_array($mode, ['B', 'H'], true)) {
                 $mode = 'B';
             }
 
-            if (!$dateIn) {
+            if (! $dateIn) {
                 continue;
             }
 
@@ -262,7 +262,7 @@ class BtmKontainerSewaController extends Controller
 
     private function normalizeDate(?string $value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 

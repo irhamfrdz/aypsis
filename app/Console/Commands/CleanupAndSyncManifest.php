@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\Manifest;
 use App\Models\NaikKapal;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class CleanupAndSyncManifest extends Command
 {
@@ -22,7 +21,7 @@ class CleanupAndSyncManifest extends Command
 
         $this->info('=== Manifest Cleanup and Sync ===');
         $this->info("Voyage: {$voyage}");
-        $this->info('Mode: ' . ($dryRun ? 'DRY RUN' : 'LIVE'));
+        $this->info('Mode: '.($dryRun ? 'DRY RUN' : 'LIVE'));
         $this->newLine();
 
         // Step 1: Show current counts
@@ -47,14 +46,14 @@ class CleanupAndSyncManifest extends Command
             ->pluck('nomor_kontainer')
             ->toArray();
 
-        $this->info("Valid containers (sudah OB): " . count($validContainers));
+        $this->info('Valid containers (sudah OB): '.count($validContainers));
 
         // Step 3: Find manifests that should NOT exist (container not in valid list)
         $invalidManifests = Manifest::where('no_voyage', $voyage)
             ->whereNotIn('nomor_kontainer', $validContainers)
             ->get();
 
-        $this->info("Manifests to DELETE (not sudah OB): " . $invalidManifests->count());
+        $this->info('Manifests to DELETE (not sudah OB): '.$invalidManifests->count());
 
         if ($invalidManifests->count() > 0) {
             $this->table(
@@ -76,17 +75,19 @@ class CleanupAndSyncManifest extends Command
             ->get();
 
         $this->newLine();
-        $this->info("Manifests to CREATE (sudah OB but missing): " . $missingInManifest->count());
+        $this->info('Manifests to CREATE (sudah OB but missing): '.$missingInManifest->count());
 
         if ($dryRun) {
             $this->newLine();
             $this->warn('DRY RUN - No changes made. Remove --dry-run to execute.');
+
             return Command::SUCCESS;
         }
 
         // Confirm before proceeding
-        if (!$this->confirm('Do you want to proceed with cleanup and sync?')) {
+        if (! $this->confirm('Do you want to proceed with cleanup and sync?')) {
             $this->info('Operation cancelled.');
+
             return Command::SUCCESS;
         }
 
@@ -139,25 +140,29 @@ class CleanupAndSyncManifest extends Command
                     if ($prospek->tandaTerima) {
                         $tt = $prospek->tandaTerima;
                         $manifestData['nomor_tanda_terima'] = $tt->nomor_tanda_terima ?? $tt->no_surat_jalan;
-                        
+
                         $itemNames = [];
-                        if (!empty($tt->dimensi_items) && is_array($tt->dimensi_items)) {
+                        if (! empty($tt->dimensi_items) && is_array($tt->dimensi_items)) {
                             foreach ($tt->dimensi_items as $item) {
-                                if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                                if (! empty($item['nama_barang'])) {
+                                    $itemNames[] = $item['nama_barang'];
+                                }
                             }
-                        } elseif (!empty($tt->dimensi_details) && is_array($tt->dimensi_details)) {
+                        } elseif (! empty($tt->dimensi_details) && is_array($tt->dimensi_details)) {
                             foreach ($tt->dimensi_details as $item) {
-                                if (!empty($item['nama_barang'])) $itemNames[] = $item['nama_barang'];
+                                if (! empty($item['nama_barang'])) {
+                                    $itemNames[] = $item['nama_barang'];
+                                }
                             }
-                        } elseif (!empty($tt->nama_barang)) {
+                        } elseif (! empty($tt->nama_barang)) {
                             if (is_array($tt->nama_barang)) {
                                 $itemNames = $tt->nama_barang;
                             } elseif (is_string($tt->nama_barang) && $tt->nama_barang !== 'null') {
                                 $itemNames[] = $tt->nama_barang;
                             }
                         }
-                        
-                        if (!empty($itemNames)) {
+
+                        if (! empty($itemNames)) {
                             $manifestData['nama_barang'] = implode(', ', $itemNames);
                         }
                     }
@@ -167,7 +172,7 @@ class CleanupAndSyncManifest extends Command
                 $createCount++;
             } catch (\Exception $e) {
                 $errors++;
-                $this->error("Error creating manifest for {$nk->nomor_kontainer}: " . $e->getMessage());
+                $this->error("Error creating manifest for {$nk->nomor_kontainer}: ".$e->getMessage());
             }
         }
 

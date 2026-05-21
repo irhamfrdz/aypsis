@@ -5,14 +5,15 @@ namespace App\Exports;
 use App\Models\SuratJalan;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class SuratJalanExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class SuratJalanExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $filters;
+
     protected $suratJalanIds;
 
     public function __construct(array $filters = [], array $suratJalanIds = [])
@@ -23,61 +24,61 @@ class SuratJalanExport implements FromCollection, WithHeadings, ShouldAutoSize, 
 
     public function collection()
     {
-        if (!empty($this->suratJalanIds)) {
+        if (! empty($this->suratJalanIds)) {
             $query = SuratJalan::with(['order', 'pranotaUangRit'])->whereIn('id', $this->suratJalanIds);
         } else {
             $query = SuratJalan::with(['order', 'pranotaUangRit'])->orderBy('created_at', 'desc');
 
-            if (!empty($this->filters['search'])) {
+            if (! empty($this->filters['search'])) {
                 $search = $this->filters['search'];
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('no_surat_jalan', 'like', "%{$search}%")
-                      ->orWhere('pengirim', 'like', "%{$search}%")
-                      ->orWhere('no_kontainer', 'like', "%{$search}%")
-                      ->orWhere('jenis_barang', 'like', "%{$search}%")
-                      ->orWhere('tipe_kontainer', 'like', "%{$search}%")
-                      ->orWhere('supir', 'like', "%{$search}%");
+                        ->orWhere('pengirim', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%")
+                        ->orWhere('jenis_barang', 'like', "%{$search}%")
+                        ->orWhere('tipe_kontainer', 'like', "%{$search}%")
+                        ->orWhere('supir', 'like', "%{$search}%");
                 });
             }
 
-            if (!empty($this->filters['status']) && $this->filters['status'] !== 'all') {
+            if (! empty($this->filters['status']) && $this->filters['status'] !== 'all') {
                 $query->where('status', $this->filters['status']);
             }
 
-            if (!empty($this->filters['status_pembayaran']) && $this->filters['status_pembayaran'] !== 'all') {
+            if (! empty($this->filters['status_pembayaran']) && $this->filters['status_pembayaran'] !== 'all') {
                 $statusPembayaran = $this->filters['status_pembayaran'];
-                
-                $query->where(function($q) use ($statusPembayaran) {
+
+                $query->where(function ($q) use ($statusPembayaran) {
                     if ($statusPembayaran === 'sudah_dibayar') {
                         // Sudah dibayar: status_pembayaran = 'sudah_dibayar' OR status_pembayaran_uang_jalan = 'dibayar'
                         $q->where('status_pembayaran', 'sudah_dibayar')
-                          ->orWhere('status_pembayaran_uang_jalan', 'dibayar');
+                            ->orWhere('status_pembayaran_uang_jalan', 'dibayar');
                     } elseif ($statusPembayaran === 'belum_dibayar') {
                         // Belum dibayar: ada uang jalan tapi belum dibayar
                         $q->where('status_pembayaran_uang_jalan', 'sudah_masuk_uang_jalan')
-                          ->where('status_pembayaran', '!=', 'sudah_dibayar');
+                            ->where('status_pembayaran', '!=', 'sudah_dibayar');
                     } else { // belum_masuk_pranota
                         // Belum masuk pranota: belum ada uang jalan sama sekali
                         $q->where('status_pembayaran_uang_jalan', 'belum_ada')
-                          ->where('status_pembayaran', '!=', 'sudah_dibayar');
+                            ->where('status_pembayaran', '!=', 'sudah_dibayar');
                     }
                 });
             }
 
-            if (!empty($this->filters['tipe_kontainer'])) {
+            if (! empty($this->filters['tipe_kontainer'])) {
                 $query->where('tipe_kontainer', $this->filters['tipe_kontainer']);
             }
 
-            if (!empty($this->filters['start_date'])) {
+            if (! empty($this->filters['start_date'])) {
                 $query->whereDate('tanggal_surat_jalan', '>=', $this->filters['start_date']);
             }
 
-            if (!empty($this->filters['end_date'])) {
+            if (! empty($this->filters['end_date'])) {
                 $query->whereDate('tanggal_surat_jalan', '<=', $this->filters['end_date']);
             }
         }
 
-        $rows = $query->get()->map(function($s) {
+        $rows = $query->get()->map(function ($s) {
             return [
                 $s->no_surat_jalan,
                 $s->tanggal_surat_jalan ? (is_string($s->tanggal_surat_jalan) ? \Carbon\Carbon::parse($s->tanggal_surat_jalan)->format('d/m/Y') : $s->tanggal_surat_jalan->format('d/m/Y')) : '-',
@@ -91,7 +92,7 @@ class SuratJalanExport implements FromCollection, WithHeadings, ShouldAutoSize, 
                 $s->supir,
                 $s->status,
                 $s->status_pembayaran,
-                $s->pranota_uang_rit_count ?? 0
+                $s->pranota_uang_rit_count ?? 0,
             ];
         });
 
@@ -113,17 +114,17 @@ class SuratJalanExport implements FromCollection, WithHeadings, ShouldAutoSize, 
             'Supir',
             'Status',
             'Status Pembayaran',
-            'Jumlah Rit'
+            'Jumlah Rit',
         ];
     }
 
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $sheet->getStyle('A1:M1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            }
+            },
         ];
     }
 }

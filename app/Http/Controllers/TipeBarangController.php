@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\TipeBarang;
 use App\Models\NomorTerakhir;
+use App\Models\TipeBarang;
 use Illuminate\Http\Request;
 
 class TipeBarangController extends Controller
@@ -16,12 +15,12 @@ class TipeBarangController extends Controller
     {
         $query = TipeBarang::query();
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('kode', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('nama', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('keterangan', 'LIKE', '%' . $searchTerm . '%');
+                $q->where('kode', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('nama', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('keterangan', 'LIKE', '%'.$searchTerm.'%');
             });
         }
 
@@ -66,6 +65,7 @@ class TipeBarangController extends Controller
     public function show(string $id)
     {
         $tipeBarang = TipeBarang::findOrFail($id);
+
         return view('master-tipe-barang.show', compact('tipeBarang'));
     }
 
@@ -75,6 +75,7 @@ class TipeBarangController extends Controller
     public function edit(string $id)
     {
         $tipeBarang = TipeBarang::findOrFail($id);
+
         return view('master-tipe-barang.edit', compact('tipeBarang'));
     }
 
@@ -86,7 +87,7 @@ class TipeBarangController extends Controller
         $tipeBarang = TipeBarang::findOrFail($id);
 
         $request->validate([
-            'kode' => 'required|string|unique:tipe_barangs,kode,' . $id,
+            'kode' => 'required|string|unique:tipe_barangs,kode,'.$id,
             'nama' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
         ]);
@@ -111,17 +112,17 @@ class TipeBarangController extends Controller
     {
         $nomorTerakhir = NomorTerakhir::where('modul', 'TB')->first();
 
-        if (!$nomorTerakhir) {
+        if (! $nomorTerakhir) {
             $nomorTerakhir = NomorTerakhir::create([
                 'modul' => 'TB',
                 'nomor_terakhir' => 0,
-                'keterangan' => 'Nomor terakhir untuk kode tipe barang'
+                'keterangan' => 'Nomor terakhir untuk kode tipe barang',
             ]);
         }
 
         $runningNumber = $nomorTerakhir->nomor_terakhir + 1;
         $nomorTerakhir->update(['nomor_terakhir' => $runningNumber]);
 
-        return 'TB' . str_pad($runningNumber, 5, '0', STR_PAD_LEFT);
+        return 'TB'.str_pad($runningNumber, 5, '0', STR_PAD_LEFT);
     }
 }

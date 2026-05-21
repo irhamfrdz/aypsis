@@ -3,16 +3,18 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Maatwebsite\Excel\Concerns\WithMapping;
 
-class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoSize, WithStyles, WithMapping
+class ReportUangJalanExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     protected $uangJalans;
+
     protected $startDate;
+
     protected $endDate;
 
     public function __construct($uangJalans, $startDate, $endDate)
@@ -31,7 +33,7 @@ class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoS
     {
         return [
             ['REPORT RINCIAN UANG JALAN'],
-            ['Periode: ' . $this->startDate->format('d/m/Y') . ' s/d ' . $this->endDate->format('d/m/Y')],
+            ['Periode: '.$this->startDate->format('d/m/Y').' s/d '.$this->endDate->format('d/m/Y')],
             [''],
             [
                 'No',
@@ -51,8 +53,8 @@ class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoS
                 'Parkir',
                 'Total Lain-lain',
                 'GRAND TOTAL',
-                'Dibuat Oleh'
-            ]
+                'Dibuat Oleh',
+            ],
         ];
     }
 
@@ -68,11 +70,12 @@ class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoS
         $plat = $relatedSJ->no_plat ?? '-';
         $nik = $relatedSJ->supirKaryawan->nik ?? '-';
         $tujuanAmbil = $relatedSJ->tujuan_pengambilan ?? '-';
-        
+
         $pembayaran = $uj->pranotaUangJalan->flatMap->pembayaranPranotaUangJalans->sortByDesc('tanggal_pembayaran')->first();
         $noBukti = $pembayaran ? $pembayaran->nomor_accurate : '-';
 
         $lainLain = ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
+
         return [
             $index,
             $uj->tanggal_uang_jalan->format('d/m/Y'),
@@ -84,14 +87,14 @@ class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoS
             $supir,
             $nik,
             $plat,
-            (float)($uj->jumlah_uang_jalan ?? 0),
-            (float)($uj->jumlah_mel ?? 0),
-            (float)($uj->jumlah_pelancar ?? 0),
-            (float)($uj->jumlah_kawalan ?? 0),
-            (float)($uj->jumlah_parkir ?? 0),
-            (float)$lainLain,
-            (float)($uj->jumlah_total ?? 0),
-            $uj->createdBy->name ?? '-'
+            (float) ($uj->jumlah_uang_jalan ?? 0),
+            (float) ($uj->jumlah_mel ?? 0),
+            (float) ($uj->jumlah_pelancar ?? 0),
+            (float) ($uj->jumlah_kawalan ?? 0),
+            (float) ($uj->jumlah_parkir ?? 0),
+            (float) $lainLain,
+            (float) ($uj->jumlah_total ?? 0),
+            $uj->createdBy->name ?? '-',
         ];
     }
 
@@ -99,10 +102,10 @@ class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoS
     {
         $sheet->mergeCells('A1:R1');
         $sheet->mergeCells('A2:R2');
-        
+
         // Final Row
         $lastRow = $sheet->getHighestRow();
-        
+
         return [
             1 => ['font' => ['bold' => true, 'size' => 16]],
             2 => ['font' => ['bold' => true]],
@@ -110,10 +113,10 @@ class ReportUangJalanExport implements FromCollection, WithHeadings, ShouldAutoS
                 'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
                 'fill' => [
                     'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => 'B45309'] // Amber 700
-                ]
+                    'startColor' => ['rgb' => 'B45309'], // Amber 700
+                ],
             ],
-            'A1:R' . $lastRow => [
+            'A1:R'.$lastRow => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,

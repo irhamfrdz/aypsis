@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('total_nominal', 15, 2)->default(0);
             $table->string('status_pembayaran')->default('belum_dibayar')->comment('belum_dibayar, sebagian, lunas');
             $table->text('keterangan')->nullable();
-            
+
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
 

@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\Auditable;
 
 class TandaTerimaBongkaranBatam extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'tanda_terima_bongkaran_batams';
 
@@ -27,7 +27,7 @@ class TandaTerimaBongkaranBatam extends Model
         'nginap',
         'tidak_lembur_nginap',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [
@@ -78,9 +78,9 @@ class TandaTerimaBongkaranBatam extends Model
         $month = date('m');
 
         $lastRecord = self::whereYear('tanggal_tanda_terima', $year)
-                         ->whereMonth('tanggal_tanda_terima', $month)
-                         ->orderBy('nomor_tanda_terima', 'desc')
-                         ->first();
+            ->whereMonth('tanggal_tanda_terima', $month)
+            ->orderBy('nomor_tanda_terima', 'desc')
+            ->first();
 
         if ($lastRecord) {
             $lastNumber = (int) substr($lastRecord->nomor_tanda_terima, -4);
@@ -89,6 +89,6 @@ class TandaTerimaBongkaranBatam extends Model
             $newNumber = 1;
         }
 
-        return 'TTB-B/' . $year . '/' . $month . '/' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        return 'TTB-B/'.$year.'/'.$month.'/'.str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 }

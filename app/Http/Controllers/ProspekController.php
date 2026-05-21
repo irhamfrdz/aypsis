@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Prospek;
-use App\Models\User;
+use App\Exports\ProspekExport;
+use App\Models\Bl;
 use App\Models\MasterKapal;
 use App\Models\NaikKapal;
-use App\Models\Bl;
+use App\Models\Prospek;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
-use Carbon\Carbon;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ProspekExport;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProspekController extends Controller
 {
@@ -30,12 +28,12 @@ class ProspekController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$this->hasProspekPermission($user, 'prospek-view')) {
-                abort(403, "Tidak memiliki akses ke halaman prospek");
+            if (! $this->hasProspekPermission($user, 'prospek-view')) {
+                abort(403, 'Tidak memiliki akses ke halaman prospek');
             }
 
             // Default to 'aktif' status if status parameter is not present in URL/request at all
-            if (!$request->has('status')) {
+            if (! $request->has('status')) {
                 $request->merge(['status' => 'aktif']);
                 $request->query->add(['status' => 'aktif']);
             }
@@ -46,9 +44,9 @@ class ProspekController extends Controller
             if ($request->filled('status')) {
                 if ($request->status == 'sudah_muat_no_voyage') {
                     $query->where('status', 'sudah_muat')
-                          ->where(function($q) {
-                              $q->whereNull('no_voyage')->orWhere('no_voyage', '');
-                          });
+                        ->where(function ($q) {
+                            $q->whereNull('no_voyage')->orWhere('no_voyage', '');
+                        });
                 } else {
                     $query->where('status', $request->status);
                 }
@@ -61,7 +59,7 @@ class ProspekController extends Controller
 
             // Filter berdasarkan tujuan
             if ($request->filled('tujuan')) {
-                $query->where('tujuan_pengiriman', 'like', '%' . $request->tujuan . '%');
+                $query->where('tujuan_pengiriman', 'like', '%'.$request->tujuan.'%');
             }
 
             // Filter berdasarkan ukuran
@@ -78,15 +76,15 @@ class ProspekController extends Controller
             if ($request->filled('search')) {
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
-                                $q->where('nama_supir', 'like', '%' . $search . '%')
-                                    ->orWhere('no_surat_jalan', 'like', '%' . $search . '%')
-                      ->orWhere('barang', 'like', '%' . $search . '%')
-                      ->orWhere('pt_pengirim', 'like', '%' . $search . '%')
-                      ->orWhere('nomor_kontainer', 'like', '%' . $search . '%')
-                      ->orWhere('no_seal', 'like', '%' . $search . '%')
-                      ->orWhere('tujuan_pengiriman', 'like', '%' . $search . '%')
-                      ->orWhere('nama_kapal', 'like', '%' . $search . '%')
-                      ->orWhere('no_voyage', 'like', '%' . $search . '%');
+                    $q->where('nama_supir', 'like', '%'.$search.'%')
+                        ->orWhere('no_surat_jalan', 'like', '%'.$search.'%')
+                        ->orWhere('barang', 'like', '%'.$search.'%')
+                        ->orWhere('pt_pengirim', 'like', '%'.$search.'%')
+                        ->orWhere('nomor_kontainer', 'like', '%'.$search.'%')
+                        ->orWhere('no_seal', 'like', '%'.$search.'%')
+                        ->orWhere('tujuan_pengiriman', 'like', '%'.$search.'%')
+                        ->orWhere('nama_kapal', 'like', '%'.$search.'%')
+                        ->orWhere('no_voyage', 'like', '%'.$search.'%');
                 });
             }
 
@@ -98,31 +96,31 @@ class ProspekController extends Controller
                     ->groupBy('no_surat_jalan')
                     ->havingRaw('COUNT(no_surat_jalan) > 1')
                     ->pluck('no_surat_jalan');
-                
+
                 $query->whereIn('no_surat_jalan', $duplicateNos);
             }
 
             // Allow configurable rows per page, default to 15. Validate allowed values to prevent abuse.
             $allowedPerPage = [10, 25, 50, 100];
             $perPage = (int) $request->get('per_page', 10);
-            if (!in_array($perPage, $allowedPerPage)) {
+            if (! in_array($perPage, $allowedPerPage)) {
                 $perPage = 10;
             }
 
-                        // Keep a copy of the filtered query so totals use the same filters
-                        $filteredQuery = clone $query;
+            // Keep a copy of the filtered query so totals use the same filters
+            $filteredQuery = clone $query;
 
-                        $prospeks = $query->paginate($perPage)->appends($request->query());
+            $prospeks = $query->paginate($perPage)->appends($request->query());
 
-                        // Statistik untuk summary cards - use the same filtered query
-                        $totalBelumMuat = (clone $filteredQuery)->where(function ($q) {
-                                $q->whereNull('status')
-                                    ->orWhere('status', '')
-                                    ->orWhere('status', 'aktif');
-                        })->count();
+            // Statistik untuk summary cards - use the same filtered query
+            $totalBelumMuat = (clone $filteredQuery)->where(function ($q) {
+                $q->whereNull('status')
+                    ->orWhere('status', '')
+                    ->orWhere('status', 'aktif');
+            })->count();
 
-                        $totalSudahMuat = (clone $filteredQuery)->where('status', 'sudah_muat')->count();
-                        $totalBatal = (clone $filteredQuery)->where('status', 'batal')->count();
+            $totalSudahMuat = (clone $filteredQuery)->where('status', 'sudah_muat')->count();
+            $totalBatal = (clone $filteredQuery)->where('status', 'batal')->count();
 
             // Mobile detection using regex (fallback since package install failed)
             $userAgent = $request->header('User-Agent');
@@ -140,13 +138,13 @@ class ProspekController extends Controller
                 ->havingRaw('COUNT(no_surat_jalan) > 1')
                 ->pluck('no_surat_jalan')
                 ->toArray();
-            
+
             $duplicateCount = count($duplicateNos);
 
             return view('prospek.index', compact('prospeks', 'totalBelumMuat', 'totalSudahMuat', 'totalBatal', 'duplicateCount', 'duplicateNos'));
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Error loading data prospek: ' . $e->getMessage());
+            return back()->with('error', 'Error loading data prospek: '.$e->getMessage());
         }
     }
 
@@ -157,19 +155,20 @@ class ProspekController extends Controller
     {
         try {
             // Default to 'aktif' status if status parameter is not present in URL/request at all
-            if (!$request->has('status')) {
+            if (! $request->has('status')) {
                 $request->merge(['status' => 'aktif']);
                 $request->query->add(['status' => 'aktif']);
             }
             $filters = $request->query();
             $prospekIds = $request->input('prospek_ids', []);
-            $fileName = 'prospek_export_' . date('Ymd_His') . '.xlsx';
+            $fileName = 'prospek_export_'.date('Ymd_His').'.xlsx';
             $export = new ProspekExport($filters, $prospekIds);
 
             return Excel::download($export, $fileName);
         } catch (\Exception $e) {
-            Log::error('Error exporting prospek: ' . $e->getMessage());
-            return back()->with('error', 'Gagal export prospek: ' . $e->getMessage());
+            Log::error('Error exporting prospek: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal export prospek: '.$e->getMessage());
         }
     }
 
@@ -181,8 +180,8 @@ class ProspekController extends Controller
     public function show(Prospek $prospek)
     {
         $user = Auth::user();
-        if (!$this->hasProspekPermission($user, 'prospek-view')) {
-            abort(403, "Tidak memiliki akses untuk melihat detail prospek");
+        if (! $this->hasProspekPermission($user, 'prospek-view')) {
+            abort(403, 'Tidak memiliki akses untuk melihat detail prospek');
         }
 
         $prospek->load(['createdBy', 'updatedBy']);
@@ -196,12 +195,12 @@ class ProspekController extends Controller
     public function edit(Prospek $prospek)
     {
         $user = Auth::user();
-        if (!$this->hasProspekPermission($user, 'prospek-edit')) {
-            abort(403, "Tidak memiliki akses untuk mengedit prospek");
+        if (! $this->hasProspekPermission($user, 'prospek-edit')) {
+            abort(403, 'Tidak memiliki akses untuk mengedit prospek');
         }
 
         $prospek->load(['suratJalan', 'tandaTerima', 'createdBy', 'updatedBy']);
-        
+
         // Get master data for dropdowns
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
 
@@ -214,8 +213,8 @@ class ProspekController extends Controller
     public function update(Request $request, Prospek $prospek)
     {
         $user = Auth::user();
-        if (!$this->hasProspekPermission($user, 'prospek-edit')) {
-            abort(403, "Tidak memiliki akses untuk mengedit prospek");
+        if (! $this->hasProspekPermission($user, 'prospek-edit')) {
+            abort(403, 'Tidak memiliki akses untuk mengedit prospek');
         }
 
         $validated = $request->validate([
@@ -250,7 +249,7 @@ class ProspekController extends Controller
         }
 
         $validated['updated_by'] = $user->id;
-        
+
         $prospek->update($validated);
 
         return redirect()->route('prospek.index')
@@ -269,8 +268,8 @@ class ProspekController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
-                abort(403, "Tidak memiliki akses untuk mengubah status prospek");
+            if (! $this->hasProspekPermission($user, 'prospek-edit')) {
+                abort(403, 'Tidak memiliki akses untuk mengubah status prospek');
             }
 
             // Ambil prospek aktif yang tersedia
@@ -284,37 +283,37 @@ class ProspekController extends Controller
                     'id' => 'jakarta',
                     'nama' => 'Jakarta',
                     'kode' => 'JKT',
-                    'deskripsi' => 'Pelabuhan Tanjung Priok, Jakarta'
+                    'deskripsi' => 'Pelabuhan Tanjung Priok, Jakarta',
                 ],
                 (object) [
                     'id' => 'batam',
                     'nama' => 'Batam',
                     'kode' => 'BTM',
-                    'deskripsi' => 'Pelabuhan Sekupang, Batam'
+                    'deskripsi' => 'Pelabuhan Sekupang, Batam',
                 ],
                 (object) [
                     'id' => 'pinang',
                     'nama' => 'Pinang',
                     'kode' => 'PNG',
-                    'deskripsi' => 'Pulau Pinang, Malaysia'
+                    'deskripsi' => 'Pulau Pinang, Malaysia',
                 ],
                 (object) [
                     'id' => 'surabaya',
                     'nama' => 'Surabaya',
                     'kode' => 'SBY',
-                    'deskripsi' => 'Pelabuhan Tanjung Perak, Surabaya'
+                    'deskripsi' => 'Pelabuhan Tanjung Perak, Surabaya',
                 ],
                 (object) [
                     'id' => 'medan',
                     'nama' => 'Medan',
                     'kode' => 'MDN',
-                    'deskripsi' => 'Pelabuhan Belawan, Medan'
-                ]
+                    'deskripsi' => 'Pelabuhan Belawan, Medan',
+                ],
             ]);
 
             return view('prospek.pilih-tujuan', compact('prospeksAktif', 'tujuans'));
         } catch (\Exception $e) {
-            return redirect()->route('prospek.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->route('prospek.index')->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -325,49 +324,49 @@ class ProspekController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
-                abort(403, "Tidak memiliki akses untuk mengubah status prospek");
+            if (! $this->hasProspekPermission($user, 'prospek-edit')) {
+                abort(403, 'Tidak memiliki akses untuk mengubah status prospek');
             }
 
             // Validate tujuan_id
             $request->validate([
-                'tujuan_id' => 'required|string|in:jakarta,batam,pinang,surabaya,medan'
+                'tujuan_id' => 'required|string|in:jakarta,batam,pinang,surabaya,medan',
             ]);
 
             $tujuanId = $request->tujuan_id;
-            
+
             // Mapping tujuan
             $tujuanMapping = [
                 'jakarta' => [
                     'nama' => 'Jakarta',
                     'kode' => 'JKT',
                     'deskripsi' => 'Pelabuhan Tanjung Priok, Jakarta',
-                    'keywords' => ['jakarta', 'tanjung priok', 'jkt']
+                    'keywords' => ['jakarta', 'tanjung priok', 'jkt'],
                 ],
                 'batam' => [
                     'nama' => 'Batam',
-                    'kode' => 'BTM', 
+                    'kode' => 'BTM',
                     'deskripsi' => 'Pelabuhan Sekupang, Batam',
-                    'keywords' => ['batam', 'sekupang', 'btm']
+                    'keywords' => ['batam', 'sekupang', 'btm'],
                 ],
                 'pinang' => [
                     'nama' => 'Pinang',
                     'kode' => 'PNG',
                     'deskripsi' => 'Pulau Pinang, Malaysia',
-                    'keywords' => ['pinang', 'penang', 'malaysia', 'png']
+                    'keywords' => ['pinang', 'penang', 'malaysia', 'png'],
                 ],
                 'surabaya' => [
                     'nama' => 'Surabaya',
                     'kode' => 'SBY',
                     'deskripsi' => 'Pelabuhan Tanjung Perak, Surabaya',
-                    'keywords' => ['surabaya', 'tanjung perak', 'sby']
+                    'keywords' => ['surabaya', 'tanjung perak', 'sby'],
                 ],
                 'medan' => [
                     'nama' => 'Medan',
                     'kode' => 'MDN',
                     'deskripsi' => 'Pelabuhan Belawan, Medan',
-                    'keywords' => ['medan', 'belawan', 'mdn']
-                ]
+                    'keywords' => ['medan', 'belawan', 'mdn'],
+                ],
             ];
 
             $tujuan = (object) $tujuanMapping[$tujuanId];
@@ -377,13 +376,14 @@ class ProspekController extends Controller
             $prospeksAktif = Prospek::with('tandaTerima')
                 ->whereIn('status', ['aktif', 'batal'])
                 ->get()
-                ->filter(function($prospek) use ($keywords) {
+                ->filter(function ($prospek) use ($keywords) {
                     $tujuanPengiriman = strtolower($prospek->tujuan_pengiriman ?? '');
                     foreach ($keywords as $keyword) {
                         if (stripos($tujuanPengiriman, strtolower($keyword)) !== false) {
                             return true;
                         }
                     }
+
                     return false;
                 });
 
@@ -402,7 +402,7 @@ class ProspekController extends Controller
                             ->where('tujuan_pengiriman', $prospek->tujuan_pengiriman)
                             ->orderBy('created_at', 'desc')
                             ->get();
-                        
+
                         if ($tttsj->count() > 0) {
                             // Jika hanya 1, langsung assign
                             if ($tttsj->count() == 1) {
@@ -411,18 +411,18 @@ class ProspekController extends Controller
                                 // Jika lebih dari 1, coba cari yang created_at nya paling dekat dengan prospek
                                 $closestTT = null;
                                 $minDiff = PHP_INT_MAX;
-                                
+
                                 foreach ($tttsj as $tt) {
                                     $ttTime = strtotime($tt->created_at);
                                     $prospekTime = strtotime($prospek->created_at);
                                     $diff = abs($ttTime - $prospekTime);
-                                    
+
                                     if ($diff < $minDiff) {
                                         $minDiff = $diff;
                                         $closestTT = $tt;
                                     }
                                 }
-                                
+
                                 if ($closestTT) {
                                     $prospek->nomor_tanda_terima = $closestTT->no_tanda_terima;
                                 }
@@ -442,7 +442,7 @@ class ProspekController extends Controller
 
             return view('prospek.proses-naik-kapal', compact('tujuan', 'prospeksAktif', 'tujuanId', 'masterKapals', 'masterTujuanKirims'));
         } catch (\Exception $e) {
-            return redirect()->route('prospek.pilih-tujuan')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->route('prospek.pilih-tujuan')->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -453,17 +453,17 @@ class ProspekController extends Controller
     {
         // Debug - buat file debug sederhana
         $debugFile = storage_path('logs/debug_submit.txt');
-        file_put_contents($debugFile, 'Submit attempt at: ' . now() . "\n", FILE_APPEND);
-        file_put_contents($debugFile, 'Request data: ' . json_encode($request->all()) . "\n", FILE_APPEND);
-        
+        file_put_contents($debugFile, 'Submit attempt at: '.now()."\n", FILE_APPEND);
+        file_put_contents($debugFile, 'Request data: '.json_encode($request->all())."\n", FILE_APPEND);
+
         try {
             $user = Auth::user();
-            
+
             // Log incoming request data
             Log::info('Execute Naik Kapal - Request Data:', $request->all());
-            
-            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
-                abort(403, "Tidak memiliki akses untuk mengubah status prospek");
+
+            if (! $this->hasProspekPermission($user, 'prospek-edit')) {
+                abort(403, 'Tidak memiliki akses untuk mengubah status prospek');
             }
 
             // Validate input
@@ -474,22 +474,22 @@ class ProspekController extends Controller
                 'no_voyage' => 'required|string|max:50',
                 'prospek_ids' => 'required|array|min:1',
                 'prospek_ids.*' => 'exists:prospek,id',
-                'pelabuhan_asal' => 'required|string|max:100'
+                'pelabuhan_asal' => 'required|string|max:100',
             ]);
-            
+
             $debugFile = storage_path('logs/debug_submit.txt');
-            file_put_contents($debugFile, 'Validation passed' . "\n", FILE_APPEND);
+            file_put_contents($debugFile, 'Validation passed'."\n", FILE_APPEND);
             Log::info('Validation passed successfully');
 
             $tujuanId = $request->tujuan_id;
-            
+
             // Mapping tujuan dan keywords
             $tujuanMapping = [
                 'jakarta' => ['nama' => 'Jakarta', 'keywords' => ['jakarta', 'tanjung priok', 'jkt']],
                 'batam' => ['nama' => 'Batam', 'keywords' => ['batam', 'sekupang', 'btm']],
                 'pinang' => ['nama' => 'Pinang', 'keywords' => ['pinang', 'penang', 'malaysia', 'png']],
                 'surabaya' => ['nama' => 'Surabaya', 'keywords' => ['surabaya', 'tanjung perak', 'sby']],
-                'medan' => ['nama' => 'Medan', 'keywords' => ['medan', 'belawan', 'mdn']]
+                'medan' => ['nama' => 'Medan', 'keywords' => ['medan', 'belawan', 'mdn']],
             ];
 
             $tujuanData = $tujuanMapping[$tujuanId];
@@ -497,7 +497,7 @@ class ProspekController extends Controller
 
             // Get data kapal yang dipilih
             $masterKapal = \App\Models\MasterKapal::find($request->kapal_id);
-            if (!$masterKapal) {
+            if (! $masterKapal) {
                 return redirect()->back()
                     ->with('error', 'Kapal tidak ditemukan')
                     ->withInput();
@@ -506,15 +506,16 @@ class ProspekController extends Controller
             // Get prospek yang dipilih berdasarkan prospek_ids
             $prospekIds = $request->prospek_ids;
             Log::info('Selected Prospek IDs:', $prospekIds);
-            
+
             $prospeks = Prospek::whereIn('id', $prospekIds)
                 ->whereIn('status', ['aktif', 'batal'])
                 ->get();
 
-            Log::info('Found ' . $prospeks->count() . ' active prospeks');
+            Log::info('Found '.$prospeks->count().' active prospeks');
 
             if ($prospeks->isEmpty()) {
                 Log::warning('No active prospeks found for selected IDs');
+
                 return redirect()->back()
                     ->with('error', 'Tidak ada prospek aktif yang dipilih')
                     ->withInput();
@@ -525,8 +526,8 @@ class ProspekController extends Controller
 
             // Update semua prospek yang dipilih dan simpan ke tabel naik_kapal
             foreach ($prospeks as $prospek) {
-                Log::info('Processing prospek ID: ' . $prospek->id);
-                
+                Log::info('Processing prospek ID: '.$prospek->id);
+
                 // Jangan ubah status prospek, biarkan tetap aktif
                 // Hanya update informasi tambahan terkait kapal tanpa mengubah status
                 $updateData = [
@@ -535,12 +536,12 @@ class ProspekController extends Controller
                     'kapal_id' => $masterKapal->id,
                     'no_voyage' => $request->no_voyage,
                     'pelabuhan_asal' => $request->pelabuhan_asal,
-                    'updated_by' => $user->id
+                    'updated_by' => $user->id,
                 ];
-                
+
                 $prospek->update($updateData);
-                
-                Log::info('Updated prospek info (status tetap) for ID: ' . $prospek->id);
+
+                Log::info('Updated prospek info (status tetap) for ID: '.$prospek->id);
 
                 // Simpan data ke tabel naik_kapal
                 // Format size_kontainer: convert ukuran (20, 40, 40hc, 45) to standard format (20ft, 40ft, 40hc, 45ft)
@@ -551,17 +552,17 @@ class ProspekController extends Controller
                     if (strpos($ukuran, 'ft') !== false || strpos($ukuran, 'hc') !== false) {
                         $sizeKontainer = $ukuran;
                     } else {
-                        $sizeKontainer = $ukuran . 'ft';
+                        $sizeKontainer = $ukuran.'ft';
                     }
                 }
-                
+
                 $naikKapalData = [
                     'prospek_id' => $prospek->id,
                     'nomor_kontainer' => $prospek->nomor_kontainer ?? $prospek->no_surat_jalan ?? '-',
                     'jenis_barang' => $prospek->barang ? substr($prospek->barang, 0, 255) : null,
                     'tipe_kontainer' => $prospek->tipe,
                     'size_kontainer' => $sizeKontainer,
-                    'ukuran_kontainer' => $prospek->ukuran ? $prospek->ukuran . ' Feet' : null,
+                    'ukuran_kontainer' => $prospek->ukuran ? $prospek->ukuran.' Feet' : null,
                     'nama_kapal' => $masterKapal->nama_kapal,
                     'no_voyage' => $request->no_voyage,
                     'pelabuhan_asal' => $request->pelabuhan_asal,
@@ -571,42 +572,43 @@ class ProspekController extends Controller
                     'total_tonase' => $prospek->total_ton,
                     'kuantitas' => $prospek->kuantitas,
                     'created_by' => $user->id,
-                    'updated_by' => $user->id
+                    'updated_by' => $user->id,
                 ];
-                
+
                 try {
                     // Simpan ke naik_kapal
                     Log::info('Creating NaikKapal record with data:', $naikKapalData);
                     $naikKapal = NaikKapal::create($naikKapalData);
-                    Log::info('Successfully created NaikKapal record with ID: ' . $naikKapal->id);
-                    
+                    Log::info('Successfully created NaikKapal record with ID: '.$naikKapal->id);
+
                     $updatedCount++;
                     $updatedKontainers[] = $naikKapalData['nomor_kontainer'];
-                    
+
                 } catch (\Exception $createError) {
                     Log::error('Failed to create NaikKapal record', [
                         'prospek_id' => $prospek->id,
-                        'error' => $createError->getMessage()
+                        'error' => $createError->getMessage(),
                     ]);
                     // Lanjutkan ke prospek berikutnya meski ada error
                 }
             }
 
             $kontainerList = implode(', ', $updatedKontainers);
-            
-            Log::info('Successfully processed ' . $updatedCount . ' prospeks');
-            
+
+            Log::info('Successfully processed '.$updatedCount.' prospeks');
+
             return redirect()->route('prospek.index')
                 ->with('success', "Berhasil memproses {$updatedCount} prospek ({$kontainerList}) untuk naik kapal {$masterKapal->nama_kapal} ke {$tujuanData['nama']}. Data telah disimpan ke tabel naik kapal dan BL.");
-        
+
         } catch (\Exception $e) {
             $debugFile = storage_path('logs/debug_submit.txt');
-            file_put_contents($debugFile, 'ERROR: ' . $e->getMessage() . "\n", FILE_APPEND);
-            file_put_contents($debugFile, 'Stack trace: ' . $e->getTraceAsString() . "\n", FILE_APPEND);
-            Log::error('Error in executeNaikKapal: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
+            file_put_contents($debugFile, 'ERROR: '.$e->getMessage()."\n", FILE_APPEND);
+            file_put_contents($debugFile, 'Stack trace: '.$e->getTraceAsString()."\n", FILE_APPEND);
+            Log::error('Error in executeNaikKapal: '.$e->getMessage());
+            Log::error('Stack trace: '.$e->getTraceAsString());
+
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage())
                 ->withInput();
         }
     }
@@ -618,14 +620,14 @@ class ProspekController extends Controller
     {
         try {
             $kapalId = $request->kapal_id;
-            
-            if (!$kapalId) {
+
+            if (! $kapalId) {
                 return response()->json(['error' => 'Kapal ID required'], 400);
             }
 
             // Get kapal name
             $masterKapal = \App\Models\MasterKapal::find($kapalId);
-            if (!$masterKapal) {
+            if (! $masterKapal) {
                 return response()->json(['error' => 'Kapal not found'], 404);
             }
 
@@ -639,7 +641,7 @@ class ProspekController extends Controller
 
             return response()->json([
                 'success' => true,
-                'voyages' => $voyages
+                'voyages' => $voyages,
             ]);
 
         } catch (\Exception $e) {
@@ -654,19 +656,19 @@ class ProspekController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+            if (! $this->hasProspekPermission($user, 'prospek-edit')) {
                 return response()->json(['error' => 'Tidak memiliki akses untuk mengubah data prospek'], 403);
             }
 
             $request->validate([
-                'no_seal' => 'required|string|max:255'
+                'no_seal' => 'required|string|max:255',
             ]);
 
             $oldSeal = $prospek->no_seal;
-            
+
             $prospek->update([
                 'no_seal' => $request->no_seal,
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
 
             // Log the update
@@ -675,7 +677,7 @@ class ProspekController extends Controller
                 'old_seal' => $oldSeal,
                 'new_seal' => $request->no_seal,
                 'updated_by' => Auth::user()->name,
-                'supir' => $prospek->nama_supir
+                'supir' => $prospek->nama_supir,
             ]);
 
             return response()->json([
@@ -683,22 +685,22 @@ class ProspekController extends Controller
                 'message' => 'Nomor seal berhasil diperbarui',
                 'data' => [
                     'id' => $prospek->id,
-                    'no_seal' => $prospek->no_seal
-                ]
+                    'no_seal' => $prospek->no_seal,
+                ],
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'error' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             Log::error('Error updating seal (inline edit)', [
                 'prospek_id' => $prospek->id ?? null,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
-            return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+
+            return response()->json(['error' => 'Terjadi kesalahan: '.$e->getMessage()], 500);
         }
     }
 
@@ -709,19 +711,19 @@ class ProspekController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+            if (! $this->hasProspekPermission($user, 'prospek-edit')) {
                 return response()->json(['error' => 'Tidak memiliki akses untuk mengubah status prospek'], 403);
             }
 
             $request->validate([
-                'status' => 'required|string|in:aktif,sudah_muat,batal'
+                'status' => 'required|string|in:aktif,sudah_muat,batal',
             ]);
 
             $oldStatus = $prospek->status;
-            
+
             $prospek->update([
                 'status' => $request->status,
-                'updated_by' => Auth::id()
+                'updated_by' => Auth::id(),
             ]);
 
             // Log the update
@@ -731,7 +733,7 @@ class ProspekController extends Controller
                 'old_status' => $oldStatus,
                 'new_status' => $request->status,
                 'updated_by' => Auth::user()->name,
-                'supir' => $prospek->nama_supir
+                'supir' => $prospek->nama_supir,
             ]);
 
             return response()->json([
@@ -740,19 +742,19 @@ class ProspekController extends Controller
                 'data' => [
                     'id' => $prospek->id,
                     'status' => $prospek->status,
-                    'old_status' => $oldStatus
-                ]
+                    'old_status' => $oldStatus,
+                ],
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'error' => 'Validasi gagal',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             Log::error('Error updating status', [
                 'prospek_id' => $prospek->id ?? null,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return response()->json(['error' => 'Terjadi kesalahan saat memperbarui status'], 500);
@@ -766,11 +768,11 @@ class ProspekController extends Controller
     {
         try {
             $user = Auth::user();
-            
+
             // Check permission
-            if (!$this->hasProspekPermission($user, 'prospek-delete')) {
+            if (! $this->hasProspekPermission($user, 'prospek-delete')) {
                 return response()->json([
-                    'error' => 'Anda tidak memiliki izin untuk menghapus prospek'
+                    'error' => 'Anda tidak memiliki izin untuk menghapus prospek',
                 ], 403);
             }
 
@@ -797,23 +799,23 @@ class ProspekController extends Controller
             Log::info('Prospek deleted', [
                 'prospek_data' => $prospekData,
                 'deleted_by' => $user->username,
-                'deleted_at' => now()
+                'deleted_at' => now(),
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Prospek berhasil dihapus'
+                'message' => 'Prospek berhasil dihapus',
             ]);
 
         } catch (\Exception $e) {
             Log::error('Error deleting prospek', [
                 'prospek_id' => $prospek->id ?? null,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return response()->json([
-                'error' => 'Terjadi kesalahan saat menghapus prospek: ' . $e->getMessage()
+                'error' => 'Terjadi kesalahan saat menghapus prospek: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -825,22 +827,22 @@ class ProspekController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+            if (! $this->hasProspekPermission($user, 'prospek-edit')) {
                 return response()->json([
-                    'error' => 'Tidak memiliki akses untuk mengubah prospek'
+                    'error' => 'Tidak memiliki akses untuk mengubah prospek',
                 ], 403);
             }
 
             $prospek = Prospek::with('suratJalan')->findOrFail($id);
-            
-            if (!$prospek->suratJalan) {
+
+            if (! $prospek->suratJalan) {
                 return response()->json([
-                    'error' => 'Prospek tidak memiliki surat jalan terkait'
+                    'error' => 'Prospek tidak memiliki surat jalan terkait',
                 ], 400);
             }
 
             $suratJalan = $prospek->suratJalan;
-            
+
             // Update data prospek dari surat jalan
             $prospek->no_surat_jalan = $suratJalan->no_surat_jalan;
             $prospek->nomor_kontainer = $suratJalan->no_kontainer;
@@ -860,19 +862,19 @@ class ProspekController extends Controller
                     'nama_supir' => $prospek->nama_supir,
                     'barang' => $prospek->barang,
                     'pt_pengirim' => $prospek->pt_pengirim,
-                    'tujuan_pengiriman' => $prospek->tujuan_pengiriman
-                ]
+                    'tujuan_pengiriman' => $prospek->tujuan_pengiriman,
+                ],
             ]);
 
         } catch (\Exception $e) {
             Log::error('Error syncing prospek from surat jalan', [
                 'prospek_id' => $id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return response()->json([
-                'error' => 'Terjadi kesalahan saat sinkronisasi: ' . $e->getMessage()
+                'error' => 'Terjadi kesalahan saat sinkronisasi: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -884,10 +886,10 @@ class ProspekController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+            if (! $this->hasProspekPermission($user, 'prospek-edit')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak memiliki akses untuk melakukan scan surat jalan'
+                    'message' => 'Tidak memiliki akses untuk melakukan scan surat jalan',
                 ], 403);
             }
 
@@ -895,52 +897,53 @@ class ProspekController extends Controller
             Log::info('Scan Surat Jalan Request', [
                 'has_file' => $request->hasFile('excel_file'),
                 'all_files' => $request->allFiles(),
-                'content_type' => $request->header('Content-Type')
+                'content_type' => $request->header('Content-Type'),
             ]);
 
             // Validasi file upload
             try {
                 $request->validate([
-                    'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:5120' // max 5MB
+                    'excel_file' => 'required|file|mimes:xlsx,xls,csv|max:5120', // max 5MB
                 ]);
             } catch (\Illuminate\Validation\ValidationException $e) {
                 Log::error('Validation failed', ['errors' => $e->validator->errors()->toArray()]);
+
                 return response()->json([
                     'success' => false,
-                    'message' => $e->validator->errors()->first()
+                    'message' => $e->validator->errors()->first(),
                 ], 422);
             }
 
             $file = $request->file('excel_file');
-            
-            if (!$file) {
+
+            if (! $file) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'File tidak ditemukan. Pastikan Anda memilih file Excel yang valid.'
+                    'message' => 'File tidak ditemukan. Pastikan Anda memilih file Excel yang valid.',
                 ], 400);
             }
-            
+
             // Baca file Excel
             $data = Excel::toArray([], $file);
-            
+
             if (empty($data) || empty($data[0])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'File Excel kosong atau tidak valid'
+                    'message' => 'File Excel kosong atau tidak valid',
                 ], 400);
             }
 
             $rows = $data[0]; // Ambil sheet pertama
             $suratJalanNumbers = [];
-            
+
             // Ambil nomor surat jalan dari kolom pertama (skip header jika ada)
             $startRow = 0;
-            
+
             // Deteksi header - jika row pertama berisi text seperti "nomor", "no", "surat jalan", skip
-            if (!empty($rows[0]) && !empty($rows[0][0])) {
+            if (! empty($rows[0]) && ! empty($rows[0][0])) {
                 $firstCell = strtolower(trim($rows[0][0]));
-                if (stripos($firstCell, 'nomor') !== false || 
-                    stripos($firstCell, 'no') !== false || 
+                if (stripos($firstCell, 'nomor') !== false ||
+                    stripos($firstCell, 'no') !== false ||
                     stripos($firstCell, 'surat') !== false) {
                     $startRow = 1; // Skip header
                 }
@@ -948,9 +951,9 @@ class ProspekController extends Controller
 
             // Kumpulkan semua nomor surat jalan
             for ($i = $startRow; $i < count($rows); $i++) {
-                if (!empty($rows[$i]) && !empty($rows[$i][0])) {
+                if (! empty($rows[$i]) && ! empty($rows[$i][0])) {
                     $noSuratJalan = trim($rows[$i][0]);
-                    if (!empty($noSuratJalan)) {
+                    if (! empty($noSuratJalan)) {
                         $suratJalanNumbers[] = $noSuratJalan;
                     }
                 }
@@ -959,33 +962,33 @@ class ProspekController extends Controller
             if (empty($suratJalanNumbers)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak ada nomor surat jalan yang ditemukan dalam file Excel'
+                    'message' => 'Tidak ada nomor surat jalan yang ditemukan dalam file Excel',
                 ], 400);
             }
 
             // Cari surat jalan yang cocok
             $suratJalans = \App\Models\SuratJalan::whereIn('no_surat_jalan', $suratJalanNumbers)->get();
-            
+
             $foundCount = 0;
             $notFoundNumbers = [];
             $updatedProspekIds = [];
 
             foreach ($suratJalanNumbers as $number) {
                 $suratJalan = $suratJalans->firstWhere('no_surat_jalan', $number);
-                
+
                 if ($suratJalan) {
                     $foundCount++;
-                    
+
                     // Cari prospek yang terkait dengan surat jalan ini
                     $prospeks = Prospek::where('surat_jalan_id', $suratJalan->id)->get();
-                    
+
                     foreach ($prospeks as $prospek) {
                         // Update prospek status menjadi "sudah_muat"
                         $prospek->update([
                             'status' => Prospek::STATUS_SUDAH_MUAT,
-                            'updated_by' => $user->id
+                            'updated_by' => $user->id,
                         ]);
-                        
+
                         $updatedProspekIds[] = $prospek->id;
                     }
                 } else {
@@ -993,11 +996,11 @@ class ProspekController extends Controller
                 }
             }
 
-            $message = "Berhasil memproses {$foundCount} dari " . count($suratJalanNumbers) . " surat jalan. ";
-            $message .= count(array_unique($updatedProspekIds)) . " prospek telah diupdate menjadi 'Sudah Muat'.";
-            
-            if (!empty($notFoundNumbers)) {
-                $message .= " Tidak ditemukan: " . implode(', ', $notFoundNumbers);
+            $message = "Berhasil memproses {$foundCount} dari ".count($suratJalanNumbers).' surat jalan. ';
+            $message .= count(array_unique($updatedProspekIds))." prospek telah diupdate menjadi 'Sudah Muat'.";
+
+            if (! empty($notFoundNumbers)) {
+                $message .= ' Tidak ditemukan: '.implode(', ', $notFoundNumbers);
             }
 
             return response()->json([
@@ -1008,15 +1011,16 @@ class ProspekController extends Controller
                     'found' => $foundCount,
                     'not_found' => count($notFoundNumbers),
                     'not_found_numbers' => $notFoundNumbers,
-                    'prospek_updated' => count(array_unique($updatedProspekIds))
-                ]
+                    'prospek_updated' => count(array_unique($updatedProspekIds)),
+                ],
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error scanning surat jalan: ' . $e->getMessage());
+            Log::error('Error scanning surat jalan: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -1024,25 +1028,26 @@ class ProspekController extends Controller
     private function hasProspekPermission($user, $permission)
     {
         // Admin and user_admin always have access
-        if (in_array($user->role, ["admin", "user_admin"])) {
+        if (in_array($user->role, ['admin', 'user_admin'])) {
             return true;
         }
 
         try {
-            $hasPermission = DB::table("user_permissions")
-                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
-                ->where("user_permissions.user_id", $user->id)
-                ->where("permissions.name", $permission)
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', $permission)
                 ->exists();
-            
+
             // Debug logging - remove this later
-            if (!$hasPermission) {
+            if (! $hasPermission) {
                 Log::warning("User {$user->username} (ID: {$user->id}) missing permission: {$permission}");
             }
-            
+
             return $hasPermission;
         } catch (\Exception $e) {
-            Log::error("Permission check failed for user {$user->id}: " . $e->getMessage());
+            Log::error("Permission check failed for user {$user->id}: ".$e->getMessage());
+
             return false;
         }
     }
@@ -1054,24 +1059,24 @@ class ProspekController extends Controller
     {
         try {
             $user = Auth::user();
-            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+            if (! $this->hasProspekPermission($user, 'prospek-edit')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak memiliki akses untuk menggabungkan LCL'
+                    'message' => 'Tidak memiliki akses untuk menggabungkan LCL',
                 ], 403);
             }
 
             // Validasi input
             $request->validate([
-                'prospek_ids' => 'required|json'
+                'prospek_ids' => 'required|json',
             ]);
 
             $prospekIds = json_decode($request->prospek_ids, true);
 
-            if (!is_array($prospekIds) || count($prospekIds) < 2) {
+            if (! is_array($prospekIds) || count($prospekIds) < 2) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Pilih minimal 2 kontainer LCL untuk digabungkan'
+                    'message' => 'Pilih minimal 2 kontainer LCL untuk digabungkan',
                 ], 400);
             }
 
@@ -1081,21 +1086,21 @@ class ProspekController extends Controller
                 ->get();
 
             // Validasi semua prospek adalah LCL
-            $nonLCL = $prospeks->filter(function($p) {
+            $nonLCL = $prospeks->filter(function ($p) {
                 return strtoupper($p->tipe) !== 'LCL';
             });
 
             if ($nonLCL->count() > 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Hanya kontainer LCL yang dapat digabungkan'
+                    'message' => 'Hanya kontainer LCL yang dapat digabungkan',
                 ], 400);
             }
 
             if ($prospeks->count() < 2) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Data prospek tidak valid atau tidak dalam status aktif'
+                    'message' => 'Data prospek tidak valid atau tidak dalam status aktif',
                 ], 400);
             }
 
@@ -1113,7 +1118,7 @@ class ProspekController extends Controller
                 'ukuran' => $prospeks->pluck('ukuran')->filter()->unique()->implode(', '),
                 'status' => Prospek::STATUS_AKTIF,
                 'created_by' => $user->id,
-                'updated_by' => $user->id
+                'updated_by' => $user->id,
             ];
 
             DB::beginTransaction();
@@ -1126,7 +1131,7 @@ class ProspekController extends Controller
                 foreach ($prospeks as $prospek) {
                     $prospek->update([
                         'status' => Prospek::STATUS_BATAL,
-                        'updated_by' => $user->id
+                        'updated_by' => $user->id,
                     ]);
                 }
 
@@ -1137,8 +1142,8 @@ class ProspekController extends Controller
                     'message' => "Berhasil menggabungkan {$prospeks->count()} kontainer LCL menjadi 1 prospek",
                     'data' => [
                         'prospek_id' => $prospekGabungan->id,
-                        'merged_count' => $prospeks->count()
-                    ]
+                        'merged_count' => $prospeks->count(),
+                    ],
                 ]);
 
             } catch (\Exception $e) {
@@ -1147,10 +1152,11 @@ class ProspekController extends Controller
             }
 
         } catch (\Exception $e) {
-            Log::error('Error gabungkan LCL: ' . $e->getMessage());
+            Log::error('Error gabungkan LCL: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }

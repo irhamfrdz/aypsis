@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('nomor')->unique();
             $table->date('tanggal');
-            $table->string('vendor_name'); 
+            $table->string('vendor_name');
             $table->string('bank')->nullable();
             $table->string('jenis_transaksi')->default('Kredit');
             $table->decimal('total_pembayaran', 15, 2);

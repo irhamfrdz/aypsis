@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\VendorAsuransi;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class VendorAsuransiController extends Controller
 {
@@ -18,13 +18,13 @@ class VendorAsuransiController extends Controller
         $query = VendorAsuransi::query();
 
         // Search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('kode', 'like', "%{$search}%")
-                  ->orWhere('nama_asuransi', 'like', "%{$search}%")
-                  ->orWhere('alamat', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('nama_asuransi', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
@@ -39,6 +39,7 @@ class VendorAsuransiController extends Controller
     public function create(): View
     {
         $nextKode = VendorAsuransi::generateNextKode();
+
         return view('master.vendor-asuransi.create', compact('nextKode'));
     }
 
@@ -55,7 +56,7 @@ class VendorAsuransiController extends Controller
             'email' => 'nullable|email|max:255',
             'tarif' => 'nullable|numeric|min:0|max:100',
             'keterangan' => 'nullable|string|max:1000',
-            'catatan' => 'nullable|string'
+            'catatan' => 'nullable|string',
         ]);
 
         $validated['created_by'] = Auth::id();
@@ -89,14 +90,14 @@ class VendorAsuransiController extends Controller
     public function update(Request $request, VendorAsuransi $vendorAsuransi): RedirectResponse
     {
         $validated = $request->validate([
-            'kode' => 'nullable|string|max:50|unique:vendor_asuransi,kode,' . $vendorAsuransi->id,
-            'nama_asuransi' => 'required|string|max:255|unique:vendor_asuransi,nama_asuransi,' . $vendorAsuransi->id,
+            'kode' => 'nullable|string|max:50|unique:vendor_asuransi,kode,'.$vendorAsuransi->id,
+            'nama_asuransi' => 'required|string|max:255|unique:vendor_asuransi,nama_asuransi,'.$vendorAsuransi->id,
             'alamat' => 'nullable|string|max:1000',
             'telepon' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
             'tarif' => 'nullable|numeric|min:0|max:100',
             'keterangan' => 'nullable|string|max:1000',
-            'catatan' => 'nullable|string'
+            'catatan' => 'nullable|string',
         ]);
 
         $validated['updated_by'] = Auth::id();
@@ -123,17 +124,17 @@ class VendorAsuransiController extends Controller
      */
     public function exportTemplate()
     {
-        $filename = 'template_vendor_asuransi_' . date('Y-m-d') . '.csv';
+        $filename = 'template_vendor_asuransi_'.date('Y-m-d').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
             'Pragma' => 'no-cache',
-            'Expires' => '0'
+            'Expires' => '0',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
 
             // Header row with semicolon delimiter
@@ -144,7 +145,7 @@ class VendorAsuransiController extends Controller
                 'telepon',
                 'email',
                 'keterangan',
-                'catatan'
+                'catatan',
             ], ';');
 
             // Sample data
@@ -155,7 +156,7 @@ class VendorAsuransiController extends Controller
                 '021-1234567',
                 'info@aca.co.id',
                 'Vendor asuransi utama',
-                'Kontak person: Pak Budi'
+                'Kontak person: Pak Budi',
             ], ';');
 
             fclose($file);
@@ -170,13 +171,13 @@ class VendorAsuransiController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:csv,txt|max:2048'
+            'file' => 'required|mimes:csv,txt|max:2048',
         ]);
 
         $file = $request->file('file');
         $path = $file->getRealPath();
 
-        $data = array_map(function($line) {
+        $data = array_map(function ($line) {
             return str_getcsv($line, ';');
         }, file($path));
 
@@ -191,6 +192,7 @@ class VendorAsuransiController extends Controller
                 if (count($row) < 2) {
                     $errors[] = "Baris {$rowNumber}: Data tidak lengkap";
                     $rowNumber++;
+
                     continue;
                 }
 
@@ -214,6 +216,7 @@ class VendorAsuransiController extends Controller
                 if (empty($vendorData['nama_asuransi'])) {
                     $errors[] = "Baris {$rowNumber}: Nama asuransi wajib diisi";
                     $rowNumber++;
+
                     continue;
                 }
 
@@ -221,14 +224,16 @@ class VendorAsuransiController extends Controller
                 if ($existing) {
                     $errors[] = "Baris {$rowNumber}: Vendor Asuransi dengan nama '{$vendorData['nama_asuransi']}' sudah ada";
                     $rowNumber++;
+
                     continue;
                 }
 
-                if (!empty($vendorData['kode'])) {
+                if (! empty($vendorData['kode'])) {
                     $existingKode = VendorAsuransi::where('kode', $vendorData['kode'])->first();
                     if ($existingKode) {
                         $errors[] = "Baris {$rowNumber}: Kode '{$vendorData['kode']}' sudah digunakan";
                         $rowNumber++;
+
                         continue;
                     }
                 }
@@ -241,14 +246,14 @@ class VendorAsuransiController extends Controller
                 $rowNumber++;
 
             } catch (\Exception $e) {
-                $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+                $errors[] = "Baris {$rowNumber}: ".$e->getMessage();
                 $rowNumber++;
             }
         }
 
         $message = "Import selesai. {$successCount} data berhasil diimpor.";
-        if (!empty($errors)) {
-            $message .= " Terdapat " . count($errors) . " error(s).";
+        if (! empty($errors)) {
+            $message .= ' Terdapat '.count($errors).' error(s).';
             session()->flash('import_errors', $errors);
         }
 

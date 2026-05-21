@@ -1,11 +1,12 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
 
-use Illuminate\Support\Facades\DB;
+require __DIR__.'/../vendor/autoload.php';
+
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 // Boot Laravel app
-$app = require __DIR__ . '/../bootstrap/app.php';
+$app = require __DIR__.'/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
@@ -92,7 +93,10 @@ $vendorValue = $perm->vendor_perusahaan ?: ($kontainers->first()->pemilik_kontai
 $sizeList = collect($kontainers)->pluck('ukuran')->filter()->unique()->values()->all();
 $ukuran = count($sizeList) > 1 ? implode(',', $sizeList) : ($sizeList[0] ?? 'UNKNOWN');
 
-$aggDpp = 0.0; $aggPpn = 0.0; $aggPph = 0.0; $aggGrand = 0.0;
+$aggDpp = 0.0;
+$aggPpn = 0.0;
+$aggPph = 0.0;
+$aggGrand = 0.0;
 $nomorKontainers = [];
 foreach ($kontainers as $k) {
     $base = floatval($k->harga_satuan ?? 0);
@@ -100,8 +104,11 @@ foreach ($kontainers as $k) {
     $ppn = round($dpp * 0.12, 2);
     $pph = round($base * 0.02, 2);
     $grand = round($base + $ppn - $pph, 2);
-    $aggDpp += $dpp; $aggPpn += $ppn; $aggPph += $pph; $aggGrand += $grand;
-    $nomorKontainers[] = $k->nomor_seri_gabungan ?? ('id:' . $k->id);
+    $aggDpp += $dpp;
+    $aggPpn += $ppn;
+    $aggPph += $pph;
+    $aggGrand += $grand;
+    $nomorKontainers[] = $k->nomor_seri_gabungan ?? ('id:'.$k->id);
 }
 
 $dateForTagihan = isset($validated['tanggal_masuk_sewa'])
@@ -111,20 +118,22 @@ $dateForTagihan = isset($validated['tanggal_masuk_sewa'])
 $existing = DB::table('tagihan_kontainer_sewa')
     ->where('vendor', $vendorValue)
     ->where('tanggal_harga_awal', $dateForTagihan)
-    ->where(function($q){ $q->whereNull('tarif')->orWhere('tarif','<>','Pranota'); })
-    ->orderBy('id','desc')
+    ->where(function ($q) {
+        $q->whereNull('tarif')->orWhere('tarif', '<>', 'Pranota');
+    })
+    ->orderBy('id', 'desc')
     ->first();
 
 if ($existing) {
     // merge
-    $newDpp = round((float)$existing->dpp + round($aggDpp,2), 2);
-    $newPpn = round((float)$existing->ppn + round($aggPpn,2), 2);
-    $newPph = round((float)$existing->pph + round($aggPph,2), 2);
-    $newGrand = round((float)$existing->grand_total + round($aggGrand,2), 2);
-    $existingKontainers = trim((string)$existing->nomor_kontainer);
-    $combinedKontainers = $existingKontainers === '' ? implode(',', $nomorKontainers) : ($existingKontainers . ',' . implode(',', $nomorKontainers));
+    $newDpp = round((float) $existing->dpp + round($aggDpp, 2), 2);
+    $newPpn = round((float) $existing->ppn + round($aggPpn, 2), 2);
+    $newPph = round((float) $existing->pph + round($aggPph, 2), 2);
+    $newGrand = round((float) $existing->grand_total + round($aggGrand, 2), 2);
+    $existingKontainers = trim((string) $existing->nomor_kontainer);
+    $combinedKontainers = $existingKontainers === '' ? implode(',', $nomorKontainers) : ($existingKontainers.','.implode(',', $nomorKontainers));
 
-    $existingSizes = array_filter(array_map('trim', explode(',', (string)$existing->ukuran_kontainer)));
+    $existingSizes = array_filter(array_map('trim', explode(',', (string) $existing->ukuran_kontainer)));
     $mergedSizes = array_values(array_unique(array_filter(array_merge($existingSizes, $sizeList))));
     $mergedUkuran = count($mergedSizes) > 1 ? implode(',', $mergedSizes) : ($mergedSizes[0] ?? null);
 
@@ -136,12 +145,12 @@ if ($existing) {
         'harga' => $newGrand,
         'nomor_kontainer' => $combinedKontainers,
         'ukuran_kontainer' => $mergedUkuran,
-        'masa' => (function() use ($existing) {
+        'masa' => (function () use ($existing) {
             try {
                 $start = isset($existing->tanggal_harga_awal) ? Carbon::parse($existing->tanggal_harga_awal) : null;
                 $masaStart = $start ? $start->locale('id')->isoFormat('D MMMM') : null;
                 $masaEnd = null;
-                if (!empty($existing->tanggal_harga_akhir)) {
+                if (! empty($existing->tanggal_harga_akhir)) {
                     $end = Carbon::parse($existing->tanggal_harga_akhir)->subDay();
                     $masaEnd = $end->locale('id')->isoFormat('D MMMM');
                 } else {
@@ -151,36 +160,44 @@ if ($existing) {
                         $masaEnd = $derived->locale('id')->isoFormat('D MMMM');
                     }
                 }
-                if ($masaStart && $masaEnd) return $masaStart . ' - ' . $masaEnd;
+                if ($masaStart && $masaEnd) {
+                    return $masaStart.' - '.$masaEnd;
+                }
+
                 return $masaStart ?: ($masaEnd ?: null);
-            } catch (\Exception $e) { return null; }
+            } catch (\Exception $e) {
+                return null;
+            }
         })(),
         'updated_at' => now(),
     ]);
     $tagihanId = $existing->id;
     echo "Reused existing tagihan id={$tagihanId}\n";
 } else {
-    $masaForInsert = (function() use ($dateForTagihan) {
+    $masaForInsert = (function () use ($dateForTagihan) {
         try {
             $s = Carbon::parse($dateForTagihan);
             $p = 1;
             $e = $s->copy()->addMonths($p)->subDay();
-            return $s->locale('id')->isoFormat('D MMMM') . ' - ' . $e->locale('id')->isoFormat('D MMMM');
-        } catch (\Exception $e) { return null; }
+
+            return $s->locale('id')->isoFormat('D MMMM').' - '.$e->locale('id')->isoFormat('D MMMM');
+        } catch (\Exception $e) {
+            return null;
+        }
     })();
 
     $tagihanId = DB::table('tagihan_kontainer_sewa')->insertGetId([
         'vendor' => $vendorValue,
         'tarif' => 'Bulanan',
         'ukuran_kontainer' => $ukuran,
-        'harga' => round($aggGrand,2),
-        'dpp' => round($aggDpp,2),
-        'ppn' => round($aggPpn,2),
-        'pph' => round($aggPph,2),
-        'grand_total' => round($aggGrand,2),
+        'harga' => round($aggGrand, 2),
+        'dpp' => round($aggDpp, 2),
+        'ppn' => round($aggPpn, 2),
+        'pph' => round($aggPph, 2),
+        'grand_total' => round($aggGrand, 2),
         'nomor_kontainer' => implode(',', $nomorKontainers),
         'tanggal_harga_awal' => $dateForTagihan,
-        'group_code' => 'A' . str_pad((string)$permId, 3, '0', STR_PAD_LEFT),
+        'group_code' => 'A'.str_pad((string) $permId, 3, '0', STR_PAD_LEFT),
         'periode' => '1',
         'keterangan' => 'Tagihan dibuat dari persetujuan permohonan TEST',
         'masa' => $masaForInsert,
@@ -198,7 +215,8 @@ foreach ([$k1, $k2] as $kid) {
             'tagihan_id' => $tagihanId,
             'kontainer_id' => $kid,
         ]);
-    } catch (\Exception $e) {}
+    } catch (\Exception $e) {
+    }
 }
 
 // Print the resulting tagihan row

@@ -2,14 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use App\Models\BiayaBensin;
-use App\Models\Mobil;
-use App\Models\Karyawan;
 use App\Models\AuditLog;
-use Carbon\Carbon;
+use App\Models\BiayaBensin;
+use App\Models\Karyawan;
+use App\Models\Mobil;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class BiayaBensinController extends Controller
@@ -37,6 +34,7 @@ class BiayaBensinController extends Controller
     {
         $mobils = Mobil::all();
         $supirs = Karyawan::where('divisi', 'LIKE', '%supir%')->orWhere('pekerjaan', 'LIKE', '%supir%')->get();
+
         return view('biaya-bensin.create', compact('mobils', 'supirs'));
     }
 
@@ -84,6 +82,7 @@ class BiayaBensinController extends Controller
     public function show(string $id)
     {
         $item = BiayaBensin::with(['mobil', 'supir', 'creator'])->findOrFail($id);
+
         return view('biaya-bensin.show', compact('item'));
     }
 
@@ -95,6 +94,7 @@ class BiayaBensinController extends Controller
         $item = BiayaBensin::findOrFail($id);
         $mobils = Mobil::all();
         $supirs = Karyawan::where('divisi', 'LIKE', '%supir%')->orWhere('pekerjaan', 'LIKE', '%supir%')->get();
+
         return view('biaya-bensin.edit', compact('item', 'mobils', 'supirs'));
     }
 

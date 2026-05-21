@@ -2,17 +2,17 @@
 
 namespace App\Exports;
 
+use App\Models\Gudang;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
-use App\Models\Gudang;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class BranchGudangKontainerExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class BranchGudangKontainerExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $cabangNama;
 
@@ -33,7 +33,7 @@ class BranchGudangKontainerExport implements FromCollection, WithHeadings, Shoul
             ->orderBy('gudangs_id')
             ->orderBy('nomor_seri_gabungan')
             ->get()
-            ->map(function($k) {
+            ->map(function ($k) {
                 return [
                     $k->gudang->nama_gudang ?? '-',
                     $k->nomor_seri_gabungan,
@@ -48,7 +48,7 @@ class BranchGudangKontainerExport implements FromCollection, WithHeadings, Shoul
             ->orderBy('gudangs_id')
             ->orderBy('nomor_seri_gabungan')
             ->get()
-            ->map(function($s) {
+            ->map(function ($s) {
                 return [
                     $s->gudang->nama_gudang ?? '-',
                     $s->nomor_seri_gabungan,
@@ -73,11 +73,11 @@ class BranchGudangKontainerExport implements FromCollection, WithHeadings, Shoul
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $sheet->getStyle('A1:D1')->getFont()->setBold(true);
                 $sheet->getStyle('A1:D1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            }
+            },
         ];
     }
 }

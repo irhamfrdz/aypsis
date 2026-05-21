@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\VendorBengkel;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class VendorBengkelController extends Controller
 {
@@ -18,13 +18,13 @@ class VendorBengkelController extends Controller
         $query = VendorBengkel::query();
 
         // Search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('kode', 'like', "%{$search}%")
-                  ->orWhere('nama_bengkel', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%")
-                  ->orWhere('catatan', 'like', "%{$search}%");
+                    ->orWhere('nama_bengkel', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%")
+                    ->orWhere('catatan', 'like', "%{$search}%");
             });
         }
 
@@ -50,7 +50,7 @@ class VendorBengkelController extends Controller
             'kode' => 'nullable|string|max:50|unique:vendor_bengkel,kode',
             'nama_bengkel' => 'required|string|max:255|unique:vendor_bengkel,nama_bengkel',
             'keterangan' => 'nullable|string|max:1000',
-            'catatan' => 'nullable|string|max:2000'
+            'catatan' => 'nullable|string|max:2000',
         ]);
 
         $validated['created_by'] = Auth::id();
@@ -84,10 +84,10 @@ class VendorBengkelController extends Controller
     public function update(Request $request, VendorBengkel $vendorBengkel): RedirectResponse
     {
         $validated = $request->validate([
-            'kode' => 'nullable|string|max:50|unique:vendor_bengkel,kode,' . $vendorBengkel->id,
-            'nama_bengkel' => 'required|string|max:255|unique:vendor_bengkel,nama_bengkel,' . $vendorBengkel->id,
+            'kode' => 'nullable|string|max:50|unique:vendor_bengkel,kode,'.$vendorBengkel->id,
+            'nama_bengkel' => 'required|string|max:255|unique:vendor_bengkel,nama_bengkel,'.$vendorBengkel->id,
             'keterangan' => 'nullable|string|max:1000',
-            'catatan' => 'nullable|string|max:2000'
+            'catatan' => 'nullable|string|max:2000',
         ]);
 
         $validated['updated_by'] = Auth::id();
@@ -117,17 +117,17 @@ class VendorBengkelController extends Controller
      */
     public function exportTemplate()
     {
-        $filename = 'template_vendor_bengkel_' . date('Y-m-d') . '.csv';
+        $filename = 'template_vendor_bengkel_'.date('Y-m-d').'.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
             'Pragma' => 'no-cache',
-            'Expires' => '0'
+            'Expires' => '0',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
 
             // Header row with semicolon delimiter
@@ -135,7 +135,7 @@ class VendorBengkelController extends Controller
                 'kode',
                 'nama_bengkel',
                 'keterangan',
-                'catatan'
+                'catatan',
             ], ';');
 
             // Sample data
@@ -143,14 +143,14 @@ class VendorBengkelController extends Controller
                 'VB001',
                 'Bengkel Motor Jaya',
                 'Spesialis motor sport',
-                'Lokasi strategis, harga terjangkau'
+                'Lokasi strategis, harga terjangkau',
             ], ';');
 
             fputcsv($file, [
                 'VB002',
                 'Vendor Spare Part ABC',
                 'Distributor spare part original',
-                'Supplier terpercaya dengan garansi resmi'
+                'Supplier terpercaya dengan garansi resmi',
             ], ';');
 
             fclose($file);
@@ -165,13 +165,13 @@ class VendorBengkelController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:csv,txt|max:2048'
+            'file' => 'required|mimes:csv,txt|max:2048',
         ]);
 
         $file = $request->file('file');
         $path = $file->getRealPath();
 
-        $data = array_map(function($line) {
+        $data = array_map(function ($line) {
             return str_getcsv($line, ';'); // Use semicolon as delimiter
         }, file($path));
 
@@ -186,6 +186,7 @@ class VendorBengkelController extends Controller
                 if (count($row) < 2) { // Minimum required fields (kode bisa kosong, nama_bengkel wajib)
                     $errors[] = "Baris {$rowNumber}: Data tidak lengkap";
                     $rowNumber++;
+
                     continue;
                 }
 
@@ -207,6 +208,7 @@ class VendorBengkelController extends Controller
                 if (empty($vendorData['nama_bengkel'])) {
                     $errors[] = "Baris {$rowNumber}: Nama bengkel wajib diisi";
                     $rowNumber++;
+
                     continue;
                 }
 
@@ -215,15 +217,17 @@ class VendorBengkelController extends Controller
                 if ($existing) {
                     $errors[] = "Baris {$rowNumber}: Vendor/Bengkel dengan nama '{$vendorData['nama_bengkel']}' sudah ada";
                     $rowNumber++;
+
                     continue;
                 }
 
                 // Check for duplicate kode if provided
-                if (!empty($vendorData['kode'])) {
+                if (! empty($vendorData['kode'])) {
                     $existingKode = VendorBengkel::where('kode', $vendorData['kode'])->first();
                     if ($existingKode) {
                         $errors[] = "Baris {$rowNumber}: Kode '{$vendorData['kode']}' sudah digunakan";
                         $rowNumber++;
+
                         continue;
                     }
                 }
@@ -233,14 +237,14 @@ class VendorBengkelController extends Controller
                 $rowNumber++;
 
             } catch (\Exception $e) {
-                $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+                $errors[] = "Baris {$rowNumber}: ".$e->getMessage();
                 $rowNumber++;
             }
         }
 
         $message = "Import selesai. {$successCount} data berhasil diimpor.";
-        if (!empty($errors)) {
-            $message .= " Terdapat " . count($errors) . " error(s).";
+        if (! empty($errors)) {
+            $message .= ' Terdapat '.count($errors).' error(s).';
             session()->flash('import_errors', $errors);
         }
 

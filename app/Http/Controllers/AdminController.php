@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route as RouteFacade;
-use App\Models\Permission;
 
 class AdminController extends Controller
 {
@@ -38,7 +38,7 @@ class AdminController extends Controller
     public function debug(Request $request)
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'not authenticated'], 401);
         }
 

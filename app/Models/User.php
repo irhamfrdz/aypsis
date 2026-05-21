@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Traits\Auditable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, Auditable;
-
     use Auditable;
+    use Auditable, HasFactory, Notifiable;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -69,8 +69,6 @@ class User extends Authenticatable
 
     /**
      * Check if user is approved
-     *
-     * @return bool
      */
     public function isApproved(): bool
     {
@@ -79,8 +77,6 @@ class User extends Authenticatable
 
     /**
      * Check if user is pending approval
-     *
-     * @return bool
      */
     public function isPending(): bool
     {
@@ -89,8 +85,6 @@ class User extends Authenticatable
 
     /**
      * Check if user is rejected
-     *
-     * @return bool
      */
     public function isRejected(): bool
     {
@@ -109,9 +103,6 @@ class User extends Authenticatable
 
     /**
      * Check if the user has a specific permission.
-     *
-     * @param  string  $permissionName
-     * @return bool
      */
     public function hasPermissionTo(string $permissionName): bool
     {
@@ -122,9 +113,6 @@ class User extends Authenticatable
     /**
      * Check if the user has any permission whose name starts with the given prefix.
      * Useful when permissions are scoped by resource (e.g. "tagihan-kontainer-sewa.*").
-     *
-     * @param string $prefix
-     * @return bool
      */
     public function hasPermissionLike(string $prefix): bool
     {
@@ -137,9 +125,6 @@ class User extends Authenticatable
      * Heuristic permission match: compare tokens of the requested ability and each permission
      * and return true when there's a sufficient overlap. This helps when ability names and
      * permission names use different prefixes but share core tokens (e.g. "master-pranota-tagihan-kontainer" vs "tagihan-kontainer-sewa.index").
-     *
-     * @param string $ability
-     * @return bool
      */
     public function hasPermissionMatch(string $ability): bool
     {
@@ -176,18 +161,17 @@ class User extends Authenticatable
 
     /**
      * Check if the user is a driver (supir) based on karyawan divisi
-     *
-     * @return bool
      */
     public function isSupir(): bool
     {
         // Check if user has karyawan relationship
-        if (!$this->karyawan) {
+        if (! $this->karyawan) {
             return false;
         }
 
         // Check if karyawan's divisi is 'supir' (case insensitive)
         $divisi = strtoupper(trim($this->karyawan->divisi ?? ''));
+
         return $divisi === 'SUPIR' || $divisi === 'DRIVER';
     }
 
@@ -203,9 +187,6 @@ class User extends Authenticatable
 
     /**
      * Check if the user has a specific role.
-     *
-     * @param string $roleName
-     * @return bool
      */
     public function hasRole(string $roleName): bool
     {
@@ -216,9 +197,8 @@ class User extends Authenticatable
      * Check if the user can perform a specific action (alias for hasPermissionTo).
      * This method is used by the sidebar layout and other parts of the application.
      *
-     * @param string|array $abilities
-     * @param array $arguments
-     * @return bool
+     * @param  string|array  $abilities
+     * @param  array  $arguments
      */
     public function can($abilities, $arguments = []): bool
     {
@@ -242,6 +222,7 @@ class User extends Authenticatable
                     }
                 }
             }
+
             return false;
         }
 
@@ -251,9 +232,6 @@ class User extends Authenticatable
 
     /**
      * Check permission with flexible matching to handle different naming conventions
-     *
-     * @param string $ability
-     * @return bool
      */
     private function hasFlexiblePermission(string $ability): bool
     {
@@ -269,7 +247,7 @@ class User extends Authenticatable
             'view' => ['index', 'show', 'view'],
             'create' => ['create', 'store'],
             'update' => ['edit', 'update'],
-            'delete' => ['destroy', 'delete']
+            'delete' => ['destroy', 'delete'],
         ];
 
         // Extract module and action from ability
@@ -280,8 +258,8 @@ class User extends Authenticatable
             // Add mapped actions to patterns
             if (isset($actionMappings[$action])) {
                 foreach ($actionMappings[$action] as $mappedAction) {
-                    $patterns[] = $module . '-' . $mappedAction;
-                    $patterns[] = $module . '.' . $mappedAction;
+                    $patterns[] = $module.'-'.$mappedAction;
+                    $patterns[] = $module.'.'.$mappedAction;
                 }
             }
         }
@@ -299,8 +277,6 @@ class User extends Authenticatable
     /**
      * Get the name attribute (accessor)
      * Use karyawan nama_lengkap if available, otherwise use username
-     *
-     * @return string
      */
     public function getNameAttribute(): string
     {

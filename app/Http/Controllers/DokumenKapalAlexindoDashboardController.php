@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\MasterDokumenKapalAlexindo;
 use Carbon\Carbon;
 
@@ -17,7 +15,7 @@ class DokumenKapalAlexindoDashboardController extends Controller
         $this->authorize('dashboard-dokumen-kapal-alexindo-view');
         $today = Carbon::today();
         $thirtyDaysLater = $today->copy()->addDays(30);
-        
+
         // Semua dokumen berjangka (punya tanggal berakhir)
         $totalDokumens = MasterDokumenKapalAlexindo::with(['kapal', 'sertifikatKapal'])
             ->whereNotNull('tanggal_berakhir')
@@ -31,7 +29,7 @@ class DokumenKapalAlexindoDashboardController extends Controller
             ->whereDate('tanggal_berakhir', '<=', $thirtyDaysLater)
             ->orderBy('tanggal_berakhir', 'asc')
             ->get();
-        
+
         // Asset yang sudah lewat jatuh tempo
         $expiredDokumens = MasterDokumenKapalAlexindo::with(['kapal', 'sertifikatKapal'])
             ->whereNotNull('tanggal_berakhir')
@@ -44,7 +42,7 @@ class DokumenKapalAlexindoDashboardController extends Controller
             ->whereNull('tanggal_berakhir')
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // Statistics
         $stats = [
             'total_dokumen' => $totalDokumens->count(),
@@ -52,7 +50,7 @@ class DokumenKapalAlexindoDashboardController extends Controller
             'expired' => $expiredDokumens->count(),
             'no_date' => $noDateDokumens->count(),
         ];
-        
+
         return view('dashboards.dokumen-kapal-alexindo', compact('totalDokumens', 'expiringDokumens', 'expiredDokumens', 'noDateDokumens', 'stats'));
     }
 }

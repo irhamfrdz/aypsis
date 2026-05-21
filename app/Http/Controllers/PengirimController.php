@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Exports\PengirimExport;
 use App\Models\Pengirim;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\PengirimExport;
 
 class PengirimController extends Controller
 {
@@ -20,6 +19,7 @@ class PengirimController extends Controller
             'Content-Disposition' => 'attachment; filename="template_pengirim.csv"',
         ];
         $csv = "kode;nama_pengirim;catatan;status\n";
+
         return response($csv, 200, $headers);
     }
 
@@ -46,7 +46,7 @@ class PengirimController extends Controller
         $successCount = 0;
 
         $handle = fopen($path, 'r');
-        if (!$handle) {
+        if (! $handle) {
             return back()->with('error', 'Gagal membuka file CSV.');
         }
 
@@ -61,6 +61,7 @@ class PengirimController extends Controller
             $rowNum++;
             if (count($row) !== 4) {
                 $errors[] = "Baris $rowNum: Jumlah kolom tidak sesuai.";
+
                 continue;
             }
             [$kode, $nama_pengirim, $catatan, $status] = $row;
@@ -72,6 +73,7 @@ class PengirimController extends Controller
             // Skip jika nama_pengirim kosong
             if ($nama_pengirim === '') {
                 $errors[] = "Baris $rowNum: Nama pengirim wajib diisi.";
+
                 continue;
             }
 
@@ -85,8 +87,9 @@ class PengirimController extends Controller
                 $status = 'active';
             }
 
-            if (!in_array($status, ['active', 'inactive'])) {
+            if (! in_array($status, ['active', 'inactive'])) {
                 $errors[] = "Baris $rowNum: Status harus 'active' atau 'inactive'.";
+
                 continue;
             }
 
@@ -111,8 +114,10 @@ class PengirimController extends Controller
         if ($errors) {
             return back()->with('error', implode('<br>', $errors));
         }
+
         return back()->with('success', "Import selesai. $successCount data berhasil diproses.");
     }
+
     /**
      * Export pengirim data to Excel
      */
@@ -122,8 +127,8 @@ class PengirimController extends Controller
             'search' => $request->input('search', ''),
         ];
 
-        $filename = 'master_pengirim_' . date('Y-m-d_His') . '.xlsx';
-        
+        $filename = 'master_pengirim_'.date('Y-m-d_His').'.xlsx';
+
         return Excel::download(new PengirimExport($filters), $filename);
     }
 
@@ -135,12 +140,12 @@ class PengirimController extends Controller
         $query = Pengirim::query();
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('kode', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('nama_pengirim', 'LIKE', '%' . $searchTerm . '%')
-                  ->orWhere('catatan', 'LIKE', '%' . $searchTerm . '%');
+                $q->where('kode', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('nama_pengirim', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('catatan', 'LIKE', '%'.$searchTerm.'%');
             });
         }
 
@@ -191,6 +196,7 @@ class PengirimController extends Controller
     public function show(string $id)
     {
         $pengirim = Pengirim::findOrFail($id);
+
         return view('master-pengirim.show', compact('pengirim'));
     }
 
@@ -200,6 +206,7 @@ class PengirimController extends Controller
     public function edit(string $id)
     {
         $pengirim = Pengirim::findOrFail($id);
+
         return view('master-pengirim.edit', compact('pengirim'));
     }
 
@@ -211,7 +218,7 @@ class PengirimController extends Controller
         $pengirim = Pengirim::findOrFail($id);
 
         $request->validate([
-            'kode' => 'required|string|unique:pengirims,kode,' . $id,
+            'kode' => 'required|string|unique:pengirims,kode,'.$id,
             'nama_pengirim' => 'required|string|max:255',
             'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',
@@ -251,7 +258,7 @@ class PengirimController extends Controller
         }
 
         // Format: MP + 5 digit angka (MP00001)
-        return 'MP' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+        return 'MP'.str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -262,7 +269,7 @@ class PengirimController extends Controller
     {
         // Pre-fill nama_pengirim if search parameter exists
         $searchValue = $request->query('search', '');
-        
+
         return view('master-pengirim.create-for-order', compact('searchValue'));
     }
 
@@ -275,6 +282,7 @@ class PengirimController extends Controller
         // Handle code generation request
         if ($request->has('_generate_code_only')) {
             $code = $this->generatePengirimCode();
+
             return response()->json(['code' => $code]);
         }
 
@@ -305,7 +313,7 @@ class PengirimController extends Controller
     public function updateForTandaTerima(Request $request, Pengirim $pengirim)
     {
         $request->validate([
-            'kode' => 'required|string|unique:pengirims,kode,' . $pengirim->id,
+            'kode' => 'required|string|unique:pengirims,kode,'.$pengirim->id,
             'nama_pengirim' => 'required|string|max:255',
             'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',
@@ -317,7 +325,7 @@ class PengirimController extends Controller
         // Return popup success view
         return view('master-pengirim.success-for-order', [
             'pengirim' => $pengirim,
-            'message' => 'Pengirim berhasil diperbarui!'
+            'message' => 'Pengirim berhasil diperbarui!',
         ]);
     }
 }

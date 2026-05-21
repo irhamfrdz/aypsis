@@ -2,22 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-
-use App\Models\HistoryKontainer;
 use App\Models\Gudang;
+use App\Models\HistoryKontainer;
 use App\Models\Kontainer;
 use App\Models\StockKontainer;
+use Illuminate\Http\Request;
 
 class HistoryKontainerController extends Controller
 {
     public function index(Request $request)
     {
         $query = HistoryKontainer::select('history_kontainers.*')
-            ->selectSub(function($q) {
+            ->selectSub(function ($q) {
                 // Prefer asal_gudang_id if available, otherwise fallback to previous record's gudang
-                $q->selectRaw("
+                $q->selectRaw('
                     COALESCE(
                         (SELECT g1.nama_gudang FROM gudangs g1 WHERE g1.id = history_kontainers.asal_gudang_id LIMIT 1),
                         (SELECT g2.nama_gudang FROM history_kontainers hk 
@@ -26,14 +24,13 @@ class HistoryKontainerController extends Controller
                          AND hk.id < history_kontainers.id
                          ORDER BY hk.id DESC LIMIT 1)
                     )
-                ");
+                ');
             }, 'asal_gudang_nama')
             ->with(['gudang', 'creator'])
             ->orderBy('created_at', 'desc');
 
-
         if ($request->filled('search')) {
-            $query->where('nomor_kontainer', 'like', '%' . $request->search . '%');
+            $query->where('nomor_kontainer', 'like', '%'.$request->search.'%');
         }
 
         if ($request->filled('start_date')) {
@@ -77,7 +74,7 @@ class HistoryKontainerController extends Controller
             if ($kontainer) {
                 $kontainer->update(['gudangs_id' => $previous ? $previous->gudang_id : null]);
             }
-            
+
             // Juga coba update di tabel stock_kontainers jika ini adalah tipe stock
             $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
             if ($stockKontainer) {
@@ -90,4 +87,3 @@ class HistoryKontainerController extends Controller
         return redirect()->back()->with('success', 'History pergerakan berhasil dihapus.');
     }
 }
-

@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class Term extends Model
 {
     use Auditable;
@@ -14,6 +13,6 @@ class Term extends Model
         'kode',
         'nama_status',
         'catatan',
-        'status'
+        'status',
     ];
 }

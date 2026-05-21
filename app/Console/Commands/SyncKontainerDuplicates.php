@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\StockKontainer;
 use App\Models\Kontainer;
+use App\Models\StockKontainer;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class SyncKontainerDuplicates extends Command
@@ -45,7 +45,7 @@ class SyncKontainerDuplicates extends Command
         if (empty($duplicates)) {
             $this->info('No duplicates found between stock_kontainers and kontainers.');
         } else {
-            $this->info('Found ' . count($duplicates) . ' container numbers with duplicates:');
+            $this->info('Found '.count($duplicates).' container numbers with duplicates:');
 
             foreach ($duplicates as $duplicate) {
                 $this->line("Processing: {$duplicate->nomor_seri_gabungan}");
@@ -56,7 +56,7 @@ class SyncKontainerDuplicates extends Command
                         ->where('status', 'active')
                         ->update(['status' => 'inactive']);
 
-                    $this->info("  → Stock kontainer set to inactive (kontainer is active)");
+                    $this->info('  → Stock kontainer set to inactive (kontainer is active)');
                 }
             }
         }
@@ -71,8 +71,8 @@ class SyncKontainerDuplicates extends Command
             HAVING COUNT(*) > 1
         ");
 
-        if (!empty($stockDuplicates)) {
-            $this->info('Found ' . count($stockDuplicates) . ' duplicate numbers in stock_kontainers:');
+        if (! empty($stockDuplicates)) {
+            $this->info('Found '.count($stockDuplicates).' duplicate numbers in stock_kontainers:');
 
             foreach ($stockDuplicates as $duplicate) {
                 $this->line("Processing stock duplicates: {$duplicate->nomor_seri_gabungan}");
@@ -88,7 +88,7 @@ class SyncKontainerDuplicates extends Command
                     $stock->update(['status' => 'inactive']);
                 });
 
-                $this->info("  → " . ($stocks->count() - 1) . " old stock entries set to inactive");
+                $this->info('  → '.($stocks->count() - 1).' old stock entries set to inactive');
             }
         }
 
@@ -103,8 +103,8 @@ class SyncKontainerDuplicates extends Command
             HAVING COUNT(*) > 1
         ");
 
-        if (!empty($kontainerSerialDuplicates)) {
-            $this->info('Found ' . count($kontainerSerialDuplicates) . ' duplicate serial+suffix combinations in kontainers:');
+        if (! empty($kontainerSerialDuplicates)) {
+            $this->info('Found '.count($kontainerSerialDuplicates).' duplicate serial+suffix combinations in kontainers:');
 
             foreach ($kontainerSerialDuplicates as $duplicate) {
                 $this->line("Processing kontainer serial duplicates: {$duplicate->nomor_seri_kontainer}-{$duplicate->akhiran_kontainer}");
@@ -121,7 +121,7 @@ class SyncKontainerDuplicates extends Command
                     $kontainer->update(['status' => 'inactive']);
                 });
 
-                $this->info("  → " . ($kontainers->count() - 1) . " old kontainer entries with same serial+suffix set to inactive");
+                $this->info('  → '.($kontainers->count() - 1).' old kontainer entries with same serial+suffix set to inactive');
             }
         }
 
@@ -135,8 +135,8 @@ class SyncKontainerDuplicates extends Command
             HAVING COUNT(*) > 1
         ");
 
-        if (!empty($kontainerDuplicates)) {
-            $this->info('Found ' . count($kontainerDuplicates) . ' duplicate numbers in kontainers:');
+        if (! empty($kontainerDuplicates)) {
+            $this->info('Found '.count($kontainerDuplicates).' duplicate numbers in kontainers:');
 
             foreach ($kontainerDuplicates as $duplicate) {
                 $this->line("Processing kontainer duplicates: {$duplicate->nomor_seri_gabungan}");
@@ -152,11 +152,12 @@ class SyncKontainerDuplicates extends Command
                     $kontainer->update(['status' => 'inactive']);
                 });
 
-                $this->info("  → " . ($kontainers->count() - 1) . " old kontainer entries set to inactive");
+                $this->info('  → '.($kontainers->count() - 1).' old kontainer entries set to inactive');
             }
         }
 
         $this->info('Container duplicate synchronization completed!');
+
         return 0;
     }
 }

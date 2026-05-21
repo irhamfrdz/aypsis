@@ -8,19 +8,21 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
 {
     protected $receipts;
+
     protected $vendor;
+
     protected $shipName;
+
     protected $requestDate;
 
     public function __construct($receipts, $vendor = null, $shipName = null, $requestDate = null)
     {
         $this->receipts = $receipts;
-        
+
         // Prioritize ship name from insurance records if possible
         $first = $receipts->first();
         if ($first && isset($first->insurance_ship) && $first->insurance_ship) {
@@ -28,7 +30,7 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
         } else {
             $this->shipName = $shipName ?: 'KM. ALKEN PESONA';
         }
-        
+
         $this->vendor = $vendor;
         $this->requestDate = $requestDate ? \Carbon\Carbon::parse($requestDate)->translatedFormat('d F Y') : date('d F Y');
     }
@@ -38,23 +40,23 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
         // Group receipts by 'numbering' (user-input sequence) if available.
         // If no numbering is set, use a unique key to keep them as separate individual entries.
         $grouped = $this->receipts->groupBy(function ($item) {
-            return $item->numbering ?: 'unassigned_' . $item->type . '_' . $item->id;
+            return $item->numbering ?: 'unassigned_'.$item->type.'_'.$item->id;
         });
 
         return view('exports.insurance_request', [
             'grouped' => $grouped,
             'vendor' => $this->vendor,
             'shipName' => $this->shipName,
-            'requestDate' => $this->requestDate
+            'requestDate' => $this->requestDate,
         ]);
     }
 
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                
+
                 // Set Column Widths (Manual override because ShouldAutoSize is not always perfect)
                 $sheet->getColumnDimension('A')->setWidth(5);
                 $sheet->getColumnDimension('B')->setWidth(18);
@@ -73,7 +75,7 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
                 // Center align column A and G
                 $sheet->getStyle("A1:A{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                 $sheet->getStyle("G1:G{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
-                
+
                 // Vertical align everything to top
                 $sheet->getStyle("A1:Z{$highestRow}")->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
 
@@ -82,9 +84,9 @@ class InsuranceRequestExport implements FromView, ShouldAutoSize, WithEvents
                     for ($row = 1; $row <= $highestRow; $row++) {
                         $cell = $sheet->getCell("{$col}{$row}");
                         $value = $cell->getValue();
-                        
+
                         if ($value && is_string($value) && strpos($value, ', ') !== false) {
-                            $cell->setValue(str_replace(', ', "," . chr(10), $value));
+                            $cell->setValue(str_replace(', ', ','.chr(10), $value));
                             $sheet->getStyle("{$col}{$row}")->getAlignment()->setWrapText(true);
                         }
                     }

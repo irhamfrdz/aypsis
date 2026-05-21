@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\MasterTerminal;
-use App\Models\MasterKapal;
-use App\Models\Kontainer;
 use App\Models\GateIn;
-use App\Models\GateInPetikemas;
 use App\Models\GateInAktivitas;
+use App\Models\GateInPetikemas;
+use App\Models\Kontainer;
+use App\Models\MasterKapal;
+use App\Models\MasterTerminal;
 use App\Models\PricelistGateIn;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class GateInController extends Controller
@@ -119,7 +119,7 @@ class GateInController extends Controller
             'kapal_id' => 'required|exists:master_kapals,id',
             'kontainer_ids' => 'required|array|min:1',
             'kontainer_ids.*' => 'required|integer|exists:surat_jalans,id',
-            'keterangan' => 'nullable|string|max:500'
+            'keterangan' => 'nullable|string|max:500',
         ], [
             'nomor_gate_in.required' => 'Nomor Gate In wajib diisi.',
             'nomor_gate_in.unique' => 'Nomor Gate In sudah digunakan, silakan gunakan nomor lain.',
@@ -138,7 +138,7 @@ class GateInController extends Controller
             'kontainer_ids.*.required' => 'Data kontainer tidak boleh kosong.',
             'kontainer_ids.*.integer' => 'Data kontainer tidak valid.',
             'kontainer_ids.*.exists' => 'Surat jalan yang dipilih tidak ditemukan.',
-            'keterangan.max' => 'Keterangan maksimal 500 karakter.'
+            'keterangan.max' => 'Keterangan maksimal 500 karakter.',
         ]);
 
         DB::beginTransaction();
@@ -155,7 +155,7 @@ class GateInController extends Controller
                 'tanggal_gate_in' => $request->tanggal_gate_in,
                 'user_id' => Auth::id(),
                 'keterangan' => $request->keterangan,
-                'status' => 'aktif'
+                'status' => 'aktif',
             ]);
 
             // Log data yang diterima
@@ -169,19 +169,22 @@ class GateInController extends Controller
                 // Ambil data surat jalan
                 $suratJalan = DB::table('surat_jalans')->where('id', $suratJalanId)->first();
 
-                if (!$suratJalan) {
+                if (! $suratJalan) {
                     $errorMessages[] = "Surat jalan dengan ID {$suratJalanId} tidak ditemukan";
+
                     continue;
                 }
 
                 // Validasi apakah surat jalan sudah checkpoint
                 if ($suratJalan->status !== 'sudah_checkpoint') {
                     $errorMessages[] = "Surat jalan {$suratJalan->no_surat_jalan} belum melalui checkpoint supir";
+
                     continue;
                 }
 
-                if (!$suratJalan->no_kontainer) {
+                if (! $suratJalan->no_kontainer) {
                     $errorMessages[] = "Surat jalan {$suratJalan->no_surat_jalan} tidak memiliki nomor kontainer";
+
                     continue;
                 }
 
@@ -190,12 +193,12 @@ class GateInController extends Controller
                     'gate_in_id' => $gateIn->id,
                     'status_gate_in' => 'selesai',
                     'tanggal_gate_in' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
                 ]);
 
                 if ($updated) {
                     $updateCount++;
-                    Log::info('Surat jalan ' . $suratJalan->no_surat_jalan . ' dengan kontainer ' . $suratJalan->no_kontainer . ' linked ke Gate In ID ' . $gateIn->id);
+                    Log::info('Surat jalan '.$suratJalan->no_surat_jalan.' dengan kontainer '.$suratJalan->no_kontainer.' linked ke Gate In ID '.$gateIn->id);
 
                     // Opsional: Jika ada tabel kontainers dan ingin sync data juga
                     try {
@@ -204,13 +207,13 @@ class GateInController extends Controller
                             $kontainer->update([
                                 'gate_in_id' => $gateIn->id,
                                 'status_gate_in' => 'selesai',
-                                'tanggal_gate_in' => now()
+                                'tanggal_gate_in' => now(),
                             ]);
-                            Log::info('Kontainer ' . $suratJalan->no_kontainer . ' juga diupdate di tabel kontainers');
+                            Log::info('Kontainer '.$suratJalan->no_kontainer.' juga diupdate di tabel kontainers');
                         }
                     } catch (\Exception $e) {
                         // Jika gagal update kontainer, tidak perlu error karena data utama di surat_jalans
-                        Log::warning('Gagal update tabel kontainers untuk nomor: ' . $suratJalan->no_kontainer . '. Error: ' . $e->getMessage());
+                        Log::warning('Gagal update tabel kontainers untuk nomor: '.$suratJalan->no_kontainer.'. Error: '.$e->getMessage());
                     }
                 } else {
                     $errorMessages[] = "Gagal mengupdate surat jalan {$suratJalan->no_surat_jalan}";
@@ -227,18 +230,18 @@ class GateInController extends Controller
                     ->with('error', $errorMessage);
             }
 
-            Log::info('Gate In created with ID ' . $gateIn->id . ' - Updated ' . $updateCount . ' kontainer records');
+            Log::info('Gate In created with ID '.$gateIn->id.' - Updated '.$updateCount.' kontainer records');
 
             // Process multiple biaya for specific kegiatan like RECEIVING
             $this->processMultipleBiaya($gateIn, $request->kontainer_ids);
 
             DB::commit();
 
-            $successMessage = 'Gate In berhasil dibuat dengan nomor: ' . $gateIn->nomor_gate_in . ' (' . $updateCount . ' kontainer berhasil ditambahkan)';
+            $successMessage = 'Gate In berhasil dibuat dengan nomor: '.$gateIn->nomor_gate_in.' ('.$updateCount.' kontainer berhasil ditambahkan)';
 
             // Tambahkan warning jika ada error pada beberapa kontainer
-            if (!empty($errorMessages)) {
-                $successMessage .= '. Peringatan: ' . implode('; ', $errorMessages);
+            if (! empty($errorMessages)) {
+                $successMessage .= '. Peringatan: '.implode('; ', $errorMessages);
             }
 
             return redirect()->route('gate-in.show', $gateIn)
@@ -246,8 +249,8 @@ class GateInController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Gate In store error: ' . $e->getMessage());
-            Log::error('Gate In store stack trace: ' . $e->getTraceAsString());
+            Log::error('Gate In store error: '.$e->getMessage());
+            Log::error('Gate In store stack trace: '.$e->getTraceAsString());
 
             // Buat pesan error yang lebih informatif
             $errorMessage = 'Gagal menyimpan Gate In. ';
@@ -259,7 +262,7 @@ class GateInController extends Controller
             } elseif (strpos($e->getMessage(), 'Connection refused') !== false) {
                 $errorMessage .= 'Koneksi database bermasalah, silakan coba lagi.';
             } else {
-                $errorMessage .= 'Detail error: ' . $e->getMessage();
+                $errorMessage .= 'Detail error: '.$e->getMessage();
             }
 
             return back()->withInput()
@@ -297,12 +300,12 @@ class GateInController extends Controller
         $kapals = MasterKapal::where('status', 'aktif')->orderBy('nama_kapal')->get();
 
         // Get kontainers yang sudah checkpoint supir (termasuk yang sudah terpilih di gate in ini)
-        $kontainers = Kontainer::where(function($query) use ($gateIn) {
+        $kontainers = Kontainer::where(function ($query) use ($gateIn) {
             $query->where('status_checkpoint_supir', 'selesai')
-                  ->where(function($q) use ($gateIn) {
-                      $q->where('status_gate_in', '!=', 'selesai')
+                ->where(function ($q) use ($gateIn) {
+                    $q->where('status_gate_in', '!=', 'selesai')
                         ->orWhere('gate_in_id', $gateIn->id);
-                  });
+                });
         })->orderBy('nomor_seri_gabungan')->get();
 
         $gateIn->load(['kontainers']);
@@ -323,7 +326,7 @@ class GateInController extends Controller
             'kapal_id' => 'required|exists:master_kapals,id',
             'kontainer_ids' => 'required|array|min:1',
             'kontainer_ids.*' => 'exists:kontainers,id',
-            'keterangan' => 'nullable|string|max:500'
+            'keterangan' => 'nullable|string|max:500',
         ]);
 
         DB::beginTransaction();
@@ -333,14 +336,14 @@ class GateInController extends Controller
                 'pelabuhan' => $request->pelabuhan,
                 'tanggal_gate_in' => $request->tanggal_gate_in,
                 'kapal_id' => $request->kapal_id,
-                'keterangan' => $request->keterangan
+                'keterangan' => $request->keterangan,
             ]);
 
             // Reset kontainer yang sebelumnya terkait dengan gate in ini
             Kontainer::where('gate_in_id', $gateIn->id)->update([
                 'gate_in_id' => null,
                 'status_gate_in' => 'pending',
-                'tanggal_gate_in' => null
+                'tanggal_gate_in' => null,
             ]);
 
             // Update kontainer baru yang dipilih
@@ -349,7 +352,7 @@ class GateInController extends Controller
                 $kontainer->update([
                     'gate_in_id' => $gateIn->id,
                     'status_gate_in' => 'selesai',
-                    'tanggal_gate_in' => now()
+                    'tanggal_gate_in' => now(),
                 ]);
             }
 
@@ -360,8 +363,9 @@ class GateInController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return back()->withInput()
-                ->with('error', 'Terjadi kesalahan saat memperbarui Gate In: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat memperbarui Gate In: '.$e->getMessage());
         }
     }
 
@@ -378,7 +382,7 @@ class GateInController extends Controller
             Kontainer::where('gate_in_id', $gateIn->id)->update([
                 'gate_in_id' => null,
                 'status_gate_in' => 'pending',
-                'tanggal_gate_in' => null
+                'tanggal_gate_in' => null,
             ]);
 
             // Soft delete gate in record
@@ -391,7 +395,8 @@ class GateInController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Terjadi kesalahan saat menghapus Gate In: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan saat menghapus Gate In: '.$e->getMessage());
         }
     }
 
@@ -455,6 +460,7 @@ class GateInController extends Controller
             return response()->json($kontainers);
         } catch (\Exception $e) {
             Log::error('getKontainersSuratJalan error:', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -467,7 +473,7 @@ class GateInController extends Controller
         $this->authorize('gate-in-update');
 
         $request->validate([
-            'kontainer_id' => 'required|exists:kontainers,id'
+            'kontainer_id' => 'required|exists:kontainers,id',
         ]);
 
         $kontainer = Kontainer::find($request->kontainer_id);
@@ -476,7 +482,7 @@ class GateInController extends Controller
         if ($gateIn->kontainers()->where('kontainer_id', $kontainer->id)->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Kontainer sudah ada dalam gate in ini'
+                'message' => 'Kontainer sudah ada dalam gate in ini',
             ]);
         }
 
@@ -484,7 +490,7 @@ class GateInController extends Controller
         if ($kontainer->status_checkpoint_supir !== 'selesai') {
             return response()->json([
                 'success' => false,
-                'message' => 'Kontainer belum selesai checkpoint supir'
+                'message' => 'Kontainer belum selesai checkpoint supir',
             ]);
         }
 
@@ -493,18 +499,18 @@ class GateInController extends Controller
             'waktu_masuk' => null,
             'waktu_keluar' => null,
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
 
         // Update kontainer
         $kontainer->update([
             'gate_in_id' => $gateIn->id,
-            'status_gate_in' => 'pending'
+            'status_gate_in' => 'pending',
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Kontainer berhasil ditambahkan'
+            'message' => 'Kontainer berhasil ditambahkan',
         ]);
     }
 
@@ -516,7 +522,7 @@ class GateInController extends Controller
         $this->authorize('gate-in-update');
 
         $request->validate([
-            'kontainer_id' => 'required|exists:kontainers,id'
+            'kontainer_id' => 'required|exists:kontainers,id',
         ]);
 
         $kontainer = Kontainer::find($request->kontainer_id);
@@ -527,12 +533,12 @@ class GateInController extends Controller
         // Update kontainer
         $kontainer->update([
             'gate_in_id' => null,
-            'status_gate_in' => null
+            'status_gate_in' => null,
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Kontainer berhasil dihapus'
+            'message' => 'Kontainer berhasil dihapus',
         ]);
     }
 
@@ -544,24 +550,23 @@ class GateInController extends Controller
         $this->authorize('gate-in-update');
 
         $request->validate([
-            'status' => 'required|in:aktif,selesai,dibatalkan'
+            'status' => 'required|in:aktif,selesai,dibatalkan',
         ]);
 
         $gateIn->update([
             'status' => $request->status,
-            'waktu_keluar' => $request->status === 'selesai' ? now() : $gateIn->waktu_keluar
+            'waktu_keluar' => $request->status === 'selesai' ? now() : $gateIn->waktu_keluar,
         ]);
 
         // Update kontainer status if gate in is completed
         if ($request->status === 'selesai') {
             $gateIn->kontainers()->where('status_gate_in', '!=', 'keluar')->update([
-                'status_gate_in' => 'keluar'
+                'status_gate_in' => 'keluar',
             ]);
         }
 
         return redirect()->route('gate-in.show', $gateIn)->with('success', 'Status gate in berhasil diupdate');
     }
-
 
     /**
      * Get gudang options based on selected kegiatan
@@ -570,7 +575,7 @@ class GateInController extends Controller
     {
         $kegiatan = $request->query('kegiatan');
 
-        if (!$kegiatan) {
+        if (! $kegiatan) {
             return response()->json(['gudangs' => []]);
         }
 
@@ -594,7 +599,7 @@ class GateInController extends Controller
     {
         $kegiatan = $request->query('kegiatan');
 
-        if (!$kegiatan) {
+        if (! $kegiatan) {
             return response()->json(['kontainers' => []]);
         }
 
@@ -618,7 +623,7 @@ class GateInController extends Controller
     {
         $kegiatan = $request->query('kegiatan');
 
-        if (!$kegiatan) {
+        if (! $kegiatan) {
             return response()->json(['muatans' => []]);
         }
 
@@ -655,7 +660,7 @@ class GateInController extends Controller
                     'formatted_total' => 'Rp 0',
                     'breakdown' => [],
                     'kontainer_count' => 0,
-                    'aktivitas_details' => []
+                    'aktivitas_details' => [],
                 ]);
             }
 
@@ -673,10 +678,11 @@ class GateInController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Calculate total error:', ['message' => $e->getMessage()]);
+
             return response()->json([
                 'total' => 0,
                 'formatted_total' => 'Error dalam perhitungan',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -689,7 +695,7 @@ class GateInController extends Controller
         $biayaMapping = [
             'RECEIVING' => ['ADMINISTRASI', 'HAULAGE', 'LOLO', 'MASA 1A'],
             'DISCHARGE' => ['ADMINISTRASI', 'HAULAGE', 'LOLO', 'STEVEDORING'],
-            'LOADING' => ['ADMINISTRASI', 'HAULAGE', 'LOLO', 'STUFFING']
+            'LOADING' => ['ADMINISTRASI', 'HAULAGE', 'LOLO', 'STUFFING'],
         ];
 
         $biayaList = $biayaMapping[$kegiatan] ?? [];
@@ -709,17 +715,17 @@ class GateInController extends Controller
                 ->first();
 
             // If not found and this is ADMINISTRASI, try with nullable kontainer/muatan
-            if (!$pricelist && $biaya === 'ADMINISTRASI') {
+            if (! $pricelist && $biaya === 'ADMINISTRASI') {
                 $pricelist = PricelistGateIn::where('status', 'aktif')
                     ->where('pelabuhan', $pelabuhan)
                     ->where('kegiatan', $kegiatan)
                     ->where('biaya', $biaya)
                     ->where('gudang', $gudang)
-                    ->where(function($query) use ($kontainer, $muatan) {
-                        $query->where(function($q) use ($kontainer, $muatan) {
+                    ->where(function ($query) use ($kontainer, $muatan) {
+                        $query->where(function ($q) use ($kontainer, $muatan) {
                             // Exact match
                             $q->where('kontainer', $kontainer)->where('muatan', $muatan);
-                        })->orWhere(function($q) {
+                        })->orWhere(function ($q) {
                             // Nullable fields for general ADMINISTRASI
                             $q->whereNull('kontainer')->whereNull('muatan');
                         });
@@ -741,9 +747,9 @@ class GateInController extends Controller
                     'box' => $box,
                     'itm' => $itm,
                     'tarif' => $pricelist->tarif,
-                    'formatted_tarif' => 'Rp ' . number_format((float)$pricelist->tarif, 0, ',', '.'),
+                    'formatted_tarif' => 'Rp '.number_format((float) $pricelist->tarif, 0, ',', '.'),
                     'total' => $total,
-                    'formatted_total' => 'Rp ' . number_format($total, 0, ',', '.')
+                    'formatted_total' => 'Rp '.number_format($total, 0, ',', '.'),
                 ];
             } else {
                 Log::warning("Pricelist tidak ditemukan untuk biaya: {$biaya}");
@@ -766,15 +772,15 @@ class GateInController extends Controller
 
         return response()->json([
             'total' => $grandTotal,
-            'formatted_total' => 'Rp ' . number_format($grandTotal, 0, ',', '.'),
+            'formatted_total' => 'Rp '.number_format($grandTotal, 0, ',', '.'),
             'subtotal' => $subtotal,
-            'formatted_subtotal' => 'Rp ' . number_format($subtotal, 0, ',', '.'),
+            'formatted_subtotal' => 'Rp '.number_format($subtotal, 0, ',', '.'),
             'ppn' => $ppn,
-            'formatted_ppn' => 'Rp ' . number_format($ppn, 0, ',', '.'),
+            'formatted_ppn' => 'Rp '.number_format($ppn, 0, ',', '.'),
             'pph' => $pph,
-            'formatted_pph' => 'Rp ' . number_format($pph, 0, ',', '.'),
+            'formatted_pph' => 'Rp '.number_format($pph, 0, ',', '.'),
             'materai' => $materai,
-            'formatted_materai' => 'Rp ' . number_format($materai, 0, ',', '.'),
+            'formatted_materai' => 'Rp '.number_format($materai, 0, ',', '.'),
             'kontainer_count' => $kontainerCount,
             'aktivitas_details' => $aktivitasDetails,
             'breakdown' => [
@@ -782,9 +788,9 @@ class GateInController extends Controller
                 'kegiatan' => $kegiatan,
                 'gudang' => $gudang,
                 'kontainer' => $kontainer,
-                'muatan' => $muatan
+                'muatan' => $muatan,
             ],
-            'is_multiple_biaya' => true
+            'is_multiple_biaya' => true,
         ]);
     }
 
@@ -814,7 +820,7 @@ class GateInController extends Controller
 
         $pricelist = $pricelistQuery->first();
 
-        if (!$pricelist) {
+        if (! $pricelist) {
             return response()->json([
                 'total' => 0,
                 'formatted_total' => 'Tarif tidak ditemukan',
@@ -822,7 +828,7 @@ class GateInController extends Controller
                 'kontainer_count' => $kontainerCount,
                 'aktivitas_details' => [],
                 'error' => 'Kombinasi input tidak ditemukan dalam pricelist',
-                'is_multiple_biaya' => false
+                'is_multiple_biaya' => false,
             ]);
         }
 
@@ -832,9 +838,9 @@ class GateInController extends Controller
 
         return response()->json([
             'total' => $total,
-            'formatted_total' => 'Rp ' . number_format($total, 0, ',', '.'),
+            'formatted_total' => 'Rp '.number_format($total, 0, ',', '.'),
             'unit_price' => $unitPrice,
-            'formatted_unit_price' => 'Rp ' . number_format($unitPrice, 0, ',', '.'),
+            'formatted_unit_price' => 'Rp '.number_format($unitPrice, 0, ',', '.'),
             'kontainer_count' => $kontainerCount,
             'aktivitas_details' => [],
             'breakdown' => [
@@ -842,9 +848,9 @@ class GateInController extends Controller
                 'kegiatan' => $kegiatan,
                 'gudang' => $gudang,
                 'kontainer' => $kontainer,
-                'muatan' => $muatan
+                'muatan' => $muatan,
             ],
-            'is_multiple_biaya' => false
+            'is_multiple_biaya' => false,
         ]);
     }
 
@@ -858,7 +864,7 @@ class GateInController extends Controller
         $bulan = date('m');
 
         // Get last number for current month/year
-        $lastGateIn = GateIn::where('nomor_gate_in', 'like', $prefix . $tahun . $bulan . '%')
+        $lastGateIn = GateIn::where('nomor_gate_in', 'like', $prefix.$tahun.$bulan.'%')
             ->orderBy('nomor_gate_in', 'desc')
             ->first();
 
@@ -869,7 +875,7 @@ class GateInController extends Controller
             $newNumber = 1;
         }
 
-        return $prefix . $tahun . $bulan . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        return $prefix.$tahun.$bulan.str_pad($newNumber, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -881,8 +887,9 @@ class GateInController extends Controller
             // Only process for specific kegiatan that have multiple biaya
             $kegiatanWithMultipleBiaya = ['RECEIVING', 'DISCHARGE', 'LOADING'];
 
-            if (!in_array($gateIn->kegiatan, $kegiatanWithMultipleBiaya)) {
+            if (! in_array($gateIn->kegiatan, $kegiatanWithMultipleBiaya)) {
                 Log::info("Kegiatan {$gateIn->kegiatan} tidak memerlukan multiple biaya processing");
+
                 return;
             }
 
@@ -893,6 +900,7 @@ class GateInController extends Controller
 
             if (empty($aktivitasList)) {
                 Log::warning("Tidak ada aktivitas ditemukan untuk kegiatan {$gateIn->kegiatan}");
+
                 return;
             }
 
@@ -912,7 +920,7 @@ class GateInController extends Controller
             Log::info("Multiple biaya processing completed for Gate In ID: {$gateIn->id}");
 
         } catch (\Exception $e) {
-            Log::error("Error processing multiple biaya: " . $e->getMessage());
+            Log::error('Error processing multiple biaya: '.$e->getMessage());
             // Don't throw exception to prevent transaction rollback
         }
     }
@@ -925,7 +933,7 @@ class GateInController extends Controller
         $biayaMapping = [
             'RECEIVING' => ['ADMINISTRASI', 'HAULAGE', 'LOLO', 'MASA 1A'],
             'DISCHARGE' => ['ADMINISTRASI', 'HAULAGE', 'LOLO', 'STEVEDORING'],
-            'LOADING' => ['ADMINISTRASI', 'HAULAGE', 'LOLO', 'STUFFING']
+            'LOADING' => ['ADMINISTRASI', 'HAULAGE', 'LOLO', 'STUFFING'],
         ];
 
         $biayaList = $biayaMapping[$gateIn->kegiatan] ?? [];
@@ -943,17 +951,17 @@ class GateInController extends Controller
                 ->first();
 
             // If not found and this is ADMINISTRASI, try with nullable kontainer/muatan
-            if (!$pricelist && $biaya === 'ADMINISTRASI') {
+            if (! $pricelist && $biaya === 'ADMINISTRASI') {
                 $pricelist = PricelistGateIn::where('status', 'aktif')
                     ->where('pelabuhan', $gateIn->pelabuhan)
                     ->where('kegiatan', $gateIn->kegiatan)
                     ->where('biaya', $biaya)
                     ->where('gudang', $gateIn->gudang)
-                    ->where(function($query) use ($gateIn) {
-                        $query->where(function($q) use ($gateIn) {
+                    ->where(function ($query) use ($gateIn) {
+                        $query->where(function ($q) use ($gateIn) {
                             // Exact match
                             $q->where('kontainer', $gateIn->kontainer)->where('muatan', $gateIn->muatan);
-                        })->orWhere(function($q) {
+                        })->orWhere(function ($q) {
                             // Nullable fields for general ADMINISTRASI
                             $q->whereNull('kontainer')->whereNull('muatan');
                         });
@@ -965,7 +973,7 @@ class GateInController extends Controller
                 $aktivitasList[] = [
                     'aktivitas' => $biaya,
                     'tarif' => $pricelist->tarif,
-                    's_t_s' => $biaya === 'ADMINISTRASI' ? '0/-/-' : "{$gateIn->kontainer}/DRY/F"
+                    's_t_s' => $biaya === 'ADMINISTRASI' ? '0/-/-' : "{$gateIn->kontainer}/DRY/F",
                 ];
             } else {
                 Log::warning("Pricelist tidak ditemukan untuk biaya: {$biaya}");
@@ -1007,7 +1015,7 @@ class GateInController extends Controller
             'box' => $box,
             'itm' => $itm,
             'tarif' => $aktivitas['tarif'],
-            'total' => $total
+            'total' => $total,
         ]);
 
         Log::info("Created aktivitas: {$aktivitas['aktivitas']} with total: {$total}");
@@ -1038,7 +1046,7 @@ class GateInController extends Controller
             'no_petikemas' => $kontainer->no_kontainer,
             's_t_s' => "{$kontainer->size}/DRY/F",
             'estimasi' => now()->toDateString(),
-            'estimasi_biaya' => $estimasiBiaya
+            'estimasi_biaya' => $estimasiBiaya,
         ]);
 
         Log::info("Created petikemas: {$kontainer->no_kontainer} with estimasi: {$estimasiBiaya}");

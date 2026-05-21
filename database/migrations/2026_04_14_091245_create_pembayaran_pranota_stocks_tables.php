@@ -35,13 +35,13 @@ return new class extends Migration
         Schema::create('pembayaran_pranota_stock_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pembayaran_pranota_stock_id')
-                  ->constrained('pembayaran_pranota_stocks')
-                  ->onDelete('cascade')
-                  ->name('fk_pemb_stock_id');
+                ->constrained('pembayaran_pranota_stocks')
+                ->onDelete('cascade')
+                ->name('fk_pemb_stock_id');
             $table->foreignId('pranota_stock_id')
-                  ->constrained('pranota_stocks')
-                  ->onDelete('cascade')
-                  ->name('fk_pranota_stock_id');
+                ->constrained('pranota_stocks')
+                ->onDelete('cascade')
+                ->name('fk_pranota_stock_id');
             $table->decimal('subtotal', 15, 2);
             $table->timestamps();
         });

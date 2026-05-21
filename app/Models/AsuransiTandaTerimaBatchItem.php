@@ -43,12 +43,19 @@ class AsuransiTandaTerimaBatchItem extends Model
     {
         return $this->belongsTo(TandaTerimaLcl::class, 'tanda_terima_lcl_id');
     }
-    
+
     public function getReceiptNumberAttribute()
     {
-        if ($this->receipt_type == 'tt' && $this->tandaTerima) return $this->tandaTerima->no_surat_jalan;
-        if ($this->receipt_type == 'tttsj' && $this->tandaTerimaTanpaSj) return $this->tandaTerimaTanpaSj->no_tanda_terima;
-        if ($this->receipt_type == 'lcl' && $this->tandaTerimaLcl) return $this->tandaTerimaLcl->nomor_tanda_terima;
+        if ($this->receipt_type == 'tt' && $this->tandaTerima) {
+            return $this->tandaTerima->no_surat_jalan;
+        }
+        if ($this->receipt_type == 'tttsj' && $this->tandaTerimaTanpaSj) {
+            return $this->tandaTerimaTanpaSj->no_tanda_terima;
+        }
+        if ($this->receipt_type == 'lcl' && $this->tandaTerimaLcl) {
+            return $this->tandaTerimaLcl->nomor_tanda_terima;
+        }
+
         return '-';
     }
 }

@@ -30,7 +30,7 @@ class CheckApprovalPermissions extends Command
         // Check if approval permissions exist
         $approvalPerms = \App\Models\Permission::where('name', 'like', 'approval-tugas%')->get();
 
-        $this->info('Found ' . $approvalPerms->count() . ' approval permissions:');
+        $this->info('Found '.$approvalPerms->count().' approval permissions:');
         foreach ($approvalPerms as $perm) {
             $this->line("ID: {$perm->id} - Name: {$perm->name}");
         }
@@ -39,18 +39,18 @@ class CheckApprovalPermissions extends Command
         $testMatrix = [
             'approval-tugas-1' => [
                 'view' => '1',
-                'approve' => '1'
+                'approve' => '1',
             ],
             'approval-tugas-2' => [
-                'view' => '1'
-            ]
+                'view' => '1',
+            ],
         ];
 
         $this->info("\nTest matrix data:");
         $this->line(json_encode($testMatrix, JSON_PRETTY_PRINT));
 
         // Test conversion
-        $controller = new \App\Http\Controllers\UserController();
+        $controller = new \App\Http\Controllers\UserController;
         $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('convertMatrixPermissionsToIds');
         $method->setAccessible(true);
@@ -69,11 +69,11 @@ class CheckApprovalPermissions extends Command
 
                 // Assign permissions to user
                 $user->permissions()->sync($permissionIds);
-                $this->info("Permissions assigned to user successfully");
+                $this->info('Permissions assigned to user successfully');
 
                 // Verify assignment
                 $userPermissions = $user->permissions()->get();
-                $this->info("User now has " . $userPermissions->count() . " permissions:");
+                $this->info('User now has '.$userPermissions->count().' permissions:');
                 foreach ($userPermissions as $perm) {
                     $this->line("- {$perm->name}");
                 }

@@ -4,22 +4,21 @@ namespace App\Services;
 
 use App\Models\Coa;
 use App\Models\CoaTransaction;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CoaTransactionService
 {
     /**
      * Catat transaksi ke buku besar COA
      *
-     * @param string $namaAkun Nama akun COA
-     * @param float $debit Jumlah debit
-     * @param float $kredit Jumlah kredit
-     * @param string $tanggalTransaksi Tanggal transaksi
-     * @param string $nomorReferensi Nomor referensi (nomor pembayaran, invoice, dll)
-     * @param string $jenisTransaksi Jenis transaksi (pembayaran, penerimaan, dll)
-     * @param string|null $keterangan Keterangan transaksi
-     * @return CoaTransaction|null
+     * @param  string  $namaAkun  Nama akun COA
+     * @param  float  $debit  Jumlah debit
+     * @param  float  $kredit  Jumlah kredit
+     * @param  string  $tanggalTransaksi  Tanggal transaksi
+     * @param  string  $nomorReferensi  Nomor referensi (nomor pembayaran, invoice, dll)
+     * @param  string  $jenisTransaksi  Jenis transaksi (pembayaran, penerimaan, dll)
+     * @param  string|null  $keterangan  Keterangan transaksi
      */
     public function recordTransaction(
         string $namaAkun,
@@ -32,8 +31,9 @@ class CoaTransactionService
     ): ?CoaTransaction {
         $coa = Coa::where('nama_akun', $namaAkun)->first();
 
-        if (!$coa) {
+        if (! $coa) {
             \Log::warning("COA tidak ditemukan: {$namaAkun}");
+
             return null;
         }
 
@@ -50,7 +50,7 @@ class CoaTransactionService
             'debit' => $debit,
             'kredit' => $kredit,
             'saldo' => $saldoBaru,
-            'created_by' => Auth::id()
+            'created_by' => Auth::id(),
         ]);
 
         // Update saldo di master COA
@@ -63,13 +63,8 @@ class CoaTransactionService
     /**
      * Catat transaksi ganda (double entry)
      *
-     * @param array $debitAccount ['nama_akun' => string, 'jumlah' => float]
-     * @param array $kreditAccount ['nama_akun' => string, 'jumlah' => float]
-     * @param string $tanggalTransaksi
-     * @param string $nomorReferensi
-     * @param string $jenisTransaksi
-     * @param string|null $keterangan
-     * @return bool
+     * @param  array  $debitAccount  ['nama_akun' => string, 'jumlah' => float]
+     * @param  array  $kreditAccount  ['nama_akun' => string, 'jumlah' => float]
      */
     public function recordDoubleEntry(
         array $debitAccount,
@@ -105,19 +100,18 @@ class CoaTransactionService
             );
 
             DB::commit();
+
             return true;
         } catch (\Exception $e) {
             DB::rollback();
-            \Log::error('Error recording double entry: ' . $e->getMessage());
+            \Log::error('Error recording double entry: '.$e->getMessage());
+
             return false;
         }
     }
 
     /**
      * Hapus transaksi dan kembalikan saldo
-     *
-     * @param string $nomorReferensi
-     * @return bool
      */
     public function deleteTransactionByReference(string $nomorReferensi): bool
     {
@@ -138,10 +132,12 @@ class CoaTransactionService
             }
 
             DB::commit();
+
             return true;
         } catch (\Exception $e) {
             DB::rollback();
-            \Log::error('Error deleting transaction: ' . $e->getMessage());
+            \Log::error('Error deleting transaction: '.$e->getMessage());
+
             return false;
         }
     }
@@ -149,8 +145,7 @@ class CoaTransactionService
     /**
      * Catat pembayaran biaya kapal
      *
-     * @param mixed $pembayaran
-     * @return bool
+     * @param  mixed  $pembayaran
      */
     public function pembayaranBiayaKapal($pembayaran): bool
     {
@@ -158,17 +153,23 @@ class CoaTransactionService
         try {
             foreach ($pembayaran->biayaKapals as $biaya) {
                 $nominal = $biaya->pivot->nominal ?? $biaya->total_biaya ?? $biaya->nominal;
-                
+
                 // Determine expense account based on classification
                 $namaAkunBiaya = 'Biaya Kapal Lain-Lain'; // Fallback
                 $klasifikasi = $biaya->klasifikasiBiaya->nama ?? '';
-                
-                if (stripos($klasifikasi, 'perbaikan') !== false) $namaAkunBiaya = 'Biaya Perbaikan Kapal';
-                elseif (stripos($klasifikasi, 'perlengkapan') !== false) $namaAkunBiaya = 'Biaya Perlengkapan Kapal';
-                elseif (stripos($klasifikasi, 'perijinan') !== false) $namaAkunBiaya = 'Biaya Sertifikat dan Perijinan Kapal';
-                elseif (stripos($klasifikasi, 'bunker') !== false || stripos($klasifikasi, 'bbm') !== false) $namaAkunBiaya = 'Biaya Bunker Kapal';
-                elseif (stripos($klasifikasi, 'pelumas') !== false) $namaAkunBiaya = 'Biaya Pelumas Kapal';
-                
+
+                if (stripos($klasifikasi, 'perbaikan') !== false) {
+                    $namaAkunBiaya = 'Biaya Perbaikan Kapal';
+                } elseif (stripos($klasifikasi, 'perlengkapan') !== false) {
+                    $namaAkunBiaya = 'Biaya Perlengkapan Kapal';
+                } elseif (stripos($klasifikasi, 'perijinan') !== false) {
+                    $namaAkunBiaya = 'Biaya Sertifikat dan Perijinan Kapal';
+                } elseif (stripos($klasifikasi, 'bunker') !== false || stripos($klasifikasi, 'bbm') !== false) {
+                    $namaAkunBiaya = 'Biaya Bunker Kapal';
+                } elseif (stripos($klasifikasi, 'pelumas') !== false) {
+                    $namaAkunBiaya = 'Biaya Pelumas Kapal';
+                }
+
                 if ($pembayaran->jenis_transaksi == 'debit') {
                     // DEBIT bank (increase), KREDIT expense (decrease) - typically for refunds/corrections
                     $this->recordDoubleEntry(
@@ -197,10 +198,10 @@ class CoaTransactionService
                 $penyesuaian = $pembayaran->total_tagihan_penyesuaian;
                 $isDebitAdjustment = ($penyesuaian > 0);
                 $absPenyesuaian = abs($penyesuaian);
-                
+
                 // Adjustment account (usually mapping to Biaya Kapal Lain-Lain or similar)
                 $namaAkunPenyesuaian = 'Biaya Kapal Lain-Lain';
-                
+
                 if ($pembayaran->jenis_transaksi == 'debit') {
                     // Logic for debit transaction adjustments
                     if ($isDebitAdjustment) {
@@ -211,7 +212,7 @@ class CoaTransactionService
                             $pembayaran->tanggal_pembayaran,
                             $pembayaran->nomor_pembayaran,
                             'pembayaran_biaya_kapal',
-                            "Penyesuaian (+) Pembayaran Biaya Kapal: " . ($pembayaran->alasan_penyesuaian ?? 'Tanpa alasan')
+                            'Penyesuaian (+) Pembayaran Biaya Kapal: '.($pembayaran->alasan_penyesuaian ?? 'Tanpa alasan')
                         );
                     } else {
                         // Decrease bank, increase expense (negative adjustment in a refund context)
@@ -221,7 +222,7 @@ class CoaTransactionService
                             $pembayaran->tanggal_pembayaran,
                             $pembayaran->nomor_pembayaran,
                             'pembayaran_biaya_kapal',
-                            "Penyesuaian (-) Pembayaran Biaya Kapal: " . ($pembayaran->alasan_penyesuaian ?? 'Tanpa alasan')
+                            'Penyesuaian (-) Pembayaran Biaya Kapal: '.($pembayaran->alasan_penyesuaian ?? 'Tanpa alasan')
                         );
                     }
                 } else {
@@ -234,7 +235,7 @@ class CoaTransactionService
                             $pembayaran->tanggal_pembayaran,
                             $pembayaran->nomor_pembayaran,
                             'pembayaran_biaya_kapal',
-                            "Penyesuaian (+) Pembayaran Biaya Kapal: " . ($pembayaran->alasan_penyesuaian ?? 'Tanpa alasan')
+                            'Penyesuaian (+) Pembayaran Biaya Kapal: '.($pembayaran->alasan_penyesuaian ?? 'Tanpa alasan')
                         );
                     } else {
                         // Decrease expense, increase bank (negative adjustment: discount/reduction)
@@ -244,17 +245,19 @@ class CoaTransactionService
                             $pembayaran->tanggal_pembayaran,
                             $pembayaran->nomor_pembayaran,
                             'pembayaran_biaya_kapal',
-                            "Penyesuaian (-) Pembayaran Biaya Kapal: " . ($pembayaran->alasan_penyesuaian ?? 'Tanpa alasan')
+                            'Penyesuaian (-) Pembayaran Biaya Kapal: '.($pembayaran->alasan_penyesuaian ?? 'Tanpa alasan')
                         );
                     }
                 }
             }
 
             DB::commit();
+
             return true;
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error recording pembayaran biaya kapal: ' . $e->getMessage());
+            \Log::error('Error recording pembayaran biaya kapal: '.$e->getMessage());
+
             return false;
         }
     }

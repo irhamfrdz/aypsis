@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class TagihanKontainerSewa extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
     protected $table = 'tagihan_kontainer_sewa';
 
     protected $fillable = [
@@ -44,19 +43,27 @@ class TagihanKontainerSewa extends Model
     public function getNomorKontainerListAttribute()
     {
         $raw = $this->attributes['nomor_kontainer'] ?? '';
-        if (trim($raw) === '') return [];
+        if (trim($raw) === '') {
+            return [];
+        }
         $parts = array_map('trim', explode(',', $raw));
-        return array_values(array_filter($parts, function($v){ return $v !== ''; }));
+
+        return array_values(array_filter($parts, function ($v) {
+            return $v !== '';
+        }));
     }
 
     public function scopeSearch($query, $term)
     {
-        if (empty($term)) return $query;
-        $t = '%' . str_replace(' ', '%', $term) . '%';
+        if (empty($term)) {
+            return $query;
+        }
+        $t = '%'.str_replace(' ', '%', $term).'%';
+
         return $query->where(function ($q) use ($t) {
             $q->where('vendor', 'like', $t)
-              ->orWhere('group', 'like', $t)
-              ->orWhere('nomor_kontainer', 'like', $t);
+                ->orWhere('group', 'like', $t)
+                ->orWhere('nomor_kontainer', 'like', $t);
         });
     }
 }

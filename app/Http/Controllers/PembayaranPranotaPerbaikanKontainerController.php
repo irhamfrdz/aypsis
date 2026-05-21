@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coa;
 use App\Models\PembayaranPranotaPerbaikanKontainer;
 use App\Models\PranotaPerbaikanKontainer;
-use App\Models\Coa;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class PembayaranPranotaPerbaikanKontainerController extends Controller
 {
@@ -19,6 +18,7 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
     {
         $this->coaTransactionService = $coaTransactionService;
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -43,12 +43,12 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
         // Search by kontainer number or description
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->whereHas('pranotaPerbaikanKontainers.perbaikanKontainers.kontainer', function($kontainer) use ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('pranotaPerbaikanKontainers.perbaikanKontainers.kontainer', function ($kontainer) use ($search) {
                     $kontainer->where('nomor_kontainer', 'like', "%{$search}%");
                 })
-                ->orWhere('nomor_pembayaran', 'like', "%{$search}%")
-                ->orWhere('alasan_penyesuaian', 'like', "%{$search}%");
+                    ->orWhere('nomor_pembayaran', 'like', "%{$search}%")
+                    ->orWhere('alasan_penyesuaian', 'like', "%{$search}%");
             });
         }
 
@@ -65,7 +65,7 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
     public function create()
     {
         // Check permission manually to provide better error message
-        if (!Gate::allows('pembayaran-pranota-perbaikan-kontainer-create')) {
+        if (! Gate::allows('pembayaran-pranota-perbaikan-kontainer-create')) {
             return redirect()->route('dashboard')
                 ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota perbaikan kontainer. Silakan hubungi administrator.');
         }
@@ -76,12 +76,12 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
             ->get();
 
         // Get Bank/Kas accounts only, sorted by account number
-        $akunCoa = Coa::where(function($query) {
-                $query->where('tipe_akun', 'Kas/Bank')
-                      ->orWhere('tipe_akun', 'Bank/Kas')
-                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
-                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
-            })
+        $akunCoa = Coa::where(function ($query) {
+            $query->where('tipe_akun', 'Kas/Bank')
+                ->orWhere('tipe_akun', 'Bank/Kas')
+                ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+        })
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
@@ -94,14 +94,14 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
     public function store(Request $request)
     {
         // Check permission manually to provide better error message
-        if (!Gate::allows('pembayaran-pranota-perbaikan-kontainer-create')) {
+        if (! Gate::allows('pembayaran-pranota-perbaikan-kontainer-create')) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota perbaikan kontainer. Silakan hubungi administrator.');
         }
 
         // Generate unique nomor pembayaran if not provided or if it's a default value
-        if (!$request->filled('nomor_pembayaran') || str_contains($request->nomor_pembayaran, '-000001')) {
+        if (! $request->filled('nomor_pembayaran') || str_contains($request->nomor_pembayaran, '-000001')) {
             $request->merge(['nomor_pembayaran' => $this->generateUniqueNomorPembayaran($request->bank)]);
         }
 
@@ -170,9 +170,9 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
             // Catat transaksi menggunakan double-entry COA
             $tanggalTransaksi = $request->tanggal_kas;
 
-            $keterangan = "Pembayaran Pranota Perbaikan Kontainer - " . $request->nomor_pembayaran;
+            $keterangan = 'Pembayaran Pranota Perbaikan Kontainer - '.$request->nomor_pembayaran;
             if ($request->alasan_penyesuaian) {
-                $keterangan .= " | " . $request->alasan_penyesuaian;
+                $keterangan .= ' | '.$request->alasan_penyesuaian;
             }
 
             // Catat transaksi double-entry: Biaya Perbaikan Kontainer (Debit) dan Bank (Kredit)
@@ -188,13 +188,14 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
             DB::commit();
 
             return redirect()->route('pembayaran-pranota-perbaikan-kontainer.index')
-                ->with('success', "Pembayaran berhasil dibuat untuk " . count($pranotaIds) . " pranota dengan total Rp " . number_format($totalPembayaran, 0, ',', '.'));
+                ->with('success', 'Pembayaran berhasil dibuat untuk '.count($pranotaIds).' pranota dengan total Rp '.number_format($totalPembayaran, 0, ',', '.'));
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat memproses pembayaran: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat memproses pembayaran: '.$e->getMessage());
         }
     }
 
@@ -240,7 +241,7 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
             'pranota_perbaikan_kontainer_ids' => 'required|array|min:1',
             'pranota_perbaikan_kontainer_ids.*' => 'exists:pranota_perbaikan_kontainers,id',
             'tanggal_kas' => 'required|date',
-            'nomor_pembayaran' => 'required|string|unique:pembayaran_pranota_perbaikan_kontainers,nomor_pembayaran,' . $pembayaran->id,
+            'nomor_pembayaran' => 'required|string|unique:pembayaran_pranota_perbaikan_kontainers,nomor_pembayaran,'.$pembayaran->id,
             'nomor_cetakan' => 'nullable|integer|min:1|max:9',
             'bank' => 'required|string',
             'jenis_transaksi' => 'required|in:Debit,Kredit',
@@ -318,7 +319,7 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat memperbarui pembayaran: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat memperbarui pembayaran: '.$e->getMessage());
         }
     }
 
@@ -333,18 +334,19 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
 
         $tahun = now()->format('y');
         $bulan = now()->format('m');
-        $baseNomor = $kode . $tahun . $bulan;
+        $baseNomor = $kode.$tahun.$bulan;
 
         // Find the next available number
         $counter = 1;
         do {
-            $nomor = $baseNomor . '-' . str_pad($counter, 6, '0', STR_PAD_LEFT);
+            $nomor = $baseNomor.'-'.str_pad($counter, 6, '0', STR_PAD_LEFT);
             $exists = PembayaranPranotaPerbaikanKontainer::where('nomor_pembayaran', $nomor)->exists();
             $counter++;
         } while ($exists && $counter <= 999999);
 
         return $nomor;
     }
+
     public function destroy(PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
         try {
@@ -367,7 +369,7 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
                 ->with('success', 'Pembayaran pranota perbaikan kontainer berhasil dihapus dan status dikembalikan.');
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat menghapus pembayaran: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat menghapus pembayaran: '.$e->getMessage());
         }
     }
 }

@@ -34,6 +34,7 @@ class ClearTagihanCache extends Command
         }
 
         $this->info('All tagihan cache cleared successfully!');
+
         return 0;
     }
 }

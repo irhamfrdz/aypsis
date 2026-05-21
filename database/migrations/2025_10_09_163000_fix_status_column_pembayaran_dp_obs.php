@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -23,8 +22,8 @@ return new class extends Migration
         // Add status column with correct ENUM values
         Schema::table('pembayaran_dp_obs', function (Blueprint $table) {
             $table->enum('status', ['dp_belum_terpakai', 'dp_terpakai'])
-                  ->default('dp_belum_terpakai')
-                  ->after('keterangan');
+                ->default('dp_belum_terpakai')
+                ->after('keterangan');
         });
     }
 

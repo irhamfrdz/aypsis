@@ -57,12 +57,12 @@ return new class extends Migration
 
         // Remove role permissions first
         DB::table('permission_role')
-          ->whereIn('permission_id', function($query) use ($permissions) {
-              $query->select('id')
+            ->whereIn('permission_id', function ($query) use ($permissions) {
+                $query->select('id')
                     ->from('permissions')
                     ->whereIn('name', $permissions);
-          })
-          ->delete();
+            })
+            ->delete();
 
         // Remove permissions
         DB::table('permissions')->whereIn('name', $permissions)->delete();

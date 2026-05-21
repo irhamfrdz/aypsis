@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PricelistGateIn extends Model
 {
-    use HasFactory, SoftDeletes, Auditable;
+    use Auditable, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'pelabuhan',
@@ -19,11 +19,11 @@ class PricelistGateIn extends Model
         'kontainer',
         'muatan',
         'tarif',
-        'status'
+        'status',
     ];
 
     protected $casts = [
-        'tarif' => 'decimal:2'
+        'tarif' => 'decimal:2',
     ];
 
     // Relationships - removed as not needed for simplified structure
@@ -56,6 +56,6 @@ class PricelistGateIn extends Model
     // Accessors
     public function getFormattedTarifAttribute()
     {
-        return 'IDR ' . number_format((float) $this->tarif, 0, ',', '.');
+        return 'IDR '.number_format((float) $this->tarif, 0, ',', '.');
     }
 }

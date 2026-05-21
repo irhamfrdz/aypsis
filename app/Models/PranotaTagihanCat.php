@@ -2,33 +2,34 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class PranotaTagihanCat extends Model
 {
+    use Auditable;
     use HasFactory;
 
-    use Auditable;
-    protected $table = "pranota_tagihan_cat";
+    protected $table = 'pranota_tagihan_cat';
+
     protected $fillable = [
-        "no_invoice",
-        "total_amount",
-        "keterangan",
-        "supplier",
-        "status",
-        "tagihan_cat_ids",
-        "jumlah_tagihan",
-        "tanggal_pranota",
-        "due_date"
+        'no_invoice',
+        'total_amount',
+        'keterangan',
+        'supplier',
+        'status',
+        'tagihan_cat_ids',
+        'jumlah_tagihan',
+        'tanggal_pranota',
+        'due_date',
     ];
+
     protected $casts = [
-        "tagihan_cat_ids" => "array",
-        "total_amount" => "decimal:2",
-        "tanggal_pranota" => "date",
-        "due_date" => "date"
+        'tagihan_cat_ids' => 'array',
+        'total_amount' => 'decimal:2',
+        'tanggal_pranota' => 'date',
+        'due_date' => 'date',
     ];
 
     public function tagihanCatItems()
@@ -36,6 +37,7 @@ class PranotaTagihanCat extends Model
         if (empty($this->tagihan_cat_ids)) {
             return collect();
         }
+
         return TagihanCat::whereIn('id', $this->tagihan_cat_ids)->get();
     }
 
@@ -56,6 +58,7 @@ class PranotaTagihanCat extends Model
         }
 
         $catItems = TagihanCat::whereIn('id', $this->tagihan_cat_ids)->get();
+
         return $catItems->sum('realisasi_biaya');
     }
 

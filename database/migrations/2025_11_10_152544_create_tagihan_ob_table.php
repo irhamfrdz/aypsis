@@ -25,7 +25,7 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable()->comment('User yang membuat record');
             $table->text('keterangan')->nullable();
             $table->timestamps();
-            
+
             // Indexes
             $table->index(['kapal', 'voyage']);
             $table->index('nomor_kontainer');
@@ -33,7 +33,7 @@ return new class extends Migration
             $table->index('status_kontainer');
             $table->index('created_by');
             $table->index('bl_id');
-            
+
             // Foreign keys
             $table->foreign('bl_id')->references('id')->on('bls')->onDelete('set null');
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');

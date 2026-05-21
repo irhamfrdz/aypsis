@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\PricelistPerijinan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -26,15 +25,15 @@ class MasterPricelistPerijinanController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%");
+                    ->orWhere('lokasi', 'like', "%{$search}%");
             });
         }
 
         // Pagination
         $perPage = $request->get('per_page', 15);
         $pricelistPerijinan = $query->latest()
-                            ->paginate($perPage)
-                            ->withQueryString();
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('master.pricelist-perijinan.index', compact('pricelistPerijinan'));
     }
@@ -65,12 +64,12 @@ class MasterPricelistPerijinanController extends Controller
 
         try {
             PricelistPerijinan::create($request->all());
-            
+
             return redirect()->route('master.pricelist-perijinan.index')
-                           ->with('success', 'Master Pricelist Perijinan berhasil ditambahkan.');
+                ->with('success', 'Master Pricelist Perijinan berhasil ditambahkan.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menambahkan data: ' . $e->getMessage())
-                        ->withInput();
+            return back()->with('error', 'Gagal menambahkan data: '.$e->getMessage())
+                ->withInput();
         }
     }
 
@@ -100,12 +99,12 @@ class MasterPricelistPerijinanController extends Controller
 
         try {
             $pricelistPerijinan->update($request->all());
-            
+
             return redirect()->route('master.pricelist-perijinan.index')
-                           ->with('success', 'Master Pricelist Perijinan berhasil diperbarui.');
+                ->with('success', 'Master Pricelist Perijinan berhasil diperbarui.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage())
-                        ->withInput();
+            return back()->with('error', 'Gagal memperbarui data: '.$e->getMessage())
+                ->withInput();
         }
     }
 
@@ -116,11 +115,11 @@ class MasterPricelistPerijinanController extends Controller
     {
         try {
             $pricelistPerijinan->delete();
-            
+
             return redirect()->route('master.pricelist-perijinan.index')
-                           ->with('success', 'Master Pricelist Perijinan berhasil dihapus.');
+                ->with('success', 'Master Pricelist Perijinan berhasil dihapus.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus data: '.$e->getMessage());
         }
     }
 }

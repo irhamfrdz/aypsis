@@ -27,7 +27,7 @@ class PembatalanSuratJalan extends Model
         'alasan_batal',
         'status',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $casts = [

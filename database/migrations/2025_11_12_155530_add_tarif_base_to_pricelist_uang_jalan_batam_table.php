@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -16,7 +16,7 @@ return new class extends Migration
             // Tambah kolom tarif_base untuk menyimpan tarif awal/original
             $table->decimal('tarif_base', 15, 2)->nullable()->after('tarif');
         });
-        
+
         // Copy tarif saat ini ke tarif_base untuk data yang sudah ada
         DB::statement('UPDATE pricelist_uang_jalan_batam SET tarif_base = tarif WHERE tarif_base IS NULL');
     }

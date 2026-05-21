@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('pembayaran_pranota_obs', function (Blueprint $table) {
             $table->unsignedBigInteger('akun_coa_id')->nullable()->after('jenis_transaksi');
             $table->unsignedBigInteger('akun_bank_id')->nullable()->after('akun_coa_id');
-            
+
             $table->foreign('akun_coa_id')->references('id')->on('akun_coa')->onDelete('set null');
             $table->foreign('akun_bank_id')->references('id')->on('akun_coa')->onDelete('set null');
         });

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PranotaSupir;
-use App\Models\Permohonan;
 use App\Models\MasterKegiatan;
 use App\Models\NomorTerakhir;
+use App\Models\Permohonan;
+use App\Models\PranotaSupir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -37,7 +37,7 @@ class PranotaSupirController extends Controller
         $nextNumber = $nomorTerakhir ? $nomorTerakhir->nomor_terakhir + 1 : 1;
         $tahun = now()->format('y');
         $bulan = now()->format('m');
-        $nomor_pranota_display = "PMS{$nomor_cetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+        $nomor_pranota_display = "PMS{$nomor_cetakan}{$bulan}{$tahun}".str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
         // Preload a map of kode_kegiatan => nama_kegiatan so the view can display names without queries inside the loop
         $kegiatanMap = MasterKegiatan::pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
@@ -82,7 +82,7 @@ class PranotaSupirController extends Controller
         return view('pranota-supir.index', [
             'pranotas' => $pranotas,
             'search' => $request->search ?? '',
-            'status_pembayaran' => $request->status_pembayaran ?? ''
+            'status_pembayaran' => $request->status_pembayaran ?? '',
         ]);
     }
 
@@ -102,6 +102,7 @@ class PranotaSupirController extends Controller
     public function print(PranotaSupir $pranotaSupir)
     {
         $pranotaSupir->load('permohonans.supir', 'permohonans.krani', 'permohonans.kontainers');
+
         return view('pranota-supir.print', compact('pranotaSupir'));
     }
 
@@ -175,13 +176,13 @@ class PranotaSupirController extends Controller
         try {
             // Generate nomor pranota from master nomor terakhir
             $nomorTerakhir = NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
-            if (!$nomorTerakhir) {
+            if (! $nomorTerakhir) {
                 return back()->with('error', 'Modul PMS tidak ditemukan di master nomor terakhir.');
             }
             $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
             $tahun = now()->format('y');
             $bulan = now()->format('m');
-            $nomor_pranota = "PMS{$nomor_cetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+            $nomor_pranota = "PMS{$nomor_cetakan}{$bulan}{$tahun}".str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
             $nomorTerakhir->nomor_terakhir = $nextNumber;
             $nomorTerakhir->save();
 
@@ -197,11 +198,13 @@ class PranotaSupirController extends Controller
             $pranota->permohonans()->sync($validatedData['permohonan_ids']);
 
             DB::commit();
+
             return redirect()->route('dashboard')->with('success', 'Pranota berhasil dibuat!');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyimpan pranota: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', 'Gagal menyimpan pranota: '.$e->getMessage())->withInput();
         }
     }
 }

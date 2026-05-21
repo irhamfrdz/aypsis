@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
 
 class MasterPricelistFreight extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'master_pricelist_freights';
 
@@ -21,7 +21,7 @@ class MasterPricelistFreight extends Model
         'keterangan',
         'pelabuhan_asal_id',
         'pelabuhan_tujuan_id',
-        'size_kontainer'
+        'size_kontainer',
     ];
 
     protected $casts = [
@@ -48,7 +48,7 @@ class MasterPricelistFreight extends Model
      */
     public function getFormattedTarifAttribute()
     {
-        return 'Rp ' . number_format($this->tarif, 0, ',', '.');
+        return 'Rp '.number_format($this->tarif, 0, ',', '.');
     }
 
     /**
@@ -70,6 +70,7 @@ class MasterPricelistFreight extends Model
     public function getSizeKontainerLabelAttribute()
     {
         $options = self::getSizeKontainerOptions();
+
         return $options[$this->size_kontainer] ?? $this->size_kontainer;
     }
 

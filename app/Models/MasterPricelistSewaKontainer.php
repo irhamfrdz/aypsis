@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Model;
 
 class MasterPricelistSewaKontainer extends Model
 {
-    
     use Auditable;
 
-protected $table = 'master_pricelist_sewa_kontainers';
+    protected $table = 'master_pricelist_sewa_kontainers';
+
     protected $fillable = [
         'vendor',
         'tarif',
@@ -19,8 +19,8 @@ protected $table = 'master_pricelist_sewa_kontainers';
         'tanggal_harga_awal',
         'tanggal_harga_akhir',
         'keterangan',
-    // legacy column present in some test DBs (sqlite); allow mass assignment when present
-    'nomor_tagihan',
+        // legacy column present in some test DBs (sqlite); allow mass assignment when present
+        'nomor_tagihan',
     ];
 
     protected $casts = [

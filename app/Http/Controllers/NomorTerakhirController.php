@@ -16,9 +16,9 @@ class NomorTerakhirController extends Controller
         $query = NomorTerakhir::query();
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where('modul', 'like', '%' . $request->search . '%')
-                  ->orWhere('keterangan', 'like', '%' . $request->search . '%');
+        if ($request->has('search') && ! empty($request->search)) {
+            $query->where('modul', 'like', '%'.$request->search.'%')
+                ->orWhere('keterangan', 'like', '%'.$request->search.'%');
         }
 
         $nomorTerakhirs = $query->orderBy('modul')->paginate(15);
@@ -42,7 +42,7 @@ class NomorTerakhirController extends Controller
         $request->validate([
             'modul' => 'required|string|max:100|unique:nomor_terakhir,modul',
             'nomor_terakhir' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ]);
 
         // Convert nomor_terakhir to integer to handle leading zeros
@@ -52,7 +52,7 @@ class NomorTerakhirController extends Controller
         NomorTerakhir::create($data);
 
         return redirect()->route('master.nomor-terakhir.index')
-                        ->with('success', 'Nomor Terakhir berhasil ditambahkan.');
+            ->with('success', 'Nomor Terakhir berhasil ditambahkan.');
     }
 
     /**
@@ -79,7 +79,7 @@ class NomorTerakhirController extends Controller
         $request->validate([
             'modul' => ['required', 'string', 'max:100', Rule::unique('nomor_terakhir')->ignore($nomorTerakhir->id)],
             'nomor_terakhir' => 'required|numeric|min:0',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ]);
 
         // Convert nomor_terakhir to integer to handle leading zeros
@@ -89,7 +89,7 @@ class NomorTerakhirController extends Controller
         $nomorTerakhir->update($data);
 
         return redirect()->route('master.nomor-terakhir.index')
-                        ->with('success', 'Nomor Terakhir berhasil diperbarui.');
+            ->with('success', 'Nomor Terakhir berhasil diperbarui.');
     }
 
     /**
@@ -100,6 +100,6 @@ class NomorTerakhirController extends Controller
         $nomorTerakhir->delete();
 
         return redirect()->route('master.nomor-terakhir.index')
-                        ->with('success', 'Nomor Terakhir berhasil dihapus.');
+            ->with('success', 'Nomor Terakhir berhasil dihapus.');
     }
 }

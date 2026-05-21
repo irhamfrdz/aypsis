@@ -17,7 +17,7 @@ return new class extends Migration
             $table->json('barang_detail')->nullable()->after('klasifikasi_biaya_id');
             $table->text('deskripsi')->nullable()->after('total');
             $table->text('catatan')->nullable()->after('deskripsi');
-            
+
             // Add foreign key constraints if needed
             // $table->foreign('bl_id')->references('id')->on('bls')->onDelete('set null');
             // $table->foreign('klasifikasi_biaya_id')->references('id')->on('klasifikasi_biayas')->onDelete('set null');

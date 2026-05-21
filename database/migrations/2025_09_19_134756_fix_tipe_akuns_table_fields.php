@@ -24,10 +24,10 @@ return new class extends Migration
             }
 
             // Add correct columns if they don't exist
-            if (!Schema::hasColumn('tipe_akuns', 'tipe_akun')) {
+            if (! Schema::hasColumn('tipe_akuns', 'tipe_akun')) {
                 $table->string('tipe_akun')->nullable()->after('id');
             }
-            if (!Schema::hasColumn('tipe_akuns', 'catatan')) {
+            if (! Schema::hasColumn('tipe_akuns', 'catatan')) {
                 $table->text('catatan')->nullable()->after('tipe_akun');
             }
         });
@@ -48,13 +48,13 @@ return new class extends Migration
             }
 
             // Restore old columns if they don't exist
-            if (!Schema::hasColumn('tipe_akuns', 'kode_tipe')) {
+            if (! Schema::hasColumn('tipe_akuns', 'kode_tipe')) {
                 $table->string('kode_tipe')->nullable()->after('id');
             }
-            if (!Schema::hasColumn('tipe_akuns', 'nama_tipe')) {
+            if (! Schema::hasColumn('tipe_akuns', 'nama_tipe')) {
                 $table->string('nama_tipe')->nullable()->after('kode_tipe');
             }
-            if (!Schema::hasColumn('tipe_akuns', 'keterangan')) {
+            if (! Schema::hasColumn('tipe_akuns', 'keterangan')) {
                 $table->text('keterangan')->nullable()->after('nama_tipe');
             }
         });

@@ -1,10 +1,10 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Exports\TujuanKegiatanUtamaExport;
 use App\Models\TujuanKegiatanUtama;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TujuanKegiatanUtamaController extends Controller
@@ -12,7 +12,6 @@ class TujuanKegiatanUtamaController extends Controller
     /**
      * Tampilkan daftar tujuan kegiatan utama.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\View\View
      */
     public function index(Request $request)
@@ -22,13 +21,13 @@ class TujuanKegiatanUtamaController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('kode', 'like', "%{$search}%")
-                  ->orWhere('cabang', 'like', "%{$search}%")
-                  ->orWhere('wilayah', 'like', "%{$search}%")
-                  ->orWhere('dari', 'like', "%{$search}%")
-                  ->orWhere('ke', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('cabang', 'like', "%{$search}%")
+                    ->orWhere('wilayah', 'like', "%{$search}%")
+                    ->orWhere('dari', 'like', "%{$search}%")
+                    ->orWhere('ke', 'like', "%{$search}%")
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
@@ -52,7 +51,6 @@ class TujuanKegiatanUtamaController extends Controller
     /**
      * Simpan tujuan kegiatan utama baru ke database.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
@@ -79,13 +77,12 @@ class TujuanKegiatanUtamaController extends Controller
 
         TujuanKegiatanUtama::create($validated);
 
-                return redirect()->route('master.tujuan-kegiatan-utama.index')->with('success', 'Data Transportasi berhasil ditambahkan!');
+        return redirect()->route('master.tujuan-kegiatan-utama.index')->with('success', 'Data Transportasi berhasil ditambahkan!');
     }
 
     /**
      * Tampilkan detail tujuan kegiatan utama.
      *
-     * @param  \App\Models\TujuanKegiatanUtama  $tujuanKegiatanUtama
      * @return \Illuminate\View\View
      */
     public function show(TujuanKegiatanUtama $tujuanKegiatanUtama)
@@ -96,7 +93,6 @@ class TujuanKegiatanUtamaController extends Controller
     /**
      * Tampilkan form untuk mengedit tujuan kegiatan utama yang ada.
      *
-     * @param  \App\Models\TujuanKegiatanUtama  $tujuanKegiatanUtama
      * @return \Illuminate\View\View
      */
     public function edit(TujuanKegiatanUtama $tujuanKegiatanUtama)
@@ -107,8 +103,6 @@ class TujuanKegiatanUtamaController extends Controller
     /**
      * Perbarui tujuan kegiatan utama yang ada di database.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\TujuanKegiatanUtama  $tujuanKegiatanUtama
      * @return \Illuminate\Http\RedirectResponse
      */
     public function update(Request $request, TujuanKegiatanUtama $tujuanKegiatanUtama)
@@ -141,7 +135,6 @@ class TujuanKegiatanUtamaController extends Controller
     /**
      * Hapus tujuan kegiatan utama dari database.
      *
-     * @param  \App\Models\TujuanKegiatanUtama  $tujuanKegiatanUtama
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(TujuanKegiatanUtama $tujuanKegiatanUtama)
@@ -160,7 +153,7 @@ class TujuanKegiatanUtamaController extends Controller
     {
         $tujuanKegiatanUtamas = TujuanKegiatanUtama::all();
 
-        $response = new \Symfony\Component\HttpFoundation\StreamedResponse(function() use ($tujuanKegiatanUtamas) {
+        $response = new \Symfony\Component\HttpFoundation\StreamedResponse(function () use ($tujuanKegiatanUtamas) {
             $handle = fopen('php://output', 'w');
 
             // Header CSV dengan semua kolom transportasi
@@ -184,7 +177,7 @@ class TujuanKegiatanUtamaController extends Controller
                 'Antar Lokasi 40ft',
                 'Status',
                 'Dibuat',
-                'Diupdate'
+                'Diupdate',
             ]);
 
             // Data transportasi
@@ -209,7 +202,7 @@ class TujuanKegiatanUtamaController extends Controller
                     $item->antar_lokasi_40ft,
                     $item->aktif ? 'Aktif' : 'Tidak Aktif',
                     $item->created_at->format('Y-m-d H:i:s'),
-                    $item->updated_at->format('Y-m-d H:i:s')
+                    $item->updated_at->format('Y-m-d H:i:s'),
                 ]);
             }
 
@@ -217,7 +210,7 @@ class TujuanKegiatanUtamaController extends Controller
         });
 
         $response->headers->set('Content-Type', 'text/csv');
-        $response->headers->set('Content-Disposition', 'attachment; filename="transportasi_data_' . date('Y-m-d_H-i-s') . '.csv"');
+        $response->headers->set('Content-Disposition', 'attachment; filename="transportasi_data_'.date('Y-m-d_H-i-s').'.csv"');
 
         return $response;
     }
@@ -227,8 +220,9 @@ class TujuanKegiatanUtamaController extends Controller
      */
     public function exportExcel()
     {
-        $fileName = 'transportasi_data_' . date('Y-m-d_H-i-s') . '.xlsx';
-        return Excel::download(new TujuanKegiatanUtamaExport(), $fileName);
+        $fileName = 'transportasi_data_'.date('Y-m-d_H-i-s').'.xlsx';
+
+        return Excel::download(new TujuanKegiatanUtamaExport, $fileName);
     }
 
     /**
@@ -240,10 +234,10 @@ class TujuanKegiatanUtamaController extends Controller
     {
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="template_transportasi_' . date('Y-m-d_H-i-s') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="template_transportasi_'.date('Y-m-d_H-i-s').'.csv"',
         ];
 
-        $callback = function() {
+        $callback = function () {
             $file = fopen('php://output', 'w');
 
             // Header CSV dengan semua kolom yang diperlukan
@@ -264,7 +258,7 @@ class TujuanKegiatanUtamaController extends Controller
                 'ongkos_truk_40ft',
                 'antar_lokasi_20ft',
                 'antar_lokasi_40ft',
-                'aktif'
+                'aktif',
             ]);
 
             // Contoh data untuk panduan user
@@ -285,7 +279,7 @@ class TujuanKegiatanUtamaController extends Controller
                 '2000000',
                 '200000',
                 '300000',
-                '1'
+                '1',
             ]);
 
             fclose($file);
@@ -297,7 +291,6 @@ class TujuanKegiatanUtamaController extends Controller
     /**
      * Import data transportasi dari CSV.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function import(Request $request)
@@ -314,23 +307,23 @@ class TujuanKegiatanUtamaController extends Controller
         $successCount = 0;
         $errorCount = 0;
 
-        if (($handle = fopen($path, 'r')) !== FALSE) {
+        if (($handle = fopen($path, 'r')) !== false) {
             // Detect delimiter by checking first line
             $firstLine = fgets($handle);
             rewind($handle); // Reset to beginning
-            
+
             // Count delimiters to detect which one is used
             $semicolonCount = substr_count($firstLine, ';');
             $commaCount = substr_count($firstLine, ',');
-            
+
             $delimiter = ($semicolonCount > $commaCount) ? ';' : ',';
-            
+
             // Read and skip header row
             $headers = fgetcsv($handle, 0, $delimiter);
-            
+
             $rowNumber = 1; // Header is row 1, data starts from row 2
 
-            while (($row = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
+            while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
                 $rowNumber++;
 
                 // Skip empty rows
@@ -340,14 +333,15 @@ class TujuanKegiatanUtamaController extends Controller
 
                 try {
                     // Helper function untuk membersihkan dan mengkonversi angka
-                    $cleanNumber = function($value) {
+                    $cleanNumber = function ($value) {
                         if (empty($value) || trim($value) === '') {
                             return null;
                         }
                         // Remove spaces, dots as thousand separators, and convert to float
                         $cleaned = str_replace([' ', '.'], '', trim($value));
                         $cleaned = str_replace(',', '.', $cleaned); // Convert comma decimal to dot
-                        return is_numeric($cleaned) ? (float)$cleaned : null;
+
+                        return is_numeric($cleaned) ? (float) $cleaned : null;
                     };
 
                     // Mapping data dengan handling untuk format file user yang berbeda
@@ -400,6 +394,7 @@ class TujuanKegiatanUtamaController extends Controller
                     if (empty($rowData['dari']) || empty($rowData['ke'])) {
                         $errors[] = "Baris {$rowNumber}: Kolom 'dari' dan 'ke' wajib diisi";
                         $errorCount++;
+
                         continue;
                     }
 
@@ -408,7 +403,7 @@ class TujuanKegiatanUtamaController extends Controller
                     $successCount++;
 
                 } catch (\Exception $e) {
-                    $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+                    $errors[] = "Baris {$rowNumber}: ".$e->getMessage();
                     $errorCount++;
                 }
             }
@@ -422,7 +417,7 @@ class TujuanKegiatanUtamaController extends Controller
             $message .= " {$errorCount} data gagal diimport.";
         }
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             return redirect()->back()
                 ->with('success', $message)
                 ->with('errors', $errors);
@@ -450,6 +445,7 @@ class TujuanKegiatanUtamaController extends Controller
     public function print()
     {
         $tujuanKegiatanUtamas = TujuanKegiatanUtama::all();
+
         return view('master-tujuan-kegiatan-utama.print', compact('tujuanKegiatanUtamas'));
     }
 
@@ -460,7 +456,7 @@ class TujuanKegiatanUtamaController extends Controller
     public function createForOrder(Request $request)
     {
         $searchValue = $request->query('search', '');
-        
+
         return view('master-tujuan-kegiatan-utama.create-for-order', compact('searchValue'));
     }
 
@@ -473,6 +469,7 @@ class TujuanKegiatanUtamaController extends Controller
         // Handle code generation request
         if ($request->has('_generate_code_only')) {
             $code = $this->generateTujuanAmbilCode();
+
             return response()->json(['code' => $code]);
         }
 
@@ -504,7 +501,7 @@ class TujuanKegiatanUtamaController extends Controller
             $nextNumber = 1;
         }
 
-        return 'TA' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+        return 'TA'.str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -514,17 +511,17 @@ class TujuanKegiatanUtamaController extends Controller
     {
         try {
             \DB::table('tujuan_kegiatan_utamas')->update([
-                'ongkos_truk_40ft' => \DB::raw('ongkos_truk_20ft')
+                'ongkos_truk_40ft' => \DB::raw('ongkos_truk_20ft'),
             ]);
 
             return response()->json([
-                'success' => true, 
-                'message' => 'Semua data ongkos truk 40ft berhasil disamakan dengan 20ft!'
+                'success' => true,
+                'message' => 'Semua data ongkos truk 40ft berhasil disamakan dengan 20ft!',
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'success' => false, 
-                'message' => 'Gagal menyamakan data: ' . $e->getMessage()
+                'success' => false,
+                'message' => 'Gagal menyamakan data: '.$e->getMessage(),
             ], 500);
         }
     }

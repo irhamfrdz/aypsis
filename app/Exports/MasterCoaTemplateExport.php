@@ -2,17 +2,15 @@
 
 namespace App\Exports;
 
-use Illuminate\Http\Response;
-
 class MasterCoaTemplateExport
 {
     public function download()
     {
-        $filename = 'template_master_coa_' . date('Y-m-d') . '.csv';
+        $filename = 'template_master_coa_'.date('Y-m-d').'.csv';
 
         // Create header only (no example data)
         $data = [
-            ['nomor_akun', 'nama_akun', 'tipe_akun', 'saldo']
+            ['nomor_akun', 'nama_akun', 'tipe_akun', 'saldo'],
         ];
 
         $content = $this->createCsvContent($data);
@@ -30,13 +28,14 @@ class MasterCoaTemplateExport
         $content = "\xEF\xBB\xBF";
 
         foreach ($data as $row) {
-            $content .= implode(';', array_map(function($cell) {
+            $content .= implode(';', array_map(function ($cell) {
                 // Escape quotes and wrap in quotes if contains semicolon, quote, or newline
                 if (strpos($cell, ';') !== false || strpos($cell, '"') !== false || strpos($cell, "\n") !== false) {
-                    return '"' . str_replace('"', '""', $cell) . '"';
+                    return '"'.str_replace('"', '""', $cell).'"';
                 }
+
                 return $cell;
-            }, $row)) . "\r\n";
+            }, $row))."\r\n";
         }
 
         return $content;

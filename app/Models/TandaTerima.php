@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Traits\Auditable;
 use App\Traits\AsuransiManageable;
+use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class TandaTerima extends Model
 {
-    use HasFactory, Auditable, AsuransiManageable;
+    use AsuransiManageable, Auditable, HasFactory;
+
     protected $fillable = [
         'surat_jalan_id',
         'no_surat_jalan',
@@ -178,11 +179,11 @@ class TandaTerima extends Model
         }
 
         // Alternatif: cari berdasarkan no_surat_jalan jika surat_jalan_id tidak ada
-        if ($this->no_surat_jalan && !$this->surat_jalan_id) {
-            \App\Models\Prospek::where(function($q) {
-                    $q->where('no_surat_jalan', $this->no_surat_jalan)
-                      ->orWhere('no_surat_jalan', 'like', $this->no_surat_jalan . '-%');
-                })
+        if ($this->no_surat_jalan && ! $this->surat_jalan_id) {
+            \App\Models\Prospek::where(function ($q) {
+                $q->where('no_surat_jalan', $this->no_surat_jalan)
+                    ->orWhere('no_surat_jalan', 'like', $this->no_surat_jalan.'-%');
+            })
                 ->whereNull('tanda_terima_id')
                 ->update(['tanda_terima_id' => $this->id]);
         }
@@ -204,6 +205,7 @@ class TandaTerima extends Model
         if (is_null($this->meter_kubik)) {
             return null;
         }
+
         return rtrim(rtrim(number_format($this->meter_kubik, 3, '.', ''), '0'), '.');
     }
 
@@ -215,6 +217,7 @@ class TandaTerima extends Model
         if (is_null($this->tonase)) {
             return null;
         }
+
         return rtrim(rtrim(number_format($this->tonase, 3, '.', ''), '0'), '.');
     }
 
@@ -226,6 +229,7 @@ class TandaTerima extends Model
         if (is_null($this->panjang)) {
             return null;
         }
+
         return rtrim(rtrim(number_format($this->panjang, 3, '.', ''), '0'), '.');
     }
 
@@ -237,6 +241,7 @@ class TandaTerima extends Model
         if (is_null($this->lebar)) {
             return null;
         }
+
         return rtrim(rtrim(number_format($this->lebar, 3, '.', ''), '0'), '.');
     }
 
@@ -248,6 +253,7 @@ class TandaTerima extends Model
         if (is_null($this->tinggi)) {
             return null;
         }
+
         return rtrim(rtrim(number_format($this->tinggi, 3, '.', ''), '0'), '.');
     }
 
@@ -267,7 +273,7 @@ class TandaTerima extends Model
      */
     public function getBls()
     {
-        return \App\Models\Bl::whereIn('prospek_id', 
+        return \App\Models\Bl::whereIn('prospek_id',
             $this->prospeks()->pluck('id')
         )->get();
     }

@@ -13,13 +13,13 @@ return new class extends Migration
     {
         if (Schema::hasTable('tanda_terima_dimensi_items')) {
             Schema::table('tanda_terima_dimensi_items', function (Blueprint $table) {
-                if (!Schema::hasColumn('tanda_terima_dimensi_items', 'nama_barang')) {
+                if (! Schema::hasColumn('tanda_terima_dimensi_items', 'nama_barang')) {
                     $table->string('nama_barang')->nullable()->after('tanda_terima_tanpa_surat_jalan_id');
                 }
-                if (!Schema::hasColumn('tanda_terima_dimensi_items', 'jumlah')) {
+                if (! Schema::hasColumn('tanda_terima_dimensi_items', 'jumlah')) {
                     $table->integer('jumlah')->default(1)->after('nama_barang');
                 }
-                if (!Schema::hasColumn('tanda_terima_dimensi_items', 'satuan')) {
+                if (! Schema::hasColumn('tanda_terima_dimensi_items', 'satuan')) {
                     $table->string('satuan', 50)->default('unit')->after('jumlah');
                 }
             });
@@ -34,7 +34,7 @@ return new class extends Migration
         if (Schema::hasTable('tanda_terima_dimensi_items')) {
             Schema::table('tanda_terima_dimensi_items', function (Blueprint $table) {
                 $columnsToRemove = [];
-                
+
                 if (Schema::hasColumn('tanda_terima_dimensi_items', 'nama_barang')) {
                     $columnsToRemove[] = 'nama_barang';
                 }
@@ -45,7 +45,7 @@ return new class extends Migration
                     $columnsToRemove[] = 'satuan';
                 }
 
-                if (!empty($columnsToRemove)) {
+                if (! empty($columnsToRemove)) {
                     $table->dropColumn($columnsToRemove);
                 }
             });

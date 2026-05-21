@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\Permohonan;
 use App\Models\Kontainer;
 use App\Models\PerbaikanKontainer;
+use App\Models\Permohonan;
 use App\Models\User;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -35,8 +35,9 @@ class TestAutoMemoGeneration extends Command
 
         // Simulate authentication
         $user = User::find(1); // Assuming admin user exists
-        if (!$user) {
+        if (! $user) {
             $this->error('Admin user not found. Please create admin user first.');
+
             return 1;
         }
 
@@ -58,14 +59,14 @@ class TestAutoMemoGeneration extends Command
                     'ukuran' => '20ft',
                     'tipe_kontainer' => 'Standard',
                     'status' => 'baik',
-                    'tanggal_beli' => now()->subYear()
+                    'tanggal_beli' => now()->subYear(),
                 ]
             );
             $this->info("✅ Test kontainer created: {$kontainer->nomor_kontainer}");
 
             // Create test permohonan
             $permohonan = Permohonan::create([
-                'nomor_memo' => 'TEST/MP/' . date('YmdHis'),
+                'nomor_memo' => 'TEST/MP/'.date('YmdHis'),
                 'kegiatan' => 'PERBAIKAN',
                 'vendor_perusahaan' => 'TEST_VENDOR',
                 'supir_id' => 1, // Assuming supir exists
@@ -77,7 +78,7 @@ class TestAutoMemoGeneration extends Command
                 'jumlah_kontainer' => 1,
                 'tanggal_memo' => now(),
                 'jumlah_uang_jalan' => 1000000,
-                'status' => 'Pending'
+                'status' => 'Pending',
             ]);
             $this->info("✅ Test permohonan created: {$permohonan->nomor_memo}");
 
@@ -88,7 +89,7 @@ class TestAutoMemoGeneration extends Command
             // Test the createPerbaikanKontainer method
             $this->info('🔄 Testing createPerbaikanKontainer method...');
 
-            $controller = new \App\Http\Controllers\PenyelesaianController();
+            $controller = new \App\Http\Controllers\PenyelesaianController;
             $reflection = new \ReflectionClass($controller);
             $method = $reflection->getMethod('createPerbaikanKontainer');
             $method->setAccessible(true);
@@ -128,6 +129,7 @@ class TestAutoMemoGeneration extends Command
             DB::rollBack();
             $this->error("❌ Test failed: {$e->getMessage()}");
             $this->error("Stack trace:\n{$e->getTraceAsString()}");
+
             return 1;
         }
 

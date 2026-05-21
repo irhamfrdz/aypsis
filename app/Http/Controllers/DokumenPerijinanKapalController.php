@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\DokumenPerijinanKapal;
+use Illuminate\Http\Request;
 
 class DokumenPerijinanKapalController extends Controller
 {
@@ -14,6 +13,7 @@ class DokumenPerijinanKapalController extends Controller
     public function index()
     {
         $dokumens = DokumenPerijinanKapal::latest()->paginate(10);
+
         return view('master-dokumen-perijinan-kapal.index', compact('dokumens'));
     }
 
@@ -33,7 +33,7 @@ class DokumenPerijinanKapalController extends Controller
         $request->validate([
             'nama_dokumen' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
-            'status_aktif' => 'boolean'
+            'status_aktif' => 'boolean',
         ]);
 
         DokumenPerijinanKapal::create($request->all());
@@ -61,7 +61,7 @@ class DokumenPerijinanKapalController extends Controller
         // I will use $dokumenPerijinanKapal for consistency if I can rename the param, but Laravel matches specific type hint.
         // Actually, let's just use $master_dokumen_perijinan_kapal as per the resource name which is long.
         // Wait, route resource name is 'master-dokumen-perijinan-kapal', so param is likely 'master_dokumen_perijinan_kapal'.
-        
+
         return view('master-dokumen-perijinan-kapal.edit', compact('master_dokumen_perijinan_kapal'));
     }
 
@@ -73,7 +73,7 @@ class DokumenPerijinanKapalController extends Controller
         $request->validate([
             'nama_dokumen' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
-            'status_aktif' => 'boolean'
+            'status_aktif' => 'boolean',
         ]);
 
         $master_dokumen_perijinan_kapal->update($request->all());

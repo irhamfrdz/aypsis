@@ -5,21 +5,21 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 
 class EnsureUserApproved
 {
     public function handle(Request $request, Closure $next)
     {
         $user = Auth::user();
-        
+
         // Skip middleware for supir routes - they handle their own authorization
         $routeName = optional($request->route())->getName();
         if ($routeName && str_starts_with($routeName, 'supir.')) {
             return $next($request);
         }
-        
+
         if ($user && $user->status !== 'approved') {
             // Allow user to complete profile, logout and auth routes
             $allowedNamed = [
@@ -35,7 +35,7 @@ class EnsureUserApproved
                 'logout',
                 'password.change',
             ];
-            if (!in_array($routeName, $allowedNamed)) {
+            if (! in_array($routeName, $allowedNamed)) {
                 Log::warning('EnsureUserApproved blocking non-approved user', [
                     'user_id' => $user->id ?? null,
                     'status' => $user->status ?? null,
@@ -53,6 +53,7 @@ class EnsureUserApproved
                 return abort(403, 'Akun belum disetujui oleh admin.');
             }
         }
+
         return $next($request);
     }
 }

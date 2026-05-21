@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
-use App\Models\User;
 
 class Prospek extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $table = 'prospek';
 
@@ -38,14 +37,14 @@ class Prospek extends Model
         'keterangan',
         'status',
         'created_by',
-        'updated_by'
+        'updated_by',
     ];
 
     protected $dates = [
         'tanggal',
         'tanggal_muat',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
     protected $casts = [
@@ -53,17 +52,21 @@ class Prospek extends Model
         'total_ton' => 'decimal:3',
         'total_volume' => 'decimal:3',
         'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'updated_at' => 'datetime',
     ];
 
     // Status constants
     const STATUS_AKTIF = 'aktif';
+
     const STATUS_MENUNGGU_KAPAL = 'menunggu_kapal';
+
     const STATUS_SUDAH_MUAT = 'sudah_muat';
+
     const STATUS_BATAL = 'batal';
 
     // Ukuran constants
     const UKURAN_20 = '20';
+
     const UKURAN_40 = '40';
 
     public static function getStatusOptions()
@@ -72,7 +75,7 @@ class Prospek extends Model
             self::STATUS_AKTIF => 'Aktif',
             self::STATUS_MENUNGGU_KAPAL => 'Menunggu Kapal',
             self::STATUS_SUDAH_MUAT => 'Sudah Muat',
-            self::STATUS_BATAL => 'Batal'
+            self::STATUS_BATAL => 'Batal',
         ];
     }
 
@@ -80,7 +83,7 @@ class Prospek extends Model
     {
         return [
             self::UKURAN_20 => '20 Feet',
-            self::UKURAN_40 => '40 Feet'
+            self::UKURAN_40 => '40 Feet',
         ];
     }
 
@@ -128,7 +131,7 @@ class Prospek extends Model
         });
 
         static::updated(function (self $prospek) {
-            if (($prospek->isDirty('surat_jalan_id') || $prospek->isDirty('no_surat_jalan')) && !$prospek->tanda_terima_id) {
+            if (($prospek->isDirty('surat_jalan_id') || $prospek->isDirty('no_surat_jalan')) && ! $prospek->tanda_terima_id) {
                 $prospek->autoLinkTandaTerima();
             }
         });
@@ -151,7 +154,7 @@ class Prospek extends Model
         }
 
         // Jika tidak ditemukan, cari berdasarkan no_surat_jalan
-        if (!$tandaTerima && $this->no_surat_jalan) {
+        if (! $tandaTerima && $this->no_surat_jalan) {
             // Strip suffix if present (e.g. -1, -2) to find the base TandaTerima
             $baseNoSuratJalan = preg_replace('/-\d+$/', '', $this->no_surat_jalan);
             $tandaTerima = \App\Models\TandaTerima::where('no_surat_jalan', $baseNoSuratJalan)->first();
@@ -193,12 +196,14 @@ class Prospek extends Model
     public function getStatusLabelAttribute()
     {
         $statuses = self::getStatusOptions();
+
         return $statuses[$this->status] ?? $this->status;
     }
 
     public function getUkuranLabelAttribute()
     {
         $ukurans = self::getUkuranOptions();
+
         return $ukurans[$this->ukuran] ?? $this->ukuran;
     }
 
@@ -213,11 +218,11 @@ class Prospek extends Model
         if (strtoupper($this->tipe) === 'LCL' && $this->nomor_kontainer) {
             $containers = array_filter(explode(',', $this->nomor_kontainer), 'trim');
             $seals = array_filter(explode(',', $this->no_seal ?? ''), 'trim');
-            
+
             // New structure: TandaTerimaLcl model and kontainerPivot
-            $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($q) use ($containers, $seals) {
+            $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function ($q) use ($containers, $seals) {
                 $q->whereIn('nomor_kontainer', $containers);
-                if (!empty($seals)) {
+                if (! empty($seals)) {
                     $q->whereIn('nomor_seal', $seals);
                 }
             })->get();
@@ -226,11 +231,11 @@ class Prospek extends Model
             if ($ttLcls->isEmpty()) {
                 $legacyData = \Illuminate\Support\Facades\DB::table('tanda_terima_lcl')
                     ->whereIn('nomor_kontainer', $containers);
-                if (!empty($seals)) {
+                if (! empty($seals)) {
                     $legacyData->whereIn('nomor_seal', $seals);
                 }
                 $ttLclsLegacy = $legacyData->get();
-                
+
                 if ($ttLclsLegacy->isNotEmpty()) {
                     $penerimas = $ttLclsLegacy->pluck('nama_penerima')->filter()->unique();
                     if ($penerimas->isNotEmpty()) {
@@ -240,11 +245,11 @@ class Prospek extends Model
             }
 
             // Jika filter no_seal kosong, ambil tanpa filter no_seal kalau tidak nemu
-            if ($ttLcls->isEmpty() && !empty($seals)) {
-                $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($q) use ($containers) {
+            if ($ttLcls->isEmpty() && ! empty($seals)) {
+                $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function ($q) use ($containers) {
                     $q->whereIn('nomor_kontainer', $containers);
                 })->get();
-                
+
                 if ($ttLcls->isEmpty()) {
                     $ttLclsLegacy = \Illuminate\Support\Facades\DB::table('tanda_terima_lcl')
                         ->whereIn('nomor_kontainer', $containers)
@@ -265,7 +270,7 @@ class Prospek extends Model
                         $penerimas->push($tt->nama_penerima);
                     }
                 }
-                
+
                 if ($penerimas->isNotEmpty()) {
                     return $penerimas->unique()->implode(', ');
                 }
@@ -287,16 +292,16 @@ class Prospek extends Model
         }
 
         // 4. CARGO fallback ke TTTSJ
-        if (strtoupper($this->tipe) === 'CARGO' && !$this->tanda_terima_id) {
-             $tttsj = \Illuminate\Support\Facades\DB::table('tanda_terima_tanpa_surat_jalan')
+        if (strtoupper($this->tipe) === 'CARGO' && ! $this->tanda_terima_id) {
+            $tttsj = \Illuminate\Support\Facades\DB::table('tanda_terima_tanpa_surat_jalan')
                 ->where('pengirim', $this->pt_pengirim)
                 ->where('supir', $this->nama_supir)
                 ->where('tujuan_pengiriman', $this->tujuan_pengiriman)
                 ->orderBy('created_at', 'desc')
                 ->first();
-             if ($tttsj && $tttsj->penerima) {
-                 return $tttsj->penerima;
-             }
+            if ($tttsj && $tttsj->penerima) {
+                return $tttsj->penerima;
+            }
         }
 
         return $this->attributes['penerima'] ?? null;
@@ -308,11 +313,11 @@ class Prospek extends Model
         if (strtoupper($this->tipe) === 'LCL' && $this->nomor_kontainer) {
             $containers = array_filter(explode(',', $this->nomor_kontainer), 'trim');
             $seals = array_filter(explode(',', $this->no_seal ?? ''), 'trim');
-            
+
             // New structure
-            $ttLcls = \App\Models\TandaTerimaLcl::with('items')->whereHas('kontainerPivot', function($q) use ($containers, $seals) {
+            $ttLcls = \App\Models\TandaTerimaLcl::with('items')->whereHas('kontainerPivot', function ($q) use ($containers, $seals) {
                 $q->whereIn('nomor_kontainer', $containers);
-                if (!empty($seals)) {
+                if (! empty($seals)) {
                     $q->whereIn('nomor_seal', $seals);
                 }
             })->get();
@@ -328,16 +333,16 @@ class Prospek extends Model
                         }
                     }
                 }
-                
+
                 if ($barangList->isNotEmpty()) {
                     return $barangList->unique()->implode(', ');
                 }
             }
-            
+
             // Legacy structure check
             $legacyData = \Illuminate\Support\Facades\DB::table('tanda_terima_lcl')
                 ->whereIn('nomor_kontainer', $containers);
-            if (!empty($seals)) {
+            if (! empty($seals)) {
                 $legacyData->whereIn('nomor_seal', $seals);
             }
             $ttLclsLegacy = $legacyData->get();
@@ -358,11 +363,11 @@ class Prospek extends Model
         if (strtoupper($this->tipe) === 'LCL' && $this->nomor_kontainer) {
             $containers = array_filter(explode(',', $this->nomor_kontainer), 'trim');
             $seals = array_filter(explode(',', $this->no_seal ?? ''), 'trim');
-            
+
             // New structure
-            $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function($q) use ($containers, $seals) {
+            $ttLcls = \App\Models\TandaTerimaLcl::whereHas('kontainerPivot', function ($q) use ($containers, $seals) {
                 $q->whereIn('nomor_kontainer', $containers);
-                if (!empty($seals)) {
+                if (! empty($seals)) {
                     $q->whereIn('nomor_seal', $seals);
                 }
             })->get();
@@ -374,16 +379,16 @@ class Prospek extends Model
                         $pengirimList->push($tt->nama_pengirim);
                     }
                 }
-                
+
                 if ($pengirimList->isNotEmpty()) {
                     return $pengirimList->unique()->implode(', ');
                 }
             }
-            
+
             // Legacy structure check
             $legacyData = \Illuminate\Support\Facades\DB::table('tanda_terima_lcl')
                 ->whereIn('nomor_kontainer', $containers);
-            if (!empty($seals)) {
+            if (! empty($seals)) {
                 $legacyData->whereIn('nomor_seal', $seals);
             }
             $ttLclsLegacy = $legacyData->get();

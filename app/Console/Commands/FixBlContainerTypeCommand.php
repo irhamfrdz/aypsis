@@ -2,9 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Bl;
-use App\Models\Prospek;
+use Illuminate\Console\Command;
 
 class FixBlContainerTypeCommand extends Command
 {
@@ -28,12 +27,12 @@ class FixBlContainerTypeCommand extends Command
     public function handle()
     {
         $dryRun = $this->option('dry-run');
-        
+
         if ($dryRun) {
-            $this->warn("Running in DRY RUN mode. No data will be modified.");
+            $this->warn('Running in DRY RUN mode. No data will be modified.');
         } else {
-            $this->info("Starting data fix for BL container types (Strict Mode)...");
-            $this->info("Only records with existing prospek_id will be processed.");
+            $this->info('Starting data fix for BL container types (Strict Mode)...');
+            $this->info('Only records with existing prospek_id will be processed.');
         }
 
         // Only get BLs that have a prospek_id
@@ -49,12 +48,12 @@ class FixBlContainerTypeCommand extends Command
         foreach ($bls as $bl) {
             $prospek = $bl->prospek;
 
-            if ($prospek && !empty($prospek->tipe)) {
+            if ($prospek && ! empty($prospek->tipe)) {
                 $targetTipe = $prospek->tipe;
-                
+
                 // Normalisasi pengecekan
                 if (strtoupper(trim($bl->tipe_kontainer ?? '')) !== strtoupper(trim($targetTipe))) {
-                    if (!$dryRun) {
+                    if (! $dryRun) {
                         $bl->tipe_kontainer = $targetTipe;
                         $bl->save();
                     }
@@ -81,14 +80,13 @@ class FixBlContainerTypeCommand extends Command
                 ['No valid type in Prospek', $failedMatch],
             ]
         );
-        
+
         $totalBl = Bl::count();
         $manualBl = $totalBl - $total;
         $this->info("Note: $manualBl records without prospek_id were skipped (Manual Entries).");
-        
+
         if ($dryRun && $updated > 0) {
-            $this->info("Run: php artisan fix:bl-types to apply changes.");
+            $this->info('Run: php artisan fix:bl-types to apply changes.');
         }
     }
 }
-

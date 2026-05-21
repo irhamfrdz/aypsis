@@ -27,7 +27,7 @@ return new class extends Migration
             $table->decimal('grand_total', 15, 2)->default(0);
             $table->string('penerima')->nullable();
             $table->timestamps();
-            
+
             // Index for faster queries
             $table->index('biaya_kapal_id');
         });

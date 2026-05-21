@@ -3,10 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InvoiceKontainerSewa extends Model
 {
@@ -94,8 +94,8 @@ class InvoiceKontainerSewa extends Model
             'invoice_id',
             'tagihan_id'
         )
-        ->withPivot('jumlah', 'catatan')
-        ->withTimestamps();
+            ->withPivot('jumlah', 'catatan')
+            ->withTimestamps();
     }
 
     /**
@@ -129,16 +129,16 @@ class InvoiceKontainerSewa extends Model
     {
         $subtotal = $this->items->sum('jumlah');
         $this->subtotal = $subtotal;
-        
+
         // Hitung PPN (11%)
         $this->ppn = $subtotal * 0.11;
-        
+
         // Hitung PPH (2%)
         $this->pph = $subtotal * 0.02;
-        
+
         // Total = Subtotal + PPN - PPH + Adjustment
         $this->total = $subtotal + $this->ppn - $this->pph + $this->adjustment;
-        
+
         return $this;
     }
 
@@ -147,7 +147,7 @@ class InvoiceKontainerSewa extends Model
      */
     public function getStatusBadgeAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'draft' => 'bg-gray-100 text-gray-800',
             'submitted' => 'bg-blue-100 text-blue-800',
             'approved' => 'bg-green-100 text-green-800',

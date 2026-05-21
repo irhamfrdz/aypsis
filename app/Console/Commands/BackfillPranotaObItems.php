@@ -2,14 +2,14 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use App\Models\PranotaOb;
 use App\Models\PranotaObItem;
+use Illuminate\Console\Command;
 
 class BackfillPranotaObItems extends Command
 {
     protected $signature = 'pranota-ob:backfill-items {--force}';
+
     protected $description = 'Backfill pranota_ob_items from existing pranota_obs.items JSON';
 
     public function handle()
@@ -21,8 +21,9 @@ class BackfillPranotaObItems extends Command
 
         foreach ($items as $p) {
             $data = $p->items;
-            if (!is_array($data) || count($data) === 0) {
+            if (! is_array($data) || count($data) === 0) {
                 $progress->advance();
+
                 continue;
             }
             foreach ($data as $it) {
@@ -31,13 +32,19 @@ class BackfillPranotaObItems extends Command
                     ->where('item_id', $it['id'] ?? null)
                     ->where('item_type', isset($it['type']) ? ($it['type'] === 'bl' ? \App\Models\Bl::class : ($it['type'] === 'naik_kapal' ? \App\Models\NaikKapal::class : $it['type'])) : null)
                     ->exists();
-                if ($exists) continue;
+                if ($exists) {
+                    continue;
+                }
 
                 $itemType = null;
                 if (isset($it['type'])) {
-                    if ($it['type'] === 'bl') $itemType = \App\Models\Bl::class;
-                    elseif ($it['type'] === 'naik_kapal') $itemType = \App\Models\NaikKapal::class;
-                    elseif ($it['type'] === 'tagihan_ob') $itemType = \App\Models\TagihanOb::class;
+                    if ($it['type'] === 'bl') {
+                        $itemType = \App\Models\Bl::class;
+                    } elseif ($it['type'] === 'naik_kapal') {
+                        $itemType = \App\Models\NaikKapal::class;
+                    } elseif ($it['type'] === 'tagihan_ob') {
+                        $itemType = \App\Models\TagihanOb::class;
+                    }
                 }
 
                 PranotaObItem::create([
@@ -57,6 +64,7 @@ class BackfillPranotaObItems extends Command
 
         $progress->finish();
         $this->info("\nCreated {$created} pivot rows.");
+
         return 0;
     }
 }

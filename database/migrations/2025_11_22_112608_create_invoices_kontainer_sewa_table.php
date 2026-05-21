@@ -30,7 +30,7 @@ return new class extends Migration
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            
+
             // Indexes
             $table->index('nomor_invoice');
             $table->index('tanggal_invoice');
@@ -46,11 +46,11 @@ return new class extends Migration
             $table->decimal('jumlah', 15, 2); // Nilai tagihan saat ditambahkan ke invoice
             $table->text('catatan')->nullable();
             $table->timestamps();
-            
+
             // Indexes
             $table->index('invoice_id');
             $table->index('tagihan_id');
-            
+
             // Unique constraint: satu tagihan hanya bisa masuk ke satu invoice
             $table->unique('tagihan_id');
         });
@@ -72,7 +72,7 @@ return new class extends Migration
             $table->dropForeign(['invoice_id']);
             $table->dropColumn('invoice_id');
         });
-        
+
         Schema::dropIfExists('invoice_kontainer_sewa_items');
         Schema::dropIfExists('invoices_kontainer_sewa');
     }

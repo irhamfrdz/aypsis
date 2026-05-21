@@ -5,16 +5,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Permohonan;
-// removed: MasterPricelistSewaKontainer is not needed for simplified approval flow
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\MasterPricelistSewaKontainer;
+// removed: MasterPricelistSewaKontainer is not needed for simplified approval flow
+use App\Models\Permohonan;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
 // removed: TagihanKontainerSewa is not needed for simplified approval flow
 
 class PenyelesaianController extends Controller
@@ -24,9 +24,9 @@ class PenyelesaianController extends Controller
      */
     public function index()
     {
-    $query = Permohonan::whereNotIn('status', ['Selesai', 'Dibatalkan'])
-         ->where('approved_by_system_1', false) // Belum disetujui system 1
-         ->with(['supir', 'kontainers', 'checkpoints']);
+        $query = Permohonan::whereNotIn('status', ['Selesai', 'Dibatalkan'])
+            ->where('approved_by_system_1', false) // Belum disetujui system 1
+            ->with(['supir', 'kontainers', 'checkpoints']);
 
         if (request('vendor')) {
             $query->where('vendor_perusahaan', request('vendor'));
@@ -63,8 +63,8 @@ class PenyelesaianController extends Controller
         // Filter berdasarkan tanggal
         if (request('tanggal_dari') && request('tanggal_sampai')) {
             $query->whereBetween('updated_at', [
-                request('tanggal_dari') . ' 00:00:00',
-                request('tanggal_sampai') . ' 23:59:59'
+                request('tanggal_dari').' 00:00:00',
+                request('tanggal_sampai').' 23:59:59',
             ]);
         } elseif (request('tanggal_dari')) {
             $query->whereDate('updated_at', '>=', request('tanggal_dari'));
@@ -87,7 +87,7 @@ class PenyelesaianController extends Controller
         $statusOptions = [
             'Selesai' => 'Selesai',
             'Bermasalah' => 'Bermasalah',
-            'Dibatalkan' => 'Dibatalkan'
+            'Dibatalkan' => 'Dibatalkan',
         ];
 
         return view('approval.riwayat', compact('permohonans', 'vendors', 'kegiatans', 'statusOptions'));
@@ -96,8 +96,8 @@ class PenyelesaianController extends Controller
     /**
      * Create or merge a TagihanKontainerSewa row from a Permohonan.
      * This centralizes the approval -> tagihan logic used by massProcess and store.
-     * @param Permohonan $permohonan
-     * @param string $dateForTagihan (Y-m-d)
+     *
+     * @param  string  $dateForTagihan  (Y-m-d)
      */
     protected function createOrUpdateTagihan(Permohonan $permohonan, $dateForTagihan, $kontainersPayload = null)
     {
@@ -109,6 +109,7 @@ class PenyelesaianController extends Controller
             $vendor = $permohonan->vendor_perusahaan ?? null;
             if (empty($vendor)) {
                 Log::debug('createOrUpdateTagihan skipped: no vendor on permohonan', ['permohonan_id' => $permohonan->id]);
+
                 return null;
             }
 
@@ -121,7 +122,9 @@ class PenyelesaianController extends Controller
             foreach ($permohonan->kontainers as $kontainer) {
                 // Prepare values
                 $nomor = $kontainer->nomor_kontainer ?? ($kontainer->nomor ?? null);
-                if (empty($nomor)) continue;
+                if (empty($nomor)) {
+                    continue;
+                }
 
                 // If caller provided kontainers payload (from the form), prefer its size for this kontainer
                 $overrideSize = null;
@@ -148,13 +151,13 @@ class PenyelesaianController extends Controller
                     $startObj = Carbon::parse($tanggal_awal);
                     // period end is start +1 month -1 day, capped to tanggal_akhir when present
                     $periodEndCandidate = $startObj->copy()->addMonthsNoOverflow(1)->subDay();
-                    if (!empty($tanggal_akhir)) {
+                    if (! empty($tanggal_akhir)) {
                         $taObj = Carbon::parse($tanggal_akhir);
                         $endObj = $taObj->lessThan($periodEndCandidate) ? $taObj : $periodEndCandidate;
                     } else {
                         $endObj = $periodEndCandidate;
                     }
-                    $masa = strtolower($startObj->locale('id')->isoFormat('D MMMM YYYY')) . ' - ' . strtolower($endObj->locale('id')->isoFormat('D MMMM YYYY'));
+                    $masa = strtolower($startObj->locale('id')->isoFormat('D MMMM YYYY')).' - '.strtolower($endObj->locale('id')->isoFormat('D MMMM YYYY'));
                     $masaDays = $startObj->diffInDays($endObj);
                 }
 
@@ -170,13 +173,13 @@ class PenyelesaianController extends Controller
                 // Attempt to fetch monthly pricelist for this vendor + kontainer ukuran (use override if provided)
                 $pricelist = null;
                 try {
-                    if (!empty($vendor) && !empty($sizeForLookup)) {
+                    if (! empty($vendor) && ! empty($sizeForLookup)) {
                         $pricelist = MasterPricelistSewaKontainer::where('vendor', $vendor)
                             ->where('ukuran_kontainer', $sizeForLookup)
-                            ->where(function($q) use ($dateStr) {
+                            ->where(function ($q) use ($dateStr) {
                                 $q->whereNull('tanggal_harga_awal')->orWhere('tanggal_harga_awal', '<=', $dateStr);
                             })
-                            ->where(function($q) use ($dateStr) {
+                            ->where(function ($q) use ($dateStr) {
                                 $q->whereNull('tanggal_harga_akhir')->orWhere('tanggal_harga_akhir', '>=', $dateStr);
                             })
                             ->orderByDesc('tanggal_harga_awal')
@@ -192,11 +195,11 @@ class PenyelesaianController extends Controller
 
                 if ($pricelist) {
                     // tarif default must be the monthly tarif from pricelist when present
-                    if (!is_null($pricelist->tarif)) {
+                    if (! is_null($pricelist->tarif)) {
                         $defaultTarif = $pricelist->tarif;
                     }
                     // dpp should be the pricelist harga (base amount)
-                    if (!is_null($pricelist->harga)) {
+                    if (! is_null($pricelist->harga)) {
                         $defaultDpp = $pricelist->harga;
                     }
                 }
@@ -204,21 +207,21 @@ class PenyelesaianController extends Controller
                 // If this kontainer was marked as returned/dikembalikan and masa < 30 days,
                 // prefer a daily tariff: attempt to use pricelist->harga_harian if present,
                 // otherwise approximate daily = monthly_harga / 30 and multiply by masa.
-                $isReturned = strtolower((string)($kontainer->status ?? '')) === 'dikembalikan' || (!empty($kontainer->tanggal_selesai_sewa) && ($kontainer->tanggal_selesai_sewa !== null));
+                $isReturned = strtolower((string) ($kontainer->status ?? '')) === 'dikembalikan' || (! empty($kontainer->tanggal_selesai_sewa) && ($kontainer->tanggal_selesai_sewa !== null));
                 if ($isReturned && $masaDays !== null && $masaDays < 30) {
                     $dailyRate = null;
-                    if ($pricelist && isset($pricelist->harga_harian) && !is_null($pricelist->harga_harian)) {
+                    if ($pricelist && isset($pricelist->harga_harian) && ! is_null($pricelist->harga_harian)) {
                         $dailyRate = $pricelist->harga_harian;
-                    } elseif ($pricelist && !is_null($pricelist->harga)) {
-                        $dailyRate = round((float)$pricelist->harga / 30, 2);
+                    } elseif ($pricelist && ! is_null($pricelist->harga)) {
+                        $dailyRate = round((float) $pricelist->harga / 30, 2);
                     } else {
                         // fallback: base on default monthly dpp if available
-                        $dailyRate = isset($defaultDpp) ? round((float)$defaultDpp / 30, 2) : 0;
+                        $dailyRate = isset($defaultDpp) ? round((float) $defaultDpp / 30, 2) : 0;
                     }
 
                     // Use daily tarif label and compute dpp as dailyRate * masa
                     $defaultTarif = 'Harian';
-                    $defaultDpp = round((float)$dailyRate * (int)$masaDays, 2);
+                    $defaultDpp = round((float) $dailyRate * (int) $masaDays, 2);
                 }
 
                 $values = [
@@ -231,13 +234,13 @@ class PenyelesaianController extends Controller
                     // store the resolved size (either from override or model)
                     'size' => $sizeForLookup,
                     // Jika ada override pada model kontainer, gunakan itu; jika tidak, hitung dari dpp
-                    'dpp_nilai_lain' => $kontainer->dpp_nilai_lain ?? round((float)($defaultDpp ?? 0) * 11 / 12, 2),
+                    'dpp_nilai_lain' => $kontainer->dpp_nilai_lain ?? round((float) ($defaultDpp ?? 0) * 11 / 12, 2),
                     // compute ppn from dpp_nilai_lain unless kontainer explicitly provided a ppn
-                    'ppn' => $kontainer->ppn ?? round(((float)($kontainer->dpp_nilai_lain ?? round((float)($defaultDpp ?? 0) * 11 / 12, 2))) * 0.12, 2),
+                    'ppn' => $kontainer->ppn ?? round(((float) ($kontainer->dpp_nilai_lain ?? round((float) ($defaultDpp ?? 0) * 11 / 12, 2))) * 0.12, 2),
                     // compute pph from dpp (2%) unless kontainer explicitly provided a pph
-                    'pph' => $kontainer->pph ?? round((float)($defaultDpp ?? 0) * 0.02, 2),
+                    'pph' => $kontainer->pph ?? round((float) ($defaultDpp ?? 0) * 0.02, 2),
                     // compute grand_total from components if not provided explicit
-                    'grand_total' => $kontainer->grand_total ?? round(((float)($defaultDpp ?? 0) + (float)($kontainer->ppn ?? round(((float)($kontainer->dpp_nilai_lain ?? round((float)($defaultDpp ?? 0) * 11 / 12, 2))) * 0.12, 2))) - (float)($kontainer->pph ?? round((float)($defaultDpp ?? 0) * 0.02, 2)), 2),
+                    'grand_total' => $kontainer->grand_total ?? round(((float) ($defaultDpp ?? 0) + (float) ($kontainer->ppn ?? round(((float) ($kontainer->dpp_nilai_lain ?? round((float) ($defaultDpp ?? 0) * 11 / 12, 2))) * 0.12, 2))) - (float) ($kontainer->pph ?? round((float) ($defaultDpp ?? 0) * 0.02, 2)), 2),
                     'status' => $kontainer->status ?? 'Tersedia',
                 ];
 
@@ -255,8 +258,8 @@ class PenyelesaianController extends Controller
 
     /**
      * Create PerbaikanKontainer record for perbaikan kegiatan when approval is completed.
-     * @param Permohonan $permohonan
-     * @param string $tanggalPerbaikan (Y-m-d)
+     *
+     * @param  string  $tanggalPerbaikan  (Y-m-d)
      */
     protected function createPerbaikanKontainer(Permohonan $permohonan, $tanggalPerbaikan, ?Request $request = null)
     {
@@ -264,7 +267,7 @@ class PenyelesaianController extends Controller
             'permohonan_id' => $permohonan->id,
             'tanggal_perbaikan' => $tanggalPerbaikan,
             'has_request' => $request !== null,
-            'request_data' => $request ? $request->all() : null
+            'request_data' => $request ? $request->all() : null,
         ]);
 
         try {
@@ -280,12 +283,13 @@ class PenyelesaianController extends Controller
                 || ($permohonan->kegiatan === 'PERBAIKAN KONTAINER')
                 || ($permohonan->kegiatan === 'REPAIR');
 
-            if (!$isPerbaikanKegiatan) {
+            if (! $isPerbaikanKegiatan) {
                 Log::debug('createPerbaikanKontainer skipped: not a perbaikan kegiatan', [
                     'permohonan_id' => $permohonan->id,
                     'kegiatan' => $permohonan->kegiatan,
-                    'kegiatan_name' => $kegiatanName
+                    'kegiatan_name' => $kegiatanName,
                 ]);
+
                 return null;
             }
 
@@ -301,8 +305,9 @@ class PenyelesaianController extends Controller
                     Log::debug('createPerbaikanKontainer skipped: record already exists', [
                         'nomor_kontainer' => $kontainer->nomor_kontainer,
                         'tanggal_perbaikan' => $tanggalPerbaikan,
-                        'existing_id' => $existingRecord->id
+                        'existing_id' => $existingRecord->id,
                     ]);
+
                     continue;
                 }
 
@@ -311,34 +316,34 @@ class PenyelesaianController extends Controller
                     'nomor_tagihan' => \App\Models\PerbaikanKontainer::generateNomorTagihan(),
                     'nomor_kontainer' => $kontainer->nomor_kontainer,
                     'tanggal_perbaikan' => $tanggalPerbaikan,
-                    'deskripsi_perbaikan' => 'Perbaikan kontainer berdasarkan permohonan ID: ' . $permohonan->id,
+                    'deskripsi_perbaikan' => 'Perbaikan kontainer berdasarkan permohonan ID: '.$permohonan->id,
                     'status_perbaikan' => 'belum_masuk_pranota',
                     'created_by' => Auth::id() ?? 1, // Default to admin if no user logged in
                 ];
 
                 // Add vendor_bengkel if provided in request
-                if ($request && $request->has('vendor_bengkel') && !empty($request->vendor_bengkel)) {
+                if ($request && $request->has('vendor_bengkel') && ! empty($request->vendor_bengkel)) {
                     $perbaikanData['vendor_bengkel'] = $request->vendor_bengkel;
                     Log::debug('PenyelesaianIIController: vendor_bengkel set', [
-                        'vendor_bengkel_value' => $request->vendor_bengkel
+                        'vendor_bengkel_value' => $request->vendor_bengkel,
                     ]);
                 }
 
                 // Add estimasi biaya perbaikan if provided in request
-                if ($request && $request->has('estimasi_perbaikan') && !empty($request->estimasi_perbaikan)) {
+                if ($request && $request->has('estimasi_perbaikan') && ! empty($request->estimasi_perbaikan)) {
                     $perbaikanData['catatan'] = $request->estimasi_perbaikan;
                 }
 
                 // Add estimasi perbaikan (description) to estimasi_kerusakan_kontainer if provided
-                if ($request && $request->has('estimasi_perbaikan') && !empty($request->estimasi_perbaikan)) {
+                if ($request && $request->has('estimasi_perbaikan') && ! empty($request->estimasi_perbaikan)) {
                     $perbaikanData['estimasi_kerusakan_kontainer'] = $request->estimasi_perbaikan;
                     Log::debug('PenyelesaianIIController: estimasi_kerusakan_kontainer set with description', [
-                        'estimasi_perbaikan_value' => $request->estimasi_perbaikan
+                        'estimasi_perbaikan_value' => $request->estimasi_perbaikan,
                     ]);
                 }
 
                 // Add total biaya perbaikan as estimasi_biaya_perbaikan if provided
-                if ($request && $request->has('total_biaya_perbaikan') && !empty($request->total_biaya_perbaikan)) {
+                if ($request && $request->has('total_biaya_perbaikan') && ! empty($request->total_biaya_perbaikan)) {
                     // Remove thousand separators and convert to numeric
                     $biayaClean = str_replace(['.', ','], ['', '.'], $request->total_biaya_perbaikan);
                     $biayaNumeric = (float) $biayaClean;
@@ -347,7 +352,7 @@ class PenyelesaianController extends Controller
                         Log::debug('PenyelesaianIIController: estimasi_biaya_perbaikan set with amount', [
                             'original_value' => $request->total_biaya_perbaikan,
                             'cleaned_value' => $biayaClean,
-                            'numeric_value' => $biayaNumeric
+                            'numeric_value' => $biayaNumeric,
                         ]);
                     }
                 }
@@ -359,7 +364,7 @@ class PenyelesaianController extends Controller
                     'perbaikan_id' => $perbaikanRecord->id,
                     'nomor_kontainer' => $kontainer->nomor_kontainer,
                     'tanggal_perbaikan' => $tanggalPerbaikan,
-                    'permohonan_id' => $permohonan->id
+                    'permohonan_id' => $permohonan->id,
                 ]);
             }
 
@@ -367,7 +372,7 @@ class PenyelesaianController extends Controller
                 Log::info('createPerbaikanKontainer: successfully created records', [
                     'permohonan_id' => $permohonan->id,
                     'created_records' => $createdRecords,
-                    'tanggal_perbaikan' => $tanggalPerbaikan
+                    'tanggal_perbaikan' => $tanggalPerbaikan,
                 ]);
             }
 
@@ -376,7 +381,7 @@ class PenyelesaianController extends Controller
             Log::error('createPerbaikanKontainer failed', [
                 'message' => $e->getMessage(),
                 'permohonan_id' => $permohonan->id ?? null,
-                'tanggal_perbaikan' => $tanggalPerbaikan ?? null
+                'tanggal_perbaikan' => $tanggalPerbaikan ?? null,
             ]);
             throw $e;
         }
@@ -394,20 +399,20 @@ class PenyelesaianController extends Controller
             'permohonan_ids.*' => 'required|integer|exists:permohonans,id',
         ]);
 
-    // Load selected permohonans with checkpoints so we can enforce checkpoint requirement
+        // Load selected permohonans with checkpoints so we can enforce checkpoint requirement
         $permohonansToProcess = Permohonan::whereIn('id', $validated['permohonan_ids'])
             ->with(['kontainers', 'checkpoints'])
             ->get();
 
-    // Diagnostic: log kontainers payload shape (if any)
-    $kontainersPayload = $request->input('kontainers', []);
-    Log::debug('PenyelesaianIIController: kontainers payload', ['kontainers' => $kontainersPayload]);
+        // Diagnostic: log kontainers payload shape (if any)
+        $kontainersPayload = $request->input('kontainers', []);
+        Log::debug('PenyelesaianIIController: kontainers payload', ['kontainers' => $kontainersPayload]);
 
-    // Note: tests expect mass processing to proceed even if checkpoints are not present.
-    // Previous behavior aborted when any permohonan lacked checkpoints; allow processing anyway.
+        // Note: tests expect mass processing to proceed even if checkpoints are not present.
+        // Previous behavior aborted when any permohonan lacked checkpoints; allow processing anyway.
 
         DB::beginTransaction();
-    try {
+        try {
             $processed = 0;
             foreach ($permohonansToProcess as $permohonan) {
 
@@ -422,11 +427,13 @@ class PenyelesaianController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('approval.dashboard')->with('success', "Berhasil memproses {$processed} permohonan.");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('PenyelesaianController: massProcess exception', ['message' => $e->getMessage(), 'exception' => $e]);
-            return back()->with('error', 'Gagal melakukan proses masal: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal melakukan proses masal: '.$e->getMessage());
         }
     }
 
@@ -446,22 +453,22 @@ class PenyelesaianController extends Controller
         if ($isPerbaikanKegiatan) {
             $kontainerPerbaikan = $permohonan->kontainers;
         } else {
-            $kontainerPerbaikan = $permohonan->kontainers->filter(function($kontainer) {
+            $kontainerPerbaikan = $permohonan->kontainers->filter(function ($kontainer) {
                 return $kontainer->perbaikanKontainers && $kontainer->perbaikanKontainers->count() > 0;
             });
         }
 
         // If there are containers to show OR kegiatan is PERBAIKAN, use the specialized view
         if ($kontainerPerbaikan->count() > 0 || $isPerbaikanKegiatan) {
-            $totalPerbaikan = $kontainerPerbaikan->sum(function($k) {
+            $totalPerbaikan = $kontainerPerbaikan->sum(function ($k) {
                 return $k->perbaikanKontainers ? $k->perbaikanKontainers->count() : 0;
             });
 
-            $totalBiaya = $kontainerPerbaikan->sum(function($k) {
+            $totalBiaya = $kontainerPerbaikan->sum(function ($k) {
                 return $k->perbaikanKontainers ? $k->perbaikanKontainers->sum('biaya_perbaikan') : 0;
             });
 
-            $totalSudahDibayar = $kontainerPerbaikan->sum(function($k) {
+            $totalSudahDibayar = $kontainerPerbaikan->sum(function ($k) {
                 return $k->perbaikanKontainers ? $k->perbaikanKontainers->where('status_perbaikan', 'sudah_dibayar')->count() : 0;
             });
 
@@ -487,14 +494,14 @@ class PenyelesaianController extends Controller
      */
     public function store(Request $request, Permohonan $permohonan)
     {
-    // Debug: log incoming request and permohonan id (debug level)
-    Log::debug('PenyelesaianController: store entry', [
+        // Debug: log incoming request and permohonan id (debug level)
+        Log::debug('PenyelesaianController: store entry', [
             'permohonan_id' => $permohonan->id,
             'request' => $request->all(),
         ]);
 
-    // Ensure related kontainers and checkpoints are loaded (useful for direct approvals/tests)
-    $permohonan->load('kontainers', 'checkpoints');
+        // Ensure related kontainers and checkpoints are loaded (useful for direct approvals/tests)
+        $permohonan->load('kontainers', 'checkpoints');
 
         $validated = $request->validate([
             'status_permohonan' => 'required|in:selesai,bermasalah',
@@ -522,19 +529,19 @@ class PenyelesaianController extends Controller
             }
 
             // Simpan catatan karyawan (mungkin di kolom 'catatan' atau kolom baru)
-            if (array_key_exists('catatan_karyawan', $validated) && !empty($validated['catatan_karyawan'])) {
-                $permohonan->catatan = $permohonan->catatan . "\n\n[Catatan Penyelesaian]:\n" . $validated['catatan_karyawan'];
+            if (array_key_exists('catatan_karyawan', $validated) && ! empty($validated['catatan_karyawan'])) {
+                $permohonan->catatan = $permohonan->catatan."\n\n[Catatan Penyelesaian]:\n".$validated['catatan_karyawan'];
             }
 
             // Simpan estimasi perbaikan jika ada
-            if (array_key_exists('estimasi_perbaikan', $validated) && !empty($validated['estimasi_perbaikan'])) {
-                $permohonan->catatan = $permohonan->catatan . "\n\n[Estimasi Perbaikan]:\n" . $validated['estimasi_perbaikan'];
+            if (array_key_exists('estimasi_perbaikan', $validated) && ! empty($validated['estimasi_perbaikan'])) {
+                $permohonan->catatan = $permohonan->catatan."\n\n[Estimasi Perbaikan]:\n".$validated['estimasi_perbaikan'];
             }
 
             // Simpan total biaya perbaikan jika ada
-            if (array_key_exists('total_biaya_perbaikan', $validated) && !empty($validated['total_biaya_perbaikan'])) {
-                $biayaFormatted = 'Rp ' . number_format($validated['total_biaya_perbaikan'], 0, ',', '.');
-                $permohonan->catatan = $permohonan->catatan . "\n\n[Total Biaya Perbaikan]: " . $biayaFormatted;
+            if (array_key_exists('total_biaya_perbaikan', $validated) && ! empty($validated['total_biaya_perbaikan'])) {
+                $biayaFormatted = 'Rp '.number_format($validated['total_biaya_perbaikan'], 0, ',', '.');
+                $permohonan->catatan = $permohonan->catatan."\n\n[Total Biaya Perbaikan]: ".$biayaFormatted;
             }
 
             // Untuk Approval Tugas I, hanya update approved_by_system_1 saja
@@ -553,7 +560,8 @@ class PenyelesaianController extends Controller
             DB::rollBack();
             // Log the exception for test/debug visibility
             Log::error('PenyelesaianIIController: exception', ['message' => $e->getMessage(), 'exception' => $e]);
-            return back()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menyimpan: '.$e->getMessage());
         }
     }
 
@@ -575,7 +583,7 @@ class PenyelesaianController extends Controller
                     'nomor_kontainer' => $nomorKontainer,
                     'vendor' => $vendor,
                     'count' => $existingTagihan->count(),
-                    'tanggal_akhir' => $tanggalAkhir
+                    'tanggal_akhir' => $tanggalAkhir,
                 ]);
 
                 foreach ($existingTagihan as $tagihan) {
@@ -585,14 +593,14 @@ class PenyelesaianController extends Controller
                     if ($tagihan->tanggal_awal) {
                         $startObj = Carbon::parse($tagihan->tanggal_awal);
                         $endObj = Carbon::parse($tanggalAkhir);
-                        $tagihan->masa = strtolower($startObj->locale('id')->isoFormat('D MMMM YYYY')) . ' - ' . strtolower($endObj->locale('id')->isoFormat('D MMMM YYYY'));
+                        $tagihan->masa = strtolower($startObj->locale('id')->isoFormat('D MMMM YYYY')).' - '.strtolower($endObj->locale('id')->isoFormat('D MMMM YYYY'));
 
                         // If periode duration is less than 30 days, adjust to daily tariff
                         $masaDays = $startObj->diffInDays($endObj) + 1; // include end date
                         if ($masaDays < 30 && $tagihan->tarif !== 'Harian') {
                             // Convert to daily tariff
                             $originalDpp = $tagihan->dpp ?? 0;
-                            $dailyRate = round((float)$originalDpp / 30, 2);
+                            $dailyRate = round((float) $originalDpp / 30, 2);
                             $newDpp = round($dailyRate * $masaDays, 2);
 
                             $tagihan->tarif = 'Harian';
@@ -606,7 +614,7 @@ class PenyelesaianController extends Controller
                                 'nomor_kontainer' => $nomorKontainer,
                                 'masa_days' => $masaDays,
                                 'original_dpp' => $originalDpp,
-                                'new_dpp' => $newDpp
+                                'new_dpp' => $newDpp,
                             ]);
                         }
                     }
@@ -618,12 +626,12 @@ class PenyelesaianController extends Controller
                     'nomor_kontainer' => $nomorKontainer,
                     'vendor' => $vendor,
                     'updated_count' => $existingTagihan->count(),
-                    'tanggal_akhir' => $tanggalAkhir
+                    'tanggal_akhir' => $tanggalAkhir,
                 ]);
             } else {
                 Log::debug('updateTagihanTanggalAkhir: No existing records found to update', [
                     'nomor_kontainer' => $nomorKontainer,
-                    'vendor' => $vendor
+                    'vendor' => $vendor,
                 ]);
             }
         } catch (\Exception $e) {
@@ -631,7 +639,7 @@ class PenyelesaianController extends Controller
                 'message' => $e->getMessage(),
                 'nomor_kontainer' => $nomorKontainer,
                 'vendor' => $vendor,
-                'tanggal_akhir' => $tanggalAkhir
+                'tanggal_akhir' => $tanggalAkhir,
             ]);
             throw $e;
         }

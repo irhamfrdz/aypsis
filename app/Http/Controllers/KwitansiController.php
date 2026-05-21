@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Kwitansi;
 use App\Models\KwitansiDetail;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class KwitansiController extends Controller
 {
@@ -18,12 +16,12 @@ class KwitansiController extends Controller
         $search = $request->get('search');
 
         // If no filters, redirect to select ship page
-        if (!$namaKapal || !$noVoyage) {
+        if (! $namaKapal || ! $noVoyage) {
             return redirect()->route('kwitansi.select-ship');
         }
 
         $kwitansis = Kwitansi::orderBy('created_at', 'desc')->get();
-        
+
         // Fetch manifests for the "Draft" tab
         $manifestQuery = \App\Models\Manifest::query();
 
@@ -38,10 +36,10 @@ class KwitansiController extends Controller
         }
 
         if ($search) {
-            $manifestQuery->where(function($q) use ($search) {
+            $manifestQuery->where(function ($q) use ($search) {
                 $q->where('nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('nomor_bl', 'like', "%{$search}%")
-                  ->orWhere('nomor_manifest', 'like', "%{$search}%");
+                    ->orWhere('nomor_bl', 'like', "%{$search}%")
+                    ->orWhere('nomor_manifest', 'like', "%{$search}%");
             });
         }
 
@@ -73,7 +71,7 @@ class KwitansiController extends Controller
 
         // Convert to objects for view compatibility
         $ships = $shipNames->map(function ($name) {
-            return (object)['nama_kapal' => $name];
+            return (object) ['nama_kapal' => $name];
         });
 
         return view('kwitansi.select-ship', compact('ships'));
@@ -110,7 +108,7 @@ class KwitansiController extends Controller
         // Auto-generate Kwt No
         $latestKwitansi = Kwitansi::orderBy('id', 'desc')->first();
         $nextId = $latestKwitansi ? $latestKwitansi->id + 1 : 1;
-        $kwtNo = 'KWT-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+        $kwtNo = 'KWT-'.date('Ymd').'-'.str_pad($nextId, 4, '0', STR_PAD_LEFT);
 
         $manifest = null;
         if ($request->has('manifest_id')) {
@@ -128,7 +126,7 @@ class KwitansiController extends Controller
             'pelanggan_nama' => 'nullable|string',
             'tgl_inv' => 'nullable|date',
             'details' => 'required|array|min:1',
-            'details.*.item_description' => 'required|string'
+            'details.*.item_description' => 'required|string',
         ]);
 
         try {
@@ -174,34 +172,38 @@ class KwitansiController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('kwitansi.index')->with('success', 'Kwitansi berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Gagal menyimpan Kwitansi: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'Gagal menyimpan Kwitansi: '.$e->getMessage());
         }
     }
 
     public function show($id)
     {
         $kwitansi = Kwitansi::with('details')->findOrFail($id);
+
         return view('kwitansi.show', compact('kwitansi'));
     }
 
     public function edit($id)
     {
         $kwitansi = Kwitansi::with('details')->findOrFail($id);
+
         return view('kwitansi.edit', compact('kwitansi'));
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'kwt_no' => 'required|unique:kwitansis,kwt_no,' . $id,
+            'kwt_no' => 'required|unique:kwitansis,kwt_no,'.$id,
             'pelanggan_kode' => 'nullable|string',
             'pelanggan_nama' => 'nullable|string',
             'tgl_inv' => 'nullable|date',
             'details' => 'required|array|min:1',
-            'details.*.item_description' => 'required|string'
+            'details.*.item_description' => 'required|string',
         ]);
 
         try {
@@ -252,10 +254,12 @@ class KwitansiController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('kwitansi.index')->with('success', 'Kwitansi berhasil diupdate.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'Gagal mengupdate Kwitansi: ' . $e->getMessage());
+
+            return back()->withInput()->with('error', 'Gagal mengupdate Kwitansi: '.$e->getMessage());
         }
     }
 
@@ -264,9 +268,10 @@ class KwitansiController extends Controller
         try {
             $kwitansi = Kwitansi::findOrFail($id);
             $kwitansi->delete();
+
             return redirect()->route('kwitansi.index')->with('success', 'Kwitansi berhasil dihapus.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus Kwitansi: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus Kwitansi: '.$e->getMessage());
         }
     }
 
@@ -274,35 +279,36 @@ class KwitansiController extends Controller
     {
         $kwitansi = Kwitansi::with('details')->findOrFail($id);
         $terbilang = $this->terbilang($kwitansi->total_invoice);
+
         return view('kwitansi.print', compact('kwitansi', 'terbilang'));
     }
 
     private function terbilang($number)
     {
         $number = abs($number);
-        $words = array("", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "delapan", "sembilan", "sepuluh", "sebelas");
-        $temp = "";
+        $words = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+        $temp = '';
 
         if ($number < 12) {
-            $temp = " " . $words[$number];
-        } else if ($number < 20) {
-            $temp = $this->terbilang($number - 10) . " belas";
-        } else if ($number < 100) {
-            $temp = $this->terbilang($number / 10) . " puluh" . $this->terbilang($number % 10);
-        } else if ($number < 200) {
-            $temp = " seratus" . $this->terbilang($number - 100);
-        } else if ($number < 1000) {
-            $temp = $this->terbilang($number / 100) . " ratus" . $this->terbilang($number % 100);
-        } else if ($number < 2000) {
-            $temp = " seribu" . $this->terbilang($number - 1000);
-        } else if ($number < 1000000) {
-            $temp = $this->terbilang($number / 1000) . " ribu" . $this->terbilang($number % 1000);
-        } else if ($number < 1000000000) {
-            $temp = $this->terbilang($number / 1000000) . " juta" . $this->terbilang($number % 1000000);
-        } else if ($number < 1000000000000) {
-            $temp = $this->terbilang($number / 1000000000) . " milyar" . $this->terbilang(fmod($number, 1000000000));
-        } else if ($number < 1000000000000000) {
-            $temp = $this->terbilang($number / 1000000000000) . " trilyun" . $this->terbilang(fmod($number, 1000000000000));
+            $temp = ' '.$words[$number];
+        } elseif ($number < 20) {
+            $temp = $this->terbilang($number - 10).' belas';
+        } elseif ($number < 100) {
+            $temp = $this->terbilang($number / 10).' puluh'.$this->terbilang($number % 10);
+        } elseif ($number < 200) {
+            $temp = ' seratus'.$this->terbilang($number - 100);
+        } elseif ($number < 1000) {
+            $temp = $this->terbilang($number / 100).' ratus'.$this->terbilang($number % 100);
+        } elseif ($number < 2000) {
+            $temp = ' seribu'.$this->terbilang($number - 1000);
+        } elseif ($number < 1000000) {
+            $temp = $this->terbilang($number / 1000).' ribu'.$this->terbilang($number % 1000);
+        } elseif ($number < 1000000000) {
+            $temp = $this->terbilang($number / 1000000).' juta'.$this->terbilang($number % 1000000);
+        } elseif ($number < 1000000000000) {
+            $temp = $this->terbilang($number / 1000000000).' milyar'.$this->terbilang(fmod($number, 1000000000));
+        } elseif ($number < 1000000000000000) {
+            $temp = $this->terbilang($number / 1000000000000).' trilyun'.$this->terbilang(fmod($number, 1000000000000));
         }
 
         return trim($temp);

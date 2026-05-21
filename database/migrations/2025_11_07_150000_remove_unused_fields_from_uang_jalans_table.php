@@ -2,14 +2,14 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * This migration removes unused fields from uang_jalans table after form simplification:
      * - bank_kas: Bank/Kas selection field (from original table)
      * - nomor_kas_bank: Auto-generated kas/bank number
@@ -23,7 +23,7 @@ return new class extends Migration
         $indexesToDrop = [
             'uang_jalans_tanggal_pemberian_index',
             'uang_jalans_status_tanggal_pemberian_index',
-            'tanggal_pemberian'
+            'tanggal_pemberian',
         ];
 
         foreach ($indexesToDrop as $indexName) {
@@ -38,12 +38,12 @@ return new class extends Migration
             // Drop columns that are no longer needed after form simplification
             $columnsToRemove = [
                 'bank_kas',
-                'nomor_kas_bank', 
+                'nomor_kas_bank',
                 'tanggal_kas_bank',
                 'tanggal_pemberian',
-                'jenis_transaksi'
+                'jenis_transaksi',
             ];
-            
+
             foreach ($columnsToRemove as $column) {
                 if (Schema::hasColumn('uang_jalans', $column)) {
                     $table->dropColumn($column);
@@ -62,9 +62,9 @@ return new class extends Migration
             $table->string('nomor_kas_bank', 50)->nullable()->after('nomor_uang_jalan');
             $table->date('tanggal_kas_bank')->nullable()->after('nomor_kas_bank');
             $table->enum('bank_kas', ['bank', 'kas'])->default('kas')->after('tanggal_kas_bank');
-            $table->date('tanggal_pemberian')->after('status'); 
+            $table->date('tanggal_pemberian')->after('status');
             $table->enum('jenis_transaksi', ['debit', 'kredit'])->nullable()->after('tanggal_pemberian');
-            
+
             // Restore indexes
             $table->index(['status', 'tanggal_pemberian']);
         });

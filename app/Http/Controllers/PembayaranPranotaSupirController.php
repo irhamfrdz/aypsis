@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coa;
 use App\Models\PembayaranPranotaSupir;
 use App\Models\PranotaSupir;
-use App\Models\Coa;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class PembayaranPranotaSupirController extends Controller
 {
@@ -19,30 +18,32 @@ class PembayaranPranotaSupirController extends Controller
     {
         $this->coaTransactionService = $coaTransactionService;
     }
+
     // Tampilkan pranota yang belum dibayar
     public function index()
     {
         $pembayarans = PembayaranPranotaSupir::with('pranotas')->latest('tanggal_pembayaran')->get();
+
         return view('pembayaran-pranota-supir.index', compact('pembayarans'));
     }
 
     // Tampilkan form pembayaran untuk banyak pranota
     public function create(Request $request)
     {
-    // Ambil semua pranota yang belum dibayar, user akan memilih di form
-    $pranotas = PranotaSupir::whereDoesntHave('pembayarans')->get();
-    $total_tagihan = 0;
+        // Ambil semua pranota yang belum dibayar, user akan memilih di form
+        $pranotas = PranotaSupir::whereDoesntHave('pembayarans')->get();
+        $total_tagihan = 0;
 
-    // Ambil data akun COA untuk dropdown bank
-    $akunCoa = Coa::orderBy('nama_akun')->get();
+        // Ambil data akun COA untuk dropdown bank
+        $akunCoa = Coa::orderBy('nama_akun')->get();
 
-    return view('pembayaran-pranota-supir.create', compact('pranotas', 'total_tagihan', 'akunCoa'));
+        return view('pembayaran-pranota-supir.create', compact('pranotas', 'total_tagihan', 'akunCoa'));
     }
 
     // Simpan pembayaran ke banyak pranota
     public function store(Request $request)
     {
-    Log::debug('PembayaranPranotaSupirController: store entry', ['request' => $request->all()]);
+        Log::debug('PembayaranPranotaSupirController: store entry', ['request' => $request->all()]);
 
         $validated = $request->validate([
             'pranota_ids' => 'required|array',
@@ -91,7 +92,7 @@ class PembayaranPranotaSupirController extends Controller
             $totalPembayaran = $validated['total_tagihan_setelah_penyesuaian'] ?? $validated['total_pembayaran'];
             $bankName = $validated['bank'];
             $jenisTransaksi = $validated['jenis_transaksi'];
-            $keterangan = "Pembayaran Pranota Supir - " . $validated['nomor_pembayaran'];
+            $keterangan = 'Pembayaran Pranota Supir - '.$validated['nomor_pembayaran'];
 
             // Tentukan apakah bank di-debit atau di-kredit berdasarkan jenis transaksi
             if ($jenisTransaksi == 'Debit') {
@@ -121,7 +122,7 @@ class PembayaranPranotaSupirController extends Controller
                 'total_pembayaran' => $totalPembayaran,
                 'bank' => $bankName,
                 'jenis_transaksi' => $jenisTransaksi,
-                'biaya_account' => 'Biaya Uang Jalan Muat'
+                'biaya_account' => 'Biaya Uang Jalan Muat',
             ]);
 
             // Update nomor terakhir after successful payment creation
@@ -137,10 +138,12 @@ class PembayaranPranotaSupirController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('pembayaran-pranota-supir.index')->with('success', 'Pembayaran berhasil disimpan!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('PembayaranPranotaSupirController: exception', ['message' => $e->getMessage(), 'exception' => $e]);
+
             return back()->with('error', $e->getMessage());
         }
     }
@@ -149,6 +152,7 @@ class PembayaranPranotaSupirController extends Controller
     public function print(PembayaranPranotaSupir $pembayaran)
     {
         $pembayaran->load('pranotas');
+
         return view('pembayaran-pranota-supir.print', compact('pembayaran'));
     }
 
@@ -165,13 +169,13 @@ class PembayaranPranotaSupirController extends Controller
 
             return response()->json([
                 'success' => true,
-                'nomor_pembayaran' => $nomorPembayaran
+                'nomor_pembayaran' => $nomorPembayaran,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }

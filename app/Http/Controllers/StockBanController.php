@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StockBan;
+use App\Models\Gudang;
+use App\Models\InvoiceKanisirBan;
+use App\Models\InvoiceKanisirBanItem;
+use App\Models\MerkBan;
 use App\Models\Mobil;
 use App\Models\NamaStockBan;
-use App\Models\MerkBan;
-use App\Models\Gudang;
+use App\Models\StockBan;
 use App\Models\StockRingVelg;
 use App\Models\StockVelg;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\InvoiceKanisirBan;
-use App\Models\InvoiceKanisirBanItem;
 
 class StockBanController extends Controller
 {
@@ -25,28 +25,28 @@ class StockBanController extends Controller
         $stockBanLuarBatams = \App\Models\StockBanLuarBatam::with('mobil')->latest()->get();
         // Separate Ban Dalam, Ban Perut, and Lock Kontainer
         $stockBanDalamsOriginal = \App\Models\StockBanDalam::with('namaStockBan')->latest()->get();
-        $stockBanDalams = $stockBanDalamsOriginal->filter(function($item) {
+        $stockBanDalams = $stockBanDalamsOriginal->filter(function ($item) {
             return $item->namaStockBan && stripos($item->namaStockBan->nama, 'ban dalam') !== false;
         });
-        $stockBanPeruts = $stockBanDalamsOriginal->filter(function($item) {
-             return $item->namaStockBan && stripos($item->namaStockBan->nama, 'ban perut') !== false;
+        $stockBanPeruts = $stockBanDalamsOriginal->filter(function ($item) {
+            return $item->namaStockBan && stripos($item->namaStockBan->nama, 'ban perut') !== false;
         });
-        $stockLockKontainers = $stockBanDalamsOriginal->filter(function($item) {
-             return $item->namaStockBan && stripos($item->namaStockBan->nama, 'lock kontainer') !== false;
+        $stockLockKontainers = $stockBanDalamsOriginal->filter(function ($item) {
+            return $item->namaStockBan && stripos($item->namaStockBan->nama, 'lock kontainer') !== false;
         });
-        
-        $stockLainLains = $stockBanDalamsOriginal->filter(function($item) {
-             return $item->namaStockBan && (
-                stripos($item->namaStockBan->nama, 'cat') !== false || 
+
+        $stockLainLains = $stockBanDalamsOriginal->filter(function ($item) {
+            return $item->namaStockBan && (
+                stripos($item->namaStockBan->nama, 'cat') !== false ||
                 stripos($item->namaStockBan->nama, 'majun') !== false ||
                 (
                     stripos($item->namaStockBan->nama, 'ban dalam') === false &&
                     stripos($item->namaStockBan->nama, 'ban perut') === false &&
                     stripos($item->namaStockBan->nama, 'lock kontainer') === false
                 )
-             );
+            );
         });
-        
+
         $stockRingVelgs = StockRingVelg::with('namaStockBan')->latest()->get();
         $stockVelgs = StockVelg::with('namaStockBan')->latest()->get();
 
@@ -72,13 +72,13 @@ class StockBanController extends Controller
     public function inputHarian(Request $request)
     {
         $date = $request->input('date', date('Y-m-d'));
-        
+
         // Fetch original creations (existing behavior)
         $stockBans = StockBan::with(['mobil', 'alatBerat', 'penerima', 'kapal', 'namaStockBan', 'createdBy'])
             ->whereDate('created_at', $date)
             ->latest()
             ->get();
-            
+
         $stockBanLuarBatams = \App\Models\StockBanLuarBatam::with(['mobil', 'alatBerat', 'penerima', 'kapal', 'namaStockBan', 'createdBy'])
             ->whereDate('created_at', $date)
             ->latest()
@@ -106,6 +106,7 @@ class StockBanController extends Controller
         $masterGudangBans = \App\Models\MasterGudangBan::where('status', 'aktif')->orderBy('nama_gudang')->get();
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
         $nextInvoice = StockBan::generateNextInvoice(); // Using the same generator for now
+
         return view('stock-ban.create', compact('mobils', 'namaStockBans', 'merkBans', 'gudangs', 'masterGudangBans', 'karyawans', 'nextInvoice'));
     }
 
@@ -116,12 +117,12 @@ class StockBanController extends Controller
     {
         // First check if it's Ban Dalam or Ban Perut or Lock Kontainer
         $namaStockBan = NamaStockBan::find($request->nama_stock_ban_id);
-        
+
         // Check for Ring Velg
         $isRingVelg = $namaStockBan && stripos($namaStockBan->nama, 'ring velg') !== false;
 
         if ($isRingVelg) {
-             $request->validate([
+            $request->validate([
                 'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
                 'qty' => 'required|integer|min:0',
                 'harga_beli' => 'nullable|numeric|min:0',
@@ -188,7 +189,7 @@ class StockBanController extends Controller
         $isBulkItem = $namaStockBan && (stripos($namaStockBan->nama, 'ban dalam') !== false || stripos($namaStockBan->nama, 'ban perut') !== false || stripos($namaStockBan->nama, 'lock kontainer') !== false || stripos($namaStockBan->nama, 'cat') !== false || stripos($namaStockBan->nama, 'majun') !== false || stripos($namaStockBan->nama, 'thinner') !== false);
 
         if ($isBulkItem) {
-             $request->validate([
+            $request->validate([
                 'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
                 'qty' => 'required|integer|min:0',
                 'harga_beli' => 'nullable|numeric|min:0',
@@ -224,7 +225,7 @@ class StockBanController extends Controller
         }
 
         if ($request->filled('no_serial_checkbox')) {
-            $request->merge(['nomor_seri' => 'Tidak Ada No Seri - ' . strtoupper(uniqid())]);
+            $request->merge(['nomor_seri' => 'Tidak Ada No Seri - '.strtoupper(uniqid())]);
         }
 
         $request->validate([
@@ -262,7 +263,7 @@ class StockBanController extends Controller
         if ($request->kondisi === 'afkir' || $request->kondisi === 'rusak') {
             $data['status'] = 'Rusak';
         }
-        
+
         StockBan::create($data);
 
         return redirect()->route('stock-ban.index')->with('success', 'Data Stock Ban berhasil ditambahkan');
@@ -274,6 +275,7 @@ class StockBanController extends Controller
     public function show($id)
     {
         $stockBan = StockBan::with(['mobil', 'alatBerat', 'penerima', 'kapal'])->findOrFail($id);
+
         return view('stock-ban.show', compact('stockBan'));
     }
 
@@ -288,6 +290,7 @@ class StockBanController extends Controller
         $merkBans = MerkBan::orderBy('nama')->get();
         $gudangs = Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
+
         return view('stock-ban.edit', compact('stockBan', 'mobils', 'namaStockBans', 'merkBans', 'gudangs', 'karyawans'));
     }
 
@@ -298,10 +301,10 @@ class StockBanController extends Controller
     {
         $model = $this->getModelByType($type);
         $item = $model::with('namaStockBan')->findOrFail($id);
-        
+
         $namaStockBans = NamaStockBan::where('status', 'active')->orderBy('nama')->get();
         $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
-        
+
         return view('stock-ban.edit-stock-lain', compact('item', 'type', 'namaStockBans', 'gudangs'));
     }
 
@@ -312,7 +315,7 @@ class StockBanController extends Controller
     {
         $model = $this->getModelByType($type);
         $item = $model::findOrFail($id);
-        
+
         $request->validate([
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
             'qty' => 'required|integer|min:0',
@@ -336,7 +339,7 @@ class StockBanController extends Controller
             'updated_by' => auth()->id(),
         ]);
 
-        return redirect()->route('stock-ban.index', ['tab' => 'barang-lainnya'])->with('success', 'Data stock ' . ucwords(str_replace('-', ' ', $type)) . ' berhasil diperbarui');
+        return redirect()->route('stock-ban.index', ['tab' => 'barang-lainnya'])->with('success', 'Data stock '.ucwords(str_replace('-', ' ', $type)).' berhasil diperbarui');
     }
 
     /**
@@ -348,7 +351,7 @@ class StockBanController extends Controller
         $item = $model::findOrFail($id);
         $item->delete();
 
-        return redirect()->route('stock-ban.index', ['tab' => 'barang-lainnya'])->with('success', 'Data stock ' . ucwords(str_replace('-', ' ', $type)) . ' berhasil dihapus');
+        return redirect()->route('stock-ban.index', ['tab' => 'barang-lainnya'])->with('success', 'Data stock '.ucwords(str_replace('-', ' ', $type)).' berhasil dihapus');
     }
 
     /**
@@ -374,7 +377,6 @@ class StockBanController extends Controller
         }
     }
 
-
     /**
      * Update the specified resource in storage.
      */
@@ -383,8 +385,8 @@ class StockBanController extends Controller
         $stockBan = StockBan::findOrFail($id);
 
         if ($request->filled('no_serial_checkbox')) {
-            if (!str_starts_with($stockBan->nomor_seri ?? '', 'Tidak Ada No Seri')) {
-                $request->merge(['nomor_seri' => 'Tidak Ada No Seri - ' . strtoupper(uniqid())]);
+            if (! str_starts_with($stockBan->nomor_seri ?? '', 'Tidak Ada No Seri')) {
+                $request->merge(['nomor_seri' => 'Tidak Ada No Seri - '.strtoupper(uniqid())]);
             } else {
                 $request->merge(['nomor_seri' => $stockBan->nomor_seri]);
             }
@@ -392,7 +394,7 @@ class StockBanController extends Controller
 
         $request->validate([
             'nama_stock_ban_id' => 'required|exists:nama_stock_bans,id',
-            'nomor_seri' => 'nullable|unique:stock_bans,nomor_seri,' . $stockBan->id,
+            'nomor_seri' => 'nullable|unique:stock_bans,nomor_seri,'.$stockBan->id,
             'nomor_faktur' => 'nullable|string|max:255',
             'merk' => 'nullable|required_without:merk_id|string|max:255',
             'merk_id' => 'nullable|exists:merk_bans,id',
@@ -444,6 +446,7 @@ class StockBanController extends Controller
     {
         $stockBanDalam = \App\Models\StockBanDalam::findOrFail($id);
         $mobils = Mobil::orderBy('nomor_polisi')->get();
+
         return view('stock-ban.use-ban-dalam', compact('stockBanDalam', 'mobils'));
     }
 
@@ -456,7 +459,7 @@ class StockBanController extends Controller
 
         $request->validate([
             'mobil_id' => 'required|exists:mobils,id',
-            'qty' => 'required|integer|min:1|max:' . $stockBanDalam->qty,
+            'qty' => 'required|integer|min:1|max:'.$stockBanDalam->qty,
             'tanggal_keluar' => 'required|date',
             'keterangan' => 'nullable|string',
         ]);
@@ -484,6 +487,7 @@ class StockBanController extends Controller
     public function showBanDalam($id)
     {
         $stockBanDalam = \App\Models\StockBanDalam::with(['namaStockBan', 'usages.mobil'])->findOrFail($id);
+
         return view('stock-ban.show-ban-dalam', compact('stockBanDalam'));
     }
 
@@ -496,16 +500,16 @@ class StockBanController extends Controller
 
         // Informative check: only Stok can be used
         if ($stockBan->status !== 'Stok') {
-            return redirect()->back()->with('error', 'Gagal: Ban ini sedang dalam status "' . $stockBan->status . '" dan tidak bisa dikonfigurasi ulang untuk pemakaian.')->withInput();
+            return redirect()->back()->with('error', 'Gagal: Ban ini sedang dalam status "'.$stockBan->status.'" dan tidak bisa dikonfigurasi ulang untuk pemakaian.')->withInput();
         }
 
         $selectionId = $request->mobil_id;
         $isAlatBerat = false;
-        
+
         // Handle Alat Berat prefix
         if ($selectionId && str_starts_with($selectionId, 'alat_berat_')) {
-             $isAlatBerat = true;
-             $selectionId = str_replace('alat_berat_', '', $selectionId);
+            $isAlatBerat = true;
+            $selectionId = str_replace('alat_berat_', '', $selectionId);
         }
 
         // Add to request for easier validation
@@ -534,7 +538,7 @@ class StockBanController extends Controller
             'penerima_manual' => $request->penerima_manual,
             'tanggal_keluar' => $request->tanggal_keluar,
             'tanggal_digunakan' => $request->tanggal_digunakan ?? $request->tanggal_keluar,
-            'keterangan' => $request->keterangan ? ($stockBan->keterangan . "\n" . "[Pemakaian: " . $request->keterangan . "]") : $stockBan->keterangan,
+            'keterangan' => $request->keterangan ? ($stockBan->keterangan."\n".'[Pemakaian: '.$request->keterangan.']') : $stockBan->keterangan,
         ];
 
         if ($isAlatBerat) {
@@ -548,7 +552,8 @@ class StockBanController extends Controller
         $stockBan->update($updateData);
 
         $unitName = $isAlatBerat ? 'alat berat' : 'mobil';
-        return redirect()->route('stock-ban.index')->with('success', 'Ban dengan nomor seri ' . ($stockBan->nomor_seri ?? '-') . ' berhasil dipasang pada ' . $unitName . '.');
+
+        return redirect()->route('stock-ban.index')->with('success', 'Ban dengan nomor seri '.($stockBan->nomor_seri ?? '-').' berhasil dipasang pada '.$unitName.'.');
     }
 
     /**
@@ -576,7 +581,7 @@ class StockBanController extends Controller
 
         // Informative check: only Stok can be sent
         if ($stockBan->status !== 'Stok') {
-            return redirect()->back()->with('error', 'Gagal: Ban ini sedang dalam status "' . $stockBan->status . '" dan tidak bisa dikirim.')->withInput();
+            return redirect()->back()->with('error', 'Gagal: Ban ini sedang dalam status "'.$stockBan->status.'" dan tidak bisa dikirim.')->withInput();
         }
 
         $request->validate([
@@ -594,8 +599,8 @@ class StockBanController extends Controller
             'tanggal_kirim.required' => 'Tanggal kirim harus diisi.',
         ]);
 
-        $status = "Dikirim Ke " . $destination;
-        $keteranganNote = "[Kirim ke " . $destination . ": " . ($request->keterangan ?? '-') . "]";
+        $status = 'Dikirim Ke '.$destination;
+        $keteranganNote = '[Kirim ke '.$destination.': '.($request->keterangan ?? '-').']';
 
         $stockBan->update([
             'status' => $status,
@@ -603,11 +608,12 @@ class StockBanController extends Controller
             'penerima_manual' => $request->penerima_manual,
             'kapal_id' => $request->kapal_id,
             'tanggal_kirim' => $request->tanggal_kirim,
-            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $keteranganNote) : $keteranganNote,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan."\n".$keteranganNote) : $keteranganNote,
         ]);
 
         $kapalName = \App\Models\MasterKapal::find($request->kapal_id)->nama_kapal ?? '-';
-        return redirect()->route('stock-ban.index')->with('success', 'Ban dengan nomor seri ' . ($stockBan->nomor_seri ?? '-') . ' berhasil dikirim ke ' . $destination . ' (' . $kapalName . ').');
+
+        return redirect()->route('stock-ban.index')->with('success', 'Ban dengan nomor seri '.($stockBan->nomor_seri ?? '-').' berhasil dikirim ke '.$destination.' ('.$kapalName.').');
     }
 
     /**
@@ -620,7 +626,7 @@ class StockBanController extends Controller
         $stockBan->update([
             'kondisi' => 'kanisir',
             'status_masak' => 'sudah',
-            'jumlah_masak' => $stockBan->jumlah_masak + 1
+            'jumlah_masak' => $stockBan->jumlah_masak + 1,
         ]);
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dimasak menjadi Kanisir.');
@@ -645,15 +651,15 @@ class StockBanController extends Controller
             ->where('status', 'Stok')
             ->where('kondisi', '!=', 'afkir')
             ->get();
-        
+
         if ($bans->isEmpty()) {
-             return redirect()->back()->with('error', 'Tidak ada ban yang valid untuk dimasak/kanisir.');
+            return redirect()->back()->with('error', 'Tidak ada ban yang valid untuk dimasak/kanisir.');
         }
 
         DB::transaction(function () use ($request, $bans) {
-             // Create Invoice Header
+            // Create Invoice Header
             $invoice = InvoiceKanisirBan::create([
-                'nomor_invoice' => $request->nomor_invoice ?? 'INV-KANISIR-' . time(),
+                'nomor_invoice' => $request->nomor_invoice ?? 'INV-KANISIR-'.time(),
                 'nomor_faktur' => $request->nomor_faktur_vendor, // Save vendor invoice number
                 'tanggal_invoice' => $request->tanggal_masuk_kanisir,
                 'vendor' => $request->vendor,
@@ -680,13 +686,13 @@ class StockBanController extends Controller
                 $ban->nomor_faktur = $request->nomor_faktur_vendor; // Update vendor invoice on the ban record as well
                 $ban->tanggal_masuk = $request->tanggal_masuk_kanisir; // Update date to kanisir date
                 $ban->harga_beli = $request->harga; // Update price/cost
-                
+
                 // Append vendor info to keterangan
-                $vendorNote = "[Masak Kanisir] Vendor: " . $request->vendor . ", Tgl: " . date('d-m-Y', strtotime($request->tanggal_masuk_kanisir));
+                $vendorNote = '[Masak Kanisir] Vendor: '.$request->vendor.', Tgl: '.date('d-m-Y', strtotime($request->tanggal_masuk_kanisir));
                 if ($ban->keterangan) {
-                     $ban->keterangan .= "\n" . $vendorNote;
+                    $ban->keterangan .= "\n".$vendorNote;
                 } else {
-                     $ban->keterangan = $vendorNote;
+                    $ban->keterangan = $vendorNote;
                 }
 
                 $ban->save();
@@ -694,7 +700,7 @@ class StockBanController extends Controller
         });
 
         // Use count from bans collection since we processed all valid ones
-        return redirect()->route('stock-ban.index')->with('success', $bans->count() . ' Ban berhasil dimasak menjadi Kanisir. Invoice berhasil dibuat.');
+        return redirect()->route('stock-ban.index')->with('success', $bans->count().' Ban berhasil dimasak menjadi Kanisir. Invoice berhasil dibuat.');
     }
 
     /**
@@ -716,11 +722,11 @@ class StockBanController extends Controller
 
         // Get mobil info before clearing it
         $mobilPolisi = $stockBan->mobil ? $stockBan->mobil->nomor_polisi : '-';
-        
+
         // Build return note
-        $returnNote = "[Kembali ke Gudang] Dari mobil: " . $mobilPolisi . ", Tgl: " . date('d-m-Y');
+        $returnNote = '[Kembali ke Gudang] Dari mobil: '.$mobilPolisi.', Tgl: '.date('d-m-Y');
         if ($request->filled('keterangan')) {
-            $returnNote .= ", Ket: " . $request->keterangan;
+            $returnNote .= ', Ket: '.$request->keterangan;
         }
 
         // Update stock ban
@@ -729,7 +735,7 @@ class StockBanController extends Controller
             'mobil_id' => null,
             'lokasi' => $request->lokasi,
             'tanggal_keluar' => null,
-            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $returnNote) : $returnNote,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan."\n".$returnNote) : $returnNote,
         ]);
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dikembalikan ke gudang.');
@@ -757,7 +763,7 @@ class StockBanController extends Controller
             'status' => 'Stok',
             'lokasi' => $request->lokasi,
             'tanggal_kembali' => $request->tanggal_kembali,
-            'keterangan' => $stockBan->keterangan . "\n[Selesai Masak] Kembali ke stok di " . $request->lokasi . ", Tgl: " . $tanggalKembali,
+            'keterangan' => $stockBan->keterangan."\n[Selesai Masak] Kembali ke stok di ".$request->lokasi.', Tgl: '.$tanggalKembali,
         ]);
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban selesai dimasak dan kembali ke stok.');
@@ -783,20 +789,20 @@ class StockBanController extends Controller
 
         $tanggalKembali = \Carbon\Carbon::parse($request->tanggal_kembali)->format('d-m-Y');
 
-        $returnNote = "[Kembali ke Toko] ";
+        $returnNote = '[Kembali ke Toko] ';
         if ($request->filled('nama_toko')) {
-            $returnNote .= "Toko: " . $request->nama_toko . ", ";
+            $returnNote .= 'Toko: '.$request->nama_toko.', ';
         }
-        $returnNote .= "Tgl: " . $tanggalKembali;
-        
+        $returnNote .= 'Tgl: '.$tanggalKembali;
+
         if ($request->filled('keterangan_kembali')) {
-            $returnNote .= ", Ket: " . $request->keterangan_kembali;
+            $returnNote .= ', Ket: '.$request->keterangan_kembali;
         }
 
         $updateData = [
             'status' => 'Dikembalikan',
             'tanggal_kembali' => $request->tanggal_kembali,
-            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $returnNote) : $returnNote,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan."\n".$returnNote) : $returnNote,
             'mobil_id' => null,
             'alat_berat_id' => null,
             'penerima_id' => null,
@@ -833,9 +839,9 @@ class StockBanController extends Controller
             'keterangan_jual' => 'nullable|string',
         ]);
 
-        $jualNote = "[Dijual] Pembeli: " . $request->pembeli . ", Harga: " . number_format($request->harga_jual, 0, ',', '.') . ", Tgl: " . date('d-m-Y', strtotime($request->tanggal_jual));
+        $jualNote = '[Dijual] Pembeli: '.$request->pembeli.', Harga: '.number_format($request->harga_jual, 0, ',', '.').', Tgl: '.date('d-m-Y', strtotime($request->tanggal_jual));
         if ($request->filled('keterangan_jual')) {
-            $jualNote .= ", Ket: " . $request->keterangan_jual;
+            $jualNote .= ', Ket: '.$request->keterangan_jual;
         }
 
         $stockBan->update([
@@ -843,7 +849,7 @@ class StockBanController extends Controller
             'harga_jual' => $request->harga_jual,
             'pembeli' => $request->pembeli,
             'tanggal_jual' => $request->tanggal_jual,
-            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $jualNote) : $jualNote,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan."\n".$jualNote) : $jualNote,
             'mobil_id' => null,
             'alat_berat_id' => null,
             'penerima_id' => null,
@@ -873,15 +879,15 @@ class StockBanController extends Controller
 
         $tanggalHilang = \Carbon\Carbon::parse($request->tanggal_hilang)->format('d-m-Y');
 
-        $lostNote = "[Hilang] Tgl: " . $tanggalHilang;
+        $lostNote = '[Hilang] Tgl: '.$tanggalHilang;
         if ($request->filled('keterangan_hilang')) {
-            $lostNote .= ", Ket: " . $request->keterangan_hilang;
+            $lostNote .= ', Ket: '.$request->keterangan_hilang;
         }
 
         $stockBan->update([
             'status' => 'Hilang',
             'lokasi' => 'Hilang',
-            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $lostNote) : $lostNote,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan."\n".$lostNote) : $lostNote,
             'mobil_id' => null,
             'alat_berat_id' => null,
             'penerima_id' => null,
@@ -909,20 +915,21 @@ class StockBanController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        $restoreNote = "[Kembali ke Stok] Lokasi: " . $request->lokasi . ", Tgl: " . date('d-m-Y');
+        $restoreNote = '[Kembali ke Stok] Lokasi: '.$request->lokasi.', Tgl: '.date('d-m-Y');
         if ($request->filled('keterangan')) {
-            $restoreNote .= ", Ket: " . $request->keterangan;
+            $restoreNote .= ', Ket: '.$request->keterangan;
         }
 
         $stockBan->update([
             'status' => 'Stok',
             'lokasi' => $request->lokasi,
             'tanggal_kembali' => null,
-            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan . "\n" . $restoreNote) : $restoreNote,
+            'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan."\n".$restoreNote) : $restoreNote,
         ]);
 
         return redirect()->route('stock-ban.index')->with('success', 'Ban berhasil dikembalikan ke stok.');
     }
+
     /**
      * Store stock usage for quantity-based items.
      */
@@ -948,7 +955,7 @@ class StockBanController extends Controller
         try {
             $item = null;
             $tableName = '';
-            
+
             if (in_array($jenis, ['Ban Dalam', 'Ban Perut', 'Lock Kontainer', 'Cat', 'Majun', 'Thinner', 'Lainnya'])) {
                 $item = \App\Models\StockBanDalam::findOrFail($itemId);
                 $tableName = 'stock_ban_dalams';
@@ -960,7 +967,7 @@ class StockBanController extends Controller
                 $tableName = 'stock_velgs';
             }
 
-            if (!$item) {
+            if (! $item) {
                 throw new \Exception('Jenis barang tidak dikenal.');
             }
 
@@ -984,26 +991,29 @@ class StockBanController extends Controller
                 'tanggal_keluar' => $request->tanggal_digunakan ?? now(),
                 'tanggal_digunakan' => $request->tanggal_digunakan ?? now(),
                 'created_by' => \Illuminate\Support\Facades\Auth::id(),
-                'keterangan' => ($tableName != 'stock_ban_dalams') 
-                    ? "[$jenis ID: $itemId] " . $request->keterangan 
+                'keterangan' => ($tableName != 'stock_ban_dalams')
+                    ? "[$jenis ID: $itemId] ".$request->keterangan
                     : $request->keterangan,
             ]);
 
             DB::commit();
+
             return redirect()->route('stock-ban.index')->with('success', 'Pemakaian stok berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyimpan pemakaian: ' . $e->getMessage());
+
+            return back()->with('error', 'Gagal menyimpan pemakaian: '.$e->getMessage());
         }
     }
+
     /**
      * Show all movement history (Inbound and Outbound) for quantity-based items.
      */
     public function allUsageHistory()
     {
         // 1. Get Inbound (Creation of StockBanDalam, RingVelg, Velg)
-        $inboundBan = \App\Models\StockBanDalam::with(['namaStockBan', 'createdBy'])->get()->map(function($item) {
-            return (object)[
+        $inboundBan = \App\Models\StockBanDalam::with(['namaStockBan', 'createdBy'])->get()->map(function ($item) {
+            return (object) [
                 'tanggal' => $item->tanggal_masuk,
                 'created_at' => $item->created_at,
                 'jenis_pergerakan' => 'MASUK',
@@ -1019,12 +1029,12 @@ class StockBanController extends Controller
             ];
         });
 
-        $inboundRing = \App\Models\StockRingVelg::with(['namaStockBan', 'createdBy'])->get()->map(function($item) {
-            return (object)[
+        $inboundRing = \App\Models\StockRingVelg::with(['namaStockBan', 'createdBy'])->get()->map(function ($item) {
+            return (object) [
                 'tanggal' => $item->tanggal_masuk,
                 'created_at' => $item->created_at,
                 'jenis_pergerakan' => 'MASUK',
-                'nama' => 'Ring Velg: ' . ($item->namaStockBan->nama ?? $item->ukuran),
+                'nama' => 'Ring Velg: '.($item->namaStockBan->nama ?? $item->ukuran),
                 'qty' => $item->qty,
                 'pelaku' => 'System / Purchase',
                 'updater' => $item->createdBy->username ?? '-',
@@ -1036,12 +1046,12 @@ class StockBanController extends Controller
             ];
         });
 
-        $inboundVelg = \App\Models\StockVelg::with(['namaStockBan', 'createdBy'])->get()->map(function($item) {
-            return (object)[
+        $inboundVelg = \App\Models\StockVelg::with(['namaStockBan', 'createdBy'])->get()->map(function ($item) {
+            return (object) [
                 'tanggal' => $item->tanggal_masuk,
                 'created_at' => $item->created_at,
                 'jenis_pergerakan' => 'MASUK',
-                'nama' => 'Velg: ' . ($item->namaStockBan->nama ?? $item->ukuran),
+                'nama' => 'Velg: '.($item->namaStockBan->nama ?? $item->ukuran),
                 'qty' => $item->qty,
                 'pelaku' => 'System / Purchase',
                 'updater' => $item->createdBy->username ?? '-',
@@ -1056,20 +1066,24 @@ class StockBanController extends Controller
         $inbound = $inboundBan->concat($inboundRing)->concat($inboundVelg);
 
         // 2. Get Outbound (Usage)
-        $outbound = \App\Models\StockBanDalamUsage::with(['stockBanDalam.namaStockBan', 'penerima', 'mobil', 'kapal', 'gudang', 'createdBy'])->get()->map(function($item) {
+        $outbound = \App\Models\StockBanDalamUsage::with(['stockBanDalam.namaStockBan', 'penerima', 'mobil', 'kapal', 'gudang', 'createdBy'])->get()->map(function ($item) {
             $tujuan = '-';
-            if ($item->mobil) $tujuan = $item->mobil->nomor_polisi;
-            elseif ($item->kapal) $tujuan = $item->kapal->nama_kapal;
-            elseif ($item->gudang) $tujuan = $item->gudang->nama_gudang;
-
-            $nama = $item->stockBanDalam->namaStockBan->nama ?? 'Barang Lainnya';
-            
-            // If it's a generic reference (Velg/Ring Velg recorded in keterangan)
-            if (!$item->stock_ban_dalam_id && preg_match('/\[(.*?) ID: (.*?)\]/', $item->keterangan, $matches)) {
-                $nama = $matches[1] . " (Ref ID: " . $matches[2] . ")";
+            if ($item->mobil) {
+                $tujuan = $item->mobil->nomor_polisi;
+            } elseif ($item->kapal) {
+                $tujuan = $item->kapal->nama_kapal;
+            } elseif ($item->gudang) {
+                $tujuan = $item->gudang->nama_gudang;
             }
 
-            return (object)[
+            $nama = $item->stockBanDalam->namaStockBan->nama ?? 'Barang Lainnya';
+
+            // If it's a generic reference (Velg/Ring Velg recorded in keterangan)
+            if (! $item->stock_ban_dalam_id && preg_match('/\[(.*?) ID: (.*?)\]/', $item->keterangan, $matches)) {
+                $nama = $matches[1].' (Ref ID: '.$matches[2].')';
+            }
+
+            return (object) [
                 'tanggal' => $item->tanggal_keluar,
                 'created_at' => $item->created_at,
                 'jenis_pergerakan' => 'KELUAR',
@@ -1086,10 +1100,10 @@ class StockBanController extends Controller
         });
 
         // 3. Merge and Sort
-        $history = $inbound->concat($outbound)->sortByDesc(function($item) {
-            return $item->tanggal . $item->created_at;
+        $history = $inbound->concat($outbound)->sortByDesc(function ($item) {
+            return $item->tanggal.$item->created_at;
         });
-            
+
         return view('stock-ban.all-usage-history', compact('history'));
     }
 
@@ -1119,13 +1133,13 @@ class StockBanController extends Controller
             case 'stock_ban_dalam_usages':
                 DB::table($table)->where('id', $id)->update([
                     'tanggal_keluar' => $newDate,
-                    'tanggal_digunakan' => $newDate
+                    'tanggal_digunakan' => $newDate,
                 ]);
                 break;
             case 'stock_bans':
                 $updateField = $field ?? 'tanggal_masuk';
                 // Security check for field name
-                if (!in_array($updateField, ['tanggal_masuk', 'tanggal_keluar', 'tanggal_digunakan', 'tanggal_kirim', 'tanggal_jual'])) {
+                if (! in_array($updateField, ['tanggal_masuk', 'tanggal_keluar', 'tanggal_digunakan', 'tanggal_kirim', 'tanggal_jual'])) {
                     return response()->json(['success' => false, 'message' => 'Field tidak valid']);
                 }
                 DB::table($table)->where('id', $id)->update([$updateField => $newDate]);
@@ -1155,12 +1169,12 @@ class StockBanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Riwayat penggunaan berhasil dihapus dan stok telah dikembalikan.'
+                'message' => 'Riwayat penggunaan berhasil dihapus dan stok telah dikembalikan.',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus riwayat: ' . $e->getMessage()
+                'message' => 'Gagal menghapus riwayat: '.$e->getMessage(),
             ]);
         }
     }

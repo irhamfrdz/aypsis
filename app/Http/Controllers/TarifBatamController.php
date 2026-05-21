@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\TarifBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -48,8 +47,8 @@ class TarifBatamController extends Controller
 
         $perPage = $request->get('per_page', 10);
         $tarifBatam = $query->orderBy('masa_berlaku', 'desc')
-                           ->orderBy('created_at', 'desc')
-                           ->paginate($perPage);
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
 
         return view('tarif-batam.index', compact('tarifBatam'));
     }
@@ -77,26 +76,26 @@ class TarifBatamController extends Controller
             '40ft_antar_lokasi' => 'nullable|numeric|min:0',
             'masa_berlaku' => 'required|date',
             'keterangan' => 'nullable|string|max:1000',
-            'status' => 'required|in:aktif,nonaktif'
+            'status' => 'required|in:aktif,nonaktif',
         ], [
             'masa_berlaku.required' => 'Masa berlaku wajib diisi',
             'masa_berlaku.date' => 'Format tanggal masa berlaku tidak valid',
             'status.required' => 'Status wajib dipilih',
             'status.in' => 'Status harus aktif atau nonaktif',
             '*.numeric' => 'Tarif harus berupa angka',
-            '*.min' => 'Tarif tidak boleh negatif'
+            '*.min' => 'Tarif tidak boleh negatif',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
-                           ->withErrors($validator)
-                           ->withInput();
+                ->withErrors($validator)
+                ->withInput();
         }
 
         TarifBatam::create($request->all());
 
         return redirect()->route('tarif-batam.index')
-                        ->with('success', 'Tarif Batam berhasil ditambahkan!');
+            ->with('success', 'Tarif Batam berhasil ditambahkan!');
     }
 
     /**
@@ -130,26 +129,26 @@ class TarifBatamController extends Controller
             '40ft_antar_lokasi' => 'nullable|numeric|min:0',
             'masa_berlaku' => 'required|date',
             'keterangan' => 'nullable|string|max:1000',
-            'status' => 'required|in:aktif,nonaktif'
+            'status' => 'required|in:aktif,nonaktif',
         ], [
             'masa_berlaku.required' => 'Masa berlaku wajib diisi',
             'masa_berlaku.date' => 'Format tanggal masa berlaku tidak valid',
             'status.required' => 'Status wajib dipilih',
             'status.in' => 'Status harus aktif atau nonaktif',
             '*.numeric' => 'Tarif harus berupa angka',
-            '*.min' => 'Tarif tidak boleh negatif'
+            '*.min' => 'Tarif tidak boleh negatif',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
-                           ->withErrors($validator)
-                           ->withInput();
+                ->withErrors($validator)
+                ->withInput();
         }
 
         $tarifBatam->update($request->all());
 
         return redirect()->route('tarif-batam.index')
-                        ->with('success', 'Tarif Batam berhasil diperbarui!');
+            ->with('success', 'Tarif Batam berhasil diperbarui!');
     }
 
     /**
@@ -160,6 +159,6 @@ class TarifBatamController extends Controller
         $tarifBatam->delete();
 
         return redirect()->route('tarif-batam.index')
-                        ->with('success', 'Tarif Batam berhasil dihapus!');
+            ->with('success', 'Tarif Batam berhasil dihapus!');
     }
 }

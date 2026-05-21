@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\SertifikatKapal;
+use Illuminate\Http\Request;
 
 class SertifikatKapalController extends Controller
 {
@@ -17,10 +16,10 @@ class SertifikatKapalController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nama_sertifikat', 'like', '%' . $search . '%')
-                  ->orWhere('name_certificate', 'like', '%' . $search . '%')
-                  ->orWhere('nickname', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_sertifikat', 'like', '%'.$search.'%')
+                    ->orWhere('name_certificate', 'like', '%'.$search.'%')
+                    ->orWhere('nickname', 'like', '%'.$search.'%');
             });
         }
 
@@ -50,7 +49,7 @@ class SertifikatKapalController extends Controller
             'nama_sertifikat' => 'required|string|max:255',
             'name_certificate' => 'nullable|string|max:255',
             'nickname' => 'nullable|string|max:255',
-            'status' => 'required|in:aktif,nonaktif'
+            'status' => 'required|in:aktif,nonaktif',
         ]);
 
         SertifikatKapal::create($request->all());
@@ -84,7 +83,7 @@ class SertifikatKapalController extends Controller
             'nama_sertifikat' => 'required|string|max:255',
             'name_certificate' => 'nullable|string|max:255',
             'nickname' => 'nullable|string|max:255',
-            'status' => 'required|in:aktif,nonaktif'
+            'status' => 'required|in:aktif,nonaktif',
         ]);
 
         $master_sertifikat_kapal->update($request->all());

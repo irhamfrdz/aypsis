@@ -26,7 +26,7 @@ return new class extends Migration
         Schema::table('pranota_ongkos_truks', function (Blueprint $table) {
             $table->unsignedBigInteger('supir_id')->nullable()->after('tanggal_pranota');
             $table->unsignedBigInteger('vendor_id')->nullable()->after('supir_id');
-            
+
             $table->foreign('supir_id')->references('id')->on('karyawans')->onDelete('set null');
             $table->foreign('vendor_id')->references('id')->on('vendor_supirs')->onDelete('set null');
         });

@@ -3,17 +3,19 @@
 namespace App\Imports;
 
 use App\Models\MasterPricelistOb;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
-use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class MasterPricelistObImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithCustomCsvSettings
+class MasterPricelistObImport implements SkipsEmptyRows, ToModel, WithCustomCsvSettings, WithHeadingRow
 {
     private $successCount = 0;
+
     private $errorCount = 0;
+
     private $errors = [];
+
     private $rowNumber = 0;
 
     public function model(array $row)
@@ -38,6 +40,7 @@ class MasterPricelistObImport implements ToModel, WithHeadingRow, SkipsEmptyRows
             if (empty($size) || empty($status) || $biaya <= 0) {
                 $this->errorCount++;
                 $this->errors[] = "Baris {$this->rowNumber}: Data tidak lengkap atau tidak valid";
+
                 return null;
             }
 
@@ -52,10 +55,12 @@ class MasterPricelistObImport implements ToModel, WithHeadingRow, SkipsEmptyRows
                     'keterangan' => $keterangan,
                 ]);
                 $this->successCount++;
+
                 return null;
             }
 
             $this->successCount++;
+
             return new MasterPricelistOb([
                 'size_kontainer' => $size,
                 'status_kontainer' => $status,
@@ -65,7 +70,8 @@ class MasterPricelistObImport implements ToModel, WithHeadingRow, SkipsEmptyRows
 
         } catch (\Exception $e) {
             $this->errorCount++;
-            $this->errors[] = "Baris {$this->rowNumber}: Error - " . $e->getMessage();
+            $this->errors[] = "Baris {$this->rowNumber}: Error - ".$e->getMessage();
+
             return null;
         }
     }
@@ -77,25 +83,40 @@ class MasterPricelistObImport implements ToModel, WithHeadingRow, SkipsEmptyRows
                 return $row[$key];
             }
         }
+
         return '';
     }
 
     private function normalizeSize($size)
     {
-        if ($size === null) return null;
-        $s = strtoupper(trim((string)$size));
+        if ($size === null) {
+            return null;
+        }
+        $s = strtoupper(trim((string) $size));
         // Accept '20', '20ft', '20 FT', '20 FT'
-        if (preg_match('/^20/', $s)) return '20ft';
-        if (preg_match('/^40/', $s)) return '40ft';
+        if (preg_match('/^20/', $s)) {
+            return '20ft';
+        }
+        if (preg_match('/^40/', $s)) {
+            return '40ft';
+        }
+
         return null;
     }
 
     private function normalizeStatus($status)
     {
-        if ($status === null) return null;
-        $s = strtolower(trim((string)$status));
-        if (in_array($s, ['full', 'f', '0'])) return 'full';
-        if (in_array($s, ['empty', 'e', '1'])) return 'empty';
+        if ($status === null) {
+            return null;
+        }
+        $s = strtolower(trim((string) $status));
+        if (in_array($s, ['full', 'f', '0'])) {
+            return 'full';
+        }
+        if (in_array($s, ['empty', 'e', '1'])) {
+            return 'empty';
+        }
+
         return null;
     }
 
@@ -104,7 +125,7 @@ class MasterPricelistObImport implements ToModel, WithHeadingRow, SkipsEmptyRows
         if ($value === null || $value === '') {
             return 0;
         }
-        $val = trim((string)$value);
+        $val = trim((string) $value);
         // Remove spaces
         $val = str_replace(' ', '', $val);
         // If european format 170.500,00 -> turn into 170500.00
@@ -121,6 +142,7 @@ class MasterPricelistObImport implements ToModel, WithHeadingRow, SkipsEmptyRows
             }
             $val = str_replace(',', '', $val);
         }
+
         return floatval($val);
     }
 
@@ -145,7 +167,7 @@ class MasterPricelistObImport implements ToModel, WithHeadingRow, SkipsEmptyRows
     public function getCsvSettings(): array
     {
         return [
-            'delimiter' => ';'
+            'delimiter' => ';',
         ];
     }
 }

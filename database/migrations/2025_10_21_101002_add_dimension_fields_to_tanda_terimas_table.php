@@ -32,7 +32,7 @@ return new class extends Migration
                 'lebar',
                 'tinggi',
                 'meter_kubik',
-                'tonase'
+                'tonase',
             ]);
         });
     }

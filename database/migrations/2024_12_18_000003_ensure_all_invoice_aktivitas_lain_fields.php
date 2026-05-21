@@ -13,19 +13,19 @@ return new class extends Migration
     {
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
             // Check and add fields if they don't exist
-            if (!Schema::hasColumn('invoice_aktivitas_lain', 'nomor_voyage')) {
+            if (! Schema::hasColumn('invoice_aktivitas_lain', 'nomor_voyage')) {
                 $table->string('nomor_voyage')->nullable()->after('nomor_polisi');
             }
-            
-            if (!Schema::hasColumn('invoice_aktivitas_lain', 'surat_jalan_id')) {
+
+            if (! Schema::hasColumn('invoice_aktivitas_lain', 'surat_jalan_id')) {
                 $table->unsignedBigInteger('surat_jalan_id')->nullable()->after('nomor_voyage');
             }
-            
-            if (!Schema::hasColumn('invoice_aktivitas_lain', 'jenis_penyesuaian')) {
+
+            if (! Schema::hasColumn('invoice_aktivitas_lain', 'jenis_penyesuaian')) {
                 $table->string('jenis_penyesuaian')->nullable()->after('surat_jalan_id');
             }
-            
-            if (!Schema::hasColumn('invoice_aktivitas_lain', 'tipe_penyesuaian')) {
+
+            if (! Schema::hasColumn('invoice_aktivitas_lain', 'tipe_penyesuaian')) {
                 $table->json('tipe_penyesuaian')->nullable()->after('jenis_penyesuaian');
             }
         });

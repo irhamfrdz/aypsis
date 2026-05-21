@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -23,7 +23,7 @@ return new class extends Migration
             LIMIT 1
         ");
 
-        if (!empty($foreignKeyResult)) {
+        if (! empty($foreignKeyResult)) {
             $constraintName = $foreignKeyResult[0]->CONSTRAINT_NAME;
             DB::statement("ALTER TABLE pembayaran_pranota_kontainer_items DROP FOREIGN KEY `{$constraintName}`");
         }
@@ -35,8 +35,8 @@ return new class extends Migration
                 WHERE Column_name = 'pranota_id' AND Non_unique = 0
             ");
 
-            if (!empty($uniqueIndexResult)) {
-                DB::statement("ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pranota_id");
+            if (! empty($uniqueIndexResult)) {
+                DB::statement('ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pranota_id');
             }
         } catch (\Exception $e) {
             // Ignore if index doesn't exist
@@ -44,7 +44,7 @@ return new class extends Migration
 
         // Also try to drop other possible index names
         try {
-            DB::statement("ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pembayaran_pranota_kontainer_items_pranota_id_unique");
+            DB::statement('ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pembayaran_pranota_kontainer_items_pranota_id_unique');
         } catch (\Exception $e) {
             // Ignore if index doesn't exist
         }

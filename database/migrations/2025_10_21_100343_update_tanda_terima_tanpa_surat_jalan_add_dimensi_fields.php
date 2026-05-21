@@ -36,7 +36,7 @@ return new class extends Migration
                 'lebar',
                 'tinggi',
                 'meter_kubik',
-                'tonase'
+                'tonase',
             ]);
 
             // Add back dimensi field if needed

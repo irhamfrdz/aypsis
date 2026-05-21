@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\InvoiceKanisirBan;
+use Illuminate\Console\Command;
 
 class FixKanisirStatus extends Command
 {
@@ -29,13 +29,14 @@ class FixKanisirStatus extends Command
         $invoiceNumber = $this->argument('invoice_number');
         $invoice = InvoiceKanisirBan::with('items.stockBan')->where('nomor_invoice', $invoiceNumber)->first();
 
-        if (!$invoice) {
+        if (! $invoice) {
             $this->error("Invoice {$invoiceNumber} not found.");
+
             return 1;
         }
 
         $this->info("Processing Invoice: {$invoice->nomor_invoice}");
-        
+
         $count = 0;
         foreach ($invoice->items as $item) {
             if ($item->stockBan) {
@@ -47,6 +48,7 @@ class FixKanisirStatus extends Command
         }
 
         $this->info("Successfully updated {$count} bans to status 'Sedang Dimasak'.");
+
         return 0;
     }
 }

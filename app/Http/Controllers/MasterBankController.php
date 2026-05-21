@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Bank;
 use App\Exports\MasterBankTemplateExport;
 use App\Imports\MasterBankImport;
+use App\Models\Bank;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -18,10 +18,10 @@ class MasterBankController extends Controller
         $query = Bank::query();
 
         // Handle search functionality
-        if ($request->has('search') && !empty($request->search)) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('code', 'like', '%' . $request->search . '%')
-                  ->orWhere('keterangan', 'like', '%' . $request->search . '%');
+        if ($request->has('search') && ! empty($request->search)) {
+            $query->where('name', 'like', '%'.$request->search.'%')
+                ->orWhere('code', 'like', '%'.$request->search.'%')
+                ->orWhere('keterangan', 'like', '%'.$request->search.'%');
         }
 
         $banks = $query->orderBy('name')->paginate(15);
@@ -45,13 +45,13 @@ class MasterBankController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:10|unique:banks,code',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ]);
 
         Bank::create([
             'name' => $request->name,
             'code' => $request->code,
-            'keterangan' => $request->keterangan
+            'keterangan' => $request->keterangan,
         ]);
 
         return redirect()->route('master-bank-index')->with('success', 'Bank berhasil ditambahkan!');
@@ -81,13 +81,13 @@ class MasterBankController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'code' => ['required', 'string', 'max:10', Rule::unique('banks')->ignore($bank->id)],
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
         ]);
 
         $bank->update([
             'name' => $request->name,
             'code' => $request->code,
-            'keterangan' => $request->keterangan
+            'keterangan' => $request->keterangan,
         ]);
 
         return redirect()->route('master-bank-index')->with('success', 'Bank berhasil diperbarui!');
@@ -108,7 +108,8 @@ class MasterBankController extends Controller
      */
     public function downloadTemplate()
     {
-        $export = new MasterBankTemplateExport();
+        $export = new MasterBankTemplateExport;
+
         return $export->download();
     }
 
@@ -118,24 +119,25 @@ class MasterBankController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:2048'
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:2048',
         ]);
 
         try {
-            $import = new MasterBankImport();
+            $import = new MasterBankImport;
             $result = $import->import($request->file('file'));
 
             if ($result['success_count'] > 0) {
                 $message = "Berhasil mengimport {$result['success_count']} data bank";
-                if (!empty($result['errors'])) {
-                    $message .= ". Namun ada " . count($result['errors']) . " error: " . implode('; ', $result['errors']);
+                if (! empty($result['errors'])) {
+                    $message .= '. Namun ada '.count($result['errors']).' error: '.implode('; ', $result['errors']);
                 }
+
                 return redirect()->route('master-bank-index')->with('success', $message);
             } else {
-                return redirect()->route('master-bank-index')->with('error', 'Gagal mengimport data: ' . implode('; ', $result['errors']));
+                return redirect()->route('master-bank-index')->with('error', 'Gagal mengimport data: '.implode('; ', $result['errors']));
             }
         } catch (\Exception $e) {
-            return redirect()->route('master-bank-index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->route('master-bank-index')->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 }

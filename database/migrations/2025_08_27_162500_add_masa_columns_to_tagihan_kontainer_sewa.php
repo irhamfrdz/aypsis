@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up()
     {
-        if (!Schema::hasColumn('tagihan_kontainer_sewa', 'masa_awal')) {
+        if (! Schema::hasColumn('tagihan_kontainer_sewa', 'masa_awal')) {
             Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
                 $table->date('masa_awal')->nullable()->after('tanggal_harga_awal');
                 $table->date('masa_akhir')->nullable()->after('tanggal_harga_akhir');
@@ -20,8 +20,12 @@ return new class extends Migration
     {
         if (Schema::hasColumn('tagihan_kontainer_sewa', 'masa_awal') || Schema::hasColumn('tagihan_kontainer_sewa', 'masa_akhir')) {
             Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
-                if (Schema::hasColumn('tagihan_kontainer_sewa', 'masa_awal')) $table->dropColumn('masa_awal');
-                if (Schema::hasColumn('tagihan_kontainer_sewa', 'masa_akhir')) $table->dropColumn('masa_akhir');
+                if (Schema::hasColumn('tagihan_kontainer_sewa', 'masa_awal')) {
+                    $table->dropColumn('masa_awal');
+                }
+                if (Schema::hasColumn('tagihan_kontainer_sewa', 'masa_akhir')) {
+                    $table->dropColumn('masa_akhir');
+                }
             });
         }
     }

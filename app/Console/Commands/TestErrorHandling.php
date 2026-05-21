@@ -2,14 +2,15 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Http\Controllers\KontainerImportController;
+use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
 class TestErrorHandling extends Command
 {
     protected $signature = 'test:error-handling';
+
     protected $description = 'Test error handling in import';
 
     public function handle()
@@ -20,7 +21,7 @@ class TestErrorHandling extends Command
             // Read CSV content from our test file
             $csvContent = file_get_contents('test_error_handling.csv');
 
-            $tempFile = tempnam(sys_get_temp_dir(), 'test_error') . '.csv';
+            $tempFile = tempnam(sys_get_temp_dir(), 'test_error').'.csv';
             file_put_contents($tempFile, $csvContent);
 
             $this->info('Test CSV with errors created');
@@ -35,27 +36,27 @@ class TestErrorHandling extends Command
             );
 
             // Create mock request
-            $request = new Request();
+            $request = new Request;
             $request->files->set('excel_file', $uploadedFile);
 
             // Clear session
             session()->flush();
 
             // Test controller
-            $controller = new KontainerImportController();
+            $controller = new KontainerImportController;
             $response = $controller->import($request);
 
             // Check response
             if (session()->has('success')) {
-                $this->info('✓ Success: ' . session('success'));
+                $this->info('✓ Success: '.session('success'));
             }
 
             if (session()->has('error')) {
-                $this->warn('Errors: ' . session('error'));
+                $this->warn('Errors: '.session('error'));
             }
 
             if (session()->has('warning')) {
-                $this->warn('Warnings: ' . session('warning'));
+                $this->warn('Warnings: '.session('warning'));
             }
 
             // Verify specific records
@@ -75,17 +76,19 @@ class TestErrorHandling extends Command
 
             $this->info('');
             $this->info('Expected: 2 success, 2 errors');
-            $this->info('Actual: ' . $records->count() . ' records imported');
+            $this->info('Actual: '.$records->count().' records imported');
 
             // Cleanup
             unlink($tempFile);
 
         } catch (\Exception $e) {
-            $this->error('Error: ' . $e->getMessage());
+            $this->error('Error: '.$e->getMessage());
+
             return 1;
         }
 
         $this->info('=== TEST ERROR HANDLING SELESAI ===');
+
         return 0;
     }
 }

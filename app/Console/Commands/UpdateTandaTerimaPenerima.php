@@ -2,12 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Order;
-use App\Models\SuratJalan;
-use App\Models\TandaTerima;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class UpdateTandaTerimaPenerima extends Command
 {
@@ -51,11 +49,11 @@ class UpdateTandaTerimaPenerima extends Command
             DB::beginTransaction();
 
             // Query orders yang memiliki data penerima
-            $query = Order::where(function($q) {
+            $query = Order::where(function ($q) {
                 $q->whereNotNull('penerima')
-                  ->orWhereNotNull('penerima_id')
-                  ->orWhereNotNull('alamat_penerima')
-                  ->orWhereNotNull('kontak_penerima');
+                    ->orWhereNotNull('penerima_id')
+                    ->orWhereNotNull('alamat_penerima')
+                    ->orWhereNotNull('kontak_penerima');
             });
 
             // Filter berdasarkan order ID jika diberikan
@@ -65,11 +63,12 @@ class UpdateTandaTerimaPenerima extends Command
 
             $orders = $query->with([
                 'suratJalans.tandaTerima',
-                'recipient'
+                'recipient',
             ])->get();
 
             if ($orders->isEmpty()) {
                 $this->warn('Tidak ada order dengan data penerima yang ditemukan.');
+
                 return 0;
             }
 
@@ -83,14 +82,14 @@ class UpdateTandaTerimaPenerima extends Command
 
             $this->info("Memproses {$orderCount} order...");
             $this->newLine();
-            
+
             $bar = $this->output->createProgressBar($orderCount);
             $bar->start();
 
             foreach ($orders as $index => $order) {
                 // Ambil data penerima dari order
                 $penerimaName = null;
-                
+
                 // Cek jika ada penerima_id, maka load relationship recipient
                 if ($order->penerima_id) {
                     try {
@@ -102,35 +101,35 @@ class UpdateTandaTerimaPenerima extends Command
                         // fallback
                     }
                 }
-                
+
                 // Jika masih null, coba ambil dari attribute penerima (string)
-                if (!$penerimaName) {
+                if (! $penerimaName) {
                     $penerimaName = $order->penerima;
                 }
-                
+
                 $alamatPenerima = $order->alamat_penerima;
-                
+
                 // Loop melalui surat jalan yang terkait dengan order
                 foreach ($order->suratJalans as $suratJalan) {
                     if ($suratJalan->tandaTerima) {
                         $tandaTerima = $suratJalan->tandaTerima;
                         $totalTandaTerima++;
-                        
+
                         // Cek apakah ada perubahan
                         $hasChanges = false;
-                        
+
                         if ($penerimaName && $tandaTerima->penerima != $penerimaName) {
                             $hasChanges = true;
                         }
-                        
+
                         if ($alamatPenerima && $tandaTerima->alamat_penerima != $alamatPenerima) {
                             $hasChanges = true;
                         }
-                        
+
                         if ($hasChanges) {
                             $totalWithChanges++;
-                            
-                            if (!$dryRun) {
+
+                            if (! $dryRun) {
                                 // Update tanda terima
                                 if ($penerimaName) {
                                     $tandaTerima->penerima = $penerimaName;
@@ -144,36 +143,36 @@ class UpdateTandaTerimaPenerima extends Command
                         }
                     }
                 }
-                
+
                 $bar->advance();
             }
-            
+
             $bar->finish();
             $this->newLine(2);
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 DB::commit();
                 $this->newLine();
-                $this->info("=== SELESAI ===");
+                $this->info('=== SELESAI ===');
                 $this->info("Total Order diproses: {$orders->count()}");
                 $this->info("Total Tanda Terima ditemukan: {$totalTandaTerima}");
                 $this->info("Total Tanda Terima dengan perubahan: {$totalWithChanges}");
                 $this->info("Total Tanda Terima berhasil diupdate: {$totalUpdated}");
-                
+
                 // Record last run time
                 Cache::put('last_tanda_terima_update', now(), now()->addDays(7));
             } else {
                 DB::rollBack();
                 $this->newLine();
-                $this->info("=== DRY RUN SELESAI ===");
+                $this->info('=== DRY RUN SELESAI ===');
                 $this->info("Total Order diproses: {$orders->count()}");
                 $this->info("Total Tanda Terima ditemukan: {$totalTandaTerima}");
                 $this->info("Total Tanda Terima yang akan diupdate: {$totalWithChanges}");
                 $this->newLine();
                 if ($totalWithChanges > 0) {
-                    $this->warn("Gunakan perintah tanpa --dry-run untuk melakukan update sebenarnya");
+                    $this->warn('Gunakan perintah tanpa --dry-run untuk melakukan update sebenarnya');
                 } else {
-                    $this->info("Tidak ada data yang perlu diupdate (semua data sudah sama)");
+                    $this->info('Tidak ada data yang perlu diupdate (semua data sudah sama)');
                 }
             }
 
@@ -181,8 +180,9 @@ class UpdateTandaTerimaPenerima extends Command
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error('Error: ' . $e->getMessage());
-            $this->error('Stack trace: ' . $e->getTraceAsString());
+            $this->error('Error: '.$e->getMessage());
+            $this->error('Stack trace: '.$e->getTraceAsString());
+
             return 1;
         }
     }

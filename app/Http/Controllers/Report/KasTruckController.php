@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\Coa;
 use App\Models\CoaTransaction;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class KasTruckController extends Controller
 {
@@ -22,7 +22,7 @@ class KasTruckController extends Controller
     {
         // Name of the account we are tracking (includes double space from database)
         $accountName = 'Bank BCA Trucking  - 168 2889 955';
-        
+
         // Find the coa account by its exact name
         $akunCoa = Coa::where('nama_akun', $accountName)->first();
 
@@ -35,24 +35,24 @@ class KasTruckController extends Controller
         if ($akunCoa) {
             $query = CoaTransaction::with(['coa'])
                 ->where('coa_id', $akunCoa->id);
-                
+
             // Apply Date Filters
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date');
-            
+
             if ($startDate) {
                 $query->whereDate('tanggal_transaksi', '>=', $startDate);
             }
             if ($endDate) {
                 $query->whereDate('tanggal_transaksi', '<=', $endDate);
             }
-            
+
             // Search functionality
             if ($request->filled('search')) {
                 $search = $request->input('search');
-                $query->where(function($q) use ($search) {
-                    $q->where('keterangan', 'LIKE', '%' . $search . '%')
-                      ->orWhere('nomor_referensi', 'LIKE', '%' . $search . '%');
+                $query->where(function ($q) use ($search) {
+                    $q->where('keterangan', 'LIKE', '%'.$search.'%')
+                        ->orWhere('nomor_referensi', 'LIKE', '%'.$search.'%');
                 });
             }
 
@@ -63,7 +63,7 @@ class KasTruckController extends Controller
                 $pastTransactions = CoaTransaction::where('coa_id', $akunCoa->id)
                     ->whereDate('tanggal_transaksi', '<', $startDate)
                     ->get();
-                    
+
                 foreach ($pastTransactions as $pt) {
                     $saldoAwal += $pt->debit;
                     $saldoAwal -= $pt->kredit;
@@ -79,7 +79,7 @@ class KasTruckController extends Controller
             $referensiList = $transactions->pluck('nomor_referensi')->filter()->unique()->values()->toArray();
             $nomorAccurateMap = [];
 
-            if (!empty($referensiList)) {
+            if (! empty($referensiList)) {
                 // Tabel yang menggunakan kolom 'nomor' sebagai primary key referensi
                 $tablesWithNomor = [
                     'pembayaran_aktivitas_lains',
@@ -93,7 +93,7 @@ class KasTruckController extends Controller
                             ->where('nomor_accurate', '!=', '')
                             ->pluck('nomor_accurate', 'nomor');
                         foreach ($rows as $key => $accurate) {
-                            if (!isset($nomorAccurateMap[$key])) {
+                            if (! isset($nomorAccurateMap[$key])) {
                                 $nomorAccurateMap[$key] = $accurate;
                             }
                         }
@@ -129,7 +129,7 @@ class KasTruckController extends Controller
                             ->where('nomor_accurate', '!=', '')
                             ->pluck('nomor_accurate', 'nomor_pembayaran');
                         foreach ($rows as $key => $accurate) {
-                            if (!isset($nomorAccurateMap[$key])) {
+                            if (! isset($nomorAccurateMap[$key])) {
                                 $nomorAccurateMap[$key] = $accurate;
                             }
                         }
@@ -141,14 +141,14 @@ class KasTruckController extends Controller
 
             // Fallback: data lama dimana nomor_referensi berupa ID integer
             // (bug lama di PembayaranObController yang mengirim $pembayaran->id bukan nomor_pembayaran)
-            if (!empty($referensiList)) {
+            if (! empty($referensiList)) {
                 $numericReferensiList = collect($referensiList)
-                    ->filter(fn($ref) => ctype_digit((string)$ref))
-                    ->map(fn($ref) => (int)$ref)
+                    ->filter(fn ($ref) => ctype_digit((string) $ref))
+                    ->map(fn ($ref) => (int) $ref)
                     ->values()
                     ->toArray();
 
-                if (!empty($numericReferensiList)) {
+                if (! empty($numericReferensiList)) {
                     try {
                         $rows = DB::table('pembayaran_obs')
                             ->whereIn('id', $numericReferensiList)
@@ -158,7 +158,7 @@ class KasTruckController extends Controller
                             ->get();
                         foreach ($rows as $row) {
                             $idKey = (string) $row->id;
-                            if (!isset($nomorAccurateMap[$idKey])) {
+                            if (! isset($nomorAccurateMap[$idKey])) {
                                 $nomorAccurateMap[$idKey] = $row->nomor_accurate;
                             }
                         }
@@ -182,8 +182,9 @@ class KasTruckController extends Controller
                 if (str_contains(strtoupper($t->keterangan ?? ''), 'TOP UP SALDO AWAL')) {
                     return '0000000000';
                 }
-                
+
                 $key = $t->nomor_accurate ?? $t->nomor_referensi ?? '';
+
                 // Pastikan null/kosong muncul di paling bawah (setelah transaksi yang punya nomor)
                 return $key === '' ? 'ZZZZZZZZZZ' : $key;
             })->values();
@@ -192,26 +193,26 @@ class KasTruckController extends Controller
             // Hitung Running Balances (berdasarkan urutan yang sudah disortir)
             // -------------------------------------------------------
             $runningBalance = $saldoAwal;
-            
+
             foreach ($transactions as $t) {
                 $runningBalance += $t->debit;
                 $runningBalance -= $t->kredit;
-                
+
                 $totalDebit += $t->debit;
                 $totalKredit += $t->kredit;
-                
+
                 // Add virtual attribute for view rendering
                 $t->running_balance = $runningBalance;
             }
-            
+
             $saldoAkhir = $runningBalance;
         }
 
         return view('report.kas-truck.index', compact(
-            'akunCoa', 
+            'akunCoa',
             'accountName',
-            'transactions', 
-            'saldoAwal', 
+            'transactions',
+            'saldoAwal',
             'saldoAkhir',
             'totalDebit',
             'totalKredit'
@@ -229,7 +230,7 @@ class KasTruckController extends Controller
         $accountName = 'Bank BCA Trucking  - 168 2889 955';
         $akunCoa = Coa::where('nama_akun', $accountName)->first();
 
-        if (!$akunCoa) {
+        if (! $akunCoa) {
             return redirect()->back()->with('error', 'Gagal, Akun COA master tidak ditemukan di sistem.');
         }
 
@@ -250,21 +251,21 @@ class KasTruckController extends Controller
     public function swap($id)
     {
         $trx = CoaTransaction::findOrFail($id);
-        
+
         // Swap values
         $tempDebit = $trx->debit;
         $trx->debit = $trx->kredit;
         $trx->kredit = $tempDebit;
-        
+
         // Update jenis_transaksi if needed
         if ($trx->debit > 0) {
             $trx->jenis_transaksi = 'Debit';
         } elseif ($trx->kredit > 0) {
             $trx->jenis_transaksi = 'Kredit';
         }
-        
+
         $trx->save();
-        
+
         return redirect()->back()->with('success', 'Berhasil menukar posisi Pemasukan/Pengeluaran!');
     }
 
@@ -278,7 +279,7 @@ class KasTruckController extends Controller
         $accountName = 'Bank BCA Trucking  - 168 2889 955';
         $akunCoa = Coa::where('nama_akun', $accountName)->first();
 
-        if (!$akunCoa) {
+        if (! $akunCoa) {
             return redirect()->back()->with('error', 'Gagal, Akun COA master tidak ditemukan di sistem.');
         }
 
@@ -290,7 +291,7 @@ class KasTruckController extends Controller
         $pastTransactions = CoaTransaction::where('coa_id', $akunCoa->id)
             ->whereDate('tanggal_transaksi', '<', $startDate)
             ->get();
-            
+
         foreach ($pastTransactions as $pt) {
             $currentSaldoAwal += $pt->debit;
             $currentSaldoAwal -= $pt->kredit;

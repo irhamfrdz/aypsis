@@ -22,14 +22,14 @@ class BiayaKapalThc extends Model
     ];
 
     protected $casts = [
-        'tanda_terima_ids'    => 'array',
-        'kontainer_ids'       => 'array',
-        'subtotal'            => 'decimal:2',
-        'biaya_dokumen_muat'  => 'decimal:2',
+        'tanda_terima_ids' => 'array',
+        'kontainer_ids' => 'array',
+        'subtotal' => 'decimal:2',
+        'biaya_dokumen_muat' => 'decimal:2',
         'biaya_dokumen_bongkar' => 'decimal:2',
-        'biaya_materai'       => 'decimal:2',
-        'pph'                 => 'decimal:2',
-        'total_biaya'         => 'decimal:2',
+        'biaya_materai' => 'decimal:2',
+        'pph' => 'decimal:2',
+        'total_biaya' => 'decimal:2',
     ];
 
     public function biayaKapal()

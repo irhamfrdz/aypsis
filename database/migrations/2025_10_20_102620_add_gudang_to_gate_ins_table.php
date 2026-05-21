@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::table('gate_ins', function (Blueprint $table) {
             $table->enum('gudang', ['CY', 'DERMAGA', 'SS'])
-                  ->after('biaya')
-                  ->nullable();
+                ->after('biaya')
+                ->nullable();
         });
     }
 

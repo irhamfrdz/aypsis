@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::table('surat_jalans', function (Blueprint $table) {
             // Checkpoint Kontainer Keluar fields
-            if (!Schema::hasColumn('surat_jalans', 'status_checkpoint_keluar')) {
+            if (! Schema::hasColumn('surat_jalans', 'status_checkpoint_keluar')) {
                 $table->string('status_checkpoint_keluar')->nullable()->after('status')->comment('Status checkpoint keluar: null/pending/sudah_keluar');
             }
-            if (!Schema::hasColumn('surat_jalans', 'waktu_keluar')) {
+            if (! Schema::hasColumn('surat_jalans', 'waktu_keluar')) {
                 $table->timestamp('waktu_keluar')->nullable()->after('status_checkpoint_keluar')->comment('Waktu kontainer keluar dari lokasi');
             }
-            if (!Schema::hasColumn('surat_jalans', 'catatan_keluar')) {
+            if (! Schema::hasColumn('surat_jalans', 'catatan_keluar')) {
                 $table->text('catatan_keluar')->nullable()->after('waktu_keluar')->comment('Catatan saat kontainer keluar');
             }
-            if (!Schema::hasColumn('surat_jalans', 'user_keluar_id')) {
+            if (! Schema::hasColumn('surat_jalans', 'user_keluar_id')) {
                 $table->unsignedBigInteger('user_keluar_id')->nullable()->after('catatan_keluar')->comment('User yang memproses checkpoint keluar');
             }
         });

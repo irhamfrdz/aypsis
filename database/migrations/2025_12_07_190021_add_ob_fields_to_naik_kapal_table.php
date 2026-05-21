@@ -15,7 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('supir_id')->nullable()->after('sudah_ob');
             $table->timestamp('tanggal_ob')->nullable()->after('supir_id');
             $table->text('catatan_ob')->nullable()->after('tanggal_ob');
-            
+
             // Add foreign key constraint
             $table->foreign('supir_id')->references('id')->on('karyawans')->onDelete('set null');
         });

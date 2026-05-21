@@ -5,12 +5,12 @@ namespace App\Exports;
 use App\Models\SuratJalan;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class CheckpointKontainerKeluarExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
+class CheckpointKontainerKeluarExport implements FromCollection, ShouldAutoSize, WithEvents, WithHeadings
 {
     protected $filters;
 
@@ -25,16 +25,16 @@ class CheckpointKontainerKeluarExport implements FromCollection, WithHeadings, S
             ->orderBy('tanggal_checkpoint', 'desc');
 
         // Filter by date range if provided
-        if (!empty($this->filters['tanggal_dari'])) {
+        if (! empty($this->filters['tanggal_dari'])) {
             $query->whereDate('tanggal_checkpoint', '>=', $this->filters['tanggal_dari']);
         }
 
-        if (!empty($this->filters['tanggal_sampai'])) {
+        if (! empty($this->filters['tanggal_sampai'])) {
             $query->whereDate('tanggal_checkpoint', '<=', $this->filters['tanggal_sampai']);
         }
 
         // Filter by search term
-        if (!empty($this->filters['search'])) {
+        if (! empty($this->filters['search'])) {
             $search = $this->filters['search'];
             $query->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
@@ -43,7 +43,7 @@ class CheckpointKontainerKeluarExport implements FromCollection, WithHeadings, S
             });
         }
 
-        return $query->get()->map(function($sj) {
+        return $query->get()->map(function ($sj) {
             return [
                 $sj->no_surat_jalan,
                 $sj->tanggal_gate_in ? \Carbon\Carbon::parse($sj->tanggal_gate_in)->format('d/m/Y H:i') : '-',
@@ -72,11 +72,11 @@ class CheckpointKontainerKeluarExport implements FromCollection, WithHeadings, S
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $sheet->getStyle('A1:G1')->getFont()->setBold(true);
                 $sheet->getStyle('A1:G1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            }
+            },
         ];
     }
 }

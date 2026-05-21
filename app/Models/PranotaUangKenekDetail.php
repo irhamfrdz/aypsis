@@ -13,7 +13,7 @@ class PranotaUangKenekDetail extends Model
         'supir_nama',
         'kenek_nama',
         'no_plat',
-        'uang_rit_kenek'
+        'uang_rit_kenek',
     ];
 
     protected $casts = [

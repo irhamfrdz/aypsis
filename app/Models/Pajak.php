@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
-
-use App\Traits\Auditable;
 class Pajak extends Model
 {
     use Auditable;
@@ -14,7 +13,7 @@ class Pajak extends Model
 
     protected $fillable = [
         'nama_status',
-        'keterangan'
+        'keterangan',
     ];
 
     protected $casts = [
@@ -27,9 +26,10 @@ class Pajak extends Model
     public function scopeSearch($query, $search)
     {
         if ($search) {
-            return $query->where('nama_status', 'like', '%' . $search . '%')
-                        ->orWhere('keterangan', 'like', '%' . $search . '%');
+            return $query->where('nama_status', 'like', '%'.$search.'%')
+                ->orWhere('keterangan', 'like', '%'.$search.'%');
         }
+
         return $query;
     }
 }

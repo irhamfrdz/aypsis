@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::table('orders', function (Blueprint $table) {
             // Drop foreign key constraint first
             $table->dropForeign(['approved_by']);
-            
+
             // Drop approval-related columns
             $table->dropColumn([
                 'approval_status',
-                'approved_by', 
+                'approved_by',
                 'approved_at',
-                'approval_notes'
+                'approval_notes',
             ]);
         });
     }

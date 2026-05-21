@@ -14,12 +14,12 @@ class EnsureRole
     public function handle(Request $request, Closure $next, $role)
     {
         $user = $request->user();
-        if (!$user) {
+        if (! $user) {
             abort(403);
         }
 
         $has = $user->roles()->where('name', $role)->exists();
-        if (!$has) {
+        if (! $has) {
             abort(403);
         }
 

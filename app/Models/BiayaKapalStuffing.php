@@ -35,7 +35,10 @@ class BiayaKapalStuffing extends Model
      */
     public function getTandaTerimasAttribute()
     {
-        if (empty($this->tanda_terima_ids)) return collect();
+        if (empty($this->tanda_terima_ids)) {
+            return collect();
+        }
+
         return TandaTerima::whereIn('id', $this->tanda_terima_ids)->get();
     }
 
@@ -44,7 +47,10 @@ class BiayaKapalStuffing extends Model
      */
     public function getTandaTerimas()
     {
-        if (empty($this->tanda_terima_ids)) return collect();
+        if (empty($this->tanda_terima_ids)) {
+            return collect();
+        }
+
         return TandaTerima::whereIn('id', $this->tanda_terima_ids)->get();
     }
 }

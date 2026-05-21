@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\Coa;
 use App\Models\CoaTransaction;
+use App\Models\DaftarTagihanKontainerSewa;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class CreateNextPeriodeTagihan extends Command
 {
@@ -51,13 +51,13 @@ class CreateNextPeriodeTagihan extends Command
                 // This allows billing to continue even after contract expires
                 $totalMonthsToNow = intval($startDate->diffInMonths($currentDate));
                 $maxPeriode = $totalMonthsToNow + 1;
-                
+
                 // Log the calculation
                 if ($container->tanggal_akhir) {
                     $endDate = Carbon::parse($container->tanggal_akhir);
                     $isExpired = $currentDate->gt($endDate);
-                    $this->line("Container {$container->nomor_kontainer}: " . 
-                               ($isExpired ? "EXPIRED ({$endDate->format('Y-m-d')})" : "ACTIVE") . 
+                    $this->line("Container {$container->nomor_kontainer}: ".
+                               ($isExpired ? "EXPIRED ({$endDate->format('Y-m-d')})" : 'ACTIVE').
                                " - creating periods until now ({$currentDate->format('Y-m-d')})");
                 } else {
                     $this->line("Container {$container->nomor_kontainer}: ONGOING - creating periods until now ({$currentDate->format('Y-m-d')})");
@@ -82,12 +82,12 @@ class CreateNextPeriodeTagihan extends Command
                     $isAfterContractEnd = false;
                     if ($container->tanggal_akhir) {
                         $containerEnd = Carbon::parse($container->tanggal_akhir);
-                        
+
                         // If period start is after contract end, this is a post-contract period
                         if ($periodStart->gt($containerEnd)) {
                             $isAfterContractEnd = true;
                             // For post-contract periods, use normal monthly periods (don't cap)
-                        } else if ($periodEnd->gt($containerEnd)) {
+                        } elseif ($periodEnd->gt($containerEnd)) {
                             // Period straddles the contract end - cap the end date for this specific period only
                             $periodEnd = $containerEnd;
                         }
@@ -100,7 +100,7 @@ class CreateNextPeriodeTagihan extends Command
                         ->where('periode', 1)
                         ->first();
 
-                    if (!$baseRecord) {
+                    if (! $baseRecord) {
                         continue; // Skip if no base record
                     }
 
@@ -118,32 +118,32 @@ class CreateNextPeriodeTagihan extends Command
 
                     // Get base monthly price from pricelist if possible, else fallback to base record
                     $monthlyPrice = null;
-                    
+
                     // Try to find pricelist matching the period start
                     $pr = \App\Models\MasterPricelistSewaKontainer::where('ukuran_kontainer', $baseRecord->size)
                         ->where('vendor', $container->vendor)
-                        ->where(function($q) use ($periodStart){
+                        ->where(function ($q) use ($periodStart) {
                             $q->where('tanggal_harga_awal', '<=', $periodStart->toDateString())
-                              ->where(function($q2) use ($periodStart){ 
-                                  $q2->whereNull('tanggal_harga_akhir')
-                                     ->orWhere('tanggal_harga_akhir','>=',$periodStart->toDateString()); 
-                              });
-                        })->orderBy('tanggal_harga_awal','desc')->first();
-                    
+                                ->where(function ($q2) use ($periodStart) {
+                                    $q2->whereNull('tanggal_harga_akhir')
+                                        ->orWhere('tanggal_harga_akhir', '>=', $periodStart->toDateString());
+                                });
+                        })->orderBy('tanggal_harga_awal', 'desc')->first();
+
                     if ($pr) {
-                        $monthlyPrice = (float)$pr->harga;
+                        $monthlyPrice = (float) $pr->harga;
                     } else {
                         // If no pricelist, check if baseRecord was a full month
                         $baseStart = \Carbon\Carbon::parse($baseRecord->tanggal_awal);
                         $baseEnd = \Carbon\Carbon::parse($baseRecord->tanggal_akhir);
                         $baseDays = $baseStart->diffInDays($baseEnd) + 1;
                         $baseFullMonthDays = $baseStart->daysInMonth;
-                        
+
                         if ($baseDays >= $baseFullMonthDays) {
-                            $monthlyPrice = (float)$baseRecord->dpp;
+                            $monthlyPrice = (float) $baseRecord->dpp;
                         } else {
                             // Reverse pro-rate to get approximate monthly price
-                            $monthlyPrice = round((float)$baseRecord->dpp * ($baseFullMonthDays / $baseDays), 2);
+                            $monthlyPrice = round((float) $baseRecord->dpp * ($baseFullMonthDays / $baseDays), 2);
                         }
                     }
 
@@ -152,11 +152,11 @@ class CreateNextPeriodeTagihan extends Command
                     $values = [
                         'size' => $baseRecord->size,
                         'group' => $baseRecord->group,
-                        'tanggal_akhir' => $periodEnd->format('Y-m-d'), 
+                        'tanggal_akhir' => $periodEnd->format('Y-m-d'),
                         'masa' => $this->generateMasaString($periodStart, $periodEnd),
                         'tarif' => $isFullMonth ? 'Bulanan' : 'Harian',
                         'dpp' => $periodDpp,
-                        // Values below will be automatically recalculated by Model boot method anyway, 
+                        // Values below will be automatically recalculated by Model boot method anyway,
                         // but setting them here for initial firstOrCreate values consistency
                         'dpp_nilai_lain' => round($periodDpp * 11 / 12, 2),
                         'ppn' => round(($periodDpp * 11 / 12) * 0.12, 2),
@@ -169,7 +169,7 @@ class CreateNextPeriodeTagihan extends Command
 
                     if ($row->wasRecentlyCreated) {
                         $created++;
-                        $this->line("Created periode={$periode} for container {$container->nomor_kontainer} (vendor {$container->vendor}) - DPP: " . number_format($periodDpp, 2));
+                        $this->line("Created periode={$periode} for container {$container->nomor_kontainer} (vendor {$container->vendor}) - DPP: ".number_format($periodDpp, 2));
 
                         // Record debit to COA007 for new periode
                         $this->recordCoaTransaction($row, $periode);
@@ -177,12 +177,14 @@ class CreateNextPeriodeTagihan extends Command
                 }
 
             } catch (\Exception $e) {
-                $this->error("Error processing container {$container->nomor_kontainer}: " . $e->getMessage());
+                $this->error("Error processing container {$container->nomor_kontainer}: ".$e->getMessage());
+
                 continue;
             }
         }
 
         $this->info('Created '.$created.' new periode tagihan.');
+
         return 0;
     }
 
@@ -194,13 +196,13 @@ class CreateNextPeriodeTagihan extends Command
         $months = [
             1 => 'januari', 2 => 'februari', 3 => 'maret', 4 => 'april',
             5 => 'mei', 6 => 'juni', 7 => 'juli', 8 => 'agustus',
-            9 => 'september', 10 => 'oktober', 11 => 'november', 12 => 'desember'
+            9 => 'september', 10 => 'oktober', 11 => 'november', 12 => 'desember',
         ];
 
-        $startStr = $start->format('j') . ' ' . $months[(int)$start->format('n')] . ' ' . $start->format('Y');
-        $endStr = $end->format('j') . ' ' . $months[(int)$end->format('n')] . ' ' . $end->format('Y');
+        $startStr = $start->format('j').' '.$months[(int) $start->format('n')].' '.$start->format('Y');
+        $endStr = $end->format('j').' '.$months[(int) $end->format('n')].' '.$end->format('Y');
 
-        return $startStr . ' - ' . $endStr;
+        return $startStr.' - '.$endStr;
     }
 
     /**
@@ -212,8 +214,9 @@ class CreateNextPeriodeTagihan extends Command
             // Find COA007 account
             $coa = Coa::where('nomor_akun', 'COA007')->first();
 
-            if (!$coa) {
+            if (! $coa) {
                 $this->error("COA007 account not found. Skipping COA transaction for {$tagihan->nomor_kontainer}");
+
                 return;
             }
 
@@ -222,6 +225,7 @@ class CreateNextPeriodeTagihan extends Command
 
             if ($debitAmount <= 0) {
                 $this->line("Skipping COA transaction for {$tagihan->nomor_kontainer} - zero amount");
+
                 return;
             }
 
@@ -237,16 +241,16 @@ class CreateNextPeriodeTagihan extends Command
                 'nomor_referensi' => "TKS-{$tagihan->nomor_kontainer}-P{$periode}",
                 'created_by' => 1, // Default admin user ID
                 'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
+                'updated_at' => Carbon::now(),
             ]);
 
             // Update saldo
             $this->updateCoaSaldo($coa->id, $transaksi->id);
 
-            $this->line("  → COA007 debit recorded: Rp " . number_format($debitAmount, 2, ',', '.') . " for periode {$periode}");
+            $this->line('  → COA007 debit recorded: Rp '.number_format($debitAmount, 2, ',', '.')." for periode {$periode}");
 
         } catch (\Exception $e) {
-            $this->error("Failed to record COA transaction for {$tagihan->nomor_kontainer}: " . $e->getMessage());
+            $this->error("Failed to record COA transaction for {$tagihan->nomor_kontainer}: ".$e->getMessage());
         }
     }
 
@@ -261,12 +265,12 @@ class CreateNextPeriodeTagihan extends Command
 
             // Calculate running saldo
             $previousSaldo = CoaTransaction::where('coa_id', $coaId)
-                ->where(function($query) use ($transaksi) {
+                ->where(function ($query) use ($transaksi) {
                     $query->where('tanggal_transaksi', '<', $transaksi->tanggal_transaksi)
-                          ->orWhere(function($q) use ($transaksi) {
-                              $q->where('tanggal_transaksi', '=', $transaksi->tanggal_transaksi)
+                        ->orWhere(function ($q) use ($transaksi) {
+                            $q->where('tanggal_transaksi', '=', $transaksi->tanggal_transaksi)
                                 ->where('id', '<', $transaksi->id);
-                          });
+                        });
                 })
                 ->orderBy('tanggal_transaksi', 'desc')
                 ->orderBy('id', 'desc')
@@ -282,7 +286,7 @@ class CreateNextPeriodeTagihan extends Command
             $this->updateSubsequentSaldos($coaId, $transaksi->tanggal_transaksi, $transaksi->id);
 
         } catch (\Exception $e) {
-            $this->error("Failed to update COA saldo: " . $e->getMessage());
+            $this->error('Failed to update COA saldo: '.$e->getMessage());
         }
     }
 
@@ -293,24 +297,24 @@ class CreateNextPeriodeTagihan extends Command
     {
         try {
             $subsequentTransactions = CoaTransaction::where('coa_id', $coaId)
-                ->where(function($query) use ($fromDate, $fromId) {
+                ->where(function ($query) use ($fromDate, $fromId) {
                     $query->where('tanggal_transaksi', '>', $fromDate)
-                          ->orWhere(function($q) use ($fromDate, $fromId) {
-                              $q->where('tanggal_transaksi', '=', $fromDate)
+                        ->orWhere(function ($q) use ($fromDate, $fromId) {
+                            $q->where('tanggal_transaksi', '=', $fromDate)
                                 ->where('id', '>', $fromId);
-                          });
+                        });
                 })
                 ->orderBy('tanggal_transaksi', 'asc')
                 ->orderBy('id', 'asc')
                 ->get();
 
             $runningSaldo = CoaTransaction::where('coa_id', $coaId)
-                ->where(function($query) use ($fromDate, $fromId) {
+                ->where(function ($query) use ($fromDate, $fromId) {
                     $query->where('tanggal_transaksi', '<', $fromDate)
-                          ->orWhere(function($q) use ($fromDate, $fromId) {
-                              $q->where('tanggal_transaksi', '=', $fromDate)
+                        ->orWhere(function ($q) use ($fromDate, $fromId) {
+                            $q->where('tanggal_transaksi', '=', $fromDate)
                                 ->where('id', '<=', $fromId);
-                          });
+                        });
                 })
                 ->orderBy('tanggal_transaksi', 'desc')
                 ->orderBy('id', 'desc')
@@ -322,7 +326,7 @@ class CreateNextPeriodeTagihan extends Command
             }
 
         } catch (\Exception $e) {
-            $this->error("Failed to update subsequent saldos: " . $e->getMessage());
+            $this->error('Failed to update subsequent saldos: '.$e->getMessage());
         }
     }
 }

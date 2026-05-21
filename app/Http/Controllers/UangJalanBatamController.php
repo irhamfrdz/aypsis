@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalanBatam;
 use App\Models\UangJalanBatam;
-use App\Models\PricelistUangJalanBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class UangJalanBatamController extends Controller
 {
@@ -34,12 +32,12 @@ class UangJalanBatamController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nomor_uang_jalan', 'like', "%{$search}%")
-                  ->orWhere('memo', 'like', "%{$search}%")
-                  ->orWhereHas('suratJalanBatam', function ($sj) use ($search) {
-                      $sj->where('no_surat_jalan', 'like', "%{$search}%")
-                        ->orWhere('supir', 'like', "%{$search}%")
-                        ->orWhere('no_plat', 'like', "%{$search}%");
-                  });
+                    ->orWhere('memo', 'like', "%{$search}%")
+                    ->orWhereHas('suratJalanBatam', function ($sj) use ($search) {
+                        $sj->where('no_surat_jalan', 'like', "%{$search}%")
+                            ->orWhere('supir', 'like', "%{$search}%")
+                            ->orWhere('no_plat', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -55,7 +53,7 @@ class UangJalanBatamController extends Controller
         }
 
         $uangJalans = $query->orderBy('created_at', 'desc')->paginate(15);
-        
+
         $statusOptions = UangJalanBatam::getStatusOptions();
         $statusOptions = ['all' => 'Semua Status'] + $statusOptions;
 
@@ -73,20 +71,21 @@ class UangJalanBatamController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('supir', 'like', "%{$search}%")
-                  ->orWhere('no_plat', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%");
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%");
             });
         }
 
         // Exclude which already have uang jalan
         $existingIds = UangJalanBatam::pluck('surat_jalan_batam_id')->toArray();
         $query->whereNotIn('id', $existingIds);
-        
+
         // Only active/completed SJ
         $query->whereIn('status', ['active', 'completed', 'sudah_checkpoint']);
 
         $suratJalans = $query->orderBy('created_at', 'desc')->paginate(9999);
+
         return view('uang-jalan-batam.select-surat-jalan', compact('suratJalans', 'search'));
     }
 
@@ -96,18 +95,19 @@ class UangJalanBatamController extends Controller
     public function create(Request $request)
     {
         $suratJalanId = $request->get('surat_jalan_id');
-        if (!$suratJalanId) {
+        if (! $suratJalanId) {
             return redirect()->route('uang-jalan-batam.select-surat-jalan');
         }
 
         $suratJalan = SuratJalanBatam::with('orderBatam')->findOrFail($suratJalanId);
-        
+
         $exists = UangJalanBatam::where('surat_jalan_batam_id', $suratJalanId)->exists();
         if ($exists) {
             return redirect()->route('uang-jalan-batam.select-surat-jalan')->with('error', 'Uang jalan sudah dibuat.');
         }
 
         $nomorUangJalan = UangJalanBatam::generateNomorUangJalan();
+
         return view('uang-jalan-batam.create', compact('suratJalan', 'nomorUangJalan'));
     }
 
@@ -128,15 +128,15 @@ class UangJalanBatamController extends Controller
             'alasan_penyesuaian' => 'nullable|string',
             'jumlah_penyesuaian' => 'nullable|numeric',
             'memo' => 'nullable|string',
-            'status' => 'required|in:belum_dibayar,belum_masuk_pranota,sudah_masuk_pranota,lunas,dibatalkan'
+            'status' => 'required|in:belum_dibayar,belum_masuk_pranota,sudah_masuk_pranota,lunas,dibatalkan',
         ]);
 
-        $subtotal = $validated['jumlah_uang_jalan'] + 
-                    ($validated['jumlah_mel'] ?? 0) + 
-                    ($validated['jumlah_pelancar'] ?? 0) + 
-                    ($validated['jumlah_kawalan'] ?? 0) + 
+        $subtotal = $validated['jumlah_uang_jalan'] +
+                    ($validated['jumlah_mel'] ?? 0) +
+                    ($validated['jumlah_pelancar'] ?? 0) +
+                    ($validated['jumlah_kawalan'] ?? 0) +
                     ($validated['jumlah_parkir'] ?? 0);
-        
+
         $validated['subtotal'] = $subtotal;
         $validated['jumlah_total'] = $subtotal + ($validated['jumlah_penyesuaian'] ?? 0);
         $validated['created_by'] = Auth::id();
@@ -156,6 +156,7 @@ class UangJalanBatamController extends Controller
     public function show($id)
     {
         $uangJalan = UangJalanBatam::with(['suratJalanBatam.orderBatam', 'createdBy'])->findOrFail($id);
+
         return view('uang-jalan-batam.show', compact('uangJalan'));
     }
 
@@ -165,6 +166,7 @@ class UangJalanBatamController extends Controller
     public function edit($id)
     {
         $uangJalan = UangJalanBatam::with(['suratJalanBatam.orderBatam'])->findOrFail($id);
+
         return view('uang-jalan-batam.edit', compact('uangJalan'));
     }
 
@@ -174,7 +176,7 @@ class UangJalanBatamController extends Controller
     public function update(Request $request, $id)
     {
         $uangJalan = UangJalanBatam::findOrFail($id);
-        
+
         $validated = $request->validate([
             'nomor_uang_jalan' => 'required|unique:uang_jalan_batams,nomor_uang_jalan,'.$id,
             'tanggal_uang_jalan' => 'required|date',
@@ -186,15 +188,15 @@ class UangJalanBatamController extends Controller
             'alasan_penyesuaian' => 'nullable|string',
             'jumlah_penyesuaian' => 'nullable|numeric',
             'memo' => 'nullable|string',
-            'status' => 'required|in:belum_dibayar,belum_masuk_pranota,sudah_masuk_pranota,lunas,dibatalkan'
+            'status' => 'required|in:belum_dibayar,belum_masuk_pranota,sudah_masuk_pranota,lunas,dibatalkan',
         ]);
 
-        $subtotal = $validated['jumlah_uang_jalan'] + 
-                    ($validated['jumlah_mel'] ?? 0) + 
-                    ($validated['jumlah_pelancar'] ?? 0) + 
-                    ($validated['jumlah_kawalan'] ?? 0) + 
+        $subtotal = $validated['jumlah_uang_jalan'] +
+                    ($validated['jumlah_mel'] ?? 0) +
+                    ($validated['jumlah_pelancar'] ?? 0) +
+                    ($validated['jumlah_kawalan'] ?? 0) +
                     ($validated['jumlah_parkir'] ?? 0);
-        
+
         $validated['subtotal'] = $subtotal;
         $validated['jumlah_total'] = $subtotal + ($validated['jumlah_penyesuaian'] ?? 0);
 
@@ -211,7 +213,7 @@ class UangJalanBatamController extends Controller
         $uangJalan = UangJalanBatam::findOrFail($id);
         $sjId = $uangJalan->surat_jalan_batam_id;
         $uangJalan->delete();
-        
+
         SuratJalanBatam::where('id', $sjId)->update(['status_pembayaran_uang_jalan' => 'belum_ada']);
 
         return redirect()->route('uang-jalan-batam.index')->with('success', 'Uang jalan Batam berhasil dihapus.');

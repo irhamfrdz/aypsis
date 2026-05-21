@@ -11,12 +11,14 @@ class BelanjaAmprahanController extends Controller
     public function index()
     {
         $items = BelanjaAmprahan::latest()->paginate(20);
+
         return view('belanja-amprahan.index', compact('items'));
     }
 
     public function create()
     {
         $karyawans = Karyawan::orderBy('nama_panggilan')->get();
+
         return view('belanja-amprahan.create', compact('karyawans'));
     }
 
@@ -40,6 +42,7 @@ class BelanjaAmprahanController extends Controller
     public function show($id)
     {
         $item = BelanjaAmprahan::findOrFail($id);
+
         return view('belanja-amprahan.show', compact('item'));
     }
 
@@ -47,6 +50,7 @@ class BelanjaAmprahanController extends Controller
     {
         $item = BelanjaAmprahan::findOrFail($id);
         $karyawans = Karyawan::orderBy('nama_panggilan')->get();
+
         return view('belanja-amprahan.edit', compact('item', 'karyawans'));
     }
 
@@ -72,6 +76,7 @@ class BelanjaAmprahanController extends Controller
     {
         $item = BelanjaAmprahan::findOrFail($id);
         $item->delete();
+
         return redirect()->route('belanja-amprahan.index')->with('success', 'Data dihapus');
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\User;
 use App\Models\SuratJalan;
+use App\Models\User;
+use Illuminate\Console\Command;
 
 class TestSupirDashboard extends Command
 {
@@ -30,15 +30,16 @@ class TestSupirDashboard extends Command
         // Find user 'supir'
         $user = User::where('username', 'supir')->with('karyawan')->first();
 
-        if (!$user) {
+        if (! $user) {
             $this->error('User supir not found');
+
             return 1;
         }
 
         $this->info("User found: {$user->username}");
         $this->info("User name (accessor): {$user->name}");
         $this->info("Karyawan nama_lengkap: {$user->karyawan->nama_lengkap}");
-        $this->info("Is supir: " . ($user->isSupir() ? 'Yes' : 'No'));
+        $this->info('Is supir: '.($user->isSupir() ? 'Yes' : 'No'));
 
         // Test the same logic as in SupirDashboardController
         $supirId = $user->karyawan->id ?? null;
@@ -53,16 +54,16 @@ class TestSupirDashboard extends Command
         $this->info("supirNamaLengkap: {$supirNamaLengkap}");
 
         // Query surat jalan
-        $suratJalans = SuratJalan::where(function($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
-                         $query->where('supir', $supirNamaLengkap)
-                               ->orWhere('supir', $supirUsername)
-                               ->orWhere('supir', $supirName);
-                     })
-                     ->whereIn('status', ['belum masuk checkpoint', 'checkpoint_completed'])
-                     ->latest()
-                     ->get();
+        $suratJalans = SuratJalan::where(function ($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
+            $query->where('supir', $supirNamaLengkap)
+                ->orWhere('supir', $supirUsername)
+                ->orWhere('supir', $supirName);
+        })
+            ->whereIn('status', ['belum masuk checkpoint', 'checkpoint_completed'])
+            ->latest()
+            ->get();
 
-        $this->info("\nSurat Jalan found: " . $suratJalans->count());
+        $this->info("\nSurat Jalan found: ".$suratJalans->count());
 
         foreach ($suratJalans as $sj) {
             $this->info("- ID: {$sj->id}, No: {$sj->no_surat_jalan}, Supir: '{$sj->supir}', Status: {$sj->status}");

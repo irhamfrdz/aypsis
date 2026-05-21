@@ -23,9 +23,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasTable('bls') && !Schema::hasColumn('bls', 'alamat_penerima')) {
+        if (Schema::hasTable('bls') && ! Schema::hasColumn('bls', 'alamat_penerima')) {
             Schema::table('bls', function (Blueprint $table) {
-                    $table->string('alamat_penerima')->nullable()->after('penerima');
+                $table->string('alamat_penerima')->nullable()->after('penerima');
             });
         }
     }
