@@ -24,9 +24,11 @@
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         @php
             $counts = $data->groupBy('source')->map->count();
+            $sudahNaikKapal = $data->where('naik_kapal', true)->count();
+            $belumNaikKapal = $data->where('naik_kapal', false)->count();
         @endphp
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <div class="text-sm font-medium text-gray-500 mb-1">Standard</div>
@@ -40,6 +42,20 @@
             <div class="text-sm font-medium text-gray-500 mb-1">LCL</div>
             <div class="text-2xl font-bold text-orange-600">{{ $counts->get('LCL', 0) }}</div>
         </div>
+        <div class="bg-emerald-50 p-6 rounded-xl shadow-sm border border-emerald-100">
+            <div class="flex items-center gap-2 mb-1">
+                <i class="fas fa-ship text-emerald-500 text-xs"></i>
+                <span class="text-sm font-medium text-emerald-700">Sudah Naik Kapal</span>
+            </div>
+            <div class="text-2xl font-bold text-emerald-600">{{ $sudahNaikKapal }}</div>
+        </div>
+        <div class="bg-amber-50 p-6 rounded-xl shadow-sm border border-amber-100">
+            <div class="flex items-center gap-2 mb-1">
+                <i class="fas fa-clock text-amber-500 text-xs"></i>
+                <span class="text-sm font-medium text-amber-700">Belum Naik Kapal</span>
+            </div>
+            <div class="text-2xl font-bold text-amber-600">{{ $belumNaikKapal }}</div>
+        </div>
     </div>
 
     <!-- Data Table -->
@@ -49,6 +65,7 @@
                 <thead class="bg-gray-50 border-b border-gray-100">
                     <tr>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Sumber</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">No. TT / SJ</th>
                         <th class="px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">No. Kontainer / Seal</th>
@@ -61,7 +78,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse($data as $row)
-                        <tr class="hover:bg-gray-50 transition-colors">
+                        <tr class="hover:bg-gray-50 transition-colors {{ $row['naik_kapal'] ? '' : 'bg-amber-50/40' }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-medium 
                                     @if($row['source'] == 'Standard') bg-purple-100 text-purple-700
@@ -71,6 +88,25 @@
                                     @endif">
                                     {{ $row['source'] }}
                                 </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($row['naik_kapal'])
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                        <i class="fas fa-ship text-[10px]"></i>
+                                        Sudah Naik Kapal
+                                    </span>
+                                    @if($row['nama_kapal'] || $row['no_voyage'])
+                                        <div class="text-[10px] text-emerald-600 mt-0.5 font-medium leading-tight">
+                                            @if($row['nama_kapal']) {{ $row['nama_kapal'] }} @endif
+                                            @if($row['no_voyage']) <span class="text-gray-400">/ Voy.</span> {{ $row['no_voyage'] }} @endif
+                                        </div>
+                                    @endif
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                                        <i class="fas fa-clock text-[10px]"></i>
+                                        Belum Naik Kapal
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                 {{ $row['tanggal'] ? $row['tanggal']->format('d/m/Y') : '-' }}
@@ -105,7 +141,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-10 text-center text-gray-500 italic">
+                            <td colspan="10" class="px-6 py-10 text-center text-gray-500 italic">
                                 No data found for the selected period.
                             </td>
                         </tr>

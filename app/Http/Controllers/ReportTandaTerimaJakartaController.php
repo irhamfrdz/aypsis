@@ -8,6 +8,7 @@ use App\Models\TandaTerimaBongkaran;
 use App\Models\TandaTerimaLcl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ReportTandaTerimaJakartaExport;
@@ -67,14 +68,24 @@ class ReportTandaTerimaJakartaController extends Controller
     {
         $data = collect();
 
+        // Pre-fetch all manifested tanda terima numbers for efficient lookup
+        $manifestedTTs = DB::table('manifests')
+            ->whereNotNull('nomor_tanda_terima')
+            ->where('nomor_tanda_terima', '!=', '')
+            ->select('nomor_tanda_terima', 'nama_kapal', 'no_voyage', 'tanggal_berangkat')
+            ->get()
+            ->keyBy('nomor_tanda_terima');
+
         // 1. Tanda Terima (Standard)
         $ttStandard = TandaTerima::whereBetween('tanggal', [$startDate, $endDate])
             ->get()
-            ->map(function($item) {
+            ->map(function($item) use ($manifestedTTs) {
+                $noTt = $item->no_surat_jalan ?? $item->surat_jalan?->no_surat_jalan ?? '-';
+                $manifest = $manifestedTTs->get($noTt);
                 return [
                     'source' => 'Standard',
                     'tanggal' => $item->tanggal,
-                    'no_tt' => $item->no_surat_jalan ?? $item->surat_jalan?->no_surat_jalan ?? '-',
+                    'no_tt' => $noTt,
                     'no_sj_pabrik' => $item->surat_jalan_pabrik,
                     'no_kontainer' => $item->no_kontainer,
                     'no_seal' => $item->no_seal,
@@ -83,6 +94,9 @@ class ReportTandaTerimaJakartaController extends Controller
                     'penerima' => $item->penerima,
                     'tujuan' => $item->tujuan_pengiriman,
                     'keterangan' => $item->kegiatan,
+                    'naik_kapal' => $manifest !== null,
+                    'nama_kapal' => $manifest?->nama_kapal ?? null,
+                    'no_voyage' => $manifest?->no_voyage ?? null,
                 ];
             });
         $data = $data->concat($ttStandard);
@@ -90,11 +104,13 @@ class ReportTandaTerimaJakartaController extends Controller
         // 2. Tanda Terima Tanpa Surat Jalan
         $ttTSJ = TandaTerimaTanpaSuratJalan::whereBetween('tanggal_tanda_terima', [$startDate, $endDate])
             ->get()
-            ->map(function($item) {
+            ->map(function($item) use ($manifestedTTs) {
+                $noTt = $item->no_tanda_terima;
+                $manifest = $manifestedTTs->get($noTt);
                 return [
                     'source' => 'Tanpa SJ',
                     'tanggal' => $item->tanggal_tanda_terima,
-                    'no_tt' => $item->no_tanda_terima,
+                    'no_tt' => $noTt,
                     'no_sj_pabrik' => $item->surat_jalan_pabrik,
                     'no_kontainer' => $item->no_kontainer,
                     'no_seal' => $item->no_seal,
@@ -103,6 +119,9 @@ class ReportTandaTerimaJakartaController extends Controller
                     'penerima' => $item->penerima,
                     'tujuan' => $item->tujuan_pengiriman,
                     'keterangan' => $item->aktifitas,
+                    'naik_kapal' => $manifest !== null,
+                    'nama_kapal' => $manifest?->nama_kapal ?? null,
+                    'no_voyage' => $manifest?->no_voyage ?? null,
                 ];
             });
         $data = $data->concat($ttTSJ);
@@ -111,11 +130,13 @@ class ReportTandaTerimaJakartaController extends Controller
         $ttLCL = TandaTerimaLcl::whereBetween('tanggal_tanda_terima', [$startDate, $endDate])
             ->with(['tujuanKirim', 'kontainerPivot'])
             ->get()
-            ->map(function($item) {
+            ->map(function($item) use ($manifestedTTs) {
+                $noTt = $item->nomor_tanda_terima;
+                $manifest = $manifestedTTs->get($noTt);
                 return [
                     'source' => 'LCL',
                     'tanggal' => $item->tanggal_tanda_terima,
-                    'no_tt' => $item->nomor_tanda_terima,
+                    'no_tt' => $noTt,
                     'no_sj_pabrik' => $item->surat_jalan_pabrik,
                     'no_kontainer' => $item->nomor_kontainer,
                     'no_seal' => $item->nomor_seal,
@@ -124,6 +145,9 @@ class ReportTandaTerimaJakartaController extends Controller
                     'penerima' => $item->nama_penerima,
                     'tujuan' => $item->tujuanKirim?->nama_tujuan ?? '-',
                     'keterangan' => $item->kegiatan,
+                    'naik_kapal' => $manifest !== null,
+                    'nama_kapal' => $manifest?->nama_kapal ?? null,
+                    'no_voyage' => $manifest?->no_voyage ?? null,
                 ];
             });
         $data = $data->concat($ttLCL);
