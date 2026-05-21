@@ -41,11 +41,12 @@
         if($biayaKapal->airDetails->count() > 0) {
             $groupedAir = $biayaKapal->airDetails->groupBy(function($item) {
                 $tgl = $item->tanggal_invoice_vendor ? \Carbon\Carbon::parse($item->tanggal_invoice_vendor)->format('Y-m-d') : '';
-                return $item->kapal . '|||' . $item->voyage . '|||' . $item->vendor . '|||' . ($item->lokasi ?? '') . '|||' . ($item->jasa_air ?? 0) . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . $tgl;
+                return $item->kapal . '|||' . $item->voyage . '|||' . $item->vendor . '|||' . ($item->lokasi ?? '') . '|||' . ($item->jasa_air ?? 0) . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . $tgl . '|||' . ($item->bank_id ?? '');
             });
             foreach($groupedAir as $key => $items) {
                  $parts = explode('|||', $key);
                  if(count($parts) >= 9) {
+                     $firstItem = $items->first();
                      $editAirSections[] = [
                          'kapal' => $parts[0],
                          'voyage' => $parts[1],
@@ -56,6 +57,7 @@
                          'nomor_rekening' => $parts[6],
                          'nomor_referensi' => $parts[7],
                          'tanggal_invoice_vendor' => $parts[8],
+                         'bank_id' => $firstItem->bank_id,
                          'types' => $items->map(function($i){
                              return [
                                  'type_id' => $i->type_id,
@@ -483,6 +485,10 @@
                     sec.querySelector('.jasa-air-input').value = data.jasa_air;
                     if(data.penerima) sec.querySelector('.penerima-input-air').value = data.penerima;
                     if(data.nomor_rekening) sec.querySelector('.nomor-rekening-input-air').value = data.nomor_rekening;
+                    if(data.bank_id) {
+                        const bankSel = sec.querySelector('.bank-select-air');
+                        if(bankSel) bankSel.value = data.bank_id;
+                    }
                     if(data.nomor_referensi) sec.querySelector('input[name="air['+sectionIndex+'][nomor_referensi]"]').value = data.nomor_referensi;
                     if(data.tanggal_invoice_vendor) sec.querySelector('input[name="air['+sectionIndex+'][tanggal_invoice_vendor]"]').value = data.tanggal_invoice_vendor;
                     

@@ -120,6 +120,12 @@
         @foreach($karyawans as $karyawan)
             penerimaOptions += `<option value="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }}</option>`;
         @endforeach
+
+        // Bank options
+        let bankOptions = '<option value="">-- Pilih Bank --</option>';
+        @foreach($banks as $bank)
+            bankOptions += `<option value="{{ $bank->id }}">{{ $bank->name }}</option>`;
+        @endforeach
         
         
         section.innerHTML = `
@@ -231,6 +237,12 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Rekening</label>
                     <input type="text" name="air[${sectionIndex}][nomor_rekening]" class="nomor-rekening-input-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" placeholder="Masukkan nomor rekening">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Bank</label>
+                    <select name="air[${sectionIndex}][bank_id]" class="bank-select-air w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500">
+                        ${bankOptions}
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Referensi</label>

@@ -1971,6 +1971,7 @@ class BiayaKapalController extends Controller
                                 'grand_total' => $currentGrandTotal,
                                 'penerima' => $section['penerima'] ?? null,
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                                'bank_id' => $section['bank_id'] ?? null,
                                 'nomor_referensi' => $section['nomor_referensi'] ?? null,
                                 'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                             ]);
@@ -2036,6 +2037,7 @@ class BiayaKapalController extends Controller
                             'grand_total' => $grandTotal,
                             'penerima' => $section['penerima'] ?? null,
                             'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                            'bank_id' => $section['bank_id'] ?? null,
                             'nomor_referensi' => $section['nomor_referensi'] ?? null,
                             'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                         ]);
@@ -2359,7 +2361,7 @@ class BiayaKapalController extends Controller
      */
     public function print(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details', 'tenagaKerjaDetails.buruh', 'bank']);
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails.bank', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details', 'tenagaKerjaDetails.buruh', 'bank']);
 
         // Check if it's Biaya Meratus
         if ($biayaKapal->klasifikasiBiaya &&
@@ -2713,7 +2715,7 @@ class BiayaKapalController extends Controller
      */
     public function printAir(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'airDetails']);
+        $biayaKapal->load(['klasifikasiBiaya', 'airDetails.bank']);
 
         return view('biaya-kapal.print-air', compact('biayaKapal'));
     }
@@ -3532,6 +3534,7 @@ class BiayaKapalController extends Controller
                                     'grand_total' => $currentGrandTotal,
                                     'penerima' => $section['penerima'] ?? null,
                                     'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                                    'bank_id' => $section['bank_id'] ?? null,
                                     'nomor_referensi' => $section['nomor_referensi'] ?? null,
                                     'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                                 ]);

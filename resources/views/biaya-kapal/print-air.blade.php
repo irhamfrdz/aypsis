@@ -223,6 +223,8 @@
         @php
             $penerimaDisplay = $biayaKapal->penerima ?? ($biayaKapal->airDetails->pluck('penerima')->filter()->unique()->values()->first() ?? '-');
             $rekeningDisplay = $biayaKapal->nomor_rekening ?? ($biayaKapal->airDetails->pluck('nomor_rekening')->filter()->unique()->values()->first() ?? '-');
+            $bankDisplay = $biayaKapal->airDetails->map(fn($d) => optional($d->bank)->name)->filter()->unique()->values()->implode(', ');
+            if (!$bankDisplay) $bankDisplay = '-';
             
             // Calculate Totals and Group by Type
             $waterByType = [];
@@ -275,8 +277,8 @@
                 <tr>
                     <td>No. Rekening</td>
                     <td>: {{ $rekeningDisplay }}</td>
-                    <td></td>
-                    <td></td>
+                    <td>Bank</td>
+                    <td>: {{ $bankDisplay }}</td>
                 </tr>
             </table>
         </div>
