@@ -284,13 +284,18 @@
             
             // Hide standard fields for Biaya Air
             if(nominalWrapper) nominalWrapper.classList.add('hidden');
-            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
             if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
-            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+            
+            // Show global payment fields for Biaya Air (entered once for all ships)
+            if(penerimaWrapper) {
+                penerimaWrapper.classList.remove('hidden');
+                if(penerimaInput) penerimaInput.setAttribute('required', 'required');
+            }
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+            if(bankIdWrapper) bankIdWrapper.classList.remove('hidden');
             
             // Remove required attributes for hidden fields
             if(nominalInput) nominalInput.removeAttribute('required');
-            if(penerimaInput) penerimaInput.removeAttribute('required');
             
             // Hide other type-specific fields (with null checks)
             vendorWrapper.classList.add('hidden');

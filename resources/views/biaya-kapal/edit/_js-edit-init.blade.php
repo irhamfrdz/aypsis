@@ -483,8 +483,10 @@
                     }
                     
                     sec.querySelector('.jasa-air-input').value = data.jasa_air;
-                    if(data.penerima) sec.querySelector('.penerima-input-air').value = data.penerima;
-                    if(data.nomor_rekening) sec.querySelector('.nomor-rekening-input-air').value = data.nomor_rekening;
+                    const penerimaAirInput = sec.querySelector('.penerima-input-air');
+                    if(penerimaAirInput && data.penerima) penerimaAirInput.value = data.penerima;
+                    const rekAirInput = sec.querySelector('.nomor-rekening-input-air');
+                    if(rekAirInput && data.nomor_rekening) rekAirInput.value = data.nomor_rekening;
                     if(data.bank_id) {
                         const bankSel = sec.querySelector('.bank-select-air');
                         if(bankSel) bankSel.value = data.bank_id;
@@ -501,6 +503,23 @@
                     calculateAirSectionTotal(sectionIndex);
                 })();
              });
+
+             // Populate global penerima/rekening/bank from first air section (backward compat)
+             const firstAirData = existingAirSections[0];
+             if (firstAirData) {
+                 const globalPenerima = document.getElementById('penerima');
+                 if (globalPenerima && firstAirData.penerima && !globalPenerima.value) {
+                     globalPenerima.value = firstAirData.penerima;
+                 }
+                 const globalRekening = document.getElementById('nomor_rekening');
+                 if (globalRekening && firstAirData.nomor_rekening && !globalRekening.value) {
+                     globalRekening.value = firstAirData.nomor_rekening;
+                 }
+                 const globalBank = document.getElementById('bank_id');
+                 if (globalBank && firstAirData.bank_id && !globalBank.value) {
+                     globalBank.value = firstAirData.bank_id;
+                 }
+             }
         }
 
         // 4. TKBM SECTIONS
