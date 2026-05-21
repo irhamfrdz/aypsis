@@ -257,7 +257,7 @@ class ManifestTableExport implements FromCollection, WithHeadings, WithMapping, 
 
                 return ($hasContainer && $hasSeal) ? 0 : 1;
             }, 'asc'],
-            ['is_lcl', 'asc'],
+            ['is_lcl', 'desc'],
             ['no_kontainer', 'asc'],
             ['no_seal', 'asc'],
             ['tanggal', 'desc'],
