@@ -258,7 +258,7 @@
                     <td>No. Ref</td>
                     <td>: {{ $biayaKapal->nomor_referensi ?? $biayaKapal->nomor_invoice }}</td>
                     <td>No. Rekening</td>
-                    <td>: {{ $biayaKapal->nomor_rekening ?? '-' }}</td>
+                    <td>: {{ ($biayaKapal->bank ? $biayaKapal->bank->name . ' - ' : '') . ($biayaKapal->nomor_rekening ?? '-') }}</td>
                 </tr>
             </table>
         </div>

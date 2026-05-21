@@ -2359,7 +2359,7 @@ class BiayaKapalController extends Controller
      */
     public function print(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details', 'tenagaKerjaDetails.buruh']);
+        $biayaKapal->load(['klasifikasiBiaya', 'barangDetails.pricelistBuruh', 'airDetails', 'tkbmDetails.pricelistTkbm', 'operasionalDetails', 'oppOptDetails.pricelistOppOpt', 'perijinanDetails.details', 'tenagaKerjaDetails.buruh', 'bank']);
 
         // Check if it's Biaya Meratus
         if ($biayaKapal->klasifikasiBiaya &&
@@ -2723,7 +2723,7 @@ class BiayaKapalController extends Controller
      */
     public function printTkbm(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'tkbmDetails.pricelistTkbm']);
+        $biayaKapal->load(['klasifikasiBiaya', 'tkbmDetails.pricelistTkbm', 'bank']);
 
         return view('biaya-kapal.print-tkbm', compact('biayaKapal'));
     }

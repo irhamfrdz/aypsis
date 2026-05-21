@@ -302,6 +302,12 @@
                             <td>: {{ $biayaKapal->nama_vendor }}</td>
                         </tr>
                         @endif
+                        @if($biayaKapal->bank)
+                        <tr>
+                            <td>Bank</td>
+                            <td>: {{ $biayaKapal->bank->name }}</td>
+                        </tr>
+                        @endif
                         @if($biayaKapal->nomor_rekening)
                         <tr>
                             <td>Nomor Rekening</td>
