@@ -89,7 +89,7 @@ class Manifest extends Model
 
         if ($this->prospek) {
             if ($this->prospek->tandaTerima) {
-                return $this->prospek->tandaTerima->no_tanda_terima;
+                return $this->prospek->tandaTerima->no_tanda_terima ?: $this->prospek->tandaTerima->no_surat_jalan;
             }
 
             // Fallback: extract from keterangan if it's a TTTSJ

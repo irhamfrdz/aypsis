@@ -277,4 +277,12 @@ class TandaTerima extends Model
             $this->prospeks()->pluck('id')
         )->get();
     }
+
+    /**
+     * Get the Tanda Terima number (no_surat_jalan).
+     */
+    public function getNoTandaTerimaAttribute()
+    {
+        return $this->no_surat_jalan;
+    }
 }
