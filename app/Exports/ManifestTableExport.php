@@ -84,7 +84,7 @@ class ManifestTableExport implements FromCollection, WithHeadings, WithMapping, 
         if ($ttNo) {
             // Check FCL Tanda Terima
             $fcl = TandaTerima::where('no_surat_jalan', $ttNo)
-                ->orWhere('no_tanda_terima', $ttNo)
+                ->orWhere('no_dn', $ttNo)
                 ->first();
             if ($fcl) {
                 return ['type' => 'Standard', 'model' => $fcl];
