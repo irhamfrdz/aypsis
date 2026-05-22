@@ -86,7 +86,7 @@ class TandaTerimaLclItem extends Model
         parent::boot();
 
         static::saving(function ($item) {
-            if ($item->panjang && $item->lebar && $item->tinggi && !$item->isDirty('meter_kubik')) {
+            if ($item->panjang && $item->lebar && $item->tinggi && ! $item->isDirty('meter_kubik')) {
                 $volume = floatval($item->panjang) * floatval($item->lebar) * floatval($item->tinggi) * floatval($item->jumlah ?? 1);
                 $item->meter_kubik = $volume; // Akan otomatis dibulatkan via mutator
             }

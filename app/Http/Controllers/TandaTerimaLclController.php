@@ -891,6 +891,7 @@ class TandaTerimaLclController extends Controller
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => $message], 400);
             }
+
             return redirect()->back()->with('error', $message);
         }
 
@@ -899,6 +900,7 @@ class TandaTerimaLclController extends Controller
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => $message], 400);
             }
+
             return redirect()->back()->with('error', $message);
         }
 
@@ -907,6 +909,7 @@ class TandaTerimaLclController extends Controller
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => $message], 400);
             }
+
             return redirect()->back()->with('error', $message);
         }
 
@@ -982,7 +985,7 @@ class TandaTerimaLclController extends Controller
             if ($remainingKuantitas <= 0 || $remainingVolume <= 0) {
                 $specificItem->delete();
                 \Log::info('Original specific item deleted as it became empty');
-                
+
                 // If original tanda terima now has no items, soft delete it
                 if ($originalTandaTerima->items()->count() === 0) {
                     $originalTandaTerima->delete();
@@ -1067,15 +1070,15 @@ class TandaTerimaLclController extends Controller
             // Prepare data for prospek
             $prospekData = [
                 'tanggal' => $tandaTerima->tanggal_tanda_terima->format('Y-m-d'),
-                'no_surat_jalan' => $tandaTerima->nomor_tanda_terima,
-                'nama_supir' => $tandaTerima->supir ?? '',
+                'no_surat_jalan' => \Illuminate\Support\Str::limit($tandaTerima->nomor_tanda_terima, 255, ''),
+                'nama_supir' => \Illuminate\Support\Str::limit($tandaTerima->supir ?? '', 255, ''),
                 'barang' => $tandaTerima->nama_barang ?? '',
-                'pt_pengirim' => $tandaTerima->nama_pengirim ?? '',
+                'pt_pengirim' => \Illuminate\Support\Str::limit($tandaTerima->nama_pengirim ?? '', 255, ''),
                 'ukuran' => $tandaTerima->size_kontainer ? str_replace('ft', '', $tandaTerima->size_kontainer) : '20',
                 'tipe' => 'LCL',
-                'nomor_kontainer' => $tandaTerima->nomor_kontainer ?? '',
-                'no_seal' => $tandaTerima->nomor_seal ?? '',
-                'tujuan_pengiriman' => $tandaTerima->tujuanPengiriman->nama_tujuan ?? $tandaTerima->alamat_penerima ?? '',
+                'nomor_kontainer' => \Illuminate\Support\Str::limit($tandaTerima->nomor_kontainer ?? '', 255, ''),
+                'no_seal' => \Illuminate\Support\Str::limit($tandaTerima->nomor_seal ?? '', 255, ''),
+                'tujuan_pengiriman' => \Illuminate\Support\Str::limit($tandaTerima->tujuanPengiriman->nama_tujuan ?? $tandaTerima->alamat_penerima ?? '', 255, ''),
                 'nama_kapal' => '', // Will be filled later in prospek
                 'keterangan' => 'Auto-created from Tanda Terima LCL: '.$tandaTerima->nomor_tanda_terima,
                 'status' => 'aktif',
@@ -1149,15 +1152,15 @@ class TandaTerimaLclController extends Controller
 
                 $prospekData = [
                     'tanggal' => $tandaTerimaLcl->tanggal_tanda_terima,
-                    'nama_supir' => $tandaTerimaLcl->supir ?: 'Tidak ada supir',
+                    'nama_supir' => \Illuminate\Support\Str::limit($tandaTerimaLcl->supir ?: 'Tidak ada supir', 255, ''),
                     'barang' => $allBarang->unique()->implode(', ') ?: 'Barang LCL',
-                    'pt_pengirim' => $allPengirim->unique()->implode(', ') ?: 'Tidak ada pengirim',
+                    'pt_pengirim' => \Illuminate\Support\Str::limit($allPengirim->unique()->implode(', ') ?: 'Tidak ada pengirim', 255, ''),
                     'ukuran' => $sizeKontainer,
                     'tipe' => 'LCL',
-                    'nomor_kontainer' => $nomorKontainer,
-                    'no_seal' => $currentSeal,
-                    'no_surat_jalan' => $tandaTerimaLcl->nomor_tanda_terima,
-                    'tujuan_pengiriman' => $tandaTerimaLcl->tujuanPengiriman->nama_tujuan ?? $allPenerima->first() ?? 'Tidak ada tujuan',
+                    'nomor_kontainer' => \Illuminate\Support\Str::limit($nomorKontainer, 255, ''),
+                    'no_seal' => \Illuminate\Support\Str::limit($currentSeal, 255, ''),
+                    'no_surat_jalan' => \Illuminate\Support\Str::limit($tandaTerimaLcl->nomor_tanda_terima, 255, ''),
+                    'tujuan_pengiriman' => \Illuminate\Support\Str::limit($tandaTerimaLcl->tujuanPengiriman->nama_tujuan ?? $allPenerima->first() ?? 'Tidak ada tujuan', 255, ''),
                     'nama_kapal' => '',
                     'total_ton' => $tandaTerimaLcl->items->sum('tonase'),
                     'total_volume' => $tandaTerimaLcl->items->sum('meter_kubik'),
@@ -1249,16 +1252,16 @@ class TandaTerimaLclController extends Controller
             // Prepare data for prospek
             $prospekData = [
                 'tanggal' => now()->format('Y-m-d'),
-                'no_surat_jalan' => $tandaTerimas->pluck('nomor_tanda_terima')->unique()->implode(', '),
-                'nama_supir' => $firstTandaTerima->supir ?? '',
+                'no_surat_jalan' => \Illuminate\Support\Str::limit($tandaTerimas->pluck('nomor_tanda_terima')->unique()->implode(', '), 255, ''),
+                'nama_supir' => \Illuminate\Support\Str::limit($firstTandaTerima->supir ?? '', 255, ''),
                 'barang' => $allBarang->unique()->implode(', '),
-                'pt_pengirim' => $allPengirim->unique()->implode(', '),
+                'pt_pengirim' => \Illuminate\Support\Str::limit($allPengirim->unique()->implode(', '), 255, ''),
                 'ukuran' => $sizeKontainer,
                 'tipe' => 'LCL',
-                'nomor_kontainer' => $nomorKontainer,
-                'no_seal' => $nomorSeal ?: ($kontainerPivot->nomor_seal ?? ''),
+                'nomor_kontainer' => \Illuminate\Support\Str::limit($nomorKontainer, 255, ''),
+                'no_seal' => \Illuminate\Support\Str::limit($nomorSeal ?: ($kontainerPivot->nomor_seal ?? ''), 255, ''),
                 'tanggal' => $tanggalSeal ?: ($kontainerPivot->tanggal_seal ?? now()->format('Y-m-d')),
-                'tujuan_pengiriman' => $firstTandaTerima->tujuanPengiriman->nama_tujuan ?? $allPenerima->first() ?? '',
+                'tujuan_pengiriman' => \Illuminate\Support\Str::limit($firstTandaTerima->tujuanPengiriman->nama_tujuan ?? $allPenerima->first() ?? '', 255, ''),
                 'nama_kapal' => '', // Will be filled later in prospek
                 'keterangan' => 'Transfer dari Tanda Terima LCL - Total: '.$tandaTerimas->count().' items',
                 'status' => 'aktif',
@@ -1654,10 +1657,7 @@ class TandaTerimaLclController extends Controller
                 return $pivot->tandaTerima ? $pivot->tandaTerima->nama_pengirim : null;
             })->filter()->unique()->implode(', ');
 
-            // Limit to 180 characters to avoid database truncation error
-            if (strlen($ptPengirimList) > 180) {
-                $ptPengirimList = substr($ptPengirimList, 0, 177).'...';
-            }
+            $ptPengirimList = \Illuminate\Support\Str::limit($ptPengirimList, 255, '');
 
             $barangList = $pivotRecords->map(function ($pivot) {
                 if (! $pivot->tandaTerima || ! $pivot->tandaTerima->items) {
@@ -1667,16 +1667,15 @@ class TandaTerimaLclController extends Controller
                 return $pivot->tandaTerima->items->pluck('nama_barang')->filter()->unique()->implode(', ');
             })->filter()->unique()->implode(', ');
 
-            // Limit barang to 180 characters to avoid database truncation error
-            if (strlen($barangList) > 180) {
-                $barangList = substr($barangList, 0, 177).'...';
+            if (strlen($barangList) > 2000) {
+                $barangList = substr($barangList, 0, 1997).'...';
             }
 
             // Insert ke tabel prospek
             $prospek = Prospek::create([
                 'tanggal' => $request->tanggal_seal,
-                'nomor_kontainer' => $request->nomor_kontainer,
-                'no_seal' => $request->nomor_seal,
+                'nomor_kontainer' => \Illuminate\Support\Str::limit($request->nomor_kontainer, 255, ''),
+                'no_seal' => \Illuminate\Support\Str::limit($request->nomor_seal, 255, ''),
                 'ukuran' => $firstPivot->size_kontainer ? (strpos($firstPivot->size_kontainer, '20') !== false ? '20' : '40') : null,
                 'tipe' => $firstPivot->tipe_kontainer,
                 'pt_pengirim' => $ptPengirimList ?: null,
@@ -1684,7 +1683,7 @@ class TandaTerimaLclController extends Controller
                 'total_volume' => $totalVolume,
                 'total_ton' => $totalTon,
                 'kuantitas' => $pivotRecords->count(),
-                'tujuan_pengiriman' => $request->tujuan,
+                'tujuan_pengiriman' => \Illuminate\Support\Str::limit($request->tujuan, 255, ''),
                 'status' => Prospek::STATUS_AKTIF,
                 'keterangan' => "Kontainer LCL dengan {$pivotRecords->count()} tanda terima",
                 'created_by' => Auth::id(),
@@ -1908,9 +1907,9 @@ class TandaTerimaLclController extends Controller
 
                 $prospek->update([
                     'barang' => $allBarang->unique()->implode(', '),
-                    'pt_pengirim' => $allPengirim->unique()->implode(', '),
-                    'tujuan_pengiriman' => $allPenerima->unique()->implode(', '),
-                    'no_surat_jalan' => $mergedSuratJalan,
+                    'pt_pengirim' => \Illuminate\Support\Str::limit($allPengirim->unique()->implode(', '), 255, ''),
+                    'tujuan_pengiriman' => \Illuminate\Support\Str::limit($allPenerima->unique()->implode(', '), 255, ''),
+                    'no_surat_jalan' => \Illuminate\Support\Str::limit($mergedSuratJalan, 255, ''),
                     'updated_by' => Auth::id(),
                     'updated_at' => now(),
                 ]);
@@ -2277,8 +2276,8 @@ class TandaTerimaLclController extends Controller
         try {
             \DB::beginTransaction();
             $tt = TandaTerimaLcl::findOrFail($id);
-            $penerima = $tt->nama_penerima;
-            $pengirim = $tt->nama_pengirim;
+            $penerima = \Illuminate\Support\Str::limit($tt->nama_penerima, 255, '');
+            $pengirim = \Illuminate\Support\Str::limit($tt->nama_pengirim, 255, '');
 
             $updatedCounts = [];
 
@@ -2407,9 +2406,7 @@ class TandaTerimaLclController extends Controller
                 return $pivot->tandaTerima ? $pivot->tandaTerima->nama_pengirim : null;
             })->filter()->unique()->implode(', ');
 
-            if (strlen($ptPengirimList) > 2000) {
-                $ptPengirimList = substr($ptPengirimList, 0, 1997).'...';
-            }
+            $ptPengirimList = \Illuminate\Support\Str::limit($ptPengirimList, 255, '');
 
             $barangList = $pivotRecords->map(function ($pivot) {
                 if (! $pivot->tandaTerima || ! $pivot->tandaTerima->items) {
@@ -2431,8 +2428,8 @@ class TandaTerimaLclController extends Controller
             // Create prospek
             $prospek = Prospek::create([
                 'tanggal' => $tanggal,
-                'nomor_kontainer' => $request->nomor_kontainer,
-                'no_seal' => $request->nomor_seal,
+                'nomor_kontainer' => \Illuminate\Support\Str::limit($request->nomor_kontainer, 255, ''),
+                'no_seal' => \Illuminate\Support\Str::limit($request->nomor_seal, 255, ''),
                 'ukuran' => $firstPivot->size_kontainer ? (strpos($firstPivot->size_kontainer, '20') !== false ? '20' : '40') : null,
                 'tipe' => $firstPivot->tipe_kontainer,
                 'pt_pengirim' => $ptPengirimList ?: null,
@@ -2440,7 +2437,7 @@ class TandaTerimaLclController extends Controller
                 'total_volume' => $totalVolume,
                 'total_ton' => $totalTon,
                 'kuantitas' => $pivotRecords->count(),
-                'tujuan_pengiriman' => $tujuan,
+                'tujuan_pengiriman' => \Illuminate\Support\Str::limit($tujuan, 255, ''),
                 'status' => Prospek::STATUS_AKTIF,
                 'keterangan' => 'Synced from LCL Stuffing',
                 'created_by' => Auth::id(),

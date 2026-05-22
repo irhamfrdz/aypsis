@@ -1106,16 +1106,16 @@ class ProspekController extends Controller
 
             // Gabungkan data
             $gabunganData = [
-                'no_surat_jalan' => $prospeks->pluck('no_surat_jalan')->filter()->unique()->implode(', '),
-                'nomor_kontainer' => $prospeks->pluck('nomor_kontainer')->filter()->unique()->implode(', '),
-                'no_seal' => $prospeks->pluck('no_seal')->filter()->unique()->implode(', '),
-                'nama_supir' => $prospeks->pluck('nama_supir')->filter()->unique()->implode(', '),
+                'no_surat_jalan' => \Illuminate\Support\Str::limit($prospeks->pluck('no_surat_jalan')->filter()->unique()->implode(', '), 255, ''),
+                'nomor_kontainer' => \Illuminate\Support\Str::limit($prospeks->pluck('nomor_kontainer')->filter()->unique()->implode(', '), 255, ''),
+                'no_seal' => \Illuminate\Support\Str::limit($prospeks->pluck('no_seal')->filter()->unique()->implode(', '), 255, ''),
+                'nama_supir' => \Illuminate\Support\Str::limit($prospeks->pluck('nama_supir')->filter()->unique()->implode(', '), 255, ''),
                 'barang' => $prospeks->pluck('barang')->filter()->unique()->implode(', '),
-                'pt_pengirim' => $prospeks->pluck('pt_pengirim')->filter()->unique()->implode(', '),
-                'tujuan_pengiriman' => $prospeks->pluck('tujuan_pengiriman')->filter()->unique()->first(),
+                'pt_pengirim' => \Illuminate\Support\Str::limit($prospeks->pluck('pt_pengirim')->filter()->unique()->implode(', '), 255, ''),
+                'tujuan_pengiriman' => \Illuminate\Support\Str::limit($prospeks->pluck('tujuan_pengiriman')->filter()->unique()->first(), 255, ''),
                 'tanggal' => $prospeks->sortBy('tanggal')->first()->tanggal,
                 'tipe' => 'LCL',
-                'ukuran' => $prospeks->pluck('ukuran')->filter()->unique()->implode(', '),
+                'ukuran' => $prospeks->pluck('ukuran')->filter()->first() ?? '20',
                 'status' => Prospek::STATUS_AKTIF,
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
