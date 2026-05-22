@@ -14,7 +14,7 @@
                 </svg>
                 Change Filter
             </a>
-            <a href="{{ route('report.tanda-terima-jakarta.export', ['start_date' => $startDate, 'end_date' => $endDate]) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+            <a id="export-excel-link" href="{{ route('report.tanda-terima-jakarta.export', ['start_date' => $startDate, 'end_date' => $endDate, 'status' => 'semua']) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
@@ -217,6 +217,14 @@
 
         // Update active button styles
         updateFilterButtons(filter);
+
+        // Update export Excel link
+        const exportLink = document.getElementById('export-excel-link');
+        if (exportLink) {
+            const url = new URL(exportLink.href);
+            url.searchParams.set('status', filter);
+            exportLink.href = url.toString();
+        }
     }
 
     function updateFilterButtons(active) {

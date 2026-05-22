@@ -61,7 +61,9 @@ return new class extends Migration
             $table->foreign('pranota_id')->references('id')->on('pranota_tagihan_kontainer_sewa')->onDelete('cascade');
 
             // Ensure each pranota can only be paid once
-            $table->unique('pranota_id');
+            if (DB::getDriverName() !== 'sqlite') {
+                $table->unique('pranota_id');
+            }
         });
     }
 

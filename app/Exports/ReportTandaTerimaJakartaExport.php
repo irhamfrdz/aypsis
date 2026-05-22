@@ -17,14 +17,17 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
 
     protected $endDate;
 
+    protected $status;
+
     protected $penerimaLookup = [];
 
     protected $termLookup = [];
 
-    public function __construct($startDate, $endDate)
+    public function __construct($startDate, $endDate, $status = 'semua')
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
+        $this->status = $status;
         $this->initializeLookups();
     }
 
@@ -220,8 +223,16 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             });
         $data = $data->concat($ttLCL);
 
+        // Fetch all manifested tanda terima numbers for efficient lookup
+        $manifestedTTs = \Illuminate\Support\Facades\DB::table('manifests')
+            ->whereNotNull('nomor_tanda_terima')
+            ->where('nomor_tanda_terima', '!=', '')
+            ->select('nomor_tanda_terima')
+            ->get()
+            ->keyBy('nomor_tanda_terima');
+
         // Enhance with lookup data
-        $enhancedData = $data->map(function ($item) {
+        $enhancedData = $data->map(function ($item) use ($manifestedTTs) {
             $pName = strtoupper(trim($item['penerima']));
             $pLookup = $this->penerimaLookup[$pName] ?? null;
 
@@ -235,8 +246,18 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
 
             $item['s_address'] = $item['shipper_address_raw'] ?: ($sLookup['address'] ?? '-');
 
+            // Add manifest status
+            $item['naik_kapal'] = $manifestedTTs->has($item['no_tt']);
+
             return $item;
         });
+
+        // Filter based on status
+        if ($this->status === 'belum') {
+            $enhancedData = $enhancedData->where('naik_kapal', false);
+        } elseif ($this->status === 'sudah') {
+            $enhancedData = $enhancedData->where('naik_kapal', true);
+        }
 
         // Sort data first to enable grouping
         $sortedData = $enhancedData->sortBy([

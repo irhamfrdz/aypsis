@@ -40,6 +40,7 @@ return [
                 'master-kontainer' => 'Manajemen Kontainer',
                 'master-pricelist-sewa-kontainer' => 'Pricelist Sewa Kontainer',
                 'master-pricelist-cat' => 'Pricelist CAT',
+                'master-pricelist-pelindo' => 'Pricelist Pelindo',
                 'master-tujuan' => 'Manajemen Tujuan',
                 'master-kegiatan' => 'Manajemen Kegiatan',
                 'master-permission' => 'Manajemen Permission',

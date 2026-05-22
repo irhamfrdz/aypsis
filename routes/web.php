@@ -6108,4 +6108,16 @@ Route::middleware(['auth',
             'update' => 'can:master-pricelist-perijinan-update',
             'destroy' => 'can:master-pricelist-perijinan-delete',
         ]);
+
+    Route::resource('pricelist-pelindo', \App\Http\Controllers\PricelistPelindoController::class)
+        ->names('master.pricelist-pelindo')
+        ->middleware([
+            'index' => 'can:master-pricelist-pelindo-view',
+            'show' => 'can:master-pricelist-pelindo-view',
+            'create' => 'can:master-pricelist-pelindo-create',
+            'store' => 'can:master-pricelist-pelindo-create',
+            'edit' => 'can:master-pricelist-pelindo-update',
+            'update' => 'can:master-pricelist-pelindo-update',
+            'destroy' => 'can:master-pricelist-pelindo-delete',
+        ]);
 });

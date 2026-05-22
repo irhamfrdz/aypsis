@@ -1231,6 +1231,12 @@ class UserController extends Controller
                             $action = str_replace('pricelist-tanto-', '', $action);
                             $module = 'master-pricelist-tanto';
                         }
+                        // Special handling for master-pricelist-pelindo permissions
+                        elseif (strpos($action, 'pricelist-pelindo-') === 0) {
+                            // For master-pricelist-pelindo-view, extract the action
+                            $action = str_replace('pricelist-pelindo-', '', $action);
+                            $module = 'master-pricelist-pelindo';
+                        }
                         // Special handling for master-pricelist-tujuan-kontainer-sewa permissions
                         elseif (strpos($action, 'pricelist-tujuan-kontainer-sewa-') === 0) {
                             // For master-pricelist-tujuan-kontainer-sewa-view, extract the action
@@ -3004,6 +3010,26 @@ class UserController extends Controller
                             'create' => 'master-pricelist-tanto-create',
                             'update' => 'master-pricelist-tanto-update',
                             'delete' => 'master-pricelist-tanto-delete',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pricelist-pelindo permissions explicitly
+                    if ($module === 'master-pricelist-pelindo' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pricelist-pelindo-view',
+                            'create' => 'master-pricelist-pelindo-create',
+                            'update' => 'master-pricelist-pelindo-update',
+                            'delete' => 'master-pricelist-pelindo-delete',
                         ];
 
                         if (isset($actionMap[$action])) {
