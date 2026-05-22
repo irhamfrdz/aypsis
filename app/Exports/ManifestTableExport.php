@@ -268,6 +268,33 @@ class ManifestTableExport implements FromCollection, WithHeadings, WithMapping, 
             return ($item['no_kontainer'] ?: 'none').'|'.($item['no_seal'] ?: 'none');
         });
 
+        // 1. Sort items inside each group by BL number naturally
+        $grouped = $grouped->map(function ($items) {
+            return $items->sort(function ($a, $b) {
+                return strnatcasecmp($a['bl_no'] ?? '', $b['bl_no'] ?? '');
+            });
+        });
+
+        // 2. Sort groups by their first item's BL number naturally, keeping container info items first
+        $grouped = $grouped->sort(function ($groupA, $groupB) {
+            $firstA = $groupA->first();
+            $firstB = $groupB->first();
+
+            $hasInfoA = ! empty($firstA['no_kontainer']) && $firstA['no_kontainer'] != '-' &&
+                        ! empty($firstA['no_seal']) && $firstA['no_seal'] != '-';
+            $hasInfoB = ! empty($firstB['no_kontainer']) && $firstB['no_kontainer'] != '-' &&
+                        ! empty($firstB['no_seal']) && $firstB['no_seal'] != '-';
+
+            if ($hasInfoA && ! $hasInfoB) {
+                return -1;
+            }
+            if (! $hasInfoA && $hasInfoB) {
+                return 1;
+            }
+
+            return strnatcasecmp($firstA['bl_no'] ?? '', $firstB['bl_no'] ?? '');
+        });
+
         $groupCounter = 1;
         foreach ($grouped as $key => $items) {
             $firstItem = $items->first();
