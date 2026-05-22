@@ -163,6 +163,8 @@
             padding: 4px;
             margin-top: 10px;
             min-height: 40px;
+            word-wrap: break-word;
+            word-break: break-all;
         }
 
         .footer {
