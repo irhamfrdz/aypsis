@@ -13,40 +13,42 @@ return new class extends Migration
     public function up(): void
     {
         // Step 1: Drop foreign key constraints first
-        try {
-            // Check if foreign key constraint exists and drop it
-            $foreignKeys = DB::select("
-                SELECT CONSTRAINT_NAME
-                FROM information_schema.KEY_COLUMN_USAGE
-                WHERE TABLE_SCHEMA = DATABASE()
-                AND TABLE_NAME = 'pricelist_gate_ins'
-                AND REFERENCED_TABLE_NAME = 'master_services'
-            ");
+        if (DB::getDriverName() !== 'sqlite') {
+            try {
+                // Check if foreign key constraint exists and drop it
+                $foreignKeys = DB::select("
+                    SELECT CONSTRAINT_NAME
+                    FROM information_schema.KEY_COLUMN_USAGE
+                    WHERE TABLE_SCHEMA = DATABASE()
+                    AND TABLE_NAME = 'pricelist_gate_ins'
+                    AND REFERENCED_TABLE_NAME = 'master_services'
+                ");
 
-            foreach ($foreignKeys as $fk) {
-                DB::statement("ALTER TABLE pricelist_gate_ins DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
-                echo "Dropped foreign key: {$fk->CONSTRAINT_NAME}\n";
-            }
-
-            // Also check for other tables that might reference master_services
-            $allForeignKeys = DB::select("
-                SELECT TABLE_NAME, CONSTRAINT_NAME
-                FROM information_schema.KEY_COLUMN_USAGE
-                WHERE TABLE_SCHEMA = DATABASE()
-                AND REFERENCED_TABLE_NAME = 'master_services'
-            ");
-
-            foreach ($allForeignKeys as $fk) {
-                try {
-                    DB::statement("ALTER TABLE {$fk->TABLE_NAME} DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
-                    echo "Dropped foreign key: {$fk->CONSTRAINT_NAME} from table {$fk->TABLE_NAME}\n";
-                } catch (Exception $e) {
-                    echo "Warning: Could not drop foreign key {$fk->CONSTRAINT_NAME}: ".$e->getMessage()."\n";
+                foreach ($foreignKeys as $fk) {
+                    DB::statement("ALTER TABLE pricelist_gate_ins DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
+                    echo "Dropped foreign key: {$fk->CONSTRAINT_NAME}\n";
                 }
-            }
 
-        } catch (Exception $e) {
-            echo 'Warning during foreign key cleanup: '.$e->getMessage()."\n";
+                // Also check for other tables that might reference master_services
+                $allForeignKeys = DB::select("
+                    SELECT TABLE_NAME, CONSTRAINT_NAME
+                    FROM information_schema.KEY_COLUMN_USAGE
+                    WHERE TABLE_SCHEMA = DATABASE()
+                    AND REFERENCED_TABLE_NAME = 'master_services'
+                ");
+
+                foreach ($allForeignKeys as $fk) {
+                    try {
+                        DB::statement("ALTER TABLE {$fk->TABLE_NAME} DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
+                        echo "Dropped foreign key: {$fk->CONSTRAINT_NAME} from table {$fk->TABLE_NAME}\n";
+                    } catch (Exception $e) {
+                        echo "Warning: Could not drop foreign key {$fk->CONSTRAINT_NAME}: ".$e->getMessage()."\n";
+                    }
+                }
+
+            } catch (Exception $e) {
+                echo 'Warning during foreign key cleanup: '.$e->getMessage()."\n";
+            }
         }
 
         // Step 2: Drop service_id column from pricelist_gate_ins if it exists

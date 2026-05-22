@@ -11,6 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        try {
+            Schema::table('perbaikan_kontainers', function (Blueprint $table) {
+                $table->dropUnique('perbaikan_kontainers_nomor_memo_perbaikan_unique');
+            });
+        } catch (\Exception $e) {
+            // Ignore if index doesn't exist or fails
+        }
+
         Schema::table('perbaikan_kontainers', function (Blueprint $table) {
             $table->dropColumn('nomor_memo_perbaikan');
         });

@@ -23,6 +23,8 @@ class TandaTerimaTanpaSuratJalan extends Model
         'aktifitas',
         'tipe_kontainer',
         'no_kontainer',
+        'status',
+
         'size_kontainer',
         'pengirim',
         'telepon',

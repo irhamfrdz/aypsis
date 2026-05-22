@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         // Disable foreign key checks untuk drop tables
-        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
 
         // Drop tabel lama jika ada
         Schema::dropIfExists('pembayaran_uang_muka_supir_details');
@@ -23,7 +23,7 @@ return new class extends Migration
         Schema::dropIfExists('pembayaran_aktivitas_lainnya');
 
         // Re-enable foreign key checks
-        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
 
         // Create tabel pembayaran_aktivitas_lainnya dengan struktur baru
         Schema::create('pembayaran_aktivitas_lainnya', function (Blueprint $table) {

@@ -25,6 +25,14 @@ return new class extends Migration
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
 
+            // Tambahkan kolom untuk SQLite saja agar kompatibel dengan migrasi 2024 yang di-skip
+            if (\DB::getDriverName() === 'sqlite') {
+                $table->string('nomor_voyage')->nullable();
+                $table->unsignedBigInteger('surat_jalan_id')->nullable();
+                $table->string('jenis_penyesuaian')->nullable();
+                $table->json('tipe_penyesuaian')->nullable();
+            }
+
             // Foreign keys
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('approved_by')->references('id')->on('users')->onDelete('set null');

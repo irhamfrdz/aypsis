@@ -11,6 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
+        try {
+            Schema::table('pricelist_cat', function (Blueprint $table) {
+                $table->dropIndex('pricelist_cat_tanggal_harga_awal_index');
+            });
+        } catch (\Exception $e) {
+            // Ignore if index doesn't exist
+        }
+
+        try {
+            Schema::table('pricelist_cat', function (Blueprint $table) {
+                $table->dropIndex('pricelist_cat_tanggal_harga_akhir_index');
+            });
+        } catch (\Exception $e) {
+            // Ignore if index doesn't exist
+        }
+
         Schema::table('pricelist_cat', function (Blueprint $table) {
             $table->dropColumn([
                 'tanggal_harga_awal',

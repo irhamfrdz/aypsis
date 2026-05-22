@@ -27,24 +27,24 @@ return new class extends Migration
         // Step 2: Drop foreign key dan kolom service_id dari tabel gate_ins
         if (Schema::hasTable('gate_ins') && Schema::hasColumn('gate_ins', 'service_id')) {
             // Drop foreign key constraints that might exist
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            Schema::disableForeignKeyConstraints();
 
             Schema::table('gate_ins', function (Blueprint $table) {
                 $table->dropColumn('service_id');
             });
 
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            Schema::enableForeignKeyConstraints();
         }
 
         // Step 3: Drop foreign key dan kolom service_id dari tabel kontainers
         if (Schema::hasTable('kontainers') && Schema::hasColumn('kontainers', 'service_id')) {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            Schema::disableForeignKeyConstraints();
 
             Schema::table('kontainers', function (Blueprint $table) {
                 $table->dropColumn('service_id');
             });
 
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            Schema::enableForeignKeyConstraints();
         }
 
         // Step 4: Drop any other tables that might reference master_services
@@ -52,13 +52,13 @@ return new class extends Migration
 
         foreach ($tablesToCheck as $tableName) {
             if (Schema::hasTable($tableName) && Schema::hasColumn($tableName, 'service_id')) {
-                DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+                Schema::disableForeignKeyConstraints();
 
                 Schema::table($tableName, function (Blueprint $table) {
                     $table->dropColumn('service_id');
                 });
 
-                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+                Schema::enableForeignKeyConstraints();
             }
         }
 

@@ -24,21 +24,23 @@ return new class extends Migration
         }
 
         // Step 2: Find and drop any other foreign keys referencing master_services
-        $foreignKeys = DB::select("
-            SELECT
-                TABLE_NAME,
-                CONSTRAINT_NAME
-            FROM information_schema.KEY_COLUMN_USAGE
-            WHERE TABLE_SCHEMA = DATABASE()
-            AND REFERENCED_TABLE_NAME = 'master_services'
-        ");
+        if (DB::getDriverName() !== 'sqlite') {
+            $foreignKeys = DB::select("
+                SELECT
+                    TABLE_NAME,
+                    CONSTRAINT_NAME
+                FROM information_schema.KEY_COLUMN_USAGE
+                WHERE TABLE_SCHEMA = DATABASE()
+                AND REFERENCED_TABLE_NAME = 'master_services'
+            ");
 
-        foreach ($foreignKeys as $fk) {
-            try {
-                DB::statement("ALTER TABLE {$fk->TABLE_NAME} DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
-                echo "Dropped foreign key: {$fk->CONSTRAINT_NAME} from table {$fk->TABLE_NAME}\n";
-            } catch (Exception $e) {
-                echo "Warning: Could not drop foreign key {$fk->CONSTRAINT_NAME} - ".$e->getMessage()."\n";
+            foreach ($foreignKeys as $fk) {
+                try {
+                    DB::statement("ALTER TABLE {$fk->TABLE_NAME} DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
+                    echo "Dropped foreign key: {$fk->CONSTRAINT_NAME} from table {$fk->TABLE_NAME}\n";
+                } catch (Exception $e) {
+                    echo "Warning: Could not drop foreign key {$fk->CONSTRAINT_NAME} - ".$e->getMessage()."\n";
+                }
             }
         }
 

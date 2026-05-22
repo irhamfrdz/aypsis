@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (\DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
             // Check and add fields if they don't exist
             if (! Schema::hasColumn('invoice_aktivitas_lain', 'nomor_voyage')) {
@@ -36,6 +40,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (\DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
             $columns = ['nomor_voyage', 'surat_jalan_id', 'jenis_penyesuaian', 'tipe_penyesuaian'];
             foreach ($columns as $column) {

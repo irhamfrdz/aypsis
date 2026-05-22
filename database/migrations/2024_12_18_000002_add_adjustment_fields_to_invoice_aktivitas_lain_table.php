@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (\DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
             $table->unsignedBigInteger('surat_jalan_id')->nullable()->after('nomor_voyage');
             $table->string('jenis_penyesuaian')->nullable()->after('surat_jalan_id');
@@ -23,6 +27,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (\DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
             $table->dropColumn(['surat_jalan_id', 'jenis_penyesuaian', 'tipe_penyesuaian']);
         });

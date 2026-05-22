@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (\DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
             $table->string('nomor_voyage')->nullable()->after('nomor_polisi');
         });
@@ -21,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (\DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('invoice_aktivitas_lain', function (Blueprint $table) {
             $table->dropColumn('nomor_voyage');
         });

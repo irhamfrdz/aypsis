@@ -130,6 +130,21 @@ class TandaTerimaLcl extends Model
         return $this->items->sum('jumlah') ?? 0;
     }
 
+    public function getNamaBarangAttribute($value)
+    {
+        return $value ?: $this->items->first()?->nama_barang;
+    }
+
+    public function getKeteranganBarangAttribute($value)
+    {
+        return $value ?: $this->items->first()?->keterangan_barang;
+    }
+
+    public function getKuantitasAttribute($value)
+    {
+        return $value ?: ($this->items->sum('jumlah') ?? 0);
+    }
+
     public function getFormattedNumberAttribute(): string
     {
         return $this->nomor_tanda_terima ?? 'TT-LCL-'.$this->id;

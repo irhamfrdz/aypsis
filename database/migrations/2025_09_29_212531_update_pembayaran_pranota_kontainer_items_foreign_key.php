@@ -12,41 +12,43 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Check and drop existing foreign key if it exists
-        $foreignKeyResult = DB::select("
-            SELECT CONSTRAINT_NAME
-            FROM information_schema.KEY_COLUMN_USAGE
-            WHERE TABLE_SCHEMA = DATABASE()
-            AND TABLE_NAME = 'pembayaran_pranota_kontainer_items'
-            AND COLUMN_NAME = 'pranota_id'
-            AND REFERENCED_TABLE_NAME IS NOT NULL
-            LIMIT 1
-        ");
-
-        if (! empty($foreignKeyResult)) {
-            $constraintName = $foreignKeyResult[0]->CONSTRAINT_NAME;
-            DB::statement("ALTER TABLE pembayaran_pranota_kontainer_items DROP FOREIGN KEY `{$constraintName}`");
-        }
-
-        // Check and drop unique index if it exists
-        try {
-            $uniqueIndexResult = DB::select("
-                SHOW INDEX FROM pembayaran_pranota_kontainer_items
-                WHERE Column_name = 'pranota_id' AND Non_unique = 0
+        if (DB::getDriverName() !== 'sqlite') {
+            // Check and drop existing foreign key if it exists
+            $foreignKeyResult = DB::select("
+                SELECT CONSTRAINT_NAME
+                FROM information_schema.KEY_COLUMN_USAGE
+                WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME = 'pembayaran_pranota_kontainer_items'
+                AND COLUMN_NAME = 'pranota_id'
+                AND REFERENCED_TABLE_NAME IS NOT NULL
+                LIMIT 1
             ");
 
-            if (! empty($uniqueIndexResult)) {
-                DB::statement('ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pranota_id');
+            if (! empty($foreignKeyResult)) {
+                $constraintName = $foreignKeyResult[0]->CONSTRAINT_NAME;
+                DB::statement("ALTER TABLE pembayaran_pranota_kontainer_items DROP FOREIGN KEY `{$constraintName}`");
             }
-        } catch (\Exception $e) {
-            // Ignore if index doesn't exist
-        }
 
-        // Also try to drop other possible index names
-        try {
-            DB::statement('ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pembayaran_pranota_kontainer_items_pranota_id_unique');
-        } catch (\Exception $e) {
-            // Ignore if index doesn't exist
+            // Check and drop unique index if it exists
+            try {
+                $uniqueIndexResult = DB::select("
+                    SHOW INDEX FROM pembayaran_pranota_kontainer_items
+                    WHERE Column_name = 'pranota_id' AND Non_unique = 0
+                ");
+
+                if (! empty($uniqueIndexResult)) {
+                    DB::statement('ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pranota_id');
+                }
+            } catch (\Exception $e) {
+                // Ignore if index doesn't exist
+            }
+
+            // Also try to drop other possible index names
+            try {
+                DB::statement('ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pembayaran_pranota_kontainer_items_pranota_id_unique');
+            } catch (\Exception $e) {
+                // Ignore if index doesn't exist
+            }
         }
 
         // Clean up invalid data before adding foreign key constraint

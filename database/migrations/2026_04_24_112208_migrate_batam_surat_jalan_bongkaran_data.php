@@ -21,14 +21,16 @@ return new class extends Migration
 
         // 2. Drop old foreign keys that point to the old table for Batam records
         // Using a more robust check for older MySQL versions
-        $existingFkTt = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tanda_terima_bongkaran_batams' AND CONSTRAINT_NAME = 'ttbb_sj_bongkaran_foreign'");
-        if (! empty($existingFkTt)) {
-            DB::statement('ALTER TABLE tanda_terima_bongkaran_batams DROP FOREIGN KEY ttbb_sj_bongkaran_foreign');
-        }
+        if (DB::getDriverName() !== 'sqlite') {
+            $existingFkTt = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tanda_terima_bongkaran_batams' AND CONSTRAINT_NAME = 'ttbb_sj_bongkaran_foreign'");
+            if (! empty($existingFkTt)) {
+                DB::statement('ALTER TABLE tanda_terima_bongkaran_batams DROP FOREIGN KEY ttbb_sj_bongkaran_foreign');
+            }
 
-        $existingFkUj = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'uang_jalans' AND CONSTRAINT_NAME = 'uang_jalans_surat_jalan_bongkaran_id_foreign'");
-        if (! empty($existingFkUj)) {
-            DB::statement('ALTER TABLE uang_jalans DROP FOREIGN KEY uang_jalans_surat_jalan_bongkaran_id_foreign');
+            $existingFkUj = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'uang_jalans' AND CONSTRAINT_NAME = 'uang_jalans_surat_jalan_bongkaran_id_foreign'");
+            if (! empty($existingFkUj)) {
+                DB::statement('ALTER TABLE uang_jalans DROP FOREIGN KEY uang_jalans_surat_jalan_bongkaran_id_foreign');
+            }
         }
 
         // 3. Move Data
@@ -79,32 +81,34 @@ return new class extends Migration
         }
 
         // 4. Re-establish Foreign Keys pointing to the NEW tables
-        $checkTt = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tanda_terima_bongkaran_batams' AND CONSTRAINT_NAME = 'ttbb_sj_bongkaran_batam_foreign'");
-        if (empty($checkTt)) {
-            Schema::table('tanda_terima_bongkaran_batams', function (Blueprint $table) {
-                $table->foreign('surat_jalan_bongkaran_id', 'ttbb_sj_bongkaran_batam_foreign')
-                    ->references('id')->on('surat_jalan_bongkaran_batams')
-                    ->onDelete('cascade');
-            });
-        }
+        if (DB::getDriverName() !== 'sqlite') {
+            $checkTt = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tanda_terima_bongkaran_batams' AND CONSTRAINT_NAME = 'ttbb_sj_bongkaran_batam_foreign'");
+            if (empty($checkTt)) {
+                Schema::table('tanda_terima_bongkaran_batams', function (Blueprint $table) {
+                    $table->foreign('surat_jalan_bongkaran_id', 'ttbb_sj_bongkaran_batam_foreign')
+                        ->references('id')->on('surat_jalan_bongkaran_batams')
+                        ->onDelete('cascade');
+                });
+            }
 
-        $checkUjBatam = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'uang_jalans' AND CONSTRAINT_NAME = 'uj_sjb_batam_foreign'");
-        if (empty($checkUjBatam)) {
-            Schema::table('uang_jalans', function (Blueprint $table) {
-                $table->foreign('surat_jalan_bongkaran_batam_id', 'uj_sjb_batam_foreign')
-                    ->references('id')->on('surat_jalan_bongkaran_batams')
-                    ->onDelete('cascade');
-            });
-        }
+            $checkUjBatam = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'uang_jalans' AND CONSTRAINT_NAME = 'uj_sjb_batam_foreign'");
+            if (empty($checkUjBatam)) {
+                Schema::table('uang_jalans', function (Blueprint $table) {
+                    $table->foreign('surat_jalan_bongkaran_batam_id', 'uj_sjb_batam_foreign')
+                        ->references('id')->on('surat_jalan_bongkaran_batams')
+                        ->onDelete('cascade');
+                });
+            }
 
-        $checkUjOld = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'uang_jalans' AND CONSTRAINT_NAME = 'uang_jalans_surat_jalan_bongkaran_id_foreign'");
-        if (empty($checkUjOld)) {
-            Schema::table('uang_jalans', function (Blueprint $table) {
-                // Re-add the old FK for Jakarta records
-                $table->foreign('surat_jalan_bongkaran_id', 'uang_jalans_surat_jalan_bongkaran_id_foreign')
-                    ->references('id')->on('surat_jalan_bongkarans')
-                    ->onDelete('cascade');
-            });
+            $checkUjOld = DB::select("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'uang_jalans' AND CONSTRAINT_NAME = 'uang_jalans_surat_jalan_bongkaran_id_foreign'");
+            if (empty($checkUjOld)) {
+                Schema::table('uang_jalans', function (Blueprint $table) {
+                    // Re-add the old FK for Jakarta records
+                    $table->foreign('surat_jalan_bongkaran_id', 'uang_jalans_surat_jalan_bongkaran_id_foreign')
+                        ->references('id')->on('surat_jalan_bongkarans')
+                        ->onDelete('cascade');
+                });
+            }
         }
     }
 
@@ -113,19 +117,21 @@ return new class extends Migration
         // Reverse is complex, but basically move back
         $batamRecords = DB::table('surat_jalan_bongkaran_batams')->get();
 
-        Schema::table('tanda_terima_bongkaran_batams', function (Blueprint $table) {
-            try {
-                $table->dropForeign('ttbb_sj_bongkaran_batam_foreign');
-            } catch (\Exception $e) {
-            }
-        });
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('tanda_terima_bongkaran_batams', function (Blueprint $table) {
+                try {
+                    $table->dropForeign('ttbb_sj_bongkaran_batam_foreign');
+                } catch (\Exception $e) {
+                }
+            });
 
-        Schema::table('uang_jalans', function (Blueprint $table) {
-            try {
-                $table->dropForeign('uj_sjb_batam_foreign');
-            } catch (\Exception $e) {
-            }
-        });
+            Schema::table('uang_jalans', function (Blueprint $table) {
+                try {
+                    $table->dropForeign('uj_sjb_batam_foreign');
+                } catch (\Exception $e) {
+                }
+            });
+        }
 
         foreach ($batamRecords as $record) {
             $data = (array) $record;
@@ -141,14 +147,18 @@ return new class extends Migration
             DB::table('surat_jalan_bongkaran_batams')->where('id', $record->id)->delete();
         }
 
-        Schema::table('tanda_terima_bongkaran_batams', function (Blueprint $table) {
-            $table->foreign('surat_jalan_bongkaran_id', 'ttbb_sj_bongkaran_foreign')
-                ->references('id')->on('surat_jalan_bongkarans')
-                ->onDelete('cascade');
-        });
+        if (DB::getDriverName() !== 'sqlite') {
+            Schema::table('tanda_terima_bongkaran_batams', function (Blueprint $table) {
+                $table->foreign('surat_jalan_bongkaran_id', 'ttbb_sj_bongkaran_foreign')
+                    ->references('id')->on('surat_jalan_bongkarans')
+                    ->onDelete('cascade');
+            });
+        }
 
         Schema::table('uang_jalans', function (Blueprint $table) {
-            $table->dropColumn('surat_jalan_bongkaran_batam_id');
+            if (Schema::hasColumn('uang_jalans', 'surat_jalan_bongkaran_batam_id')) {
+                $table->dropColumn('surat_jalan_bongkaran_batam_id');
+            }
         });
     }
 };

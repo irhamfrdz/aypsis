@@ -18,20 +18,27 @@ class SimplifyTagihanKontainerSewaTable extends Migration
      */
     public function up()
     {
-        Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
-            // Rename massa -> masa if present
-            if (Schema::hasColumn('tagihan_kontainer_sewa', 'massa') && ! Schema::hasColumn('tagihan_kontainer_sewa', 'masa')) {
-                try {
+        if (Schema::hasColumn('tagihan_kontainer_sewa', 'massa') && ! Schema::hasColumn('tagihan_kontainer_sewa', 'masa')) {
+            try {
+                Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
                     $table->renameColumn('massa', 'masa');
-                } catch (\Exception $e) {
-                    // Some DB drivers (SQLite) may not support rename in this context; fallback handled later
-                }
+                });
+            } catch (\Exception $e) {
+                // ignore
             }
+        }
 
-            // Add masa if neither massa nor masa existed
-            if (! Schema::hasColumn('tagihan_kontainer_sewa', 'masa')) {
-                $table->decimal('masa', 12, 2)->nullable()->after('periode');
+        if (! Schema::hasColumn('tagihan_kontainer_sewa', 'masa')) {
+            try {
+                Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
+                    $table->decimal('masa', 12, 2)->nullable()->after('periode');
+                });
+            } catch (\Exception $e) {
+                // ignore if duplicate
             }
+        }
+
+        Schema::table('tagihan_kontainer_sewa', function (Blueprint $table) {
 
             // Ensure the required columns exist (create if missing)
             if (! Schema::hasColumn('tagihan_kontainer_sewa', 'vendor')) {

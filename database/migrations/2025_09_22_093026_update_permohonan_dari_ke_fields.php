@@ -19,12 +19,14 @@ return new class extends Migration
         });
 
         // Migrate data dari kolom tujuan ke kolom dari dan ke
-        DB::statement("
-            UPDATE permohonans
-            SET dari = SUBSTRING_INDEX(tujuan, ' - ', 1),
-                ke = SUBSTRING_INDEX(tujuan, ' - ', -1)
-            WHERE tujuan IS NOT NULL AND tujuan != ''
-        ");
+        if (\DB::getDriverName() !== 'sqlite') {
+            DB::statement("
+                UPDATE permohonans
+                SET dari = SUBSTRING_INDEX(tujuan, ' - ', 1),
+                    ke = SUBSTRING_INDEX(tujuan, ' - ', -1)
+                WHERE tujuan IS NOT NULL AND tujuan != ''
+            ");
+        }
 
         Schema::table('permohonans', function (Blueprint $table) {
             // Hapus kolom tujuan
@@ -43,11 +45,19 @@ return new class extends Migration
         });
 
         // Migrate data kembali ke kolom tujuan
-        DB::statement("
-            UPDATE permohonans
-            SET tujuan = CONCAT(COALESCE(dari, ''), ' - ', COALESCE(ke, ''))
-            WHERE dari IS NOT NULL OR ke IS NOT NULL
-        ");
+        if (\DB::getDriverName() !== 'sqlite') {
+            DB::statement("
+                UPDATE permohonans
+                SET tujuan = CONCAT(COALESCE(dari, ''), ' - ', COALESCE(ke, ''))
+                WHERE dari IS NOT NULL OR ke IS NOT NULL
+            ");
+        } else {
+            DB::statement("
+                UPDATE permohonans
+                SET tujuan = COALESCE(dari, '') || ' - ' || COALESCE(ke, '')
+                WHERE dari IS NOT NULL OR ke IS NOT NULL
+            ");
+        }
 
         Schema::table('permohonans', function (Blueprint $table) {
             // Hapus kolom dari dan ke

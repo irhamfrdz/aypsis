@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // Disable foreign key checks temporarily
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
 
         try {
             // Drop all foreign key constraints that reference pranotalist
@@ -45,7 +45,7 @@ return new class extends Migration
 
         } finally {
             // Re-enable foreign key checks
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            Schema::enableForeignKeyConstraints();
         }
     }
 

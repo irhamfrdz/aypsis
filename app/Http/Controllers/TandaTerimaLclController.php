@@ -867,15 +867,6 @@ class TandaTerimaLclController extends Controller
             return redirect()->back()->with('error', 'Item barang yang dipilih tidak ditemukan.');
         }
 
-        // Only process the tanda terima that contains this specific item
-        $tandaTerimaIds = [$specificItem->tanda_terima_lcl_id];
-
-        \Log::info('Processing specific item split', [
-            'item_id' => $itemId,
-            'tanda_terima_id' => $specificItem->tanda_terima_lcl_id,
-            'nama_barang' => $request->input('nama_barang'),
-        ]);
-
         // Handle locale-specific decimal formatting (comma vs dot)
         $rawVolume = $request->input('volume');
         $rawBerat = $request->input('berat');
@@ -883,7 +874,7 @@ class TandaTerimaLclController extends Controller
         // Convert comma to dot for proper numeric parsing
         $splitVolume = floatval(str_replace(',', '.', $rawVolume));
         $splitBeratTon = floatval(str_replace(',', '.', $rawBerat));
-        $splitKuantitas = $request->jumlah ?? 1; // Use jumlah from form
+        $splitKuantitas = intval($request->jumlah ?? 1); // Use jumlah from form
         $processedCount = 0;
 
         \Log::info('Split values after conversion', [
@@ -894,228 +885,130 @@ class TandaTerimaLclController extends Controller
             'parsed_berat' => $splitBeratTon,
         ]);
 
-        DB::transaction(function () use ($tandaTerimaIds, $request, $splitVolume, $splitBeratTon, $splitKuantitas, &$processedCount) {
+        // Validation against specific item capacity
+        if ($specificItem->jumlah < $splitKuantitas) {
+            $message = "Kuantitas pemecahan ({$splitKuantitas}) tidak boleh melebihi kuantitas item asal ({$specificItem->jumlah}).";
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 400);
+            }
+            return redirect()->back()->with('error', $message);
+        }
 
-            foreach ($tandaTerimaIds as $originalId) {
+        if ($specificItem->meter_kubik < $splitVolume) {
+            $message = "Volume pemecahan ({$splitVolume} m³) tidak boleh melebihi volume item asal ({$specificItem->meter_kubik} m³).";
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 400);
+            }
+            return redirect()->back()->with('error', $message);
+        }
 
-                // Use find() instead of findOrFail() to handle orphaned pivot records
-                $originalTandaTerima = TandaTerimaLcl::with('items')->find($originalId);
+        if ($specificItem->tonase > 0 && $specificItem->tonase < $splitBeratTon) {
+            $message = "Berat/tonase pemecahan ({$splitBeratTon} ton) tidak boleh melebihi berat/tonase item asal ({$specificItem->tonase} ton).";
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 400);
+            }
+            return redirect()->back()->with('error', $message);
+        }
 
-                // Skip if tanda terima doesn't exist (orphaned pivot record)
-                if (! $originalTandaTerima) {
-                    \Log::warning("TandaTerimaLcl ID {$originalId} not found - skipping orphaned pivot record");
+        DB::transaction(function () use ($specificItem, $request, $splitVolume, $splitBeratTon, $splitKuantitas, &$processedCount) {
+            $originalTandaTerima = TandaTerimaLcl::find($specificItem->tanda_terima_lcl_id);
 
-                    continue;
-                }
+            if (! $originalTandaTerima) {
+                return;
+            }
 
-                // Calculate current totals
-                $currentVolume = $originalTandaTerima->items->sum('meter_kubik');
-                $currentBeratTon = $originalTandaTerima->items->sum('tonase');
+            // Generate new tanda terima number with suffix and timestamp for uniqueness
+            $timestamp = now()->format('YmdHis'); // Format: 20251226163049
+            $newNomorTandaTerima = $originalTandaTerima->nomor_tanda_terima.'-SPLIT-'.$timestamp;
 
-                \Log::info("Checking split eligibility for ID {$originalId}", [
-                    'current_volume' => $currentVolume,
-                    'current_berat' => $currentBeratTon,
-                    'requested_split_volume' => $splitVolume,
-                    'requested_split_berat' => $splitBeratTon,
-                    'volume_sufficient' => $currentVolume >= $splitVolume,
-                    'berat_sufficient' => $currentBeratTon >= $splitBeratTon || $currentBeratTon == 0,
-                ]);
+            // Create new LCL record for split container
+            $newTandaTerima = TandaTerimaLcl::create([
+                'nomor_tanda_terima' => $newNomorTandaTerima,
+                'tanggal_tanda_terima' => $originalTandaTerima->tanggal_tanda_terima,
+                'no_surat_jalan_customer' => $originalTandaTerima->no_surat_jalan_customer,
+                'surat_jalan_pabrik' => $originalTandaTerima->surat_jalan_pabrik,
+                'tanggal_surat_jalan_pabrik' => $originalTandaTerima->tanggal_surat_jalan_pabrik,
+                'term_id' => $originalTandaTerima->term_id,
+                'nama_penerima' => $originalTandaTerima->nama_penerima,
+                'pic_penerima' => $originalTandaTerima->pic_penerima,
+                'telepon_penerima' => $originalTandaTerima->telepon_penerima,
+                'alamat_penerima' => $originalTandaTerima->alamat_penerima,
+                'nama_pengirim' => $originalTandaTerima->nama_pengirim,
+                'pic_pengirim' => $originalTandaTerima->pic_pengirim,
+                'telepon_pengirim' => $originalTandaTerima->telepon_pengirim,
+                'alamat_pengirim' => $originalTandaTerima->alamat_pengirim,
+                'supir' => $originalTandaTerima->supir,
+                'no_plat' => $originalTandaTerima->no_plat,
+                'tujuan_pengiriman_id' => $originalTandaTerima->tujuan_pengiriman_id,
+                'status' => 'draft',
+                'created_by' => Auth::id(),
+            ]);
 
-                // Check if we have enough volume to split (required)
-                if ($currentVolume < $splitVolume) {
-                    \Log::info("Skipping ID {$originalId} - insufficient volume: {$currentVolume} < {$splitVolume}");
-
-                    continue; // Skip this item if not enough volume
-                }
-
-                // For berat: if original has no berat data (0), proceed anyway
-                // Only skip if original has berat data but it's less than requested
-                if ($currentBeratTon > 0 && $currentBeratTon < $splitBeratTon) {
-                    \Log::info("Skipping ID {$originalId} - insufficient berat: {$currentBeratTon} < {$splitBeratTon}");
-
-                    continue; // Skip this item if not enough weight (in ton)
-                }
-
-                // If original has no berat, use the requested berat for the new split
-                // If original has berat, use the minimum of requested and available
-                $actualSplitBerat = $currentBeratTon > 0 ? min($splitBeratTon, $currentBeratTon) : $splitBeratTon;
-
-                \Log::info("Proceeding with split for ID {$originalId}", [
-                    'actual_split_berat' => $actualSplitBerat,
-                ]);
-
-                // Generate new tanda terima number with suffix and timestamp for uniqueness
-                $timestamp = now()->format('YmdHis'); // Format: 20251226163049
-                $newNomorTandaTerima = $originalTandaTerima->nomor_tanda_terima.'-SPLIT-'.$timestamp;
-
-                // Create new LCL record for split container
-                $newTandaTerima = TandaTerimaLcl::create([
-                    'nomor_tanda_terima' => $newNomorTandaTerima,
-                    'tanggal_tanda_terima' => $originalTandaTerima->tanggal_tanda_terima,
-                    'no_surat_jalan_customer' => $originalTandaTerima->no_surat_jalan_customer,
-                    'term_id' => $originalTandaTerima->term_id,
-                    'nama_penerima' => $originalTandaTerima->nama_penerima,
-                    'pic_penerima' => $originalTandaTerima->pic_penerima,
-                    'telepon_penerima' => $originalTandaTerima->telepon_penerima,
-                    'alamat_penerima' => $originalTandaTerima->alamat_penerima,
-                    'nama_pengirim' => $originalTandaTerima->nama_pengirim,
-                    'pic_pengirim' => $originalTandaTerima->pic_pengirim,
-                    'telepon_pengirim' => $originalTandaTerima->telepon_pengirim,
-                    'alamat_pengirim' => $originalTandaTerima->alamat_pengirim,
-                    'nama_barang' => $request->nama_barang,
-                    'kuantitas' => $request->jumlah,
-                    'keterangan_barang' => $request->satuan,
-                    'supir' => $originalTandaTerima->supir,
-                    'no_plat' => $originalTandaTerima->no_plat,
-                    'tujuan_pengiriman_id' => $originalTandaTerima->tujuan_pengiriman_id,
-                    'tipe_kontainer' => $request->tipe_kontainer,
+            // Add new tanda terima to pivot table so it appears in stuffing page
+            if ($request->nomor_kontainer) {
+                TandaTerimaLclKontainerPivot::create([
+                    'tanda_terima_lcl_id' => $newTandaTerima->id,
                     'nomor_kontainer' => $request->nomor_kontainer,
                     'size_kontainer' => $request->size_kontainer,
-                    'status' => 'draft',
-                    'created_by' => Auth::id(),
+                    'tipe_kontainer' => $request->tipe_kontainer ?? 'lcl',
                 ]);
 
-                // Add new tanda terima to pivot table so it appears in stuffing page
-                if ($request->nomor_kontainer) {
-                    TandaTerimaLclKontainerPivot::create([
-                        'tanda_terima_lcl_id' => $newTandaTerima->id,
-                        'nomor_kontainer' => $request->nomor_kontainer,
-                        'size_kontainer' => $request->size_kontainer,
-                        'tipe_kontainer' => $request->tipe_kontainer ?? 'lcl',
-                    ]);
-
-                    \Log::info('Added new tanda terima to pivot table', [
-                        'tanda_terima_lcl_id' => $newTandaTerima->id,
-                        'nomor_kontainer' => $request->nomor_kontainer,
-                    ]);
-                }
-
-                // Create single item for split container with specified dimensions
-                TandaTerimaLclItem::create([
+                \Log::info('Added new tanda terima to pivot table', [
                     'tanda_terima_lcl_id' => $newTandaTerima->id,
-                    'item_number' => 1,
-                    'nama_barang' => $request->nama_barang,
-                    'keterangan_barang' => $request->keterangan,
-                    'panjang' => $request->panjang,
-                    'lebar' => $request->lebar,
-                    'tinggi' => $request->tinggi,
-                    'meter_kubik' => $splitVolume,
-                    'tonase' => $splitBeratTon,
+                    'nomor_kontainer' => $request->nomor_kontainer,
                 ]);
+            }
 
-                // Update original tanda terima - reduce volume and weight
-                $remainingVolume = $currentVolume - $splitVolume;
-                $remainingBeratTon = $currentBeratTon - $splitBeratTon;
-                $remainingKuantitas = $splitKuantitas > 0 ? max(0, $originalTandaTerima->kuantitas - $splitKuantitas) : $originalTandaTerima->kuantitas;
+            // Create single item for split container with specified dimensions
+            TandaTerimaLclItem::create([
+                'tanda_terima_lcl_id' => $newTandaTerima->id,
+                'item_number' => 1,
+                'nama_barang' => $request->nama_barang,
+                'jumlah' => $splitKuantitas,
+                'satuan' => $request->satuan,
+                'keterangan_barang' => $request->keterangan,
+                'panjang' => floatval(str_replace(',', '.', $request->panjang)),
+                'lebar' => floatval(str_replace(',', '.', $request->lebar)),
+                'tinggi' => floatval(str_replace(',', '.', $request->tinggi)),
+                'meter_kubik' => $splitVolume,
+                'tonase' => $splitBeratTon,
+            ]);
 
-                // Update original items - jika hanya ada satu item, langsung kurangi
-                $itemCount = $originalTandaTerima->items->count();
+            // Update original item
+            $remainingKuantitas = max(0, $specificItem->jumlah - $splitKuantitas);
+            $remainingVolume = max(0.0, floatval($specificItem->meter_kubik) - floatval($splitVolume));
+            $remainingBeratTon = max(0.0, floatval($specificItem->tonase) - floatval($splitBeratTon));
 
-                if ($itemCount == 1) {
-                    // Jika hanya satu item, langsung kurangi volume dan berat
-                    $singleItem = $originalTandaTerima->items->first();
-
-                    // Pastikan remaining volume dan berat tidak negatif
-                    $newVolume = max(0, round($remainingVolume, 3));
-                    $newTonase = max(0, round($remainingBeratTon, 3));
-
-                    \Log::info('Single Item Direct Update', [
-                        'item_id' => $singleItem->id,
-                        'old_volume' => $singleItem->meter_kubik,
-                        'new_volume' => $newVolume,
-                        'old_tonase' => $singleItem->tonase,
-                        'new_tonase' => $newTonase,
-                        'calculation_check' => [
-                            'current_volume' => $currentVolume,
-                            'split_volume' => $splitVolume,
-                            'remaining_volume' => $remainingVolume,
-                        ],
-                    ]);
-
-                    // Use updateOrFail untuk memastikan update berhasil
-                    $updateResult = $singleItem->updateOrFail([
-                        'meter_kubik' => $newVolume,
-                        'tonase' => $newTonase,
-                    ]);
-
-                    \Log::info('Update Result', ['success' => $updateResult]);
-                } else {
-                    // Jika multiple items, update secara proporsional
-                    $volumeRatio = $remainingVolume > 0 ? $remainingVolume / $currentVolume : 0;
-                    $beratRatio = $remainingBeratTon > 0 ? $remainingBeratTon / $currentBeratTon : 0;
-
-                    \Log::info('Multiple Items Proportional Update', [
-                        'items_count' => $itemCount,
-                        'volume_ratio' => $volumeRatio,
-                        'berat_ratio' => $beratRatio,
-                    ]);
-
-                    foreach ($originalTandaTerima->items as $item) {
-                        $newVolume = round($item->meter_kubik * $volumeRatio, 3);
-                        $newTonase = round($item->tonase * $beratRatio, 3);
-
-                        $item->update([
-                            'meter_kubik' => $newVolume,
-                            'tonase' => $newTonase,
-                        ]);
-                    }
+            if ($remainingKuantitas <= 0 || $remainingVolume <= 0) {
+                $specificItem->delete();
+                \Log::info('Original specific item deleted as it became empty');
+                
+                // If original tanda terima now has no items, soft delete it
+                if ($originalTandaTerima->items()->count() === 0) {
+                    $originalTandaTerima->delete();
+                    \Log::info('Original Tanda Terima LCL deleted as it has no items left');
                 }
+            } else {
+                $specificItem->update([
+                    'jumlah' => $remainingKuantitas,
+                    'meter_kubik' => $remainingVolume,
+                    'tonase' => $remainingBeratTon,
+                    'keterangan_barang' => ($specificItem->keterangan_barang ?? '').' [SEBAGIAN DIPINDAH KE: '.$newNomorTandaTerima.']',
+                ]);
+            }
 
-                // Update original tanda terima quantities
+            // Update parent audit field
+            if ($originalTandaTerima->exists) {
                 $originalTandaTerima->update([
-                    'kuantitas' => $remainingKuantitas,
-                    'keterangan_barang' => ($originalTandaTerima->keterangan_barang ?? '').' [SEBAGIAN DIPINDAH KE: '.$newNomorTandaTerima.']',
                     'updated_by' => Auth::id(),
                 ]);
-
-                // Force refresh the relationship and verify the update
-                $originalTandaTerima->unsetRelation('items');
-                $originalTandaTerima->load('items');
-                $updatedTotalVolume = $originalTandaTerima->items->sum('meter_kubik');
-                $updatedTotalBerat = $originalTandaTerima->items->sum('tonase');
-
-                \Log::info('After Update Verification', [
-                    'original_id' => $originalId,
-                    'updated_total_volume' => $updatedTotalVolume,
-                    'expected_remaining_volume' => $remainingVolume,
-                    'updated_total_berat' => $updatedTotalBerat,
-                    'expected_remaining_berat' => $remainingBeratTon,
-                    'volume_difference' => abs($updatedTotalVolume - $remainingVolume),
-                    'is_volume_correct' => abs($updatedTotalVolume - $remainingVolume) < 0.001,
-                ]);
-
-                // Additional check: Direct database query to verify
-                $dbTotalVolume = DB::table('tanda_terima_lcl_items')
-                    ->where('tanda_terima_lcl_id', $originalId)
-                    ->sum('meter_kubik');
-
-                \Log::info('Direct DB Verification', [
-                    'original_id' => $originalId,
-                    'db_total_volume' => $dbTotalVolume,
-                    'eloquent_total_volume' => $updatedTotalVolume,
-                    'volumes_match' => abs($dbTotalVolume - $updatedTotalVolume) < 0.001,
-                ]);
-
-                $processedCount++;
             }
+
+            $processedCount++;
         });
 
         if ($processedCount == 0) {
-            // Get first selected item to show current capacity
-            $firstId = $tandaTerimaIds[0] ?? null;
-            if ($firstId) {
-                $firstTandaTerima = TandaTerimaLcl::with('items')->find($firstId);
-                if ($firstTandaTerima) {
-                    $currentVolume = $firstTandaTerima->items->sum('meter_kubik');
-                    $currentBeratTon = $firstTandaTerima->items->sum('tonase');
-                    $message = "Tidak ada tanda terima yang dapat dipecah. Kapasitas tersedia pada tanda terima pertama: Volume {$currentVolume} m³, Berat {$currentBeratTon} ton. Pastikan volume dan berat yang diminta tidak melebihi kapasitas ini.";
-                } else {
-                    $message = 'Tidak ada tanda terima yang dapat dipecah. Pastikan volume dan berat yang diminta tidak melebihi kapasitas yang tersedia.';
-                }
-            } else {
-                $message = 'Tidak ada tanda terima yang dapat dipecah. Pastikan volume dan berat yang diminta tidak melebihi kapasitas yang tersedia.';
-            }
-
+            $message = 'Gagal memecah kontainer. Pastikan volume dan berat yang diminta tidak melebihi kapasitas yang tersedia.';
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -1126,7 +1019,7 @@ class TandaTerimaLclController extends Controller
             return redirect()->back()->with('error', $message);
         }
 
-        $successMessage = "Berhasil memecah {$processedCount} tanda terima. Kontainer baru telah dibuat dengan volume {$splitVolume} m³ dan berat {$splitBeratTon} ton.";
+        $successMessage = "Berhasil memecah tanda terima. Kontainer baru telah dibuat dengan volume {$splitVolume} m³ dan berat {$splitBeratTon} ton.";
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([

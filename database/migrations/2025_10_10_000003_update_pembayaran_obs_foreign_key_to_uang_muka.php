@@ -13,18 +13,20 @@ return new class extends Migration
     public function up()
     {
         Schema::table('pembayaran_obs', function (Blueprint $table) {
-            // Check if foreign key exists and drop it safely
-            $foreignKeys = DB::select("
-                SELECT CONSTRAINT_NAME
-                FROM information_schema.KEY_COLUMN_USAGE
-                WHERE TABLE_SCHEMA = DATABASE()
-                AND TABLE_NAME = 'pembayaran_obs'
-                AND COLUMN_NAME = 'pembayaran_dp_ob_id'
-                AND REFERENCED_TABLE_NAME IS NOT NULL
-            ");
+            if (DB::getDriverName() !== 'sqlite') {
+                // Check if foreign key exists and drop it safely
+                $foreignKeys = DB::select("
+                    SELECT CONSTRAINT_NAME
+                    FROM information_schema.KEY_COLUMN_USAGE
+                    WHERE TABLE_SCHEMA = DATABASE()
+                    AND TABLE_NAME = 'pembayaran_obs'
+                    AND COLUMN_NAME = 'pembayaran_dp_ob_id'
+                    AND REFERENCED_TABLE_NAME IS NOT NULL
+                ");
 
-            foreach ($foreignKeys as $fk) {
-                DB::statement("ALTER TABLE pembayaran_obs DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
+                foreach ($foreignKeys as $fk) {
+                    DB::statement("ALTER TABLE pembayaran_obs DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
+                }
             }
         });
 
@@ -47,18 +49,20 @@ return new class extends Migration
     public function down()
     {
         Schema::table('pembayaran_obs', function (Blueprint $table) {
-            // Check if foreign key exists and drop it safely
-            $foreignKeys = DB::select("
-                SELECT CONSTRAINT_NAME
-                FROM information_schema.KEY_COLUMN_USAGE
-                WHERE TABLE_SCHEMA = DATABASE()
-                AND TABLE_NAME = 'pembayaran_obs'
-                AND COLUMN_NAME = 'pembayaran_uang_muka_id'
-                AND REFERENCED_TABLE_NAME IS NOT NULL
-            ");
+            if (DB::getDriverName() !== 'sqlite') {
+                // Check if foreign key exists and drop it safely
+                $foreignKeys = DB::select("
+                    SELECT CONSTRAINT_NAME
+                    FROM information_schema.KEY_COLUMN_USAGE
+                    WHERE TABLE_SCHEMA = DATABASE()
+                    AND TABLE_NAME = 'pembayaran_obs'
+                    AND COLUMN_NAME = 'pembayaran_uang_muka_id'
+                    AND REFERENCED_TABLE_NAME IS NOT NULL
+                ");
 
-            foreach ($foreignKeys as $fk) {
-                DB::statement("ALTER TABLE pembayaran_obs DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
+                foreach ($foreignKeys as $fk) {
+                    DB::statement("ALTER TABLE pembayaran_obs DROP FOREIGN KEY {$fk->CONSTRAINT_NAME}");
+                }
             }
         });
 

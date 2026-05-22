@@ -11,12 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('realisasi_uang_muka', function (Blueprint $table) {
-            // Drop foreign key first
-            $table->dropForeign(['kegiatan']);
-            // Then drop the column
-            $table->dropColumn('kegiatan');
-        });
+        if (Schema::hasTable('realisasi_uang_muka') && Schema::hasColumn('realisasi_uang_muka', 'kegiatan')) {
+            Schema::table('realisasi_uang_muka', function (Blueprint $table) {
+                // Drop foreign key first
+                try {
+                    $table->dropForeign(['kegiatan']);
+                } catch (\Exception $e) {
+                    // Ignore if foreign key doesn't exist
+                }
+                // Then drop the column
+                $table->dropColumn('kegiatan');
+            });
+        }
     }
 
     /**

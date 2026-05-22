@@ -10,8 +10,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Change enum to include 'sudah_dibayar'
-        DB::statement("ALTER TABLE pranota_perbaikan_kontainers MODIFY COLUMN status ENUM('draft', 'belum_dibayar', 'approved', 'in_progress', 'completed', 'cancelled', 'sudah_dibayar') DEFAULT 'belum_dibayar'");
+        if (DB::getDriverName() !== 'sqlite') {
+            // Change enum to include 'sudah_dibayar'
+            DB::statement("ALTER TABLE pranota_perbaikan_kontainers MODIFY COLUMN status ENUM('draft', 'belum_dibayar', 'approved', 'in_progress', 'completed', 'cancelled', 'sudah_dibayar') DEFAULT 'belum_dibayar'");
+        }
     }
 
     /**
@@ -19,7 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert enum to original values
-        DB::statement("ALTER TABLE pranota_perbaikan_kontainers MODIFY COLUMN status ENUM('draft', 'belum_dibayar', 'approved', 'in_progress', 'completed', 'cancelled') DEFAULT 'belum_dibayar'");
+        if (DB::getDriverName() !== 'sqlite') {
+            // Revert enum to original values
+            DB::statement("ALTER TABLE pranota_perbaikan_kontainers MODIFY COLUMN status ENUM('draft', 'belum_dibayar', 'approved', 'in_progress', 'completed', 'cancelled') DEFAULT 'belum_dibayar'");
+        }
     }
 };

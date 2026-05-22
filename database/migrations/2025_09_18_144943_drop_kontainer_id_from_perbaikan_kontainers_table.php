@@ -11,8 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
+        try {
+            Schema::table('perbaikan_kontainers', function (Blueprint $table) {
+                $table->dropIndex('perbaikan_kontainers_kontainer_id_status_perbaikan_index');
+            });
+        } catch (\Exception $e) {
+            // Ignore if index doesn't exist or fails
+        }
+
         Schema::table('perbaikan_kontainers', function (Blueprint $table) {
-            $table->dropForeign(['kontainer_id']);
+            try {
+                $table->dropForeign(['kontainer_id']);
+            } catch (\Exception $e) {
+                // Ignore if foreign key doesn't exist
+            }
             $table->dropColumn('kontainer_id');
         });
     }

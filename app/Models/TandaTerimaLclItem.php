@@ -16,6 +16,7 @@ class TandaTerimaLclItem extends Model
         'tanda_terima_lcl_id',
         'item_number',
         'nama_barang',
+        'keterangan_barang',
         'jumlah',
         'satuan',
         'panjang',
@@ -47,6 +48,7 @@ class TandaTerimaLclItem extends Model
         return number_format($this->meter_kubik ?? 0, 3).' m³';
     }
 
+    // Helper methods
     public function getFormattedWeightAttribute(): string
     {
         return number_format($this->tonase ?? 0, 2).' Ton';
@@ -54,15 +56,14 @@ class TandaTerimaLclItem extends Model
 
     public function getDimensionsAttribute(): string
     {
-        return "{$this->panjang} x {$this->lebar} x {$this->tinggi} cm";
+        return "{$this->panjang} x {$this->lebar} x {$this->tinggi} m";
     }
 
     // Calculate volume from dimensions
     public function calculateVolume(): float
     {
         if ($this->panjang && $this->lebar && $this->tinggi) {
-            // Convert cm³ to m³ (divide by 1,000,000)
-            return ($this->panjang * $this->lebar * $this->tinggi) / 1000000;
+            return floatval($this->panjang) * floatval($this->lebar) * floatval($this->tinggi) * floatval($this->jumlah ?? 1);
         }
 
         return 0;
@@ -85,8 +86,8 @@ class TandaTerimaLclItem extends Model
         parent::boot();
 
         static::saving(function ($item) {
-            if ($item->panjang && $item->lebar && $item->tinggi) {
-                $volume = floatval($item->panjang) * floatval($item->lebar) * floatval($item->tinggi);
+            if ($item->panjang && $item->lebar && $item->tinggi && !$item->isDirty('meter_kubik')) {
+                $volume = floatval($item->panjang) * floatval($item->lebar) * floatval($item->tinggi) * floatval($item->jumlah ?? 1);
                 $item->meter_kubik = $volume; // Akan otomatis dibulatkan via mutator
             }
         });

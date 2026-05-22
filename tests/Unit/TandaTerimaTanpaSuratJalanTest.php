@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\TandaTerimaTanpaSuratJalan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class TandaTerimaTanpaSuratJalanTest extends TestCase
 {
