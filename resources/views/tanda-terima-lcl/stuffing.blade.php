@@ -420,6 +420,23 @@
                                                 </button>
                                             </form>
                                             @endif
+
+                                            <form action="{{ route('tanda-terima-lcl.delete-container') }}" method="POST" class="inline-flex m-0 p-0"
+                                                  onsubmit="return confirm('Apakah Anda yakin ingin menghapus kontainer {{ $container['nomor_kontainer'] }} dari stuffing?\n\nSemua LCL yang terhubung ke kontainer ini akan dilepas.\nTanda terima tidak akan dihapus, hanya koneksi ke kontainer.');">
+                                                @csrf
+                                                <input type="hidden" name="nomor_kontainer" value="{{ $container['nomor_kontainer'] }}">
+                                                <button type="submit"
+                                                        style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #dc2626; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
+                                                        onmouseover="this.style.backgroundColor='#b91c1c'"
+                                                        onmouseout="this.style.backgroundColor='#dc2626'"
+                                                        class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 text-xs font-medium transition"
+                                                        title="Hapus kontainer ini dari stuffing (semua LCL akan dilepas)">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                    Hapus
+                                                </button>
+                                            </form>
                                         @endif
                                     </div>
                                 </td>

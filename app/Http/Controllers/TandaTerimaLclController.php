@@ -2143,6 +2143,47 @@ class TandaTerimaLclController extends Controller
     }
 
     /**
+     * Delete (unstuff) all LCL Tanda Terima from a container
+     */
+    public function deleteContainer(Request $request)
+    {
+        $request->validate([
+            'nomor_kontainer' => 'required|string|max:255',
+        ]);
+
+        $nomorKontainer = $request->nomor_kontainer;
+
+        try {
+            // Check if container has a seal — prevent deletion if sealed
+            $hasSeal = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $nomorKontainer)
+                ->whereNotNull('nomor_seal')
+                ->exists();
+
+            if ($hasSeal) {
+                return redirect()->back()->with('error', 'Kontainer '.$nomorKontainer.' sudah di-seal dan tidak dapat dihapus dari stuffing. Lepas seal terlebih dahulu.');
+            }
+
+            $deletedCount = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $nomorKontainer)->delete();
+
+            \Log::info('Container deleted from stuffing', [
+                'nomor_kontainer' => $nomorKontainer,
+                'deleted_pivot_count' => $deletedCount,
+                'user_id' => auth()->id(),
+            ]);
+
+            return redirect()->back()->with('success', 'Kontainer '.$nomorKontainer.' berhasil dihapus dari stuffing ('.$deletedCount.' LCL dilepas).');
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting container from stuffing: '.$e->getMessage(), [
+                'nomor_kontainer' => $nomorKontainer,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->back()->with('error', 'Gagal menghapus kontainer: '.$e->getMessage());
+        }
+    }
+
+    /**
      * Remove LCL from container (unstuffing)
      */
     public function removeFromContainer(Request $request, $id)

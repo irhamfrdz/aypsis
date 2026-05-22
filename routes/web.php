@@ -3783,6 +3783,10 @@ Route::middleware([
         Route::post('tanda-terima-lcl/{id}/remove-from-container', [\App\Http\Controllers\TandaTerimaLclController::class, 'removeFromContainer'])
             ->name('tanda-terima-lcl.remove-from-container');
 
+        Route::post('tanda-terima-lcl/delete-container', [\App\Http\Controllers\TandaTerimaLclController::class, 'deleteContainer'])
+            ->name('tanda-terima-lcl.delete-container')
+            ->middleware('can:tanda-terima-tanpa-surat-jalan-delete');
+
         Route::post('tanda-terima-lcl/{id}/sync-penerima-pengirim', [\App\Http\Controllers\TandaTerimaLclController::class, 'syncPenerimaPengirim'])
             ->name('tanda-terima-lcl.sync-penerima-pengirim')
             ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
