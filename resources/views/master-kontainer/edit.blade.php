@@ -81,7 +81,7 @@
                     <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                     <select name="status" id="status" class="{{ $inputClasses }}">
                         <option value="Tersedia" {{ old('status', $kontainer->status) == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
-                        <option value="Tidak Tersedia" {{ old('status', $kontainer->status) == 'Tidak Tersedia' ? 'selected' : '' }}>Tidak Tersedia</option>
+                        <option value="Tidak Tersedia" {{ old('status', $kontainer->status) !== 'Tersedia' ? 'selected' : '' }}>Tidak Tersedia</option>
                     </select>
                     @error('status')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
@@ -108,14 +108,14 @@
                 </div>
                 <div>
                     <label for="tanggal_mulai_sewa" class="block text-sm font-medium text-gray-700">Tanggal Mulai Sewa</label>
-                    <input type="text" name="tanggal_mulai_sewa" id="tanggal_mulai_sewa" value="{{ old('tanggal_mulai_sewa', $kontainer->tanggal_mulai_sewa?->format('d/M/Y')) }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
+                    <input type="text" name="tanggal_mulai_sewa" id="tanggal_mulai_sewa" value="{{ old('tanggal_mulai_sewa', $kontainer->tanggal_mulai_sewa ? str_replace(['May', 'Aug', 'Oct', 'Dec'], ['Mei', 'Agu', 'Okt', 'Des'], $kontainer->tanggal_mulai_sewa->format('d/M/Y')) : '') }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
                     @error('tanggal_mulai_sewa')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
                     <label for="tanggal_selesai_sewa" class="block text-sm font-medium text-gray-700">Tanggal Selesai Sewa</label>
-                    <input type="text" name="tanggal_selesai_sewa" id="tanggal_selesai_sewa" value="{{ old('tanggal_selesai_sewa', $kontainer->tanggal_selesai_sewa?->format('d/M/Y')) }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
+                    <input type="text" name="tanggal_selesai_sewa" id="tanggal_selesai_sewa" value="{{ old('tanggal_selesai_sewa', $kontainer->tanggal_selesai_sewa ? str_replace(['May', 'Aug', 'Oct', 'Dec'], ['Mei', 'Agu', 'Okt', 'Des'], $kontainer->tanggal_selesai_sewa->format('d/M/Y')) : '') }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
                     @error('tanggal_selesai_sewa')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror

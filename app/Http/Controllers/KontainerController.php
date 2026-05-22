@@ -132,7 +132,7 @@ class KontainerController extends Controller
             'keterangan' => 'nullable|string',
             'tanggal_mulai_sewa' => 'nullable|date',
             'tanggal_selesai_sewa' => 'nullable|date',
-            'status' => 'nullable|string|in:Tersedia,Disewa',
+            'status' => 'nullable|string|in:Tersedia,Tidak Tersedia,Disewa,selesai,belum masuk pranota,inactive',
         ];
 
         // Add after_or_equal rule only if both dates are present
@@ -281,7 +281,7 @@ class KontainerController extends Controller
             'keterangan' => 'nullable|string',
             'tanggal_mulai_sewa' => 'nullable|date',
             'tanggal_selesai_sewa' => 'nullable|date',
-            'status' => 'nullable|string|in:Tersedia,Disewa',
+            'status' => 'nullable|string|in:Tersedia,Tidak Tersedia,Disewa,selesai,belum masuk pranota,inactive',
         ];
 
         // Add after_or_equal rule only if both dates are present
