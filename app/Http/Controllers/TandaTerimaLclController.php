@@ -886,8 +886,20 @@ class TandaTerimaLclController extends Controller
         ]);
 
         // Validation against specific item capacity
-        if ($specificItem->jumlah < $splitKuantitas) {
+        if ($splitKuantitas > $specificItem->jumlah) {
             $message = "Kuantitas pemecahan ({$splitKuantitas}) tidak boleh melebihi kuantitas item asal ({$specificItem->jumlah}).";
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 400);
+            }
+
+            return redirect()->back()->with('error', $message);
+        }
+
+        $originalTandaTerima = $specificItem->tandaTerima;
+        $totalItemsCount = $originalTandaTerima ? $originalTandaTerima->items()->count() : 0;
+
+        if ($totalItemsCount === 1 && $splitKuantitas == $specificItem->jumlah) {
+            $message = 'Kuantitas pemecahan tidak boleh sama dengan kuantitas item asal karena item ini adalah satu-satunya barang di Tanda Terima. Jika ingin memindahkan seluruh barang, gunakan fitur Stuffing Kontainer / Assign Container.';
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['success' => false, 'message' => $message], 400);
             }
@@ -982,7 +994,7 @@ class TandaTerimaLclController extends Controller
             $remainingVolume = max(0.0, floatval($specificItem->meter_kubik) - floatval($splitVolume));
             $remainingBeratTon = max(0.0, floatval($specificItem->tonase) - floatval($splitBeratTon));
 
-            if ($remainingKuantitas <= 0 || $remainingVolume <= 0) {
+            if ($remainingKuantitas <= 0) {
                 $specificItem->delete();
                 \Log::info('Original specific item deleted as it became empty');
 
@@ -2009,38 +2021,48 @@ class TandaTerimaLclController extends Controller
                 ->with('items')
                 ->get();
 
-            // Collect all unique barang from items
+            // Collect all barang from items (including duplicates with different dimensions/records)
             $barangData = [];
-            $barangNames = [];
+            $seenItems = []; // Track unique items to avoid duplicates
 
             foreach ($tandaTerimas as $tandaTerima) {
-                foreach ($tandaTerima->items as $item) {
-                    $namaBarang = $item->nama_barang;
+                if ($tandaTerima->items && $tandaTerima->items->count() > 0) {
+                    foreach ($tandaTerima->items as $item) {
+                        $itemKey = $item->id;
 
-                    // Skip if we already have this barang
-                    if (in_array($namaBarang, $barangNames)) {
-                        continue;
+                        if (! isset($seenItems[$itemKey])) {
+                            $seenItems[$itemKey] = true;
+
+                            $namaBarang = $item->nama_barang ?? $tandaTerima->nama_barang ?? 'N/A';
+                            $satuan = $item->satuan ?? $item->keterangan_barang ?? $tandaTerima->keterangan_barang ?? '';
+                            $jumlah = $item->jumlah ?? $tandaTerima->kuantitas ?? 1;
+
+                            $barangData[] = [
+                                'id' => $item->id,
+                                'nama_barang' => $namaBarang,
+                                'satuan' => $satuan,
+                                'panjang' => $item->panjang,
+                                'lebar' => $item->lebar,
+                                'tinggi' => $item->tinggi,
+                                'jumlah' => $jumlah,
+                                'meter_kubik' => $item->meter_kubik,
+                                'tonase' => $item->tonase,
+                                'total_items_in_tt' => $tandaTerima->items->count(),
+                                'display_label' => $namaBarang.
+                                                 ($jumlah > 1 ? ' ('.$jumlah.' pcs)' : '').
+                                                 ($item->panjang && $item->lebar && $item->tinggi ?
+                                                     ' - '.$item->panjang.'x'.$item->lebar.'x'.$item->tinggi.'m' : '').
+                                                 ($item->meter_kubik ? ' - '.number_format($item->meter_kubik, 3).'m³' : ''),
+                            ];
+                        }
                     }
-
-                    $barangNames[] = $namaBarang;
-
-                    $barangData[] = [
-                        'nama_barang' => $namaBarang,
-                        'satuan' => $item->satuan,
-                        'panjang' => $item->panjang,
-                        'lebar' => $item->lebar,
-                        'tinggi' => $item->tinggi,
-                        'jumlah' => $item->jumlah,
-                        'meter_kubik' => $item->meter_kubik,
-                        'tonase' => $item->tonase,
-                    ];
                 }
             }
 
             return response()->json([
                 'success' => true,
                 'barang' => $barangData,
-                'message' => 'Data barang berhasil dimuat',
+                'message' => 'Data barang berhasil dimuat ('.count($barangData).' items)',
             ]);
 
         } catch (\Exception $e) {
@@ -2236,6 +2258,7 @@ class TandaTerimaLclController extends Controller
                                 'jumlah' => $jumlah,
                                 'meter_kubik' => $item->meter_kubik,
                                 'tonase' => $item->tonase,
+                                'total_items_in_tt' => $tandaTerima->items->count(),
                                 'display_label' => $namaBarang.
                                                  ($jumlah > 1 ? ' ('.$jumlah.' pcs)' : '').
                                                  ($item->panjang && $item->lebar && $item->tinggi ?

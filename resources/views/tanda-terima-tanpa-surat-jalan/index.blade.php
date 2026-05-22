@@ -528,10 +528,12 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-1">
                                         Nama Barang <span class="text-red-500">*</span>
                                     </label>
-                                    <select id="split_nama_barang" name="nama_barang" required
+                                    <select id="split_nama_barang" required
                                             class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                                         <option value="">Memuat data barang...</option>
                                     </select>
+                                    <input type="hidden" name="item_id" id="split_item_id">
+                                    <input type="hidden" name="nama_barang" id="split_nama_barang_value">
                                     <p class="text-xs text-gray-500 mt-1">Pilih dari barang yang ada di kontainer terpilih</p>
                                 </div>
                                 <div>
@@ -1229,8 +1231,9 @@
                 // Add barang options
                 data.barang.forEach(item => {
                     const option = document.createElement('option');
-                    option.value = item.nama_barang;
-                    option.textContent = item.nama_barang;
+                    option.value = item.id; // Use item ID as unique identifier
+                    option.textContent = item.display_label || item.nama_barang;
+                    option.dataset.namaBarang = item.nama_barang;
                     
                     // Store additional data as data attributes
                     if (item.satuan) option.setAttribute('data-satuan', item.satuan);
@@ -1238,6 +1241,7 @@
                     if (item.lebar) option.setAttribute('data-lebar', item.lebar);
                     if (item.tinggi) option.setAttribute('data-tinggi', item.tinggi);
                     if (item.jumlah) option.setAttribute('data-jumlah', item.jumlah);
+                    option.setAttribute('data-total-items', item.total_items_in_tt || 1);
                     
                     namaBarangSelect.appendChild(option);
                 });
@@ -1248,6 +1252,18 @@
                 namaBarangSelect.addEventListener('change', function() {
                     const selectedOption = this.options[this.selectedIndex];
                     if (selectedOption.value) {
+                        // Set the hidden item_id input
+                        const itemIdInput = document.getElementById('split_item_id');
+                        if (itemIdInput) {
+                            itemIdInput.value = selectedOption.value;
+                        }
+                        
+                        // Set the hidden nama_barang input
+                        const namaBarangInput = document.getElementById('split_nama_barang_value');
+                        if (namaBarangInput) {
+                            namaBarangInput.value = selectedOption.dataset.namaBarang || selectedOption.textContent;
+                        }
+
                         // Auto-fill dimensi fields if data available
                         const satuan = selectedOption.getAttribute('data-satuan');
                         const panjang = selectedOption.getAttribute('data-panjang');
@@ -1272,6 +1288,10 @@
                         if (tinggi) {
                             const tinggiInput = document.getElementById('split_tinggi');
                             if (tinggiInput) tinggiInput.value = tinggi;
+                        }
+                        if (jumlah) {
+                            const jumlahInput = document.getElementById('split_jumlah');
+                            if (jumlahInput) jumlahInput.value = jumlah;
                         }
                         
                         // Auto-calculate volume
@@ -1308,6 +1328,16 @@
         if (namaBarangSelect) {
             namaBarangSelect.innerHTML = '<option value="">Memuat data barang...</option>';
             namaBarangSelect.disabled = true;
+        }
+        
+        // Reset hidden item_id and nama_barang value inputs
+        const itemIdInput = document.getElementById('split_item_id');
+        if (itemIdInput) {
+            itemIdInput.value = '';
+        }
+        const namaBarangInput = document.getElementById('split_nama_barang_value');
+        if (namaBarangInput) {
+            namaBarangInput.value = '';
         }
         
         // Reset all dimensi input fields
@@ -1424,6 +1454,39 @@
             volumeInput.value = '';
         }
     }
+
+    // Add submit handler for split form with client-side validation
+    document.getElementById('splitForm').addEventListener('submit', function(e) {
+        // Validate item_id value
+        const itemIdValue = document.getElementById('split_item_id').value;
+        if (!itemIdValue) {
+            e.preventDefault();
+            alert('Silakan pilih barang terlebih dahulu');
+            return false;
+        }
+
+        const namaBarangSelect = document.getElementById('split_nama_barang');
+        const selectedOption = namaBarangSelect.options[namaBarangSelect.selectedIndex];
+        const totalOptions = Array.from(namaBarangSelect.options).filter(opt => opt.value !== "").length;
+
+        if (selectedOption && selectedOption.value) {
+            const maxQty = parseInt(selectedOption.getAttribute('data-jumlah')) || 0;
+            const splitQty = parseInt(document.getElementById('split_jumlah').value) || 0;
+            const totalItemsInTT = parseInt(selectedOption.getAttribute('data-total-items') || '1');
+
+            if (splitQty > maxQty) {
+                e.preventDefault();
+                alert('Kuantitas pemecahan tidak boleh melebihi kuantitas item asal (' + maxQty + ')');
+                return false;
+            }
+
+            if (totalItemsInTT === 1 && splitQty >= maxQty && maxQty > 0) {
+                e.preventDefault();
+                alert('Kuantitas pemecahan tidak boleh sama dengan kuantitas item asal karena item ini adalah satu-satunya barang di Tanda Terima. Jika ingin memindahkan seluruh barang, gunakan fitur Stuffing Kontainer / Assign Container.');
+                return false;
+            }
+        }
+    });
 
     function validateSplitInputs() {
         const volumeInput = document.getElementById('split_volume');

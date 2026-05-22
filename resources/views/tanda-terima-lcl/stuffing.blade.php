@@ -1308,6 +1308,7 @@ function loadBarangForSplit(selectedContainers) {
                 option.dataset.jumlah = item.jumlah || '';
                 option.dataset.volume = item.meter_kubik || '';
                 option.dataset.tonase = item.tonase || '';
+                option.dataset.totalItems = item.total_items_in_tt || 1;
                 namaBarangSelect.appendChild(option);
             });
             
@@ -1454,6 +1455,19 @@ document.getElementById('splitForm').addEventListener('submit', function(e) {
     if (!itemIdValue) {
         alert('Silakan pilih barang terlebih dahulu');
         return false;
+    }
+
+    // Validate 100% split on single-item Tanda Terima
+    const namaBarangSelect = document.getElementById('split_nama_barang');
+    const selectedOption = namaBarangSelect ? namaBarangSelect.options[namaBarangSelect.selectedIndex] : null;
+    if (selectedOption && selectedOption.value) {
+        const totalItemsInTT = parseInt(selectedOption.dataset.totalItems || '1');
+        const originalJumlah = parseInt(selectedOption.dataset.jumlah || '0');
+        const splitJumlah = parseInt(document.getElementById('split_jumlah').value || '0');
+        if (totalItemsInTT === 1 && splitJumlah >= originalJumlah && originalJumlah > 0) {
+            alert('Kuantitas pemecahan tidak boleh sama dengan kuantitas item asal karena item ini adalah satu-satunya barang di Tanda Terima.\n\nJika ingin memindahkan seluruh barang, gunakan fitur Stuffing Kontainer / Assign Container.');
+            return false;
+        }
     }
     
     fetch(formUrl, {
