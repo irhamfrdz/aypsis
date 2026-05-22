@@ -7,12 +7,12 @@ use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaTanpaSuratJalan;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ManifestTableExport implements FromCollection, WithHeadings, WithMapping, WithStyles
+class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMapping, WithStyles
 {
     protected $manifests;
 
@@ -24,6 +24,11 @@ class ManifestTableExport implements FromCollection, WithHeadings, WithMapping, 
     {
         $this->manifests = $manifests;
         $this->initializeLookups();
+    }
+
+    public function startCell(): string
+    {
+        return 'A10';
     }
 
     protected function initializeLookups()
@@ -249,421 +254,431 @@ class ManifestTableExport implements FromCollection, WithHeadings, WithMapping, 
             ];
         });
 
-        // Sort data first to enable grouping
-        $sortedData = $enhancedData->sortBy([
-            [function ($item) {
-                $hasContainer = ! empty($item['no_kontainer']) && $item['no_kontainer'] != '-';
-                $hasSeal = ! empty($item['no_seal']) && $item['no_seal'] != '-';
-
-                return ($hasContainer && $hasSeal) ? 0 : 1;
-            }, 'asc'],
-            ['is_lcl', 'desc'],
-            ['no_kontainer', 'asc'],
-            ['no_seal', 'asc'],
-            ['tanggal', 'desc'],
-        ]);
-
-        $finalData = collect();
-        $grouped = $sortedData->groupBy(function ($item) {
-            return ($item['no_kontainer'] ?: 'none').'|'.($item['no_seal'] ?: 'none');
-        });
-
-        // 1. Sort items inside each group by BL number naturally
-        $grouped = $grouped->map(function ($items) {
-            return $items->sort(function ($a, $b) {
-                return strnatcasecmp($a['bl_no'] ?? '', $b['bl_no'] ?? '');
-            });
-        });
-
-        // 2. Sort groups by their first item's BL number naturally, keeping container info items first
-        $grouped = $grouped->sort(function ($groupA, $groupB) {
-            $firstA = $groupA->first();
-            $firstB = $groupB->first();
-
-            $hasInfoA = ! empty($firstA['no_kontainer']) && $firstA['no_kontainer'] != '-' &&
-                        ! empty($firstA['no_seal']) && $firstA['no_seal'] != '-';
-            $hasInfoB = ! empty($firstB['no_kontainer']) && $firstB['no_kontainer'] != '-' &&
-                        ! empty($firstB['no_seal']) && $firstB['no_seal'] != '-';
-
-            if ($hasInfoA && ! $hasInfoB) {
-                return -1;
-            }
-            if (! $hasInfoA && $hasInfoB) {
+        // Sort data: cargo last, and others sorted naturally by bl_no
+        $sortedData = $enhancedData->sort(function ($a, $b) {
+            $isCargoA = $a['is_cargo'];
+            $isCargoB = $b['is_cargo'];
+            if ($isCargoA && ! $isCargoB) {
                 return 1;
             }
+            if (! $isCargoA && $isCargoB) {
+                return -1;
+            }
 
-            return strnatcasecmp($firstA['bl_no'] ?? '', $firstB['bl_no'] ?? '');
+            return strnatcasecmp($a['bl_no'] ?? '', $b['bl_no'] ?? '');
         });
 
+        // Group by bl_no (with unique fallback for empty values to prevent merging)
+        $grouped = $sortedData->groupBy(function ($item) {
+            return $item['bl_no'] ?: ('empty_'.$item['model']->id);
+        });
+
+        $finalData = collect();
         $groupCounter = 1;
+
         foreach ($grouped as $key => $items) {
             $firstItem = $items->first();
-            $hasInfo = ! empty($firstItem['no_kontainer']) && $firstItem['no_kontainer'] != '-' &&
-                       ! empty($firstItem['no_seal']) && $firstItem['no_seal'] != '-';
+            $hasInfo = ! empty($firstItem['no_kontainer']) && $firstItem['no_kontainer'] != '-';
 
-            if ($hasInfo) {
-                $isStandard = ! $firstItem['is_lcl'];
-
-                if (! $isStandard) {
-                    // Add Header Row for the Group (Non-Standard like LCL)
-                    $finalData->push([
-                        'type' => 'header',
-                        'no_kontainer' => $firstItem['no_kontainer'],
-                        'no_seal' => $firstItem['no_seal'],
-                        'size' => $firstItem['size'],
-                        'tujuan' => $firstItem['tujuan'],
-                    ]);
-                }
-
-                // Add Item Rows
-                foreach ($items as $idx => $item) {
-                    $number = sprintf('%02d', $groupCounter);
-                    if ($idx > 0) {
-                        $number .= chr(96 + $idx); // 1 -> a, 2 -> b, etc.
-                    }
-
-                    $perincian = $item['perincian_items'] ?? [];
-                    if (empty($perincian)) {
-                        $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
-                    }
-
-                    // Special case for Standard: condense all items into 1 row
-                    if (! $item['is_lcl'] && count($perincian) > 1) {
-                        $pItem = [
-                            'qty' => implode("\n", array_column($perincian, 'qty')),
-                            'satuan' => implode("\n", array_column($perincian, 'satuan')),
-                            'nama' => implode("\n", array_column($perincian, 'nama')),
-                            'weight' => implode("\n", array_column($perincian, 'weight')),
-                            'meass' => implode("\n", array_column($perincian, 'meass')),
-                        ];
-                        $perincian = [$pItem];
-                    }
-
-                    foreach ($perincian as $pIdx => $pItem) {
-                        $row = $item;
-                        $row['type'] = 'item';
-                        $row['display_number'] = ($pIdx === 0) ? $number : '';
-
-                        // If Standard, we inject the container header info into the first perincian row
-                        if (! $item['is_lcl'] && $pIdx === 0) {
-                            $row['is_combined_standard'] = true;
-                        }
-
-                        // Clear some fields for additional perincian rows to keep it clean
-                        if ($pIdx > 0) {
-                            $row['tanggal'] = null;
-                            $row['no_tt'] = '';
-                            $row['no_sj_pabrik'] = '';
-                            $row['pengirim'] = '';
-                            $row['penerima'] = '';
-                            $row['tujuan'] = '';
-                            $row['keterangan'] = '';
-                            $row['bl_no'] = '';
-                        }
-
-                        $row['p_qty'] = $pItem['qty'];
-                        $row['p_satuan'] = $pItem['satuan'];
-                        $row['p_nama'] = $pItem['nama'];
-                        $row['p_weight'] = $pItem['weight'];
-                        $row['p_meass'] = $pItem['meass'];
-                        $finalData->push($row);
-                    }
-                }
+            $groupNumber = '';
+            if ($hasInfo && ! $firstItem['is_cargo']) {
+                $groupNumber = sprintf('%02d', $groupCounter);
                 $groupCounter++;
-            } else {
-                // For items without container/seal info (e.g. Cargo), just add them normally
-                foreach ($items as $item) {
-                    $perincian = $item['perincian_items'] ?? [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
+            }
 
-                    if (! $item['is_lcl'] && count($perincian) > 1) {
-                        $pItem = [
-                            'qty' => implode("\n", array_column($perincian, 'qty')),
-                            'satuan' => implode("\n", array_column($perincian, 'satuan')),
-                            'nama' => implode("\n", array_column($perincian, 'nama')),
-                            'weight' => implode("\n", array_column($perincian, 'weight')),
-                            'meass' => implode("\n", array_column($perincian, 'meass')),
-                        ];
-                        $perincian = [$pItem];
+            $itemsCount = count($items);
+            foreach ($items as $idx => $item) {
+                $perincian = $item['perincian_items'] ?? [];
+                if (empty($perincian)) {
+                    $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
+                }
+
+                // Condense perincian details into 1 row for FCL
+                if (! $item['is_lcl'] && count($perincian) > 1) {
+                    $pItem = [
+                        'qty' => implode("\n", array_column($perincian, 'qty')),
+                        'satuan' => implode("\n", array_column($perincian, 'satuan')),
+                        'nama' => implode("\n", array_column($perincian, 'nama')),
+                        'weight' => implode("\n", array_column($perincian, 'weight')),
+                        'meass' => implode("\n", array_column($perincian, 'meass')),
+                    ];
+                    $perincian = [$pItem];
+                }
+
+                foreach ($perincian as $pIdx => $pItem) {
+                    $row = $item;
+                    $row['type'] = 'item';
+
+                    // Group-level details are only written on the first row of the group
+                    $isFirstOfGroup = ($idx === 0 && $pIdx === 0);
+                    if ($isFirstOfGroup) {
+                        $row['group_number'] = $groupNumber;
+                        $row['show_group_fields'] = true;
+                        $row['group_count'] = $itemsCount;
+                    } else {
+                        $row['group_number'] = '';
+                        $row['show_group_fields'] = false;
+                        $row['group_count'] = null;
                     }
 
-                    foreach ($perincian as $pIdx => $pItem) {
-                        $row = $item;
-                        $row['type'] = 'item';
-                        $row['display_number'] = '';
+                    $row['p_qty'] = $pItem['qty'];
+                    $row['p_satuan'] = $pItem['satuan'];
+                    $row['p_nama'] = $pItem['nama'];
+                    $row['p_weight'] = $pItem['weight'];
+                    $row['p_meass'] = $pItem['meass'];
 
-                        if ($pIdx > 0) {
-                            $row['tanggal'] = null;
-                            $row['no_tt'] = '';
-                            $row['no_sj_pabrik'] = '';
-                            $row['pengirim'] = '';
-                            $row['penerima'] = '';
-                            $row['tujuan'] = '';
-                            $row['keterangan'] = '';
-                            $row['bl_no'] = '';
-                        }
-
-                        $row['p_qty'] = $pItem['qty'];
-                        $row['p_satuan'] = $pItem['satuan'];
-                        $row['p_nama'] = $pItem['nama'];
-                        $row['p_weight'] = $pItem['weight'];
-                        $row['p_meass'] = $pItem['meass'];
-                        $finalData->push($row);
-                    }
+                    $finalData->push($row);
                 }
             }
         }
+
+        // Add Grand Total row
+        $lastDataRow = 9 + $finalData->count();
+        $sizes = $this->manifests->pluck('size_kontainer')->filter()->unique();
+        $sizeStr = $sizes->implode(' & ');
+        $containerText = 'Container '.($sizeStr ?: '20').' feet';
+
+        $finalData->push([
+            'type' => 'total',
+            'qty_formula' => "=SUM(F10:F{$lastDataRow})",
+            'container_text' => $containerText,
+            'weight_formula' => "=SUM(O10:O{$lastDataRow})",
+            'volume_formula' => "=SUM(P10:P{$lastDataRow})",
+        ]);
+
+        // Add Signatures rows
+        $firstManifest = $this->manifests->first();
+        $pelabuhanAsal = strtoupper($firstManifest->pelabuhan_asal ?: 'SUNDA KELAPA');
+        Carbon::setLocale('id');
+        $dateStr = $firstManifest && $firstManifest->tanggal_berangkat
+            ? strtoupper(Carbon::parse($firstManifest->tanggal_berangkat)->translatedFormat('d F Y'))
+            : strtoupper(Carbon::now()->translatedFormat('d F Y'));
+
+        $finalData->push([
+            'type' => 'signature',
+            'value' => "{$pelabuhanAsal}, {$dateStr}",
+        ]);
+        $finalData->push([
+            'type' => 'signature',
+            'value' => 'PT. ALEXINDO YAKIN PRIMA',
+        ]);
+        for ($i = 0; $i < 5; $i++) {
+            $finalData->push([
+                'type' => 'signature',
+                'value' => '',
+            ]);
+        }
+        $finalData->push([
+            'type' => 'signature',
+            'value' => '( S U G E N G   R I A D I )',
+        ]);
 
         return $finalData;
     }
 
-    public function headings(): array
-    {
-        return [
-            'TANGGAL',
-            'NO. TANDA TERIMA / SJ',
-            'B/L NO',
-            'HS CODE',
-            'MARK AND NUMBERS',
-            'SEAL NO',
-            'DESCRIPTION OF GOODS MANIFEST',
-            '',
-            '',
-            '',
-            '',
-            '',
-            'Qty',
-            'Satuan',
-            'Nama Barang',
-            'Weight',
-            'Meass',
-            'Size',
-            'SHIPPER',
-            'Shipper Address',
-            'CONSIGNEE',
-            'Consignee Address',
-            'NPWP',
-            'Contact Person',
-            'Document PPFTZ',
-            'TERM',
-            'Tujuan',
-            'Keterangan',
-        ];
-    }
-
     public function map($row): array
     {
-        $formattedDate = ! empty($row['tanggal']) ? (is_string($row['tanggal']) ? Carbon::parse($row['tanggal'])->format('d/m/Y') : $row['tanggal']->format('d/m/Y')) : '';
+        if ($row['type'] === 'signature') {
+            $arr = array_fill(0, 33, '');
+            $arr[22] = $row['value']; // Column W
 
-        if ($row['type'] === 'header') {
-            return [
-                '', // A: TANGGAL
-                '', // B: NO. TANDA TERIMA / SJ
-                '', // C: B/L NO
-                '', // D: HS CODE
-                $row['no_kontainer'], // E: MARK AND NUMBERS
-                $row['no_seal'], // F: SEAL NO
-                '1', // G: Qty
-                'Unit', // H: Satuan
-                'Container '.($row['size'] ?: '-').' feet stc :', // I: Desc
-                '', // J
-                '', // K
-                'General cargo', // L: Activity
-                '', // M: Qty
-                '', // N: Satuan
-                '', // O: Nama Barang
-                '', // P: Weight
-                '', // Q: Meass
-                $row['size'], // R: Size
-                '', // S: SHIPPER
-                '', // T: Shipper Address
-                '', // U: CONSIGNEE
-                '', // V: Address
-                '', // W: NPWP
-                '', // X: Contact Person
-                '', // Y: Document PPFTZ
-                '', // Z: TERM
-                $row['tujuan'], // AA
-                '',  // AB: Keterangan
-            ];
+            return $arr;
         }
 
-        // Item row
-        $data = [
-            $formattedDate, // A: TANGGAL
-            $row['no_tt'], // B: NO. TANDA TERIMA / SJ
-            $row['bl_no'], // C: B/L NO
-            '', // D: HS CODE
-            '', // E: MARK AND NUMBERS
-            '', // F: SEAL NO
-            '', // G: Qty
-            '', // H: Satuan
-            '', // I: Desc
-            '', // J
-            '', // K
-            '', // L: Activity
-            $row['p_qty'] ?? '', // M: Qty
-            $row['p_satuan'] ?? '', // N: Satuan
-            $row['p_nama'] ?? '', // O: Nama Barang
-            $row['p_weight'] ?? '', // P: Weight
-            $row['p_meass'] ?? '', // Q: Meass
-            $row['size'], // R: Size
-            $row['pengirim'], // S: SHIPPER
-            $row['s_address'] ?? '-', // T: Shipper Address
-            $row['penerima'], // U: CONSIGNEE
-            $row['p_address'] ?? '-', // V: Address
-            $row['p_npwp'] ?? '-', // W: NPWP
-            $row['p_cp'] ?? '-', // X: Contact Person
-            $row['ppftz'] ?? '-', // Y: Document PPFTZ
-            $row['term'] ?? '-', // Z: TERM
-            $row['tujuan'], // AA: Tujuan
-            $row['keterangan'], // AB: Keterangan
+        if ($row['type'] === 'total') {
+            $arr = array_fill(0, 33, '');
+            $arr[3] = 'Grand Total….'; // Column D
+            $arr[5] = $row['qty_formula']; // Column F
+            $arr[6] = 'Unit'; // Column G
+            $arr[7] = $row['container_text']; // Column H
+            $arr[14] = $row['weight_formula']; // Column O
+            $arr[15] = $row['volume_formula']; // Column P
+
+            return $arr;
+        }
+
+        $formattedDate = ! empty($row['tanggal'])
+            ? (is_string($row['tanggal']) ? Carbon::parse($row['tanggal'])->format('d/m/Y') : $row['tanggal']->format('d/m/Y'))
+            : '';
+
+        $noKontainer = $row['no_kontainer'];
+        $noSeal = $row['no_seal'];
+        $size = $row['size'] ?: '20';
+
+        $isCargo = $row['is_cargo'];
+        $containerQty = $isCargo ? '' : 1;
+        $containerUnit = $isCargo ? '' : 'Unit';
+        $containerDesc = $isCargo ? '' : "Container {$size} feet stc :";
+
+        $blNo = '';
+        $shipperName = '';
+        $shipperAddress = '';
+        $shipperNpwp = '';
+        $consigneeName = '';
+        $consigneeAddress = '';
+        $consigneeNpwp = '';
+        $notifyName = '';
+        $notifyAddress = '';
+        $notifyNpwp = '';
+        $deliveryAddress = '';
+        $groupCount = '';
+        $groupUnit = '';
+        $groupDesc = '';
+
+        if (! empty($row['show_group_fields'])) {
+            $blNo = $row['group_number'];
+            $shipperName = $row['pengirim'];
+            $shipperAddress = $row['s_address'];
+
+            $sLookup = $this->penerimaLookup[strtoupper(trim($row['pengirim']))] ?? null;
+            $shipperNpwp = $sLookup['npwp'] ?? '-';
+
+            $consigneeNpwp = $row['p_npwp'];
+            $consigneeName = $row['penerima'];
+            $consigneeAddress = $row['p_address'];
+
+            $notifyName = $row['model']->notify_party ?: $row['penerima'];
+            $nName = strtoupper(trim($notifyName));
+            $nLookup = $this->penerimaLookup[$nName] ?? null;
+            $notifyAddress = $row['model']->alamat_notify_party ?: ($nLookup['address'] ?? $row['p_address']);
+            $notifyNpwp = $nLookup['npwp'] ?? $consigneeNpwp;
+
+            $deliveryAddress = trim($consigneeName).'    '.trim($consigneeAddress);
+            if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {
+                $deliveryAddress .= ' Telp.'.$row['p_cp'];
+            }
+
+            $groupCount = $row['group_count'];
+            $groupUnit = 'Unit';
+            $groupDesc = "Container {$size} feet / FCL  (Kantor)";
+        }
+
+        return [
+            '', // A: Spacer
+            $blNo, // B: B/L NO.
+            '', // C: HS CODE
+            $noKontainer, // D: MARK AND NUMBERS
+            $noSeal, // E: SEAL NO.
+            $containerQty, // F: Container Qty (1)
+            $containerUnit, // G: Container Satuan ('Unit')
+            $containerDesc, // H: Container Description
+            $row['p_qty'], // I: Manifest Qty
+            $row['p_satuan'], // J: Manifest Satuan
+            $row['p_nama'], // K: Manifest Description of goods
+            $row['p_qty'], // L: Perincian Qty
+            $row['p_satuan'], // M: Perincian Satuan
+            $row['p_nama'], // N: Perincian Description of goods
+            $row['p_weight'], // O: Weight
+            $row['p_meass'], // P: Meass
+            $shipperName, // Q: SHIPPER
+            $shipperAddress, // R: ADDRESS (Shipper Address)
+            $shipperNpwp, // S: NPWP SHIPPER
+            $consigneeName, // T: CONSIGNEE
+            $consigneeAddress, // U: ADDRESS (Consignee Address)
+            $consigneeNpwp, // V: NPWP CONSIGNEE
+            $notifyName, // W: NOTIFY PARTY
+            $notifyAddress, // X: ADDRESS (Notify Party Address)
+            $notifyNpwp, // Y: NPWP NOTIFY PARTY
+            $deliveryAddress, // Z: DELIVERY ADDRESS & CONTACT PERSON
+            $row['ppftz'] === '-' ? 'AYP' : $row['ppftz'], // AA: DOCUMENT PPFTZ-03
+            $row['term'] ?: '-', // AB: CONDITION (Term)
+            $row['no_tt'] ?: '-', // AC: RECEIPT SIGNS (NUMBER)
+            $formattedDate ?: '-', // AD: RECEIPT SIGNS (DATE)
+            $groupCount, // AE: Qty Perhitungan
+            $groupUnit, // AF: Unit Perhitungan
+            $groupDesc, // AG: Container breakdown description
         ];
-
-        // If it's a combined standard row, inject the container header values
-        if (! empty($row['is_combined_standard'])) {
-            $data[4] = $row['no_kontainer']; // E: MARK AND NUMBERS
-            $data[5] = $row['no_seal']; // F: SEAL NO
-            $data[6] = '1'; // G: Qty
-            $data[7] = 'Unit'; // H: Satuan
-            $data[8] = 'Container '.($row['size'] ?: '-').' feet stc :'; // I: Desc
-            $data[11] = 'General cargo'; // L: Activity
-        }
-
-        return $data;
     }
 
     public function styles(Worksheet $sheet)
     {
-        // Set explicit widths to prevent "too large" columns
+        $sheet->setShowGridlines(true);
+
+        // Column widths
         $widths = [
-            'A' => 15, // Tanggal
-            'B' => 25, // No. TT / SJ
-            'C' => 15, 'D' => 15, 'E' => 20, 'F' => 20,
-            'G' => 8,  'H' => 10, 'I' => 20, 'J' => 8,  'K' => 8,  'L' => 15,
-            'M' => 10, 'N' => 12, 'O' => 40, 'P' => 12, 'Q' => 12, // Perincian
-            'R' => 10, 'S' => 25, 'T' => 35, 'U' => 25, // Size, Shipper, Shipper Address, Consignee
-            'V' => 40, 'W' => 20, 'X' => 20, 'Y' => 20, 'Z' => 15, // Consignee Address, NPWP, CP, PPFTZ, TERM
-            'AA' => 25, 'AB' => 30, // Tujuan, Keterangan
+            'A' => 2.57, 'B' => 5.71, 'C' => 10, 'D' => 16.71, 'E' => 10.71,
+            'F' => 9.71, 'G' => 8.71, 'H' => 25.71, 'I' => 9.71, 'J' => 8.71,
+            'K' => 80.71, 'L' => 9.71, 'M' => 8.71, 'N' => 80.71, 'O' => 16.14,
+            'P' => 14.71, 'Q' => 26.71, 'R' => 26.71, 'S' => 20.57, 'T' => 26.71,
+            'U' => 26.71, 'V' => 20.57, 'W' => 26.71, 'X' => 26.71, 'Y' => 20.57,
+            'Z' => 26.71, 'AA' => 15.29, 'AB' => 15.14, 'AC' => 13.57, 'AD' => 18.71,
+            'AE' => 14.71, 'AF' => 5.14, 'AG' => 33.14,
         ];
         foreach ($widths as $col => $width) {
             $sheet->getColumnDimension($col)->setWidth($width);
         }
 
-        // Add one more row at the top for the "PERINCIAN" and "MANIFEST" headers
-        $sheet->insertNewRowBefore(1, 1);
-
-        // --- Row 1 & 2: Set Values and Merges ---
-        $headerValues = [
-            'A' => 'TANGGAL',
-            'B' => 'NO. TANDA TERIMA / SJ',
-            'C' => 'B/L NO',
-            'D' => 'HS CODE',
-            'E' => 'MARK AND NUMBERS',
-            'F' => 'SEAL NO',
-            'G' => 'MANIFEST', // Main header for manifest
-            'M' => 'PERINCIAN', // Main header for perincian
-            'R' => 'Size',
-            'S' => 'SHIPPER',
-            'T' => 'Shipper Address',
-            'U' => 'CONSIGNEE',
-            'V' => 'Consignee Address',
-            'W' => 'NPWP',
-            'X' => 'Contact Person',
-            'Y' => 'Document PPFTZ',
-            'Z' => 'TERM',
-            'AA' => 'Tujuan',
-            'AB' => 'Keterangan',
+        // Row heights
+        $rowHeights = [
+            1 => 27.75, 2 => 15, 3 => 27.75, 4 => 18, 5 => 18,
+            6 => 18, 7 => 15, 8 => 15, 9 => 25.5,
         ];
-
-        foreach ($headerValues as $col => $val) {
-            $sheet->setCellValue("{$col}1", $val);
-            if (! in_array($col, ['G', 'M'])) {
-                $sheet->mergeCells("{$col}1:{$col}2");
-            }
+        foreach ($rowHeights as $r => $height) {
+            $sheet->getRowDimension($r)->setRowHeight($height);
         }
 
-        // Merges for the main headers
-        $sheet->mergeCells('G1:L1');
-        $sheet->mergeCells('M1:Q1');
+        // Row 1 & 2 left headers
+        $sheet->setCellValue('B1', 'PT. ALEXINDO YAKIN PRIMA');
+        $sheet->setCellValue('B2', 'Perusahaan Pelayaran Nasional');
 
-        // Row 2 Sub-headers
-        $sheet->setCellValue('G2', 'Qty');
-        $sheet->setCellValue('H2', 'Satuan');
-        $sheet->setCellValue('I2', 'DESCRIPTION OF GOODS MANIFEST');
-        $sheet->mergeCells('I2:L2');
+        $sheet->getStyle('B1')->getFont()->setName('Arial')->setSize(11)->setBold(true);
+        $sheet->getStyle('B2')->getFont()->setName('Arial')->setSize(11)->setBold(false);
 
-        $sheet->setCellValue('M2', 'Qty');
-        $sheet->setCellValue('N2', 'Satuan');
-        $sheet->setCellValue('O2', 'Nama Barang');
-        $sheet->setCellValue('P2', 'Weight');
-        $sheet->setCellValue('Q2', 'Meass');
+        // Row 3: Merged Title
+        $sheet->setCellValue('B3', 'M A N I F E S T    O F    C A R G O');
+        $sheet->mergeCells('B3:AG3');
+        $sheet->getStyle('B3')->getFont()->setName('Arial')->setSize(14)->setBold(true);
+        $sheet->getStyle('B3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
 
-        // --- Apply Styles ---
+        // Vessel, Voyage, Date info
+        $firstManifest = $this->manifests->first();
+        $vesselName = strtoupper($firstManifest->nama_kapal ?? '');
+        $voyage = $firstManifest->no_voyage ?? '';
 
-        // Standard Headers (Light Gray)
-        $sheet->getStyle('A1:F2')->applyFromArray($this->getStandardHeaderStyle());
-        $sheet->getStyle('R1:U2')->applyFromArray($this->getStandardHeaderStyle()); // Size to Consignee
-        $sheet->getStyle('V1:Z2')->applyFromArray($this->getStandardHeaderStyle()); // New columns
-        $sheet->getStyle('AA1:AB2')->applyFromArray($this->getStandardHeaderStyle()); // End columns
+        Carbon::setLocale('id');
+        $dateStr = $firstManifest && $firstManifest->tanggal_berangkat
+            ? strtoupper(Carbon::parse($firstManifest->tanggal_berangkat)->translatedFormat('d F Y'))
+            : strtoupper(Carbon::now()->translatedFormat('d F Y'));
 
-        // Manifest Section (Light Green)
-        $sheet->getStyle('G1:L2')->applyFromArray([
-            'font' => ['bold' => true, 'size' => 11],
-            'alignment' => [
-                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-            ],
-            'fill' => [
-                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '92D050'],
-            ],
-        ]);
+        $sheet->setCellValue('Q4', 'NAMA KAPAL : '.$vesselName);
+        $sheet->setCellValue('Q5', 'VOY : '.$voyage);
+        $sheet->setCellValue('Q6', 'TANGGAL : '.$dateStr);
 
-        // Perincian Section (Cyan/Blue)
-        $sheet->getStyle('M1:Q2')->applyFromArray([
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
-            'alignment' => [
-                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-            ],
-            'fill' => [
-                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '00B0F0'],
-            ],
-        ]);
+        $sheet->getStyle('Q4:Q6')->getFont()->setName('Arial')->setSize(11)->setBold(true);
 
-        // General styling for all headers (Row 1 & 2)
-        $sheet->getStyle('A1:AB2')->getFont()->setBold(true);
-        $sheet->getStyle('A1:AB2')->getAlignment()->setWrapText(true);
+        // Row 7 Headers
+        $sheet->setCellValue('I7', 'MANIFEST');
+        $sheet->mergeCells('I7:K7');
+        $sheet->setCellValue('L7', 'PERINCIAN');
+        $sheet->mergeCells('L7:N7');
 
-        // Add borders to all active cells
-        $lastRow = $sheet->getHighestRow();
-        $range = 'A1:AB'.$lastRow;
-        $sheet->getStyle($range)->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle('I7')->getFont()->setName('Arial')->setSize(11)->setBold(true);
+        $sheet->getStyle('I7')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('I7')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FF92D050');
 
-        // Style for content data
-        return [
-            'A:AB' => [
-                'alignment' => [
-                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP,
-                    'wrapText' => true,
-                ],
-            ],
+        $sheet->getStyle('L7')->getFont()->setName('Arial')->setSize(11)->setBold(true);
+        $sheet->getStyle('L7')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('L7')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FF00B0F0');
+
+        // Row 8 & 9 Headers
+        $headers = [
+            'B8' => 'B/L NO.',
+            'C8' => 'HS CODE',
+            'D8' => 'MARK AND NUMBERS',
+            'E8' => 'SEAL NO.',
+            'F8' => 'DESCRIPTION OF GOODS',
+            'L8' => 'DESCRIPTION OF GOODS',
+            'O8' => 'WEIGHT',
+            'P8' => 'MEASS',
+            'Q8' => 'SHIPPER',
+            'R8' => 'ADDRESS',
+            'S8' => "NO. IDENTITAS \n(NPWP  SHIPPER)",
+            'T8' => 'CONSIGNEE',
+            'U8' => 'ADDRESS',
+            'V8' => "NO. IDENTITAS \n(NPWP  CONSIGNEE)",
+            'W8' => "NOTIFY PARTY\n(CONSIGNEE)",
+            'X8' => 'ADDRESS',
+            'Y8' => "NO. IDENTITAS \n(NPWP  NOTIFY PARTY CONSIGNEE)",
+            'Z8' => 'DELIVERY ADDRESS & CONTACT PERSON',
+            'AA8' => 'DOCUMENT PPFTZ-03',
+            'AB8' => 'CONDITION',
+            'AC8' => 'RECEIPT SIGNS & ROAD LETTERS',
+            'AE8' => "K E T E R A N G A N\nPERHITUNGAN M3 / KGS",
         ];
-    }
 
-    protected function getStandardHeaderStyle()
-    {
-        return [
-            'font' => ['bold' => true, 'size' => 11],
-            'alignment' => [
-                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-            ],
-            'fill' => [
-                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => ['rgb' => 'D9D9D9'], // Light Gray
-            ],
+        foreach ($headers as $cell => $text) {
+            $sheet->setCellValue($cell, $text);
+        }
+
+        $sheet->setCellValue('AC9', 'NUMBER');
+        $sheet->setCellValue('AD9', 'DATE');
+
+        $merges = [
+            'B8:B9', 'C8:C9', 'D8:D9', 'E8:E9',
+            'F8:K9', 'L8:N9', 'O8:O9', 'P8:P9',
+            'Q8:Q9', 'R8:R9', 'S8:S9', 'T8:T9', 'U8:U9', 'V8:V9',
+            'W8:W9', 'X8:X9', 'Y8:Y9', 'Z8:Z9',
+            'AA8:AA9', 'AB8:AB9', 'AC8:AD8', 'AE8:AG9',
         ];
+        foreach ($merges as $m) {
+            $sheet->mergeCells($m);
+        }
+
+        $sheet->getStyle('B8:AG9')->getFont()->setName('Arial')->setSize(11)->setBold(true);
+        $sheet->getStyle('B8:AG9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+            ->setWrapText(true);
+
+        foreach (['E8', 'AA8', 'AC8', 'AD8', 'AC9', 'AD9'] as $c) {
+            $sheet->getStyle($c)->getFont()->setSize(10);
+        }
+
+        $fills = [
+            'F8:K9' => 'FF92D050',
+            'L8:N9' => 'FF00B0F0',
+            'Q8:Q9' => 'FFFF0000',
+            'T8:T9' => 'FF92D050',
+            'W8:W9' => 'FFFFC000',
+        ];
+        foreach ($fills as $range => $color) {
+            $sheet->getStyle($range)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setARGB($color);
+        }
+
+        // Borders for headers
+        $sheet->getStyle('B7:AG9')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
+        // Find ranges dynamically
+        $highestRow = $sheet->getHighestRow();
+        $totalRowIndex = 10;
+        for ($r = 10; $r <= $highestRow; $r++) {
+            if ($sheet->getCell("D{$r}")->getValue() === 'Grand Total….') {
+                $totalRowIndex = $r;
+                break;
+            }
+        }
+        $lastDataRow = $totalRowIndex - 1;
+
+        // Style data cells
+        $sheet->getStyle("B10:AG{$lastDataRow}")->getFont()->setName('Arial')->setSize(10)->setBold(false);
+        $sheet->getStyle("B10:AG{$lastDataRow}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle("B10:AG{$lastDataRow}")->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+            ->setWrapText(true);
+
+        $centerCols = ['C', 'S', 'V', 'Y', 'AA', 'AB'];
+        foreach ($centerCols as $col) {
+            $sheet->getStyle("{$col}10:{$col}{$lastDataRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        }
+        $sheet->getStyle("AA10:AA{$lastDataRow}")->getFont()->setBold(true);
+
+        // Style Total Row
+        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getBorders()->getRight()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
+
+        foreach (['O', 'P'] as $col) {
+            $sheet->getStyle("{$col}{$totalRowIndex}")->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
+            $sheet->getStyle("{$col}{$totalRowIndex}")->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
+        }
+
+        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getFont()->setName('Arial')->setSize(10);
+        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        $sheet->getStyle("D{$totalRowIndex}")->getFont()->setBold(true);
+        $sheet->getStyle("O{$totalRowIndex}")->getFont()->setBold(true);
+        $sheet->getStyle("P{$totalRowIndex}")->getFont()->setBold(true);
+
+        // Style Signature Rows
+        $sigStart = $totalRowIndex + 1;
+        $sheet->getStyle("B{$sigStart}:AG{$highestRow}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
+
+        for ($r = $sigStart; $r <= $highestRow; $r++) {
+            $sheet->getStyle("W{$r}")->getFont()->setName('Arial')->setSize(10)->setBold(true);
+        }
+
+        return [];
     }
 }
