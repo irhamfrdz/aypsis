@@ -60,8 +60,9 @@ class ReportTandaTerimaJakartaController extends Controller
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
         $status = $request->get('status', 'semua');
+        $tujuan = $request->get('tujuan', 'semua');
 
-        return Excel::download(new ReportTandaTerimaJakartaExport($startDate, $endDate, $status), 'report-tanda-terima-jakarta-'.$startDate.'-to-'.$endDate.'.xlsx');
+        return Excel::download(new ReportTandaTerimaJakartaExport($startDate, $endDate, $status, $tujuan), 'report-tanda-terima-jakarta-'.$startDate.'-to-'.$endDate.'.xlsx');
     }
 
     private function getAggregatedData($startDate, $endDate)

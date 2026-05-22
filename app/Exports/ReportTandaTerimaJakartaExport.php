@@ -19,15 +19,18 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
 
     protected $status;
 
+    protected $tujuan;
+
     protected $penerimaLookup = [];
 
     protected $termLookup = [];
 
-    public function __construct($startDate, $endDate, $status = 'semua')
+    public function __construct($startDate, $endDate, $status = 'semua', $tujuan = 'semua')
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->status = $status;
+        $this->tujuan = $tujuan;
         $this->initializeLookups();
     }
 
@@ -257,6 +260,21 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithHeadings, Wi
             $enhancedData = $enhancedData->where('naik_kapal', false);
         } elseif ($this->status === 'sudah') {
             $enhancedData = $enhancedData->where('naik_kapal', true);
+        }
+
+        // Filter based on tujuan (destination)
+        if ($this->tujuan === 'batam') {
+            $enhancedData = $enhancedData->filter(function ($item) {
+                $tuj = strtolower($item['tujuan'] ?? '');
+
+                return str_contains($tuj, 'batam');
+            });
+        } elseif ($this->tujuan === 'tanjungpinang') {
+            $enhancedData = $enhancedData->filter(function ($item) {
+                $tuj = strtolower($item['tujuan'] ?? '');
+
+                return str_contains($tuj, 'tanjung pinang') || str_contains($tuj, 'tanjungpinang');
+            });
         }
 
         // Sort data first to enable grouping

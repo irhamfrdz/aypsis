@@ -14,7 +14,7 @@
                 </svg>
                 Change Filter
             </a>
-            <a id="export-excel-link" href="{{ route('report.tanda-terima-jakarta.export', ['start_date' => $startDate, 'end_date' => $endDate, 'status' => 'semua']) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+            <a id="export-excel-link" href="{{ route('report.tanda-terima-jakarta.export', ['start_date' => $startDate, 'end_date' => $endDate, 'status' => 'semua', 'tujuan' => 'semua']) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
@@ -44,7 +44,7 @@
             <div class="text-2xl font-bold text-orange-600">{{ $counts->get('LCL', 0) }}</div>
         </div>
         {{-- Clickable stat card → langsung filter Sudah Naik Kapal --}}
-        <div onclick="applyFilter('sudah')"
+        <div onclick="applyStatusFilter('sudah')"
              class="bg-emerald-50 p-6 rounded-xl shadow-sm border border-emerald-200 cursor-pointer hover:bg-emerald-100 hover:shadow-md transition-all group">
             <div class="flex items-center gap-2 mb-1">
                 <i class="fas fa-ship text-emerald-500 text-xs group-hover:scale-110 transition-transform"></i>
@@ -54,7 +54,7 @@
             <div class="text-[10px] text-emerald-500 mt-1">Klik untuk filter →</div>
         </div>
         {{-- Clickable stat card → langsung filter Belum Naik Kapal --}}
-        <div onclick="applyFilter('belum')"
+        <div onclick="applyStatusFilter('belum')"
              class="bg-amber-50 p-6 rounded-xl shadow-sm border border-amber-200 cursor-pointer hover:bg-amber-100 hover:shadow-md transition-all group">
             <div class="flex items-center gap-2 mb-1">
                 <i class="fas fa-clock text-amber-500 text-xs group-hover:scale-110 transition-transform"></i>
@@ -67,30 +67,55 @@
 
     <!-- Filter Bar -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-3 mb-4 flex flex-wrap items-center gap-3">
-        <span class="text-sm font-semibold text-gray-600 mr-1">
-            <i class="fas fa-filter text-gray-400 mr-1"></i>Filter Status:
-        </span>
+        <div class="flex flex-wrap items-center gap-3">
+            <span class="text-sm font-semibold text-gray-600 mr-1">
+                <i class="fas fa-filter text-gray-400 mr-1"></i>Filter Status:
+            </span>
 
-        <button id="filter-semua" onclick="applyFilter('semua')"
-            class="filter-btn active-filter inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all border-gray-300 bg-gray-100 text-gray-700 hover:border-gray-400">
-            <i class="fas fa-list text-xs"></i>
-            Semua
-            <span class="ml-1 bg-gray-300 text-gray-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $totalData }}</span>
-        </button>
+            <button id="filter-semua" onclick="applyStatusFilter('semua')"
+                class="filter-btn active-filter inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all border-gray-300 bg-gray-100 text-gray-700 hover:border-gray-400">
+                <i class="fas fa-list text-xs"></i>
+                Semua
+                <span class="ml-1 bg-gray-300 text-gray-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $totalData }}</span>
+            </button>
 
-        <button id="filter-sudah" onclick="applyFilter('sudah')"
-            class="filter-btn inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 hover:border-emerald-400">
-            <i class="fas fa-ship text-xs"></i>
-            Sudah Naik Kapal
-            <span class="ml-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $sudahNaikKapal }}</span>
-        </button>
+            <button id="filter-sudah" onclick="applyStatusFilter('sudah')"
+                class="filter-btn inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 hover:border-emerald-400">
+                <i class="fas fa-ship text-xs"></i>
+                Sudah Naik Kapal
+                <span class="ml-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $sudahNaikKapal }}</span>
+            </button>
 
-        <button id="filter-belum" onclick="applyFilter('belum')"
-            class="filter-btn inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all border-amber-200 bg-white text-amber-700 hover:bg-amber-50 hover:border-amber-400">
-            <i class="fas fa-clock text-xs"></i>
-            Belum Naik Kapal
-            <span class="ml-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $belumNaikKapal }}</span>
-        </button>
+            <button id="filter-belum" onclick="applyStatusFilter('belum')"
+                class="filter-btn inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all border-amber-200 bg-white text-amber-700 hover:bg-amber-50 hover:border-amber-400">
+                <i class="fas fa-clock text-xs"></i>
+                Belum Naik Kapal
+                <span class="ml-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ $belumNaikKapal }}</span>
+            </button>
+        </div>
+
+        <div class="hidden lg:block w-px h-6 bg-gray-200 mx-2"></div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <span class="text-sm font-semibold text-gray-600 mr-1">
+                Tujuan:
+            </span>
+
+            <button id="filter-tujuan-semua" onclick="applyTujuanFilter('semua')"
+                class="filter-tujuan-btn active-filter inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all border-gray-300 bg-gray-100 text-gray-700 hover:border-gray-400">
+                Semua
+            </button>
+
+            <button id="filter-tujuan-batam" onclick="applyTujuanFilter('batam')"
+                class="filter-tujuan-btn inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all border-blue-200 bg-white text-blue-700 hover:bg-blue-50 hover:border-blue-400">
+                Batam
+            </button>
+
+            <button id="filter-tujuan-tanjungpinang" onclick="applyTujuanFilter('tanjungpinang')"
+                class="filter-tujuan-btn inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:border-purple-400">
+                Tanjung Pinang
+            </button>
+        </div>
 
         <div class="ml-auto text-xs text-gray-400 italic" id="filter-info">
             Menampilkan <span id="visible-count" class="font-semibold text-gray-600">{{ $totalData }}</span> dari {{ $totalData }} data
@@ -118,7 +143,8 @@
                 <tbody class="divide-y divide-gray-100" id="tt-tbody">
                     @forelse($data as $row)
                         <tr class="hover:bg-gray-50 transition-colors {{ $row['naik_kapal'] ? '' : 'bg-amber-50/40' }}"
-                            data-naik-kapal="{{ $row['naik_kapal'] ? 'sudah' : 'belum' }}">
+                            data-naik-kapal="{{ $row['naik_kapal'] ? 'sudah' : 'belum' }}"
+                            data-tujuan="{{ strtolower($row['tujuan'] ?? '') }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-medium
                                     @if($row['source'] == 'Standard') bg-purple-100 text-purple-700
@@ -189,20 +215,44 @@
 </div>
 
 <script>
-    let currentFilter = 'semua';
+    let currentStatusFilter = 'semua';
+    let currentTujuanFilter = 'semua';
 
-    function applyFilter(filter) {
-        currentFilter = filter;
+    function applyStatusFilter(filter) {
+        currentStatusFilter = filter;
+        runCombinedFilter();
+        updateFilterButtons(filter);
+    }
+
+    function applyTujuanFilter(filter) {
+        currentTujuanFilter = filter;
+        runCombinedFilter();
+        updateTujuanFilterButtons(filter);
+    }
+
+    function runCombinedFilter() {
         const rows = document.querySelectorAll('#tt-tbody tr[data-naik-kapal]');
         let visibleCount = 0;
 
         rows.forEach(row => {
             const status = row.getAttribute('data-naik-kapal');
-            let show = false;
-            if (filter === 'semua') show = true;
-            else if (filter === 'sudah' && status === 'sudah') show = true;
-            else if (filter === 'belum' && status === 'belum') show = true;
+            const tujuan = (row.getAttribute('data-tujuan') || '').toLowerCase();
 
+            let matchStatus = false;
+            if (currentStatusFilter === 'semua') matchStatus = true;
+            else if (currentStatusFilter === 'sudah' && status === 'sudah') matchStatus = true;
+            else if (currentStatusFilter === 'belum' && status === 'belum') matchStatus = true;
+
+            let matchTujuan = false;
+            if (currentTujuanFilter === 'semua') {
+                matchTujuan = true;
+            } else if (currentTujuanFilter === 'batam') {
+                matchTujuan = tujuan.includes('batam');
+            } else if (currentTujuanFilter === 'tanjungpinang') {
+                matchTujuan = tujuan.includes('tanjung pinang') || tujuan.includes('tanjungpinang');
+            }
+
+            const show = matchStatus && matchTujuan;
             row.style.display = show ? '' : 'none';
             if (show) visibleCount++;
         });
@@ -215,14 +265,12 @@
         const noResult = document.getElementById('no-filter-result');
         if (noResult) noResult.classList.toggle('hidden', visibleCount > 0);
 
-        // Update active button styles
-        updateFilterButtons(filter);
-
         // Update export Excel link
         const exportLink = document.getElementById('export-excel-link');
         if (exportLink) {
             const url = new URL(exportLink.href);
-            url.searchParams.set('status', filter);
+            url.searchParams.set('status', currentStatusFilter);
+            url.searchParams.set('tujuan', currentTujuanFilter);
             exportLink.href = url.toString();
         }
     }
@@ -232,6 +280,24 @@
             semua:  { id: 'filter-semua',  base: 'border-gray-300 bg-gray-100 text-gray-700',   active: 'border-gray-500 bg-gray-200 text-gray-800 ring-2 ring-gray-300' },
             sudah:  { id: 'filter-sudah',  base: 'border-emerald-200 bg-white text-emerald-700', active: 'border-emerald-500 bg-emerald-100 text-emerald-800 ring-2 ring-emerald-300' },
             belum:  { id: 'filter-belum',  base: 'border-amber-200 bg-white text-amber-700',     active: 'border-amber-500 bg-amber-100 text-amber-800 ring-2 ring-amber-300' },
+        };
+
+        Object.entries(configs).forEach(([key, cfg]) => {
+            const btn = document.getElementById(cfg.id);
+            if (!btn) return;
+            // Remove all possible classes then apply correct set
+            const allClasses = (cfg.base + ' ' + cfg.active).split(' ');
+            allClasses.forEach(cls => btn.classList.remove(cls));
+            const toAdd = (key === active ? cfg.active : cfg.base).split(' ');
+            toAdd.forEach(cls => btn.classList.add(cls));
+        });
+    }
+
+    function updateTujuanFilterButtons(active) {
+        const configs = {
+            semua:  { id: 'filter-tujuan-semua',  base: 'border-gray-300 bg-gray-100 text-gray-700',   active: 'border-gray-500 bg-gray-200 text-gray-800 ring-2 ring-gray-300' },
+            batam:  { id: 'filter-tujuan-batam',  base: 'border-blue-200 bg-white text-blue-700',      active: 'border-blue-500 bg-blue-100 text-blue-800 ring-2 ring-blue-300' },
+            tanjungpinang:  { id: 'filter-tujuan-tanjungpinang',  base: 'border-purple-200 bg-white text-purple-700', active: 'border-purple-500 bg-purple-100 text-purple-800 ring-2 ring-purple-300' },
         };
 
         Object.entries(configs).forEach(([key, cfg]) => {
