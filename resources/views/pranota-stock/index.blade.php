@@ -25,6 +25,10 @@
                 <input type="text" name="search" id="search" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" value="{{ request('search') }}" placeholder="Masukkan kata kunci...">
             </div>
             <div>
+                <label for="penerima" class="block text-sm font-medium text-gray-700">Cari Penerima</label>
+                <input type="text" name="penerima" id="penerima" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" value="{{ request('penerima') }}" placeholder="Nama penerima...">
+            </div>
+            <div>
                 <label for="from_date" class="block text-sm font-medium text-gray-700">Dari Tanggal</label>
                 <input type="date" name="from_date" id="from_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" value="{{ request('from_date') }}">
             </div>

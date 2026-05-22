@@ -1050,6 +1050,10 @@ class StockAmprahanController extends Controller
                 ->orWhere('nomor_accurate', 'like', "%{$search}%");
         }
 
+        if ($request->filled('penerima')) {
+            $query->where('penerima', 'like', '%' . $request->penerima . '%');
+        }
+
         if ($request->filled('from_date')) {
             $query->whereDate('tanggal_pranota', '>=', $request->from_date);
         }
