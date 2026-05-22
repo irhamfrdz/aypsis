@@ -9,6 +9,7 @@ use App\Models\Karyawan;
 use App\Models\MasterGudangAmprahan;
 use App\Models\MasterKapal;
 use App\Models\MasterNamaBarangAmprahan;
+use App\Models\Bank;
 use App\Models\Mobil;
 use App\Models\StockAmprahan;
 use App\Models\StockAmprahanUsage;
@@ -131,32 +132,7 @@ class StockAmprahanController extends Controller
 
         $masterItems = \App\Models\MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
 
-        $banks = [
-            'BCA (Bank Central Asia)',
-            'Bank Mandiri',
-            'BRI (Bank Rakyat Indonesia)',
-            'BNI (Bank Negara Indonesia)',
-            'BSI (Bank Syariah Indonesia)',
-            'BTN (Bank Tabungan Negara)',
-            'Bank CIMB Niaga',
-            'Bank Danamon',
-            'Maybank Indonesia',
-            'Bank Permata',
-            'OCBC NISP',
-            'Bank Panin',
-            'Bank Mega',
-            'KB Bukopin',
-            'Bank BTPN',
-            'Bank UOB Indonesia',
-            'Bank HSBC Indonesia',
-            'Commonwealth Bank',
-            'Bank DKI',
-            'Bank BJB',
-            'Bank Jatim',
-            'Bank Jateng',
-            'Bank Sumut',
-        ];
-        sort($banks);
+        $banks = Bank::orderBy('name')->pluck('name')->toArray();
 
         return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'selectedMobil', 'banks'));
     }
@@ -1225,32 +1201,7 @@ class StockAmprahanController extends Controller
 
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
 
-        $banks = [
-            'BCA (Bank Central Asia)',
-            'Bank Mandiri',
-            'BRI (Bank Rakyat Indonesia)',
-            'BNI (Bank Negara Indonesia)',
-            'BSI (Bank Syariah Indonesia)',
-            'BTN (Bank Tabungan Negara)',
-            'Bank CIMB Niaga',
-            'Bank Danamon',
-            'Maybank Indonesia',
-            'Bank Permata',
-            'OCBC NISP',
-            'Bank Panin',
-            'Bank Mega',
-            'KB Bukopin',
-            'Bank BTPN',
-            'Bank UOB Indonesia',
-            'Bank HSBC Indonesia',
-            'Commonwealth Bank',
-            'Bank DKI',
-            'Bank BJB',
-            'Bank Jatim',
-            'Bank Jateng',
-            'Bank Sumut',
-        ];
-        sort($banks);
+        $banks = Bank::orderBy('name')->pluck('name')->toArray();
 
         return view('pranota-stock.edit', compact('pranota', 'karyawans', 'banks'));
     }
