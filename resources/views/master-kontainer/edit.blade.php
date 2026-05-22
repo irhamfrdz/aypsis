@@ -94,6 +94,7 @@
                         <option value="ZONA" {{ old('vendor', $kontainer->vendor) == 'ZONA' ? 'selected' : '' }}>ZONA</option>
                         <option value="DPE" {{ old('vendor', $kontainer->vendor) == 'DPE' ? 'selected' : '' }}>DPE</option>
                         <option value="MERATUS" {{ old('vendor', $kontainer->vendor) == 'MERATUS' ? 'selected' : '' }}>MERATUS</option>
+                        <option value="SOC" {{ old('vendor', $kontainer->vendor) == 'SOC' ? 'selected' : '' }}>SOC</option>
                     </select>
                     @error('vendor')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>

@@ -277,7 +277,7 @@ class KontainerController extends Controller
             'nomor_seri_gabungan' => 'required|string|size:11',
             'ukuran' => 'required|string|in:10,20,40',
             'tipe_kontainer' => 'required|string',
-            'vendor' => 'nullable|string|in:ZONA,DPE,MERATUS',
+            'vendor' => 'nullable|string|in:ZONA,DPE,MERATUS,FREEUSE,SOC',
             'keterangan' => 'nullable|string',
             'tanggal_mulai_sewa' => 'nullable|date',
             'tanggal_selesai_sewa' => 'nullable|date',
