@@ -117,6 +117,40 @@
             </button>
         </div>
 
+        <div class="hidden lg:block w-px h-6 bg-gray-200 mx-2"></div>
+
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold text-gray-600 whitespace-nowrap">
+                <i class="fas fa-ship text-gray-400 mr-1"></i>Kapal:
+            </span>
+            <select id="filter-kapal" onchange="applyKapalFilter(this.value)"
+                class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-purple-200 focus:border-purple-400">
+                <option value="semua">Semua Kapal</option>
+                @php
+                    $uniqueShips = $data->pluck('nama_kapal')->filter()->unique()->sort()->values();
+                @endphp
+                @foreach($uniqueShips as $ship)
+                    <option value="{{ $ship }}">{{ $ship }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold text-gray-600 whitespace-nowrap">
+                <i class="fas fa-anchor text-gray-400 mr-1"></i>Voyage:
+            </span>
+            <select id="filter-voyage" onchange="applyVoyageFilter(this.value)"
+                class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-purple-200 focus:border-purple-400">
+                <option value="semua">Semua Voyage</option>
+                @php
+                    $uniqueVoyages = $data->pluck('no_voyage')->filter()->unique()->sort()->values();
+                @endphp
+                @foreach($uniqueVoyages as $voyage)
+                    <option value="{{ $voyage }}">{{ $voyage }}</option>
+                @endforeach
+            </select>
+        </div>
+
         <div class="ml-auto text-xs text-gray-400 italic" id="filter-info">
             Menampilkan <span id="visible-count" class="font-semibold text-gray-600">{{ $totalData }}</span> dari {{ $totalData }} data
         </div>
@@ -144,7 +178,9 @@
                     @forelse($data as $row)
                         <tr class="hover:bg-gray-50 transition-colors {{ $row['naik_kapal'] ? '' : 'bg-amber-50/40' }}"
                             data-naik-kapal="{{ $row['naik_kapal'] ? 'sudah' : 'belum' }}"
-                            data-tujuan="{{ strtolower($row['tujuan'] ?? '') }}">
+                            data-tujuan="{{ strtolower($row['tujuan'] ?? '') }}"
+                            data-nama-kapal="{{ $row['nama_kapal'] ?? '' }}"
+                            data-no-voyage="{{ $row['no_voyage'] ?? '' }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-medium
                                     @if($row['source'] == 'Standard') bg-purple-100 text-purple-700
@@ -217,6 +253,8 @@
 <script>
     let currentStatusFilter = 'semua';
     let currentTujuanFilter = 'semua';
+    let currentKapalFilter = 'semua';
+    let currentVoyageFilter = 'semua';
 
     function applyStatusFilter(filter) {
         currentStatusFilter = filter;
@@ -230,6 +268,16 @@
         updateTujuanFilterButtons(filter);
     }
 
+    function applyKapalFilter(filter) {
+        currentKapalFilter = filter;
+        runCombinedFilter();
+    }
+
+    function applyVoyageFilter(filter) {
+        currentVoyageFilter = filter;
+        runCombinedFilter();
+    }
+
     function runCombinedFilter() {
         const rows = document.querySelectorAll('#tt-tbody tr[data-naik-kapal]');
         let visibleCount = 0;
@@ -237,6 +285,8 @@
         rows.forEach(row => {
             const status = row.getAttribute('data-naik-kapal');
             const tujuan = (row.getAttribute('data-tujuan') || '').toLowerCase();
+            const kapal = (row.getAttribute('data-nama-kapal') || '').trim();
+            const voyage = (row.getAttribute('data-no-voyage') || '').trim();
 
             let matchStatus = false;
             if (currentStatusFilter === 'semua') matchStatus = true;
@@ -252,7 +302,17 @@
                 matchTujuan = tujuan.includes('tanjung pinang') || tujuan.includes('tanjungpinang');
             }
 
-            const show = matchStatus && matchTujuan;
+            let matchKapal = true;
+            if (currentKapalFilter !== 'semua') {
+                matchKapal = kapal.toLowerCase() === currentKapalFilter.toLowerCase();
+            }
+
+            let matchVoyage = true;
+            if (currentVoyageFilter !== 'semua') {
+                matchVoyage = voyage === currentVoyageFilter;
+            }
+
+            const show = matchStatus && matchTujuan && matchKapal && matchVoyage;
             row.style.display = show ? '' : 'none';
             if (show) visibleCount++;
         });
@@ -271,6 +331,8 @@
             const url = new URL(exportLink.href);
             url.searchParams.set('status', currentStatusFilter);
             url.searchParams.set('tujuan', currentTujuanFilter);
+            url.searchParams.set('nama_kapal', currentKapalFilter);
+            url.searchParams.set('no_voyage', currentVoyageFilter);
             exportLink.href = url.toString();
         }
     }

@@ -215,7 +215,7 @@ class KwitansiController extends Controller
 
             DB::commit();
 
-            return redirect()->route('kwitansi.index')->with('success', 'Kwitansi berhasil disimpan.');
+            return redirect()->route('kwitansi.show', $kwitansi->id)->with('success', 'Kwitansi berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -333,7 +333,7 @@ class KwitansiController extends Controller
 
             DB::commit();
 
-            return redirect()->route('kwitansi.index')->with('success', 'Kwitansi berhasil diupdate.');
+            return redirect()->route('kwitansi.show', $kwitansi->id)->with('success', 'Kwitansi berhasil diupdate.');
         } catch (\Exception $e) {
             DB::rollBack();
 
