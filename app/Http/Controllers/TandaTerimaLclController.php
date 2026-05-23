@@ -373,6 +373,7 @@ class TandaTerimaLclController extends Controller
             'tipe_kontainer' => 'required|in:cargo,lcl',
             'nomor_seal' => 'nullable|string|max:255',
             'jenis_kontainer' => 'nullable|in:HC,STD,RF,OT,FR,Dry Container',
+            'tujuan_pengiriman' => 'required|exists:master_tujuan_kirim,id',
         ]);
 
         DB::transaction(function () use ($request, $tandaTerima) {
@@ -403,7 +404,7 @@ class TandaTerimaLclController extends Controller
                 'jenis_kontainer' => $request->jenis_kontainer,
                 'supir' => $request->supir,
                 'no_plat' => $request->no_plat,
-                'tujuan_pengiriman_id' => $request->master_tujuan_kirim_id,
+                'tujuan_pengiriman_id' => $request->tujuan_pengiriman,
                 'updated_by' => Auth::id(),
             ]);
 
