@@ -3418,6 +3418,10 @@ Route::middleware([
             ->name('pranota-uang-rit-kenek.select-date')
             ->middleware('can:pranota-uang-rit-kenek-create');
 
+        Route::get('pranota-uang-rit-kenek/export/list', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'exportList'])
+            ->name('pranota-uang-rit-kenek.export-list')
+            ->middleware('can:pranota-uang-rit-kenek-export');
+
         Route::post('pranota-uang-rit-kenek/from-selection', [\App\Http\Controllers\PranotaUangRitKenekController::class, 'createFromSelection'])
             ->name('pranota-uang-rit-kenek.from-selection')
             ->middleware('can:pranota-uang-rit-kenek-create');

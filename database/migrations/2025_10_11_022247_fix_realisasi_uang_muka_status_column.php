@@ -17,11 +17,13 @@ return new class extends Migration
         DB::statement("UPDATE realisasi_uang_muka SET status = 'approved' WHERE status = 'dp_terpakai'");
 
         // THEN: Change status column from old ENUM values to new ones
-        Schema::table('realisasi_uang_muka', function (Blueprint $table) {
-            // Old: dp_belum_terpakai, dp_terpakai
-            // New: pending, approved, rejected
-            DB::statement("ALTER TABLE realisasi_uang_muka MODIFY COLUMN status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending'");
-        });
+        if (DB::getDriverName() === 'mysql') {
+            Schema::table('realisasi_uang_muka', function (Blueprint $table) {
+                // Old: dp_belum_terpakai, dp_terpakai
+                // New: pending, approved, rejected
+                DB::statement("ALTER TABLE realisasi_uang_muka MODIFY COLUMN status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending'");
+            });
+        }
     }
 
     /**
@@ -33,9 +35,11 @@ return new class extends Migration
         DB::statement("UPDATE realisasi_uang_muka SET status = 'dp_belum_terpakai' WHERE status = 'pending'");
         DB::statement("UPDATE realisasi_uang_muka SET status = 'dp_terpakai' WHERE status = 'approved'");
 
-        Schema::table('realisasi_uang_muka', function (Blueprint $table) {
-            // Revert back to old ENUM values
-            DB::statement("ALTER TABLE realisasi_uang_muka MODIFY COLUMN status ENUM('dp_belum_terpakai', 'dp_terpakai') DEFAULT 'dp_belum_terpakai'");
-        });
+        if (DB::getDriverName() === 'mysql') {
+            Schema::table('realisasi_uang_muka', function (Blueprint $table) {
+                // Revert back to old ENUM values
+                DB::statement("ALTER TABLE realisasi_uang_muka MODIFY COLUMN status ENUM('dp_belum_terpakai', 'dp_terpakai') DEFAULT 'dp_belum_terpakai'");
+            });
+        }
     }
 };

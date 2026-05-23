@@ -12,6 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Step 1: Drop foreign key constraints first
         if (DB::getDriverName() !== 'sqlite') {
             try {
@@ -83,6 +87,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Recreate master_services table
         if (! Schema::hasTable('master_services')) {
             Schema::create('master_services', function (Blueprint $table) {

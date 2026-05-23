@@ -541,15 +541,7 @@ class BiayaKapalController extends Controller
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
                     }
                 }
-                // custom_prices come from type="number" inputs - no formatting needed
-                if (isset($section['quantities']) && is_array($section['quantities'])) {
-                    foreach ($section['quantities'] as &$qty) {
-                        if (is_string($qty)) {
-                            $qty = str_replace(',', '.', str_replace('.', '', $qty));
-                        }
-                    }
-                    unset($qty);
-                }
+                // custom_prices and quantities come from type="number" inputs - no formatting needed
             }
             unset($section);
         }
@@ -563,15 +555,7 @@ class BiayaKapalController extends Controller
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
                     }
                 }
-                // custom_prices come from type="number" inputs - no formatting needed
-                if (isset($section['quantities']) && is_array($section['quantities'])) {
-                    foreach ($section['quantities'] as &$qty) {
-                        if (is_string($qty)) {
-                            $qty = str_replace(',', '.', str_replace('.', '', $qty));
-                        }
-                    }
-                    unset($qty);
-                }
+                // custom_prices and quantities come from type="number" inputs - no formatting needed
             }
             unset($section);
         }
@@ -585,15 +569,7 @@ class BiayaKapalController extends Controller
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
                     }
                 }
-                // custom_prices come from type="number" inputs - no formatting needed
-                if (isset($section['quantities']) && is_array($section['quantities'])) {
-                    foreach ($section['quantities'] as &$qty) {
-                        if (is_string($qty)) {
-                            $qty = str_replace(',', '.', str_replace('.', '', $qty));
-                        }
-                    }
-                    unset($qty);
-                }
+                // custom_prices and quantities come from type="number" inputs - no formatting needed
             }
             unset($section);
         }
@@ -3141,6 +3117,20 @@ class BiayaKapalController extends Controller
             unset($section);
         }
 
+        // Meratus Sections Cleaning
+        if (isset($data['meratus']) && is_array($data['meratus'])) {
+            foreach ($data['meratus'] as &$section) {
+                $numericMeratus = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'grand_total'];
+                foreach ($numericMeratus as $f) {
+                    if (isset($section[$f]) && is_string($section[$f])) {
+                        $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                    }
+                }
+                // custom_prices and quantities come from type="number" inputs - no formatting needed
+            }
+            unset($section);
+        }
+
         // Temas Sections Cleaning
         if (isset($data['temas']) && is_array($data['temas'])) {
             foreach ($data['temas'] as &$section) {
@@ -3150,15 +3140,7 @@ class BiayaKapalController extends Controller
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
                     }
                 }
-                // quantities
-                if (isset($section['quantities']) && is_array($section['quantities'])) {
-                    foreach ($section['quantities'] as &$qty) {
-                        if (is_string($qty)) {
-                            $qty = str_replace(',', '.', str_replace('.', '', $qty));
-                        }
-                    }
-                    unset($qty);
-                }
+                // quantities come from type="number" inputs - no formatting needed
             }
             unset($section);
         }
@@ -3172,15 +3154,7 @@ class BiayaKapalController extends Controller
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
                     }
                 }
-                // quantities
-                if (isset($section['quantities']) && is_array($section['quantities'])) {
-                    foreach ($section['quantities'] as &$qty) {
-                        if (is_string($qty)) {
-                            $qty = str_replace(',', '.', str_replace('.', '', $qty));
-                        }
-                    }
-                    unset($qty);
-                }
+                // quantities come from type="number" inputs - no formatting needed
             }
             unset($section);
         }

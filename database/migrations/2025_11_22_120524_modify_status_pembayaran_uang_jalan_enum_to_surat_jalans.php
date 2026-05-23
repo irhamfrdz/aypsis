@@ -10,7 +10,9 @@ return new class extends Migration
     public function up(): void
     {
         // Modify ENUM to add 'dibayar' value
-        DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran_uang_jalan ENUM('belum_ada', 'sudah_masuk_uang_jalan', 'dibayar') DEFAULT 'belum_ada' COMMENT 'Status pembayaran uang jalan: belum_ada = belum dibuat uang jalan, sudah_masuk_uang_jalan = sudah ada record uang jalan, dibayar = sudah dibayar'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran_uang_jalan ENUM('belum_ada', 'sudah_masuk_uang_jalan', 'dibayar') DEFAULT 'belum_ada' COMMENT 'Status pembayaran uang jalan: belum_ada = belum dibuat uang jalan, sudah_masuk_uang_jalan = sudah ada record uang jalan, dibayar = sudah dibayar'");
+        }
     }
 
     /**
@@ -19,6 +21,8 @@ return new class extends Migration
     public function down(): void
     {
         // Revert back to original ENUM values
-        DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran_uang_jalan ENUM('belum_ada', 'sudah_masuk_uang_jalan') DEFAULT 'belum_ada' COMMENT 'Status pembayaran uang jalan: belum_ada = belum dibuat uang jalan, sudah_masuk_uang_jalan = sudah ada record uang jalan'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran_uang_jalan ENUM('belum_ada', 'sudah_masuk_uang_jalan') DEFAULT 'belum_ada' COMMENT 'Status pembayaran uang jalan: belum_ada = belum dibuat uang jalan, sudah_masuk_uang_jalan = sudah ada record uang jalan'");
+        }
     }
 };

@@ -11,7 +11,9 @@ return new class extends Migration
     public function up(): void
     {
         // Add 'belum_masuk_pranota' to the status enum
-        DB::statement("ALTER TABLE uang_jalans MODIFY COLUMN status ENUM('belum_dibayar', 'belum_masuk_pranota', 'sudah_masuk_pranota', 'lunas', 'dibatalkan') DEFAULT 'belum_masuk_pranota'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE uang_jalans MODIFY COLUMN status ENUM('belum_dibayar', 'belum_masuk_pranota', 'sudah_masuk_pranota', 'lunas', 'dibatalkan') DEFAULT 'belum_masuk_pranota'");
+        }
     }
 
     /**
@@ -20,6 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         // Remove 'belum_masuk_pranota' from the status enum
-        DB::statement("ALTER TABLE uang_jalans MODIFY COLUMN status ENUM('belum_dibayar', 'sudah_masuk_pranota', 'lunas', 'dibatalkan') DEFAULT 'belum_dibayar'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE uang_jalans MODIFY COLUMN status ENUM('belum_dibayar', 'sudah_masuk_pranota', 'lunas', 'dibatalkan') DEFAULT 'belum_dibayar'");
+        }
     }
 };

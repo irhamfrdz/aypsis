@@ -12,6 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // This migration specifically handles the foreign key constraint error
         // It must run BEFORE the drop_service_id_from_tables migration
 
@@ -60,6 +64,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Add back service_id column to pricelist_gate_ins (but don't restore foreign key)
         if (! Schema::hasColumn('pricelist_gate_ins', 'service_id')) {
             Schema::table('pricelist_gate_ins', function (Blueprint $table) {

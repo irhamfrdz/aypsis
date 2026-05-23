@@ -13,7 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         // Ubah struktur kolom ke decimal(10,3)
-        DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN meter_kubik DECIMAL(10,3) NULL COMMENT 'Volume in m³ with 3 decimal places'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN meter_kubik DECIMAL(10,3) NULL COMMENT 'Volume in m³ with 3 decimal places'");
+        }
 
         // Recalculate dan round semua volume ke 3 desimal
         DB::statement('
@@ -36,7 +38,9 @@ return new class extends Migration
     public function down(): void
     {
         // Kembalikan ke decimal(15,6)
-        DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN meter_kubik DECIMAL(15,6) NULL COMMENT 'Volume in m³'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN meter_kubik DECIMAL(15,6) NULL COMMENT 'Volume in m³'");
+        }
 
         echo 'Reverted meter_kubik to DECIMAL(15,6).';
     }

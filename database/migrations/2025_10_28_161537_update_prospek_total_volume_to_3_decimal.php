@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         // Update prospek table - volume and weight columns to 3 decimal places
-        DB::statement("ALTER TABLE prospek MODIFY COLUMN total_volume DECIMAL(12,3) NULL COMMENT 'Total volume in m³ with 3 decimal places'");
-        DB::statement("ALTER TABLE prospek MODIFY COLUMN total_ton DECIMAL(10,3) NULL COMMENT 'Total weight in tons with 3 decimal places'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE prospek MODIFY COLUMN total_volume DECIMAL(12,3) NULL COMMENT 'Total volume in m³ with 3 decimal places'");
+        }
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE prospek MODIFY COLUMN total_ton DECIMAL(10,3) NULL COMMENT 'Total weight in tons with 3 decimal places'");
+        }
 
         echo "Updated prospek columns to DECIMAL(x,3)\n";
     }
@@ -24,8 +28,12 @@ return new class extends Migration
     public function down(): void
     {
         // Revert back to 6 decimal places (original format)
-        DB::statement('ALTER TABLE prospek MODIFY COLUMN total_volume DECIMAL(12,6) NULL');
-        DB::statement('ALTER TABLE prospek MODIFY COLUMN total_ton DECIMAL(10,6) NULL');
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE prospek MODIFY COLUMN total_volume DECIMAL(12,6) NULL');
+        }
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE prospek MODIFY COLUMN total_ton DECIMAL(10,6) NULL');
+        }
 
         echo "Reverted prospek columns to DECIMAL(x,6)\n";
     }

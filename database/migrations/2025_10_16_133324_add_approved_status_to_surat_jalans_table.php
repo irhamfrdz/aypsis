@@ -11,7 +11,9 @@ return new class extends Migration
     public function up(): void
     {
         // Modify enum to add 'approved' status
-        DB::statement("ALTER TABLE `surat_jalans` MODIFY COLUMN `status` ENUM('draft','active','completed','cancelled','belum masuk checkpoint','sudah_checkpoint','fully_approved','rejected','approved') NOT NULL DEFAULT 'draft'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE `surat_jalans` MODIFY COLUMN `status` ENUM('draft','active','completed','cancelled','belum masuk checkpoint','sudah_checkpoint','fully_approved','rejected','approved') NOT NULL DEFAULT 'draft'");
+        }
     }
 
     /**
@@ -20,6 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         // Remove 'approved' status from enum
-        DB::statement("ALTER TABLE `surat_jalans` MODIFY COLUMN `status` ENUM('draft','active','completed','cancelled','belum masuk checkpoint','sudah_checkpoint','fully_approved','rejected') NOT NULL DEFAULT 'draft'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE `surat_jalans` MODIFY COLUMN `status` ENUM('draft','active','completed','cancelled','belum masuk checkpoint','sudah_checkpoint','fully_approved','rejected') NOT NULL DEFAULT 'draft'");
+        }
     }
 };

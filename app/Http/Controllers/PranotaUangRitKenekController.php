@@ -6,6 +6,8 @@ use App\Models\PranotaUangRitKenek;
 use App\Models\PranotaUangRitKenekDetail;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
+use App\Exports\PranotaUangRitKenekExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -1600,5 +1602,15 @@ class PranotaUangRitKenekController extends Controller
 
         $writer->save('php://output');
         exit;
+    }
+
+    /**
+     * Export listing to Excel
+     */
+    public function exportList(Request $request)
+    {
+        $filters = $request->only(['search', 'status', 'start_date', 'end_date']);
+        $fileName = 'pranota_uang_rit_kenek_'.date('Ymd_His').'.xlsx';
+        return Excel::download(new PranotaUangRitKenekExport($filters), $fileName);
     }
 }

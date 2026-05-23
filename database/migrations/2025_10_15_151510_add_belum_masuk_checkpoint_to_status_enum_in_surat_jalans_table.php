@@ -11,7 +11,9 @@ return new class extends Migration
     public function up(): void
     {
         // Modify the status enum to include 'belum masuk checkpoint'
-        DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status ENUM('draft', 'active', 'completed', 'cancelled', 'belum masuk checkpoint') DEFAULT 'belum masuk checkpoint'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status ENUM('draft', 'active', 'completed', 'cancelled', 'belum masuk checkpoint') DEFAULT 'belum masuk checkpoint'");
+        }
     }
 
     /**
@@ -20,6 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         // Revert back to original enum values
-        DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status ENUM('draft', 'active', 'completed', 'cancelled') DEFAULT 'draft'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status ENUM('draft', 'active', 'completed', 'cancelled') DEFAULT 'draft'");
+        }
     }
 };

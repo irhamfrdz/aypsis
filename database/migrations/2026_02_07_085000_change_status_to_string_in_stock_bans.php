@@ -20,7 +20,9 @@ return new class extends Migration
         } catch (\Exception $e) {
             // Fallback for MySQL if dbal is missing or fails
             // Modify column type to VARCHAR(50) and set default value
+            if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
             DB::statement("ALTER TABLE stock_bans MODIFY status VARCHAR(50) NOT NULL DEFAULT 'Stok'");
+        }
         }
     }
 

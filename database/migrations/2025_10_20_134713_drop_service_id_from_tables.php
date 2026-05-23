@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Step 1: Drop foreign key dan kolom service_id dari tabel pricelist_gate_ins FIRST
         if (Schema::hasTable('pricelist_gate_ins') && Schema::hasColumn('pricelist_gate_ins', 'service_id')) {
             Schema::table('pricelist_gate_ins', function (Blueprint $table) {
@@ -70,6 +74,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (\Illuminate\Support\Facades\DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Recreate master_services table
         if (! Schema::hasTable('master_services')) {
             Schema::create('master_services', function (Blueprint $table) {

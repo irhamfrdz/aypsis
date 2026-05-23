@@ -9,7 +9,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran_uang_rit ENUM(
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran_uang_rit ENUM(
             'belum_dibayar', 
             'proses_pranota', 
             'sudah_masuk_pranota',
@@ -17,6 +18,7 @@ return new class extends Migration
             'pranota_approved', 
             'dibayar'
         ) DEFAULT 'belum_dibayar'");
+        }
     }
 
     /**
@@ -24,12 +26,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran_uang_rit ENUM(
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran_uang_rit ENUM(
             'belum_dibayar', 
             'proses_pranota', 
             'pranota_submitted', 
             'pranota_approved', 
             'dibayar'
         ) DEFAULT 'belum_dibayar'");
+        }
     }
 };

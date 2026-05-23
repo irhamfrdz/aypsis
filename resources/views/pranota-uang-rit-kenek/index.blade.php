@@ -11,11 +11,18 @@
                 <h1 class="text-2xl font-bold text-gray-900">💰 Pranota Uang Rit Kenek</h1>
                 <p class="text-gray-600 mt-1">Kelola daftar Pranota Uang Rit Kenek untuk Kenek</p>
             </div>
-            @can('pranota-uang-rit-create')
-            <a href="{{ route('pranota-uang-rit-kenek.select-date') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
-                <i class="fas fa-plus mr-2"></i> Tambah Pranota Uang Rit Kenek
-            </a>
-            @endcan
+            <div class="flex items-center gap-3">
+                @can('pranota-uang-rit-kenek-export')
+                <a href="{{ route('pranota-uang-rit-kenek.export-list', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                    <i class="fas fa-file-excel mr-2"></i> Export Excel
+                </a>
+                @endcan
+                @can('pranota-uang-rit-create')
+                <a href="{{ route('pranota-uang-rit-kenek.select-date') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                    <i class="fas fa-plus mr-2"></i> Tambah Pranota Uang Rit Kenek
+                </a>
+                @endcan
+            </div>
         </div>
 
         <!-- Filters -->

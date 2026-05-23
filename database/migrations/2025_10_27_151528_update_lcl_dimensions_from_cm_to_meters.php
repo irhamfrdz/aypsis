@@ -41,9 +41,15 @@ return new class extends Migration
         ');
 
         // Update comments untuk menunjukkan bahwa sekarang dalam meter
-        DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN panjang DECIMAL(10,2) NULL COMMENT 'Length in meters'");
-        DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN lebar DECIMAL(10,2) NULL COMMENT 'Width in meters'");
-        DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN tinggi DECIMAL(10,2) NULL COMMENT 'Height in meters'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN panjang DECIMAL(10,2) NULL COMMENT 'Length in meters'");
+        }
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN lebar DECIMAL(10,2) NULL COMMENT 'Width in meters'");
+        }
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN tinggi DECIMAL(10,2) NULL COMMENT 'Height in meters'");
+        }
     }
 
     /**
@@ -70,8 +76,14 @@ return new class extends Migration
         ');
 
         // Kembalikan comment ke cm
-        DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN panjang DECIMAL(10,2) NULL COMMENT 'Length in cm'");
-        DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN lebar DECIMAL(10,2) NULL COMMENT 'Width in cm'");
-        DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN tinggi DECIMAL(10,2) NULL COMMENT 'Height in cm'");
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN panjang DECIMAL(10,2) NULL COMMENT 'Length in cm'");
+        }
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN lebar DECIMAL(10,2) NULL COMMENT 'Width in cm'");
+        }
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE tanda_terima_lcl_items MODIFY COLUMN tinggi DECIMAL(10,2) NULL COMMENT 'Height in cm'");
+        }
     }
 };
