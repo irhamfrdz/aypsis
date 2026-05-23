@@ -1484,7 +1484,7 @@ class PranotaUangRitController extends Controller
         if ($pranotaUangRit->surat_jalan_bongkaran_id) {
             $suratJalanBongkarans = SuratJalanBongkaran::whereIn('nomor_surat_jalan', $suratJalanNomors)
                 ->orderBy('supir', 'asc')
-                ->orderBy('tanggal', 'desc')
+                ->orderBy('tanggal_surat_jalan', 'desc')
                 ->get();
         }
 
