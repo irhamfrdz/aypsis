@@ -115,7 +115,9 @@ class KwitansiController extends Controller
             $manifest = \App\Models\Manifest::find($request->manifest_id);
         }
 
-        return view('kwitansi.create', compact('kwtNo', 'manifest'));
+        $akunPiutangList = \App\Models\Coa::orderBy('kode_nomor')->get();
+
+        return view('kwitansi.create', compact('kwtNo', 'manifest', 'akunPiutangList'));
     }
 
     public function store(Request $request)
@@ -191,8 +193,9 @@ class KwitansiController extends Controller
     public function edit($id)
     {
         $kwitansi = Kwitansi::with('details')->findOrFail($id);
+        $akunPiutangList = \App\Models\Coa::orderBy('kode_nomor')->get();
 
-        return view('kwitansi.edit', compact('kwitansi'));
+        return view('kwitansi.edit', compact('kwitansi', 'akunPiutangList'));
     }
 
     public function update(Request $request, $id)

@@ -189,7 +189,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Akun Piutang</label>
-                    <input type="text" name="akun_piutang" value="{{ $kwitansi->akun_piutang }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
+                    <select name="akun_piutang" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-sm py-2.5 px-4 rounded-xl transition-all shadow-sm shadow-indigo-100/10">
+                        <option value="">Pilih Akun Piutang</option>
+                        @foreach($akunPiutangList as $coa)
+                            <option value="{{ $coa->nama_akun }}" {{ old('akun_piutang', $kwitansi->akun_piutang) == $coa->nama_akun ? 'selected' : '' }}>
+                                {{ $coa->nomor_akun }} - {{ $coa->nama_akun }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
                 
                 <div class="space-y-3">
