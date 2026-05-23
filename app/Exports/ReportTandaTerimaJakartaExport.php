@@ -125,23 +125,29 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                 $dimensi = ! empty($item->dimensi_details) ? $item->dimensi_details : $item->dimensi_items;
 
                 if (! empty($dimensi)) {
-                    $items = collect($dimensi)->map(function ($i) use ($item) {
-                        $qty = data_get($i, 'jumlah') ?? data_get($i, 'qty') ?? 0;
-                        $satuan = data_get($i, 'satuan') ?? '';
-                        $nama = data_get($i, 'nama_barang') ?: data_get($i, 'nama') ?: $item->nama_barang ?: $item->jenis_barang;
+                    $sumQty = collect($dimensi)->sum(function ($i) {
+                        return data_get($i, 'jumlah') ?? data_get($i, 'qty') ?? 0;
+                    });
+                    $sumWeight = collect($dimensi)->sum(function ($i) {
+                        return data_get($i, 'tonase') ?? 0;
+                    });
+                    $sumVolume = collect($dimensi)->sum(function ($i) {
+                        return data_get($i, 'meter_kubik') ?? 0;
+                    });
+                    $names = collect($dimensi)->map(function ($i) use ($item) {
+                        $n = data_get($i, 'nama_barang') ?: data_get($i, 'nama') ?: $item->nama_barang ?: $item->jenis_barang;
+                        return is_array($n) ? implode(', ', $n) : $n;
+                    })->filter()->unique()->implode(', ');
+                    
+                    $satuan = data_get($dimensi[0], 'satuan') ?? '';
 
-                        if (is_array($nama)) {
-                            $nama = implode(', ', $nama);
-                        }
-
-                        return [
-                            'qty' => $qty,
-                            'satuan' => $satuan,
-                            'nama' => $nama,
-                            'weight' => data_get($i, 'tonase') ?? 0,
-                            'meass' => data_get($i, 'meter_kubik') ?? 0,
-                        ];
-                    })->toArray();
+                    $items = [[
+                        'qty' => $sumQty,
+                        'satuan' => $satuan,
+                        'nama' => $names,
+                        'weight' => $sumWeight,
+                        'meass' => $sumVolume,
+                    ]];
                 } else {
                     $items = [[
                         'qty' => $item->jumlah ?? 0,
@@ -184,19 +190,25 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
             ->with(['dimensiItems'])
             ->get()
             ->map(function ($item) use ($manifestedTTs) {
-                $items = $item->dimensiItems->map(function ($i) use ($item) {
-                    $nama = $i->nama_barang ?: $i->nama ?: $item->nama_barang ?: $item->jenis_barang;
+                $items = [];
+                if ($item->dimensiItems->isNotEmpty()) {
+                    $sumQty = $item->dimensiItems->sum('jumlah');
+                    $sumWeight = $item->dimensiItems->sum('tonase');
+                    $sumVolume = $item->dimensiItems->sum('meter_kubik');
+                    $names = $item->dimensiItems->map(function ($i) use ($item) {
+                        return $i->nama_barang ?: $i->nama ?: $item->nama_barang ?: $item->jenis_barang;
+                    })->filter()->unique()->implode(', ');
+                    
+                    $satuan = $item->dimensiItems->first()->satuan ?? '';
 
-                    return [
-                        'qty' => $i->jumlah ?? 0,
-                        'satuan' => $i->satuan ?? '',
-                        'nama' => $nama,
-                        'weight' => $i->tonase ?? 0,
-                        'meass' => $i->meter_kubik ?? 0,
-                    ];
-                })->toArray();
-
-                if (empty($items)) {
+                    $items = [[
+                        'qty' => $sumQty,
+                        'satuan' => $satuan,
+                        'nama' => $names,
+                        'weight' => $sumWeight,
+                        'meass' => $sumVolume,
+                    ]];
+                } else {
                     $nama = $item->nama_barang ?: $item->jenis_barang;
                     $items = [[
                         'qty' => $item->jumlah_barang ?? 0,
@@ -239,17 +251,33 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
             ->with(['tujuanKirim', 'kontainerPivot', 'items'])
             ->get()
             ->map(function ($item) use ($manifestedTTs) {
-                $items = $item->items->map(function ($i) use ($item) {
-                    $nama = $i->nama_barang ?: $i->nama ?: $item->nama_barang ?: $item->kegiatan ?: $item->jenis_barang;
+                $items = [];
+                if ($item->items->isNotEmpty()) {
+                    $sumQty = $item->items->sum('jumlah');
+                    $sumWeight = $item->items->sum('tonase');
+                    $sumVolume = $item->items->sum('meter_kubik');
+                    $names = $item->items->map(function ($i) use ($item) {
+                        return $i->nama_barang ?: $i->nama ?: $item->nama_barang ?: $item->kegiatan ?: $item->jenis_barang;
+                    })->filter()->unique()->implode(', ');
+                    
+                    $satuan = $item->items->first()->satuan ?? '';
 
-                    return [
-                        'qty' => $i->jumlah ?? 0,
-                        'satuan' => $i->satuan ?? '',
-                        'nama' => $nama,
-                        'weight' => $i->tonase ?? 0,
-                        'meass' => $i->meter_kubik ?? 0,
-                    ];
-                })->toArray();
+                    $items = [[
+                        'qty' => $sumQty,
+                        'satuan' => $satuan,
+                        'nama' => $names,
+                        'weight' => $sumWeight,
+                        'meass' => $sumVolume,
+                    ]];
+                } else {
+                    $items = [[
+                        'qty' => 0,
+                        'satuan' => '',
+                        'nama' => $item->nama_barang ?: $item->kegiatan ?: $item->jenis_barang,
+                        'weight' => 0,
+                        'meass' => 0,
+                    ]];
+                }
 
                 $noTt = $item->nomor_tanda_terima;
                 $manifest = $manifestedTTs->get($noTt);
@@ -382,18 +410,6 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
 
                 // Determine if LCL for this specific item
                 $itemIsLcl = ($item['source'] === 'LCL') || (stripos($item['size'] ?? '', 'LCL') !== false);
-
-                // Condense perincian details into 1 row for FCL (Standard/Tanpa SJ)
-                if (! $itemIsLcl && count($perincian) > 1) {
-                    $pItem = [
-                        'qty' => implode("\n", array_column($perincian, 'qty')),
-                        'satuan' => implode("\n", array_column($perincian, 'satuan')),
-                        'nama' => implode("\n", array_column($perincian, 'nama')),
-                        'weight' => implode("\n", array_column($perincian, 'weight')),
-                        'meass' => implode("\n", array_column($perincian, 'meass')),
-                    ];
-                    $perincian = [$pItem];
-                }
 
                 foreach ($perincian as $pIdx => $pItem) {
                     $row = $item;
