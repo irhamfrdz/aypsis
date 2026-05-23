@@ -257,7 +257,21 @@
     
     document.addEventListener('DOMContentLoaded', function() {
         let rowCount = 1;
-        
+
+        // Initialize Select2 on item description dropdowns
+        function initSelect2(target) {
+            const selector = target ? $(target) : $('.select2-item');
+            selector.each(function() {
+                if (!$(this).hasClass('select2-hidden-accessible')) {
+                    $(this).select2({
+                        placeholder: 'Cari & Pilih Item...',
+                        allowClear: true,
+                        width: 'resolve'
+                    });
+                }
+            });
+        }
+
         // Format number to currency
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -336,7 +350,7 @@
                         <input type="text" name="details[${index}][item_kode]" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Kode Item">
                     </td>
                     <td class="px-2 py-2">
-                        <select name="details[${index}][item_description]" required class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10">
+                        <select name="details[${index}][item_description]" required class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10 select2-item">
                             <option value="">Pilih Item</option>
                             ${coaList.map(coa => `<option value="${coa.nama_akun}">${coa.nomor_akun} - ${coa.nama_akun}</option>`).join('')}
                         </select>
@@ -366,13 +380,19 @@
             
             document.getElementById('detail-body').insertAdjacentHTML('beforeend', newRow);
             initNumberInputs();
+            initSelect2('#detail-body .select2-item:last');
         });
         
         // Remove row
         document.getElementById('detail-body').addEventListener('click', function(e) {
             if (e.target.closest('.btn-remove-item')) {
                 if (document.querySelectorAll('.detail-row').length > 1) {
-                    e.target.closest('.detail-row').remove();
+                    const row = e.target.closest('.detail-row');
+                    const select = row.querySelector('.select2-item');
+                    if (select && $(select).hasClass('select2-hidden-accessible')) {
+                        $(select).select2('destroy');
+                    }
+                    row.remove();
                     calculateAll();
                 } else {
                     alert('Minimal harus ada 1 item.');
@@ -387,6 +407,7 @@
         
         // Initial setup
         initNumberInputs();
+        initSelect2();
 
         // Sync Pengirim to Terima Dari
         const pengirimInput = document.querySelector('input[name="pengirim"]');
