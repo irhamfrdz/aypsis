@@ -4,11 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Kwitansi;
 use App\Models\KwitansiDetail;
+use App\Models\Coa;
+use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class KwitansiController extends Controller
 {
+    protected $coaTransactionService;
+
+    public function __construct(CoaTransactionService $coaTransactionService)
+    {
+        $this->coaTransactionService = $coaTransactionService;
+    }
     public function index(Request $request)
     {
         $namaKapal = $request->get('nama_kapal');
@@ -160,17 +168,49 @@ class KwitansiController extends Controller
 
             if ($request->has('details') && is_array($request->details)) {
                 foreach ($request->details as $detail) {
+                    $detailAmount = str_replace(',', '', $detail['amount'] ?? 0);
+
                     KwitansiDetail::create([
                         'kwitansi_id' => $kwitansi->id,
                         'item_kode' => $detail['item_kode'] ?? null,
                         'item_description' => $detail['item_description'] ?? null,
                         'qty' => $detail['qty'] ?? 0,
                         'unit_price' => str_replace(',', '', $detail['unit_price'] ?? 0),
-                        'amount' => str_replace(',', '', $detail['amount'] ?? 0),
+                        'amount' => $detailAmount,
                         'no_bl' => $detail['no_bl'] ?? null,
                         'no_sj' => $detail['no_sj'] ?? null,
                     ]);
+
+                    // Credit ke akun COA yang dipilih di item description
+                    $itemDesc = $detail['item_description'] ?? null;
+                    if ($itemDesc && Coa::where('nama_akun', $itemDesc)->exists()) {
+                        $this->coaTransactionService->recordTransaction(
+                            $itemDesc,
+                            0,
+                            (float) $detailAmount,
+                            $request->tgl_inv ?? date('Y-m-d'),
+                            $kwitansi->kwt_no,
+                            'penjualan',
+                            $detail['item_kode']
+                                ? "{$itemDesc} ({$detail['item_kode']}) - {$kwitansi->kwt_no}"
+                                : "{$itemDesc} - {$kwitansi->kwt_no}"
+                        );
+                    }
                 }
+            }
+
+            // Debit ke akun piutang
+            if ($request->akun_piutang && Coa::where('nama_akun', $request->akun_piutang)->exists()) {
+                $totalInvoice = str_replace(',', '', $request->total_invoice ?? 0);
+                $this->coaTransactionService->recordTransaction(
+                    $request->akun_piutang,
+                    (float) $totalInvoice,
+                    0,
+                    $request->tgl_inv ?? date('Y-m-d'),
+                    $kwitansi->kwt_no,
+                    'penjualan',
+                    "Piutang {$kwitansi->kwt_no} - {$kwitansi->pelanggan_nama}"
+                );
             }
 
             DB::commit();
@@ -237,23 +277,58 @@ class KwitansiController extends Controller
                 'termasuk_pajak' => $request->has('termasuk_pajak'),
             ]);
 
+            // Delete old COA transactions
+            $this->coaTransactionService->deleteTransactionByReference($kwitansi->kwt_no);
+
             // Delete old details
             $kwitansi->details()->delete();
 
             // Re-create details
             if ($request->has('details') && is_array($request->details)) {
                 foreach ($request->details as $detail) {
+                    $detailAmount = str_replace(',', '', $detail['amount'] ?? 0);
+
                     KwitansiDetail::create([
                         'kwitansi_id' => $kwitansi->id,
                         'item_kode' => $detail['item_kode'] ?? null,
                         'item_description' => $detail['item_description'] ?? null,
                         'qty' => $detail['qty'] ?? 0,
                         'unit_price' => str_replace(',', '', $detail['unit_price'] ?? 0),
-                        'amount' => str_replace(',', '', $detail['amount'] ?? 0),
+                        'amount' => $detailAmount,
                         'no_bl' => $detail['no_bl'] ?? null,
                         'no_sj' => $detail['no_sj'] ?? null,
                     ]);
+
+                    // Credit ke akun COA yang dipilih di item description
+                    $itemDesc = $detail['item_description'] ?? null;
+                    if ($itemDesc && Coa::where('nama_akun', $itemDesc)->exists()) {
+                        $this->coaTransactionService->recordTransaction(
+                            $itemDesc,
+                            0,
+                            (float) $detailAmount,
+                            $request->tgl_inv ?? date('Y-m-d'),
+                            $kwitansi->kwt_no,
+                            'penjualan',
+                            $detail['item_kode']
+                                ? "{$itemDesc} ({$detail['item_kode']}) - {$kwitansi->kwt_no}"
+                                : "{$itemDesc} - {$kwitansi->kwt_no}"
+                        );
+                    }
                 }
+            }
+
+            // Debit ke akun piutang
+            if ($request->akun_piutang && Coa::where('nama_akun', $request->akun_piutang)->exists()) {
+                $totalInvoice = str_replace(',', '', $request->total_invoice ?? 0);
+                $this->coaTransactionService->recordTransaction(
+                    $request->akun_piutang,
+                    (float) $totalInvoice,
+                    0,
+                    $request->tgl_inv ?? date('Y-m-d'),
+                    $kwitansi->kwt_no,
+                    'penjualan',
+                    "Piutang {$kwitansi->kwt_no} - {$kwitansi->pelanggan_nama}"
+                );
             }
 
             DB::commit();
@@ -269,11 +344,21 @@ class KwitansiController extends Controller
     public function destroy($id)
     {
         try {
+            DB::beginTransaction();
+
             $kwitansi = Kwitansi::findOrFail($id);
+
+            // Hapus COA transactions
+            $this->coaTransactionService->deleteTransactionByReference($kwitansi->kwt_no);
+
             $kwitansi->delete();
+
+            DB::commit();
 
             return redirect()->route('kwitansi.index')->with('success', 'Kwitansi berhasil dihapus.');
         } catch (\Exception $e) {
+            DB::rollBack();
+
             return back()->with('error', 'Gagal menghapus Kwitansi: '.$e->getMessage());
         }
     }
