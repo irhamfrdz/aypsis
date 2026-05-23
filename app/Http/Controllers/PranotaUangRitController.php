@@ -1482,7 +1482,7 @@ class PranotaUangRitController extends Controller
         // Also check for surat jalan bongkaran if exists - sorted by supir name alphabetically
         $suratJalanBongkarans = collect();
         if ($pranotaUangRit->surat_jalan_bongkaran_id) {
-            $suratJalanBongkarans = SuratJalanBongkaran::whereIn('no_surat_jalan', $suratJalanNomors)
+            $suratJalanBongkarans = SuratJalanBongkaran::whereIn('nomor_surat_jalan', $suratJalanNomors)
                 ->orderBy('supir', 'asc')
                 ->orderBy('tanggal', 'desc')
                 ->get();
