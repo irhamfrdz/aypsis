@@ -27,11 +27,22 @@
                         @enderror
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label for="ukuran" class="block text-sm font-semibold text-gray-700">Ukuran</label>
-                            <input type="text" name="ukuran" id="ukuran" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm" placeholder="Contoh: 20 Feet, 40 Feet, Combo, dll..." value="{{ old('ukuran') }}">
+                            <input type="text" name="ukuran" id="ukuran" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm" placeholder="Contoh: 20 Feet, 40 Feet..." value="{{ old('ukuran') }}">
                             @error('ukuran')
+                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="status_kontainer" class="block text-sm font-semibold text-gray-700">Status Kontainer</label>
+                            <select name="status_kontainer" id="status_kontainer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm">
+                                <option value="">Pilih Status...</option>
+                                <option value="empty" {{ old('status_kontainer') == 'empty' ? 'selected' : '' }}>Empty</option>
+                                <option value="full" {{ old('status_kontainer') == 'full' ? 'selected' : '' }}>Full</option>
+                            </select>
+                            @error('status_kontainer')
                                 <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                             @enderror
                         </div>

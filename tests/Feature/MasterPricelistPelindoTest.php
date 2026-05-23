@@ -50,6 +50,7 @@ class MasterPricelistPelindoTest extends TestCase
         PricelistPelindo::create([
             'kegiatan' => 'Sewa Crane',
             'ukuran' => '20 Feet',
+            'status_kontainer' => 'empty',
             'tarif' => 1500000,
             'keterangan' => 'Keterangan test',
             'status' => 'aktif',
@@ -60,6 +61,7 @@ class MasterPricelistPelindoTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Sewa Crane');
         $response->assertSee('20 Feet');
+        $response->assertSee('empty');
         $response->assertSee('Rp 1.500.000');
     }
 
@@ -71,6 +73,7 @@ class MasterPricelistPelindoTest extends TestCase
         $data = [
             'kegiatan' => 'Jasa Labuh',
             'ukuran' => '40 Feet',
+            'status_kontainer' => 'full',
             'tarif' => '2.500.000', // Formatted input
             'keterangan' => 'Keterangan store',
             'status' => 'aktif',
@@ -82,6 +85,7 @@ class MasterPricelistPelindoTest extends TestCase
         $this->assertDatabaseHas('pricelist_pelindos', [
             'kegiatan' => 'Jasa Labuh',
             'ukuran' => '40 Feet',
+            'status_kontainer' => 'full',
             'tarif' => 2500000.00,
             'keterangan' => 'Keterangan store',
             'status' => 'aktif',
@@ -96,6 +100,7 @@ class MasterPricelistPelindoTest extends TestCase
         $pricelist = PricelistPelindo::create([
             'kegiatan' => 'Sewa Forklift',
             'ukuran' => '10 Ton',
+            'status_kontainer' => 'empty',
             'tarif' => 750000,
             'keterangan' => 'Keterangan awal',
             'status' => 'aktif',
@@ -104,6 +109,7 @@ class MasterPricelistPelindoTest extends TestCase
         $data = [
             'kegiatan' => 'Sewa Forklift Updated',
             'ukuran' => '12 Ton',
+            'status_kontainer' => 'full',
             'tarif' => '850.000', // Formatted input
             'keterangan' => 'Keterangan updated',
             'status' => 'nonaktif',
@@ -116,6 +122,7 @@ class MasterPricelistPelindoTest extends TestCase
             'id' => $pricelist->id,
             'kegiatan' => 'Sewa Forklift Updated',
             'ukuran' => '12 Ton',
+            'status_kontainer' => 'full',
             'tarif' => 850000.00,
             'keterangan' => 'Keterangan updated',
             'status' => 'nonaktif',

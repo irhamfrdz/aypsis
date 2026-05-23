@@ -52,6 +52,7 @@ class PricelistPelindoController extends Controller
             'tarif' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
+            'status_kontainer' => 'nullable|in:empty,full',
         ]);
 
         PricelistPelindo::create($validated);
@@ -92,6 +93,7 @@ class PricelistPelindoController extends Controller
             'tarif' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
+            'status_kontainer' => 'nullable|in:empty,full',
         ]);
 
         $pricelistPelindo->update($validated);

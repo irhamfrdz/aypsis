@@ -18,6 +18,7 @@ class PricelistPelindo extends Model
         'tarif',
         'keterangan',
         'status',
+        'status_kontainer',
     ];
 
     protected $casts = [

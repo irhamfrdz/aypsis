@@ -68,6 +68,7 @@
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Ukuran</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Status Kontainer</th>
                             <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Tarif</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Keterangan</th>
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Status</th>
@@ -85,6 +86,9 @@
                             </td>
                             <td class="px-4 py-3 text-xs text-gray-900">
                                 {{ $item->ukuran ?? '-' }}
+                            </td>
+                            <td class="px-4 py-3 text-xs text-gray-900 capitalize">
+                                {{ $item->status_kontainer ?? '-' }}
                             </td>
                             <td class="px-4 py-3 text-xs font-semibold text-gray-900 text-right">
                                 {{ $item->formatted_tarif }}
@@ -118,7 +122,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-8 text-center">
+                            <td colspan="8" class="px-4 py-8 text-center">
                                 <p class="text-gray-500 text-sm">Tidak ada data pricelist pelindo.</p>
                             </td>
                         </tr>
