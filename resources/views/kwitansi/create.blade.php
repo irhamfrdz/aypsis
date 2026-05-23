@@ -253,6 +253,8 @@
 
 @push('scripts')
 <script>
+    const coaList = @json($akunPiutangList);
+    
     document.addEventListener('DOMContentLoaded', function() {
         let rowCount = 1;
         
@@ -334,7 +336,10 @@
                         <input type="text" name="details[${index}][item_kode]" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Kode Item">
                     </td>
                     <td class="px-2 py-2">
-                        <input type="text" name="details[${index}][item_description]" required class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Deskripsi Item">
+                        <select name="details[${index}][item_description]" required class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10">
+                            <option value="">Pilih Item</option>
+                            ${coaList.map(coa => `<option value="${coa.nama_akun}">${coa.nomor_akun} - ${coa.nama_akun}</option>`).join('')}
+                        </select>
                     </td>
                     <td class="px-2 py-2">
                         <input type="number" name="details[${index}][qty]" min="0" step="1" value="0" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10 text-right qty-input">

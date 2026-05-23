@@ -123,7 +123,14 @@
                                 <input type="text" name="details[{{ $index }}][item_kode]" value="{{ $detail->item_kode }}" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Kode Item">
                             </td>
                             <td class="px-2 py-2">
-                                <input type="text" name="details[{{ $index }}][item_description]" value="{{ $detail->item_description }}" required class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Deskripsi Item">
+                                <select name="details[{{ $index }}][item_description]" required class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10">
+                                    <option value="">Pilih Item</option>
+                                    @foreach($akunPiutangList as $coa)
+                                        <option value="{{ $coa->nama_akun }}" {{ $detail->item_description == $coa->nama_akun ? 'selected' : '' }}>
+                                            {{ $coa->nomor_akun }} - {{ $coa->nama_akun }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </td>
                             <td class="px-2 py-2">
                                 <input type="number" name="details[{{ $index }}][qty]" value="{{ $detail->qty }}" min="0" step="1" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10 text-right qty-input">
@@ -250,6 +257,8 @@
 
 @push('scripts')
 <script>
+    const coaList = @json($akunPiutangList);
+    
     document.addEventListener('DOMContentLoaded', function() {
         let rowCount = {{ max(1, $kwitansi->details->count()) }};
         
@@ -342,7 +351,10 @@
                         <input type="text" name="details[${index}][item_kode]" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Kode Item">
                     </td>
                     <td class="px-2 py-2">
-                        <input type="text" name="details[${index}][item_description]" required class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10" placeholder="Deskripsi Item">
+                        <select name="details[${index}][item_description]" required class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10">
+                            <option value="">Pilih Item</option>
+                            ${coaList.map(coa => `<option value="${coa.nama_akun}">${coa.nomor_akun} - ${coa.nama_akun}</option>`).join('')}
+                        </select>
                     </td>
                     <td class="px-2 py-2">
                         <input type="number" name="details[${index}][qty]" min="0" step="1" value="0" class="w-full bg-gray-100 border-gray-200 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-xs py-2 px-3 rounded-lg transition-all shadow-sm shadow-indigo-100/10 text-right qty-input">
