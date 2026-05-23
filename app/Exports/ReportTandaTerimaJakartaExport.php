@@ -22,6 +22,10 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
 
     protected $tujuan;
 
+    protected $namaKapal;
+
+    protected $noVoyage;
+
     protected $penerimaLookup = [];
 
     protected $termLookup = [];
@@ -30,12 +34,14 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
 
     protected $voyage = '-';
 
-    public function __construct($startDate, $endDate, $status = 'semua', $tujuan = 'semua')
+    public function __construct($startDate, $endDate, $status = 'semua', $tujuan = 'semua', $namaKapal = 'semua', $noVoyage = 'semua')
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->status = $status;
         $this->tujuan = $tujuan;
+        $this->namaKapal = $namaKapal;
+        $this->noVoyage = $noVoyage;
         $this->initializeLookups();
     }
 
@@ -346,6 +352,20 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                 $tuj = strtolower($item['tujuan'] ?? '');
 
                 return str_contains($tuj, 'tanjung pinang') || str_contains($tuj, 'tanjungpinang');
+            });
+        }
+
+        // Filter based on kapal
+        if ($this->namaKapal !== 'semua') {
+            $enhancedData = $enhancedData->filter(function ($item) {
+                return strtolower($item['nama_kapal'] ?? '') === strtolower($this->namaKapal);
+            });
+        }
+
+        // Filter based on voyage
+        if ($this->noVoyage !== 'semua') {
+            $enhancedData = $enhancedData->filter(function ($item) {
+                return ($item['no_voyage'] ?? '') === $this->noVoyage;
             });
         }
 
