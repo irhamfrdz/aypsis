@@ -13,9 +13,9 @@
             </div>
             <div class="flex items-center gap-3">
                 @can('pranota-uang-rit-kenek-export')
-                <a href="{{ route('pranota-uang-rit-kenek.export-list', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm">
+                <button onclick="exportToExcel()" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm">
                     <i class="fas fa-file-excel mr-2"></i> Export Excel
-                </a>
+                </button>
                 @endcan
                 @can('pranota-uang-rit-create')
                 <a href="{{ route('pranota-uang-rit-kenek.select-date') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
@@ -281,7 +281,50 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
+function exportToExcel() {
+    const table = document.getElementById('pranotaUangRitTable');
+    if (!table) {
+        alert('Tidak ada data untuk diekspor');
+        return;
+    }
+    
+    // Clone table and remove action column
+    const tableClone = table.cloneNode(true);
+    const rows = tableClone.querySelectorAll('tr');
+    rows.forEach(row => {
+        const lastCell = row.querySelector('th:last-child, td:last-child');
+        if (lastCell && lastCell.textContent.includes('Aksi')) {
+            lastCell.remove();
+        } else if (lastCell && row.querySelector('button, a')) {
+            lastCell.remove();
+        }
+    });
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.table_to_sheet(tableClone);
+    
+    // Set column widths
+    ws['!cols'] = [
+        { wch: 20 }, // No. Pranota
+        { wch: 15 }, // Tanggal
+        { wch: 25 }, // No. Surat Jalan
+        { wch: 20 }, // Uang Rit
+        { wch: 15 }  // Status
+    ];
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'Pranota Uang Rit Kenek');
+    
+    // Generate filename with current date
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `Pranota_Uang_Rit_Kenek_${date}.xlsx`;
+    
+    // Save file
+    XLSX.writeFile(wb, filename);
+}
+
 function markAsPaid(pranotaId) {
     document.getElementById('markAsPaidForm').action = '/pranota-uang-rit-kenek/' + pranotaId + '/mark-as-paid';
     document.getElementById('markAsPaidModal').classList.remove('hidden');
