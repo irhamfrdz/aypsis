@@ -1511,9 +1511,10 @@ class PranotaUangRitKenekController extends Controller
             $sheet->setCellValue('I'.$row, $sj->penerima ?? '-');
             $sheet->setCellValue('J'.$row, $sj->jenis_barang ?? '-');
             $sheet->setCellValue('K'.$row, $sj->tipe_kontainer ?? '-');
-            $sheet->setCellValue('L'.$row, $sj->rit ?? 1);
+            $ritLabel = $sj->rit === 'menggunakan_rit' ? 'Ya' : ($sj->rit === 'tidak_menggunakan_rit' ? 'Tidak' : $sj->rit);
+            $sheet->setCellValue('L'.$row, $ritLabel);
 
-            $totalRit += $sj->rit ?? 1;
+            $totalRit += $sj->rit === 'menggunakan_rit' ? 1 : 0;
 
             // Center align
             $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
@@ -1539,7 +1540,7 @@ class PranotaUangRitKenekController extends Controller
         foreach ($suratJalanBongkarans as $sj) {
             $sheet->setCellValue('A'.$row, $no);
             $sheet->setCellValue('B'.$row, $sj->no_surat_jalan.' (Bongkaran)');
-            $sheet->setCellValue('C'.$row, $sj->tanggal ? $sj->tanggal->format('d/m/Y') : '-');
+            $sheet->setCellValue('C'.$row, $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-');
             $sheet->setCellValue('D'.$row, 'Bongkar');
             $sheet->setCellValue('E'.$row, $sj->supir ?? '-');
             $sheet->setCellValue('F'.$row, $sj->kenek ?? '-');
@@ -1548,9 +1549,9 @@ class PranotaUangRitKenekController extends Controller
             $sheet->setCellValue('I'.$row, $sj->penerima ?? '-');
             $sheet->setCellValue('J'.$row, $sj->jenis_barang ?? '-');
             $sheet->setCellValue('K'.$row, $sj->tipe_kontainer ?? '-');
-            $sheet->setCellValue('L'.$row, $sj->rit ?? 1);
+            $sheet->setCellValue('L'.$row, $sj->rit === 'menggunakan_rit' ? 'Ya' : 'Tidak');
 
-            $totalRit += $sj->rit ?? 1;
+            $totalRit += $sj->rit === 'menggunakan_rit' ? 1 : 0;
 
             // Center align
             $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
