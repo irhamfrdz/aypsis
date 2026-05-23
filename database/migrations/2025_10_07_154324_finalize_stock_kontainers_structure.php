@@ -56,6 +56,12 @@ return new class extends Migration
         Schema::table('stock_kontainers', function (Blueprint $table) {
             // Cek apakah kolom nomor_kontainer masih ada sebelum menghapus
             if (Schema::hasColumn('stock_kontainers', 'nomor_kontainer')) {
+                // Drop unique index first to avoid SQLite dropColumn constraint/index errors
+                try {
+                    $table->dropUnique('stock_kontainers_nomor_kontainer_unique');
+                } catch (\Exception $e) {
+                    // Ignore if index doesn't exist
+                }
                 $table->dropColumn('nomor_kontainer');
             }
 

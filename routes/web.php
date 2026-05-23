@@ -6079,6 +6079,9 @@ Route::middleware(['auth',
 
     Route::resource('pricelist-freight', \App\Http\Controllers\MasterPricelistFreightController::class)
         ->names('master-pricelist-freight')
+        ->parameters([
+            'pricelist-freight' => 'masterPricelistFreight',
+        ])
         ->middleware([
             'index' => 'can:master-pricelist-freight-view',
             'show' => 'can:master-pricelist-freight-view',
@@ -6091,6 +6094,9 @@ Route::middleware(['auth',
 
     Route::resource('pricelist-biaya-storage', \App\Http\Controllers\MasterPricelistBiayaStorageController::class)
         ->names('master-pricelist-biaya-storage')
+        ->parameters([
+            'pricelist-biaya-storage' => 'masterPricelistBiayaStorage',
+        ])
         ->middleware([
             'index' => 'can:master-pricelist-biaya-storage-view',
             'show' => 'can:master-pricelist-biaya-storage-view',
