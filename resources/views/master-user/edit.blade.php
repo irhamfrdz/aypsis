@@ -2050,6 +2050,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Perbaikan Kontainer --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Perbaikan Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[perbaikan-kontainer][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['perbaikan-kontainer']['view']) && $userMatrixPermissions['perbaikan-kontainer']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[perbaikan-kontainer][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['perbaikan-kontainer']['create']) && $userMatrixPermissions['perbaikan-kontainer']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[perbaikan-kontainer][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['perbaikan-kontainer']['update']) && $userMatrixPermissions['perbaikan-kontainer']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[perbaikan-kontainer][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['perbaikan-kontainer']['delete']) && $userMatrixPermissions['perbaikan-kontainer']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Gerak Kontainer --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">
