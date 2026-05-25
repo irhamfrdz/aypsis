@@ -247,12 +247,13 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">NO</th>
-                    <th style="width: 20%;">NO. PERBAIKAN</th>
-                    <th style="width: 15%;">NO. KONTAINER</th>
-                    <th style="width: 15%;">UKURAN & TIPE</th>
-                    <th style="width: 20%;">BENGKEL</th>
-                    <th style="width: 12%;">ESTIMASI</th>
-                    <th style="width: 13%;">REALISASI</th>
+                    <th style="width: 15%;">NO. PERBAIKAN</th>
+                    <th style="width: 13%;">NO. KONTAINER</th>
+                    <th style="width: 12%;">UKURAN & TIPE</th>
+                    <th style="width: 15%;">BENGKEL</th>
+                    <th style="width: 17%;">KETERANGAN KERUSAKAN</th>
+                    <th style="width: 11%;">ESTIMASI</th>
+                    <th style="width: 12%;">REALISASI</th>
                 </tr>
             </thead>
             <tbody>
@@ -273,26 +274,27 @@
                             {{ $item['ukuran'] ?? '' }}FT {{ $item['tipe'] ?? '' }}
                         </td>
                         <td>{{ $item['bengkel'] ?? '-' }}</td>
+                        <td style="white-space: normal;">{{ $item['keterangan_kerusakan'] ?? (\App\Models\PerbaikanKontainer::find($item['id'] ?? null)->keterangan_kerusakan ?? '-') }}</td>
                         <td class="text-right">{{ number_format($estimasi, 0, ',', '.') }}</td>
                         <td class="text-right font-bold">{{ number_format($biayaTerpakai, 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
                     <tr style="background-color: #f9f9f9; font-weight: bold;">
-                        <td colspan="6" class="text-right px-4">SUBTOTAL</td>
+                        <td colspan="7" class="text-right px-4">SUBTOTAL</td>
                         <td class="text-right">{{ number_format($grandTotal, 0, ',', '.') }}</td>
                     </tr>
                     @if($pranota->adjustment != 0)
                     <tr style="font-weight: bold;">
-                        <td colspan="6" class="text-right px-4">ADJUSTMENT</td>
+                        <td colspan="7" class="text-right px-4">ADJUSTMENT</td>
                         <td class="text-right">{{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
                     </tr>
                     <tr style="background-color: #eee; font-weight: bold; font-size: 9px;">
-                        <td colspan="6" class="text-right px-4">TOTAL AKHIR</td>
+                        <td colspan="7" class="text-right px-4">TOTAL AKHIR</td>
                         <td class="text-right">{{ number_format($grandTotal + $pranota->adjustment, 0, ',', '.') }}</td>
                     </tr>
                     @endif
                 @else
-                    <tr><td colspan="7" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
+                    <tr><td colspan="8" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
                 @endif
             </tbody>
         </table>

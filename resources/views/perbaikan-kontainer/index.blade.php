@@ -181,6 +181,7 @@
                                        data-estimasi="{{ $perbaikan->estimasi_biaya }}"
                                        data-biaya-riil="{{ $perbaikan->biaya_riil }}"
                                        data-status="{{ $perbaikan->status }}"
+                                       data-keterangan-kerusakan="{{ $perbaikan->keterangan_kerusakan }}"
                                        @if($perbaikan->status_pranota === 'Sudah') disabled @endif
                                        onchange="updateBulkActions()">
                             </td>
@@ -587,6 +588,7 @@
                 estimasi_biaya: cb.dataset.estimasi,
                 biaya_riil: cb.dataset.biayaRiil,
                 status: cb.dataset.status,
+                keterangan_kerusakan: cb.dataset.keteranganKerusakan,
             });
         });
 

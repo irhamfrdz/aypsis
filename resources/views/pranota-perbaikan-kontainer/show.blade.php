@@ -107,6 +107,7 @@
                             <th class="px-4 py-3 font-semibold uppercase tracking-wider">No. Kontainer</th>
                             <th class="px-4 py-3 font-semibold uppercase tracking-wider">Ukuran & Tipe</th>
                             <th class="px-4 py-3 font-semibold uppercase tracking-wider">Bengkel</th>
+                            <th class="px-4 py-3 font-semibold uppercase tracking-wider">Keterangan Kerusakan</th>
                             <th class="px-4 py-3 font-semibold uppercase tracking-wider text-right">Estimasi Biaya</th>
                             <th class="px-4 py-3 font-semibold uppercase tracking-wider text-right">Biaya Riil</th>
                             <th class="px-4 py-3 font-semibold uppercase tracking-wider text-right">Biaya Terpakai</th>
@@ -138,6 +139,7 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-gray-700">{{ $item['bengkel'] ?? '-' }}</td>
+                                <td class="px-4 py-3 text-gray-700 max-w-xs break-words">{{ $item['keterangan_kerusakan'] ?? (\App\Models\PerbaikanKontainer::find($item['id'] ?? null)->keterangan_kerusakan ?? '-') }}</td>
                                 <td class="px-4 py-3 text-right text-gray-600">Rp {{ number_format($estimasi, 0, ',', '.') }}</td>
                                 <td class="px-4 py-3 text-right text-gray-900">
                                     @if($biayaRiil > 0)
@@ -150,7 +152,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-4 py-8 text-center text-gray-500 font-medium">Tidak ada item perbaikan kontainer terdaftar.</td>
+                                <td colspan="9" class="px-4 py-8 text-center text-gray-500 font-medium">Tidak ada item perbaikan kontainer terdaftar.</td>
                             </tr>
                         @endforelse
                     </tbody>
