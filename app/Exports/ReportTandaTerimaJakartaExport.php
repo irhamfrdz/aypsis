@@ -142,9 +142,10 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     });
                     $names = collect($dimensi)->map(function ($i) use ($item) {
                         $n = data_get($i, 'nama_barang') ?: data_get($i, 'nama') ?: $item->nama_barang ?: $item->jenis_barang;
+
                         return is_array($n) ? implode(', ', $n) : $n;
                     })->filter()->unique()->implode(', ');
-                    
+
                     $satuan = data_get($dimensi[0], 'satuan') ?? '';
 
                     $items = [[
@@ -204,7 +205,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     $names = $item->dimensiItems->map(function ($i) use ($item) {
                         return $i->nama_barang ?: $i->nama ?: $item->nama_barang ?: $item->jenis_barang;
                     })->filter()->unique()->implode(', ');
-                    
+
                     $satuan = $item->dimensiItems->first()->satuan ?? '';
 
                     $items = [[
@@ -265,7 +266,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     $names = $item->items->map(function ($i) use ($item) {
                         return $i->nama_barang ?: $i->nama ?: $item->nama_barang ?: $item->kegiatan ?: $item->jenis_barang;
                     })->filter()->unique()->implode(', ');
-                    
+
                     $satuan = $item->items->first()->satuan ?? '';
 
                     $items = [[
@@ -398,9 +399,11 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
             $hasContainer = ! empty($item['no_kontainer']) && $item['no_kontainer'] != '-';
             if ($hasContainer) {
                 $seal = $item['no_seal'] ?: 'none';
-                return $item['no_kontainer'] . '|' . $seal;
+
+                return $item['no_kontainer'].'|'.$seal;
             }
-            return 'empty_' . $key;
+
+            return 'empty_'.$key;
         });
 
         $finalData = collect();

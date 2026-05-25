@@ -1051,7 +1051,7 @@ class StockAmprahanController extends Controller
         }
 
         if ($request->filled('penerima')) {
-            $query->where('penerima', 'like', '%' . $request->penerima . '%');
+            $query->where('penerima', 'like', '%'.$request->penerima.'%');
         }
 
         if ($request->filled('from_date')) {

@@ -20,9 +20,9 @@ foreach ($tts as $tt) {
     echo "Status: {$tt->status}\n";
     echo "Created By: {$tt->created_by}\n";
     echo "Updated By: {$tt->updated_by}\n";
-    
+
     $items = TandaTerimaLclItem::where('tanda_terima_lcl_id', $tt->id)->get();
-    echo "Items Count: " . $items->count() . "\n";
+    echo 'Items Count: '.$items->count()."\n";
     foreach ($items as $item) {
         echo "  - Item ID: {$item->id}\n";
         echo "    Nama: {$item->nama_barang}\n";

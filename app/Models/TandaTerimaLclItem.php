@@ -22,6 +22,7 @@ class TandaTerimaLclItem extends Model
         'panjang',
         'lebar',
         'tinggi',
+        'ukuran',
         'meter_kubik',
         'tonase',
     ];

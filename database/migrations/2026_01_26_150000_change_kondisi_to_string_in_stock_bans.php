@@ -22,8 +22,8 @@ return new class extends Migration
         } catch (\Exception $e) {
             // Fallback for MySQL if dbal is missing
             if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
-            DB::statement("ALTER TABLE stock_bans MODIFY kondisi VARCHAR(50) NOT NULL DEFAULT 'asli'");
-        }
+                DB::statement("ALTER TABLE stock_bans MODIFY kondisi VARCHAR(50) NOT NULL DEFAULT 'asli'");
+            }
         }
     }
 

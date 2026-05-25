@@ -634,7 +634,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             }
 
             // Set total volume and weight from arrays
-            if (! empty($tinggiArray)) {
+            if (! empty($ukuranArray)) {
                 $validated['ukuran'] = $ukuranArray[0] ?? null;
             }
             if (! empty($meterKubikArray)) {
@@ -961,6 +961,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'jumlah.*' => 'nullable|integer|min:0',
             'satuan' => 'nullable',
             'satuan.*' => 'nullable|string|max:50',
+            'ukuran' => 'nullable',
+            'ukuran.*' => 'nullable|string|max:255',
             'tujuan_pengambilan' => 'required|string|max:255',
             'no_plat' => 'nullable|string|max:20',
             'catatan' => 'nullable|string',
@@ -1052,17 +1054,19 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $panjangArray = $request->input('panjang');
             $lebarArray = $request->input('lebar');
             $tinggiArray = $request->input('tinggi');
+            $ukuranArray = $request->input('ukuran');
             $meterArray = $request->input('meter_kubik');
             $tonaseArray = $request->input('tonase');
 
             // If arrays are provided, sanitize and persist dimensi items
-            if (is_array($namaArray) || is_array($panjangArray) || is_array($meterArray)) {
+            if (is_array($namaArray) || is_array($panjangArray) || is_array($meterArray) || is_array($ukuranArray)) {
                 $maxCount = max(
                     count(is_array($namaArray) ? $namaArray : []),
                     count(is_array($jumlahArray) ? $jumlahArray : []),
                     count(is_array($panjangArray) ? $panjangArray : []),
                     count(is_array($lebarArray) ? $lebarArray : []),
                     count(is_array($tinggiArray) ? $tinggiArray : []),
+                    count(is_array($ukuranArray) ? $ukuranArray : []),
                     count(is_array($meterArray) ? $meterArray : []),
                     count(is_array($tonaseArray) ? $tonaseArray : [])
                 );
@@ -1073,6 +1077,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $panjangClean = [];
                 $lebarClean = [];
                 $tinggiClean = [];
+                $ukuranClean = [];
                 $meterClean = [];
                 $tonaseClean = [];
 
@@ -1083,6 +1088,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     $panjangClean[$i] = isset($panjangArray[$i]) && is_numeric($panjangArray[$i]) ? (float) $panjangArray[$i] : null;
                     $lebarClean[$i] = isset($lebarArray[$i]) && is_numeric($lebarArray[$i]) ? (float) $lebarArray[$i] : null;
                     $tinggiClean[$i] = isset($tinggiArray[$i]) && is_numeric($tinggiArray[$i]) ? (float) $tinggiArray[$i] : null;
+                    $ukuranClean[$i] = isset($ukuranArray[$i]) ? trim((string) $ukuranArray[$i]) : null;
                     $meterClean[$i] = isset($meterArray[$i]) && is_numeric($meterArray[$i]) ? (float) $meterArray[$i] : null;
                     $tonaseClean[$i] = isset($tonaseArray[$i]) && is_numeric($tonaseArray[$i]) ? (float) $tonaseArray[$i] : null;
                 }
@@ -1101,10 +1107,11 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     $p = $panjangClean[$i] ?? null;
                     $l = $lebarClean[$i] ?? null;
                     $t = $tinggiClean[$i] ?? null;
+                    $u = $ukuranClean[$i] ?? null;
                     $m = $meterClean[$i] ?? null;
                     $o = $tonaseClean[$i] ?? null;
 
-                    if (! is_null($n) || ! is_null($p) || ! is_null($l) || ! is_null($t) || ! is_null($m) || ! is_null($o)) {
+                    if (! is_null($n) || ! is_null($p) || ! is_null($l) || ! is_null($t) || ! is_null($u) || ! is_null($m) || ! is_null($o)) {
                         $tandaTerimaTanpaSuratJalan->dimensiItems()->create([
                             'nama_barang' => $n,
                             'jumlah' => $j,
@@ -1112,6 +1119,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                             'panjang' => $p,
                             'lebar' => $l,
                             'tinggi' => $t,
+                            'ukuran' => $u,
                             'meter_kubik' => $m,
                             'tonase' => $o,
                             'item_order' => $i,
@@ -1136,6 +1144,12 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 }
                 unset($validated['satuan']); // Always remove array field
 
+                if (! empty($ukuranClean)) {
+                    $validated['ukuran'] = $ukuranClean[0] ?? null;
+                } else {
+                    unset($validated['ukuran']);
+                }
+
                 // Always remove dimension array fields and use aggregated values
                 unset($validated['panjang']);
                 unset($validated['lebar']);
@@ -1157,6 +1171,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 unset($validated['nama_barang']);
                 unset($validated['jumlah']);
                 unset($validated['satuan']);
+                unset($validated['ukuran']);
                 unset($validated['panjang']);
                 unset($validated['lebar']);
                 unset($validated['tinggi']);

@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PranotaUangRitKenekExport;
 use App\Models\PranotaUangRitKenek;
 use App\Models\PranotaUangRitKenekDetail;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
-use App\Exports\PranotaUangRitKenekExport;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PranotaUangRitKenekController extends Controller
 {
@@ -1612,6 +1612,7 @@ class PranotaUangRitKenekController extends Controller
     {
         $filters = $request->only(['search', 'status', 'start_date', 'end_date']);
         $fileName = 'pranota_uang_rit_kenek_'.date('Ymd_His').'.xlsx';
+
         return Excel::download(new PranotaUangRitKenekExport($filters), $fileName);
     }
 }

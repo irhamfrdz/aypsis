@@ -24,6 +24,7 @@ class TandaTerimaTanpaSuratJalan extends Model
         'tipe_kontainer',
         'no_kontainer',
         'status',
+        'ukuran',
 
         'size_kontainer',
         'pengirim',

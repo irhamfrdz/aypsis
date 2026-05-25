@@ -483,7 +483,7 @@
                                 <div class="dimensi-row mb-4 pb-4 border-b border-purple-200">
                                     <input type="hidden" name="item_ids[]" value="{{ $item->id }}">
                                     
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
                                         <div>
                                             <label for="nama_barang_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
                                                 Nama Barang
@@ -491,9 +491,21 @@
                                             <input type="text"
                                                    name="nama_barang[]" 
                                                    id="nama_barang_{{ $index }}"
-                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                   class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
                                                    placeholder="Nama barang"
-                                                   value="{{ old('nama_barang.'.$index, $item->nama_barang) }}">
+                                                   value="{{ old('nama_barang.'.$index, $item->nama_barang) }}"
+                                                   oninput="toggleUkuranField(this)">
+                                        </div>
+                                        <div class="ukuran-container hidden">
+                                            <label for="ukuran_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
+                                                Ukuran
+                                            </label>
+                                            <input type="text"
+                                                   name="ukuran[]"
+                                                   id="ukuran_{{ $index }}"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                                   placeholder="Contoh: 40x40"
+                                                   value="{{ old('ukuran.'.$index, $item->ukuran) }}">
                                         </div>
                                         <div>
                                             <label for="jumlah_{{ $index }}" class="block text-xs font-medium text-gray-500 mb-2">
@@ -601,7 +613,7 @@
                             @endforeach
                         @else
                             <div class="dimensi-row mb-4 pb-4 border-b border-purple-200">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
                                     <div>
                                         <label for="nama_barang_0" class="block text-xs font-medium text-gray-500 mb-2">
                                             Nama Barang
@@ -609,9 +621,21 @@
                                         <input type="text"
                                                name="nama_barang[]" 
                                                id="nama_barang_0"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                               class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
                                                placeholder="Nama barang"
-                                               value="{{ old('nama_barang.0') }}">
+                                               value="{{ old('nama_barang.0') }}"
+                                               oninput="toggleUkuranField(this)">
+                                    </div>
+                                    <div class="ukuran-container hidden">
+                                        <label for="ukuran_0" class="block text-xs font-medium text-gray-500 mb-2">
+                                            Ukuran
+                                        </label>
+                                        <input type="text"
+                                               name="ukuran[]"
+                                               id="ukuran_0"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                                               placeholder="Contoh: 40x40"
+                                               value="{{ old('ukuran.0') }}">
                                     </div>
                                     <div>
                                         <label for="jumlah_0" class="block text-xs font-medium text-gray-500 mb-2">
@@ -1191,12 +1215,19 @@ function addDimensiRow() {
                 </svg>
             </button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 dimensi-info-grid">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
                 <input type="text" name="nama_barang[]" 
+                       class="nama-barang-input w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                       placeholder="Nama barang"
+                       oninput="toggleUkuranField(this)">
+            </div>
+            <div class="ukuran-container hidden">
+                <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran</label>
+                <input type="text" name="ukuran[]" 
                        class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
-                       placeholder="Nama barang">
+                       placeholder="Contoh: 40x40">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah</label>
@@ -2532,6 +2563,43 @@ function saveScannerResult() {
             }, 3000);
         }
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.nama-barang-input').forEach(input => {
+            toggleUkuranField(input);
+        });
+    });
+
+    /**
+     * Toggles the visibility of the "Ukuran" field based on the "Nama Barang" input value.
+     * Only shows if the value contains "keramik" (case-insensitive).
+     */
+    function toggleUkuranField(input) {
+        const row = input.closest('.dimensi-row') || input.closest('.dimensi-row-new') || input.closest('.dimensi-row-edit');
+        if (!row) return;
+
+        const ukuranContainer = row.querySelector('.ukuran-container');
+        const gridContainer = row.querySelector('.dimensi-info-grid');
+        const value = input.value.toLowerCase();
+        
+        if (value.includes('keramik')) {
+            if (ukuranContainer) {
+                ukuranContainer.classList.remove('hidden');
+            }
+            if (gridContainer) {
+                gridContainer.classList.remove('md:grid-cols-3');
+                gridContainer.classList.add('md:grid-cols-4');
+            }
+        } else {
+            if (ukuranContainer) {
+                ukuranContainer.classList.add('hidden');
+            }
+            if (gridContainer) {
+                gridContainer.classList.remove('md:grid-cols-4');
+                gridContainer.classList.add('md:grid-cols-3');
+            }
+        }
+    }
 </script>
 @endpush
 @endsection

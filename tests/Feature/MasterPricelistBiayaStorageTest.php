@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Permission;
 use App\Models\MasterPricelistBiayaStorage;
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,6 +13,7 @@ class MasterPricelistBiayaStorageTest extends TestCase
     use RefreshDatabase;
 
     protected $user;
+
     protected $permissions = [];
 
     protected function setUp(): void
@@ -30,7 +31,7 @@ class MasterPricelistBiayaStorageTest extends TestCase
         foreach ($perms as $pName) {
             $this->permissions[$pName] = Permission::create([
                 'name' => $pName,
-                'description' => 'Test ' . $pName,
+                'description' => 'Test '.$pName,
             ]);
         }
 

@@ -23,6 +23,7 @@ class TandaTerimaLcl extends Model
         'surat_jalan_pabrik',
         'tanggal_surat_jalan_pabrik',
         'term_id',
+        'ukuran',
         // Single Penerima
         'nama_penerima',
         'pic_penerima',

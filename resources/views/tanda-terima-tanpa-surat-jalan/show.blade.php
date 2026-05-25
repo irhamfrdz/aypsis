@@ -189,6 +189,13 @@
                                     </div>
                                 @endif
 
+                                @if($tandaTerimaTanpaSuratJalan->ukuran)
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-500 mb-2">Ukuran</label>
+                                        <p class="text-base text-gray-900">{{ $tandaTerimaTanpaSuratJalan->ukuran }}</p>
+                                    </div>
+                                @endif
+
                                 @if($tandaTerimaTanpaSuratJalan->panjang || $tandaTerimaTanpaSuratJalan->lebar || $tandaTerimaTanpaSuratJalan->tinggi)
                                     <div class="md:col-span-2">
                                         <label class="block text-sm font-medium text-gray-500 mb-2">Dimensi</label>
@@ -231,6 +238,7 @@
                                             <tr>
                                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran</th>
                                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
                                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Panjang (m)</th>
                                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Lebar (m)</th>
@@ -248,6 +256,9 @@
                                                         @if($item->satuan)
                                                             <div class="text-xs text-gray-500">{{ $item->satuan }}</div>
                                                         @endif
+                                                    </td>
+                                                    <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">
+                                                        {{ $item->ukuran ?: '-' }}
                                                     </td>
                                                     <td class="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">
                                                         {{ $item->jumlah ? number_format($item->jumlah) : '-' }}
@@ -284,7 +295,7 @@
                                         </tbody>
                                         <tfoot class="bg-gray-50">
                                             <tr>
-                                                <td colspan="6" class="px-4 py-3 text-sm font-medium text-gray-900 text-right">Total:</td>
+                                                <td colspan="7" class="px-4 py-3 text-sm font-medium text-gray-900 text-right">Total:</td>
                                                 <td class="px-4 py-3 text-center">
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-200 text-blue-900">
                                                         {{ number_format($tandaTerimaTanpaSuratJalan->dimensiItems->sum('meter_kubik'), 3) }} m³

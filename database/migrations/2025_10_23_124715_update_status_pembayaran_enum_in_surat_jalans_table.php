@@ -19,8 +19,8 @@ return new class extends Migration
 
             // Drop and recreate the enum column with new values
             if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
-            DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran ENUM('belum_dibayar', 'sudah_dibayar') NOT NULL DEFAULT 'belum_dibayar'");
-        }
+                DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran ENUM('belum_dibayar', 'sudah_dibayar') NOT NULL DEFAULT 'belum_dibayar'");
+            }
         });
     }
 
@@ -32,8 +32,8 @@ return new class extends Migration
         Schema::table('surat_jalans', function (Blueprint $table) {
             // Revert back to original enum values
             if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
-            DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran ENUM('belum_bayar', 'sebagian', 'lunas') NOT NULL DEFAULT 'belum_bayar'");
-        }
+                DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status_pembayaran ENUM('belum_bayar', 'sebagian', 'lunas') NOT NULL DEFAULT 'belum_bayar'");
+            }
 
             // Update records back to original values
             DB::statement("UPDATE surat_jalans SET status_pembayaran = 'belum_bayar' WHERE status_pembayaran = 'belum_dibayar'");

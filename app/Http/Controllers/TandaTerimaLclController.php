@@ -149,6 +149,8 @@ class TandaTerimaLclController extends Controller
             'meter_kubik.*' => 'nullable|numeric|min:0',
             'tonase' => 'nullable|array',
             'tonase.*' => 'nullable|numeric|min:0',
+            'ukuran' => 'nullable|array',
+            'ukuran.*' => 'nullable|string|max:255',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -164,6 +166,8 @@ class TandaTerimaLclController extends Controller
                 }
             }
 
+            $ukuranArray = $request->ukuran ?? [];
+
             // Create main LCL record
             $tandaTerima = TandaTerimaLcl::create([
                 'nomor_tanda_terima' => $request->nomor_tanda_terima,
@@ -172,6 +176,7 @@ class TandaTerimaLclController extends Controller
                 'surat_jalan_pabrik' => $request->surat_jalan_pabrik,
                 'tanggal_surat_jalan_pabrik' => $request->tanggal_surat_jalan_pabrik,
                 'term_id' => $request->term_id,
+                'ukuran' => isset($ukuranArray[0]) ? $ukuranArray[0] : null,
                 'nama_penerima' => $request->nama_penerima,
                 'pic_penerima' => $request->pic_penerima,
                 'telepon_penerima' => $request->telepon_penerima,
@@ -191,7 +196,7 @@ class TandaTerimaLclController extends Controller
             ]);
 
             // Create dimension items from array fields
-            if ($request->has('panjang') && is_array($request->panjang)) {
+            if ($request->has('panjang') || $request->has('ukuran')) {
                 $namaBarangArray = $request->nama_barang ?? [];
                 $jumlahArray = $request->jumlah ?? [];
                 $satuanArray = $request->satuan ?? [];
@@ -204,7 +209,8 @@ class TandaTerimaLclController extends Controller
                     count($panjangArray),
                     count($lebarArray),
                     count($tinggiArray),
-                    count($tonaseArray)
+                    count($tonaseArray),
+                    count($ukuranArray)
                 );
 
                 for ($i = 0; $i < $count; $i++) {
@@ -222,9 +228,10 @@ class TandaTerimaLclController extends Controller
                     $namaBarang = isset($namaBarangArray[$i]) ? $namaBarangArray[$i] : null;
                     $jumlah = isset($jumlahArray[$i]) ? intval($jumlahArray[$i]) : null;
                     $satuan = isset($satuanArray[$i]) ? $satuanArray[$i] : null;
+                    $ukuran = isset($ukuranArray[$i]) ? $ukuranArray[$i] : null;
 
-                    // Create item if at least one value is provided (including nama_barang, jumlah, or satuan)
-                    if ($namaBarang || $jumlah || $satuan || $panjang || $lebar || $tinggi || $volume || $tonase) {
+                    // Create item if at least one value is provided (including nama_barang, jumlah, satuan, or ukuran)
+                    if ($namaBarang || $jumlah || $satuan || $panjang || $lebar || $tinggi || $volume || $tonase || $ukuran) {
                         TandaTerimaLclItem::create([
                             'tanda_terima_lcl_id' => $tandaTerima->id,
                             'item_number' => $i + 1,
@@ -234,6 +241,7 @@ class TandaTerimaLclController extends Controller
                             'panjang' => $panjang,
                             'lebar' => $lebar,
                             'tinggi' => $tinggi,
+                            'ukuran' => $ukuran,
                             'meter_kubik' => $volume,
                             'tonase' => $tonase,
                         ]);
@@ -368,6 +376,8 @@ class TandaTerimaLclController extends Controller
             'meter_kubik.*' => 'nullable|numeric|min:0',
             'tonase' => 'nullable|array',
             'tonase.*' => 'nullable|numeric|min:0',
+            'ukuran' => 'nullable|array',
+            'ukuran.*' => 'nullable|string|max:255',
             'supir' => 'required|string|max:255',
             'no_plat' => 'required|string|max:255',
             'tipe_kontainer' => 'required|in:cargo,lcl',
@@ -377,6 +387,8 @@ class TandaTerimaLclController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $tandaTerima) {
+            $ukuranArray = $request->ukuran ?? [];
+
             // Update main record (without nama_barang - it's now handled in items)
             $tandaTerima->update([
                 'nomor_tanda_terima' => $request->nomor_tanda_terima,
@@ -385,6 +397,7 @@ class TandaTerimaLclController extends Controller
                 'surat_jalan_pabrik' => $request->surat_jalan_pabrik,
                 'tanggal_surat_jalan_pabrik' => $request->tanggal_surat_jalan_pabrik,
                 'term_id' => $request->term_id,
+                'ukuran' => isset($ukuranArray[0]) ? $ukuranArray[0] : null,
                 'nama_penerima' => $request->nama_penerima,
                 'pic_penerima' => $request->pic_penerima,
                 'telepon_penerima' => $request->telepon_penerima,
@@ -409,8 +422,8 @@ class TandaTerimaLclController extends Controller
             ]);
 
             // Update items - handle flat array format
-            if ($request->has('nama_barang') && is_array($request->nama_barang)) {
-                $namaBarangs = $request->nama_barang;
+            if (($request->has('nama_barang') && is_array($request->nama_barang)) || ! empty($ukuranArray)) {
+                $namaBarangs = $request->nama_barang ?? [];
                 $jumlahs = $request->jumlah ?? [];
                 $satuans = $request->satuan ?? [];
                 $panjangs = $request->panjang ?? [];
@@ -421,10 +434,16 @@ class TandaTerimaLclController extends Controller
 
                 $existingIds = [];
 
-                foreach ($namaBarangs as $index => $namaBarang) {
+                $maxCount = max(count($namaBarangs), count($ukuranArray));
+
+                for ($index = 0; $index < $maxCount; $index++) {
+                    $namaBarang = $namaBarangs[$index] ?? null;
+                    $ukuranVal = $ukuranArray[$index] ?? null;
+
                     // Check if at least one field has value
                     $hasData = ! empty($namaBarang) || ! empty($jumlahs[$index]) || ! empty($satuans[$index])
-                            || ! empty($panjangs[$index]) || ! empty($lebars[$index]) || ! empty($tinggis[$index]) || ! empty($tonases[$index]);
+                            || ! empty($panjangs[$index]) || ! empty($lebars[$index]) || ! empty($tinggis[$index])
+                            || ! empty($tonases[$index]) || ! empty($ukuranVal);
 
                     if ($hasData) {
                         // Calculate volume if dimensions are provided
@@ -444,6 +463,7 @@ class TandaTerimaLclController extends Controller
                                     'panjang' => $panjangs[$index] ?? null,
                                     'lebar' => $lebars[$index] ?? null,
                                     'tinggi' => $tinggis[$index] ?? null,
+                                    'ukuran' => $ukuranVal ?: null,
                                     'meter_kubik' => $volume,
                                     'tonase' => $tonases[$index] ?? null,
                                 ]);
@@ -460,6 +480,7 @@ class TandaTerimaLclController extends Controller
                                 'panjang' => $panjangs[$index] ?? null,
                                 'lebar' => $lebars[$index] ?? null,
                                 'tinggi' => $tinggis[$index] ?? null,
+                                'ukuran' => $ukuranVal ?: null,
                                 'meter_kubik' => $volume,
                                 'tonase' => $tonases[$index] ?? null,
                             ]);

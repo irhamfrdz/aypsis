@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coa;
 use App\Models\Kwitansi;
 use App\Models\KwitansiDetail;
-use App\Models\Coa;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +17,7 @@ class KwitansiController extends Controller
     {
         $this->coaTransactionService = $coaTransactionService;
     }
+
     public function index(Request $request)
     {
         $namaKapal = $request->get('nama_kapal');
