@@ -238,8 +238,8 @@
                     </div>
 
                 <div>
-                    <label for="tanggal_masuk" class="{{ $labelClasses }}">Tanggal Masuk</label>
-                    <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="{{ $inputClasses }}">
+                    <label for="tanggal_masuk" class="{{ $labelClasses }}">Tanggal Masuk <span class="text-red-500">*</span></label>
+                    <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="{{ $inputClasses }}" value="{{ old('tanggal_masuk') }}" required>
                 </div>
 
                 <div>
