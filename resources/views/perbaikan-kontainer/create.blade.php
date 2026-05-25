@@ -148,6 +148,20 @@
                             </select>
                         </div>
 
+                        <!-- Status Perbaikan -->
+                        <div>
+                            <label for="status" class="block text-sm font-semibold text-gray-700 mb-1">
+                                Status Perbaikan <span class="text-red-500">*</span>
+                            </label>
+                            <select name="status" id="status" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+                                <option value="pending" {{ old('status', 'pending') === 'pending' ? 'selected' : '' }}>Pending (Draft)</option>
+                                <option value="proses" {{ old('status') === 'proses' ? 'selected' : '' }}>Proses Perbaikan</option>
+                                <option value="selesai" {{ old('status') === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                <option value="batal" {{ old('status') === 'batal' ? 'selected' : '' }}>Batal</option>
+                            </select>
+                        </div>
+
                         <!-- Tanggal Masuk -->
                         <div>
                             <label for="tanggal_masuk" class="block text-sm font-semibold text-gray-700 mb-1">
@@ -158,8 +172,18 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
                         </div>
 
-                        <!-- Estimasi Biaya -->
+                        <!-- Tanggal Selesai -->
                         <div>
+                            <label for="tanggal_keluar" class="block text-sm font-semibold text-gray-700 mb-1">
+                                Tanggal Selesai Perbaikan <span id="tanggal_keluar_required_star" class="text-red-500 hidden">*</span>
+                            </label>
+                            <input type="date" name="tanggal_keluar" id="tanggal_keluar" 
+                                   value="{{ old('tanggal_keluar') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+                        </div>
+
+                        <!-- Estimasi Biaya -->
+                        <div class="md:col-span-2">
                             <label for="estimasi_biaya" class="block text-sm font-semibold text-gray-700 mb-1">
                                 Estimasi Biaya (Rp) <span class="text-red-500">*</span>
                             </label>
@@ -172,18 +196,6 @@
                                        class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
                             </div>
                         </div>
-
-                        <!-- Status Awal -->
-                        <div>
-                            <label for="status" class="block text-sm font-semibold text-gray-700 mb-1">
-                                Status Awal <span class="text-red-500">*</span>
-                            </label>
-                            <select name="status" id="status" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
-                                <option value="pending" {{ old('status', 'pending') === 'pending' ? 'selected' : '' }}>Pending (Draft)</option>
-                                <option value="proses" {{ old('status') === 'proses' ? 'selected' : '' }}>Proses Perbaikan</option>
-                            </select>
-                        </div>
                     </div>
 
                     <!-- Keterangan Kerusakan -->
@@ -194,6 +206,38 @@
                         <textarea name="keterangan_kerusakan" id="keterangan_kerusakan" rows="4" required
                                   placeholder="Tuliskan detail kerusakan kontainer yang perlu diperbaiki..."
                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">{{ old('keterangan_kerusakan') }}</textarea>
+                    </div>
+
+                    <!-- Selesai Fields Container (Toggled via JS) -->
+                    <div id="selesai_fields_container" class="bg-green-50 p-4 rounded-xl border border-green-150 space-y-4 hidden">
+                        <h4 class="text-sm font-bold text-green-800 uppercase tracking-wider"><i class="fas fa-check mr-2"></i>Data Penyelesaian</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Biaya Riil -->
+                            <div class="md:col-span-2">
+                                <label for="biaya_riil" class="block text-sm font-semibold text-green-800 mb-1">
+                                    Biaya Riil (Rp) <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative rounded-lg shadow-sm">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-green-600 text-sm">Rp</span>
+                                    </div>
+                                    <input type="number" name="biaya_riil" id="biaya_riil" 
+                                           value="{{ old('biaya_riil') }}" min="0"
+                                           class="w-full pl-9 pr-3 py-2 border border-green-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500 focus:outline-none bg-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Keterangan Perbaikan -->
+                        <div>
+                            <label for="keterangan_perbaikan" class="block text-sm font-semibold text-green-800 mb-1">
+                                Keterangan Perbaikan / Hasil Pekerjaan <span class="text-red-500">*</span>
+                            </label>
+                            <textarea name="keterangan_perbaikan" id="keterangan_perbaikan" rows="3"
+                                      placeholder="Tuliskan tindakan perbaikan yang telah dilakukan dan status akhir kontainer..."
+                                      class="w-full px-3 py-2 border border-green-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500 focus:outline-none bg-white">{{ old('keterangan_perbaikan') }}</textarea>
+                        </div>
                     </div>
                 </div>
 
@@ -220,6 +264,32 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
+        // Toggle Selesai fields based on Status input
+        function toggleSelesaiFields() {
+            var statusVal = $('#status').val();
+            if (statusVal === 'selesai') {
+                $('#selesai_fields_container').slideDown(200);
+                $('#tanggal_keluar, #biaya_riil, #keterangan_perbaikan').prop('required', true);
+                $('#tanggal_keluar_required_star').removeClass('hidden');
+                
+                // Autofill completion date if empty
+                if (!$('#tanggal_keluar').val()) {
+                    var today = new Date().toISOString().split('T')[0];
+                    $('#tanggal_keluar').val(today);
+                }
+            } else {
+                $('#selesai_fields_container').slideUp(200);
+                $('#tanggal_keluar, #biaya_riil, #keterangan_perbaikan').prop('required', false);
+                $('#tanggal_keluar_required_star').addClass('hidden');
+            }
+        }
+
+        // Trigger on page load and status input change
+        toggleSelesaiFields();
+        $('#status').on('change', function() {
+            toggleSelesaiFields();
+        });
+
         // Initialize Select2 Autocomplete Container Search
         $('#no_kontainer_select').select2({
             placeholder: 'Cari nomor kontainer...',

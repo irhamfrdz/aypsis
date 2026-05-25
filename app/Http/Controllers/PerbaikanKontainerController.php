@@ -73,9 +73,12 @@ class PerbaikanKontainerController extends Controller
             'ukuran' => 'nullable|string|max:10',
             'tipe_kontainer' => 'nullable|string|max:50',
             'tanggal_masuk' => 'required|date',
+            'tanggal_keluar' => 'required_if:status,selesai|nullable|date|after_or_equal:tanggal_masuk',
             'vendor_bengkel_id' => 'required|exists:vendor_bengkel,id',
             'keterangan_kerusakan' => 'required|string',
+            'keterangan_perbaikan' => 'required_if:status,selesai|nullable|string',
             'estimasi_biaya' => 'required|numeric|min:0',
+            'biaya_riil' => 'required_if:status,selesai|nullable|numeric|min:0',
             'status' => 'required|in:pending,proses,selesai,batal',
         ]);
 
