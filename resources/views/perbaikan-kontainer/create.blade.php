@@ -225,7 +225,7 @@
             placeholder: 'Cari nomor kontainer...',
             allowClear: true,
             ajax: {
-                url: '{{ route("api.kontainer.search") }}',
+                url: '{{ route("supir.api.kontainer.search") }}',
                 dataType: 'json',
                 delay: 250,
                 data: function(params) {
