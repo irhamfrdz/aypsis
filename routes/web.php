@@ -6042,4 +6042,16 @@ Route::middleware(['auth',
             'update' => 'can:master-pricelist-pelindo-update',
             'destroy' => 'can:master-pricelist-pelindo-delete',
         ]);
+
+    Route::resource('perbaikan-kontainer', \App\Http\Controllers\PerbaikanKontainerController::class)
+        ->names('perbaikan-kontainer')
+        ->middleware([
+            'index' => 'can:perbaikan-kontainer-view',
+            'show' => 'can:perbaikan-kontainer-view',
+            'create' => 'can:perbaikan-kontainer-update',
+            'store' => 'can:perbaikan-kontainer-update',
+            'edit' => 'can:perbaikan-kontainer-update',
+            'update' => 'can:perbaikan-kontainer-update',
+            'destroy' => 'can:perbaikan-kontainer-delete',
+        ]);
 });
