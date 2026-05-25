@@ -148,18 +148,16 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    @can('audit-log-view')
+                                        <button type="button" class="text-purple-600 hover:text-purple-900" 
+                                                onclick="showAuditLog('{!! addslashes(get_class($item)) !!}', '{{ $item->id }}', '{{ $item->kode }}')"
+                                                title="Lihat Riwayat">
+                                            <i class="fas fa-history"></i>
+                                        </button>
+                                    @endcan
                                 </div>
                             </td>
-                        
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($cabang), {{ $cabang->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                        </tr>
                     @empty
                         <tr>
                             <td colspan="9" class="px-6 py-8 text-center text-gray-500">
@@ -173,16 +171,7 @@
                                     </a>
                                 </div>
                             </td>
-                        
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($cabang), {{ $cabang->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

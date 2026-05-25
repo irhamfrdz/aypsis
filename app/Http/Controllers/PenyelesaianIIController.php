@@ -11,7 +11,6 @@ use App\Models\MasterPricelistSewaKontainer;
 use App\Models\Permohonan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -256,8 +255,6 @@ class PenyelesaianIIController extends Controller
 
         return null;
     }
-
-
 
     /**
      * Proses masal permohonan yang dipilih pada dashboard approval.
