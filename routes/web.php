@@ -6064,4 +6064,30 @@ Route::middleware(['auth',
             'update' => 'can:perbaikan-kontainer-update',
             'destroy' => 'can:perbaikan-kontainer-delete',
         ]);
+
+    // Pranota Perbaikan Kontainer routes
+    Route::get('pranota-perbaikan-kontainer', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'index'])
+        ->name('pranota-perbaikan-kontainer.index')
+        ->middleware('can:pranota-perbaikan-kontainer-view');
+    Route::get('pranota-perbaikan-kontainer/create', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'create'])
+        ->name('pranota-perbaikan-kontainer.create')
+        ->middleware('can:pranota-perbaikan-kontainer-create');
+    Route::post('pranota-perbaikan-kontainer', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'store'])
+        ->name('pranota-perbaikan-kontainer.store')
+        ->middleware('can:pranota-perbaikan-kontainer-create');
+    Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'show'])
+        ->name('pranota-perbaikan-kontainer.show')
+        ->middleware('can:pranota-perbaikan-kontainer-view');
+    Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/edit', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'edit'])
+        ->name('pranota-perbaikan-kontainer.edit')
+        ->middleware('can:pranota-perbaikan-kontainer-update');
+    Route::put('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'update'])
+        ->name('pranota-perbaikan-kontainer.update')
+        ->middleware('can:pranota-perbaikan-kontainer-update');
+    Route::delete('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'destroy'])
+        ->name('pranota-perbaikan-kontainer.destroy')
+        ->middleware('can:pranota-perbaikan-kontainer-delete');
+    Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/print', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'print'])
+        ->name('pranota-perbaikan-kontainer.print')
+        ->middleware('can:pranota-perbaikan-kontainer-print');
 });
