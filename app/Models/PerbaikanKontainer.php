@@ -29,6 +29,7 @@ class PerbaikanKontainer extends Model
         'estimasi_biaya',
         'biaya_riil',
         'status',
+        'status_pranota',
         'created_by',
         'updated_by',
     ];

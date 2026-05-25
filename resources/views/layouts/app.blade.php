@@ -997,6 +997,11 @@
                         <span class="text-xs">Perbaikan Kontainer</span>
                     </a>
                 @endif
+                @if($user && $user->can('pranota-perbaikan-kontainer-view'))
+                    <a href="{{ route('pranota-perbaikan-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pranota-perbaikan-kontainer.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Pranota Perbaikan Kontainer</span>
+                    </a>
+                @endif
             </div>
         </div>
         @endif

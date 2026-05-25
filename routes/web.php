@@ -6041,6 +6041,18 @@ Route::middleware(['auth',
             'destroy' => 'can:master-pricelist-pelindo-delete',
         ]);
 
+    Route::get('perbaikan-kontainer/generate-nomor-pranota', [\App\Http\Controllers\PerbaikanKontainerController::class, 'generateNomorPranota'])
+        ->name('perbaikan-kontainer.generate-nomor-pranota')
+        ->middleware('can:perbaikan-kontainer-view');
+
+    Route::post('perbaikan-kontainer/masuk-pranota', [\App\Http\Controllers\PerbaikanKontainerController::class, 'masukPranota'])
+        ->name('perbaikan-kontainer.masuk-pranota')
+        ->middleware('can:perbaikan-kontainer-view');
+
+    Route::post('perbaikan-kontainer/update-biaya-riil', [\App\Http\Controllers\PerbaikanKontainerController::class, 'updateBiayaRiil'])
+        ->name('perbaikan-kontainer.update-biaya-riil')
+        ->middleware('can:perbaikan-kontainer-update');
+
     Route::resource('perbaikan-kontainer', \App\Http\Controllers\PerbaikanKontainerController::class)
         ->names('perbaikan-kontainer')
         ->middleware([

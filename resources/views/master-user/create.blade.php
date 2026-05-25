@@ -471,6 +471,22 @@
                                 <td>-</td>
                             </tr>
 
+                            {{-- Pranota Perbaikan Kontainer --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Pranota Perbaikan Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-perbaikan-kontainer][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-perbaikan-kontainer][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-perbaikan-kontainer][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-perbaikan-kontainer][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pranota-perbaikan-kontainer][print]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">

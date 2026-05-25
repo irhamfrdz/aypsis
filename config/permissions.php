@@ -83,6 +83,18 @@ return [
                 'pranota-stock-delete' => 'Hapus Pranota',
             ],
         ],
+        'pranota-perbaikan-kontainer' => [
+            'name' => 'Pranota Perbaikan Kontainer',
+            'description' => 'Menu riwayat pranota perbaikan kontainer',
+            'required' => true,
+            'sub_modules' => [
+                'pranota-perbaikan-kontainer-view' => 'View Riwayat',
+                'pranota-perbaikan-kontainer-create' => 'Buat Pranota',
+                'pranota-perbaikan-kontainer-update' => 'Edit Pranota',
+                'pranota-perbaikan-kontainer-delete' => 'Hapus Pranota',
+                'pranota-perbaikan-kontainer-print' => 'Cetak Pranota',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
@@ -109,5 +121,8 @@ return [
 
         // Pranota Stock Amprahan - butuh pranota-stock-view
         'pranota-stock' => ['pranota-stock-view'],
+
+        // Pranota Perbaikan Kontainer - butuh pranota-perbaikan-kontainer-view
+        'pranota-perbaikan-kontainer' => ['pranota-perbaikan-kontainer-view'],
     ],
 ];
