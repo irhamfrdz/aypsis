@@ -12,6 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('uang_jalan_batam', function (Blueprint $table) {
+            // Drop index first to prevent SQLite errors
+            $table->dropIndex(['tanggal_berlaku']);
+
             // Drop existing tanggal_berlaku column
             $table->dropColumn('tanggal_berlaku');
 
@@ -32,6 +35,7 @@ return new class extends Migration
 
             // Restore original column
             $table->date('tanggal_berlaku')->after('status');
+            $table->index('tanggal_berlaku');
         });
     }
 };

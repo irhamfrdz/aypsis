@@ -18,15 +18,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop indexes using raw SQL with IF EXISTS check for MySQL
+        $isSqlite = \DB::connection()->getDriverName() === 'sqlite';
         try {
-            \DB::statement('ALTER TABLE uang_jalans DROP INDEX IF EXISTS uang_jalans_tanggal_pemberian_index');
+            if ($isSqlite) {
+                \DB::statement('DROP INDEX IF EXISTS `uang_jalans_tanggal_pemberian_index`');
+            } else {
+                \DB::statement('ALTER TABLE uang_jalans DROP INDEX IF EXISTS uang_jalans_tanggal_pemberian_index');
+            }
         } catch (\Exception $e) {
             // Continue if index doesn't exist
         }
 
         try {
-            \DB::statement('ALTER TABLE uang_jalans DROP INDEX IF EXISTS tanggal_pemberian');
+            if ($isSqlite) {
+                \DB::statement('DROP INDEX IF EXISTS `tanggal_pemberian`');
+            } else {
+                \DB::statement('ALTER TABLE uang_jalans DROP INDEX IF EXISTS tanggal_pemberian');
+            }
         } catch (\Exception $e) {
             // Continue if index doesn't exist
         }

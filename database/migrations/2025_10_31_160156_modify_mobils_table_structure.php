@@ -12,6 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('mobils', function (Blueprint $table) {
+            // Drop unique constraints first to prevent SQLite errors
+            $table->dropUnique(['aktiva']);
+            $table->dropUnique(['plat']);
+
             // Hapus kolom lama yang tidak digunakan lagi
             $table->dropColumn(['aktiva', 'plat', 'ukuran']);
 

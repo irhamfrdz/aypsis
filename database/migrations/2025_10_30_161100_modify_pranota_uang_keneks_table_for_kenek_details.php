@@ -12,6 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pranota_uang_keneks', function (Blueprint $table) {
+            // Drop index first to prevent SQLite errors
+            $table->dropIndex(['surat_jalan_id']);
+
             // Remove individual surat jalan fields as we'll store multiple surat jalans
             $table->dropForeign(['surat_jalan_id']);
             $table->dropColumn([
@@ -59,8 +62,9 @@ return new class extends Migration
             $table->decimal('uang_rit_kenek', 15, 2)->default(50000)->after('no_plat');
             $table->decimal('total_rit', 15, 2)->default(0)->after('uang_rit_kenek');
 
-            // Add back foreign key
+            // Add back foreign key and index
             $table->foreign('surat_jalan_id')->references('id')->on('surat_jalans')->onDelete('cascade');
+            $table->index('surat_jalan_id');
         });
     }
 };

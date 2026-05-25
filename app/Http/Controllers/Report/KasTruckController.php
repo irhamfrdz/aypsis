@@ -115,7 +115,6 @@ class KasTruckController extends Controller
                     'pembayaran_biaya_kapals',
                     'pembayaran_pranota_lemburs',
                     'pembayaran_pranota_cat',
-                    'pembayaran_pranota_perbaikan_kontainers',
                     'pembayaran_pranota_rits',
                     'pembayaran_pranota_rit_keneks',
                     'pembayaran_pranota_stocks',

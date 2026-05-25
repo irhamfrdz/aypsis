@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pranota_surat_jalans', function (Blueprint $table) {
+            $table->dropIndex('pranota_surat_jalans_status_tanggal_pranota_index');
             $table->dropColumn('status_pranota');
         });
     }
@@ -25,6 +26,7 @@ return new class extends Migration
             $table->enum('status_pranota', ['pending', 'paid', 'cancelled'])
                 ->default('pending')
                 ->after('total_amount');
+            $table->index(['status_pranota', 'tanggal_pranota'], 'pranota_surat_jalans_status_tanggal_pranota_index');
         });
     }
 };

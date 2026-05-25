@@ -26,9 +26,14 @@ return new class extends Migration
             'tanggal_pemberian',
         ];
 
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
         foreach ($indexesToDrop as $indexName) {
             try {
-                DB::statement("DROP INDEX IF EXISTS `{$indexName}` ON `uang_jalans`");
+                if ($isSqlite) {
+                    DB::statement("DROP INDEX IF EXISTS `{$indexName}`");
+                } else {
+                    DB::statement("DROP INDEX IF EXISTS `{$indexName}` ON `uang_jalans`");
+                }
             } catch (\Exception $e) {
                 // Continue if index doesn't exist
             }

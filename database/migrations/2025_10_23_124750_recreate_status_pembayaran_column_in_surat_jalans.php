@@ -12,6 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('surat_jalans', function (Blueprint $table) {
+            // Drop existing indexes first to prevent SQLite errors
+            $table->dropIndex(['status_pembayaran']);
+            $table->dropIndex(['status_pembayaran', 'created_at']);
+            
             // Drop existing column
             $table->dropColumn('status_pembayaran');
         });

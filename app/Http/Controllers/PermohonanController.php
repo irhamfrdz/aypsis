@@ -162,9 +162,6 @@ class PermohonanController extends Controller
             return back()->withInput()->with('error', "Kegiatan '{$kegiatanInput}' tidak ditemukan. Gunakan kode atau nama kegiatan yang valid.");
         }
 
-        $isPerbaikanKontainer = strtolower($mk->nama_kegiatan) === 'perbaikan kontainer' ||
-                               str_contains(strtolower($mk->nama_kegiatan), 'perbaikan');
-
         DB::beginTransaction();
         try {
             $supir = Karyawan::findOrFail($validatedData['supir_id']);
@@ -305,9 +302,6 @@ class PermohonanController extends Controller
         if (! $mk) {
             return back()->withInput()->with('error', "Kegiatan '{$kegiatanInput}' tidak ditemukan. Gunakan kode atau nama kegiatan yang valid.");
         }
-
-        $isPerbaikanKontainer = strtolower($mk->nama_kegiatan) === 'perbaikan kontainer' ||
-                               str_contains(strtolower($mk->nama_kegiatan), 'perbaikan');
 
         // Validasi untuk dari dan ke fields
         $request->validate([

@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pergerakan_kapal', function (Blueprint $table) {
+            $table->dropIndex('pergerakan_kapal_pelabuhan_asal_pelabuhan_tujuan_index');
             $table->dropColumn(['pelabuhan_asal', 'pelabuhan_tujuan', 'pelabuhan_transit']);
         });
     }
@@ -25,6 +26,7 @@ return new class extends Migration
             $table->string('pelabuhan_asal')->nullable()->after('transit');
             $table->string('pelabuhan_tujuan')->nullable()->after('pelabuhan_asal');
             $table->string('pelabuhan_transit')->nullable()->after('pelabuhan_tujuan');
+            $table->index(['pelabuhan_asal', 'pelabuhan_tujuan'], 'pergerakan_kapal_pelabuhan_asal_pelabuhan_tujuan_index');
         });
     }
 };

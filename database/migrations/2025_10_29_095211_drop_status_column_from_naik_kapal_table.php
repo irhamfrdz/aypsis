@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('naik_kapal', function (Blueprint $table) {
+            $table->dropIndex(['status']);
             $table->dropColumn('status');
         });
     }
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('naik_kapal', function (Blueprint $table) {
             $table->enum('status', ['menunggu', 'dimuat', 'selesai', 'batal'])->default('menunggu')->after('pelabuhan_tujuan');
+            $table->index('status');
         });
     }
 };

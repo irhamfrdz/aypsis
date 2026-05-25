@@ -4,7 +4,6 @@ namespace App\Console;
 
 use App\Console\Commands\BackfillTagihanMasa;
 use App\Console\Commands\BackfillTagihanMasaString;
-use App\Console\Commands\CheckTagihanPerbaikanPermissions;
 use App\Console\Commands\CleanTagihanPranota;
 use App\Console\Commands\CreateNextPeriodeTagihan;
 use App\Console\Commands\DeleteManifestByVoyage;
@@ -36,7 +35,6 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\CheckPranotaObItems::class,
         \App\Console\Commands\DumpPranotaOb::class,
         \App\Console\Commands\BackfillPranotaObItems::class,
-        CheckTagihanPerbaikanPermissions::class,
         ValidateDuplicateKontainers::class,
         \App\Console\Commands\FixPenerimaTirtaInvestama::class,
         DeleteManifestByVoyage::class,

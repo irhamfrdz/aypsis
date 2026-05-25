@@ -13,11 +13,13 @@ return new class extends Migration
     {
         // Drop status column from tanda_terimas table
         Schema::table('tanda_terimas', function (Blueprint $table) {
+            $table->dropIndex(['status']);
             $table->dropColumn('status');
         });
 
         // Drop status column from tanda_terima_tanpa_surat_jalan table
         Schema::table('tanda_terima_tanpa_surat_jalan', function (Blueprint $table) {
+            $table->dropIndex(['status']);
             $table->dropColumn('status');
         });
     }
@@ -32,6 +34,7 @@ return new class extends Migration
             $table->enum('status', ['draft', 'submitted', 'approved', 'completed', 'cancelled'])
                 ->default('draft')
                 ->after('catatan');
+            $table->index('status');
         });
 
         // Re-add status column to tanda_terima_tanpa_surat_jalan table
@@ -39,6 +42,7 @@ return new class extends Migration
             $table->enum('status', ['draft', 'submitted', 'approved', 'completed', 'cancelled'])
                 ->default('draft')
                 ->after('catatan');
+            $table->index('status');
         });
     }
 };

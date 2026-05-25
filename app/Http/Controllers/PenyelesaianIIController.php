@@ -257,136 +257,7 @@ class PenyelesaianIIController extends Controller
         return null;
     }
 
-    /**
-     * Create PerbaikanKontainer record for perbaikan kegiatan when approval is completed.
-     *
-     * @param  string  $tanggalPerbaikan  (Y-m-d)
-     */
-    protected function createPerbaikanKontainer(Permohonan $permohonan, $tanggalPerbaikan, ?Request $request = null)
-    {
-        Log::debug('createPerbaikanKontainer: method called', [
-            'permohonan_id' => $permohonan->id,
-            'tanggal_perbaikan' => $tanggalPerbaikan,
-            'has_request' => $request !== null,
-            'request_data' => $request ? $request->all() : null,
-        ]);
 
-        try {
-            // Check if this is a perbaikan kegiatan
-            $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)
-                ->value('nama_kegiatan') ?? ($permohonan->kegiatan ?? '');
-            $kegiatanLower = strtolower($kegiatanName);
-
-            // Check for perbaikan-related kegiatan codes
-            $isPerbaikanKegiatan = (stripos($kegiatanLower, 'perbaikan') !== false)
-                || (stripos($kegiatanLower, 'repair') !== false)
-                || ($permohonan->kegiatan === 'PERBAIKAN')
-                || ($permohonan->kegiatan === 'PERBAIKAN KONTAINER')
-                || ($permohonan->kegiatan === 'REPAIR');
-
-            if (! $isPerbaikanKegiatan) {
-                Log::debug('createPerbaikanKontainer skipped: not a perbaikan kegiatan', [
-                    'permohonan_id' => $permohonan->id,
-                    'kegiatan' => $permohonan->kegiatan,
-                    'kegiatan_name' => $kegiatanName,
-                ]);
-
-                return null;
-            }
-
-            // Create perbaikan kontainer records for each kontainer in the permohonan
-            $createdRecords = 0;
-            foreach ($permohonan->kontainers as $kontainer) {
-                // Check if perbaikan record already exists for this kontainer on this date
-                $existingRecord = \App\Models\PerbaikanKontainer::where('nomor_kontainer', $kontainer->nomor_kontainer)
-                    ->whereDate('tanggal_perbaikan', $tanggalPerbaikan)
-                    ->first();
-
-                if ($existingRecord) {
-                    Log::debug('createPerbaikanKontainer skipped: record already exists', [
-                        'nomor_kontainer' => $kontainer->nomor_kontainer,
-                        'tanggal_perbaikan' => $tanggalPerbaikan,
-                        'existing_id' => $existingRecord->id,
-                    ]);
-
-                    continue;
-                }
-
-                // Create new perbaikan kontainer record
-                $perbaikanData = [
-                    'nomor_tagihan' => \App\Models\PerbaikanKontainer::generateNomorTagihan(),
-                    'nomor_kontainer' => $kontainer->nomor_kontainer,
-                    'tanggal_perbaikan' => $tanggalPerbaikan,
-                    'deskripsi_perbaikan' => 'Perbaikan kontainer berdasarkan permohonan ID: '.$permohonan->id,
-                    'status_perbaikan' => 'belum_masuk_pranota',
-                    'created_by' => Auth::id() ?? 1, // Default to admin if no user logged in
-                ];
-
-                // Add vendor_bengkel if provided in request
-                if ($request && $request->has('vendor_bengkel') && ! empty($request->vendor_bengkel)) {
-                    $perbaikanData['vendor_bengkel'] = $request->vendor_bengkel;
-                    Log::debug('PenyelesaianController: vendor_bengkel set', [
-                        'vendor_bengkel_value' => $request->vendor_bengkel,
-                    ]);
-                }
-
-                // Add estimasi biaya perbaikan if provided in request
-                if ($request && $request->has('estimasi_perbaikan') && ! empty($request->estimasi_perbaikan)) {
-                    $perbaikanData['catatan'] = $request->estimasi_perbaikan;
-                }
-
-                // Add estimasi perbaikan (description) to estimasi_kerusakan_kontainer if provided
-                if ($request && $request->has('estimasi_perbaikan') && ! empty($request->estimasi_perbaikan)) {
-                    $perbaikanData['estimasi_kerusakan_kontainer'] = $request->estimasi_perbaikan;
-                    Log::debug('PenyelesaianController: estimasi_kerusakan_kontainer set with description', [
-                        'estimasi_perbaikan_value' => $request->estimasi_perbaikan,
-                    ]);
-                }
-
-                // Add total biaya perbaikan as estimasi_biaya_perbaikan if provided
-                if ($request && $request->has('total_biaya_perbaikan') && ! empty($request->total_biaya_perbaikan)) {
-                    // Remove thousand separators and convert to numeric
-                    $biayaClean = str_replace(['.', ','], ['', '.'], $request->total_biaya_perbaikan);
-                    $biayaNumeric = (float) $biayaClean;
-                    if ($biayaNumeric > 0) {
-                        $perbaikanData['estimasi_biaya_perbaikan'] = $biayaNumeric;
-                        Log::debug('PenyelesaianController: estimasi_biaya_perbaikan set with amount', [
-                            'original_value' => $request->total_biaya_perbaikan,
-                            'cleaned_value' => $biayaClean,
-                            'numeric_value' => $biayaNumeric,
-                        ]);
-                    }
-                }
-
-                $perbaikanRecord = \App\Models\PerbaikanKontainer::create($perbaikanData);
-                $createdRecords++;
-
-                Log::debug('createPerbaikanKontainer: created record', [
-                    'perbaikan_id' => $perbaikanRecord->id,
-                    'nomor_kontainer' => $kontainer->nomor_kontainer,
-                    'tanggal_perbaikan' => $tanggalPerbaikan,
-                    'permohonan_id' => $permohonan->id,
-                ]);
-            }
-
-            if ($createdRecords > 0) {
-                Log::info('createPerbaikanKontainer: successfully created records', [
-                    'permohonan_id' => $permohonan->id,
-                    'created_records' => $createdRecords,
-                    'tanggal_perbaikan' => $tanggalPerbaikan,
-                ]);
-            }
-
-            return $createdRecords;
-        } catch (\Exception $e) {
-            Log::error('createPerbaikanKontainer failed', [
-                'message' => $e->getMessage(),
-                'permohonan_id' => $permohonan->id ?? null,
-                'tanggal_perbaikan' => $tanggalPerbaikan ?? null,
-            ]);
-            throw $e;
-        }
-    }
 
     /**
      * Proses masal permohonan yang dipilih pada dashboard approval.
@@ -459,9 +330,6 @@ class PenyelesaianIIController extends Controller
                 // Use the same doneDate used for kontainer updates so grouping is consistent.
                 $this->createOrUpdateTagihan($permohonan, $doneDate, $kontainersPayload);
 
-                // Create perbaikan kontainer records if this is a perbaikan kegiatan
-                $this->createPerbaikanKontainer($permohonan, $doneDate);
-
                 $permohonan->save();
                 $processed++;
             }
@@ -483,47 +351,7 @@ class PenyelesaianIIController extends Controller
      */
     public function create(Permohonan $permohonan)
     {
-        $permohonan->load(['supir', 'kontainers.perbaikanKontainers', 'checkpoints']);
-
-        // Check if kegiatan contains "PERBAIKAN" (case insensitive)
-        $isPerbaikanKegiatan = stripos($permohonan->kegiatan, 'PERBAIKAN') !== false;
-
-        // If kegiatan is PERBAIKAN, show all containers in the permohonan
-        // Otherwise, only show containers that already have repair records
-        if ($isPerbaikanKegiatan) {
-            $kontainerPerbaikan = $permohonan->kontainers;
-        } else {
-            $kontainerPerbaikan = $permohonan->kontainers->filter(function ($kontainer) {
-                return $kontainer->perbaikanKontainers && $kontainer->perbaikanKontainers->count() > 0;
-            });
-        }
-
-        // If there are containers to show OR kegiatan is PERBAIKAN, use the specialized view
-        if ($kontainerPerbaikan->count() > 0 || $isPerbaikanKegiatan) {
-            $totalPerbaikan = $kontainerPerbaikan->sum(function ($k) {
-                return $k->perbaikanKontainers ? $k->perbaikanKontainers->count() : 0;
-            });
-
-            $totalBiaya = $kontainerPerbaikan->sum(function ($k) {
-                return $k->perbaikanKontainers ? $k->perbaikanKontainers->sum('biaya_perbaikan') : 0;
-            });
-
-            $totalSudahDibayar = $kontainerPerbaikan->sum(function ($k) {
-                return $k->perbaikanKontainers ? $k->perbaikanKontainers->where('status_perbaikan', 'sudah_dibayar')->count() : 0;
-            });
-
-            // Get vendor bengkel options for dropdown
-            $vendorBengkelOptions = \App\Models\VendorBengkel::orderBy('nama_bengkel')->get();
-
-            return view('approval-ii.checkpoint2-perbaikan', compact(
-                'permohonan',
-                'kontainerPerbaikan',
-                'totalPerbaikan',
-                'totalBiaya',
-                'totalSudahDibayar',
-                'vendorBengkelOptions'
-            ));
-        }
+        $permohonan->load(['supir', 'kontainers', 'checkpoints']);
 
         // Use the regular view for non-repair containers
         return view('approval-ii.checkpoint2-create', compact('permohonan'));
@@ -641,9 +469,6 @@ class PenyelesaianIIController extends Controller
                 $dateForTagihan = $startCheckpoint ? Carbon::parse($startCheckpoint)->toDateString() : now()->toDateString();
                 $this->createOrUpdateTagihan($permohonan, $dateForTagihan, $request->input('kontainers'));
 
-                // Create perbaikan kontainer records if this is a perbaikan kegiatan
-                $createdPerbaikanCount = $this->createPerbaikanKontainer($permohonan, $dateForTagihan, $request);
-
                 // Store stock kontainer creation count for success message
                 $createdStockKontainerCount = 0;
                 if ($isAntarKontainerSewa && $permohonan->kontainers()->exists()) {
@@ -658,22 +483,6 @@ class PenyelesaianIIController extends Controller
 
             // Prepare success message with additional info if records were created
             $successMessage = 'Permohonan berhasil diselesaikan!';
-
-            if (isset($createdPerbaikanCount) && $createdPerbaikanCount > 0) {
-                $successMessage .= " {$createdPerbaikanCount} record perbaikan kontainer telah dibuat dengan nomor tagihan otomatis.";
-
-                // Get the latest perbaikan records to show tagihan numbers
-                $latestPerbaikans = \App\Models\PerbaikanKontainer::where('created_by', Auth::id() ?? 1)
-                    ->whereDate('created_at', today())
-                    ->orderBy('created_at', 'desc')
-                    ->take($createdPerbaikanCount)
-                    ->pluck('nomor_tagihan')
-                    ->toArray();
-
-                if (! empty($latestPerbaikans)) {
-                    $successMessage .= ' Nomor tagihan: '.implode(', ', $latestPerbaikans);
-                }
-            }
 
             if (isset($createdStockKontainerCount) && $createdStockKontainerCount > 0) {
                 $successMessage .= " {$createdStockKontainerCount} record stock kontainer telah ditambahkan ke master stock.";

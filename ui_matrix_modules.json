@@ -147,15 +147,6 @@
         "print",
         "export"
     ],
-    "pembayaran-pranota-perbaikan-kontainer": [
-        "view",
-        "create",
-        "update",
-        "delete",
-        "approve",
-        "print",
-        "export"
-    ],
     "pembayaran-pranota-supir": [
         "view",
         "create",
@@ -192,15 +183,6 @@
         "print",
         "export"
     ],
-    "pranota-perbaikan-kontainer": [
-        "view",
-        "create",
-        "update",
-        "delete",
-        "approve",
-        "print",
-        "export"
-    ],
     "pranota-supir": [
         "view",
         "create",
@@ -220,15 +202,6 @@
         "export"
     ],
     "tagihan-kontainer-sewa": [
-        "view",
-        "create",
-        "update",
-        "delete",
-        "approve",
-        "print",
-        "export"
-    ],
-    "tagihan-perbaikan-kontainer": [
         "view",
         "create",
         "update",
