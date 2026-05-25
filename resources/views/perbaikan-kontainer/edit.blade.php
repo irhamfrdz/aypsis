@@ -148,31 +148,6 @@
                             </select>
                         </div>
 
-                        <!-- Tanggal Masuk -->
-                        <div>
-                            <label for="tanggal_masuk" class="block text-sm font-semibold text-gray-700 mb-1">
-                                Tanggal Masuk Perbaikan <span class="text-red-500">*</span>
-                            </label>
-                            <input type="date" name="tanggal_masuk" id="tanggal_masuk" 
-                                   value="{{ old('tanggal_masuk', $perbaikanKontainer->tanggal_masuk ? $perbaikanKontainer->tanggal_masuk->format('Y-m-d') : '') }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
-                        </div>
-
-                        <!-- Estimasi Biaya -->
-                        <div>
-                            <label for="estimasi_biaya" class="block text-sm font-semibold text-gray-700 mb-1">
-                                Estimasi Biaya (Rp) <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative rounded-lg shadow-sm">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 text-sm">Rp</span>
-                                </div>
-                                <input type="number" name="estimasi_biaya" id="estimasi_biaya" 
-                                       value="{{ old('estimasi_biaya', intval($perbaikanKontainer->estimasi_biaya)) }}" min="0" required
-                                       class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
-                            </div>
-                        </div>
-
                         <!-- Status Perbaikan -->
                         <div>
                             <label for="status" class="block text-sm font-semibold text-gray-700 mb-1">
@@ -185,6 +160,41 @@
                                 <option value="selesai" {{ old('status', $perbaikanKontainer->status) === 'selesai' ? 'selected' : '' }}>Selesai</option>
                                 <option value="batal" {{ old('status', $perbaikanKontainer->status) === 'batal' ? 'selected' : '' }}>Batal</option>
                             </select>
+                        </div>
+
+                        <!-- Tanggal Masuk -->
+                        <div>
+                            <label for="tanggal_masuk" class="block text-sm font-semibold text-gray-700 mb-1">
+                                Tanggal Masuk Perbaikan <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="tanggal_masuk" id="tanggal_masuk" 
+                                   value="{{ old('tanggal_masuk', $perbaikanKontainer->tanggal_masuk ? $perbaikanKontainer->tanggal_masuk->format('Y-m-d') : '') }}" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+                        </div>
+
+                        <!-- Tanggal Selesai -->
+                        <div>
+                            <label for="tanggal_keluar" class="block text-sm font-semibold text-gray-700 mb-1">
+                                Tanggal Selesai Perbaikan <span id="tanggal_keluar_required_star" class="text-red-500 hidden">*</span>
+                            </label>
+                            <input type="date" name="tanggal_keluar" id="tanggal_keluar" 
+                                   value="{{ old('tanggal_keluar', $perbaikanKontainer->tanggal_keluar ? $perbaikanKontainer->tanggal_keluar->format('Y-m-d') : '') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+                        </div>
+
+                        <!-- Estimasi Biaya -->
+                        <div class="md:col-span-2">
+                            <label for="estimasi_biaya" class="block text-sm font-semibold text-gray-700 mb-1">
+                                Estimasi Biaya (Rp) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative rounded-lg shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm">Rp</span>
+                                </div>
+                                <input type="number" name="estimasi_biaya" id="estimasi_biaya" 
+                                       value="{{ old('estimasi_biaya', intval($perbaikanKontainer->estimasi_biaya)) }}" min="0" required
+                                       class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+                            </div>
                         </div>
                     </div>
 
@@ -202,18 +212,8 @@
                         <h4 class="text-sm font-bold text-green-800 uppercase tracking-wider"><i class="fas fa-check mr-2"></i>Data Penyelesaian</h4>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Tanggal Keluar -->
-                            <div>
-                                <label for="tanggal_keluar" class="block text-sm font-semibold text-green-800 mb-1">
-                                    Tanggal Selesai / Keluar <span class="text-red-500">*</span>
-                                </label>
-                                <input type="date" name="tanggal_keluar" id="tanggal_keluar" 
-                                       value="{{ old('tanggal_keluar', $perbaikanKontainer->tanggal_keluar ? $perbaikanKontainer->tanggal_keluar->format('Y-m-d') : date('Y-m-d')) }}"
-                                       class="w-full px-3 py-2 border border-green-300 rounded-lg text-sm focus:ring-green-500 focus:border-green-500 focus:outline-none bg-white">
-                            </div>
-
                             <!-- Biaya Riil -->
-                            <div>
+                            <div class="md:col-span-2">
                                 <label for="biaya_riil" class="block text-sm font-semibold text-green-800 mb-1">
                                     Biaya Riil (Rp) <span class="text-red-500">*</span>
                                 </label>
@@ -269,9 +269,17 @@
             if (statusVal === 'selesai') {
                 $('#selesai_fields_container').slideDown(200);
                 $('#tanggal_keluar, #biaya_riil, #keterangan_perbaikan').prop('required', true);
+                $('#tanggal_keluar_required_star').removeClass('hidden');
+                
+                // Autofill completion date if empty
+                if (!$('#tanggal_keluar').val()) {
+                    var today = new Date().toISOString().split('T')[0];
+                    $('#tanggal_keluar').val(today);
+                }
             } else {
                 $('#selesai_fields_container').slideUp(200);
                 $('#tanggal_keluar, #biaya_riil, #keterangan_perbaikan').prop('required', false);
+                $('#tanggal_keluar_required_star').addClass('hidden');
             }
         }
 
