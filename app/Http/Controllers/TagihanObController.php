@@ -377,4 +377,86 @@ class TagihanObController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Store a new pranota ob antar gudang.
+     */
+    public function storePranotaAntarGudang(Request $request)
+    {
+        if (! Auth::user()->can('tagihan-ob-view') && ! Auth::user()->can('tagihan-ob-antar-gudang-view')) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'nomor_pranota' => 'required|string|unique:pranota_ob_antar_gudangs,nomor_pranota',
+            'tanggal_pranota' => 'required|date',
+            'keterangan' => 'nullable|string',
+            'selected_ids' => 'required|array|min:1',
+            'selected_ids.*' => 'exists:tagihan_ob,id',
+        ]);
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $pranota = \App\Models\PranotaObAntarGudang::create([
+                'nomor_pranota' => $validated['nomor_pranota'],
+                'tanggal_pranota' => $validated['tanggal_pranota'],
+                'keterangan' => $validated['keterangan'],
+                'created_by' => Auth::id(),
+            ]);
+
+            foreach ($validated['selected_ids'] as $id) {
+                \App\Models\PranotaObAntarGudangItem::create([
+                    'pranota_ob_antar_gudang_id' => $pranota->id,
+                    'tagihan_ob_id' => $id,
+                    'created_by' => Auth::id(),
+                ]);
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return redirect()->back()->with('success', 'Pranota OB Antar Gudang ' . $pranota->nomor_pranota . ' berhasil dibuat.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            Log::error('Error creating PranotaObAntarGudang: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal membuat Pranota: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Generate nomor pranota otomatis untuk Antar Gudang
+     * Format: PAG-MM-YY-000001
+     */
+    public function generateNomorPranotaAntarGudang(Request $request)
+    {
+        try {
+            $kode = 'PAG'; // Pranota Antar Gudang
+            $bulan = now()->format('m');
+            $tahun = now()->format('y');
+
+            $prefix = "{$kode}-{$bulan}-{$tahun}-";
+            $lastPranota = \App\Models\PranotaObAntarGudang::where('nomor_pranota', 'like', $prefix.'%')
+                ->orderBy('nomor_pranota', 'desc')
+                ->first();
+
+            if ($lastPranota) {
+                $lastNumber = (int) substr($lastPranota->nomor_pranota, -6);
+                $runningNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+            } else {
+                $runningNumber = '000001';
+            }
+
+            $nomorPranota = "{$prefix}{$runningNumber}";
+
+            return response()->json([
+                'success' => true,
+                'nomor_pranota' => $nomorPranota,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate nomor pranota: '.$e->getMessage(),
+            ], 500);
+        }
+    }
 }

@@ -73,11 +73,23 @@
     border-style: solid;
     border-color: transparent transparent #0f766e transparent;
 }
+
+/* Floating Action Bar */
+.floating-bar {
+    transform: translateY(100px);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    opacity: 0;
+}
+
+.floating-bar.show {
+    transform: translateY(0);
+    opacity: 1;
+}
 </style>
 @endpush
 
 @section('content')
-<div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+<div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 pb-24">
     <div class="bg-white shadow-sm rounded-lg overflow-hidden border border-teal-100">
         {{-- Header dengan tema Teal / Antar Gudang --}}
         <div class="bg-teal-700 text-white px-6 py-4">
@@ -128,10 +140,10 @@
                         <i class="fas fa-info-circle text-teal-600 text-lg"></i>
                     </div>
                     <div class="ml-3">
-                        <h3 class="text-sm font-semibold text-teal-800">Inline Editing Aktif</h3>
+                        <h3 class="text-sm font-semibold text-teal-800">Inline Editing & Pembuatan Pranota</h3>
                         <p class="text-xs text-teal-600 mt-0.5">
-                            Anda dapat mengubah <strong>Nomor Kontainer</strong>, <strong>Nama Supir</strong>, dan <strong>Biaya</strong> secara langsung pada tabel di bawah ini.
-                            Cukup klik pada teks field tersebut, ubah nilainya, lalu tekan <kbd class="px-1 py-0.5 text-xs bg-teal-100 rounded text-teal-800">Enter</kbd> untuk menyimpan atau <kbd class="px-1 py-0.5 text-xs bg-teal-100 rounded text-teal-800">Esc</kbd> untuk batal.
+                            * Anda dapat mengubah <strong>Nomor Kontainer</strong>, <strong>Nama Supir</strong>, dan <strong>Biaya</strong> secara langsung pada tabel. <br>
+                            * Beri centang pada beberapa tagihan yang belum masuk pranota untuk memunculkan tombol <strong>"Masukkan ke Pranota"</strong> secara kolektif.
                         </p>
                     </div>
                 </div>
@@ -169,6 +181,9 @@
                 <table class="min-w-full divide-y divide-gray-200" id="tagihanObTable">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 w-10">
+                                <input type="checkbox" id="selectAll" class="rounded text-teal-600 focus:ring-teal-500">
+                            </th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Kontainer</th>
@@ -183,6 +198,13 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse ($tagihanOb as $index => $item)
                             <tr class="hover:bg-teal-50/30 transition duration-150" data-item-id="{{ $item->id }}">
+                                <td class="px-4 py-4 whitespace-nowrap text-center text-xs w-10">
+                                    @if($item->pranotaObAntarGudangItem)
+                                        <input type="checkbox" disabled class="rounded bg-gray-100 text-gray-400 cursor-not-allowed" title="Sudah masuk pranota">
+                                    @else
+                                        <input type="checkbox" name="selected_tagihan[]" value="{{ $item->id }}" class="row-checkbox rounded text-teal-600 focus:ring-teal-500">
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">{{ $tagihanOb->firstItem() + $index }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">{{ $item->created_at->format('d/m/Y H:i') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs">
@@ -217,7 +239,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs">
-                                    @if($item->pranotaObItem)
+                                    @if($item->pranotaObAntarGudangItem)
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-800">
                                             <i class="fas fa-check-circle mr-1"></i> Sudah Masuk Pranota
                                         </span>
@@ -256,7 +278,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-12 text-center">
+                                <td colspan="10" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center">
                                         <i class="fas fa-inbox text-gray-400 text-4xl mb-4"></i>
                                         <p class="text-gray-500 text-sm">Belum ada data tagihan OB Antar Gudang</p>
@@ -278,6 +300,80 @@
                     {{ $tagihanOb->links() }}
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Bar -->
+<div id="floatingBar" class="floating-bar fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 bg-teal-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center justify-between gap-6 border border-teal-700/50 max-w-lg w-11/12 md:w-full">
+    <div class="flex items-center gap-3">
+        <div class="bg-teal-800 text-teal-200 px-3 py-1 rounded-lg text-sm font-bold" id="selectedCount">
+            0
+        </div>
+        <p class="text-xs text-teal-100">Tagihan dipilih untuk Pranota</p>
+    </div>
+    <button type="button" onclick="openPranotaModal()" class="bg-teal-500 hover:bg-teal-400 text-teal-950 font-bold px-4 py-2 rounded-lg text-xs transition duration-150 shadow-md">
+        <i class="fas fa-file-invoice-dollar mr-1"></i> Masukkan ke Pranota
+    </button>
+</div>
+
+<!-- Modal Masukkan ke Pranota -->
+<div id="pranotaModal" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        {{-- Overlay --}}
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true" onclick="closePranotaModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        {{-- Modal Content --}}
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-teal-150">
+            <form action="{{ route('tagihan-ob-antar-gudang.store-pranota') }}" method="POST" id="pranotaForm">
+                @csrf
+                <div id="selectedIdsContainer"></div>
+
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-teal-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-file-invoice-dollar text-teal-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-sm font-bold text-gray-900" id="modal-title">
+                                Buat Pranota OB Antar Gudang
+                            </h3>
+                            <p class="text-xs text-gray-500 mt-1">Mengelompokkan tagihan mutasi terpilih ke dalam satu invoice Pranota.</p>
+
+                            <div class="mt-4 space-y-4">
+                                <div>
+                                    <label for="nomor_pranota" class="block text-xs font-semibold text-gray-700 mb-1">Nomor Pranota <span class="text-red-500">*</span></label>
+                                    <div class="flex gap-2">
+                                        <input type="text" name="nomor_pranota" id="nomor_pranota" required class="flex-1 px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs font-mono" placeholder="PAG-XXXXXX">
+                                        <button type="button" onclick="ajaxGenerateNomor()" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-700 px-3 py-1.5 rounded-md text-xs font-medium transition duration-150">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="tanggal_pranota" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Pranota <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tanggal_pranota" id="tanggal_pranota" required value="{{ now()->format('Y-m-d') }}" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs">
+                                </div>
+
+                                <div>
+                                    <label for="keterangan_pranota" class="block text-xs font-semibold text-gray-700 mb-1">Keterangan (Opsional)</label>
+                                    <textarea name="keterangan" id="keterangan_pranota" rows="2" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs" placeholder="Catatan tambahan pranota..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-600 text-xs font-bold text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 sm:ml-3 sm:w-auto transition-all">
+                        Simpan Pranota
+                    </button>
+                    <button type="button" onclick="closePranotaModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-xs font-bold text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 sm:mt-0 sm:w-auto">
+                        Batal
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -346,6 +442,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeDeleteModal();
+            closePranotaModal();
         }
     });
     
@@ -362,19 +459,121 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('statusFilter').onchange = filterTable;
     document.getElementById('pranotaFilter').onchange = filterTable;
     
+    // Initialize Checkboxes & Floating Bar
+    initCheckboxes();
+
     // Initialize Inline Editing
     initInlineEditing();
 });
+
+// Checkboxes Logic
+function initCheckboxes() {
+    const selectAll = document.getElementById('selectAll');
+    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+    const floatingBar = document.getElementById('floatingBar');
+    const selectedCount = document.getElementById('selectedCount');
+
+    function updateFloatingBar() {
+        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+        selectedCount.textContent = checkedCount;
+
+        if (checkedCount > 0) {
+            floatingBar.classList.add('show');
+            floatingBar.classList.remove('hidden');
+        } else {
+            floatingBar.classList.remove('show');
+            setTimeout(() => {
+                if (document.querySelectorAll('.row-checkbox:checked').length === 0) {
+                    floatingBar.classList.add('hidden');
+                }
+            }, 300);
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            const isChecked = this.checked;
+            rowCheckboxes.forEach(cb => {
+                // check if the checkbox is visible before selecting
+                const tr = cb.closest('tr');
+                if (tr && tr.style.display !== 'none') {
+                    cb.checked = isChecked;
+                }
+            });
+            updateFloatingBar();
+        });
+    }
+
+    rowCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (!this.checked) {
+                selectAll.checked = false;
+            } else {
+                const totalVisible = Array.from(rowCheckboxes).filter(c => c.closest('tr').style.display !== 'none').length;
+                const totalChecked = Array.from(rowCheckboxes).filter(c => c.checked && c.closest('tr').style.display !== 'none').length;
+                selectAll.checked = (totalVisible === totalChecked);
+            }
+            updateFloatingBar();
+        });
+    });
+}
+
+function openPranotaModal() {
+    const checkedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+    const container = document.getElementById('selectedIdsContainer');
+    container.innerHTML = ''; // Clear previous
+
+    checkedCheckboxes.forEach(cb => {
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'selected_ids[]';
+        hiddenInput.value = cb.value;
+        container.appendChild(hiddenInput);
+    });
+
+    // Auto-generate next pranota number
+    ajaxGenerateNomor();
+
+    document.getElementById('pranotaModal').classList.remove('hidden');
+}
+
+function closePranotaModal() {
+    document.getElementById('pranotaModal').classList.add('hidden');
+}
+
+function ajaxGenerateNomor() {
+    const nomorField = document.getElementById('nomor_pranota');
+    nomorField.value = 'Loading...';
+
+    fetch("{{ route('tagihan-ob-antar-gudang.generate-nomor-pranota') }}", {
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            nomorField.value = data.nomor_pranota;
+        } else {
+            nomorField.value = '';
+            alert('Gagal mengambil nomor pranota');
+        }
+    })
+    .catch(error => {
+        nomorField.value = '';
+        console.error('Error fetching pranota number:', error);
+    });
+}
 
 function filterTable() {
     const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
     const pranotaFilter = document.getElementById('pranotaFilter').value.toLowerCase();
     
     document.querySelectorAll('tbody tr').forEach(row => {
-        // Status kontainer di col ke-6 (0-indexed 5)
-        const statusText = row.querySelector('td:nth-child(6) span')?.textContent.toLowerCase().trim() || '';
-        // Pranota di col ke-8 (0-indexed 7)
-        const pranotaText = row.querySelector('td:nth-child(8) span')?.textContent.toLowerCase().trim() || '';
+        // Status kontainer di col ke-7 (0-indexed 6)
+        const statusText = row.querySelector('td:nth-child(7) span')?.textContent.toLowerCase().trim() || '';
+        // Pranota di col ke-9 (0-indexed 8)
+        const pranotaText = row.querySelector('td:nth-child(9) span')?.textContent.toLowerCase().trim() || '';
         
         const statusMatch = !statusFilter || statusText.includes(statusFilter);
         
@@ -387,6 +586,18 @@ function filterTable() {
         
         row.style.display = (statusMatch && pranotaMatch) ? '' : 'none';
     });
+
+    // Uncheck selectAll and update floating bar on filter
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) selectAll.checked = false;
+    document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+    
+    // Trigger floating bar update
+    const floatingBar = document.getElementById('floatingBar');
+    if (floatingBar) {
+        floatingBar.classList.remove('show');
+        setTimeout(() => floatingBar.classList.add('hidden'), 300);
+    }
 }
 
 // Inline editing functions

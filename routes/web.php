@@ -4838,6 +4838,14 @@ Route::middleware(['auth'])->group(function () {
         ->name('tagihan-ob-antar-gudang.index')
         ->middleware('auth'); // Permission checked inside controller
 
+    Route::post('tagihan-ob-antar-gudang/pranota', [\App\Http\Controllers\TagihanObController::class, 'storePranotaAntarGudang'])
+        ->name('tagihan-ob-antar-gudang.store-pranota')
+        ->middleware('auth');
+
+    Route::get('tagihan-ob-antar-gudang/generate-nomor-pranota', [\App\Http\Controllers\TagihanObController::class, 'generateNomorPranotaAntarGudang'])
+        ->name('tagihan-ob-antar-gudang.generate-nomor-pranota')
+        ->middleware('auth');
+
     Route::get('tagihan-ob', [\App\Http\Controllers\TagihanObController::class, 'index'])
         ->name('tagihan-ob.index')
         ->middleware('can:tagihan-ob-view');

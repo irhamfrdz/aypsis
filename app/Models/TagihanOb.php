@@ -68,6 +68,14 @@ class TagihanOb extends Model
     }
 
     /**
+     * Get pranota antar gudang item untuk tagihan OB ini
+     */
+    public function pranotaObAntarGudangItem()
+    {
+        return $this->hasOne(PranotaObAntarGudangItem::class, 'tagihan_ob_id');
+    }
+
+    /**
      * Check apakah tagihan OB sudah ada di pranota
      */
     public function isInPranota(): bool
