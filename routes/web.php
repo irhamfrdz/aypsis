@@ -4846,6 +4846,22 @@ Route::middleware(['auth'])->group(function () {
         ->name('tagihan-ob-antar-gudang.generate-nomor-pranota')
         ->middleware('auth');
 
+    Route::get('pranota-ob-antar-gudang', [\App\Http\Controllers\TagihanObController::class, 'indexPranotaAntarGudang'])
+        ->name('pranota-ob-antar-gudang.index')
+        ->middleware('can:pranota-ob-antar-gudang-view');
+
+    Route::get('pranota-ob-antar-gudang/{id}', [\App\Http\Controllers\TagihanObController::class, 'showPranotaAntarGudang'])
+        ->name('pranota-ob-antar-gudang.show')
+        ->middleware('can:pranota-ob-antar-gudang-view');
+
+    Route::get('pranota-ob-antar-gudang/{id}/print', [\App\Http\Controllers\TagihanObController::class, 'printPranotaAntarGudang'])
+        ->name('pranota-ob-antar-gudang.print')
+        ->middleware('can:pranota-ob-antar-gudang-view');
+
+    Route::delete('pranota-ob-antar-gudang/{id}', [\App\Http\Controllers\TagihanObController::class, 'destroyPranotaAntarGudang'])
+        ->name('pranota-ob-antar-gudang.destroy')
+        ->middleware('can:pranota-ob-antar-gudang-delete');
+
     Route::get('tagihan-ob', [\App\Http\Controllers\TagihanObController::class, 'index'])
         ->name('tagihan-ob.index')
         ->middleware('can:tagihan-ob-view');

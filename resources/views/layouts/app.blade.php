@@ -1914,6 +1914,13 @@
                     </a>
                 @endif
 
+                {{-- Pranota OB Antar Gudang --}}
+                @if($user && ($user->can('pranota-ob-antar-gudang-view') || $user->can('pranota-ob-view')))
+                    <a href="{{ route('pranota-ob-antar-gudang.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('pranota-ob-antar-gudang.*') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs font-medium text-teal-600">Pranota OB Antar Gudang</span>
+                    </a>
+                @endif
+
                 {{-- Pranota OB --}}
                 @if($user && $user->can('pranota-ob-view'))
                     <a href="{{ route('pranota-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pranota-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">

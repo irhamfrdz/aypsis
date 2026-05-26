@@ -76,13 +76,13 @@
 
 /* Floating Action Bar */
 .floating-bar {
-    transform: translateY(100px);
+    transform: translate(-50%, 100px) !important;
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
     opacity: 0;
 }
 
 .floating-bar.show {
-    transform: translateY(0);
+    transform: translate(-50%, 0) !important;
     opacity: 1;
 }
 </style>
@@ -101,7 +101,11 @@
                     </h5>
                     <p class="text-teal-100 text-xs mt-1">Mengelola tagihan mutasi / perpindahan kontainer antar gudang</p>
                 </div>
-                <div class="flex space-x-2">
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" id="btnMasukkanPranota" onclick="openPranotaModal()" class="bg-yellow-500 hover:bg-yellow-400 text-teal-950 font-bold px-4 py-2 rounded-md text-sm transition duration-150 ease-in-out hidden">
+                        <i class="fas fa-file-invoice-dollar mr-1"></i>
+                        Masukkan ke Pranota (<span id="selectedCountHeader">0</span>)
+                    </button>
                     <a href="{{ route('ob-antar-gudang.select') }}" class="bg-teal-600 hover:bg-teal-500 text-white border border-teal-500 px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
                         <i class="fas fa-plus mr-1"></i>
                         Buat OB Baru (Pilih Gudang)
@@ -305,7 +309,7 @@
 </div>
 
 <!-- Floating Action Bar -->
-<div id="floatingBar" class="floating-bar fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 bg-teal-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center justify-between gap-6 border border-teal-700/50 max-w-lg w-11/12 md:w-full">
+<div id="floatingBar" class="floating-bar fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[9999] bg-teal-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center justify-between gap-6 border border-teal-700/50 max-w-lg w-11/12 md:w-full hidden">
     <div class="flex items-center gap-3">
         <div class="bg-teal-800 text-teal-200 px-3 py-1 rounded-lg text-sm font-bold" id="selectedCount">
             0
@@ -341,6 +345,18 @@
                             </h3>
                             <p class="text-xs text-gray-500 mt-1">Mengelompokkan tagihan mutasi terpilih ke dalam satu invoice Pranota.</p>
 
+                            {{-- Tampilan Nominal & Grand Total --}}
+                            <div class="mt-3 bg-teal-50 border border-teal-200 rounded-lg p-3 space-y-2 shadow-sm">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="font-semibold text-teal-800">Nominal:</span>
+                                    <span class="font-bold text-teal-955" id="modalNominal">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between items-center border-t border-teal-200 pt-2 text-sm">
+                                    <span class="font-bold text-teal-800">Grand Total:</span>
+                                    <span class="font-extrabold text-teal-955" id="modalGrandTotal">Rp 0</span>
+                                </div>
+                            </div>
+
                             <div class="mt-4 space-y-4">
                                 <div>
                                     <label for="nomor_pranota" class="block text-xs font-semibold text-gray-700 mb-1">Nomor Pranota <span class="text-red-500">*</span></label>
@@ -355,6 +371,18 @@
                                 <div>
                                     <label for="tanggal_pranota" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Pranota <span class="text-red-500">*</span></label>
                                     <input type="date" name="tanggal_pranota" id="tanggal_pranota" required value="{{ now()->format('Y-m-d') }}" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs">
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="adjustment" class="block text-xs font-semibold text-gray-700 mb-1">Adjustment (Penyesuaian)</label>
+                                        <input type="number" name="adjustment" id="adjustment" value="0" oninput="updateGrandTotal()" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs" placeholder="0">
+                                    </div>
+
+                                    <div>
+                                        <label for="alasan_adjustment" class="block text-xs font-semibold text-gray-700 mb-1">Alasan Adjustment</label>
+                                        <input type="text" name="alasan_adjustment" id="alasan_adjustment" class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-xs" placeholder="Alasan penyesuaian biaya...">
+                                    </div>
                                 </div>
 
                                 <div>
@@ -470,25 +498,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function initCheckboxes() {
     const selectAll = document.getElementById('selectAll');
     const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-    const floatingBar = document.getElementById('floatingBar');
-    const selectedCount = document.getElementById('selectedCount');
-
-    function updateFloatingBar() {
-        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
-        selectedCount.textContent = checkedCount;
-
-        if (checkedCount > 0) {
-            floatingBar.classList.add('show');
-            floatingBar.classList.remove('hidden');
-        } else {
-            floatingBar.classList.remove('show');
-            setTimeout(() => {
-                if (document.querySelectorAll('.row-checkbox:checked').length === 0) {
-                    floatingBar.classList.add('hidden');
-                }
-            }, 300);
-        }
-    }
 
     if (selectAll) {
         selectAll.addEventListener('change', function() {
@@ -518,18 +527,93 @@ function initCheckboxes() {
     });
 }
 
+function updateFloatingBar() {
+    const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+    const selectedCount = document.getElementById('selectedCount');
+    const selectedCountHeader = document.getElementById('selectedCountHeader');
+    const btnMasukkanPranota = document.getElementById('btnMasukkanPranota');
+    const floatingBar = document.getElementById('floatingBar');
+
+    if (selectedCount) selectedCount.textContent = checkedCount;
+    if (selectedCountHeader) selectedCountHeader.textContent = checkedCount;
+
+    if (btnMasukkanPranota) {
+        if (checkedCount > 0) {
+            btnMasukkanPranota.classList.remove('hidden');
+        } else {
+            btnMasukkanPranota.classList.add('hidden');
+        }
+    }
+
+    if (floatingBar) {
+        if (checkedCount > 0) {
+            floatingBar.classList.add('show');
+            floatingBar.classList.remove('hidden');
+        } else {
+            floatingBar.classList.remove('show');
+            setTimeout(() => {
+                if (document.querySelectorAll('.row-checkbox:checked').length === 0) {
+                    floatingBar.classList.add('hidden');
+                }
+            }, 300);
+        }
+    }
+}
+
+window.currentNominal = 0;
+
+function updateGrandTotal() {
+    const nominal = window.currentNominal || 0;
+    const adjustmentInput = document.getElementById('adjustment');
+    const adjustment = parseFloat(adjustmentInput ? adjustmentInput.value : 0) || 0;
+    const grandTotal = nominal + adjustment;
+
+    const modalNominal = document.getElementById('modalNominal');
+    if (modalNominal) {
+        modalNominal.textContent = 'Rp ' + formatNumber(nominal);
+    }
+
+    const modalGrandTotal = document.getElementById('modalGrandTotal');
+    if (modalGrandTotal) {
+        modalGrandTotal.textContent = 'Rp ' + formatNumber(grandTotal);
+    }
+}
+
 function openPranotaModal() {
     const checkedCheckboxes = document.querySelectorAll('.row-checkbox:checked');
     const container = document.getElementById('selectedIdsContainer');
     container.innerHTML = ''; // Clear previous
 
+    let totalBiaya = 0;
     checkedCheckboxes.forEach(cb => {
         const hiddenInput = document.createElement('input');
         hiddenInput.type = 'hidden';
         hiddenInput.name = 'selected_ids[]';
         hiddenInput.value = cb.value;
         container.appendChild(hiddenInput);
+
+        const tr = cb.closest('tr');
+        if (tr) {
+            const biayaInput = tr.querySelector('.editable-field[data-field="biaya"] .field-input');
+            if (biayaInput) {
+                totalBiaya += parseFloat(biayaInput.value) || 0;
+            }
+        }
     });
+
+    window.currentNominal = totalBiaya;
+
+    // Reset fields
+    const adjustmentInput = document.getElementById('adjustment');
+    if (adjustmentInput) {
+        adjustmentInput.value = 0;
+    }
+    const alasanInput = document.getElementById('alasan_adjustment');
+    if (alasanInput) {
+        alasanInput.value = '';
+    }
+
+    updateGrandTotal();
 
     // Auto-generate next pranota number
     ajaxGenerateNomor();
@@ -592,12 +676,8 @@ function filterTable() {
     if (selectAll) selectAll.checked = false;
     document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
     
-    // Trigger floating bar update
-    const floatingBar = document.getElementById('floatingBar');
-    if (floatingBar) {
-        floatingBar.classList.remove('show');
-        setTimeout(() => floatingBar.classList.add('hidden'), 300);
-    }
+    // Trigger update
+    updateFloatingBar();
 }
 
 // Inline editing functions

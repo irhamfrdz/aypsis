@@ -1,5 +1,8 @@
 <?php
 
+// Suppress deprecation warnings from libraries not yet updated for newer PHP versions
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;

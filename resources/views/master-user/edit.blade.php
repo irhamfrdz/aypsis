@@ -3161,6 +3161,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pranota OB Antar Gudang --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2 ml-4">└─</span>
+                                        <span>Pranota OB Antar Gudang</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-ob-antar-gudang][view]" value="1" class="permission-checkbox" @if(old('permissions.pranota-ob-antar-gudang.view') || (isset($userMatrixPermissions['pranota-ob-antar-gudang']['view']) && $userMatrixPermissions['pranota-ob-antar-gudang']['view']) || ($user && $user->can('pranota-ob-antar-gudang-view'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pranota-ob-antar-gudang][delete]" value="1" class="permission-checkbox" @if(old('permissions.pranota-ob-antar-gudang.delete') || (isset($userMatrixPermissions['pranota-ob-antar-gudang']['delete']) && $userMatrixPermissions['pranota-ob-antar-gudang']['delete']) || ($user && $user->can('pranota-ob-antar-gudang-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">
                                     <div class="flex items-center">

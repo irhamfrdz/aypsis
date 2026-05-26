@@ -12,6 +12,10 @@ class PranotaObAntarGudang extends Model
         'nomor_pranota',
         'tanggal_pranota',
         'keterangan',
+        'nominal',
+        'adjustment',
+        'alasan_adjustment',
+        'grand_total',
         'created_by',
     ];
 

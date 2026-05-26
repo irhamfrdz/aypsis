@@ -391,6 +391,8 @@ class TagihanObController extends Controller
             'nomor_pranota' => 'required|string|unique:pranota_ob_antar_gudangs,nomor_pranota',
             'tanggal_pranota' => 'required|date',
             'keterangan' => 'nullable|string',
+            'adjustment' => 'nullable|numeric',
+            'alasan_adjustment' => 'nullable|string',
             'selected_ids' => 'required|array|min:1',
             'selected_ids.*' => 'exists:tagihan_ob,id',
         ]);
@@ -398,10 +400,19 @@ class TagihanObController extends Controller
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();
 
+            $selectedTagihans = \App\Models\TagihanOb::whereIn('id', $validated['selected_ids'])->get();
+            $nominal = $selectedTagihans->sum('biaya');
+            $adjustment = $validated['adjustment'] ?? 0;
+            $grandTotal = $nominal + $adjustment;
+
             $pranota = \App\Models\PranotaObAntarGudang::create([
                 'nomor_pranota' => $validated['nomor_pranota'],
                 'tanggal_pranota' => $validated['tanggal_pranota'],
                 'keterangan' => $validated['keterangan'],
+                'nominal' => $nominal,
+                'adjustment' => $adjustment,
+                'alasan_adjustment' => $validated['alasan_adjustment'] ?? null,
+                'grand_total' => $grandTotal,
                 'created_by' => Auth::id(),
             ]);
 
@@ -458,5 +469,76 @@ class TagihanObController extends Controller
                 'message' => 'Gagal generate nomor pranota: '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Display a listing of pranota ob antar gudang.
+     */
+    public function indexPranotaAntarGudang(Request $request)
+    {
+        if (! Auth::user()->can('pranota-ob-antar-gudang-view')) {
+            abort(403);
+        }
+
+        $query = \App\Models\PranotaObAntarGudang::with(['creator', 'items']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_pranota', 'like', "%{$search}%")
+                  ->orWhere('keterangan', 'like', "%{$search}%");
+            });
+        }
+
+        $pranotas = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        return view('tagihan-ob.pranota-index-antar-gudang', compact('pranotas'));
+    }
+
+    /**
+     * Display the specified pranota ob antar gudang.
+     */
+    public function showPranotaAntarGudang($id)
+    {
+        if (! Auth::user()->can('pranota-ob-antar-gudang-view')) {
+            abort(403);
+        }
+
+        $pranota = \App\Models\PranotaObAntarGudang::with(['creator', 'items.tagihanOb'])->findOrFail($id);
+
+        return view('tagihan-ob.pranota-show-antar-gudang', compact('pranota'));
+    }
+
+    /**
+     * Remove the specified pranota ob antar gudang.
+     */
+    public function destroyPranotaAntarGudang($id)
+    {
+        if (! Auth::user()->can('pranota-ob-antar-gudang-delete')) {
+            abort(403);
+        }
+
+        try {
+            $pranota = \App\Models\PranotaObAntarGudang::findOrFail($id);
+            $pranota->delete();
+
+            return redirect()->route('pranota-ob-antar-gudang.index')->with('success', 'Pranota OB Antar Gudang ' . $pranota->nomor_pranota . ' berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menghapus Pranota: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Print the specified pranota ob antar gudang.
+     */
+    public function printPranotaAntarGudang($id)
+    {
+        if (! Auth::user()->can('pranota-ob-antar-gudang-view')) {
+            abort(403);
+        }
+
+        $pranota = \App\Models\PranotaObAntarGudang::with(['creator', 'items.tagihanOb'])->findOrFail($id);
+
+        return view('tagihan-ob.pranota-print-antar-gudang', compact('pranota'));
     }
 }
