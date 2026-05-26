@@ -714,6 +714,7 @@ class UserController extends Controller
                 'tagihan-cat' => 'tagihan-cat',
                 'tagihan-kontainer-sewa' => 'tagihan-kontainer-sewa',
                 'tagihan-perbaikan-kontainer' => 'tagihan-perbaikan-kontainer',
+                'tagihan-ob-antar-gudang' => 'tagihan-ob-antar-gudang',
                 'vendor-kontainer-sewa' => 'vendor-kontainer-sewa',
                 'kontainer-sewa-final' => 'kontainer-sewa-final',
                 'kwitansi' => 'kwitansi',
@@ -4827,6 +4828,16 @@ class UserController extends Controller
                     // Handle OB (Ocean Bunker) permissions explicitly
                     if ($module === 'ob' && $action === 'view') {
                         $permissionName = 'ob-view';
+                        $directPermission = Permission::where('name', $permissionName)->first();
+                        if ($directPermission) {
+                            $permissionIds[] = $directPermission->id;
+                            $found = true;
+                        }
+                    }
+
+                    // Handle Tagihan OB Antar Gudang permissions explicitly
+                    if ($module === 'tagihan-ob-antar-gudang' && $action === 'view') {
+                        $permissionName = 'tagihan-ob-antar-gudang-view';
                         $directPermission = Permission::where('name', $permissionName)->first();
                         if ($directPermission) {
                             $permissionIds[] = $directPermission->id;

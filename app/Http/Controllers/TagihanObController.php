@@ -21,12 +21,13 @@ class TagihanObController extends Controller
             abort(403);
         }
 
-        $request->merge([
-            'kapal' => 'ANTAR GUDANG',
-            'voyage' => 'ANTAR GUDANG',
-        ]);
+        $tagihanOb = TagihanOb::with(['bl', 'creator'])
+            ->where('kapal', 'ANTAR GUDANG')
+            ->where('voyage', 'ANTAR GUDANG')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
-        return $this->index($request);
+        return view('tagihan-ob.index-antar-gudang', compact('tagihanOb'));
     }
 
     /**
