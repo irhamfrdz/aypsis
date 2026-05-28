@@ -140,6 +140,13 @@ class StockKontainerPergudangController extends Controller
         return Excel::download(new \App\Exports\GudangKontainerExport($id, $type), $fileName);
     }
 
+    public function exportLaporan()
+    {
+        $fileName = 'Laporan_Persediaan_Kontainer_'.date('Ymd_His').'.xlsx';
+
+        return Excel::download(new \App\Exports\LaporanPersediaanKontainerExport(), $fileName);
+    }
+
     public function downloadTemplate()
     {
         $headers = ['Nomor Kontainer'];
