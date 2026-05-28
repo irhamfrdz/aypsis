@@ -56,22 +56,12 @@ class ReportOngkosTrukController extends Controller
         $endDate = Carbon::parse($request->end_date)->endOfDay();
         $noPlat = $request->no_plat;
 
-        $querySj = SuratJalan::where(function ($q) use ($startDate, $endDate) {
-            $q->whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
-                $tt->whereBetween('tanggal', [$startDate, $endDate]);
-            })->orWhere(function ($q2) use ($startDate, $endDate) {
-                $q2->doesntHave('tandaTerima')
-                    ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
-            });
+        $querySj = SuratJalan::whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+            $tt->whereBetween('tanggal', [$startDate, $endDate]);
         });
 
-        $querySjb = SuratJalanBongkaran::where(function ($q) use ($startDate, $endDate) {
-            $q->whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
-                $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
-            })->orWhere(function ($q2) use ($startDate, $endDate) {
-                $q2->doesntHave('tandaTerima')
-                    ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
-            });
+        $querySjb = SuratJalanBongkaran::whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+            $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
         });
 
         if ($noPlat && count($noPlat) > 0) {
@@ -378,22 +368,12 @@ class ReportOngkosTrukController extends Controller
         $endDate = Carbon::parse($request->end_date)->endOfDay();
         $noPlat = $request->no_plat;
 
-        $querySj = SuratJalan::where(function ($q) use ($startDate, $endDate) {
-            $q->whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
-                $tt->whereBetween('tanggal', [$startDate, $endDate]);
-            })->orWhere(function ($q2) use ($startDate, $endDate) {
-                $q2->doesntHave('tandaTerima')
-                    ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
-            });
+        $querySj = SuratJalan::whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+            $tt->whereBetween('tanggal', [$startDate, $endDate]);
         });
 
-        $querySjb = SuratJalanBongkaran::where(function ($q) use ($startDate, $endDate) {
-            $q->whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
-                $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
-            })->orWhere(function ($q2) use ($startDate, $endDate) {
-                $q2->doesntHave('tandaTerima')
-                    ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
-            });
+        $querySjb = SuratJalanBongkaran::whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+            $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
         });
 
         if ($noPlat && count($noPlat) > 0) {
@@ -674,22 +654,12 @@ class ReportOngkosTrukController extends Controller
         $endDate = Carbon::parse($request->end_date)->endOfDay();
         $noPlat = $request->no_plat;
 
-        $querySj = SuratJalan::where(function ($q) use ($startDate, $endDate) {
-            $q->whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
-                $tt->whereBetween('tanggal', [$startDate, $endDate]);
-            })->orWhere(function ($q2) use ($startDate, $endDate) {
-                $q2->doesntHave('tandaTerima')
-                    ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
-            });
+        $querySj = SuratJalan::whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+            $tt->whereBetween('tanggal', [$startDate, $endDate]);
         });
 
-        $querySjb = SuratJalanBongkaran::where(function ($q) use ($startDate, $endDate) {
-            $q->whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
-                $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
-            })->orWhere(function ($q2) use ($startDate, $endDate) {
-                $q2->doesntHave('tandaTerima')
-                    ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate]);
-            });
+        $querySjb = SuratJalanBongkaran::whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+            $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
         });
 
         if ($noPlat && count($noPlat) > 0) {
