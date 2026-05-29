@@ -111,14 +111,12 @@
                         <input type="number" name="nominal_uang_jalan" id="nominal_uang_jalan" value="{{ old('nominal_uang_jalan', 0) }}" step="0.01" class="w-full text-sm border border-gray-300 rounded-md pl-10 pr-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="0.00">
                     </div>
                 </div>
+                @if($tipe === 'pengembalian')
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Lokasi {{ $tipe === 'pengambilan' ? 'Pengambilan' : 'Pengembalian' }}</label>
-                    @if($tipe === 'pengambilan')
-                        <input type="text" name="lokasi_pengambilan" value="{{ old('lokasi_pengambilan') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Lokasi pengambilan">
-                    @else
-                        <input type="text" name="lokasi_pengembalian" value="{{ old('lokasi_pengembalian') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Lokasi pengembalian">
-                    @endif
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Lokasi Pengembalian</label>
+                    <input type="text" name="lokasi_pengembalian" value="{{ old('lokasi_pengembalian') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Lokasi pengembalian">
                 </div>
+                @endif
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Kontainer</label>
                     <input type="text" name="nomor_kontainer" id="kontainer-input" list="kontainer-list" value="{{ old('nomor_kontainer') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Ketik atau pilih kontainer..." autocomplete="off">

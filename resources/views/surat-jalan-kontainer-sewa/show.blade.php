@@ -93,8 +93,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 class="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b"><i class="fas fa-map-marker-alt text-cyan-600 mr-1"></i> Lokasi & Keterangan</h2>
             <table class="w-full text-sm">
-                <tr><td class="py-1.5 text-gray-500 w-[140px]">Lokasi Ambil</td><td class="py-1.5 font-medium">{{ $suratJalan->lokasi_pengambilan ?? '-' }}</td></tr>
-                <tr><td class="py-1.5 text-gray-500">Lokasi Kembali</td><td class="py-1.5 font-medium">{{ $suratJalan->lokasi_pengembalian ?? '-' }}</td></tr>
+                <tr><td class="py-1.5 text-gray-500 w-[140px]">Lokasi Kembali</td><td class="py-1.5 font-medium">{{ $suratJalan->lokasi_pengembalian ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Keterangan</td><td class="py-1.5 font-medium">{{ $suratJalan->keterangan ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Vendor Item</td><td class="py-1.5 font-medium">{{ $suratJalan->vendor_item ?? '-' }}</td></tr>
                 <tr><td class="py-1.5 text-gray-500">Dibuat oleh</td><td class="py-1.5 font-medium">{{ $suratJalan->createdByUser->name ?? '-' }}</td></tr>

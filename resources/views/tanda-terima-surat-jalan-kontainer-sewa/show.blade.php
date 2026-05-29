@@ -174,12 +174,7 @@
                                 {{ $tandaTerima->suratJalanKontainerSewa->tujuan ?? '-' }}
                             </span>
                         </div>
-                        <div class="col-span-2">
-                            <span class="text-gray-400 text-xs font-semibold block uppercase">Lokasi Pengambilan</span>
-                            <span class="text-gray-900 font-medium mt-0.5 block">
-                                {{ $tandaTerima->suratJalanKontainerSewa->lokasi_pengambilan ?? '-' }}
-                            </span>
-                        </div>
+
                         <div class="col-span-2">
                             <span class="text-gray-400 text-xs font-semibold block uppercase">Lokasi Pengembalian</span>
                             <span class="text-gray-900 font-medium mt-0.5 block">

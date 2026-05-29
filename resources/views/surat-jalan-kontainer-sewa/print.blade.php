@@ -90,12 +90,6 @@
             <td style="font-weight: bold;">Status Rit</td>
             <td colspan="3">: {{ $suratJalan->menggunakan_rit ? 'MENGGUNAKAN RIT' : 'TIDAK MENGGUNAKAN RIT' }}</td>
         </tr>
-        @if($suratJalan->lokasi_pengambilan)
-        <tr>
-            <td>Lokasi Pengambilan</td>
-            <td colspan="3">: {{ $suratJalan->lokasi_pengambilan }}</td>
-        </tr>
-        @endif
         @if($suratJalan->lokasi_pengembalian)
         <tr>
             <td>Lokasi Pengembalian</td>
