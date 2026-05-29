@@ -402,6 +402,8 @@
                                id="nomor_kontainer"
                                list="kontainer-list"
                                required
+                               minlength="11"
+                               maxlength="11"
                                placeholder="Contoh: MSKU1234567"
                                class="w-full px-3.5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
                         <datalist id="kontainer-list">
