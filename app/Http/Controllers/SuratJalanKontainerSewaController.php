@@ -124,6 +124,7 @@ class SuratJalanKontainerSewaController extends Controller
             'lokasi_pengembalian' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string|max:1000',
             'nomor_kontainer' => 'nullable|string|max:100',
+            'ukuran' => 'nullable|string|max:50',
             'menggunakan_rit' => 'nullable|boolean',
         ]);
 
@@ -144,7 +145,7 @@ class SuratJalanKontainerSewaController extends Controller
                 'antar_lokasi' => $request->boolean('antar_lokasi'),
                 'nominal_uang_jalan' => $request->nominal_uang_jalan ?? 0,
                 'nomor_kontainer' => $request->nomor_kontainer,
-                'ukuran' => $kontainer->ukuran ?? null,
+                'ukuran' => $request->ukuran ?? ($kontainer->ukuran ?? null),
                 'tipe_kontainer' => $kontainer->tipe_kontainer ?? null,
                 'vendor_item' => $kontainer->vendor ?? null,
                 'menggunakan_rit' => $request->boolean('menggunakan_rit'),
@@ -224,6 +225,7 @@ class SuratJalanKontainerSewaController extends Controller
             'supir' => 'nullable|string',
             'no_plat' => 'nullable|string',
             'nomor_kontainer' => 'nullable|string',
+            'ukuran' => 'nullable|string',
             'nominal_uang_jalan' => 'nullable|numeric|min:0',
             'menggunakan_rit' => 'nullable|boolean',
         ]);
@@ -242,7 +244,7 @@ class SuratJalanKontainerSewaController extends Controller
                 'no_plat' => $request->no_plat,
                 'antar_lokasi' => $request->has('antar_lokasi') ? 1 : 0,
                 'nomor_kontainer' => $request->nomor_kontainer,
-                'ukuran' => $kontainer->ukuran ?? $suratJalan->ukuran,
+                'ukuran' => $request->ukuran ?? ($kontainer->ukuran ?? $suratJalan->ukuran),
                 'tipe_kontainer' => $kontainer->tipe_kontainer ?? $suratJalan->tipe_kontainer,
                 'vendor_item' => $kontainer->vendor ?? $suratJalan->vendor_item,
                 'menggunakan_rit' => $request->boolean('menggunakan_rit'),

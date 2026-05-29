@@ -129,6 +129,15 @@
                     </datalist>
                 </div>
                 <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Ukuran Kontainer</label>
+                    <select name="ukuran" id="ukuran-input" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500">
+                        <option value="">-- Pilih Ukuran --</option>
+                        <option value="20" {{ old('ukuran') == '20' ? 'selected' : '' }}>20</option>
+                        <option value="40" {{ old('ukuran') == '40' ? 'selected' : '' }}>40</option>
+                        <option value="45" {{ old('ukuran') == '45' ? 'selected' : '' }}>45</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Status Rit</label>
                     <select name="menggunakan_rit" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500">
                         <option value="1" {{ old('menggunakan_rit', '1') == '1' ? 'selected' : '' }}>Menggunakan Rit</option>
@@ -341,12 +350,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const tujuanSelect = document.getElementById('tujuan-select');
     const noPlatInput = document.querySelector('input[name="no_plat"]');
     const nominalUangJalanInput = document.getElementById('nominal_uang_jalan');
+    const ukuranInput = document.getElementById('ukuran-input');
 
     if (supirSelect) createSearchableSelect(supirSelect, '-- Pilih Supir --');
     if (vendorSelect) createSearchableSelect(vendorSelect, '-- Pilih Vendor --');
     if (tujuanSelect) createSearchableSelect(tujuanSelect, '-- Pilih Tujuan --');
 
-    // Handle auto-fill money
+    // Handle auto-fill money and size
     function updateUangJalan() {
         if (!tujuanSelect || !kontainerInput || !nominalUangJalanInput) return;
         
@@ -361,6 +371,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     ukuran = option.getAttribute('data-ukuran');
                     break;
                 }
+            }
+        }
+
+        if (ukuranInput && ukuran) {
+            // Check if option exists in dropdown, else default to select
+            const exists = Array.from(ukuranInput.options).some(opt => opt.value === ukuran);
+            if (exists) {
+                ukuranInput.value = ukuran;
             }
         }
         
