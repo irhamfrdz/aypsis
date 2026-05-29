@@ -427,7 +427,7 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
                 'tipe_kontainer' => $tipeKontainer ?? 'Dry',
                 'tanggal_mulai_sewa' => $tanggalMulaiSewa,
                 'vendor' => $vendor,
-                'status' => 'Disewa',
+                'status' => 'Tersedia',
             ]);
         }
     }
