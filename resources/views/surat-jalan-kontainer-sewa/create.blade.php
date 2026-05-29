@@ -120,8 +120,8 @@
                     @endif
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Kontainer <span class="text-red-500">*</span></label>
-                    <input type="text" name="nomor_kontainer" id="kontainer-input" list="kontainer-list" value="{{ old('nomor_kontainer') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Ketik atau pilih kontainer..." required autocomplete="off">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Nomor Kontainer</label>
+                    <input type="text" name="nomor_kontainer" id="kontainer-input" list="kontainer-list" value="{{ old('nomor_kontainer') }}" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Ketik atau pilih kontainer..." autocomplete="off">
                     <datalist id="kontainer-list">
                         @foreach($kontainers as $k)
                             <option value="{{ $k->nomor_seri_gabungan }}" data-ukuran="{{ $k->ukuran }}">

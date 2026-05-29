@@ -124,7 +124,7 @@ class SuratJalanKontainerSewaController extends Controller
             'lokasi_pengambilan' => 'nullable|string|max:255',
             'lokasi_pengembalian' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string|max:1000',
-            'nomor_kontainer' => 'required|string|max:100',
+            'nomor_kontainer' => 'nullable|string|max:100',
             'menggunakan_rit' => 'nullable|boolean',
         ]);
 
@@ -222,10 +222,10 @@ class SuratJalanKontainerSewaController extends Controller
         $request->validate([
             'tipe' => 'required|in:pengambilan,pengembalian',
             'tanggal' => 'required|date',
-            'vendor' => 'required|string',
-            'supir' => 'required|string',
+            'vendor' => 'nullable|string',
+            'supir' => 'nullable|string',
             'no_plat' => 'nullable|string',
-            'nomor_kontainer' => 'required|string',
+            'nomor_kontainer' => 'nullable|string',
             'nominal_uang_jalan' => 'nullable|numeric|min:0',
             'menggunakan_rit' => 'nullable|boolean',
         ]);
