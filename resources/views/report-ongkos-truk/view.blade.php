@@ -238,27 +238,28 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label for="modal_adjustment" class="block text-sm font-semibold text-gray-700 mb-1">
-                            Adjustment (Opsional)
-                        </label>
-                        <div class="relative">
-                            <span class="absolute left-4 top-2.5 text-gray-400 text-sm">Rp</span>
-                            <input type="number" id="modal_adjustment" name="adjustment"
-                                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
-                                   placeholder="0">
-                        </div>
-                        <p class="text-[10px] text-gray-500 mt-1">Gunakan minus (-) untuk pengurangan</p>
+                <!-- Adjustments Section -->
+                <div class="mb-6 border-t pt-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="block text-sm font-bold text-gray-700">Adjustments (Opsional)</label>
+                        <button type="button" onclick="addAdjustmentRow()" class="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition-all duration-200">
+                            <i class="fas fa-plus mr-1"></i> Tambah Adjustment
+                        </button>
                     </div>
-                    <div>
-                        <label for="modal_keterangan" class="block text-sm font-semibold text-gray-700 mb-1">
-                            Keterangan (Opsional)
-                        </label>
-                        <textarea id="modal_keterangan" name="keterangan" rows="2"
-                                  class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all"
-                                  placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+                    
+                    <div id="adjustments_container" class="space-y-3">
+                        <!-- Dynamic rows populated here -->
                     </div>
+                    <p class="text-[10px] text-gray-500 mt-2">Gunakan minus (-) pada nominal untuk pengurangan</p>
+                </div>
+
+                <div class="mb-6">
+                    <label for="modal_keterangan" class="block text-sm font-semibold text-gray-700 mb-1">
+                        Catatan Pranota (Opsional)
+                    </label>
+                    <textarea id="modal_keterangan" name="keterangan" rows="2"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all"
+                              placeholder="Tambahkan catatan untuk pranota ini..."></textarea>
                 </div>
             </div>
 
@@ -324,14 +325,50 @@
             generateNomorPranota();
         };
 
+        let adjCount = 0;
+        window.addAdjustmentRow = function(nominal = '', keterangan = '') {
+            adjCount++;
+            const container = document.getElementById('adjustments_container');
+            const rowId = `adj_row_${adjCount}`;
+            const rowHtml = `
+                <div id="${rowId}" class="flex items-center gap-3 bg-gray-50/50 p-3 rounded-xl border border-gray-100 transition-all duration-200">
+                    <div class="w-1/3">
+                        <div class="relative">
+                            <span class="absolute left-3 top-2 text-gray-400 text-xs">Rp</span>
+                            <input type="number" class="adj-nominal w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 transition-all" 
+                                placeholder="0" value="${nominal}" oninput="updateModalGrandTotal()">
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <input type="text" class="adj-keterangan w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 transition-all" 
+                            placeholder="Keterangan adjustment..." value="${keterangan}">
+                    </div>
+                    <button type="button" onclick="removeAdjustmentRow('${rowId}')" class="text-red-500 hover:text-red-700 transition-colors p-1.5 rounded-lg hover:bg-red-50">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', rowHtml);
+            window.updateModalGrandTotal();
+        };
+
+        window.removeAdjustmentRow = function(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                window.updateModalGrandTotal();
+            }
+        };
+
         window.closePranotaModal = function() {
             document.getElementById('pranotaModal').classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
             // Reset form inside modal
             const keterangan = document.getElementById('modal_keterangan');
-            const adjustment = document.getElementById('modal_adjustment');
             if (keterangan) keterangan.value = '';
-            if (adjustment) adjustment.value = '';
+            document.getElementById('adjustments_container').innerHTML = '';
+            adjCount = 0;
+            window.updateModalGrandTotal();
         };
 
         window.generateNomorPranota = function() {
@@ -418,18 +455,20 @@
             });
 
             document.getElementById('modal-item-count').textContent = `${items.length} item terpilih`;
-            updateModalGrandTotal();
+            window.updateModalGrandTotal();
         }
 
-        function updateModalGrandTotal() {
+        window.updateModalGrandTotal = function() {
             const itemsTotal = currentPranotaItems.reduce((sum, item) => sum + (parseFloat(item.nominal) || 0), 0);
-            const adjustment = parseFloat(document.getElementById('modal_adjustment').value) || 0;
-            const grandTotal = itemsTotal + adjustment;
             
+            let adjustmentsTotal = 0;
+            document.querySelectorAll('.adj-nominal').forEach(input => {
+                adjustmentsTotal += parseFloat(input.value) || 0;
+            });
+            
+            const grandTotal = itemsTotal + adjustmentsTotal;
             document.getElementById('modal-grand-total').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(grandTotal)}`;
         }
-
-        document.getElementById('modal_adjustment').addEventListener('input', updateModalGrandTotal);
 
         // Submitting via AJAX
         document.getElementById('btnConfirmPranota').addEventListener('click', function() {
@@ -441,9 +480,21 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Memproses...';
 
+            const adjustments = [];
+            document.querySelectorAll('#adjustments_container > div').forEach(row => {
+                const nominalInput = row.querySelector('.adj-nominal');
+                const keteranganInput = row.querySelector('.adj-keterangan');
+                if (nominalInput) {
+                    adjustments.push({
+                        nominal: parseFloat(nominalInput.value) || 0,
+                        keterangan: keteranganInput ? keteranganInput.value : ''
+                    });
+                }
+            });
+
             const payload = {
                 tanggal_pranota: document.getElementById('modal_tanggal_pranota').value,
-                adjustment: document.getElementById('modal_adjustment').value,
+                adjustments: adjustments,
                 keterangan: document.getElementById('modal_keterangan').value,
                 items: currentPranotaItems.map(item => ({
                     id: item.id,

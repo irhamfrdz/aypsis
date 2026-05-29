@@ -398,7 +398,16 @@
                     </tr>
                     
                     <!-- Adjustment Row -->
-                    @if($pranota->adjustment != 0)
+                    @if($pranota->adjustments && is_array($pranota->adjustments))
+                        @foreach($pranota->adjustments as $index => $adj)
+                            @if(isset($adj['nominal']) && $adj['nominal'] != 0)
+                            <tr>
+                                <td colspan="12" class="text-right">Adjustment {{ $index + 1 }}: {{ $adj['keterangan'] ?? 'Tanpa Keterangan' }}</td>
+                                <td class="text-right">{{ number_format($adj['nominal'], 0, ',', '.') }}</td>
+                            </tr>
+                            @endif
+                        @endforeach
+                    @elseif($pranota->adjustment != 0)
                     <tr>
                         <td colspan="12" class="text-right">Adjustment</td>
                         <td class="text-right">{{ number_format($pranota->adjustment, 0, ',', '.') }}</td>

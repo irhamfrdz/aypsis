@@ -111,6 +111,9 @@ class PranotaOngkosTrukController extends Controller
                 'tanggal_pranota' => 'required|date',
                 'items' => 'required|array',
                 'items.*.nominal' => 'required|numeric',
+                'adjustments' => 'nullable|array',
+                'adjustments.*.nominal' => 'required|numeric',
+                'adjustments.*.keterangan' => 'nullable|string',
             ]);
             \Illuminate\Support\Facades\Log::info('Validation passed');
 
@@ -134,14 +137,28 @@ class PranotaOngkosTrukController extends Controller
             $nomorTerakhir->save();
             \Illuminate\Support\Facades\Log::info('NomorTerakhir updated');
 
-            $adjustment = $request->filled('adjustment') ? (float) $request->adjustment : 0;
+            $adjustments = $request->input('adjustments', []);
+            $sumAdjustment = 0;
+            if (empty($adjustments) && $request->filled('adjustment')) {
+                $sumAdjustment = (float) $request->adjustment;
+                $adjustments = [[
+                    'nominal' => $sumAdjustment,
+                    'keterangan' => $request->keterangan ?? 'Adjustment',
+                ]];
+            } else {
+                foreach ($adjustments as $adj) {
+                    $sumAdjustment += (float) ($adj['nominal'] ?? 0);
+                }
+            }
+
             $itemsTotal = collect($request->items)->sum('nominal');
-            $totalNominal = $itemsTotal + $adjustment;
+            $totalNominal = $itemsTotal + $sumAdjustment;
 
             $pranota = PranotaOngkosTruk::create([
                 'no_pranota' => $no_pranota,
                 'tanggal_pranota' => $request->tanggal_pranota,
-                'adjustment' => $adjustment,
+                'adjustment' => $sumAdjustment,
+                'adjustments' => $adjustments,
                 'total_nominal' => $totalNominal,
                 'keterangan' => $request->keterangan,
                 'status' => 'submitted',

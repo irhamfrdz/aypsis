@@ -17,6 +17,7 @@ class PranotaOngkosTruk extends Model
         'tanggal_pranota',
         'total_nominal',
         'adjustment',
+        'adjustments',
         'keterangan',
         'status',
         'supir_id',
@@ -26,6 +27,7 @@ class PranotaOngkosTruk extends Model
 
     protected $casts = [
         'tanggal_pranota' => 'date',
+        'adjustments' => 'array',
     ];
 
     public function creator()
