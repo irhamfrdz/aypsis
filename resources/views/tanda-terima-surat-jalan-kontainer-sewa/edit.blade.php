@@ -93,10 +93,18 @@
                     <input type="text" 
                            name="nomor_kontainer" 
                            id="nomor_kontainer"
+                           list="kontainer-list"
                            required
                            value="{{ old('nomor_kontainer', $tandaTerima->nomor_kontainer) }}"
                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm font-semibold"
                            placeholder="Masukkan nomor kontainer">
+                    <datalist id="kontainer-list">
+                        @foreach($kontainers as $k)
+                            <option value="{{ $k->nomor_seri_gabungan }}">
+                                {{ $k->vendor }} - {{ $k->ukuran }}
+                            </option>
+                        @endforeach
+                    </datalist>
                 </div>
 
                 <!-- Tanggal Terima -->

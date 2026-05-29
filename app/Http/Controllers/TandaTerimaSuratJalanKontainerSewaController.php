@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Karyawan;
+use App\Models\Kontainer;
 use App\Models\SuratJalanKontainerSewa;
 use App\Models\TandaTerimaSuratJalanKontainerSewa;
 use Illuminate\Http\Request;
@@ -61,6 +62,11 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
     {
         $tipe = $request->get('tipe', 'surat_jalan'); // default: surat_jalan
 
+        $kontainers = Kontainer::whereNotNull('nomor_seri_gabungan')
+            ->where('nomor_seri_gabungan', '!=', '')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
+
         if ($tipe === 'tanda_terima') {
             $query = TandaTerimaSuratJalanKontainerSewa::with(['suratJalanKontainerSewa']);
 
@@ -94,7 +100,7 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
                 ->orderBy('nama_panggilan')
                 ->get();
 
-            return view('tanda-terima-surat-jalan-kontainer-sewa.index', compact('tandaTerimas', 'supirs'));
+            return view('tanda-terima-surat-jalan-kontainer-sewa.index', compact('tandaTerimas', 'supirs', 'kontainers'));
         } else {
             // Pending Surat Jalan
             $query = SuratJalanKontainerSewa::query();
@@ -128,7 +134,7 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
                 ->orderBy('nama_panggilan')
                 ->get();
 
-            return view('tanda-terima-surat-jalan-kontainer-sewa.index', compact('suratJalans', 'supirs'));
+            return view('tanda-terima-surat-jalan-kontainer-sewa.index', compact('suratJalans', 'supirs', 'kontainers'));
         }
     }
 
@@ -243,9 +249,6 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
         return view('tanda-terima-surat-jalan-kontainer-sewa.show', compact('tandaTerima'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit($id)
     {
         $tandaTerima = TandaTerimaSuratJalanKontainerSewa::findOrFail($id);
@@ -256,7 +259,12 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'plat']);
 
-        return view('tanda-terima-surat-jalan-kontainer-sewa.edit', compact('tandaTerima', 'suratJalans', 'supirs'));
+        $kontainers = Kontainer::whereNotNull('nomor_seri_gabungan')
+            ->where('nomor_seri_gabungan', '!=', '')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
+
+        return view('tanda-terima-surat-jalan-kontainer-sewa.edit', compact('tandaTerima', 'suratJalans', 'supirs', 'kontainers'));
     }
 
     /**
