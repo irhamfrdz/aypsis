@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BtmSewaTransaction;
 use App\Models\Karyawan;
 use App\Models\Kontainer;
 use App\Models\SuratJalanKontainerSewa;
@@ -214,13 +215,14 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
 
             $tandaTerima = TandaTerimaSuratJalanKontainerSewa::create($validated);
 
-            // Sync/create kontainer record in kontainers table
+            // Sync/create kontainer and transaction record
             $this->syncKontainer(
                 $validated['nomor_kontainer'],
                 $validated['tanggal_mulai_sewa'],
                 $suratJalan->ukuran,
                 $suratJalan->tipe_kontainer,
-                $suratJalan->vendor
+                $suratJalan->vendor,
+                $suratJalan->tipe
             );
 
             // Update status of Surat Jalan Kontainer Sewa to selesai
@@ -312,13 +314,14 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
 
             $tandaTerima->update($validated);
 
-            // Sync/create kontainer record in kontainers table
+            // Sync/create kontainer and transaction record
             $this->syncKontainer(
                 $validated['nomor_kontainer'],
                 $validated['tanggal_mulai_sewa'],
                 $tandaTerima->ukuran,
                 $tandaTerima->tipe_kontainer,
-                $tandaTerima->suratJalanKontainerSewa->vendor ?? null
+                $tandaTerima->suratJalanKontainerSewa->vendor ?? null,
+                $tandaTerima->kegiatan
             );
 
             // Sync with related Surat Jalan Kontainer Sewa
@@ -398,9 +401,9 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
     }
 
     /**
-     * Sync or create container in kontainers table
+     * Sync or create container in kontainers and btm_sewa_transactions table
      */
-    private function syncKontainer($nomorKontainer, $tanggalMulaiSewa, $ukuran = null, $tipeKontainer = null, $vendor = null)
+    private function syncKontainer($nomorKontainer, $tanggalMulaiSewa, $ukuran = null, $tipeKontainer = null, $vendor = null, $kegiatan = 'pengambilan')
     {
         if (empty($nomorKontainer)) {
             return;
@@ -409,6 +412,7 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
         $nomor = strtoupper(trim($nomorKontainer));
         $kontainer = Kontainer::where('nomor_seri_gabungan', $nomor)->first();
 
+        // 1. Sync Kontainer Table
         if ($kontainer) {
             $kontainer->update([
                 'tanggal_mulai_sewa' => $tanggalMulaiSewa,
@@ -429,6 +433,44 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
                 'vendor' => $vendor,
                 'status' => 'Tersedia',
             ]);
+        }
+
+        // 2. Sync BtmSewaTransaction Table
+        if ($kegiatan === 'pengambilan') {
+            $activeTrx = BtmSewaTransaction::where('unit_number', $nomor)
+                ->whereNull('date_out')
+                ->first();
+
+            if ($activeTrx) {
+                $activeTrx->update([
+                    'date_in' => $tanggalMulaiSewa,
+                ]);
+            } else {
+                BtmSewaTransaction::create([
+                    'unit_number' => $nomor,
+                    'date_in' => $tanggalMulaiSewa,
+                    'date_out' => null,
+                    'billing_mode' => 'B',
+                ]);
+            }
+        } elseif ($kegiatan === 'pengembalian') {
+            $activeTrx = BtmSewaTransaction::where('unit_number', $nomor)
+                ->whereNull('date_out')
+                ->first();
+
+            if ($activeTrx) {
+                $activeTrx->update([
+                    'date_out' => $tanggalMulaiSewa,
+                ]);
+            } else {
+                // If there's no active transaction (maybe manually deleted or missing), create a closed one
+                BtmSewaTransaction::create([
+                    'unit_number' => $nomor,
+                    'date_in' => $tanggalMulaiSewa,
+                    'date_out' => $tanggalMulaiSewa,
+                    'billing_mode' => 'B',
+                ]);
+            }
         }
     }
 }
