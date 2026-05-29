@@ -95,6 +95,17 @@ return [
                 'pranota-perbaikan-kontainer-print' => 'Cetak Pranota',
             ],
         ],
+        'tanda-terima-surat-jalan-kontainer-sewa' => [
+            'name' => 'Tanda Terima SJ Kontainer Sewa',
+            'description' => 'Menu tanda terima surat jalan kontainer sewa',
+            'required' => true,
+            'sub_modules' => [
+                'tanda-terima-surat-jalan-kontainer-sewa-view' => 'View Tanda Terima',
+                'tanda-terima-surat-jalan-kontainer-sewa-create' => 'Buat Tanda Terima',
+                'tanda-terima-surat-jalan-kontainer-sewa-update' => 'Edit Tanda Terima',
+                'tanda-terima-surat-jalan-kontainer-sewa-delete' => 'Hapus Tanda Terima',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
@@ -124,5 +135,8 @@ return [
 
         // Pranota Perbaikan Kontainer - butuh pranota-perbaikan-kontainer-view
         'pranota-perbaikan-kontainer' => ['pranota-perbaikan-kontainer-view'],
+
+        // Tanda Terima SJ Kontainer Sewa - butuh tanda-terima-surat-jalan-kontainer-sewa-view
+        'tanda-terima-surat-jalan-kontainer-sewa' => ['tanda-terima-surat-jalan-kontainer-sewa-view'],
     ],
 ];

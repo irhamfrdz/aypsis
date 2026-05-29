@@ -1843,6 +1843,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Tanda Terima SJ Kontainer Sewa --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-cyan-600 font-bold">Tanda Terima SJ Kontainer Sewa</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-kontainer-sewa][view]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-surat-jalan-kontainer-sewa.view') || (isset($userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['view']) && $userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['view']) || ($user && $user->can('tanda-terima-surat-jalan-kontainer-sewa-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-kontainer-sewa][create]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-surat-jalan-kontainer-sewa.create') || (isset($userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['create']) && $userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['create']) || ($user && $user->can('tanda-terima-surat-jalan-kontainer-sewa-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-kontainer-sewa][update]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-surat-jalan-kontainer-sewa.update') || (isset($userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['update']) && $userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['update']) || ($user && $user->can('tanda-terima-surat-jalan-kontainer-sewa-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tanda-terima-surat-jalan-kontainer-sewa][delete]" value="1" class="permission-checkbox" @if(old('permissions.tanda-terima-surat-jalan-kontainer-sewa.delete') || (isset($userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['delete']) && $userMatrixPermissions['tanda-terima-surat-jalan-kontainer-sewa']['delete']) || ($user && $user->can('tanda-terima-surat-jalan-kontainer-sewa-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
                             {{-- User --}}
                             <tr class="module-row" data-module="user">
