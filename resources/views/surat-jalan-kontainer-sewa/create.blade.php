@@ -358,47 +358,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle auto-fill money and size
     function updateUangJalan() {
-        if (!tujuanSelect || !kontainerInput || !nominalUangJalanInput) return;
+        if (!tujuanSelect || !nominalUangJalanInput) return;
         
         const selectedTujuan = tujuanSelect.options[tujuanSelect.selectedIndex];
-        const val = kontainerInput.value;
+        if (!selectedTujuan || !selectedTujuan.value) return;
+
+        let ukuran = ukuranInput ? ukuranInput.value : '';
+        const val = kontainerInput ? kontainerInput.value : '';
         const list = document.getElementById('kontainer-list');
-        let ukuran = '';
         
         if (list && val) {
             for(let option of list.options) {
                 if(option.value === val) {
-                    ukuran = option.getAttribute('data-ukuran');
+                    const resolvedUkuran = option.getAttribute('data-ukuran');
+                    if (resolvedUkuran) {
+                        ukuran = resolvedUkuran;
+                        if (ukuranInput) {
+                            const exists = Array.from(ukuranInput.options).some(opt => opt.value === ukuran);
+                            if (exists) {
+                                ukuranInput.value = ukuran;
+                            }
+                        }
+                    }
                     break;
                 }
             }
         }
-
-        if (ukuranInput && ukuran) {
-            // Check if option exists in dropdown, else default to select
-            const exists = Array.from(ukuranInput.options).some(opt => opt.value === ukuran);
-            if (exists) {
-                ukuranInput.value = ukuran;
-            }
+        
+        let amount = 0;
+        if (ukuran && ukuran.includes('20')) {
+            amount = selectedTujuan.getAttribute('data-20ft');
+        } else if (ukuran && (ukuran.includes('40') || ukuran.includes('45'))) {
+            amount = selectedTujuan.getAttribute('data-40ft');
         }
         
-        if (selectedTujuan && selectedTujuan.value && val) {
-            let amount = 0;
-            
-            if (ukuran && ukuran.includes('20')) {
-                amount = selectedTujuan.getAttribute('data-20ft');
-            } else if (ukuran && ukuran.includes('40')) {
-                amount = selectedTujuan.getAttribute('data-40ft');
-            }
-            
-            if (amount > 0) {
-                nominalUangJalanInput.value = amount;
-            }
+        if (amount > 0) {
+            nominalUangJalanInput.value = amount;
+        } else {
+            nominalUangJalanInput.value = 0;
         }
     }
 
     if (tujuanSelect) tujuanSelect.addEventListener('change', updateUangJalan);
     if (kontainerInput) kontainerInput.addEventListener('input', updateUangJalan);
+    if (ukuranInput) ukuranInput.addEventListener('change', updateUangJalan);
 
     // Handle supir change for auto-fill plat
     if (supirSelect) {
