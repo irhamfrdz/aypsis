@@ -214,6 +214,15 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
 
             $tandaTerima = TandaTerimaSuratJalanKontainerSewa::create($validated);
 
+            // Sync/create kontainer record in kontainers table
+            $this->syncKontainer(
+                $validated['nomor_kontainer'],
+                $validated['tanggal_mulai_sewa'],
+                $suratJalan->ukuran,
+                $suratJalan->tipe_kontainer,
+                $suratJalan->vendor
+            );
+
             // Update status of Surat Jalan Kontainer Sewa to selesai
             $suratJalan->update([
                 'status' => 'selesai',
@@ -303,6 +312,15 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
 
             $tandaTerima->update($validated);
 
+            // Sync/create kontainer record in kontainers table
+            $this->syncKontainer(
+                $validated['nomor_kontainer'],
+                $validated['tanggal_mulai_sewa'],
+                $tandaTerima->ukuran,
+                $tandaTerima->tipe_kontainer,
+                $tandaTerima->suratJalanKontainerSewa->vendor ?? null
+            );
+
             // Sync with related Surat Jalan Kontainer Sewa
             if ($tandaTerima->surat_jalan_kontainer_sewa_id) {
                 $suratJalan = SuratJalanKontainerSewa::find($tandaTerima->surat_jalan_kontainer_sewa_id);
@@ -377,5 +395,40 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
         $tandaTerima = TandaTerimaSuratJalanKontainerSewa::with(['suratJalanKontainerSewa'])->findOrFail($id);
 
         return view('tanda-terima-surat-jalan-kontainer-sewa.print', compact('tandaTerima'));
+    }
+
+    /**
+     * Sync or create container in kontainers table
+     */
+    private function syncKontainer($nomorKontainer, $tanggalMulaiSewa, $ukuran = null, $tipeKontainer = null, $vendor = null)
+    {
+        if (empty($nomorKontainer)) {
+            return;
+        }
+
+        $nomor = strtoupper(trim($nomorKontainer));
+        $kontainer = Kontainer::where('nomor_seri_gabungan', $nomor)->first();
+
+        if ($kontainer) {
+            $kontainer->update([
+                'tanggal_mulai_sewa' => $tanggalMulaiSewa,
+            ]);
+        } else {
+            $awalan = strlen($nomor) >= 4 ? substr($nomor, 0, 4) : $nomor;
+            $seri = strlen($nomor) >= 10 ? substr($nomor, 4, 6) : '';
+            $akhiran = strlen($nomor) >= 11 ? substr($nomor, 10, 1) : '';
+
+            Kontainer::create([
+                'awalan_kontainer' => $awalan,
+                'nomor_seri_kontainer' => $seri,
+                'akhiran_kontainer' => $akhiran,
+                'nomor_seri_gabungan' => $nomor,
+                'ukuran' => $ukuran ?? '40',
+                'tipe_kontainer' => $tipeKontainer ?? 'Dry',
+                'tanggal_mulai_sewa' => $tanggalMulaiSewa,
+                'vendor' => $vendor,
+                'status' => 'Disewa',
+            ]);
+        }
     }
 }
