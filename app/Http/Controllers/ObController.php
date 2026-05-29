@@ -1102,8 +1102,21 @@ class ObController extends Controller
                 if (strtoupper(trim($manifestDataForLater['tipe_kontainer'])) === 'LCL') {
                     \Log::info('LCL container detected, finding tanda terima...');
 
+                    $allowedTtrNumbers = [];
+                    if ($manifestDataForLater['prospek_id']) {
+                        $prospek = \App\Models\Prospek::find($manifestDataForLater['prospek_id']);
+                        if ($prospek && $prospek->no_surat_jalan) {
+                            $allowedTtrNumbers = array_map('trim', explode(',', $prospek->no_surat_jalan));
+                        }
+                    }
+
                     $tandaTerimaRecords = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $manifestDataForLater['nomor_kontainer'])
                         ->where('nomor_seal', $manifestDataForLater['no_seal'])
+                        ->when(!empty($allowedTtrNumbers), function ($q) use ($allowedTtrNumbers) {
+                            return $q->whereHas('tandaTerima', function($sq) use ($allowedTtrNumbers) {
+                                $sq->whereIn('nomor_tanda_terima', $allowedTtrNumbers);
+                            });
+                        })
                         ->with('tandaTerima.items')
                         ->get();
 
@@ -1397,8 +1410,21 @@ class ObController extends Controller
 
             if ($isLcl) {
                 // Untuk LCL: cari tanda terima yang terkait dengan kontainer ini
+                $allowedTtrNumbers = [];
+                if ($prospekId) {
+                    $prospek = \App\Models\Prospek::find($prospekId);
+                    if ($prospek && $prospek->no_surat_jalan) {
+                        $allowedTtrNumbers = array_map('trim', explode(',', $prospek->no_surat_jalan));
+                    }
+                }
+
                 $tandaTerimaRecords = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $nomorKontainer)
                     ->where('nomor_seal', $noSeal)
+                    ->when(!empty($allowedTtrNumbers), function ($q) use ($allowedTtrNumbers) {
+                        return $q->whereHas('tandaTerima', function($sq) use ($allowedTtrNumbers) {
+                            $sq->whereIn('nomor_tanda_terima', $allowedTtrNumbers);
+                        });
+                    })
                     ->with('tandaTerima.items')
                     ->get();
 
