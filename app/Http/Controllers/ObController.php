@@ -1103,6 +1103,7 @@ class ObController extends Controller
                     \Log::info('LCL container detected, finding tanda terima...');
 
                     $tandaTerimaRecords = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $manifestDataForLater['nomor_kontainer'])
+                        ->where('nomor_seal', $manifestDataForLater['no_seal'])
                         ->with('tandaTerima.items')
                         ->get();
 
@@ -1397,6 +1398,7 @@ class ObController extends Controller
             if ($isLcl) {
                 // Untuk LCL: cari tanda terima yang terkait dengan kontainer ini
                 $tandaTerimaRecords = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $nomorKontainer)
+                    ->where('nomor_seal', $noSeal)
                     ->with('tandaTerima.items')
                     ->get();
 
