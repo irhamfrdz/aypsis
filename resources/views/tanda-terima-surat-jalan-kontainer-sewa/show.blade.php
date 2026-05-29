@@ -73,8 +73,10 @@
                             <span class="text-gray-900 font-bold block mt-1">{{ $tandaTerima->no_plat ?? '-' }}</span>
                         </div>
                         <div>
-                            <span class="text-gray-500 text-xs font-semibold uppercase tracking-wider block">Nomor Seal</span>
-                            <span class="text-gray-900 font-semibold block mt-1 text-cyan-700">{{ $tandaTerima->no_seal ?? '-' }}</span>
+                            <span class="text-gray-500 text-xs font-semibold uppercase tracking-wider block">Tanggal Mulai Sewa</span>
+                            <span class="text-gray-900 font-semibold block mt-1 text-cyan-700">
+                                {{ $tandaTerima->tanggal_mulai_sewa ? $tandaTerima->tanggal_mulai_sewa->format('d F Y') : '-' }}
+                            </span>
                         </div>
                         <div>
                             <span class="text-gray-500 text-xs font-semibold uppercase tracking-wider block">Tipe Kegiatan</span>

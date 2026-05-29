@@ -165,8 +165,9 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
         $validated = $request->validate([
             'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_surat_jalan_kontainer_sewas,nomor_tanda_terima',
             'tanggal_tanda_terima' => 'required|date',
+            'tanggal_mulai_sewa' => 'required|date',
             'surat_jalan_kontainer_sewa_id' => 'required|exists:surat_jalan_kontainer_sewas,id',
-            'no_seal' => 'nullable|string|max:255',
+            'nomor_kontainer' => 'required|string|max:255',
             'supir' => 'nullable|string|max:255',
             'no_plat' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
@@ -187,7 +188,6 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
             $suratJalan = SuratJalanKontainerSewa::findOrFail($validated['surat_jalan_kontainer_sewa_id']);
 
             $validated['nomor_surat_jalan'] = $suratJalan->nomor_surat_jalan;
-            $validated['nomor_kontainer'] = $suratJalan->nomor_kontainer;
             $validated['tipe_kontainer'] = $suratJalan->tipe_kontainer;
             $validated['ukuran'] = $suratJalan->ukuran;
             $validated['kegiatan'] = $suratJalan->tipe; // 'pengambilan' or 'pengembalian'
@@ -213,6 +213,7 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
                 'status' => 'selesai',
                 'supir' => $validated['supir'],
                 'no_plat' => $validated['no_plat'],
+                'nomor_kontainer' => $validated['nomor_kontainer'],
                 'updated_by' => Auth::id(),
             ]);
 
@@ -266,7 +267,8 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
         $validated = $request->validate([
             'nomor_tanda_terima' => 'required|string|max:255|unique:tanda_terima_surat_jalan_kontainer_sewas,nomor_tanda_terima,'.$id,
             'tanggal_tanda_terima' => 'required|date',
-            'no_seal' => 'nullable|string|max:255',
+            'tanggal_mulai_sewa' => 'required|date',
+            'nomor_kontainer' => 'required|string|max:255',
             'supir' => 'nullable|string|max:255',
             'no_plat' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
@@ -300,6 +302,7 @@ class TandaTerimaSuratJalanKontainerSewaController extends Controller
                     $suratJalan->update([
                         'supir' => $validated['supir'] ?: $suratJalan->supir,
                         'no_plat' => $validated['no_plat'] ?: $suratJalan->no_plat,
+                        'nomor_kontainer' => $validated['nomor_kontainer'] ?: $suratJalan->nomor_kontainer,
                         'updated_by' => Auth::id(),
                     ]);
                 }

@@ -392,6 +392,21 @@
                                placeholder="Mengenerate nomor otomatis...">
                     </div>
 
+                    <!-- Nomor Kontainer -->
+                    <div>
+                        <label for="nomor_kontainer" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Nomor Kontainer <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               name="nomor_kontainer" 
+                               id="nomor_kontainer"
+                               required
+                               placeholder="Contoh: MSKU1234567"
+                               class="w-full px-3.5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- Tanggal Terima -->
                     <div>
                         <label for="tanggal_tanda_terima" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -400,6 +415,19 @@
                         <input type="date" 
                                name="tanggal_tanda_terima" 
                                id="tanggal_tanda_terima"
+                               required
+                               value="{{ date('Y-m-d') }}"
+                               class="w-full px-3.5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
+                    </div>
+
+                    <!-- Tanggal Mulai Sewa -->
+                    <div>
+                        <label for="tanggal_mulai_sewa" class="block text-sm font-semibold text-gray-700 mb-2">
+                            Tanggal Mulai Sewa <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" 
+                               name="tanggal_mulai_sewa" 
+                               id="tanggal_mulai_sewa"
                                required
                                value="{{ date('Y-m-d') }}"
                                class="w-full px-3.5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
@@ -442,20 +470,6 @@
                                name="no_plat" 
                                id="no_plat"
                                placeholder="Contoh: BP 1234 XX"
-                               class="w-full px-3.5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Nomor Seal -->
-                    <div>
-                        <label for="no_seal" class="block text-sm font-semibold text-gray-700 mb-2">
-                            Nomor Seal (Segel)
-                        </label>
-                        <input type="text" 
-                               name="no_seal" 
-                               id="no_seal"
-                               placeholder="Contoh: SL123456"
                                class="w-full px-3.5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
                     </div>
                 </div>
@@ -571,6 +585,13 @@
         document.getElementById('modal_nomor_sj').textContent = nomorSj || '-';
         document.getElementById('modal_no_kontainer').textContent = nomorKontainer || '-';
         
+        // Pre-fill nomor kontainer
+        if (nomorKontainer) {
+            document.getElementById('nomor_kontainer').value = nomorKontainer;
+        } else {
+            document.getElementById('nomor_kontainer').value = '';
+        }
+
         // Pre-fill supir and plat from Surat Jalan
         if (defaultSupir) {
             document.getElementById('supir_search').value = defaultSupir;

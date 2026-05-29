@@ -85,6 +85,20 @@
                            placeholder="Masukkan nomor tanda terima">
                 </div>
 
+                <!-- Nomor Kontainer -->
+                <div>
+                    <label for="nomor_kontainer" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Nomor Kontainer <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           name="nomor_kontainer" 
+                           id="nomor_kontainer"
+                           required
+                           value="{{ old('nomor_kontainer', $tandaTerima->nomor_kontainer) }}"
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm font-semibold"
+                           placeholder="Masukkan nomor kontainer">
+                </div>
+
                 <!-- Tanggal Terima -->
                 <div>
                     <label for="tanggal_tanda_terima" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -95,6 +109,19 @@
                            id="tanggal_tanda_terima"
                            required
                            value="{{ old('tanggal_tanda_terima', $tandaTerima->tanggal_tanda_terima ? $tandaTerima->tanggal_tanda_terima->format('Y-m-d') : '') }}"
+                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
+                </div>
+
+                <!-- Tanggal Mulai Sewa -->
+                <div>
+                    <label for="tanggal_mulai_sewa" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Tanggal Mulai Sewa <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" 
+                           name="tanggal_mulai_sewa" 
+                           id="tanggal_mulai_sewa"
+                           required
+                           value="{{ old('tanggal_mulai_sewa', $tandaTerima->tanggal_mulai_sewa ? $tandaTerima->tanggal_mulai_sewa->format('Y-m-d') : '') }}"
                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
                 </div>
 
@@ -135,19 +162,6 @@
                            id="no_plat"
                            value="{{ old('no_plat', $tandaTerima->no_plat) }}"
                            placeholder="Contoh: BP 1234 XX"
-                           class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
-                </div>
-
-                <!-- Nomor Seal -->
-                <div>
-                    <label for="no_seal" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Nomor Seal (Segel)
-                    </label>
-                    <input type="text" 
-                           name="no_seal" 
-                           id="no_seal"
-                           value="{{ old('no_seal', $tandaTerima->no_seal) }}"
-                           placeholder="Contoh: SL123456"
                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm">
                 </div>
             </div>

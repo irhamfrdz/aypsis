@@ -15,10 +15,10 @@ class TandaTerimaSuratJalanKontainerSewa extends Model
     protected $fillable = [
         'nomor_tanda_terima',
         'tanggal_tanda_terima',
+        'tanggal_mulai_sewa',
         'surat_jalan_kontainer_sewa_id',
         'nomor_surat_jalan',
         'nomor_kontainer',
-        'no_seal',
         'tipe_kontainer',
         'ukuran',
         'supir',
@@ -35,6 +35,7 @@ class TandaTerimaSuratJalanKontainerSewa extends Model
 
     protected $casts = [
         'tanggal_tanda_terima' => 'date',
+        'tanggal_mulai_sewa' => 'date',
         'lembur' => 'boolean',
         'nginap' => 'boolean',
         'tidak_lembur_nginap' => 'boolean',

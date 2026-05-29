@@ -98,8 +98,8 @@
             <td>: {{ $tandaTerima->tipe_kontainer ?? '-' }} / {{ $tandaTerima->ukuran ?? '-' }}</td>
         </tr>
         <tr>
-            <td class="label">No. Seal (Segel)</td>
-            <td>: {{ $tandaTerima->no_seal ?? '-' }}</td>
+            <td class="label">Tanggal Mulai Sewa</td>
+            <td>: {{ $tandaTerima->tanggal_mulai_sewa ? \Carbon\Carbon::parse($tandaTerima->tanggal_mulai_sewa)->format('d F Y') : '-' }}</td>
         </tr>
         <tr>
             <td class="label">Supir</td>
