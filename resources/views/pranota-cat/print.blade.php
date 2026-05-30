@@ -235,11 +235,10 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">NO</th>
-                    <th style="width: 25%;">NOMOR TAGIHAN CAT</th>
-                    <th style="width: 20%;">NOMOR KONTAINER</th>
-                    <th style="width: 20%;">VENDOR</th>
+                    <th style="width: 35%;">NOMOR TAGIHAN CAT</th>
+                    <th style="width: 25%;">NOMOR KONTAINER</th>
                     <th style="width: 15%;">TANGGAL CAT</th>
-                    <th style="width: 15%;">BIAYA</th>
+                    <th style="width: 20%;">BIAYA</th>
                 </tr>
             </thead>
             <tbody>
@@ -253,16 +252,15 @@
                         <td class="text-center">{{ $i++ }}</td>
                         <td class="text-center font-bold">{{ $item->nomor_tagihan_cat ?? $item->id }}</td>
                         <td class="text-center">{{ $item->nomor_kontainer ?? '-' }}</td>
-                        <td>{{ $item->vendor ?? '-' }}</td>
                         <td class="text-center">{{ $item->tanggal_cat ? \Carbon\Carbon::parse($item->tanggal_cat)->format('d/m/Y') : '-' }}</td>
                         <td class="text-right font-bold">{{ number_format($biaya, 0, ',', '.') }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
+                    <tr><td colspan="5" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
                 @endforelse
                 @if(count($tagihanItems) > 0)
                     <tr style="background-color: #f9f9f9; font-weight: bold;">
-                        <td colspan="5" class="text-right px-4">TOTAL</td>
+                        <td colspan="4" class="text-right px-4">TOTAL</td>
                         <td class="text-right">{{ number_format($grandTotal, 0, ',', '.') }}</td>
                     </tr>
                 @endif
