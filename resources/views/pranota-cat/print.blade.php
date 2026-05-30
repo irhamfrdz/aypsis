@@ -1,213 +1,297 @@
 <!DOCTYPE html>
 <html lang="id">
+@php
+    // Fixed paper size: Half-Folio only
+    $paperSize = 'Half-Folio';
+    
+    // Half-Folio paper dimensions and styles
+    $currentPaper = [
+        'size' => '8.5in 6.5in', // Folio width x half height
+        'width' => '8.5in',
+        'height' => '6.5in',
+        'containerWidth' => '8.5in',
+        'fontSize' => '9px',
+        'headerH1' => '14px',
+        'tableFont' => '8px',
+        'signatureBottom' => '3mm'
+    ];
+@endphp
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Print Pranota Tagihan CAT - {{ $pranota->no_invoice ?? 'Belum ada nomor' }}</title>
+    <meta name="viewport" content="width={{ $currentPaper['width'] }}, initial-scale=1.0">
+    <title>PRANOTA TAGIHAN CAT - {{ $pranota->no_invoice ?? 'Belum ada nomor' }}</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
+        * {
             margin: 0;
-            padding: 20px;
-            background: white;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .print-container {
-            max-width: 1000px;
-            margin: 0 auto;
+        @page {
+            size: {{ $currentPaper['size'] }} portrait;
+            margin: 0;
+        }
+
+        html {
+            width: {{ $currentPaper['width'] }};
+            height: {{ $currentPaper['height'] }};
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: {{ $currentPaper['fontSize'] }};
+            line-height: 1.3;
+            color: #333;
             background: white;
-            border: 2px solid #000;
+            position: relative;
+            width: {{ $currentPaper['width'] }};
+            height: {{ $currentPaper['height'] }};
+            margin: 0;
+            padding: 0;
+        }
+
+        .no-print {
+            display: block;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body { margin: 0; padding: 0; }
+            .container {
+                border: none !important;
+                box-shadow: none !important;
+            }
+        }
+
+        .container {
+            width: {{ $currentPaper['containerWidth'] }};
+            min-height: {{ $currentPaper['height'] }};
+            margin: 0 auto;
+            padding: 5mm 8mm;
+            position: relative;
+            box-sizing: border-box;
+            background: white;
         }
 
         .header {
             text-align: center;
-            border-bottom: 2px solid #000;
-            padding: 15px;
-            background: #f8f9fa;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .header h1 {
-            margin: 0;
-            font-size: 20px;
+            font-size: {{ $currentPaper['headerH1'] }};
             font-weight: bold;
+            margin-bottom: 2px;
             text-transform: uppercase;
         }
 
-        .header h2 {
-            margin: 5px 0 0 0;
-            font-size: 16px;
-            color: #666;
+        .info-table {
+            width: 100%;
+            margin-bottom: 10px;
+            border-collapse: collapse;
         }
 
-        .pranota-info {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px;
-            border-bottom: 1px solid #ddd;
-            background: #fff;
+        .info-table td {
+            padding: 2px 0;
+            vertical-align: top;
+            font-size: 8px;
         }
 
-        .info-section {
-            flex: 1;
-        }
-
-        .info-section h3 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .info-row {
-            display: flex;
-            margin-bottom: 5px;
-        }
-
-        .info-label {
-            width: 120px;
+        .info-table .label {
+            width: 110px;
             font-weight: bold;
         }
 
-        .info-value {
-            flex: 1;
+        .info-table .separator {
+            width: 15px;
+            text-align: center;
         }
 
-        .table {
+        .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-bottom: 8px;
+            table-layout: fixed;
         }
 
-        .table th,
-        .table td {
+        .items-table th, .items-table td {
             border: 1px solid #000;
-            padding: 8px;
-            text-align: left;
+            padding: 3px 4px;
+            font-size: {{ $currentPaper['tableFont'] }};
+            vertical-align: middle;
         }
 
-        .table th {
-            background: #f8f9fa;
+        .items-table th {
+            background-color: #f2f2f2;
             font-weight: bold;
-        }
-
-        .footer {
-            margin-top: 30px;
-            padding: 20px;
             text-align: center;
-            border-top: 1px solid #ddd;
+            text-transform: uppercase;
         }
 
-        .signature-section {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 40px;
+        .items-table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .signature-box {
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+
+        .keterangan-section {
+            margin-top: 5px;
+            padding: 5px;
+            border: 1px dashed #ccc;
+            background-color: #fdfdfd;
+            font-size: 8px;
+        }
+
+        .footer-signatures {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .signature-table td {
+            width: 33.33%;
             text-align: center;
-            width: 200px;
+            vertical-align: bottom;
+            padding-top: 30px;
         }
 
         .signature-line {
             border-bottom: 1px solid #000;
-            margin-top: 40px;
-            padding-bottom: 5px;
+            width: 140px;
+            margin: 0 auto 3px;
         }
 
-        @media print {
-            body {
-                padding: 0;
-            }
-
-            .print-container {
-                border: none;
-            }
+        .signature-label {
+            font-size: 8px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="print-container">
+    <!-- Instruction Banner -->
+    <div class="no-print" style="background: #fef3c7; padding: 10px; border: 1px solid #f59e0b; margin: 10px; font-size: 11px; border-radius: 5px;">
+        <strong>⚠️ PENTING - Setting Print untuk Half-Folio:</strong><br>
+        Setting Printer: Paper Size <b>Folio/Legal</b>, Scale: <b>100%</b>, Orientation: <b>Portrait</b>.<br>
+        Potong kertas Folio menjadi 2 bagian secara horizontal setelah dicetak.
+    </div>
+
+    <!-- Print Button -->
+    <div class="no-print" style="text-align: right; margin: 0 10px 10px 0;">
+        <button onclick="window.print()" style="padding: 6px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            🖨️ Cetak Laporan
+        </button>
+    </div>
+
+    <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>ALEXINDO YAKIN PRIMA</h1>
-            <h2>PRANOTA TAGIHAN CONTAINER</h2>
+            <h1>PRANOTA TAGIHAN CONTAINER ANNUAL TEST (CAT)</h1>
         </div>
 
-        <!-- Pranota Information -->
-        <div class="pranota-info">
-            <div class="info-section">
-                <h3>Informasi Pranota</h3>
-                <div class="info-row">
-                    <div class="info-label">Nomor Pranota:</div>
-                    <div class="info-value">{{ $pranota->no_invoice ?? '-' }}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Tanggal Pranota:</div>
-                    <div class="info-value">{{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/m/Y') : '-' }}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Vendor/Bengkel:</div>
-                    <div class="info-value">{{ $pranota->supplier ?? '-' }}</div>
-                </div>
-            </div>
-            <div class="info-section">
-                <h3>Ringkasan Biaya</h3>
-                <div class="info-row">
-                    <div class="info-label">Total Biaya:</div>
-                    <div class="info-value">
-                        {{ $pranota->calculateTotalAmount() ? 'Rp ' . number_format($pranota->calculateTotalAmount(), 0, ',', '.') : '-' }}
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Info Section -->
+        <table class="info-table">
+            <tr>
+                <td class="label">Nomor Pranota</td>
+                <td class="separator">:</td>
+                <td><strong>{{ $pranota->no_invoice ?? '-' }}</strong></td>
+                <td class="label">Vendor/Bengkel</td>
+                <td class="separator">:</td>
+                <td>{{ $pranota->supplier ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Tanggal Pranota</td>
+                <td class="separator">:</td>
+                <td>{{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d F Y') : '-' }}</td>
+                <td class="label">Jumlah Tagihan</td>
+                <td class="separator">:</td>
+                <td>{{ $pranota->jumlah_tagihan ?? count($tagihanItems) }} Item</td>
+            </tr>
+            @if($pranota->due_date)
+            <tr>
+                <td class="label">Jatuh Tempo</td>
+                <td class="separator">:</td>
+                <td>{{ \Carbon\Carbon::parse($pranota->due_date)->format('d F Y') }}</td>
+                <td class="label"></td>
+                <td class="separator"></td>
+                <td></td>
+            </tr>
+            @endif
+        </table>
 
         <!-- Items Table -->
-        <table class="table">
+        <table class="items-table">
             <thead>
                 <tr>
-                    <th>No</th>
-                    <th>Nomor Tagihan CAT</th>
-                    <th>Nomor Kontainer</th>
-                    <th>Vendor</th>
-                    <th>Tanggal CAT</th>
-                    <th>Biaya</th>
+                    <th style="width: 5%;">NO</th>
+                    <th style="width: 25%;">NOMOR TAGIHAN CAT</th>
+                    <th style="width: 20%;">NOMOR KONTAINER</th>
+                    <th style="width: 20%;">VENDOR</th>
+                    <th style="width: 15%;">TANGGAL CAT</th>
+                    <th style="width: 15%;">BIAYA</th>
                 </tr>
             </thead>
             <tbody>
+                @php $i = 1; $grandTotal = 0; @endphp
                 @forelse($tagihanItems as $item)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $item->nomor_tagihan_cat ?? $item->id }}</td>
-                    <td>{{ $item->nomor_kontainer ?? '-' }}</td>
-                    <td>{{ $item->vendor ?? '-' }}</td>
-                    <td>{{ $item->tanggal_cat ? \Carbon\Carbon::parse($item->tanggal_cat)->format('d/m/Y') : '-' }}</td>
-                    <td>{{ $item->realisasi_biaya ? 'Rp ' . number_format($item->realisasi_biaya, 0, ',', '.') : '-' }}</td>
-                </tr>
+                    @php
+                        $biaya = floatval($item->realisasi_biaya ?? 0);
+                        $grandTotal += $biaya;
+                    @endphp
+                    <tr>
+                        <td class="text-center">{{ $i++ }}</td>
+                        <td class="text-center font-bold">{{ $item->nomor_tagihan_cat ?? $item->id }}</td>
+                        <td class="text-center">{{ $item->nomor_kontainer ?? '-' }}</td>
+                        <td>{{ $item->vendor ?? '-' }}</td>
+                        <td class="text-center">{{ $item->tanggal_cat ? \Carbon\Carbon::parse($item->tanggal_cat)->format('d/m/Y') : '-' }}</td>
+                        <td class="text-right font-bold">{{ number_format($biaya, 0, ',', '.') }}</td>
+                    </tr>
                 @empty
-                <tr>
-                    <td colspan="6" style="text-align: center;">Tidak ada item tagihan CAT.</td>
-                </tr>
+                    <tr><td colspan="6" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
                 @endforelse
+                @if(count($tagihanItems) > 0)
+                    <tr style="background-color: #f9f9f9; font-weight: bold;">
+                        <td colspan="5" class="text-right px-4">TOTAL</td>
+                        <td class="text-right">{{ number_format($grandTotal, 0, ',', '.') }}</td>
+                    </tr>
+                @endif
             </tbody>
         </table>
 
-        <!-- Footer -->
-        <div class="footer">
-            <div class="signature-section">
-                <div class="signature-box">
-                    <div class="signature-line">Dibuat Oleh</div>
-                    <div style="margin-top: 10px; font-size: 10px;">Tanggal: {{ now()->format('d/m/Y') }}</div>
-                </div>
-                <div class="signature-box">
-                    <div class="signature-line">Disetujui Oleh</div>
-                    <div style="margin-top: 10px; font-size: 10px;">Tanggal: _______________</div>
-                </div>
-                <div class="signature-box">
-                    <div class="signature-line">Diterima Oleh</div>
-                    <div style="margin-top: 10px; font-size: 10px;">Tanggal: _______________</div>
-                </div>
-            </div>
+        @if($pranota->keterangan)
+        <div class="keterangan-section">
+            <strong>Catatan Tambahan:</strong> {{ $pranota->keterangan }}
+        </div>
+        @endif
+
+        <div class="footer-signatures">
+            <table class="signature-table">
+                <tr>
+                    <td>
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Dibuat Oleh</div>
+                    </td>
+                    <td>
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Diperiksa Oleh</div>
+                    </td>
+                    <td>
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Disetujui Oleh</div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 
