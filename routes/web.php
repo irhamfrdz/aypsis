@@ -4905,6 +4905,9 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('can:ob-view');
 
     // Pranota CAT routes
+    Route::get('pranota-cat/generate-nomor', [\App\Http\Controllers\PranotaTagihanCatController::class, 'generateNomor'])
+        ->name('pranota-cat.generate-nomor')
+        ->middleware('can:pranota-cat-create');
     Route::get('pranota-cat', [\App\Http\Controllers\PranotaTagihanCatController::class, 'index'])
         ->name('pranota-cat.index')
         ->middleware('can:pranota-cat-view');
@@ -4919,9 +4922,6 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('can:pranota-cat-create');
     Route::post('pranota-cat/bulk-create-from-tagihan-cat', [\App\Http\Controllers\PranotaTagihanCatController::class, 'bulkCreateFromTagihanCat'])
         ->name('pranota-cat.bulk-create-from-tagihan-cat')
-        ->middleware('can:pranota-cat-create');
-    Route::get('pranota-cat/generate-nomor', [\App\Http\Controllers\PranotaTagihanCatController::class, 'generateNomor'])
-        ->name('pranota-cat.generate-nomor')
         ->middleware('can:pranota-cat-create');
     Route::post('pranota-cat/bulk-status-update', [\App\Http\Controllers\PranotaTagihanCatController::class, 'bulkStatusUpdate'])
         ->name('pranota-cat.bulk-status-update')
