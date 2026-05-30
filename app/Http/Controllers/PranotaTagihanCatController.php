@@ -292,10 +292,11 @@ class PranotaTagihanCatController extends Controller
             $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
 
             if (! $nomorTerakhir) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Modul PMS tidak ditemukan di master nomor terakhir',
-                ], 404);
+                $nomorTerakhir = \App\Models\NomorTerakhir::create([
+                    'modul' => 'PMS',
+                    'nomor_terakhir' => 0,
+                    'keterangan' => 'Pranota CAT',
+                ]);
             }
 
             // Increment nomor terakhir

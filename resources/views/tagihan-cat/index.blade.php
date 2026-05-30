@@ -663,15 +663,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to show pranota modal
     window.showPranotaModal = function(ids, isBulk = false) {
-        // For individual pranota, redirect to create page
-        if (!isBulk) {
-            window.location.href = '{{ route("pranota.create", [], false) }}?tagihan_cat_id=' + ids[0];
-            return;
-        }
-
-        // For bulk pranota, show modal
-        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-        if (checkedBoxes.length === 0) {
+        if (!ids || ids.length === 0) {
             alert('Pilih minimal satu item untuk dimasukkan ke pranota');
             return;
         }
@@ -682,13 +674,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const vendors = new Set();
         const itemsWithPranota = [];
 
-        checkedBoxes.forEach(checkbox => {
+        ids.forEach(id => {
+            const checkbox = document.querySelector(`.item-checkbox[value="${id}"]`);
+            if (!checkbox) return;
             const row = checkbox.closest('tr');
             const nomorTagihan = row.querySelector('td:nth-child(3)').textContent.trim();
             const nomorKontainer = row.querySelector('td:nth-child(4) div:first-child').textContent.trim();
             const vendorName = row.querySelector('td:nth-child(5) div:first-child').textContent.trim();
             const tanggalPranota = row.querySelector('td:nth-child(7)').textContent.trim();
-            const id = checkbox.value;
 
             // Check if item already has pranota
             if (tanggalPranota && tanggalPranota !== '-') {
@@ -722,7 +715,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Validate vendor consistency
         if (vendors.size > 1) {
             const vendorList = Array.from(vendors).join(', ');
-            alert(`Tidak dapat memproses pranota bulk. Item yang dipilih memiliki vendor yang berbeda: ${vendorList}. Silakan pilih item dengan vendor yang sama.`);
+            alert(`Tidak dapat memproses pranota. Item yang dipilih memiliki vendor yang berbeda: ${vendorList}. Silakan pilih item dengan vendor yang sama.`);
             return;
         }
 
@@ -753,7 +746,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Calculate total realisasi biaya
         let totalRealisasi = 0;
-        checkedBoxes.forEach(checkbox => {
+        ids_array.forEach(id => {
+            const checkbox = document.querySelector(`.item-checkbox[value="${id}"]`);
+            if (!checkbox) return;
             const row = checkbox.closest('tr');
             const biayaText = row.querySelector('td:nth-child(9)').textContent.trim();
             const biaya = biayaText !== '-' ? parseFloat(biayaText.replace(/[^\d]/g, '')) : 0;
