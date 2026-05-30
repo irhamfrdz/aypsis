@@ -203,6 +203,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pranota</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -266,10 +267,43 @@
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             {{ is_array($sj) ? ($sj['rit'] ?: '-') : ($sj->rit ?: '-') }}
                         </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm">
+                            @php
+                                $statusRit = is_array($sj) ? ($sj['status_pembayaran_uang_rit'] ?? null) : ($sj->status_pembayaran_uang_rit ?? null);
+                                $sudahMasuk = !in_array($statusRit, ['belum_dibayar', 'belum_bayar', '', null]);
+                            @endphp
+                            @if($sudahMasuk)
+                                @php
+                                    $label = 'Sudah Masuk';
+                                    $badgeClass = 'bg-green-100 text-green-800';
+                                    
+                                    if ($statusRit === 'proses_pranota') {
+                                        $label = 'Proses Pranota';
+                                        $badgeClass = 'bg-yellow-100 text-yellow-800';
+                                    } elseif ($statusRit === 'pranota_submitted') {
+                                        $label = 'Pranota Submitted';
+                                        $badgeClass = 'bg-blue-100 text-blue-800';
+                                    } elseif ($statusRit === 'pranota_approved') {
+                                        $label = 'Pranota Approved';
+                                        $badgeClass = 'bg-indigo-100 text-indigo-800';
+                                    } elseif (in_array($statusRit, ['dibayar', 'lunas'])) {
+                                        $label = 'Lunas / Dibayar';
+                                        $badgeClass = 'bg-emerald-100 text-emerald-800';
+                                    }
+                                @endphp
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $badgeClass }}">
+                                    {{ $label }}
+                                </span>
+                            @else
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    Belum Masuk
+                                </span>
+                            @endif
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="12" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="13" class="px-4 py-8 text-center text-gray-500">
                             Tidak ada data untuk periode yang dipilih
                         </td>
                     </tr>

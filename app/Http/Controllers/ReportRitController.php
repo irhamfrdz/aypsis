@@ -205,6 +205,7 @@ class ReportRitController extends Controller
                 'jenis_barang' => $sj->jenisBarangRelation ? $sj->jenisBarangRelation->nama_barang : $sj->jenis_barang,
                 'tipe_kontainer' => $sj->tipe_kontainer ?: ($sj->size ?: ($sj->order ? $sj->order->tipe_kontainer : null)),
                 'rit' => $sj->rit,
+                'status_pembayaran_uang_rit' => $sj->status_pembayaran_uang_rit,
                 'order' => $sj->order,
                 'created_at' => $sj->created_at,
             ]);
@@ -255,6 +256,7 @@ class ReportRitController extends Controller
                 'jenis_barang' => $sjb->jenis_barang,
                 'tipe_kontainer' => $sjb->tipe_kontainer ?: $sjb->size,
                 'rit' => $sjb->rit,
+                'status_pembayaran_uang_rit' => $sjb->status_pembayaran_uang_rit,
                 'order' => null,
                 'created_at' => $sjb->created_at,
             ]);
@@ -457,6 +459,7 @@ class ReportRitController extends Controller
                 'jenis_barang' => $sj->jenisBarangRelation ? $sj->jenisBarangRelation->nama_barang : $sj->jenis_barang,
                 'tipe_kontainer' => $sj->tipe_kontainer ?: $sj->size,
                 'rit' => $sj->rit,
+                'status_pembayaran_uang_rit' => $sj->status_pembayaran_uang_rit,
                 'order' => $sj->order,
                 'created_at' => $sj->created_at,
             ]);
@@ -505,6 +508,7 @@ class ReportRitController extends Controller
                 'jenis_barang' => $sjb->jenis_barang,
                 'tipe_kontainer' => $sjb->tipe_kontainer ?: $sjb->size,
                 'rit' => $sjb->rit,
+                'status_pembayaran_uang_rit' => $sjb->status_pembayaran_uang_rit,
                 'order' => null,
                 'created_at' => $sjb->created_at,
             ]);
@@ -693,6 +697,7 @@ class ReportRitController extends Controller
                 'jenis_barang' => $sj->jenisBarangRelation ? $sj->jenisBarangRelation->nama_barang : $sj->jenis_barang,
                 'tipe_kontainer' => $sj->tipe_kontainer ?: $sj->size,
                 'rit' => $sj->rit,
+                'status_pembayaran_uang_rit' => $sj->status_pembayaran_uang_rit,
                 'order' => $sj->order,
                 'created_at' => $sj->created_at,
             ]);
@@ -741,6 +746,7 @@ class ReportRitController extends Controller
                 'jenis_barang' => $sjb->jenis_barang,
                 'tipe_kontainer' => $sjb->tipe_kontainer ?: $sjb->size,
                 'rit' => $sjb->rit,
+                'status_pembayaran_uang_rit' => $sjb->status_pembayaran_uang_rit,
                 'order' => null,
                 'created_at' => $sjb->created_at,
             ]);
