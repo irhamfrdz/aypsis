@@ -426,11 +426,12 @@ class TagihanObController extends Controller
 
             \Illuminate\Support\Facades\DB::commit();
 
-            return redirect()->back()->with('success', 'Pranota OB Antar Gudang ' . $pranota->nomor_pranota . ' berhasil dibuat.');
+            return redirect()->back()->with('success', 'Pranota OB Antar Gudang '.$pranota->nomor_pranota.' berhasil dibuat.');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
-            Log::error('Error creating PranotaObAntarGudang: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal membuat Pranota: ' . $e->getMessage());
+            Log::error('Error creating PranotaObAntarGudang: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal membuat Pranota: '.$e->getMessage());
         }
     }
 
@@ -484,9 +485,9 @@ class TagihanObController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_pranota', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                    ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
 
@@ -522,9 +523,9 @@ class TagihanObController extends Controller
             $pranota = \App\Models\PranotaObAntarGudang::findOrFail($id);
             $pranota->delete();
 
-            return redirect()->route('pranota-ob-antar-gudang.index')->with('success', 'Pranota OB Antar Gudang ' . $pranota->nomor_pranota . ' berhasil dihapus.');
+            return redirect()->route('pranota-ob-antar-gudang.index')->with('success', 'Pranota OB Antar Gudang '.$pranota->nomor_pranota.' berhasil dihapus.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menghapus Pranota: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menghapus Pranota: '.$e->getMessage());
         }
     }
 

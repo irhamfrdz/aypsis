@@ -1112,8 +1112,8 @@ class ObController extends Controller
 
                     $tandaTerimaRecords = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $manifestDataForLater['nomor_kontainer'])
                         ->where('nomor_seal', $manifestDataForLater['no_seal'])
-                        ->when(!empty($allowedTtrNumbers), function ($q) use ($allowedTtrNumbers) {
-                            return $q->whereHas('tandaTerima', function($sq) use ($allowedTtrNumbers) {
+                        ->when(! empty($allowedTtrNumbers), function ($q) use ($allowedTtrNumbers) {
+                            return $q->whereHas('tandaTerima', function ($sq) use ($allowedTtrNumbers) {
                                 $sq->whereIn('nomor_tanda_terima', $allowedTtrNumbers);
                             });
                         })
@@ -1420,8 +1420,8 @@ class ObController extends Controller
 
                 $tandaTerimaRecords = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $nomorKontainer)
                     ->where('nomor_seal', $noSeal)
-                    ->when(!empty($allowedTtrNumbers), function ($q) use ($allowedTtrNumbers) {
-                        return $q->whereHas('tandaTerima', function($sq) use ($allowedTtrNumbers) {
+                    ->when(! empty($allowedTtrNumbers), function ($q) use ($allowedTtrNumbers) {
+                        return $q->whereHas('tandaTerima', function ($sq) use ($allowedTtrNumbers) {
                             $sq->whereIn('nomor_tanda_terima', $allowedTtrNumbers);
                         });
                     })

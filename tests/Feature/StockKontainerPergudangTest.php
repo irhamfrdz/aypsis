@@ -14,7 +14,7 @@ class StockKontainerPergudangTest extends TestCase
 
         $fileName = 'Laporan_Persediaan_Kontainer_'.date('Ymd_His').'.xlsx';
 
-        $controller = new StockKontainerPergudangController();
+        $controller = new StockKontainerPergudangController;
         $response = $controller->exportLaporan();
 
         Excel::assertDownloaded($fileName, function ($export) {
