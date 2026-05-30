@@ -57,6 +57,12 @@
                             <label class="block text-sm font-medium text-gray-600">Vendor</label>
                             <p class="text-sm text-gray-900">{{ $tagihanCat->vendor ?? 'N/A' }}</p>
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">Jenis CAT</label>
+                            <p class="text-sm text-gray-900">
+                                {{ $tagihanCat->jenis_cat == 'cat_full' ? 'Cat Full' : ($tagihanCat->jenis_cat == 'cat_sebagian' ? 'Cat Setengah (Sebagian)' : '-') }}
+                            </p>
+                        </div>
                     </div>
                 </div>
 

@@ -59,6 +59,7 @@ class TagihanCatController extends Controller
         $validated = $request->validate([
             'nomor_tagihan_cat' => 'nullable|string|max:255',
             'nomor_kontainer' => 'required|string|max:255',
+            'jenis_cat' => 'required|string|in:cat_sebagian,cat_full',
             'vendor' => 'nullable|string|max:255',
             'tanggal_cat' => 'required|date',
             'estimasi_biaya_raw' => 'nullable|numeric|min:0',
@@ -114,11 +115,12 @@ class TagihanCatController extends Controller
         $validated = $request->validate([
             'nomor_tagihan_cat' => 'nullable|string|max:255',
             'nomor_kontainer' => 'required|string|max:255',
+            'jenis_cat' => 'required|string|in:cat_sebagian,cat_full',
             'vendor' => 'nullable|string|max:255',
             'tanggal_cat' => 'required|date',
             'estimasi_biaya_raw' => 'nullable|numeric|min:0',
             'realisasi_biaya_raw' => 'nullable|numeric|min:0',
-            'status' => 'required|in:pending,paid,cancelled',
+            'status' => 'nullable|in:pending,paid,cancelled',
             'keterangan' => 'nullable|string',
         ]);
 

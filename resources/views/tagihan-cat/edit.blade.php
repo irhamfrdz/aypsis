@@ -138,33 +138,36 @@
                     </div>
                 </div>
 
-                <!-- Row 4: Keterangan (Full Width) -->
-                <div>
-                    <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
-                        Keterangan
-                    </label>
-                    <textarea id="keterangan" name="keterangan" rows="3"
-                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Tambahkan keterangan tambahan jika diperlukan...">{{ old('keterangan', $tagihanCat->keterangan) }}</textarea>
-                    @error('keterangan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                <!-- Row 4: Jenis CAT & Keterangan -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Jenis CAT -->
+                    <div>
+                        <label for="jenis_cat" class="block text-sm font-medium text-gray-700 mb-2">
+                            Jenis CAT <span class="text-red-500">*</span>
+                        </label>
+                        <select id="jenis_cat" name="jenis_cat" required
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Pilih Jenis CAT...</option>
+                            <option value="cat_full" {{ old('jenis_cat', $tagihanCat->jenis_cat) == 'cat_full' ? 'selected' : '' }}>Cat Full</option>
+                            <option value="cat_sebagian" {{ old('jenis_cat', $tagihanCat->jenis_cat) == 'cat_sebagian' ? 'selected' : '' }}>Cat Setengah (Sebagian)</option>
+                        </select>
+                        @error('jenis_cat')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                <!-- Row 5: Status -->
-                <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
-                        Status <span class="text-red-500">*</span>
-                    </label>
-                    <select id="status" name="status"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="pending" {{ old('status', $tagihanCat->status) == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="paid" {{ old('status', $tagihanCat->status) == 'paid' ? 'selected' : '' }}>Sudah Dibayar</option>
-                        <option value="cancelled" {{ old('status', $tagihanCat->status) == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
-                    </select>
-                    @error('status')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <!-- Keterangan -->
+                    <div>
+                        <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Keterangan
+                        </label>
+                        <textarea id="keterangan" name="keterangan" rows="3"
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Tambahkan keterangan tambahan jika diperlukan...">{{ old('keterangan', $tagihanCat->keterangan) }}</textarea>
+                        @error('keterangan')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 <!-- Submit Buttons -->

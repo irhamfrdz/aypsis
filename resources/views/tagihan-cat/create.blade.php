@@ -127,20 +127,20 @@
                     </div>
                 </div>
 
-                <!-- Row 4: Status & Keterangan -->
+                <!-- Row 4: Jenis CAT & Keterangan -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Status -->
+                    <!-- Jenis CAT -->
                     <div>
-                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
-                            Status
+                        <label for="jenis_cat" class="block text-sm font-medium text-gray-700 mb-2">
+                            Jenis CAT <span class="text-red-500">*</span>
                         </label>
-                        <select id="status" name="status"
+                        <select id="jenis_cat" name="jenis_cat" required
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="pending" {{ old('status', 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="paid" {{ old('status') == 'paid' ? 'selected' : '' }}>Sudah Dibayar</option>
-                            <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                            <option value="">Pilih Jenis CAT...</option>
+                            <option value="cat_full" {{ old('jenis_cat') == 'cat_full' ? 'selected' : '' }}>Cat Full</option>
+                            <option value="cat_sebagian" {{ old('jenis_cat') == 'cat_sebagian' ? 'selected' : '' }}>Cat Setengah (Sebagian)</option>
                         </select>
-                        @error('status')
+                        @error('jenis_cat')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>

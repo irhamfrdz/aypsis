@@ -16,6 +16,7 @@ class TagihanCat extends Model
     protected $fillable = [
         'nomor_tagihan_cat',
         'nomor_kontainer',
+        'jenis_cat',
         'vendor',
         'tanggal_cat',
         'estimasi_biaya',
