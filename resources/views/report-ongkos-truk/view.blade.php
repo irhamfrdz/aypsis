@@ -22,7 +22,22 @@
                     </p>
                 </div>
             </div>
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2 items-center">
+                <form method="GET" action="{{ route('report.ongkos-truk.view') }}" class="inline-flex items-center">
+                    <input type="hidden" name="start_date" value="{{ request('start_date') }}">
+                    <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+                    @if(request('no_plat'))
+                        @foreach(request('no_plat') as $plat)
+                            <input type="hidden" name="no_plat[]" value="{{ $plat }}">
+                        @endforeach
+                    @endif
+                    <select name="status_pranota" onchange="this.form.submit()" class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-sm font-medium shadow-sm">
+                        <option value="">Semua Status Pranota</option>
+                        <option value="belum" {{ request('status_pranota') == 'belum' ? 'selected' : '' }}>Belum Masuk Pranota</option>
+                        <option value="sudah" {{ request('status_pranota') == 'sudah' ? 'selected' : '' }}>Sudah Masuk Pranota</option>
+                    </select>
+                </form>
+
                 <button onclick="window.print()" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition duration-200 flex items-center shadow-sm font-medium">
                     <i class="fas fa-print mr-2"></i> Print
                 </button>
@@ -67,7 +82,8 @@
                                 <input type="checkbox" class="data-checkbox rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 cursor-pointer" 
                                     value="{{ $item['no_surat_jalan'] }}" 
                                     data-id="{{ $item['id'] ?? '' }}"
-                                    data-type="{{ $item['model_type'] ?? '' }}">
+                                    data-type="{{ $item['model_type'] ?? '' }}"
+                                    {{ ($item['is_pranota'] ?? false) ? 'disabled' : '' }}>
                             </td>
                             <td class="px-6 py-4 text-xs">{{ $isAdj ? '' : $loop->iteration }}</td>
                             <td class="px-6 py-4 text-center {{ $isAdj ? 'text-blue-500/70 text-[11px]' : '' }}">
@@ -76,7 +92,12 @@
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-700 ml-1" title="Belum ada Tanda Terima">Belum TT</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 font-medium {{ $isAdj ? 'opacity-30' : 'text-gray-800' }}">{{ $item['no_surat_jalan'] }}</td>
+                            <td class="px-6 py-4 font-medium {{ $isAdj ? 'opacity-30' : 'text-gray-800' }}">
+                                {{ $item['no_surat_jalan'] }}
+                                @if($item['is_pranota'] ?? false)
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-700 ml-1" title="Sudah masuk Pranota">Pranota</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 {{ $isAdj ? 'opacity-30' : '' }}">{{ $item['no_plat'] }}</td>
                             <td class="px-6 py-4 {{ $isAdj ? 'opacity-30' : '' }}">{{ $item['supir'] }}</td>
                             <td class="px-6 py-4 {{ $isAdj ? 'pl-12 italic text-blue-600' : '' }}">

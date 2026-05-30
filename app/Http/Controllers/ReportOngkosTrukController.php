@@ -50,6 +50,7 @@ class ReportOngkosTrukController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'no_plat' => 'nullable|array',
+            'status_pranota' => 'nullable|string|in:sudah,belum',
         ]);
 
         $startDate = Carbon::parse($request->start_date)->startOfDay();
@@ -68,6 +69,28 @@ class ReportOngkosTrukController extends Controller
             $querySj->whereIn('no_plat', $noPlat);
             $querySjb->whereIn('no_plat', $noPlat);
         }
+
+        if ($request->filled('status_pranota')) {
+            $statusPranota = $request->status_pranota;
+            if ($statusPranota === 'sudah') {
+                $querySj->whereIn('id', function ($q) {
+                    $q->select('surat_jalan_id')->from('pranota_ongkos_truk_items')->whereNotNull('surat_jalan_id');
+                });
+                $querySjb->whereIn('id', function ($q) {
+                    $q->select('surat_jalan_bongkaran_id')->from('pranota_ongkos_truk_items')->whereNotNull('surat_jalan_bongkaran_id');
+                });
+            } elseif ($statusPranota === 'belum') {
+                $querySj->whereNotIn('id', function ($q) {
+                    $q->select('surat_jalan_id')->from('pranota_ongkos_truk_items')->whereNotNull('surat_jalan_id');
+                });
+                $querySjb->whereNotIn('id', function ($q) {
+                    $q->select('surat_jalan_bongkaran_id')->from('pranota_ongkos_truk_items')->whereNotNull('surat_jalan_bongkaran_id');
+                });
+            }
+        }
+
+        $pranotaSjIds = \App\Models\PranotaOngkosTrukItem::whereNotNull('surat_jalan_id')->pluck('surat_jalan_id')->toArray();
+        $pranotaSjbIds = \App\Models\PranotaOngkosTrukItem::whereNotNull('surat_jalan_bongkaran_id')->pluck('surat_jalan_bongkaran_id')->toArray();
 
         $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan'])->get();
         $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan'])->get();
@@ -177,6 +200,7 @@ class ReportOngkosTrukController extends Controller
                 'has_tanda_terima' => $sj->tandaTerima ? true : false,
                 'id' => $sj->id,
                 'model_type' => 'SuratJalan',
+                'is_pranota' => in_array($sj->id, $pranotaSjIds),
             ]);
 
             // Adjustment Rows
@@ -291,6 +315,7 @@ class ReportOngkosTrukController extends Controller
                 'has_tanda_terima' => $sjb->tandaTerima ? true : false,
                 'id' => $sjb->id,
                 'model_type' => 'SuratJalanBongkaran',
+                'is_pranota' => in_array($sjb->id, $pranotaSjbIds),
             ]);
 
             // Adjustment Rows
