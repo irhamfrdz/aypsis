@@ -122,7 +122,7 @@
                             <div class="flex space-x-2">
                                 <a href="{{ route('pranota-cat.show', $pranota) }}"
                                    class="text-blue-600 hover:text-blue-900">Lihat</a>
-                                @can('pranota-print')
+                                @can('pranota-cat-print')
                                 <span class="text-gray-300">|</span>
                                 <a href="{{ route('pranota-cat.print', $pranota) }}"
                                    class="text-green-600 hover:text-green-900" target="_blank">Print</a>
