@@ -5799,6 +5799,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ->name('karyawan-tidak-tetap.destroy')
         ->middleware('can:karyawan-tidak-tetap-delete');
     Route::post('tanda-terima-lcl/sync-prospek', [TandaTerimaLclController::class, 'syncProspek'])->name('tanda-terima-lcl.sync-prospek');
+    Route::post('tanda-terima-lcl/sync-manifest', [TandaTerimaLclController::class, 'syncManifest'])->name('tanda-terima-lcl.sync-manifest');
 
     // ═══════════════════════════════════════════════════════════════════════
     // 📄 MASTER DOKUMEN PERIJINAN KAPAL

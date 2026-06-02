@@ -1467,6 +1467,9 @@ class TandaTerimaLclController extends Controller
         // Get all warehouses for selection
         $gudangs = Gudang::orderBy('nama_gudang')->get();
 
+        // Get active ships list
+        $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
+
         return view('tanda-terima-lcl.stuffing', compact(
             'pivotData',
             'groupedByContainer',
@@ -1475,7 +1478,8 @@ class TandaTerimaLclController extends Controller
             'uniqueContainers',
             'stats',
             'masterTujuanKirim',
-            'gudangs'
+            'gudangs',
+            'kapals'
         ));
     }
 
@@ -2537,6 +2541,160 @@ class TandaTerimaLclController extends Controller
 
             return redirect()->back()
                 ->with('error', 'Gagal sinkronisasi: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Sync sealed container LCL stuffing to Manifest
+     */
+    public function syncManifest(Request $request)
+    {
+        try {
+            $request->validate([
+                'nomor_kontainer' => 'required|string|max:255',
+                'nomor_seal' => 'required|string|max:255',
+                'nama_kapal' => 'required|string|max:255',
+                'no_voyage' => 'required|string|max:255',
+            ]);
+
+            $nomorKontainer = $request->nomor_kontainer;
+            $nomorSeal = $request->nomor_seal;
+            $namaKapal = $request->nama_kapal;
+            $noVoyage = $request->no_voyage;
+
+            // Find related Prospek
+            $prospek = Prospek::where('nomor_kontainer', $nomorKontainer)
+                ->where('no_seal', $nomorSeal)
+                ->first();
+
+            if ($prospek) {
+                $prospek->update([
+                    'nama_kapal' => $namaKapal,
+                    'no_voyage' => $noVoyage,
+                ]);
+            }
+
+            // Get LCL pivot records
+            $pivotRecords = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $nomorKontainer)
+                ->where('nomor_seal', $nomorSeal)
+                ->with(['tandaTerima.items', 'tandaTerima.term'])
+                ->get();
+
+            if ($pivotRecords->isEmpty()) {
+                return redirect()->back()
+                    ->with('error', "Data stuffing untuk kontainer {$nomorKontainer} dengan seal {$nomorSeal} tidak ditemukan.");
+            }
+
+            $successCount = 0;
+
+            foreach ($pivotRecords as $pivot) {
+                $tandaTerima = $pivot->tandaTerima;
+                if (! $tandaTerima) {
+                    continue;
+                }
+
+                // Create new Manifest
+                $manifest = new \App\Models\Manifest;
+                $manifest->nomor_kontainer = $nomorKontainer;
+                $manifest->no_seal = $nomorSeal;
+                $manifest->tipe_kontainer = 'LCL';
+                $manifest->size_kontainer = $pivot->size_kontainer;
+                $manifest->nama_kapal = $namaKapal;
+                $manifest->no_voyage = $noVoyage;
+                $manifest->nomor_tanda_terima = $tandaTerima->nomor_tanda_terima;
+                $manifest->pengirim = $tandaTerima->nama_pengirim;
+                $manifest->penerima = $tandaTerima->nama_penerima;
+                $manifest->alamat_pengirim = $tandaTerima->alamat_pengirim;
+                $manifest->alamat_penerima = $tandaTerima->alamat_penerima;
+                $manifest->alamat_pengiriman = $tandaTerima->alamat_penerima;
+                $manifest->contact_person = $tandaTerima->contact_person;
+
+                $namaBarangItems = $tandaTerima->items->pluck('nama_barang')->filter()->implode(', ');
+                $manifest->nama_barang = $namaBarangItems ?: ($prospek->barang ?? 'LCL');
+                $manifest->volume = $tandaTerima->items->sum('meter_kubik');
+                $manifest->tonnage = $tandaTerima->items->sum('tonase');
+                $manifest->kuantitas = $tandaTerima->total_koli;
+
+                $units = $tandaTerima->items->pluck('satuan')->unique()->filter();
+                if ($units->count() === 1) {
+                    $manifest->satuan = $units->first();
+                } elseif ($units->count() > 1) {
+                    $manifest->satuan = 'PKGS';
+                }
+
+                $manifest->pelabuhan_muat = $prospek->pelabuhan_asal ?? null;
+                $manifest->pelabuhan_bongkar = $prospek->tujuan_pengiriman ?? null;
+                $manifest->tanggal_berangkat = $prospek->tanggal_muat ?? now();
+                $manifest->penerimaan = $tandaTerima->tanggal_tanda_terima;
+                $manifest->term = $tandaTerima->term ? ($tandaTerima->term instanceof \App\Models\Term ? $tandaTerima->term->kode : $tandaTerima->term) : null;
+
+                if ($prospek) {
+                    $manifest->prospek_id = $prospek->id;
+                }
+
+                // Generate nomor BL (following standard pattern in app)
+                $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
+                if ($lastManifest && $lastManifest->nomor_bl) {
+                    preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
+                    $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
+                    $manifest->nomor_bl = 'MNF-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                } else {
+                    $manifest->nomor_bl = 'MNF-000001';
+                }
+
+                $manifest->created_by = Auth::id();
+                $manifest->updated_by = Auth::id();
+                $manifest->save();
+                $successCount++;
+            }
+
+            // Run auto-update nomor urut for this voyage if ship/voyage info exists
+            if ($prospek && $prospek->nama_kapal && $prospek->no_voyage) {
+                try {
+                    $normalizedKapal = strtoupper(trim(str_replace('.', '', $prospek->nama_kapal)));
+                    $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+                    $noVoyage = trim($prospek->no_voyage);
+
+                    $manifests = \App\Models\Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+                        ->where('no_voyage', $noVoyage)
+                        ->orderBy('id', 'asc')
+                        ->get();
+
+                    $fclCounter = 1;
+                    $lclCounter = 1;
+
+                    foreach ($manifests as $m) {
+                        $isCargo = (
+                            (! empty($m->tipe_kontainer) && stripos($m->tipe_kontainer, 'Cargo') !== false) ||
+                            (! empty($m->size_kontainer) && stripos($m->size_kontainer, 'Cargo') !== false)
+                        );
+                        $isLcl = (
+                            (! empty($m->tipe_kontainer) && stripos($m->tipe_kontainer, 'LCL') !== false) ||
+                            (! empty($m->size_kontainer) && stripos($m->size_kontainer, 'LCL') !== false)
+                        );
+
+                        if ($isCargo) {
+                            $m->nomor_urut = null;
+                        } elseif ($isLcl) {
+                            $m->nomor_urut = $lclCounter++;
+                        } else {
+                            $m->nomor_urut = $fclCounter++;
+                        }
+                        $m->save();
+                    }
+                } catch (\Exception $ex) {
+                    \Log::error('Error auto-updating nomor urut during syncManifest: '.$ex->getMessage());
+                }
+            }
+
+            $msg = "✓ Berhasil mengirim {$successCount} LCL ke Manifest.";
+
+            return redirect()->back()->with('success', $msg);
+
+        } catch (\Exception $e) {
+            \Log::error('Error syncing to manifest: '.$e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal mengirim ke Manifest: '.$e->getMessage());
         }
     }
 }

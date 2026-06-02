@@ -353,6 +353,16 @@
                                                 </svg>
                                                 Lepas Seal
                                             </button>
+                                            <button type="button" onclick="showManifestModal('{{ $container['nomor_kontainer'] }}', '{{ $firstPivot->nomor_seal }}', '{{ $prospek->nama_kapal ?? '' }}', '{{ $prospek->no_voyage ?? '' }}', event)" 
+                                                    style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #4f46e5; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
+                                                    onmouseover="this.style.backgroundColor='#3730a3'" 
+                                                    onmouseout="this.style.backgroundColor='#4f46e5'"
+                                                    class="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-xs font-medium transition" title="Kirim data ini ke Manifest">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                                </svg>
+                                                Kirim ke Manifest
+                                            </button>
                                             @if(!$prospek)
                                             <form action="{{ route('tanda-terima-lcl.sync-prospek') }}" method="POST" class="inline-block m-0 p-0">
                                                 @csrf
@@ -996,6 +1006,72 @@
         </div>
     </div>
 </div>
+<!-- Modal untuk kirim ke manifest -->
+<div id="manifestModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b">
+                <h3 class="text-md font-semibold text-gray-900">Kirim ke Manifest</h3>
+                <button type="button" onclick="closeManifestModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="manifestForm" method="POST" action="{{ route('tanda-terima-lcl.sync-manifest') }}">
+                @csrf
+                <input type="hidden" id="manifest_nomor_kontainer" name="nomor_kontainer">
+                <input type="hidden" id="manifest_nomor_seal" name="nomor_seal">
+                
+                <div class="mb-4 text-sm bg-gray-50 p-2.5 rounded border">
+                    <p class="text-xs text-gray-600 mb-1">Kontainer: <span id="manifest_container_display" class="font-bold text-gray-900"></span></p>
+                    <p class="text-xs text-gray-600">Seal: <span id="manifest_seal_display" class="font-bold text-gray-900"></span></p>
+                </div>
+
+                <div class="mb-4">
+                    <label for="manifest_nama_kapal" class="block text-xs font-medium text-gray-700 mb-1.5">
+                        Pilih Kapal <span class="text-red-500">*</span>
+                    </label>
+                    <select name="nama_kapal" id="manifest_nama_kapal" required style="width: 100%;"
+                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 select2-kapal">
+                        <option value="">Pilih Kapal</option>
+                        @foreach($kapals as $kapal)
+                            <option value="{{ $kapal->nama_kapal }}">{{ $kapal->nama_kapal }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="manifest_no_voyage" class="block text-xs font-medium text-gray-700 mb-1.5">
+                        Voyage <span class="text-red-500">*</span>
+                    </label>
+                    <select name="no_voyage" id="manifest_no_voyage" required style="width: 100%;"
+                            class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 select2-voyage">
+                        <option value="">Pilih Voyage</option>
+                    </select>
+                    <!-- Fallback input for custom voyage if not in dropdown -->
+                    <input type="text" id="manifest_no_voyage_custom" placeholder="Atau input voyage baru..."
+                           class="w-full mt-2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm hidden">
+                    <button type="button" id="btn_toggle_custom_voyage" class="text-[11px] text-blue-600 hover:underline mt-1 block">Input Voyage Baru Manual</button>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t mt-4">
+                    <button type="button" onclick="closeManifestModal()"
+                            style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #6b7280; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer;"
+                            class="px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-md transition duration-200">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #4f46e5; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer;"
+                            class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md transition duration-200">
+                        Kirim
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -1526,6 +1602,132 @@ window.addEventListener('click', function(event) {
     const splitModal = document.getElementById('splitModal');
     if (event.target === splitModal) {
         closeSplitModal();
+    }
+});
+
+// Initialize Select2 inside manifest modal
+jQuery(document).ready(function($) {
+    $('.select2-kapal').select2({
+        placeholder: 'Pilih Kapal',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#manifestModal')
+    });
+
+    $('.select2-voyage').select2({
+        placeholder: 'Pilih Voyage',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#manifestModal')
+    });
+
+    // Handle ship selection change to load voyages
+    $('#manifest_nama_kapal').on('change', function() {
+        const shipName = this.value;
+        const voyageSelect = $('#manifest_no_voyage');
+        
+        if (!shipName) {
+            voyageSelect.html('<option value="">Pilih Voyage</option>');
+            return;
+        }
+
+        // Fetch voyages via API
+        fetch(`/api/manifests/voyages/${encodeURIComponent(shipName)}`)
+            .then(response => response.json())
+            .then(voyages => {
+                const preSavedVoyage = voyageSelect.data('pre-saved');
+                voyageSelect.html('<option value="">Pilih Voyage</option>');
+                
+                voyages.forEach(voyage => {
+                    voyageSelect.append(`<option value="${voyage}">${voyage}</option>`);
+                });
+                
+                // If there's a pre-saved voyage value, try to select it
+                if (preSavedVoyage && voyages.includes(preSavedVoyage)) {
+                    voyageSelect.val(preSavedVoyage).trigger('change');
+                } else if (preSavedVoyage) {
+                    // Pre-saved option not found in list, append it as custom/temp option
+                    voyageSelect.append(`<option value="${preSavedVoyage}" selected>${preSavedVoyage}</option>`);
+                    voyageSelect.val(preSavedVoyage).trigger('change');
+                }
+            })
+            .catch(err => console.error('Error fetching voyages:', err));
+    });
+
+    // Toggle custom voyage input
+    $('#btn_toggle_custom_voyage').on('click', function() {
+        const customInput = $('#manifest_no_voyage_custom');
+        const voyageSelect = $('#manifest_no_voyage');
+        
+        if (customInput.hasClass('hidden')) {
+            customInput.removeClass('hidden');
+            customInput.prop('required', true);
+            customInput.attr('name', 'no_voyage');
+            voyageSelect.prop('required', false);
+            voyageSelect.removeAttr('name');
+            voyageSelect.val('').trigger('change');
+            $(this).text('Pilih dari Voyage Terdaftar');
+        } else {
+            customInput.addClass('hidden');
+            customInput.prop('required', false);
+            customInput.removeAttr('name');
+            customInput.val('');
+            voyageSelect.prop('required', true);
+            voyageSelect.attr('name', 'no_voyage');
+            $(this).text('Input Voyage Baru Manual');
+        }
+    });
+});
+
+function showManifestModal(nomorKontainer, nomorSeal, preSavedKapal, preSavedVoyage, event) {
+    if (event) event.stopPropagation();
+    
+    document.getElementById('manifest_nomor_kontainer').value = nomorKontainer;
+    document.getElementById('manifest_nomor_seal').value = nomorSeal;
+    document.getElementById('manifest_container_display').textContent = nomorKontainer;
+    document.getElementById('manifest_seal_display').textContent = nomorSeal;
+
+    // Reset fields
+    const customInput = jQuery('#manifest_no_voyage_custom');
+    const voyageSelect = jQuery('#manifest_no_voyage');
+    const toggleBtn = jQuery('#btn_toggle_custom_voyage');
+    
+    customInput.addClass('hidden').prop('required', false).removeAttr('name').val('');
+    voyageSelect.prop('required', true).attr('name', 'no_voyage').val('').trigger('change');
+    toggleBtn.text('Input Voyage Baru Manual');
+
+    // Pre-fill ship if exists
+    if (preSavedKapal) {
+        jQuery('#manifest_nama_kapal').val(preSavedKapal).trigger('change');
+    } else {
+        jQuery('#manifest_nama_kapal').val('').trigger('change');
+    }
+
+    // Pre-fill voyage if exists
+    if (preSavedVoyage) {
+        voyageSelect.data('pre-saved', preSavedVoyage);
+        // Also add a temporary option if not fetched yet, to make it selected immediately
+        voyageSelect.html(`<option value="${preSavedVoyage}" selected>${preSavedVoyage}</option>`);
+    } else {
+        voyageSelect.data('pre-saved', '');
+        voyageSelect.html('<option value="">Pilih Voyage</option>');
+    }
+    
+    document.getElementById('manifestModal').classList.remove('hidden');
+}
+
+function closeManifestModal() {
+    document.getElementById('manifestModal').classList.add('hidden');
+    document.getElementById('manifestForm').reset();
+    jQuery('#manifest_nama_kapal').val('').trigger('change');
+    jQuery('#manifest_no_voyage').val('').trigger('change');
+}
+
+// Click outside handling for manifest modal
+window.addEventListener('click', function(event) {
+    const manifestModal = document.getElementById('manifestModal');
+    if (event.target === manifestModal) {
+        closeManifestModal();
     }
 });
 </script>
