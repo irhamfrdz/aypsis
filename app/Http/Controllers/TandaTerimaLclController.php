@@ -183,7 +183,17 @@ class TandaTerimaLclController extends Controller
                 'alamat_penerima' => $request->alamat_penerima,
                 'notify_party' => $request->notify_party,
                 'alamat_notify_party' => $request->alamat_notify_party,
-                'nama_pengirim' => $request->nama_pengirim,
+                'nama_pengirim' => (function () use ($request) {
+                    $pengirimName = $request->nama_pengirim;
+                    if ($pengirimName) {
+                        $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $pengirimName)->orWhere('nickname1', $pengirimName)->first();
+                        if ($dbPengirim && ! empty($dbPengirim->nickname1)) {
+                            return $dbPengirim->nickname1;
+                        }
+                    }
+
+                    return $pengirimName;
+                })(),
                 'pic_pengirim' => $request->pic_pengirim,
                 'telepon_pengirim' => $request->telepon_pengirim,
                 'alamat_pengirim' => $request->alamat_pengirim,
@@ -404,7 +414,17 @@ class TandaTerimaLclController extends Controller
                 'alamat_penerima' => $request->alamat_penerima,
                 'notify_party' => $request->notify_party,
                 'alamat_notify_party' => $request->alamat_notify_party,
-                'nama_pengirim' => $request->nama_pengirim,
+                'nama_pengirim' => (function () use ($request) {
+                    $pengirimName = $request->nama_pengirim;
+                    if ($pengirimName) {
+                        $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $pengirimName)->orWhere('nickname1', $pengirimName)->first();
+                        if ($dbPengirim && ! empty($dbPengirim->nickname1)) {
+                            return $dbPengirim->nickname1;
+                        }
+                    }
+
+                    return $pengirimName;
+                })(),
                 'pic_pengirim' => $request->pic_pengirim,
                 'telepon_pengirim' => $request->telepon_pengirim,
                 'alamat_pengirim' => $request->alamat_pengirim,

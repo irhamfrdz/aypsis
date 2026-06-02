@@ -633,7 +633,18 @@ class TandaTerimaController extends Controller
             $tandaTerima->size = $suratJalan->size;
             $tandaTerima->jumlah_kontainer = $suratJalan->jumlah_kontainer;
             $tandaTerima->tujuan_pengiriman = $request->tujuan_pengiriman ?: $suratJalan->tujuan_pengiriman;
-            $tandaTerima->pengirim = $request->pengirim ?: ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : null);
+            $pengirimName = $request->pengirim;
+            if ($pengirimName) {
+                $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $pengirimName)->orWhere('nickname1', $pengirimName)->first();
+                if ($dbPengirim && ! empty($dbPengirim->nickname1)) {
+                    $pengirimName = $dbPengirim->nickname1;
+                }
+            } else {
+                if ($suratJalan->order && $suratJalan->order->pengirim) {
+                    $pengirimName = $suratJalan->order->pengirim->nickname1 ?: $suratJalan->order->pengirim->nama_pengirim;
+                }
+            }
+            $tandaTerima->pengirim = $pengirimName;
             $tandaTerima->pic_pengirim = $request->pic_pengirim;
 
             // Handle alamat_pengirim with fallback to master data
@@ -1311,7 +1322,17 @@ class TandaTerimaController extends Controller
                 'catatan' => $request->catatan,
                 'supir_pengganti' => $request->supir_pengganti,
                 'kenek_pengganti' => $request->kenek_pengganti,
-                'pengirim' => $request->pengirim,
+                'pengirim' => (function () use ($request) {
+                    $pengirimName = $request->pengirim;
+                    if ($pengirimName) {
+                        $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $pengirimName)->orWhere('nickname1', $pengirimName)->first();
+                        if ($dbPengirim && ! empty($dbPengirim->nickname1)) {
+                            return $dbPengirim->nickname1;
+                        }
+                    }
+
+                    return $pengirimName;
+                })(),
                 'pic_pengirim' => $request->pic_pengirim,
                 'alamat_pengirim' => $request->alamat_pengirim,
                 'penerima' => $request->penerima,

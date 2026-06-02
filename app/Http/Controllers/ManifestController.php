@@ -219,6 +219,13 @@ class ManifestController extends Controller
         $validated['created_by'] = Auth::id();
         $validated['updated_by'] = Auth::id();
 
+        if (! empty($validated['pengirim'])) {
+            $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $validated['pengirim'])->orWhere('nickname1', $validated['pengirim'])->first();
+            if ($dbPengirim && ! empty($dbPengirim->nickname1)) {
+                $validated['pengirim'] = $dbPengirim->nickname1;
+            }
+        }
+
         Manifest::create($validated);
 
         return redirect()->route('report.manifests.index', [
@@ -290,6 +297,13 @@ class ManifestController extends Controller
         ]);
 
         $validated['updated_by'] = Auth::id();
+
+        if (! empty($validated['pengirim'])) {
+            $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $validated['pengirim'])->orWhere('nickname1', $validated['pengirim'])->first();
+            if ($dbPengirim && ! empty($dbPengirim->nickname1)) {
+                $validated['pengirim'] = $dbPengirim->nickname1;
+            }
+        }
 
         $manifest->update($validated);
 
@@ -770,7 +784,17 @@ class ManifestController extends Controller
                             'tipe_kontainer' => $tipeKontainer ?: $existing->tipe_kontainer,
                             'size_kontainer' => $sizeKontainer ?: $existing->size_kontainer,
                             'nama_barang' => $namaBarang ?: $existing->nama_barang,
-                            'pengirim' => $pengirim ?: $existing->pengirim,
+                            'pengirim' => (function () use ($pengirim, $existing) {
+                                $val = $pengirim ?: $existing->pengirim;
+                                if (! empty($val)) {
+                                    $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $val)->orWhere('nickname1', $val)->first();
+                                    if ($dbPengirim && ! empty($dbPengirim->nickname1)) {
+                                        return $dbPengirim->nickname1;
+                                    }
+                                }
+
+                                return $val;
+                            })(),
                             'alamat_pengirim' => $alamatPengirim ?: $existing->alamat_pengirim,
                             'penerima' => $penerima ?: $existing->penerima,
                             'alamat_penerima' => $alamatPenerima ?: $existing->alamat_penerima,
@@ -799,7 +823,16 @@ class ManifestController extends Controller
                             'tipe_kontainer' => $tipeKontainer,
                             'size_kontainer' => $sizeKontainer,
                             'nama_barang' => $namaBarang,
-                            'pengirim' => $pengirim,
+                            'pengirim' => (function () use ($pengirim) {
+                                if (! empty($pengirim)) {
+                                    $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $pengirim)->orWhere('nickname1', $pengirim)->first();
+                                    if ($dbPengirim && ! empty($dbPengirim->nickname1)) {
+                                        return $dbPengirim->nickname1;
+                                    }
+                                }
+
+                                return $pengirim;
+                            })(),
                             'alamat_pengirim' => $alamatPengirim,
                             'penerima' => $penerima,
                             'alamat_penerima' => $alamatPenerima,
