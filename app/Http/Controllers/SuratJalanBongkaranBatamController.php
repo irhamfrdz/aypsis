@@ -735,6 +735,14 @@ class SuratJalanBongkaranBatamController extends Controller
                 'f_e' => 'nullable|string|in:Full,Empty',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal.',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+
             return back()->withErrors($e->errors())->withInput();
         }
 
@@ -753,6 +761,17 @@ class SuratJalanBongkaranBatamController extends Controller
 
             DB::commit();
 
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Surat Jalan Bongkaran Batam berhasil diperbarui.',
+                    'redirect' => route('surat-jalan-bongkaran-batam.list', [
+                        'nama_kapal' => $request->nama_kapal,
+                        'no_voyage' => $request->no_voyage,
+                    ]),
+                ]);
+            }
+
             return redirect()->route('surat-jalan-bongkaran-batam.list', [
                 'nama_kapal' => $request->nama_kapal,
                 'no_voyage' => $request->no_voyage,
@@ -760,6 +779,13 @@ class SuratJalanBongkaranBatamController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: '.$e->getMessage(),
+                ], 500);
+            }
 
             return back()->withInput()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }

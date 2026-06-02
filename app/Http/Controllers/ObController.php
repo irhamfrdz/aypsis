@@ -1102,20 +1102,9 @@ class ObController extends Controller
                 if (strtoupper(trim($manifestDataForLater['tipe_kontainer'])) === 'LCL') {
                     \Log::info('LCL container detected, finding tanda terima...');
 
-                    $allowedTtrNumbers = [];
-                    if ($manifestDataForLater['prospek_id']) {
-                        $prospek = \App\Models\Prospek::find($manifestDataForLater['prospek_id']);
-                        if ($prospek && $prospek->no_surat_jalan) {
-                            $allowedTtrNumbers = array_map('trim', explode(',', $prospek->no_surat_jalan));
-                        }
-                    }
-
                     $tandaTerimaRecords = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $manifestDataForLater['nomor_kontainer'])
-                        ->where('nomor_seal', $manifestDataForLater['no_seal'])
-                        ->when(! empty($allowedTtrNumbers), function ($q) use ($allowedTtrNumbers) {
-                            return $q->whereHas('tandaTerima', function ($sq) use ($allowedTtrNumbers) {
-                                $sq->whereIn('nomor_tanda_terima', $allowedTtrNumbers);
-                            });
+                        ->when($manifestDataForLater['no_seal'], function ($q) use ($manifestDataForLater) {
+                            return $q->where('nomor_seal', $manifestDataForLater['no_seal']);
                         })
                         ->with('tandaTerima.items')
                         ->get();
