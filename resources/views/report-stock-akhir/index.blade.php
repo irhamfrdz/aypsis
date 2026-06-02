@@ -107,6 +107,9 @@
                 <button type="submit" class="flex-1 md:flex-none px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm shadow-sm transition">
                     Filter
                 </button>
+                <a href="{{ route('report.stock-akhir.export', ['search' => $search, 'lokasi' => $lokasi]) }}" class="flex-1 md:flex-none px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-center rounded-lg font-semibold text-sm shadow-sm transition">
+                    <i class="fas fa-file-excel mr-1"></i> Export Excel
+                </a>
                 <a href="{{ route('report.stock-akhir.index') }}" class="flex-1 md:flex-none px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white text-center rounded-lg font-semibold text-sm shadow-sm transition">
                     Reset
                 </a>

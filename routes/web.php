@@ -5327,6 +5327,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
 
     // Report Stock Akhir
     Route::get('/stock-akhir', [App\Http\Controllers\ReportStockAkhirController::class, 'index'])->name('stock-akhir.index');
+    Route::get('/stock-akhir/export', [App\Http\Controllers\ReportStockAkhirController::class, 'export'])->name('stock-akhir.export');
 
     // Report Kas Truck
     Route::get('/kas-truck', [App\Http\Controllers\Report\KasTruckController::class, 'index'])->name('kas-truck.index');

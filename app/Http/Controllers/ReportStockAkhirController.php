@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ReportStockAkhirExport;
+use App\Models\StockAmprahan;
 use App\Models\StockBan;
 use App\Models\StockBanLuarBatam;
-use App\Models\StockAmprahan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportStockAkhirController extends Controller
 {
     public function index(Request $request)
     {
         $user = Auth::user();
-        if (!$user->can('stock-ban-view') && !$user->can('stock-amprahan-view')) {
+        if (! $user->can('stock-ban-view') && ! $user->can('stock-amprahan-view')) {
             abort(403, 'Unauthorized');
         }
 
@@ -30,9 +32,9 @@ class ReportStockAkhirController extends Controller
         if ($search) {
             $banQuery->where(function ($q) use ($search) {
                 $q->where('nomor_seri', 'like', "%{$search}%")
-                  ->orWhere('merk', 'like', "%{$search}%")
-                  ->orWhere('ukuran', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%");
+                    ->orWhere('merk', 'like', "%{$search}%")
+                    ->orWhere('ukuran', 'like', "%{$search}%")
+                    ->orWhere('lokasi', 'like', "%{$search}%");
             });
         }
         $stockBans = $banQuery->get();
@@ -47,9 +49,9 @@ class ReportStockAkhirController extends Controller
         if ($search) {
             $banBatamQuery->where(function ($q) use ($search) {
                 $q->where('nomor_seri', 'like', "%{$search}%")
-                  ->orWhere('merk', 'like', "%{$search}%")
-                  ->orWhere('ukuran', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%");
+                    ->orWhere('merk', 'like', "%{$search}%")
+                    ->orWhere('ukuran', 'like', "%{$search}%")
+                    ->orWhere('lokasi', 'like', "%{$search}%");
             });
         }
         $stockBanBatams = $banBatamQuery->get();
@@ -64,8 +66,8 @@ class ReportStockAkhirController extends Controller
         if ($search) {
             $amprahanQuery->where(function ($q) use ($search) {
                 $q->where('nama_barang', 'like', "%{$search}%")
-                  ->orWhere('nomor_bukti', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%");
+                    ->orWhere('nomor_bukti', 'like', "%{$search}%")
+                    ->orWhere('lokasi', 'like', "%{$search}%");
             });
         }
         $stockAmprahans = $amprahanQuery->get();
@@ -76,7 +78,7 @@ class ReportStockAkhirController extends Controller
         $totalAmprahanStok = $stockAmprahans->sum('jumlah');
 
         $valuasiBan = $stockBans->sum('harga_beli') + $stockBanBatams->sum('harga_beli');
-        
+
         $valuasiAmprahan = $stockAmprahans->reduce(function ($carry, $item) {
             return $carry + (($item->harga_satuan * $item->jumlah) + $item->adjustment);
         }, 0);
@@ -93,5 +95,71 @@ class ReportStockAkhirController extends Controller
             'search',
             'lokasi'
         ));
+    }
+
+    public function export(Request $request)
+    {
+        $user = Auth::user();
+        if (! $user->can('stock-ban-view') && ! $user->can('stock-amprahan-view')) {
+            abort(403, 'Unauthorized');
+        }
+
+        $search = $request->input('search');
+        $lokasi = $request->input('lokasi');
+
+        // 1. Fetch Stock Ban (Jakarta)
+        $banQuery = StockBan::with(['namaStockBan'])
+            ->where('status', 'Stok');
+
+        if ($lokasi) {
+            $banQuery->where('lokasi', 'like', "%{$lokasi}%");
+        }
+        if ($search) {
+            $banQuery->where(function ($q) use ($search) {
+                $q->where('nomor_seri', 'like', "%{$search}%")
+                    ->orWhere('merk', 'like', "%{$search}%")
+                    ->orWhere('ukuran', 'like', "%{$search}%")
+                    ->orWhere('lokasi', 'like', "%{$search}%");
+            });
+        }
+        $stockBans = $banQuery->get();
+
+        // 2. Fetch Stock Ban (Batam)
+        $banBatamQuery = StockBanLuarBatam::with(['namaStockBan'])
+            ->where('status', 'Stok');
+
+        if ($lokasi) {
+            $banBatamQuery->where('lokasi', 'like', "%{$lokasi}%");
+        }
+        if ($search) {
+            $banBatamQuery->where(function ($q) use ($search) {
+                $q->where('nomor_seri', 'like', "%{$search}%")
+                    ->orWhere('merk', 'like', "%{$search}%")
+                    ->orWhere('ukuran', 'like', "%{$search}%")
+                    ->orWhere('lokasi', 'like', "%{$search}%");
+            });
+        }
+        $stockBanBatams = $banBatamQuery->get();
+
+        // 3. Fetch Stock Amprahan
+        $amprahanQuery = StockAmprahan::with(['masterNamaBarangAmprahan'])
+            ->where('jumlah', '>', 0);
+
+        if ($lokasi) {
+            $amprahanQuery->where('lokasi', 'like', "%{$lokasi}%");
+        }
+        if ($search) {
+            $amprahanQuery->where(function ($q) use ($search) {
+                $q->where('nama_barang', 'like', "%{$search}%")
+                    ->orWhere('nomor_bukti', 'like', "%{$search}%")
+                    ->orWhere('lokasi', 'like', "%{$search}%");
+            });
+        }
+        $stockAmprahans = $amprahanQuery->get();
+
+        return Excel::download(
+            new ReportStockAkhirExport($stockBans, $stockBanBatams, $stockAmprahans),
+            'report-stock-akhir-'.now()->format('Y-m-d').'.xlsx'
+        );
     }
 }
