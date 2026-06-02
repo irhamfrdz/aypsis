@@ -1179,7 +1179,7 @@
         {{-- Report Stock Akhir --}}
         @if($user && ($user->can('stock-ban-view') || $user->can('stock-amprahan-view')))
         <div class="mx-2 mb-3">
-            <a href="{{ route('stock-akhir.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('stock-akhir.index') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+            <a href="{{ route('report.stock-akhir.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('report.stock-akhir.index') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Report Stock Akhir</span>
             </a>
         </div>
