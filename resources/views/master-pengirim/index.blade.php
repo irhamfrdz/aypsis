@@ -111,12 +111,13 @@
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 resizable-table" id="masterPengirimTable">
                     <thead class="bg-gray-50">
-                        <tr><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nama Pengirim<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Alamat<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Catatan<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status<div class="resize-handle"></div></th><th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th></tr>
+                        <tr><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nama Pengirim<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nickname 1<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Alamat<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Catatan<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status<div class="resize-handle"></div></th><th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th></tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 text-xs">
                         @forelse ($pengirims as $pengirim)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">{{ $pengirim->nama_pengirim }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-900 max-w-xs truncate" title="{{ $pengirim->nickname1 }}">{{ $pengirim->nickname1 ?: '-' }}</td>
                                 <td class="px-3 py-2 text-xs text-gray-900 max-w-xs truncate" title="{{ $pengirim->alamat }}">{{ $pengirim->alamat ?: '-' }}</td>
                                 <td class="px-3 py-2 text-xs text-gray-900 max-w-xs truncate" title="{{ $pengirim->catatan }}">{{ $pengirim->catatan ?: '-' }}</td>
                                 <td class="px-3 py-2 whitespace-nowrap">
@@ -156,7 +157,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-3 py-6 text-center text-xs text-gray-500">
+                                <td colspan="6" class="px-3 py-6 text-center text-xs text-gray-500">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m8-5v2m0 0v2m0-2h2m-2 0h-2"></path>

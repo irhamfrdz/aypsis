@@ -30,6 +30,7 @@ class PengirimExport implements FromCollection, ShouldAutoSize, WithEvents, With
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('kode', 'LIKE', '%'.$searchTerm.'%')
                     ->orWhere('nama_pengirim', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('nickname1', 'LIKE', '%'.$searchTerm.'%')
                     ->orWhere('catatan', 'LIKE', '%'.$searchTerm.'%');
             });
         }
@@ -39,6 +40,7 @@ class PengirimExport implements FromCollection, ShouldAutoSize, WithEvents, With
                 $index + 1,
                 $pengirim->kode,
                 $pengirim->nama_pengirim,
+                $pengirim->nickname1 ?? '-',
                 $pengirim->catatan ?? '-',
                 $pengirim->status === 'active' ? 'Aktif' : 'Tidak Aktif',
                 $pengirim->created_at ? $pengirim->created_at->format('d/m/Y H:i') : '-',
@@ -52,6 +54,7 @@ class PengirimExport implements FromCollection, ShouldAutoSize, WithEvents, With
             'No',
             'Kode',
             'Nama Pengirim',
+            'Nickname 1',
             'Catatan',
             'Status',
             'Tanggal Dibuat',
@@ -63,7 +66,7 @@ class PengirimExport implements FromCollection, ShouldAutoSize, WithEvents, With
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 // Style the header row
-                $event->sheet->getStyle('A1:F1')->applyFromArray([
+                $event->sheet->getStyle('A1:G1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'color' => ['rgb' => 'FFFFFF'],
@@ -84,12 +87,12 @@ class PengirimExport implements FromCollection, ShouldAutoSize, WithEvents, With
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 // Center align the Status column
-                $event->sheet->getStyle('E2:E'.($event->sheet->getHighestRow()))
+                $event->sheet->getStyle('F2:F'.($event->sheet->getHighestRow()))
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 // Add border to all cells
-                $event->sheet->getStyle('A1:F'.($event->sheet->getHighestRow()))
+                $event->sheet->getStyle('A1:G'.($event->sheet->getHighestRow()))
                     ->applyFromArray([
                         'borders' => [
                             'allBorders' => [

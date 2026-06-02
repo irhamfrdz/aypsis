@@ -58,6 +58,19 @@
                     @enderror
                 </div>
 
+                <!-- Nickname 1 Field -->
+                <div>
+                    <label for="nickname1" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nickname 1
+                    </label>
+                    <input type="text" name="nickname1" id="nickname1" value="{{ old('nickname1', $pengirim->nickname1) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 @error('nickname1') border-red-500 @enderror"
+                           placeholder="Masukkan nickname 1 (opsional)">
+                    @error('nickname1')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Alamat Field -->
                 <div>
                     <label for="alamat" class="block text-sm font-medium text-gray-700 mb-2">

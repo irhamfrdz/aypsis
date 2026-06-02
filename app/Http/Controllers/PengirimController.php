@@ -18,7 +18,7 @@ class PengirimController extends Controller
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="template_pengirim.csv"',
         ];
-        $csv = "kode;nama_pengirim;catatan;status\n";
+        $csv = "kode;nama_pengirim;nickname1;catatan;status\n";
 
         return response($csv, 200, $headers);
     }
@@ -51,22 +51,23 @@ class PengirimController extends Controller
         }
 
         $header = fgetcsv($handle, 0, ';');
-        $expectedHeader = ['kode', 'nama_pengirim', 'catatan', 'status'];
+        $expectedHeader = ['kode', 'nama_pengirim', 'nickname1', 'catatan', 'status'];
         if ($header !== $expectedHeader) {
-            return back()->with('error', 'Header CSV tidak sesuai. Harus: kode;nama_pengirim;catatan;status');
+            return back()->with('error', 'Header CSV tidak sesuai. Harus: kode;nama_pengirim;nickname1;catatan;status');
         }
 
         $rowNum = 1;
         while (($row = fgetcsv($handle, 0, ';')) !== false) {
             $rowNum++;
-            if (count($row) !== 4) {
+            if (count($row) !== 5) {
                 $errors[] = "Baris $rowNum: Jumlah kolom tidak sesuai.";
 
                 continue;
             }
-            [$kode, $nama_pengirim, $catatan, $status] = $row;
+            [$kode, $nama_pengirim, $nickname1, $catatan, $status] = $row;
             $kode = trim($kode);
             $nama_pengirim = trim($nama_pengirim);
+            $nickname1 = trim($nickname1);
             $catatan = trim($catatan);
             $status = trim($status);
 
@@ -96,6 +97,7 @@ class PengirimController extends Controller
             $pengirim = Pengirim::where('kode', $kode)->first();
             if ($pengirim) {
                 $pengirim->nama_pengirim = $nama_pengirim;
+                $pengirim->nickname1 = $nickname1 !== '' ? $nickname1 : null;
                 $pengirim->catatan = $catatan;
                 $pengirim->status = $status;
                 $pengirim->save();
@@ -103,6 +105,7 @@ class PengirimController extends Controller
                 Pengirim::create([
                     'kode' => $kode,
                     'nama_pengirim' => $nama_pengirim,
+                    'nickname1' => $nickname1 !== '' ? $nickname1 : null,
                     'catatan' => $catatan,
                     'status' => $status,
                 ]);
@@ -145,6 +148,7 @@ class PengirimController extends Controller
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('kode', 'LIKE', '%'.$searchTerm.'%')
                     ->orWhere('nama_pengirim', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('nickname1', 'LIKE', '%'.$searchTerm.'%')
                     ->orWhere('catatan', 'LIKE', '%'.$searchTerm.'%');
             });
         }
@@ -170,6 +174,7 @@ class PengirimController extends Controller
         $request->validate([
             'kode' => 'required|string|unique:pengirims,kode',
             'nama_pengirim' => 'required|string|max:255',
+            'nickname1' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
@@ -220,6 +225,7 @@ class PengirimController extends Controller
         $request->validate([
             'kode' => 'required|string|unique:pengirims,kode,'.$id,
             'nama_pengirim' => 'required|string|max:255',
+            'nickname1' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
@@ -289,6 +295,7 @@ class PengirimController extends Controller
         $request->validate([
             'kode' => 'required|string|unique:pengirims,kode',
             'nama_pengirim' => 'required|string|max:255',
+            'nickname1' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
@@ -315,6 +322,7 @@ class PengirimController extends Controller
         $request->validate([
             'kode' => 'required|string|unique:pengirims,kode,'.$pengirim->id,
             'nama_pengirim' => 'required|string|max:255',
+            'nickname1' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',

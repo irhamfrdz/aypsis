@@ -12,6 +12,7 @@ class Pengirim extends Model
     protected $fillable = [
         'kode',
         'nama_pengirim',
+        'nickname1',
         'alamat',
         'catatan',
         'status',
