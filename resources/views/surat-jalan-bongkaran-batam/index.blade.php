@@ -1252,6 +1252,37 @@
 
 @push('scripts')
 <script>
+// Helper to parse JSON response and handle HTML errors gracefully
+function parseJsonResponse(response) {
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+        return response.json().then(data => {
+            if (!response.ok) {
+                throw data;
+            }
+            return data;
+        });
+    } else {
+        return response.text().then(text => {
+            let errorMessage = `HTTP Error ${response.status}: ${response.statusText}`;
+            if (response.status === 419) {
+                errorMessage = 'Sesi Anda telah berakhir atau token keamanan kedaluwarsa. Silakan refresh halaman dan coba lagi.';
+            } else if (response.status === 403) {
+                errorMessage = 'Anda tidak memiliki izin (permission) untuk melakukan tindakan ini.';
+            } else if (response.status === 500) {
+                errorMessage = 'Terjadi kesalahan internal pada server. Silakan hubungi administrator.';
+                if (text.includes('class="exception-message-wrapper"')) {
+                    const match = text.match(/<h1 class="break-words[^>]*>([\s\S]*?)<\/h1>/);
+                    if (match && match[1]) {
+                        errorMessage += `\n\nDetail: ${match[1].trim()}`;
+                    }
+                }
+            }
+            throw { message: errorMessage };
+        });
+    }
+}
+
 // Data for destinations based on location
 const destinations = {
     jakarta: [
@@ -1731,14 +1762,7 @@ function handleFormSubmit(event) {
             'Accept': 'application/json'
         }
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(data => {
-                throw data;
-            });
-        }
-        return response.json();
-    })
+    .then(parseJsonResponse)
     .then(data => {
         // Success - redirect with success message
         if (data.redirect) {
@@ -2254,14 +2278,7 @@ function handleEditFormSubmit(event) {
             'Accept': 'application/json'
         }
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(data => {
-                throw data;
-            });
-        }
-        return response.json();
-    })
+    .then(parseJsonResponse)
     .then(data => {
         // Success - redirect with success message
         if (data.redirect) {
