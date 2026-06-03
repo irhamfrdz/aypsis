@@ -67,6 +67,7 @@ class TagihanPelindoTest extends TestCase
                     'pricelist_pelindo_id' => $pricelist->id,
                     'kegiatan' => 'LOLOS KAN KONTEN',
                     'ukuran' => '20',
+                    'status_kontainer' => 'Full',
                     'tarif' => 150000,
                     'jumlah' => 2,
                     'keterangan' => 'Catatan item 1',
@@ -85,6 +86,7 @@ class TagihanPelindoTest extends TestCase
 
         $this->assertDatabaseHas('tagihan_pelindo_items', [
             'nomor_kontainer' => 'MSKU1234567',
+            'status_kontainer' => 'Full',
             'tarif' => 150000,
             'jumlah' => 2,
             'total' => 300000,
@@ -134,6 +136,7 @@ class TagihanPelindoTest extends TestCase
                     'pricelist_pelindo_id' => $pricelist->id,
                     'kegiatan' => 'LOLOS KAN KONTEN NEW',
                     'ukuran' => '40',
+                    'status_kontainer' => 'Empty',
                     'tarif' => 200000,
                     'jumlah' => 3,
                     'keterangan' => 'Catatan revisi',
@@ -161,6 +164,7 @@ class TagihanPelindoTest extends TestCase
         $this->assertDatabaseHas('tagihan_pelindo_items', [
             'tagihan_pelindo_id' => $tagihan->id,
             'nomor_kontainer' => 'MSKU7654321',
+            'status_kontainer' => 'Empty',
             'kegiatan' => 'LOLOS KAN KONTEN NEW',
             'tarif' => 200000,
             'jumlah' => 3,

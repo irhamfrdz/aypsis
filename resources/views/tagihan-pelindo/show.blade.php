@@ -74,6 +74,7 @@
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Nomor Kontainer</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Kegiatan</th>
                         <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase w-24">Ukuran</th>
+                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase w-24">Full/Empty</th>
                         <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase w-32">Tarif</th>
                         <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase w-20">Qty</th>
                         <th class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase w-36">Total</th>
@@ -87,6 +88,7 @@
                         <td class="px-4 py-3.5 text-sm font-semibold text-gray-800">{{ $item->nomor_kontainer ?: '-' }}</td>
                         <td class="px-4 py-3.5 text-sm text-gray-700">{{ $item->kegiatan }}</td>
                         <td class="px-4 py-3.5 text-center text-sm text-gray-600">{{ $item->ukuran ? ($item->ukuran . 'ft') : '-' }}</td>
+                        <td class="px-4 py-3.5 text-center text-sm text-gray-600">{{ $item->status_kontainer ?: '-' }}</td>
                         <td class="px-4 py-3.5 text-sm text-right text-gray-700">Rp {{ number_format($item->tarif, 2, ',', '.') }}</td>
                         <td class="px-4 py-3.5 text-center text-sm text-gray-800 font-medium">{{ $item->jumlah }}</td>
                         <td class="px-4 py-3.5 text-sm text-right font-semibold text-gray-900">Rp {{ number_format($item->total, 2, ',', '.') }}</td>

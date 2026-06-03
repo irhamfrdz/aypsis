@@ -14,6 +14,7 @@ class TagihanPelindoItem extends Model
         'pricelist_pelindo_id',
         'kegiatan',
         'ukuran',
+        'status_kontainer',
         'tarif',
         'jumlah',
         'total',

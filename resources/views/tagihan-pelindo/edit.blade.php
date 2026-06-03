@@ -80,6 +80,7 @@
                             <th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase min-w-[150px]">Nomor Kontainer</th>
                             <th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase min-w-[200px]">Kegiatan Pelindo</th>
                             <th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase w-24">Ukuran</th>
+                            <th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase w-28">Full/Empty</th>
                             <th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase w-32">Tarif</th>
                             <th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase w-20">Qty</th>
                             <th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase w-36">Total</th>
@@ -98,8 +99,8 @@
                                 <select name="items[{{ $idx }}][pricelist_pelindo_id]" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white" onchange="onKegiatanChange(this, {{ $idx }})">
                                     <option value="">-- Pilih Kegiatan --</option>
                                     @foreach($pricelists as $pl)
-                                        <option value="{{ $pl->id }}" data-tarif="{{ $pl->tarif }}" data-ukuran="{{ $pl->ukuran }}" data-kegiatan="{{ $pl->kegiatan }}" @if($item->pricelist_pelindo_id == $pl->id) selected @endif>
-                                            {{ $pl->kegiatan }} ({{ $pl->ukuran }}ft) - Rp {{ number_format($pl->tarif, 0, ',', '.') }}
+                                        <option value="{{ $pl->id }}" data-tarif="{{ $pl->tarif }}" data-ukuran="{{ $pl->ukuran }}" data-kegiatan="{{ $pl->kegiatan }}" data-status_kontainer="{{ $pl->status_kontainer || '' }}" @if($item->pricelist_pelindo_id == $pl->id) selected @endif>
+                                            {{ $pl->kegiatan }} ({{ $pl->ukuran }}ft) @if($pl->status_kontainer) [{{ $pl->status_kontainer }}] @endif - Rp {{ number_format($pl->tarif, 0, ',', '.') }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -107,6 +108,13 @@
                             </td>
                             <td class="px-4 py-2 text-center">
                                 <input type="text" name="items[{{ $idx }}][ukuran]" value="{{ $item->ukuran }}" id="ukuran_{{ $idx }}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center bg-gray-50" readonly placeholder="-">
+                            </td>
+                            <td class="px-4 py-2">
+                                <select name="items[{{ $idx }}][status_kontainer]" id="status_kontainer_{{ $idx }}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                    <option value="">-</option>
+                                    <option value="Full" {{ $item->status_kontainer == 'Full' ? 'selected' : '' }}>Full</option>
+                                    <option value="Empty" {{ $item->status_kontainer == 'Empty' ? 'selected' : '' }}>Empty</option>
+                                </select>
                             </td>
                             <td class="px-4 py-2">
                                 <input type="number" step="0.01" name="items[{{ $idx }}][tarif]" value="{{ $item->tarif }}" id="tarif_{{ $idx }}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-right focus:ring-1 focus:ring-blue-500 focus:border-blue-500" oninput="calculateRowTotal({{ $idx }})">
@@ -188,8 +196,9 @@
         // Select options
         let selectOptions = '<option value="">-- Pilih Kegiatan --</option>';
         pricelistItems.forEach(item => {
-            const label = `${item.kegiatan} (${item.ukuran || '-'}ft) - Rp ${Number(item.tarif).toLocaleString('id-ID')}`;
-            selectOptions += `<option value="${item.id}" data-tarif="${item.tarif}" data-ukuran="${item.ukuran || ''}" data-kegiatan="${item.kegiatan}">${label}</option>`;
+            const statusSuffix = item.status_kontainer ? ` [${item.status_kontainer}]` : '';
+            const label = `${item.kegiatan} (${item.ukuran || '-'}ft)${statusSuffix} - Rp ${Number(item.tarif).toLocaleString('id-ID')}`;
+            selectOptions += `<option value="${item.id}" data-tarif="${item.tarif}" data-ukuran="${item.ukuran || ''}" data-kegiatan="${item.kegiatan}" data-status_kontainer="${item.status_kontainer || ''}">${label}</option>`;
         });
 
         tr.innerHTML = `
@@ -205,6 +214,13 @@
             </td>
             <td class="px-4 py-2 text-center">
                 <input type="text" name="items[${rowIndex}][ukuran]" id="ukuran_${rowIndex}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center bg-gray-50" readonly placeholder="-">
+            </td>
+            <td class="px-4 py-2">
+                <select name="items[${rowIndex}][status_kontainer]" id="status_kontainer_${rowIndex}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                    <option value="">-</option>
+                    <option value="Full">Full</option>
+                    <option value="Empty">Empty</option>
+                </select>
             </td>
             <td class="px-4 py-2">
                 <input type="number" step="0.01" name="items[${rowIndex}][tarif]" id="tarif_${rowIndex}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-right focus:ring-1 focus:ring-blue-500 focus:border-blue-500" value="0" oninput="calculateRowTotal(${rowIndex})">
@@ -247,23 +263,32 @@
         });
     }
 
+    // Kegiatan dropdown onchange handler
     function onKegiatanChange(selectElement, idx) {
         const selectedOption = selectElement.options[selectElement.selectedIndex];
         const inputKegiatan = document.getElementById(`kegiatan_${idx}`);
         const inputUkuran = document.getElementById(`ukuran_${idx}`);
+        const selectStatus = document.getElementById(`status_kontainer_${idx}`);
         const inputTarif = document.getElementById(`tarif_${idx}`);
 
         if (selectedOption && selectedOption.value !== "") {
             const tarif = selectedOption.getAttribute('data-tarif');
             const ukuran = selectedOption.getAttribute('data-ukuran');
             const kegiatan = selectedOption.getAttribute('data-kegiatan');
+            const status_kontainer = selectedOption.getAttribute('data-status_kontainer');
 
             inputKegiatan.value = kegiatan;
             inputUkuran.value = ukuran;
+            if (selectStatus) {
+                selectStatus.value = status_kontainer || '';
+            }
             inputTarif.value = tarif;
         } else {
             inputKegiatan.value = '';
             inputUkuran.value = '';
+            if (selectStatus) {
+                selectStatus.value = '';
+            }
             inputTarif.value = 0;
         }
 
