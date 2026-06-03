@@ -61,6 +61,24 @@ class StockAmprahanExport implements FromCollection, ShouldAutoSize, WithEvents,
             $query->where('type_amprahan', $this->filters['type_amprahan']);
         }
 
+        if (! empty($this->filters['from_date'])) {
+            $query->where(function ($q) {
+                $q->whereDate('tanggal_beli', '>=', $this->filters['from_date'])
+                    ->orWhere(function ($sq) {
+                        $sq->whereNull('tanggal_beli')->whereDate('created_at', '>=', $this->filters['from_date']);
+                    });
+            });
+        }
+
+        if (! empty($this->filters['to_date'])) {
+            $query->where(function ($q) {
+                $q->whereDate('tanggal_beli', '<=', $this->filters['to_date'])
+                    ->orWhere(function ($sq) {
+                        $sq->whereNull('tanggal_beli')->whereDate('created_at', '<=', $this->filters['to_date']);
+                    });
+            });
+        }
+
         if ($mobilId) {
             $query->whereHas('usages', function ($q) use ($mobilId) {
                 $q->where('kendaraan_id', $mobilId)

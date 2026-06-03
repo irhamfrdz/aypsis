@@ -86,46 +86,75 @@
     </div>
 
     {{-- Search Section --}}
-    <div class="mb-6">
-        <form method="GET" action="{{ route('stock-amprahan.index') }}" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-            <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari berdasarkan nama barang atau no. bukti..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-            <select name="type_amprahan" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white">
-                <option value="">Semua Tipe</option>
-                <option value="Stock" {{ request('type_amprahan') == 'Stock' ? 'selected' : '' }}>Stock</option>
-                <option value="Pemakaian" {{ request('type_amprahan') == 'Pemakaian' ? 'selected' : '' }}>Pemakaian</option>
-                <option value="Perbaikan" {{ request('type_amprahan') == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
-                <option value="Perlengkapan" {{ request('type_amprahan') == 'Perlengkapan' ? 'selected' : '' }}>Perlengkapan</option>
-                <option value="Peralatan" {{ request('type_amprahan') == 'Peralatan' ? 'selected' : '' }}>Peralatan</option>
-                <option value="Transportasi" {{ request('type_amprahan') == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
-            </select>
-            <div class="flex-1 min-w-[180px]">
-                <select name="mobil_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white searchable-select">
-                    <option value="">Semua Plat</option>
-                    @foreach($kendaraans as $m)
-                        @php
-                            $displayText = trim(($m->nomor_polisi ?: '') . ' (' . ($m->merek ?: 'Tanpa Merek') . ')');
-                            if (empty(trim($m->nomor_polisi)) && empty(trim($m->merek))) {
-                                $displayText = "Kendaraan ID: " . $m->id;
-                            }
-                        @endphp
-                        <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>
-                            {{ $displayText }}
-                        </option>
-                    @endforeach
-                </select>
+    <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm">
+        <form method="GET" action="{{ route('stock-amprahan.index') }}" class="space-y-4">
+            @if(request('lokasi'))
+                <input type="hidden" name="lokasi" value="{{ request('lokasi') }}">
+            @endif
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {{-- Search Input --}}
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Cari Barang / Bukti</label>
+                    <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari berdasarkan nama barang atau no. bukti..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                </div>
+                {{-- Tipe Amprahan --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Tipe Amprahan</label>
+                    <select name="type_amprahan" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+                        <option value="">Semua Tipe</option>
+                        <option value="Stock" {{ request('type_amprahan') == 'Stock' ? 'selected' : '' }}>Stock</option>
+                        <option value="Pemakaian" {{ request('type_amprahan') == 'Pemakaian' ? 'selected' : '' }}>Pemakaian</option>
+                        <option value="Perbaikan" {{ request('type_amprahan') == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
+                        <option value="Perlengkapan" {{ request('type_amprahan') == 'Perlengkapan' ? 'selected' : '' }}>Perlengkapan</option>
+                        <option value="Peralatan" {{ request('type_amprahan') == 'Peralatan' ? 'selected' : '' }}>Peralatan</option>
+                        <option value="Transportasi" {{ request('type_amprahan') == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
+                    </select>
+                </div>
+                {{-- Plat Mobil --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Plat Mobil</label>
+                    <select name="mobil_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white searchable-select">
+                        <option value="">Semua Plat</option>
+                        @foreach($kendaraans as $m)
+                            @php
+                                $displayText = trim(($m->nomor_polisi ?: '') . ' (' . ($m->merek ?: 'Tanpa Merek') . ')');
+                                if (empty(trim($m->nomor_polisi)) && empty(trim($m->merek))) {
+                                    $displayText = "Kendaraan ID: " . $m->id;
+                                }
+                            @endphp
+                            <option value="{{ $m->id }}" {{ request('mobil_id') == $m->id ? 'selected' : '' }}>
+                                {{ $displayText }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
-            <div class="flex space-x-2">
-                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    Cari
-                </button>
-                @if((isset($search) && $search) || request('lokasi') || request('mobil_id'))
-                <a href="{{ route('stock-amprahan.index') }}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
-                    Reset
-                </a>
-                @endif
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end pt-2 border-t border-gray-200/60">
+                {{-- Date From --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Dari Tanggal</label>
+                    <input type="date" name="from_date" value="{{ request('from_date') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                </div>
+                {{-- Date To --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Sampai Tanggal</label>
+                    <input type="date" name="to_date" value="{{ request('to_date') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                </div>
+                {{-- Action Buttons --}}
+                <div class="md:col-span-2 flex items-center justify-end space-x-2">
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        Cari
+                    </button>
+                    @if((isset($search) && $search) || request('lokasi') || request('mobil_id') || request('type_amprahan') || request('from_date') || request('to_date'))
+                    <a href="{{ route('stock-amprahan.index') }}" class="px-5 py-2.5 bg-gray-600 hover:bg-gray-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                        Reset
+                    </a>
+                    @endif
+                </div>
             </div>
         </form>
     </div>

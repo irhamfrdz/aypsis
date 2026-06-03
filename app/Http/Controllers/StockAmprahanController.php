@@ -75,6 +75,24 @@ class StockAmprahanController extends Controller
             $query->where('type_amprahan', $request->type_amprahan);
         }
 
+        if ($request->filled('from_date')) {
+            $query->where(function ($q) use ($request) {
+                $q->whereDate('tanggal_beli', '>=', $request->from_date)
+                    ->orWhere(function ($sq) use ($request) {
+                        $sq->whereNull('tanggal_beli')->whereDate('created_at', '>=', $request->from_date);
+                    });
+            });
+        }
+
+        if ($request->filled('to_date')) {
+            $query->where(function ($q) use ($request) {
+                $q->whereDate('tanggal_beli', '<=', $request->to_date)
+                    ->orWhere(function ($sq) use ($request) {
+                        $sq->whereNull('tanggal_beli')->whereDate('created_at', '<=', $request->to_date);
+                    });
+            });
+        }
+
         $selectedMobil = null;
         if ($request->filled('mobil_id')) {
             $mobilId = $request->mobil_id;
@@ -144,6 +162,8 @@ class StockAmprahanController extends Controller
             'lokasi' => $request->get('lokasi'),
             'type_amprahan' => $request->get('type_amprahan'),
             'mobil_id' => $request->get('mobil_id'),
+            'from_date' => $request->get('from_date'),
+            'to_date' => $request->get('to_date'),
         ];
 
         $fileName = 'Stock_Amprahan_'.date('Ymd_His').'.xlsx';
