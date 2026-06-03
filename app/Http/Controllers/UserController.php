@@ -712,6 +712,7 @@ class UserController extends Controller
                 'stock-amprahan' => 'stock-amprahan',
                 'stock-ban' => 'stock-ban',
                 'tagihan-cat' => 'tagihan-cat',
+                'tagihan-pelindo' => 'tagihan-pelindo',
                 'tagihan-kontainer-sewa' => 'tagihan-kontainer-sewa',
                 'tagihan-perbaikan-kontainer' => 'tagihan-perbaikan-kontainer',
                 'tagihan-ob-antar-gudang' => 'tagihan-ob-antar-gudang',

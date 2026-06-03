@@ -1640,6 +1640,23 @@
                                 <td><input type="checkbox" name="permissions[gate-in][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gate-in']['export']) && $userMatrixPermissions['gate-in']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Tagihan Pelindo --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Tagihan Pelindo</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tagihan-pelindo][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-pelindo']['view']) && $userMatrixPermissions['tagihan-pelindo']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-pelindo][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-pelindo']['create']) && $userMatrixPermissions['tagihan-pelindo']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-pelindo][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-pelindo']['update']) && $userMatrixPermissions['tagihan-pelindo']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-pelindo][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-pelindo']['delete']) && $userMatrixPermissions['tagihan-pelindo']['delete']) checked @endif></td>
+                               <td class="empty-cell"></td>
+                               <td class="empty-cell"></td>
+                               <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pranota Surat Jalan --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

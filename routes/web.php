@@ -4774,6 +4774,29 @@ Route::middleware(['auth'])->group(function () {
         ->name('tagihan-cat.destroy')
         ->middleware('can:tagihan-cat-delete');
 
+    // Tagihan Pelindo routes
+    Route::get('tagihan-pelindo', [\App\Http\Controllers\TagihanPelindoController::class, 'index'])
+        ->name('tagihan-pelindo.index')
+        ->middleware('can:tagihan-pelindo-view');
+    Route::get('tagihan-pelindo/create', [\App\Http\Controllers\TagihanPelindoController::class, 'create'])
+        ->name('tagihan-pelindo.create')
+        ->middleware('can:tagihan-pelindo-create');
+    Route::post('tagihan-pelindo', [\App\Http\Controllers\TagihanPelindoController::class, 'store'])
+        ->name('tagihan-pelindo.store')
+        ->middleware('can:tagihan-pelindo-create');
+    Route::get('tagihan-pelindo/{tagihanPelindo}', [\App\Http\Controllers\TagihanPelindoController::class, 'show'])
+        ->name('tagihan-pelindo.show')
+        ->middleware('can:tagihan-pelindo-view');
+    Route::get('tagihan-pelindo/{tagihanPelindo}/edit', [\App\Http\Controllers\TagihanPelindoController::class, 'edit'])
+        ->name('tagihan-pelindo.edit')
+        ->middleware('can:tagihan-pelindo-edit');
+    Route::put('tagihan-pelindo/{tagihanPelindo}', [\App\Http\Controllers\TagihanPelindoController::class, 'update'])
+        ->name('tagihan-pelindo.update')
+        ->middleware('can:tagihan-pelindo-edit');
+    Route::delete('tagihan-pelindo/{tagihanPelindo}', [\App\Http\Controllers\TagihanPelindoController::class, 'destroy'])
+        ->name('tagihan-pelindo.destroy')
+        ->middleware('can:tagihan-pelindo-delete');
+
     // OB (Operasional Bongkaran) routes
     Route::get('ob', [\App\Http\Controllers\ObController::class, 'index'])
         ->name('ob.index')

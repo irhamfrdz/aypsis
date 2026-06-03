@@ -117,6 +117,17 @@ return [
                 'tanda-terima-surat-jalan-kontainer-sewa-delete' => 'Hapus Tanda Terima',
             ],
         ],
+        'tagihan-pelindo' => [
+            'name' => 'Tagihan Pelindo',
+            'description' => 'Menu tagihan pelindo',
+            'required' => true,
+            'sub_modules' => [
+                'tagihan-pelindo-view' => 'View Tagihan',
+                'tagihan-pelindo-create' => 'Buat Tagihan',
+                'tagihan-pelindo-edit' => 'Edit Tagihan',
+                'tagihan-pelindo-delete' => 'Hapus Tagihan',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
@@ -152,5 +163,8 @@ return [
 
         // Tanda Terima SJ Kontainer Sewa - butuh tanda-terima-surat-jalan-kontainer-sewa-view
         'tanda-terima-surat-jalan-kontainer-sewa' => ['tanda-terima-surat-jalan-kontainer-sewa-view'],
+
+        // Tagihan Pelindo - butuh tagihan-pelindo-view
+        'tagihan-pelindo' => ['tagihan-pelindo-view'],
     ],
 ];
