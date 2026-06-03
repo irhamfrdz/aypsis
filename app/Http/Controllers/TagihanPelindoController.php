@@ -44,6 +44,14 @@ class TagihanPelindoController extends Controller
             ->orderBy('no_voyage')
             ->get();
 
+        $blContainers = DB::table('bls')
+            ->select('nama_kapal', 'no_voyage', 'nomor_kontainer', 'size_kontainer', 'nama_barang', 'tipe_kontainer')
+            ->where('nama_kapal', '!=', '')
+            ->where('no_voyage', '!=', '')
+            ->whereNotNull('nomor_kontainer')
+            ->where('nomor_kontainer', '!=', '')
+            ->get();
+
         // Generate automatic invoice number prefix: TPL-YYYYMMDD-XXXX
         $datePrefix = 'TPL-'.date('Ymd');
         $lastInvoice = TagihanPelindo::where('nomor_tagihan', 'like', $datePrefix.'%')
@@ -59,7 +67,7 @@ class TagihanPelindoController extends Controller
 
         $nomorTagihan = $datePrefix.'-'.$nextNum;
 
-        return view('tagihan-pelindo.create', compact('pricelists', 'nomorTagihan', 'bls'));
+        return view('tagihan-pelindo.create', compact('pricelists', 'nomorTagihan', 'bls', 'blContainers'));
     }
 
     public function store(Request $request)
@@ -151,7 +159,15 @@ class TagihanPelindoController extends Controller
             ->orderBy('no_voyage')
             ->get();
 
-        return view('tagihan-pelindo.edit', compact('tagihan', 'pricelists', 'bls'));
+        $blContainers = DB::table('bls')
+            ->select('nama_kapal', 'no_voyage', 'nomor_kontainer', 'size_kontainer', 'nama_barang', 'tipe_kontainer')
+            ->where('nama_kapal', '!=', '')
+            ->where('no_voyage', '!=', '')
+            ->whereNotNull('nomor_kontainer')
+            ->where('nomor_kontainer', '!=', '')
+            ->get();
+
+        return view('tagihan-pelindo.edit', compact('tagihan', 'pricelists', 'bls', 'blContainers'));
     }
 
     public function update(Request $request, $id)

@@ -108,6 +108,7 @@
                         <option value="DPE" {{ old('vendor') == 'DPE' ? 'selected' : '' }}>DPE</option>
                         <option value="MERATUS" {{ old('vendor') == 'MERATUS' ? 'selected' : '' }}>MERATUS</option>
                         <option value="SOC" {{ old('vendor') == 'SOC' ? 'selected' : '' }}>SOC</option>
+                        <option value="FREEUSE" {{ old('vendor') == 'FREEUSE' ? 'selected' : '' }}>FREEUSE</option>
                     </select>
                     @error('vendor')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>

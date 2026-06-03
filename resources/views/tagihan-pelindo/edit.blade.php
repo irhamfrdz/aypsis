@@ -182,6 +182,7 @@
 {{-- Pass pricelist data to JavaScript --}}
 <script>
     const pricelistItems = @json($pricelists);
+    const blContainers = @json($blContainers);
 </script>
 
 @push('scripts')
@@ -205,7 +206,7 @@
         }
     });
 
-    function addRow() {
+    function addRow(initialData = null) {
         const tbody = document.getElementById('itemsTableBody');
         const tr = document.createElement('tr');
         tr.id = `row_${rowIndex}`;
@@ -219,10 +220,14 @@
             selectOptions += `<option value="${item.id}" data-tarif="${item.tarif}" data-ukuran="${item.ukuran || ''}" data-kegiatan="${item.kegiatan}" data-status_kontainer="${item.status_kontainer || ''}">${label}</option>`;
         });
 
+        const nomorKontainer = initialData ? (initialData.nomor_kontainer || '') : '';
+        const ukuran = initialData ? (initialData.size_kontainer || '') : '';
+        const statusKontainer = initialData ? (initialData.status_kontainer || '') : '';
+
         tr.innerHTML = `
             <td class="px-4 py-2 text-center text-sm font-medium text-gray-400 row-number"></td>
             <td class="px-4 py-2">
-                <input type="text" name="items[${rowIndex}][nomor_kontainer]" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="Kontainer No.">
+                <input type="text" name="items[${rowIndex}][nomor_kontainer]" value="${nomorKontainer}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500" placeholder="Kontainer No.">
             </td>
             <td class="px-4 py-2">
                 <select name="items[${rowIndex}][pricelist_pelindo_id]" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white" onchange="onKegiatanChange(this, ${rowIndex})">
@@ -231,13 +236,13 @@
                 <input type="hidden" name="items[${rowIndex}][kegiatan]" id="kegiatan_${rowIndex}">
             </td>
             <td class="px-4 py-2 text-center">
-                <input type="text" name="items[${rowIndex}][ukuran]" id="ukuran_${rowIndex}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center bg-gray-50" readonly placeholder="-">
+                <input type="text" name="items[${rowIndex}][ukuran]" id="ukuran_${rowIndex}" value="${ukuran}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-center bg-gray-50" readonly placeholder="-">
             </td>
             <td class="px-4 py-2">
                 <select name="items[${rowIndex}][status_kontainer]" id="status_kontainer_${rowIndex}" class="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white">
                     <option value="">-</option>
-                    <option value="Full">Full</option>
-                    <option value="Empty">Empty</option>
+                    <option value="Full" ${statusKontainer === 'Full' ? 'selected' : ''}>Full</option>
+                    <option value="Empty" ${statusKontainer === 'Empty' ? 'selected' : ''}>Empty</option>
                 </select>
             </td>
             <td class="px-4 py-2">
@@ -365,9 +370,69 @@
         }
     }
 
+    function autoPopulateContainers() {
+        const kapal = document.getElementById('kapal_select').value;
+        const voyage = document.getElementById('voyage_select').value;
+        
+        if (!kapal || !voyage) {
+            return;
+        }
+
+        // Check if there are existing rows to warn the user
+        const tbody = document.getElementById('itemsTableBody');
+        if (tbody.children.length > 0) {
+            let hasData = false;
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const nr = row.querySelector('input[name*="[nomor_kontainer]"]');
+                const pl = row.querySelector('select[name*="[pricelist_pelindo_id]"]');
+                if ((nr && nr.value) || (pl && pl.value)) {
+                    hasData = true;
+                }
+            });
+
+            if (hasData) {
+                if (!confirm('Mengubah Kapal/Voyage akan mengosongkan item yang ada dan memuat kontainer dari voyage baru. Lanjutkan?')) {
+                    return;
+                }
+            }
+        }
+
+        // Clear existing rows
+        tbody.innerHTML = '';
+        rowIndex = 0;
+
+        // Filter blContainers
+        const filtered = blContainers.filter(c => c.nama_kapal === kapal && c.no_voyage === voyage);
+
+        if (filtered.length > 0) {
+            filtered.forEach(c => {
+                const barangUpper = (c.nama_barang || '').toUpperCase();
+                const nomorKontainer = c.nomor_kontainer || '';
+                const isEmpty = barangUpper.includes('EMPTY') || (c.tipe_kontainer === 'FCL' && (!nomorKontainer || nomorKontainer.startsWith('CARGO-')));
+                const statusKontainer = isEmpty ? 'Empty' : 'Full';
+
+                addRow({
+                    nomor_kontainer: c.nomor_kontainer,
+                    size_kontainer: c.size_kontainer,
+                    status_kontainer: statusKontainer
+                });
+            });
+        } else {
+            addRow();
+        }
+    }
+
     // Run on load to apply initial filter if Kapal was old-selected
     window.addEventListener('DOMContentLoaded', () => {
         onKapalChange();
+
+        // Add event listeners for dynamic auto-population
+        document.getElementById('kapal_select').addEventListener('change', () => {
+            onKapalChange();
+            autoPopulateContainers();
+        });
+        document.getElementById('voyage_select').addEventListener('change', autoPopulateContainers);
     });
 </script>
 @endpush
