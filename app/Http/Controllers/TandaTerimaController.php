@@ -603,7 +603,7 @@ class TandaTerimaController extends Controller
 
         DB::beginTransaction();
         try {
-            $suratJalan = SuratJalan::with(['order.pengirim'])->findOrFail($request->surat_jalan_id);
+            $suratJalan = SuratJalan::with(['order.pengirim', 'order.term', 'termRelation'])->findOrFail($request->surat_jalan_id);
 
             // Use tipe_kontainer from existing surat jalan data only - no sync from form
             $rawTipe = $suratJalan->tipe_kontainer;
@@ -684,6 +684,9 @@ class TandaTerimaController extends Controller
             $tandaTerima->lembur = $request->boolean('lembur');
             $tandaTerima->nginap = $request->boolean('nginap');
             $tandaTerima->tidak_lembur_nginap = $request->boolean('tidak_lembur_nginap');
+
+            // Assign term from input or fallback to Surat Jalan or Order term status name
+            $tandaTerima->term = $request->term ?: ($suratJalan->termRelation ? $suratJalan->termRelation->nama_status : ($suratJalan->order && $suratJalan->order->term ? $suratJalan->order->term->nama_status : null));
 
             // Handle dimensi details (multiple dimensi entries)
             $dimensiDetails = [];
@@ -1300,6 +1303,17 @@ class TandaTerimaController extends Controller
                 }
             }
 
+            // Assign or update term with fallback
+            $term = $request->term;
+            if (empty($term)) {
+                $tandaTerima->loadMissing(['suratJalan.termRelation', 'suratJalan.order.term']);
+                $term = $tandaTerima->suratJalan && $tandaTerima->suratJalan->termRelation
+                    ? $tandaTerima->suratJalan->termRelation->nama_status
+                    : ($tandaTerima->suratJalan && $tandaTerima->suratJalan->order && $tandaTerima->suratJalan->order->term
+                        ? $tandaTerima->suratJalan->order->term->nama_status
+                        : $tandaTerima->term);
+            }
+
             $updateData = [
                 'estimasi_nama_kapal' => $request->estimasi_nama_kapal,
                 'surat_jalan_pabrik' => $request->surat_jalan_pabrik,
@@ -1340,6 +1354,7 @@ class TandaTerimaController extends Controller
                 'alamat_penerima' => $request->alamat_penerima,
                 'notify_party' => $request->notify_party,
                 'alamat_notify_party' => $request->alamat_notify_party,
+                'term' => $term,
                 'updated_by' => Auth::id(),
             ];
 

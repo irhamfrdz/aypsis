@@ -251,12 +251,13 @@ class ApprovalOrderController extends Controller
             $order->save();
 
             // Sync with SuratJalan and TandaTerima
-            $order->load(['suratJalans.tandaTerima', 'pengirim']);
+            $order->load(['suratJalans.tandaTerima', 'pengirim', 'term']);
             $namaPengirim = $order->pengirim->nama_pengirim ?? null;
             $alamatPengirim = $order->alamat_pengirim;
             $penerimaId = $order->penerima_id;
             $namaPenerima = $order->penerima;
             $alamatPenerima = $order->alamat_penerima;
+            $termName = $order->term->nama_status ?? null;
 
             foreach ($order->suratJalans as $suratJalan) {
                 // Update SuratJalan
@@ -265,6 +266,7 @@ class ApprovalOrderController extends Controller
                     'alamat' => $alamatPengirim,
                     'penerima_id' => $penerimaId,
                     'alamat_penerima' => $alamatPenerima,
+                    'term' => $order->term_id,
                 ]);
 
                 // Update TandaTerima
@@ -280,6 +282,7 @@ class ApprovalOrderController extends Controller
                         'dimensi_items' => $dimensiItems,
                         'nama_barang' => $namaBarangList,
                         'satuan' => count($dimensiItems) > 0 ? ($dimensiItems[0]['satuan'] ?? null) : null,
+                        'term' => $termName,
                     ]);
                 }
             }
