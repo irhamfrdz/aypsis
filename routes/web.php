@@ -46,6 +46,7 @@ use App\Http\Controllers\PembayaranObController;
 use App\Http\Controllers\PembayaranPranotaCatController;
 use App\Http\Controllers\PembayaranPranotaKontainerController;
 use App\Http\Controllers\PembayaranPranotaObController;
+use App\Http\Controllers\PembayaranPranotaOngkosTrukController;
 use App\Http\Controllers\PembayaranPranotaRitController;
 use App\Http\Controllers\PembayaranPranotaSupirController;
 use App\Http\Controllers\PembayaranPranotaSuratJalanController;
@@ -4136,6 +4137,37 @@ Route::middleware([
         Route::get('/{pembayaran}/print', [PembayaranPranotaSupirController::class, 'print'])
             ->name('print')
             ->middleware('can:pembayaran-pranota-supir-print');
+    });
+
+    // 💰 PEMBAYARAN PRANOTA ONGKOS TRUK
+    Route::prefix('pembayaran-pranota-ongkos-truk')->name('pembayaran-pranota-ongkos-truk.')->middleware(['auth'])->group(function () {
+        Route::get('/', [PembayaranPranotaOngkosTrukController::class, 'index'])
+            ->name('index')
+            ->middleware('can:pembayaran-pranota-ongkos-truk-view');
+        Route::get('/create', [PembayaranPranotaOngkosTrukController::class, 'create'])
+            ->name('create')
+            ->middleware('can:pembayaran-pranota-ongkos-truk-create');
+        Route::get('/generate-nomor', [PembayaranPranotaOngkosTrukController::class, 'generateNomor'])
+            ->name('generate-nomor')
+            ->middleware('can:pembayaran-pranota-ongkos-truk-create');
+        Route::post('/', [PembayaranPranotaOngkosTrukController::class, 'store'])
+            ->name('store')
+            ->middleware('can:pembayaran-pranota-ongkos-truk-create');
+        Route::get('/{pembayaran}/edit', [PembayaranPranotaOngkosTrukController::class, 'edit'])
+            ->name('edit')
+            ->middleware('can:pembayaran-pranota-ongkos-truk-edit');
+        Route::put('/{pembayaran}', [PembayaranPranotaOngkosTrukController::class, 'update'])
+            ->name('update')
+            ->middleware('can:pembayaran-pranota-ongkos-truk-edit');
+        Route::get('/{pembayaran}', [PembayaranPranotaOngkosTrukController::class, 'show'])
+            ->name('show')
+            ->middleware('can:pembayaran-pranota-ongkos-truk-view');
+        Route::delete('/{pembayaran}', [PembayaranPranotaOngkosTrukController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('can:pembayaran-pranota-ongkos-truk-delete');
+        Route::post('/{pembayaran}/sync-coa', [PembayaranPranotaOngkosTrukController::class, 'syncToCoa'])
+            ->name('sync-coa')
+            ->middleware('can:pembayaran-pranota-ongkos-truk-create');
     });
 
     // 📄 Pranota Surat Jalan - DISABLED (Replaced with Pranota Uang Jalan)

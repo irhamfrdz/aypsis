@@ -20,6 +20,7 @@ class PranotaOngkosTruk extends Model
         'adjustments',
         'keterangan',
         'status',
+        'status_pembayaran',
         'supir_id',
         'vendor_id',
         'created_by',
@@ -38,5 +39,15 @@ class PranotaOngkosTruk extends Model
     public function items()
     {
         return $this->hasMany(PranotaOngkosTrukItem::class, 'pranota_ongkos_truk_id');
+    }
+
+    public function pembayaranPranotaOngkosTruks()
+    {
+        return $this->belongsToMany(
+            PembayaranPranotaOngkosTruk::class,
+            'pembayaran_pranota_ongkos_truk_items',
+            'pranota_ongkos_truk_id',
+            'pembayaran_pranota_ongkos_truk_id'
+        )->withPivot('subtotal')->withTimestamps();
     }
 }

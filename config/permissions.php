@@ -72,6 +72,17 @@ return [
             'description' => 'Menu pembayaran pranota memo',
             'required' => true,
         ],
+        'pembayaran-pranota-ongkos-truk' => [
+            'name' => 'Pembayaran Pranota Ongkos Truk',
+            'description' => 'Menu pembayaran pranota ongkos truk',
+            'required' => true,
+            'sub_modules' => [
+                'pembayaran-pranota-ongkos-truk-view' => 'View Pembayaran',
+                'pembayaran-pranota-ongkos-truk-create' => 'Buat Pembayaran',
+                'pembayaran-pranota-ongkos-truk-edit' => 'Edit Pembayaran',
+                'pembayaran-pranota-ongkos-truk-delete' => 'Hapus Pembayaran',
+            ],
+        ],
         'pranota-stock' => [
             'name' => 'Pranota Stock Amprahan',
             'description' => 'Menu riwayat pranota stock amprahan',
@@ -129,6 +140,9 @@ return [
 
         // Pembayaran Pranota Memo - butuh pembayaran-pranota-supir
         'pembayaran-pranota-supir' => ['pembayaran-pranota-supir'],
+
+        // Pembayaran Pranota Ongkos Truk - butuh pembayaran-pranota-ongkos-truk-view
+        'pembayaran-pranota-ongkos-truk' => ['pembayaran-pranota-ongkos-truk-view'],
 
         // Pranota Stock Amprahan - butuh pranota-stock-view
         'pranota-stock' => ['pranota-stock-view'],

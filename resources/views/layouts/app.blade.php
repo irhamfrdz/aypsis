@@ -1176,6 +1176,15 @@
         </div>
         @endif
 
+        {{-- Bayar Pranota Ongkos Truk --}}
+        @if(Route::has('pembayaran-pranota-ongkos-truk.index') && $user && ($user->can('pembayaran-pranota-ongkos-truk-view') || $isAdmin))
+        <div class="mx-2 mb-3">
+            <a href="{{ route('pembayaran-pranota-ongkos-truk.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-ongkos-truk.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Bayar Pranota Ongkos Truk</span>
+            </a>
+        </div>
+        @endif
+
         {{-- Report Stock Akhir --}}
         @if($user && ($user->can('stock-ban-view') || $user->can('stock-amprahan-view')))
         <div class="mx-2 mb-3">
