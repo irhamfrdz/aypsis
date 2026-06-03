@@ -15,6 +15,8 @@ class TagihanPelindo extends Model
     protected $fillable = [
         'nomor_tagihan',
         'tanggal_tagihan',
+        'kapal',
+        'voyage',
         'status_pembayaran',
         'tanggal_bayar',
         'total_tagihan',

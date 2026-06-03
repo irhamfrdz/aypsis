@@ -46,6 +46,24 @@
                     <input type="date" name="tanggal_tagihan" value="{{ old('tanggal_tagihan', date('Y-m-d')) }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" required>
                 </div>
                 <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Pilih Kapal (dari BL)</label>
+                    <select name="kapal" id="kapal_select" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white" onchange="onKapalChange()">
+                        <option value="">-- Pilih Kapal --</option>
+                        @foreach($bls->pluck('nama_kapal')->unique() as $kapal)
+                            <option value="{{ $kapal }}" {{ old('kapal') == $kapal ? 'selected' : '' }}>{{ $kapal }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Pilih Voyage (dari BL)</label>
+                    <select name="voyage" id="voyage_select" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white">
+                        <option value="">-- Pilih Voyage --</option>
+                        @foreach($bls->unique('no_voyage') as $bl)
+                            <option value="{{ $bl->no_voyage }}" data-kapal="{{ $bl->nama_kapal }}" {{ old('voyage') == $bl->no_voyage ? 'selected' : '' }}>{{ $bl->no_voyage }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Status Pembayaran <span class="text-red-500">*</span></label>
                     <select name="status_pembayaran" id="status_pembayaran" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white" required>
                         <option value="Belum Lunas" {{ old('status_pembayaran') == 'Belum Lunas' ? 'selected' : '' }}>Belum Lunas</option>
@@ -277,6 +295,37 @@
 
         document.getElementById('grandTotalDisplay').innerText = 'Rp ' + grandTotal.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
+
+    function onKapalChange() {
+        const kapalSelect = document.getElementById('kapal_select');
+        const voyageSelect = document.getElementById('voyage_select');
+        const selectedKapal = kapalSelect.value;
+        const currentVoyage = voyageSelect.value;
+
+        // Filter voyage options
+        Array.from(voyageSelect.options).forEach(option => {
+            if (option.value === '') return;
+            const optionKapal = option.getAttribute('data-kapal');
+            if (!selectedKapal || optionKapal === selectedKapal) {
+                option.style.display = '';
+                option.disabled = false;
+            } else {
+                option.style.display = 'none';
+                option.disabled = true;
+            }
+        });
+
+        // If the previously selected voyage is no longer valid, reset it
+        const selectedOption = voyageSelect.options[voyageSelect.selectedIndex];
+        if (selectedOption && selectedOption.disabled) {
+            voyageSelect.value = '';
+        }
+    }
+
+    // Run on load to apply initial filter if Kapal was old-selected
+    window.addEventListener('DOMContentLoaded', () => {
+        onKapalChange();
+    });
 </script>
 @endpush
 @endsection

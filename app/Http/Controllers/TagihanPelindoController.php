@@ -35,6 +35,14 @@ class TagihanPelindoController extends Controller
     public function create()
     {
         $pricelists = PricelistPelindo::aktif()->orderBy('kegiatan')->get();
+        $bls = DB::table('bls')
+            ->select('nama_kapal', 'no_voyage')
+            ->where('nama_kapal', '!=', '')
+            ->where('no_voyage', '!=', '')
+            ->distinct()
+            ->orderBy('nama_kapal')
+            ->orderBy('no_voyage')
+            ->get();
 
         // Generate automatic invoice number prefix: TPL-YYYYMMDD-XXXX
         $datePrefix = 'TPL-'.date('Ymd');
@@ -51,7 +59,7 @@ class TagihanPelindoController extends Controller
 
         $nomorTagihan = $datePrefix.'-'.$nextNum;
 
-        return view('tagihan-pelindo.create', compact('pricelists', 'nomorTagihan'));
+        return view('tagihan-pelindo.create', compact('pricelists', 'nomorTagihan', 'bls'));
     }
 
     public function store(Request $request)
@@ -59,6 +67,8 @@ class TagihanPelindoController extends Controller
         $validator = Validator::make($request->all(), [
             'nomor_tagihan' => 'required|string|unique:tagihan_pelindos,nomor_tagihan',
             'tanggal_tagihan' => 'required|date',
+            'kapal' => 'nullable|string',
+            'voyage' => 'nullable|string',
             'status_pembayaran' => 'required|in:Belum Lunas,Lunas',
             'tanggal_bayar' => 'nullable|required_if:status_pembayaran,Lunas|date',
             'keterangan' => 'nullable|string',
@@ -87,6 +97,8 @@ class TagihanPelindoController extends Controller
             $tagihan = TagihanPelindo::create([
                 'nomor_tagihan' => $request->nomor_tagihan,
                 'tanggal_tagihan' => $request->tanggal_tagihan,
+                'kapal' => $request->kapal,
+                'voyage' => $request->voyage,
                 'status_pembayaran' => $request->status_pembayaran,
                 'tanggal_bayar' => $request->status_pembayaran === 'Lunas' ? $request->tanggal_bayar : null,
                 'total_tagihan' => $totalTagihan,
@@ -130,8 +142,16 @@ class TagihanPelindoController extends Controller
     {
         $tagihan = TagihanPelindo::with('items')->findOrFail($id);
         $pricelists = PricelistPelindo::aktif()->orderBy('kegiatan')->get();
+        $bls = DB::table('bls')
+            ->select('nama_kapal', 'no_voyage')
+            ->where('nama_kapal', '!=', '')
+            ->where('no_voyage', '!=', '')
+            ->distinct()
+            ->orderBy('nama_kapal')
+            ->orderBy('no_voyage')
+            ->get();
 
-        return view('tagihan-pelindo.edit', compact('tagihan', 'pricelists'));
+        return view('tagihan-pelindo.edit', compact('tagihan', 'pricelists', 'bls'));
     }
 
     public function update(Request $request, $id)
@@ -141,6 +161,8 @@ class TagihanPelindoController extends Controller
         $validator = Validator::make($request->all(), [
             'nomor_tagihan' => 'required|string|unique:tagihan_pelindos,nomor_tagihan,'.$id,
             'tanggal_tagihan' => 'required|date',
+            'kapal' => 'nullable|string',
+            'voyage' => 'nullable|string',
             'status_pembayaran' => 'required|in:Belum Lunas,Lunas',
             'tanggal_bayar' => 'nullable|required_if:status_pembayaran,Lunas|date',
             'keterangan' => 'nullable|string',
@@ -169,6 +191,8 @@ class TagihanPelindoController extends Controller
             $tagihan->update([
                 'nomor_tagihan' => $request->nomor_tagihan,
                 'tanggal_tagihan' => $request->tanggal_tagihan,
+                'kapal' => $request->kapal,
+                'voyage' => $request->voyage,
                 'status_pembayaran' => $request->status_pembayaran,
                 'tanggal_bayar' => $request->status_pembayaran === 'Lunas' ? $request->tanggal_bayar : null,
                 'total_tagihan' => $totalTagihan,

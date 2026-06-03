@@ -40,10 +40,18 @@
 
         {{-- Invoice Meta Details --}}
         <div class="p-8 border-b border-gray-100 bg-gray-50/50">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
                 <div>
                     <span class="text-[10px] uppercase font-bold text-gray-400">Tanggal Tagihan</span>
                     <p class="text-sm font-bold text-gray-800 mt-1">{{ $tagihan->tanggal_tagihan ? $tagihan->tanggal_tagihan->format('d F Y') : '-' }}</p>
+                </div>
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-gray-400">Kapal</span>
+                    <p class="text-sm font-bold text-gray-800 mt-1">{{ $tagihan->kapal ?: '-' }}</p>
+                </div>
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-gray-400">Voyage</span>
+                    <p class="text-sm font-bold text-gray-800 mt-1">{{ $tagihan->voyage ?: '-' }}</p>
                 </div>
                 <div>
                     <span class="text-[10px] uppercase font-bold text-gray-400">Status Pembayaran</span>
