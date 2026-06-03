@@ -158,6 +158,7 @@ class ObAntarGudangController extends Controller
             'ukuran' => 'required|string',
             'nama_supir' => 'required|string',
             'pricelist_id' => 'required|exists:master_pricelist_ob,id',
+            'nominal' => 'required|numeric|min:0',
             'gudang_id' => 'required|exists:gudangs,id',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
             'source' => 'required|in:stock,kontainer',
@@ -184,8 +185,8 @@ class ObAntarGudangController extends Controller
                 ?? ('Antar Gudang: '.($gudangAsal->nama_gudang ?? '-').' → '.($gudangTujuan->nama_gudang ?? '-'));
             $tagihan->created_by = Auth::id();
 
-            // Gunakan harga langsung dari pricelist yang dipilih
-            $tagihan->biaya = $pricelist->biaya;
+            // Gunakan harga nominal yang diinput oleh user
+            $tagihan->biaya = $validated['nominal'];
 
             $tagihan->save();
 

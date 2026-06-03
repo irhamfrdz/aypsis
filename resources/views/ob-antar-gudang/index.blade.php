@@ -489,12 +489,17 @@
                                         <option value="">--Pilih Harga OB--</option>
                                         @foreach($pricelists as $pl)
                                             <!-- Menghilangkan 'ft' dari size untuk matching dengan ukuran kontainer yang hanya berupa angka -->
-                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}">
+                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}" data-biaya="{{ $pl->biaya }}">
                                                 {{ ucfirst($pl->status_kontainer) }} - Rp {{ number_format($pl->biaya, 0, ',', '.') }}
                                             </option>
                                         @endforeach
                                     </select>
                                     <p class="text-[10px] text-gray-500 mt-1">*Opsi yang tampil menyesuaikan dengan ukuran kontainer (20/40)</p>
+                                </div>
+
+                                <div>
+                                    <label for="nominal" class="block text-sm font-medium text-gray-700 mb-1">Nominal OB <span class="text-red-500">*</span></label>
+                                    <input type="number" name="nominal" id="nominal" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required placeholder="Masukkan nominal...">
                                 </div>
 
                                 <div>
@@ -544,6 +549,7 @@
         // Filter dropdown Harga OB berdasarkan ukuran kontainer
         const pricelistSelect = document.getElementById('pricelist_id');
         pricelistSelect.value = ''; // Reset selection
+        document.getElementById('nominal').value = ''; // Reset nominal
         
         Array.from(pricelistSelect.options).forEach(option => {
             if(option.value === '') return; // Skip placeholder option
@@ -563,6 +569,17 @@
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden'; // Prevent scrolling
     }
+
+    // Update nominal input when selecting Harga OB
+    document.getElementById('pricelist_id').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            const biaya = selectedOption.getAttribute('data-biaya');
+            document.getElementById('nominal').value = biaya;
+        } else {
+            document.getElementById('nominal').value = '';
+        }
+    });
 
     function closeTagihanModal() {
         const modal = document.getElementById('tagihanModal');
