@@ -90,6 +90,8 @@ class PerbaikanKontainerController extends Controller
         if ($data['status'] === 'selesai') {
             $data['tanggal_keluar'] = $data['tanggal_keluar'] ?? now()->format('Y-m-d');
             $data['biaya_riil'] = $data['biaya_riil'] ?? $data['estimasi_biaya'];
+        } else {
+            $data['biaya_riil'] = $data['biaya_riil'] ?? 0;
         }
 
         PerbaikanKontainer::create($data);
@@ -147,6 +149,8 @@ class PerbaikanKontainerController extends Controller
         if ($data['status'] === 'selesai') {
             $data['tanggal_keluar'] = $data['tanggal_keluar'] ?? now()->format('Y-m-d');
             $data['biaya_riil'] = $data['biaya_riil'] ?? $perbaikan->estimasi_biaya;
+        } else {
+            $data['biaya_riil'] = $data['biaya_riil'] ?? 0;
         }
 
         $perbaikan->update($data);
