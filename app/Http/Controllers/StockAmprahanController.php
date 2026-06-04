@@ -1559,7 +1559,7 @@ class StockAmprahanController extends Controller
         $kategori = $request->kategori_pemakai;
         $pemakaiName = '';
 
-        $query = \App\Models\StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat'])
+        $query = \App\Models\StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'stockAmprahan.vendorAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat'])
             ->whereBetween('tanggal_pengambilan', [$fromDate, $toDate]);
 
         // Filter by pemakai

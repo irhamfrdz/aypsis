@@ -122,6 +122,7 @@
                 <th style="width: 80px;">Tanggal Pakai</th>
                 <th style="width: 100px;">No. Bukti Stock</th>
                 <th>Nama Barang</th>
+                <th>Toko</th>
                 <th style="width: 90px;">Tipe Amprahan</th>
                 <th class="right" style="width: 70px;">Kts. Keluar</th>
                 <th style="width: 50px;">Satuan</th>
@@ -148,6 +149,7 @@
                     <td>{{ $usage->tanggal_pengambilan ? \Carbon\Carbon::parse($usage->tanggal_pengambilan)->format('d M Y') : '-' }}</td>
                     <td>{{ $usage->stockAmprahan->nomor_bukti ?? '-' }}</td>
                     <td>{{ $usage->stockAmprahan->nama_barang ?? ($usage->stockAmprahan->masterNamaBarangAmprahan->nama_barang ?? '-') }}</td>
+                    <td>{{ $usage->stockAmprahan->vendorAmprahan->nama_toko ?? '-' }}</td>
                     <td>{{ $usage->stockAmprahan->type_amprahan ?? '-' }}</td>
                     <td class="right">{{ number_format($qty, 0, ',', '.') }}</td>
                     <td>{{ $usage->stockAmprahan->satuan ?? '-' }}</td>
@@ -157,11 +159,11 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="center" style="padding: 20px;">Tidak ada transaksi pemakaian dalam periode ini.</td>
+                    <td colspan="10" class="center" style="padding: 20px;">Tidak ada transaksi pemakaian dalam periode ini.</td>
                 </tr>
             @endforelse
             <tr class="totals-row">
-                <td colspan="4">TOTAL</td>
+                <td colspan="5">TOTAL</td>
                 <td class="right">{{ number_format($totalKtsKeluar, 0, ',', '.') }}</td>
                 <td></td>
                 <td></td>
