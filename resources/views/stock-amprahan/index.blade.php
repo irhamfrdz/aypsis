@@ -24,6 +24,12 @@
                 </svg>
                 Valuasi Persediaan
             </button>
+            <button type="button" onclick="openValuasiPemakaianModal()" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Valuasi Pemakaian
+            </button>
             <a href="{{ route('stock-amprahan.export-excel', request()->all()) }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -2090,6 +2096,122 @@
     </div>
 </div>
 
+<!-- Modal Valuasi Pemakaian -->
+<div id="valuasiPemakaianModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 transition-opacity duration-300">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-lg shadow-2xl rounded-2xl bg-white">
+        <div class="mt-3">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800">Cetak Valuasi Pemakaian</h3>
+                <button type="button" onclick="closeValuasiPemakaianModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <form action="{{ route('stock-amprahan.valuasi-pemakaian-print') }}" method="GET" target="_blank" class="mt-4">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Kategori Pemakai <span class="text-red-500">*</span></label>
+                    <select id="valuasi_kategori_pemakai" name="kategori_pemakai" required onchange="toggleValuasiPemakaiFields()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm text-gray-700 bg-white">
+                        <option value="">-- Pilih Kategori --</option>
+                        <option value="penerima">Penerima / Karyawan</option>
+                        <option value="kendaraan">Kendaraan / Truck</option>
+                        <option value="alat_berat">Alat Berat</option>
+                        <option value="kapal">Kapal</option>
+                        <option value="kantor">Kantor</option>
+                    </select>
+                </div>
+
+                <!-- Penerima field -->
+                <div id="valuasi_penerima_div" class="mb-4 hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Penerima <span class="text-red-500">*</span></label>
+                    <select id="valuasi_penerima_id" name="penerima_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm text-gray-700 searchable-select">
+                        <option value="">-- Pilih Karyawan --</option>
+                        @foreach($karyawans as $karyawan)
+                            <option value="{{ $karyawan->id }}">{{ $karyawan->nama_lengkap }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Kendaraan field -->
+                <div id="valuasi_kendaraan_div" class="mb-4 hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Kendaraan <span class="text-red-500">*</span></label>
+                    <select id="valuasi_kendaraan_id" name="kendaraan_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm text-gray-700 searchable-select">
+                        <option value="">-- Pilih Kendaraan --</option>
+                        @foreach($kendaraans as $mobil)
+                            <option value="{{ $mobil->id }}">{{ $mobil->nomor_polisi }} {{ $mobil->merek ? ' - ' . $mobil->merek : '' }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Alat Berat field -->
+                <div id="valuasi_alat_berat_div" class="mb-4 hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Alat Berat <span class="text-red-500">*</span></label>
+                    <select id="valuasi_alat_berat_id" name="alat_berat_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm text-gray-700 searchable-select">
+                        <option value="">-- Pilih Alat Berat --</option>
+                        @foreach($alatBerats as $alat)
+                            <option value="{{ $alat->id }}">{{ $alat->kode_alat }} - {{ $alat->nama }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Kapal field -->
+                <div id="valuasi_kapal_div" class="mb-4 hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Kapal <span class="text-red-500">*</span></label>
+                    <select id="valuasi_kapal_id" name="kapal_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm text-gray-700 searchable-select">
+                        <option value="">-- Pilih Kapal --</option>
+                        @foreach($kapals as $kapal)
+                            <option value="{{ $kapal->id }}">{{ $kapal->nama_kapal }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Kantor field -->
+                <div id="valuasi_kantor_div" class="mb-4 hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Kantor <span class="text-red-500">*</span></label>
+                    <select id="valuasi_kantor" name="kantor" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm text-gray-700 bg-white">
+                        <option value="">-- Pilih Kantor --</option>
+                        <option value="MONTIR GARASI PLUIT">MONTIR GARASI PLUIT</option>
+                        <option value="MONTIR PELABUHAN">MONTIR PELABUHAN</option>
+                        <option value="TUKANG LAS GARASI">TUKANG LAS GARASI</option>
+                        <option value="TUKANG TAMBAL BAN GARASI">TUKANG TAMBAL BAN GARASI</option>
+                        <option value="KENEK MONTIR GARASI">KENEK MONTIR GARASI</option>
+                        <option value="KANTOR GARASI PLUIT">KANTOR GARASI PLUIT</option>
+                        <option value="KANTOR PELABUHAN">KANTOR PELABUHAN</option>
+                        <option value="KANTOR GARASI SEMUT">KANTOR GARASI SEMUT</option>
+                        <option value="GARASI SEMUT">GARASI SEMUT</option>
+                        <option value="GARASI PLUIT">GARASI PLUIT</option>
+                        <option value="PELABUHAN SUNDA KELAPA">PELABUHAN SUNDA KELAPA</option>
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Dari Tanggal <span class="text-red-500">*</span></label>
+                        <input type="date" name="from_date" required value="{{ date('Y-m-01') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm text-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Sampai Tanggal <span class="text-red-500">*</span></label>
+                        <input type="date" name="to_date" required value="{{ date('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm text-gray-700">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 border-t pt-4">
+                    <button type="button" onclick="closeValuasiPemakaianModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-semibold flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        </svg>
+                        Cetak Laporan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     function openValuasiModal() {
         document.getElementById('valuasiModal').classList.remove('hidden');
@@ -2107,6 +2229,60 @@
         const valuasiModal = document.getElementById('valuasiModal');
         if (event.target == valuasiModal) {
             closeValuasiModal();
+        }
+    }
+
+    function openValuasiPemakaianModal() {
+        document.getElementById('valuasiPemakaianModal').classList.remove('hidden');
+    }
+    
+    function closeValuasiPemakaianModal() {
+        document.getElementById('valuasiPemakaianModal').classList.add('hidden');
+    }
+
+    function toggleValuasiPemakaiFields() {
+        const kategori = document.getElementById('valuasi_kategori_pemakai').value;
+        
+        // Hide all fields
+        document.getElementById('valuasi_penerima_div').classList.add('hidden');
+        document.getElementById('valuasi_kendaraan_div').classList.add('hidden');
+        document.getElementById('valuasi_alat_berat_div').classList.add('hidden');
+        document.getElementById('valuasi_kapal_div').classList.add('hidden');
+        document.getElementById('valuasi_kantor_div').classList.add('hidden');
+        
+        // Remove required attribute from all selects
+        document.getElementById('valuasi_penerima_id').required = false;
+        document.getElementById('valuasi_kendaraan_id').required = false;
+        document.getElementById('valuasi_alat_berat_id').required = false;
+        document.getElementById('valuasi_kapal_id').required = false;
+        document.getElementById('valuasi_kantor').required = false;
+        
+        if (kategori === 'penerima') {
+            document.getElementById('valuasi_penerima_div').classList.remove('hidden');
+            document.getElementById('valuasi_penerima_id').required = true;
+        } else if (kategori === 'kendaraan') {
+            document.getElementById('valuasi_kendaraan_div').classList.remove('hidden');
+            document.getElementById('valuasi_kendaraan_id').required = true;
+        } else if (kategori === 'alat_berat') {
+            document.getElementById('valuasi_alat_berat_div').classList.remove('hidden');
+            document.getElementById('valuasi_alat_berat_id').required = true;
+        } else if (kategori === 'kapal') {
+            document.getElementById('valuasi_kapal_div').classList.remove('hidden');
+            document.getElementById('valuasi_kapal_id').required = true;
+        } else if (kategori === 'kantor') {
+            document.getElementById('valuasi_kantor_div').classList.remove('hidden');
+            document.getElementById('valuasi_kantor').required = true;
+        }
+    }
+
+    // Add click outside to close for valuasi pemakaian modal
+    const oldOnclickPemakaian = window.onclick;
+    window.onclick = function(event) {
+        if (typeof oldOnclickPemakaian === 'function') oldOnclickPemakaian(event);
+        
+        const valuasiPemakaianModal = document.getElementById('valuasiPemakaianModal');
+        if (event.target == valuasiPemakaianModal) {
+            closeValuasiPemakaianModal();
         }
     }
 </script>

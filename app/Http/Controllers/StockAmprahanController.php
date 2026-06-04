@@ -1540,4 +1540,77 @@ class StockAmprahanController extends Controller
             'transaksi' => $transaksi,
         ]);
     }
+
+    public function valuasiPemakaianPrint(Request $request)
+    {
+        $request->validate([
+            'kategori_pemakai' => 'required|in:penerima,kendaraan,alat_berat,kapal,kantor',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date',
+            'penerima_id' => 'required_if:kategori_pemakai,penerima|nullable|exists:karyawans,id',
+            'kendaraan_id' => 'required_if:kategori_pemakai,kendaraan|nullable|exists:mobils,id',
+            'alat_berat_id' => 'required_if:kategori_pemakai,alat_berat|nullable|exists:alat_berats,id',
+            'kapal_id' => 'required_if:kategori_pemakai,kapal|nullable|exists:master_kapals,id',
+            'kantor' => 'required_if:kategori_pemakai,kantor|nullable|string',
+        ]);
+
+        $fromDate = \Carbon\Carbon::parse($request->from_date)->startOfDay();
+        $toDate = \Carbon\Carbon::parse($request->to_date)->endOfDay();
+        $kategori = $request->kategori_pemakai;
+        $pemakaiName = '';
+
+        $query = \App\Models\StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat'])
+            ->whereBetween('tanggal_pengambilan', [$fromDate, $toDate]);
+
+        // Filter by pemakai
+        if ($kategori === 'penerima') {
+            $penerima = \App\Models\Karyawan::findOrFail($request->penerima_id);
+            $pemakaiName = $penerima->nama_lengkap;
+            $query->where('penerima_id', $request->penerima_id);
+        } elseif ($kategori === 'kendaraan') {
+            $mobil = \App\Models\Mobil::findOrFail($request->kendaraan_id);
+            $pemakaiName = $mobil->nomor_polisi . ($mobil->merek ? ' - ' . $mobil->merek : '');
+            $query->where(function ($q) use ($request) {
+                $q->where('kendaraan_id', $request->kendaraan_id)
+                  ->orWhere('truck_id', $request->kendaraan_id)
+                  ->orWhere('buntut_id', $request->kendaraan_id);
+            });
+        } elseif ($kategori === 'alat_berat') {
+            $alat = \App\Models\AlatBerat::findOrFail($request->alat_berat_id);
+            $pemakaiName = $alat->kode_alat . ' - ' . $alat->nama;
+            $query->where('alat_berat_id', $request->alat_berat_id);
+        } elseif ($kategori === 'kapal') {
+            $kapal = \App\Models\MasterKapal::findOrFail($request->kapal_id);
+            $pemakaiName = $kapal->nama_kapal;
+            $query->where('kapal_id', $request->kapal_id);
+        } elseif ($kategori === 'kantor') {
+            $pemakaiName = $request->kantor;
+            $query->where('kantor', $request->kantor);
+        }
+
+        // Filter based on Karyawan Cabang (Branch)
+        $user = Auth::user();
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $query->whereHas('stockAmprahan', function ($q) {
+                    $q->where('lokasi', 'like', '%BATAM%');
+                });
+            } elseif ($cabang === 'JAKARTA') {
+                $query->whereHas('stockAmprahan', function ($q) {
+                    $q->where('lokasi', 'like', '%JAKARTA%');
+                });
+            }
+        }
+
+        $usages = $query->orderBy('tanggal_pengambilan', 'asc')->get();
+
+        return view('stock-amprahan.valuasi-pemakaian-print', [
+            'kategori' => ucfirst($kategori === 'penerima' ? 'Karyawan / Penerima' : ($kategori === 'kendaraan' ? 'Kendaraan / Truck' : str_replace('_', ' ', $kategori))),
+            'pemakaiName' => $pemakaiName,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'usages' => $usages,
+        ]);
+    }
 }
