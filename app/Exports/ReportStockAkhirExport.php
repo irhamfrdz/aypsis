@@ -136,6 +136,7 @@ class AmprahanStockSheet implements FromCollection, ShouldAutoSize, WithHeadings
         return [
             'No',
             'No Bukti',
+            'Tanggal Beli',
             'Nama Barang',
             'Tipe',
             'Qty Sisa',
@@ -153,6 +154,7 @@ class AmprahanStockSheet implements FromCollection, ShouldAutoSize, WithHeadings
         return [
             $this->no++,
             $item->nomor_bukti ?? '-',
+            $item->tanggal_beli ? $item->tanggal_beli->format('d/m/Y') : '-',
             $item->nama_barang ?? ($item->masterNamaBarangAmprahan?->nama_barang ?? '-'),
             $item->type_amprahan ?? '-',
             $item->jumlah,
