@@ -22,6 +22,7 @@ class StockAmprahanUsage extends Model
         'alat_berat_id',
         'kantor',
         'kilometer',
+        'odometer',
         'jumlah',
         'tanggal_pengambilan',
         'keterangan',

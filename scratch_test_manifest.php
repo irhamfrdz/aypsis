@@ -1,6 +1,7 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
-$app = require_once __DIR__ . '/bootstrap/app.php';
+
+require __DIR__.'/vendor/autoload.php';
+$app = require_once __DIR__.'/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
@@ -17,7 +18,7 @@ $query = Manifest::where(function ($q) {
 })->with(['prospek.tandaTerima', 'suratJalanBongkaran']);
 
 $manifests = $query->get();
-echo "Found " . $manifests->count() . " manifests.\n";
+echo 'Found '.$manifests->count()." manifests.\n";
 
 $saved = 0;
 $errors = 0;
@@ -29,25 +30,25 @@ foreach ($manifests as $manifest) {
         $tandaTerimaLcl = null;
         $sjBongkaran = $manifest->suratJalanBongkaran;
 
-        if (!$tandaTerima && $manifest->prospek && $manifest->prospek->keterangan) {
+        if (! $tandaTerima && $manifest->prospek && $manifest->prospek->keterangan) {
             if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $manifest->prospek->keterangan, $matches)) {
                 $noTttsj = trim($matches[1]);
-                if (!empty($noTttsj)) {
+                if (! empty($noTttsj)) {
                     $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', $noTttsj)->first();
                 }
             }
         }
 
-        if (!$tandaTerima && !$tttsj && !$sjBongkaran && $manifest->nomor_tanda_terima) {
+        if (! $tandaTerima && ! $tttsj && ! $sjBongkaran && $manifest->nomor_tanda_terima) {
             $tandaTerimaLcl = \App\Models\TandaTerimaLcl::where('nomor_tanda_terima', $manifest->nomor_tanda_terima)->first();
-            if (!$tandaTerimaLcl && strpos($manifest->nomor_tanda_terima, ' ') !== false) {
+            if (! $tandaTerimaLcl && strpos($manifest->nomor_tanda_terima, ' ') !== false) {
                 $parts = explode(' ', $manifest->nomor_tanda_terima);
                 $lastPart = end($parts);
                 $tandaTerimaLcl = \App\Models\TandaTerimaLcl::where('nomor_tanda_terima', trim($lastPart))->first();
             }
-            if (!$tandaTerimaLcl) {
+            if (! $tandaTerimaLcl) {
                 $tandaTerimaLcl = DB::table('tanda_terima_lcl')->where('nomor_tanda_terima', $manifest->nomor_tanda_terima)->first();
-                if (!$tandaTerimaLcl && strpos($manifest->nomor_tanda_terima, ' ') !== false) {
+                if (! $tandaTerimaLcl && strpos($manifest->nomor_tanda_terima, ' ') !== false) {
                     $parts = explode(' ', $manifest->nomor_tanda_terima);
                     $lastPart = end($parts);
                     $tandaTerimaLcl = DB::table('tanda_terima_lcl')->where('nomor_tanda_terima', trim($lastPart))->first();
@@ -55,7 +56,7 @@ foreach ($manifests as $manifest) {
             }
         }
 
-        if (!$tandaTerima && !$tttsj && !$tandaTerimaLcl && !$sjBongkaran) {
+        if (! $tandaTerima && ! $tttsj && ! $tandaTerimaLcl && ! $sjBongkaran) {
             continue;
         }
 
@@ -123,18 +124,54 @@ foreach ($manifests as $manifest) {
         }
 
         $hasChanges = false;
-        if ($penerimaName && $manifest->penerima != $penerimaName) { $manifest->penerima = $penerimaName; $hasChanges = true; }
-        if ($alamatPenerima && $manifest->alamat_penerima != $alamatPenerima) { $manifest->alamat_penerima = $alamatPenerima; $hasChanges = true; }
-        if ($pengirimName && $manifest->pengirim != $pengirimName) { $manifest->pengirim = $pengirimName; $hasChanges = true; }
-        if ($alamatPengirim && $manifest->alamat_pengirim != $alamatPengirim) { $manifest->alamat_pengirim = $alamatPengirim; $hasChanges = true; }
-        if ($nomorTandaTerima && $manifest->nomor_tanda_terima != $nomorTandaTerima) { $manifest->nomor_tanda_terima = $nomorTandaTerima; $hasChanges = true; }
-        if ($sealTandaTerima !== null && $manifest->no_seal != $sealTandaTerima) { $manifest->no_seal = $sealTandaTerima; $hasChanges = true; }
-        if ($termVal !== null && $manifest->term != $termVal) { $manifest->term = $termVal; $hasChanges = true; }
-        if ($kuantitasVal !== null && $manifest->kuantitas != $kuantitasVal) { $manifest->kuantitas = $kuantitasVal; $hasChanges = true; }
-        if ($satuanVal !== null && $manifest->satuan != $satuanVal) { $manifest->satuan = $satuanVal; $hasChanges = true; }
-        if ($volumeVal !== null && $manifest->volume != $volumeVal) { $manifest->volume = $volumeVal; $hasChanges = true; }
-        if ($tonnageVal !== null && $manifest->tonnage != $tonnageVal) { $manifest->tonnage = $tonnageVal; $hasChanges = true; }
-        if ($alamatPenerima && $manifest->alamat_pengiriman != $alamatPenerima) { $manifest->alamat_pengiriman = $alamatPenerima; $hasChanges = true; }
+        if ($penerimaName && $manifest->penerima != $penerimaName) {
+            $manifest->penerima = $penerimaName;
+            $hasChanges = true;
+        }
+        if ($alamatPenerima && $manifest->alamat_penerima != $alamatPenerima) {
+            $manifest->alamat_penerima = $alamatPenerima;
+            $hasChanges = true;
+        }
+        if ($pengirimName && $manifest->pengirim != $pengirimName) {
+            $manifest->pengirim = $pengirimName;
+            $hasChanges = true;
+        }
+        if ($alamatPengirim && $manifest->alamat_pengirim != $alamatPengirim) {
+            $manifest->alamat_pengirim = $alamatPengirim;
+            $hasChanges = true;
+        }
+        if ($nomorTandaTerima && $manifest->nomor_tanda_terima != $nomorTandaTerima) {
+            $manifest->nomor_tanda_terima = $nomorTandaTerima;
+            $hasChanges = true;
+        }
+        if ($sealTandaTerima !== null && $manifest->no_seal != $sealTandaTerima) {
+            $manifest->no_seal = $sealTandaTerima;
+            $hasChanges = true;
+        }
+        if ($termVal !== null && $manifest->term != $termVal) {
+            $manifest->term = $termVal;
+            $hasChanges = true;
+        }
+        if ($kuantitasVal !== null && $manifest->kuantitas != $kuantitasVal) {
+            $manifest->kuantitas = $kuantitasVal;
+            $hasChanges = true;
+        }
+        if ($satuanVal !== null && $manifest->satuan != $satuanVal) {
+            $manifest->satuan = $satuanVal;
+            $hasChanges = true;
+        }
+        if ($volumeVal !== null && $manifest->volume != $volumeVal) {
+            $manifest->volume = $volumeVal;
+            $hasChanges = true;
+        }
+        if ($tonnageVal !== null && $manifest->tonnage != $tonnageVal) {
+            $manifest->tonnage = $tonnageVal;
+            $hasChanges = true;
+        }
+        if ($alamatPenerima && $manifest->alamat_pengiriman != $alamatPenerima) {
+            $manifest->alamat_pengiriman = $alamatPenerima;
+            $hasChanges = true;
+        }
 
         if ($hasChanges) {
             $manifest->save();
@@ -142,7 +179,7 @@ foreach ($manifests as $manifest) {
         }
     } catch (\Exception $e) {
         $errors++;
-        echo "Error on manifest ID {$manifest->id}: " . $e->getMessage() . "\n";
+        echo "Error on manifest ID {$manifest->id}: ".$e->getMessage()."\n";
         if ($errors >= 5) {
             echo "Too many errors, aborting diagnostics.\n";
             break;

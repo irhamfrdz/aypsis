@@ -501,6 +501,17 @@
                                         <p class="mt-2 text-xs font-medium text-red-500 items-center flex"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
                                     @enderror
                                 </div>
+
+                                {{-- Odometer --}}
+                                <div class="group hidden" id="odometer_group">
+                                    <label for="odometer" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                                        Odometer (Opsional)
+                                    </label>
+                                    <input type="number" name="odometer" id="odometer" value="{{ old('odometer') }}" class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                    @error('odometer')
+                                        <p class="mt-2 text-xs font-medium text-red-500 items-center flex"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
 
                             {{-- Keterangan Pakai --}}
@@ -878,6 +889,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     })();
+
+    // Odometer visibility control based on kendaraan / truck / alat berat
+    const kendaraanSelect = document.getElementById('kendaraan_id');
+    const truckSelect = document.getElementById('truck_id');
+    const alatBeratSelect = document.getElementById('alat_berat_id');
+    const odometerGroup = document.getElementById('odometer_group');
+
+    function checkOdometerVisibility() {
+        if (kendaraanSelect.value || truckSelect.value || alatBeratSelect.value) {
+            odometerGroup.classList.remove('hidden');
+        } else {
+            odometerGroup.classList.add('hidden');
+        }
+    }
+
+    if (kendaraanSelect && truckSelect && alatBeratSelect && odometerGroup) {
+        kendaraanSelect.addEventListener('change', checkOdometerVisibility);
+        truckSelect.addEventListener('change', checkOdometerVisibility);
+        alatBeratSelect.addEventListener('change', checkOdometerVisibility);
+        
+        // Check initially
+        checkOdometerVisibility();
+    }
 });
 </script>
 @endpush

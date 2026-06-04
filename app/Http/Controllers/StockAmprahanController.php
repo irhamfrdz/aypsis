@@ -222,6 +222,7 @@ class StockAmprahanController extends Controller
             'jumlah_pakai' => 'nullable|required_if:is_langsung_pakai,1|numeric|min:0',
             'keterangan_pakai' => 'nullable|required_if:is_langsung_pakai,1|string',
             'kilometer' => 'nullable|numeric|min:0',
+            'odometer' => 'nullable|integer|min:0',
         ]);
 
         $data['created_by'] = Auth::id();
@@ -271,6 +272,7 @@ class StockAmprahanController extends Controller
                 'tanggal_pengambilan' => $request->tanggal_pengambilan,
                 'keterangan' => $request->keterangan_pakai,
                 'kilometer' => $request->kilometer,
+                'odometer' => $request->odometer,
                 'created_by' => Auth::id(),
             ]);
         }
@@ -338,6 +340,7 @@ class StockAmprahanController extends Controller
             'jumlah_pakai' => 'nullable|required_if:is_langsung_pakai,1|numeric|min:0',
             'keterangan_pakai' => 'nullable|required_if:is_langsung_pakai,1|string',
             'kilometer' => 'nullable|numeric|min:0',
+            'odometer' => 'nullable|integer|min:0',
         ]);
 
         $data['updated_by'] = Auth::id();
@@ -390,6 +393,7 @@ class StockAmprahanController extends Controller
                 'tanggal_pengambilan' => $request->tanggal_pengambilan,
                 'keterangan' => $request->keterangan_pakai,
                 'kilometer' => $request->kilometer,
+                'odometer' => $request->odometer,
             ];
 
             if ($existingDirectUsage) {
@@ -433,6 +437,7 @@ class StockAmprahanController extends Controller
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
             'kantor' => 'nullable|string|max:255',
             'kilometer' => 'nullable|numeric|min:0',
+            'odometer' => 'nullable|integer|min:0',
         ]);
 
         $validator->after(function ($validator) use ($request) {
@@ -481,6 +486,7 @@ class StockAmprahanController extends Controller
             'tanggal_pengambilan' => $request->tanggal,
             'keterangan' => $request->keterangan,
             'kilometer' => $request->kilometer,
+            'odometer' => $request->odometer,
             'created_by' => Auth::id(),
         ]);
 
@@ -1569,15 +1575,15 @@ class StockAmprahanController extends Controller
             $query->where('penerima_id', $request->penerima_id);
         } elseif ($kategori === 'kendaraan') {
             $mobil = \App\Models\Mobil::findOrFail($request->kendaraan_id);
-            $pemakaiName = $mobil->nomor_polisi . ($mobil->merek ? ' - ' . $mobil->merek : '');
+            $pemakaiName = $mobil->nomor_polisi.($mobil->merek ? ' - '.$mobil->merek : '');
             $query->where(function ($q) use ($request) {
                 $q->where('kendaraan_id', $request->kendaraan_id)
-                  ->orWhere('truck_id', $request->kendaraan_id)
-                  ->orWhere('buntut_id', $request->kendaraan_id);
+                    ->orWhere('truck_id', $request->kendaraan_id)
+                    ->orWhere('buntut_id', $request->kendaraan_id);
             });
         } elseif ($kategori === 'alat_berat') {
             $alat = \App\Models\AlatBerat::findOrFail($request->alat_berat_id);
-            $pemakaiName = $alat->kode_alat . ' - ' . $alat->nama;
+            $pemakaiName = $alat->kode_alat.' - '.$alat->nama;
             $query->where('alat_berat_id', $request->alat_berat_id);
         } elseif ($kategori === 'kapal') {
             $kapal = \App\Models\MasterKapal::findOrFail($request->kapal_id);
