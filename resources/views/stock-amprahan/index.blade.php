@@ -2389,13 +2389,20 @@
                 optionsList.innerHTML = '';
                 const searchTerm = filter.toLowerCase();
                 let hasMatch = false;
-
                 Array.from(select.options).forEach((option, index) => {
                     if (select.id === 'valuasi_kendaraan_id') {
                         const selectedLokasi = document.getElementById('valuasi_kendaraan_lokasi').value;
-                        const optionLokasi = option.getAttribute('data-lokasi') || '';
-                        if (selectedLokasi && !optionLokasi.toLowerCase().includes(selectedLokasi.toLowerCase())) {
-                            return;
+                        let optionLokasi = option.getAttribute('data-lokasi') || '';
+                        optionLokasi = optionLokasi.trim().toLowerCase();
+                        
+                        if (selectedLokasi) {
+                            const isOptionEmpty = optionLokasi === '';
+                            const matchJakarta = selectedLokasi.toLowerCase() === 'jakarta' && (isOptionEmpty || optionLokasi.includes('jkt') || optionLokasi.includes('jakarta'));
+                            const matchBatam = selectedLokasi.toLowerCase() === 'batam' && (isOptionEmpty || optionLokasi.includes('btm') || optionLokasi.includes('batam'));
+                            
+                            if (!matchJakarta && !matchBatam) {
+                                return;
+                            }
                         }
                     }
 
