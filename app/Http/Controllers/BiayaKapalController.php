@@ -277,7 +277,7 @@ class BiayaKapalController extends Controller
                 if (isset($section['barang']) && is_array($section['barang'])) {
                     foreach ($section['barang'] as &$barang) {
                         if (isset($barang['jumlah'])) {
-                            $barang['jumlah'] = str_replace(',', '.', str_replace('.', '', $barang['jumlah']));
+                            $barang['jumlah'] = $this->cleanDecimal($barang['jumlah']);
                         }
                     }
                     unset($barang); // CRITICAL: Unset reference to prevent variable reference bug
@@ -338,7 +338,7 @@ class BiayaKapalController extends Controller
                 if (isset($section['barang']) && is_array($section['barang'])) {
                     foreach ($section['barang'] as &$barang) {
                         if (isset($barang['jumlah'])) {
-                            $barang['jumlah'] = str_replace(',', '.', str_replace('.', '', $barang['jumlah']));
+                            $barang['jumlah'] = $this->cleanDecimal($barang['jumlah']);
                         }
                     }
                     unset($barang);
@@ -2936,6 +2936,14 @@ class BiayaKapalController extends Controller
                 if (isset($section['adjustment'])) {
                     $section['adjustment'] = str_replace(',', '.', str_replace('.', '', $section['adjustment']));
                 }
+                if (isset($section['barang']) && is_array($section['barang'])) {
+                    foreach ($section['barang'] as &$barang) {
+                        if (isset($barang['jumlah'])) {
+                            $barang['jumlah'] = $this->cleanDecimal($barang['jumlah']);
+                        }
+                    }
+                    unset($barang);
+                }
 
                 // Tenaga Kerja Cleaning
                 if (isset($section['tenaga_kerja']) && is_array($section['tenaga_kerja'])) {
@@ -2980,10 +2988,7 @@ class BiayaKapalController extends Controller
                 if (isset($section['barang']) && is_array($section['barang'])) {
                     foreach ($section['barang'] as &$item) {
                         if (isset($item['jumlah'])) {
-                            $val = (string) $item['jumlah'];
-                            $val = str_replace([' ', '.'], ['', ''], $val);
-                            $val = str_replace(',', '.', $val);
-                            $item['jumlah'] = $val !== '' ? $val : 0;
+                            $item['jumlah'] = $this->cleanDecimal($item['jumlah']);
                         }
                     }
                     unset($item);
@@ -4298,7 +4303,7 @@ class BiayaKapalController extends Controller
                             foreach ($section['barang'] as $item) {
                                 $barangId = $item['barang_id'] ?? null;
                                 $jumlahRaw = ($item['jumlah'] ?? '0');
-                                $jumlah = is_string($jumlahRaw) ? floatval(str_replace(',', '.', str_replace('.', '', $jumlahRaw))) : floatval($jumlahRaw);
+                                $jumlah = is_string($jumlahRaw) ? $this->cleanDecimal($jumlahRaw) : floatval($jumlahRaw);
 
                                 if ($barangId && $jumlah > 0) {
                                     $barang = PricelistBuruh::find($barangId);
@@ -4908,5 +4913,39 @@ class BiayaKapalController extends Controller
                 'message' => 'Gagal mengambil data kontainer: '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    private function cleanDecimal($value)
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+        $value = (string) $value;
+        // If it contains both dot and comma
+        if (str_contains($value, '.') && str_contains($value, ',')) {
+            if (strrpos($value, ',') > strrpos($value, '.')) {
+                return (float) str_replace(',', '.', str_replace('.', '', $value));
+            } else {
+                return (float) str_replace(',', '', $value);
+            }
+        }
+        // If it contains only comma
+        if (str_contains($value, ',') && ! str_contains($value, '.')) {
+            return (float) str_replace(',', '.', $value);
+        }
+        // If it contains only dot
+        if (str_contains($value, '.') && ! str_contains($value, ',')) {
+            if (substr_count($value, '.') > 1) {
+                return (float) str_replace('.', '', $value);
+            }
+
+            // For a single dot, treat as decimal point
+            return (float) $value;
+        }
+
+        return (float) $value;
     }
 }
