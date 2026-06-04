@@ -2137,11 +2137,19 @@
 
                 <!-- Kendaraan field -->
                 <div id="valuasi_kendaraan_div" class="mb-4 hidden">
+                    <div class="mb-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Filter Lokasi Kendaraan</label>
+                        <select id="valuasi_kendaraan_lokasi" onchange="filterKendaraanByLokasi()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm text-gray-700 bg-white">
+                            <option value="">Semua Lokasi</option>
+                            <option value="Batam">Batam</option>
+                            <option value="Jakarta">Jakarta</option>
+                        </select>
+                    </div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Kendaraan <span class="text-red-500">*</span></label>
                     <select id="valuasi_kendaraan_id" name="kendaraan_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm text-gray-700 searchable-select">
                         <option value="">-- Pilih Kendaraan --</option>
                         @foreach($kendaraans as $mobil)
-                            <option value="{{ $mobil->id }}">{{ $mobil->nomor_polisi }} {{ $mobil->merek ? ' - ' . $mobil->merek : '' }}</option>
+                            <option value="{{ $mobil->id }}" data-lokasi="{{ $mobil->lokasi ?? '' }}">{{ $mobil->nomor_polisi }} {{ $mobil->merek ? ' - ' . $mobil->merek : '' }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -2285,6 +2293,20 @@
             closeValuasiPemakaianModal();
         }
     }
+
+    function filterKendaraanByLokasi() {
+        const select = document.getElementById('valuasi_kendaraan_id');
+        if (select) {
+            select.selectedIndex = 0;
+            const container = select.parentElement;
+            if (container) {
+                const searchInput = container.querySelector('input[type="text"]');
+                if (searchInput) {
+                    searchInput.value = '';
+                }
+            }
+        }
+    }
 </script>
 
 @endsection
@@ -2369,6 +2391,14 @@
                 let hasMatch = false;
 
                 Array.from(select.options).forEach((option, index) => {
+                    if (select.id === 'valuasi_kendaraan_id') {
+                        const selectedLokasi = document.getElementById('valuasi_kendaraan_lokasi').value;
+                        const optionLokasi = option.getAttribute('data-lokasi') || '';
+                        if (selectedLokasi && !optionLokasi.toLowerCase().includes(selectedLokasi.toLowerCase())) {
+                            return;
+                        }
+                    }
+
                     if (option.text.toLowerCase().includes(searchTerm)) {
                         const item = document.createElement('div');
                         const isSelected = select.selectedIndex === index;
