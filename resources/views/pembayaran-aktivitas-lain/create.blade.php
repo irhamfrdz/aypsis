@@ -135,7 +135,7 @@
                         <option value="">Pilih Jenis Aktivitas</option>
                         <option value="Pembayaran Kendaraan" {{ old('jenis_aktivitas') == 'Pembayaran Kendaraan' ? 'selected' : '' }}>Pembayaran Kendaraan</option>
                         <option value="Pembayaran Kapal" {{ old('jenis_aktivitas') == 'Pembayaran Kapal' ? 'selected' : '' }}>Pembayaran Kapal</option>
-                        <option value="Pembayaran Adjusment Uang Jalan" {{ old('jenis_aktivitas') == 'Pembayaran Adjusment Uang Jalan' ? 'selected' : '' }}>Pembayaran Adjusment Uang Jalan</option>
+                        <option value="Pembayaran Adjustment Uang Jalan" {{ in_array(old('jenis_aktivitas'), ['Pembayaran Adjusment Uang Jalan', 'Pembayaran Adjustment Uang Jalan']) ? 'selected' : '' }}>Pembayaran Adjustment Uang Jalan</option>
                         <option value="Pembayaran Lain Lain" {{ old('jenis_aktivitas') == 'Pembayaran Lain Lain' ? 'selected' : '' }}>Pembayaran Lain Lain</option>
                     </select>
                     @error('jenis_aktivitas')
@@ -166,7 +166,7 @@
                 </div>
 
                 <!-- Jenis Penyesuaian (Hidden by default) -->
-                <div id="jenis_penyesuaian_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Adjusment Uang Jalan' ? '' : 'hidden' }}" style="{{ old('jenis_aktivitas') === 'Pembayaran Adjusment Uang Jalan' ? '' : 'display:none' }}">
+                <div id="jenis_penyesuaian_field" class="{{ in_array(old('jenis_aktivitas'), ['Pembayaran Adjusment Uang Jalan', 'Pembayaran Adjustment Uang Jalan']) ? '' : 'hidden' }}" style="{{ in_array(old('jenis_aktivitas'), ['Pembayaran Adjusment Uang Jalan', 'Pembayaran Adjustment Uang Jalan']) ? '' : 'display:none' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Penyesuaian <span class="text-red-500">*</span></label>
                     <select name="jenis_penyesuaian" id="jenis_penyesuaian_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jenis_penyesuaian') border-red-500 @enderror">
                         <option value="">Pilih Jenis Penyesuaian</option>
@@ -181,7 +181,7 @@
                 </div>
 
                 <!-- Tipe Penyesuaian (Hidden by default) -->
-                <div id="tipe_penyesuaian_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Adjusment Uang Jalan' ? '' : 'hidden' }}" style="{{ old('jenis_aktivitas') === 'Pembayaran Adjusment Uang Jalan' ? '' : 'display:none' }}">
+                <div id="tipe_penyesuaian_field" class="{{ in_array(old('jenis_aktivitas'), ['Pembayaran Adjusment Uang Jalan', 'Pembayaran Adjustment Uang Jalan']) ? '' : 'hidden' }}" style="{{ in_array(old('jenis_aktivitas'), ['Pembayaran Adjusment Uang Jalan', 'Pembayaran Adjustment Uang Jalan']) ? '' : 'display:none' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Penyesuaian <span class="text-red-500">*</span></label>
 
                     <!-- Container untuk input dinamis -->
@@ -733,7 +733,7 @@ function initializeSelect2() {
         const suratJalanField = document.getElementById('surat_jalan_field');
         const suratJalanSelect = document.getElementById('surat_jalan_select');
         
-        if (jenisVal === 'Pembayaran Adjusment Uang Jalan') {
+        if (jenisVal === 'Pembayaran Adjusment Uang Jalan' || jenisVal === 'Pembayaran Adjustment Uang Jalan') {
             suratJalanField.classList.remove('hidden');
             suratJalanSelect.setAttribute('required', 'required');
         } else {
@@ -748,7 +748,7 @@ function initializeSelect2() {
         const tipePenyesuaianField = document.getElementById('tipe_penyesuaian_field');
         const tipePenyesuaianSelect = document.getElementById('tipe_penyesuaian_select');
         
-        if (jenisVal === 'Pembayaran Adjusment Uang Jalan') {
+        if (jenisVal === 'Pembayaran Adjusment Uang Jalan' || jenisVal === 'Pembayaran Adjustment Uang Jalan') {
             jenisPenyesuaianField.classList.remove('hidden');
             jenisPenyesuaianField.style.display = '';
             jenisPenyesuaianSelect.setAttribute('required', 'required');
@@ -978,8 +978,8 @@ function initializeSelect2() {
         
         if (!jumlahDisplay) return;
 
-        // Only auto-calculate for "Pembayaran Adjusment Uang Jalan"
-        if (jenisAktivitas === 'Pembayaran Adjusment Uang Jalan') {
+        // Only auto-calculate for "Pembayaran Adjusment Uang Jalan" or "Pembayaran Adjustment Uang Jalan"
+        if (jenisAktivitas === 'Pembayaran Adjusment Uang Jalan' || jenisAktivitas === 'Pembayaran Adjustment Uang Jalan') {
             const jenisPenyesuaian = document.getElementById('jenis_penyesuaian_select').value;
             
             if (jenisPenyesuaian === 'pengembalian penuh') {
@@ -1065,7 +1065,7 @@ function initializeSelect2() {
     });
 
     // Force hide jenis/tipes penyesuaian on init unless it's adjust money type
-    if (jenisAktivitas.value !== 'Pembayaran Adjusment Uang Jalan') {
+    if (jenisAktivitas.value !== 'Pembayaran Adjusment Uang Jalan' && jenisAktivitas.value !== 'Pembayaran Adjustment Uang Jalan') {
         const jenisPenyesuaianFieldInit = document.getElementById('jenis_penyesuaian_field');
         const jenisPenyesuaianSelectInit = document.getElementById('jenis_penyesuaian_select');
         const tipePenyesuaianFieldInit = document.getElementById('tipe_penyesuaian_field');
@@ -1083,7 +1083,7 @@ function initializeSelect2() {
         const jenisAktivitas = document.getElementById('jenis_aktivitas').value;
         const jenisPenyesuaian = document.getElementById('jenis_penyesuaian_select').value;
         
-        if (jenisAktivitas === 'Pembayaran Adjusment Uang Jalan') {
+        if (jenisAktivitas === 'Pembayaran Adjusment Uang Jalan' || jenisAktivitas === 'Pembayaran Adjustment Uang Jalan') {
             if (jenisPenyesuaian === 'pengembalian penuh') {
                 if (uangJalan && !isNaN(uangJalan)) {
                     jumlahInput.val(uangJalan);
