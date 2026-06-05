@@ -3225,6 +3225,10 @@ Route::middleware([
             ->name('surat-jalan-bongkaran.store')
             ->middleware('can:surat-jalan-bongkaran-create');
 
+        Route::get('surat-jalan-bongkaran/outstanding', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'outstanding'])
+            ->name('surat-jalan-bongkaran.outstanding')
+            ->middleware('can:surat-jalan-bongkaran-view');
+
         Route::get('surat-jalan-bongkaran/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'show'])
             ->name('surat-jalan-bongkaran.show')
             ->middleware('can:surat-jalan-bongkaran-view');

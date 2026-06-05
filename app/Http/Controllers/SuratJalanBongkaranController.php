@@ -1262,4 +1262,45 @@ class SuratJalanBongkaranController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Display a listing of outstanding Surat Jalan Bongkaran (not yet undergone Tanda Terima Bongkaran).
+     */
+    public function outstanding(Request $request)
+    {
+        $query = SuratJalanBongkaran::whereDoesntHave('tandaTerima')
+            ->with(['manifest', 'kapal']);
+
+        // Filter by search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                    ->orWhere('no_kontainer', 'like', "%{$search}%")
+                    ->orWhere('no_seal', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('pengirim', 'like', "%{$search}%")
+                    ->orWhere('penerima', 'like', "%{$search}%")
+                    ->orWhere('no_bl', 'like', "%{$search}%")
+                    ->orWhere('nama_kapal', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by Lokasi
+        if ($request->filled('lokasi')) {
+            $query->where('lokasi', $request->lokasi);
+        }
+
+        // Filter by Date
+        if ($request->filled('start_date')) {
+            $query->whereDate('tanggal_surat_jalan', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('tanggal_surat_jalan', '<=', $request->end_date);
+        }
+
+        $suratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')->paginate(25);
+
+        return view('surat-jalan-bongkaran.outstanding', compact('suratJalans'));
+    }
 }

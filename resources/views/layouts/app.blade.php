@@ -1629,9 +1629,16 @@
                     <div id="surat-jalan-bongkaran-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isSuratJalanBongkaranRoute) style="display: block;" @endif>
                         {{-- Surat Jalan Bongkaran --}}
                         @if($user && $user->can('surat-jalan-bongkaran-view'))
-                            <a href="{{ route('surat-jalan-bongkaran.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('surat-jalan-bongkaran.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ (Request::routeIs('surat-jalan-bongkaran.*') && !Request::routeIs('surat-jalan-bongkaran.outstanding')) ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 
                                 <span class="text-xs">Surat Jalan Bongkaran</span>
+                            </a>
+                        @endif
+
+                        {{-- Outstanding Surat Jalan Bongkaran --}}
+                        @if($user && $user->can('surat-jalan-bongkaran-view'))
+                            <a href="{{ route('surat-jalan-bongkaran.outstanding') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.outstanding') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs font-semibold text-amber-600">Outstanding Bongkaran</span>
                             </a>
                         @endif
 
