@@ -181,12 +181,20 @@
                             <dd class="text-sm text-gray-900">{{ $tandaTerima->pic_pengirim ?: '-' }}</dd>
                         </div>
                         <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Kontak Pengirim</dt>
+                            <dd class="text-sm text-gray-900">{{ $tandaTerima->kontak_pengirim ?: '-' }}</dd>
+                        </div>
+                        <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Penerima</dt>
                             <dd class="text-sm text-gray-900">{{ $tandaTerima->penerima ?: '-' }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">PIC Penerima</dt>
                             <dd class="text-sm text-gray-900">{{ $tandaTerima->pic_penerima ?: '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Kontak Penerima</dt>
+                            <dd class="text-sm text-gray-900">{{ $tandaTerima->kontak_penerima ?: '-' }}</dd>
                         </div>
                         <div class="md:col-span-2">
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Alamat Penerima</dt>

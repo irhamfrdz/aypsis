@@ -528,6 +528,7 @@ class TandaTerimaController extends Controller
             'pengirim' => 'nullable|string|max:255',
             'pic_pengirim' => 'nullable|string|max:255',
             'alamat_pengirim' => 'nullable|string',
+            'kontak_pengirim' => 'nullable|string|max:255',
             'term' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string|max:255',
             'jenis_barang' => 'nullable|string|max:255',
@@ -579,6 +580,7 @@ class TandaTerimaController extends Controller
             'penerima' => 'nullable|string|max:255',
             'pic_penerima' => 'nullable|string|max:255',
             'alamat_penerima' => 'nullable|string',
+            'kontak_penerima' => 'nullable|string|max:255',
             'notify_party' => 'nullable|string|max:255',
             'alamat_notify_party' => 'nullable|string',
             'catatan' => 'nullable|string',
@@ -661,6 +663,17 @@ class TandaTerimaController extends Controller
                 }
             }
 
+            $tandaTerima->kontak_pengirim = $request->kontak_pengirim;
+            if (empty($tandaTerima->kontak_pengirim)) {
+                $namaPengirim = $tandaTerima->pengirim;
+                if ($namaPengirim) {
+                    $masterPengirim = \App\Models\Pengirim::where('nama_pengirim', $namaPengirim)->first();
+                    if ($masterPengirim) {
+                        $tandaTerima->kontak_pengirim = $masterPengirim->contact_person;
+                    }
+                }
+            }
+
             // Additional data from form
             $tandaTerima->estimasi_nama_kapal = $request->estimasi_nama_kapal;
             $tandaTerima->nomor_ro = $request->nomor_ro;
@@ -678,6 +691,16 @@ class TandaTerimaController extends Controller
             $tandaTerima->penerima = $request->penerima;
             $tandaTerima->pic_penerima = $request->pic_penerima;
             $tandaTerima->alamat_penerima = $request->alamat_penerima;
+            $tandaTerima->kontak_penerima = $request->kontak_penerima;
+            if (empty($tandaTerima->kontak_penerima)) {
+                $namaPenerima = $tandaTerima->penerima;
+                if ($namaPenerima) {
+                    $masterPenerima = \App\Models\Penerima::where('nama_penerima', $namaPenerima)->first();
+                    if ($masterPenerima) {
+                        $tandaTerima->kontak_penerima = $masterPenerima->contact_person;
+                    }
+                }
+            }
             $tandaTerima->notify_party = $request->notify_party;
             $tandaTerima->alamat_notify_party = $request->alamat_notify_party;
             $tandaTerima->catatan = $request->catatan;
@@ -1260,8 +1283,11 @@ class TandaTerimaController extends Controller
             'pengirim' => 'nullable|string|max:255',
             'pic_pengirim' => 'nullable|string|max:255',
             'alamat_pengirim' => 'nullable|string',
+            'kontak_pengirim' => 'nullable|string|max:255',
             'penerima' => 'nullable|string|max:255',
             'pic_penerima' => 'nullable|string|max:255',
+            'alamat_penerima' => 'nullable|string',
+            'kontak_penerima' => 'nullable|string|max:255',
             'notify_party' => 'nullable|string|max:255',
             'alamat_notify_party' => 'nullable|string',
         ]);
@@ -1349,9 +1375,35 @@ class TandaTerimaController extends Controller
                 })(),
                 'pic_pengirim' => $request->pic_pengirim,
                 'alamat_pengirim' => $request->alamat_pengirim,
+                'kontak_pengirim' => (function () use ($request) {
+                    $kontak = $request->kontak_pengirim;
+                    if (empty($kontak)) {
+                        $pengirimName = $request->pengirim;
+                        if ($pengirimName) {
+                            $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $pengirimName)->first();
+                            if ($dbPengirim) {
+                                return $dbPengirim->contact_person;
+                            }
+                        }
+                    }
+                    return $kontak;
+                })(),
                 'penerima' => $request->penerima,
                 'pic_penerima' => $request->pic_penerima,
                 'alamat_penerima' => $request->alamat_penerima,
+                'kontak_penerima' => (function () use ($request) {
+                    $kontak = $request->kontak_penerima;
+                    if (empty($kontak)) {
+                        $penerimaName = $request->penerima;
+                        if ($penerimaName) {
+                            $dbPenerima = \App\Models\Penerima::where('nama_penerima', $penerimaName)->first();
+                            if ($dbPenerima) {
+                                return $dbPenerima->contact_person;
+                            }
+                        }
+                    }
+                    return $kontak;
+                })(),
                 'notify_party' => $request->notify_party,
                 'alamat_notify_party' => $request->alamat_notify_party,
                 'term' => $term,

@@ -255,6 +255,7 @@
                                         @foreach($pengirims as $pengirim)
                                             <option value="{{ $pengirim->nama_pengirim }}"
                                                     data-alamat="{{ $pengirim->alamat }}"
+                                                    data-kontak="{{ $pengirim->contact_person }}"
                                                     {{ old('pengirim', ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '')) == $pengirim->nama_pengirim ? 'selected' : '' }}>
                                                 {{ $pengirim->nama_pengirim }}
                                             </option>
@@ -272,6 +273,20 @@
                                            placeholder="Nama PIC pengirim"
                                            value="{{ old('pic_pengirim') }}">
                                     @error('pic_pengirim')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label for="kontak_pengirim" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Kontak Pengirim
+                                    </label>
+                                    <input type="text"
+                                           name="kontak_pengirim"
+                                           id="kontak_pengirim"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('kontak_pengirim') border-red-500 @enderror"
+                                           placeholder="Kontak / No. Telp Pengirim"
+                                           value="{{ old('kontak_pengirim', ($suratJalan->order ? $suratJalan->order->kontak_pengirim : '')) }}">
+                                    @error('kontak_pengirim')
                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -332,6 +347,7 @@
                                             @endphp
                                             <option value="{{ $penerima->nama_penerima }}"
                                                     data-alamat="{{ $penerima->alamat }}"
+                                                    data-kontak="{{ $penerima->contact_person }}"
                                                     {{ $isSelected ? 'selected' : '' }}>
                                                 {{ $penerima->nama_penerima }}
                                             </option>
@@ -355,6 +371,20 @@
                                            placeholder="Nama PIC penerima"
                                            value="{{ old('pic_penerima') }}">
                                     @error('pic_penerima')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                <div>
+                                    <label for="kontak_penerima" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Kontak Penerima
+                                    </label>
+                                    <input type="text"
+                                           name="kontak_penerima"
+                                           id="kontak_penerima"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('kontak_penerima') border-red-500 @enderror"
+                                           placeholder="Kontak / No. Telp Penerima"
+                                           value="{{ old('kontak_penerima') }}">
+                                    @error('kontak_penerima')
                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -1664,9 +1694,11 @@
             $('#pengirim').on('select2:select', function(e) {
                 var selectedOption = e.params.data.element;
                 var alamat = $(selectedOption).data('alamat');
+                var kontak = $(selectedOption).data('kontak');
                 
                 console.log('Pengirim selected:', e.params.data.id);
                 console.log('Alamat Pengirim:', alamat);
+                console.log('Kontak Pengirim:', kontak);
                 
                 if (alamat) {
                     $('#alamat_pengirim').val(alamat);
@@ -1674,12 +1706,20 @@
                 } else {
                     $('#alamat_pengirim').val('');
                 }
+
+                if (kontak) {
+                    $('#kontak_pengirim').val(kontak);
+                    console.log('✓ Kontak pengirim auto-filled');
+                } else {
+                    $('#kontak_pengirim').val('');
+                }
             });
 
             // Clear alamat when pengirim is cleared
             $('#pengirim').on('select2:clear', function(e) {
                 $('#alamat_pengirim').val('');
-                console.log('✓ Alamat pengirim cleared');
+                $('#kontak_pengirim').val('');
+                console.log('✓ Alamat & Kontak pengirim cleared');
             });
 
             // Initialize Select2 for tujuan kirim dropdown
@@ -1716,9 +1756,11 @@
             $('#penerima').on('select2:select', function(e) {
                 var selectedOption = e.params.data.element;
                 var alamat = $(selectedOption).data('alamat');
+                var kontak = $(selectedOption).data('kontak');
                 
                 console.log('Penerima selected:', e.params.data.id);
                 console.log('Alamat:', alamat);
+                console.log('Kontak:', kontak);
                 
                 if (alamat) {
                     $('#alamat_penerima').val(alamat);
@@ -1726,12 +1768,20 @@
                 } else {
                     $('#alamat_penerima').val('');
                 }
+
+                if (kontak) {
+                    $('#kontak_penerima').val(kontak);
+                    console.log('✓ Kontak penerima auto-filled');
+                } else {
+                    $('#kontak_penerima').val('');
+                }
             });
 
             // Clear alamat when penerima is cleared
             $('#penerima').on('select2:clear', function(e) {
                 $('#alamat_penerima').val('');
-                console.log('✓ Alamat penerima cleared');
+                $('#kontak_penerima').val('');
+                console.log('✓ Alamat & Kontak penerima cleared');
             });
 
             // Initialize Select2 for notify party dropdown
@@ -2109,6 +2159,7 @@
 
             const newName = data.nama;
             const newAlamat = data.alamat || '';
+            const newKontak = data.contact_person || data.kontak || '';
             
             // Add new option to select
             const select = jQuery('#penerima');
@@ -2117,6 +2168,7 @@
                 if (select.find("option[value='" + newName + "']").length === 0) {
                     const newOption = new Option(newName, newName, true, true);
                     jQuery(newOption).attr('data-alamat', newAlamat);
+                    jQuery(newOption).attr('data-kontak', newKontak);
                     select.append(newOption);
                 } else {
                     select.val(newName);
@@ -2125,6 +2177,7 @@
                 // Trigger select2 change and auto-fill alamat
                 select.trigger('change');
                 jQuery('#alamat_penerima').val(newAlamat);
+                jQuery('#kontak_penerima').val(newKontak);
                 
                 console.log('✓ New penerima selected:', newName);
             }
@@ -2158,6 +2211,8 @@
             if (!data) return;
             
             const newName = data.nama_pengirim || data.nama || '';
+            const newAlamat = data.alamat || '';
+            const newKontak = data.contact_person || data.kontak || '';
             if (!newName) return;
             
             // Add new option to select
@@ -2166,6 +2221,8 @@
                 // Check if option already exists
                 if (select.find("option[value='" + newName + "']").length === 0) {
                     const newOption = new Option(newName, newName, true, true);
+                    jQuery(newOption).attr('data-alamat', newAlamat);
+                    jQuery(newOption).attr('data-kontak', newKontak);
                     select.append(newOption);
                 } else {
                     select.val(newName);
@@ -2173,6 +2230,8 @@
                 
                 // Trigger select2 change
                 select.trigger('change');
+                jQuery('#alamat_pengirim').val(newAlamat);
+                jQuery('#kontak_pengirim').val(newKontak);
                 
                 console.log('✓ New pengirim selected:', newName);
             }

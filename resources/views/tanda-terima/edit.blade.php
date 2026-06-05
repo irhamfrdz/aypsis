@@ -397,6 +397,7 @@
                                     <option value="{{ $p->nama_pengirim }}" 
                                             data-id="{{ $p->id }}"
                                             data-alamat="{{ $p->alamat }}"
+                                            data-kontak="{{ $p->contact_person }}"
                                             {{ old('pengirim', $tandaTerima->pengirim ?? ($tandaTerima->suratJalan->order->pengirim->nama_pengirim ?? '')) == $p->nama_pengirim ? 'selected' : '' }}>
                                         {{ $p->nama_pengirim }}
                                     </option>
@@ -417,6 +418,20 @@
                                    placeholder="Nama PIC pengirim"
                                    value="{{ old('pic_pengirim', $tandaTerima->pic_pengirim) }}">
                             @error('pic_pengirim')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="kontak_pengirim" class="block text-xs font-medium text-gray-500 mb-2">
+                                Kontak Pengirim
+                            </label>
+                            <input type="text"
+                                   name="kontak_pengirim"
+                                   id="kontak_pengirim"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('kontak_pengirim') border-red-500 @enderror"
+                                   placeholder="Kontak / No. Telp Pengirim"
+                                   value="{{ old('kontak_pengirim', $tandaTerima->kontak_pengirim) }}">
+                            @error('kontak_pengirim')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -464,6 +479,7 @@
                                         <option value="{{ $penerimaItem->nama_penerima }}"
                                                 data-id="{{ $penerimaItem->id }}"
                                                 data-alamat="{{ $penerimaItem->alamat ?? '' }}"
+                                                data-kontak="{{ $penerimaItem->contact_person }}"
                                                 {{ old('penerima', $tandaTerima->penerima) == $penerimaItem->nama_penerima ? 'selected' : '' }}>
                                             {{ $penerimaItem->nama_penerima }}
                                         </option>
@@ -488,6 +504,20 @@
                                    placeholder="Nama PIC penerima"
                                    value="{{ old('pic_penerima', $tandaTerima->pic_penerima) }}">
                             @error('pic_penerima')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="kontak_penerima" class="block text-xs font-medium text-gray-500 mb-2">
+                                Kontak Penerima
+                            </label>
+                            <input type="text"
+                                   name="kontak_penerima"
+                                   id="kontak_penerima"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('kontak_penerima') border-red-500 @enderror"
+                                   placeholder="Kontak / No. Telp Penerima"
+                                   value="{{ old('kontak_penerima', $tandaTerima->kontak_penerima) }}">
+                            @error('kontak_penerima')
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -1307,11 +1337,18 @@
                 }).on('select2:select', function(e) {
                     var selectedOption = $(this).find('option:selected');
                     var alamat = selectedOption.data('alamat');
+                    var kontak = selectedOption.data('kontak');
                     if (alamat) {
                         $('#alamat_pengirim').val(alamat);
                     }
+                    if (kontak) {
+                        $('#kontak_pengirim').val(kontak);
+                    } else {
+                        $('#kontak_pengirim').val('');
+                    }
                 }).on('select2:clear', function(e) {
                     $('#alamat_pengirim').val('');
+                    $('#kontak_pengirim').val('');
                 });
                 
                 // Initialize Select2 for Penerima with auto-fill alamat
@@ -1320,12 +1357,20 @@
                     allowClear: true,
                     width: '100%'
                 }).on('select2:select', function(e) {
-                    var data = e.params.data;
                     var selectedOption = $(this).find('option:selected');
                     var alamat = selectedOption.data('alamat');
+                    var kontak = selectedOption.data('kontak');
                     if (alamat) {
                         $('#alamat_penerima').val(alamat);
                     }
+                    if (kontak) {
+                        $('#kontak_penerima').val(kontak);
+                    } else {
+                        $('#kontak_penerima').val('');
+                    }
+                }).on('select2:clear', function(e) {
+                    $('#alamat_penerima').val('');
+                    $('#kontak_penerima').val('');
                 });
 
                 // Initialize Select2 for Notify Party with auto-fill alamat
@@ -1431,6 +1476,7 @@
 
             const newName = data.nama;
             const newAlamat = data.alamat || '';
+            const newKontak = data.contact_person || data.kontak || '';
             
             // Add new option to select
             const select = jQuery('#penerima');
@@ -1440,15 +1486,18 @@
                 if (existingOption.length === 0) {
                     const newOption = new Option(newName, newName, true, true);
                     jQuery(newOption).attr('data-alamat', newAlamat);
+                    jQuery(newOption).attr('data-kontak', newKontak);
                     select.append(newOption);
                 } else {
                     existingOption.attr('data-alamat', newAlamat);
+                    existingOption.attr('data-kontak', newKontak);
                     select.val(newName);
                 }
                 
                 // Trigger select2 change and auto-fill alamat
                 select.trigger('change');
                 jQuery('#alamat_penerima').val(newAlamat);
+                jQuery('#kontak_penerima').val(newKontak);
                 
                 console.log('✓ New penerima selected:', newName);
             }
@@ -1484,21 +1533,30 @@
             if (!data) return;
             
             const newName = data.nama_pengirim || data.nama || '';
+            const newAlamat = data.alamat || '';
+            const newKontak = data.contact_person || data.kontak || '';
             if (!newName) return;
             
             // Add new option to select
             const select = jQuery('#pengirim');
             if (select.length) {
                 // Check if option already exists
-                if (select.find("option[value='" + newName + "']").length === 0) {
+                const existingOption = select.find("option[value='" + newName + "']");
+                if (existingOption.length === 0) {
                     const newOption = new Option(newName, newName, true, true);
+                    jQuery(newOption).attr('data-alamat', newAlamat);
+                    jQuery(newOption).attr('data-kontak', newKontak);
                     select.append(newOption);
                 } else {
+                    existingOption.attr('data-alamat', newAlamat);
+                    existingOption.attr('data-kontak', newKontak);
                     select.val(newName);
                 }
                 
                 // Trigger select2 change
                 select.trigger('change');
+                jQuery('#alamat_pengirim').val(newAlamat);
+                jQuery('#kontak_pengirim').val(newKontak);
                 
                 console.log('✓ New pengirim selected:', newName);
             }
