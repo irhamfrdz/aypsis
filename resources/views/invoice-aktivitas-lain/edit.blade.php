@@ -2000,6 +2000,10 @@ console.log('Akun COAs data:', akunCoasData);
                 subJenisKendaraanSelect.setAttribute('required', 'required');
                 nomorPolisiWrapper.classList.remove('hidden');
                 nomorPolisiSelect.setAttribute('required', 'required');
+                if (totalWrapper) {
+                    totalWrapper.classList.remove('hidden');
+                    if (totalInput) totalInput.setAttribute('required', 'required');
+                }
                 
                 setTimeout(() => {
                     $('#nomor_polisi').select2({ placeholder: 'Pilih Nomor Polisi', allowClear: true, width: '100%' });
@@ -2069,6 +2073,10 @@ console.log('Akun COAs data:', akunCoasData);
             if (jenisPenyesuaian === 'pengembalian penuh') {
                 tipePenyesuaianWrapper.classList.add('hidden');
                 clearTipePenyesuaianInputs();
+                if (totalWrapper) {
+                    totalWrapper.classList.add('hidden');
+                    if (totalInput) totalInput.removeAttribute('required');
+                }
                 
                 // Set total from surat jalan
                 const selectedSJ = $('#surat_jalan_select').find('option:selected');
@@ -2080,12 +2088,24 @@ console.log('Akun COAs data:', akunCoasData);
                 tipePenyesuaianWrapper.classList.add('hidden');
                 clearTipePenyesuaianInputs();
                 // Total can be entered manually
+                if (totalWrapper) {
+                    totalWrapper.classList.remove('hidden');
+                    if (totalInput) totalInput.setAttribute('required', 'required');
+                }
             } else if (jenisPenyesuaian === 'penambahan') {
                 tipePenyesuaianWrapper.classList.remove('hidden');
                 initializeTipePenyesuaianInputs();
+                if (totalWrapper) {
+                    totalWrapper.classList.add('hidden');
+                    if (totalInput) totalInput.removeAttribute('required');
+                }
             } else {
                 tipePenyesuaianWrapper.classList.add('hidden');
                 clearTipePenyesuaianInputs();
+                if (totalWrapper) {
+                    totalWrapper.classList.add('hidden');
+                    if (totalInput) totalInput.removeAttribute('required');
+                }
             }
         }
 
@@ -2256,6 +2276,10 @@ console.log('Akun COAs data:', akunCoasData);
                 if (namaKlasifikasi.includes('buruh')) {
                     barangWrapper.classList.remove('hidden');
                     initializeBarangInputs();
+                    if (totalWrapper) {
+                        totalWrapper.classList.add('hidden');
+                        if (totalInput) totalInput.removeAttribute('required');
+                    }
                 } else if (namaKlasifikasi.includes('biaya dokumen') || namaKlasifikasi.includes('dokumen')) {
                     vendorDokumenWrapper.classList.remove('hidden');
                     vendorDokumenSelect.setAttribute('required', 'required');
@@ -2264,6 +2288,10 @@ console.log('Akun COAs data:', akunCoasData);
                     setTimeout(() => {
                         $('#vendor_dokumen_select').select2({ placeholder: 'Pilih Vendor Dokumen', allowClear: true, width: '100%' });
                     }, 100);
+                    if (totalWrapper) {
+                        totalWrapper.classList.add('hidden');
+                        if (totalInput) totalInput.removeAttribute('required');
+                    }
                 } else if (namaKlasifikasi.includes('labuh tambat') || namaKlasifikasi.includes('labuh tambah')) {
                     if (vendorLabuhTambatWrapper) {
                         vendorLabuhTambatWrapper.classList.remove('hidden');
@@ -2274,6 +2302,12 @@ console.log('Akun COAs data:', akunCoasData);
                     }
                     if (totalWrapper) {
                         totalWrapper.classList.add('hidden');
+                        if (totalInput) totalInput.removeAttribute('required');
+                    }
+                } else {
+                    if (totalWrapper) {
+                        totalWrapper.classList.remove('hidden');
+                        if (totalInput) totalInput.setAttribute('required', 'required');
                     }
                 }
             });
