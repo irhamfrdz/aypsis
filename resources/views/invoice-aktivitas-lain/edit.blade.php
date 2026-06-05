@@ -3792,6 +3792,7 @@ console.log('Akun COAs data:', akunCoasData);
                     // Handle Biaya Listrik
                     @if($invoice->jenis_aktivitas == 'Pembayaran Lain-lain' && str_contains(strtolower($invoice->klasifikasiBiayaUmum->nama ?? ''), 'listrik'))
                         initializeBiayaListrikInputs(@json($invoice->biayaListrik));
+                        updateTotalFromBiayaListrik();
                     @endif
 
                     // Handle Utilities
@@ -3809,6 +3810,7 @@ console.log('Akun COAs data:', akunCoasData);
                         if (Array.isArray(tipeData)) {
                             tipeData.forEach(data => addTipePenyesuaianInput(data.tipe, data.nominal));
                         }
+                        calculateTotalFromTipePenyesuaian();
                     }
                 @endif
                 
@@ -3832,6 +3834,7 @@ console.log('Akun COAs data:', akunCoasData);
                     // Handle Buruh (Barang)
                     @if($invoice->barang_detail)
                         initializeBarangInputs(@json($invoice->barang_detail_array));
+                        calculateTotalFromBarang();
                     @endif
                     
                     // Handle BL selection
