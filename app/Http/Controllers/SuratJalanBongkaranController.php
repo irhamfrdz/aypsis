@@ -1268,8 +1268,42 @@ class SuratJalanBongkaranController extends Controller
      */
     public function outstanding(Request $request)
     {
+        // Show select ship & voyage form if parameters are missing and view_all is not chosen
+        if (! $request->boolean('view_all') && (! $request->filled('nama_kapal') || ! $request->filled('no_voyage'))) {
+            // Get unique kapal names from Manifest table with normalization
+            $kapals = Manifest::select('nama_kapal')
+                ->whereNotNull('nama_kapal')
+                ->where('nama_kapal', '!=', '')
+                ->get()
+                ->map(function ($item) {
+                    return trim(str_replace(['KM.', 'KMP.'], ['KM', 'KMP'], strtoupper($item->nama_kapal)));
+                })
+                ->unique()
+                ->sort()
+                ->values();
+
+            $voyages = collect();
+            if ($request->filled('nama_kapal')) {
+                $voyages = Manifest::where('nama_kapal', 'LIKE', '%'.str_replace(['KM ', 'KMP '], ['%', '%'], $request->nama_kapal).'%')
+                    ->select('no_voyage')
+                    ->whereNotNull('no_voyage')
+                    ->distinct()
+                    ->orderBy('no_voyage')
+                    ->get()
+                    ->pluck('no_voyage');
+            }
+
+            return view('surat-jalan-bongkaran.select-ship-outstanding', compact('kapals', 'voyages'));
+        }
+
         $query = SuratJalanBongkaran::whereDoesntHave('tandaTerima')
             ->with(['manifest', 'kapal']);
+
+        // Filter by selected ship and voyage if not view_all
+        if (! $request->boolean('view_all')) {
+            $query->where('nama_kapal', $request->nama_kapal)
+                  ->where('no_voyage', $request->no_voyage);
+        }
 
         // Filter by search
         if ($request->filled('search')) {
