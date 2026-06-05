@@ -1877,7 +1877,7 @@ console.log('Akun COAs data:', akunCoasData);
             });
         }
 
-        let isInitializing = false;
+        let isInitializing = true;
         function toggleConditionalFields() {
             const jenisVal = jenisAktivitasSelect.value;
             
@@ -3765,7 +3765,6 @@ console.log('Akun COAs data:', akunCoasData);
         if (jenisAktivitas) {
             isInitializing = true;
             $('#jenis_aktivitas').val(jenisAktivitas).trigger('change');
-            isInitializing = false;
             
             // Restore sub-dropdowns with small delays to ensure change events finish
             setTimeout(() => {
@@ -3861,7 +3860,12 @@ console.log('Akun COAs data:', akunCoasData);
                 }, 500);
             @endif
 
-
+            // Set isInitializing to false after all initial setups have finished
+            setTimeout(() => {
+                isInitializing = false;
+            }, 600);
+        } else {
+            isInitializing = false;
         }
         
         // Initialize Labuh Tambat
