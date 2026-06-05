@@ -43,9 +43,6 @@ class StockAmprahanController extends Controller
             if ($cabang === 'BATAM') {
                 $isBatamUser = true;
                 $query->where('lokasi', 'like', '%BATAM%');
-            } elseif ($cabang === 'JAKARTA') {
-                $isJakartaUser = true;
-                $query->where('lokasi', 'like', '%JAKARTA%');
             }
         }
 
@@ -123,8 +120,6 @@ class StockAmprahanController extends Controller
         $statsQuery = StockAmprahan::query();
         if ($isBatamUser) {
             $statsQuery->where('lokasi', 'like', '%BATAM%');
-        } elseif ($isJakartaUser) {
-            $statsQuery->where('lokasi', 'like', '%JAKARTA%');
         }
 
         $stats = [
@@ -509,8 +504,6 @@ class StockAmprahanController extends Controller
             $cabang = strtoupper($user->karyawan->cabang);
             if ($cabang === 'BATAM' && strpos(strtoupper($item->lokasi ?? ''), 'BATAM') === false) {
                 abort(403, 'Unauthorized access to this branch data.');
-            } elseif ($cabang === 'JAKARTA' && strpos(strtoupper($item->lokasi ?? ''), 'JAKARTA') === false) {
-                abort(403, 'Unauthorized access to this branch data.');
             }
         }
 
@@ -649,8 +642,6 @@ class StockAmprahanController extends Controller
             $cabang = strtoupper($user->karyawan->cabang);
             if ($cabang === 'BATAM') {
                 $additionsQuery->where('lokasi', 'like', '%BATAM%');
-            } elseif ($cabang === 'JAKARTA') {
-                $additionsQuery->where('lokasi', 'like', '%JAKARTA%');
             }
         }
 
@@ -710,10 +701,6 @@ class StockAmprahanController extends Controller
             if ($cabang === 'BATAM') {
                 $usagesQuery->whereHas('stockAmprahan', function ($q) {
                     $q->where('lokasi', 'like', '%BATAM%');
-                });
-            } elseif ($cabang === 'JAKARTA') {
-                $usagesQuery->whereHas('stockAmprahan', function ($q) {
-                    $q->where('lokasi', 'like', '%JAKARTA%');
                 });
             }
         }
@@ -787,8 +774,6 @@ class StockAmprahanController extends Controller
                 $cabang = strtoupper($user->karyawan->cabang);
                 if ($cabang === 'BATAM' && strpos(strtoupper($item->lokasi ?? ''), 'BATAM') === false) {
                     abort(403, 'Unauthorized access to this branch data.');
-                } elseif ($cabang === 'JAKARTA' && strpos(strtoupper($item->lokasi ?? ''), 'JAKARTA') === false) {
-                    abort(403, 'Unauthorized access to this branch data.');
                 }
             }
 
@@ -836,8 +821,6 @@ class StockAmprahanController extends Controller
                 $cabang = strtoupper($user->karyawan->cabang);
                 if ($cabang === 'BATAM') {
                     $additionsQuery->where('lokasi', 'like', '%BATAM%');
-                } elseif ($cabang === 'JAKARTA') {
-                    $additionsQuery->where('lokasi', 'like', '%JAKARTA%');
                 }
             }
 
@@ -917,10 +900,6 @@ class StockAmprahanController extends Controller
             if ($cabang === 'BATAM') {
                 $usagesQuery->whereHas('stockAmprahan', function ($q) {
                     $q->where('lokasi', 'like', '%BATAM%');
-                });
-            } elseif ($cabang === 'JAKARTA') {
-                $usagesQuery->whereHas('stockAmprahan', function ($q) {
-                    $q->where('lokasi', 'like', '%JAKARTA%');
                 });
             }
         }
@@ -1380,8 +1359,6 @@ class StockAmprahanController extends Controller
             $cabang = strtoupper($user->karyawan->cabang);
             if ($cabang === 'BATAM') {
                 $masukSebelumQuery->where('lokasi', 'like', '%BATAM%');
-            } elseif ($cabang === 'JAKARTA') {
-                $masukSebelumQuery->where('lokasi', 'like', '%JAKARTA%');
             }
         }
 
@@ -1408,10 +1385,6 @@ class StockAmprahanController extends Controller
             if ($cabang === 'BATAM') {
                 $keluarSebelumQuery->whereHas('stockAmprahan', function ($q) {
                     $q->where('lokasi', 'like', '%BATAM%');
-                });
-            } elseif ($cabang === 'JAKARTA') {
-                $keluarSebelumQuery->whereHas('stockAmprahan', function ($q) {
-                    $q->where('lokasi', 'like', '%JAKARTA%');
                 });
             }
         }
@@ -1442,8 +1415,6 @@ class StockAmprahanController extends Controller
             $cabang = strtoupper($user->karyawan->cabang);
             if ($cabang === 'BATAM') {
                 $additionsQuery->where('lokasi', 'like', '%BATAM%');
-            } elseif ($cabang === 'JAKARTA') {
-                $additionsQuery->where('lokasi', 'like', '%JAKARTA%');
             }
         }
 
@@ -1476,10 +1447,6 @@ class StockAmprahanController extends Controller
             if ($cabang === 'BATAM') {
                 $usagesQuery->whereHas('stockAmprahan', function ($q) {
                     $q->where('lokasi', 'like', '%BATAM%');
-                });
-            } elseif ($cabang === 'JAKARTA') {
-                $usagesQuery->whereHas('stockAmprahan', function ($q) {
-                    $q->where('lokasi', 'like', '%JAKARTA%');
                 });
             }
         }
@@ -1601,10 +1568,6 @@ class StockAmprahanController extends Controller
             if ($cabang === 'BATAM') {
                 $query->whereHas('stockAmprahan', function ($q) {
                     $q->where('lokasi', 'like', '%BATAM%');
-                });
-            } elseif ($cabang === 'JAKARTA') {
-                $query->whereHas('stockAmprahan', function ($q) {
-                    $q->where('lokasi', 'like', '%JAKARTA%');
                 });
             }
         }
