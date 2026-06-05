@@ -1296,8 +1296,16 @@ class SuratJalanBongkaranController extends Controller
             return view('surat-jalan-bongkaran.select-ship-outstanding', compact('kapals', 'voyages'));
         }
 
-        $query = SuratJalanBongkaran::whereDoesntHave('tandaTerima')
-            ->with(['manifest', 'kapal']);
+        $statusFilter = $request->get('status_tanda_terima', 'belum');
+
+        $query = SuratJalanBongkaran::with(['manifest', 'kapal', 'tandaTerima']);
+
+        // Filter by Tanda Terima status
+        if ($statusFilter === 'belum') {
+            $query->whereDoesntHave('tandaTerima');
+        } elseif ($statusFilter === 'sudah') {
+            $query->whereHas('tandaTerima');
+        }
 
         // Filter by selected ship and voyage if not view_all
         if (! $request->boolean('view_all')) {

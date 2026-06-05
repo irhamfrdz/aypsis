@@ -39,9 +39,9 @@
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 class="text-lg font-semibold text-gray-900">Daftar Outstanding Surat Jalan Bongkaran</h2>
+                    <h2 class="text-lg font-semibold text-gray-900">Daftar Surat Jalan Bongkaran</h2>
                     @if(request('view_all'))
-                        <p class="text-sm text-gray-500 mt-1">Menampilkan semua data outstanding</p>
+                        <p class="text-sm text-gray-500 mt-1">Menampilkan semua data</p>
                     @else
                         <div class="flex flex-wrap items-center gap-4 mt-2 text-sm text-gray-600">
                             <span>
@@ -74,7 +74,7 @@
                 <input type="hidden" name="no_voyage" value="{{ request('no_voyage') }}">
                 <input type="hidden" name="view_all" value="{{ request('view_all') }}">
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <!-- Search Input -->
                     <div class="md:col-span-2">
                         <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
@@ -84,6 +84,18 @@
                                name="search" 
                                placeholder="Cari nomor surat jalan, container, seal, supir, pengirim..." 
                                value="{{ request('search') }}">
+                    </div>
+
+                    <!-- Status Tanda Terima Filter -->
+                    <div>
+                        <label for="status_tanda_terima" class="block text-sm font-medium text-gray-700 mb-1">Status Tanda Terima</label>
+                        <select name="status_tanda_terima" id="status_tanda_terima" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                onchange="this.form.submit()">
+                            <option value="belum" {{ request('status_tanda_terima', 'belum') == 'belum' ? 'selected' : '' }}>Belum Tanda Terima</option>
+                            <option value="sudah" {{ request('status_tanda_terima') == 'sudah' ? 'selected' : '' }}>Sudah Tanda Terima</option>
+                            <option value="semua" {{ request('status_tanda_terima') == 'semua' ? 'selected' : '' }}>Semua</option>
+                        </select>
                     </div>
 
                     <!-- Lokasi Filter -->
@@ -140,6 +152,7 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
+                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kapal / Voyage</th>
@@ -154,16 +167,45 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($suratJalans as $sj)
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            <tr class="hover:bg-gray-50 transition-colors {{ $sj->tandaTerima ? 'bg-green-50/50' : '' }}">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="{{ route('tanda-terima-bongkaran.index', ['status' => 'belum', 'search' => $sj->nomor_surat_jalan]) }}" 
-                                       target="_blank" 
-                                       class="inline-flex items-center px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-md transition-colors duration-200 shadow-sm">
-                                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        Tanda Terima
-                                    </a>
+                                    @if($sj->tandaTerima)
+                                        <a href="{{ route('tanda-terima-bongkaran.index', ['search' => $sj->nomor_surat_jalan]) }}" 
+                                           target="_blank" 
+                                           class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors duration-200 shadow-sm">
+                                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                            Lihat
+                                        </a>
+                                    @else
+                                        <a href="{{ route('tanda-terima-bongkaran.index', ['status' => 'belum', 'search' => $sj->nomor_surat_jalan]) }}" 
+                                           target="_blank" 
+                                           class="inline-flex items-center px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-md transition-colors duration-200 shadow-sm">
+                                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            Tanda Terima
+                                        </a>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    @if($sj->tandaTerima)
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                            <svg class="w-3 h-3 inline mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                            </svg>
+                                            Sudah
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
+                                            <svg class="w-3 h-3 inline mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.828a1 1 0 101.415-1.414L11 9.586V6z" clip-rule="evenodd"/>
+                                            </svg>
+                                            Belum
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                     <span class="font-semibold text-gray-900">{{ $sj->nomor_surat_jalan ?: '-' }}</span>
@@ -202,13 +244,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="px-6 py-10 text-center">
+                                <td colspan="12" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                                         </svg>
-                                        <h3 class="text-sm font-medium text-gray-900">Tidak Ada Outstanding</h3>
-                                        <p class="text-xs text-gray-500 mt-1">Semua surat jalan bongkaran telah memiliki tanda terima bongkaran.</p>
+                                        <h3 class="text-sm font-medium text-gray-900">Tidak Ada Data</h3>
+                                        <p class="text-xs text-gray-500 mt-1">Tidak ada surat jalan bongkaran yang sesuai dengan filter yang dipilih.</p>
                                     </div>
                                 </td>
                             </tr>
