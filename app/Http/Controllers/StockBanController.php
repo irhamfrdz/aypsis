@@ -423,6 +423,16 @@ class StockBanController extends Controller
             }
         }
 
+        // Clear receiver if empty in request
+        if ($request->has('penerima_id')) {
+            if (empty($request->penerima_id)) {
+                $data['penerima_id'] = null;
+                $data['penerima_manual'] = null;
+            } else {
+                $data['penerima_manual'] = null;
+            }
+        }
+
         $stockBan->update($data);
 
         return redirect()->route('stock-ban.index')->with('success', 'Data Stock Ban berhasil diperbarui');
