@@ -42,6 +42,7 @@ class Order extends Model
         'term_id',
         'pengirim_id',
         'alamat_pengirim',
+        'kontak_pengirim',
         'jenis_barang_id',
         'status',
         'catatan',

@@ -157,6 +157,7 @@ class ApprovalOrderController extends Controller
             'term_id' => 'required|exists:terms,id',
             'pengirim_id' => 'nullable|exists:pengirims,id',
             'alamat_pengirim' => 'nullable|string',
+            'kontak_pengirim' => 'nullable|string|max:255',
             'penerima_id' => 'nullable|exists:penerimas,id',
             'notify_party_id' => 'nullable|exists:penerimas,id',
             'kontak_penerima' => 'nullable|string|max:255',
@@ -181,6 +182,7 @@ class ApprovalOrderController extends Controller
             // Update Informasi Pengirim
             $order->pengirim_id = $request->pengirim_id;
             $order->alamat_pengirim = $request->alamat_pengirim;
+            $order->kontak_pengirim = $request->kontak_pengirim;
 
             // Update Informasi Penerima
             $order->penerima_id = $request->penerima_id;

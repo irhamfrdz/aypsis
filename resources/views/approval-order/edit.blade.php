@@ -173,6 +173,7 @@
                                         @foreach($pengirims as $p)
                                             <option value="{{ $p->id }}" 
                                                     data-alamat="{{ $p->alamat }}"
+                                                    data-kontak="{{ $p->contact_person }}"
                                                     {{ old('pengirim_id', $order->pengirim_id) == $p->id ? 'selected' : '' }}>
                                                 {{ $p->nama_pengirim }}
                                             </option>
@@ -184,6 +185,19 @@
                                 </div>
                             </div>
                             @error('pengirim_id')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="kontak_pengirim" class="block text-sm font-medium text-gray-700 mb-2">
+                                Kontak Pengirim
+                            </label>
+                            <input type="text" name="kontak_pengirim" id="kontak_pengirim" 
+                                   value="{{ old('kontak_pengirim', $order->kontak_pengirim ?? ($order->pengirim->contact_person ?? '')) }}"
+                                   placeholder="Nomor telepon/HP pengirim"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('kontak_pengirim') border-red-300 @enderror">
+                            @error('kontak_pengirim')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -211,11 +225,18 @@
                                 <label for="penerima_id" class="text-sm font-medium text-gray-700">
                                     Penerima
                                 </label>
-                                <a href="{{ route('order.penerima.create') }}" id="add_penerima_link"
-                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                                   title="Tambah">
-                                    Tambah
-                                </a>
+                                <div class="flex gap-2">
+                                    <a href="{{ route('order.penerima.create') }}" id="add_penerima_link"
+                                       class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                       title="Tambah">
+                                        Tambah
+                                    </a>
+                                    <a href="#" id="edit_penerima_link"
+                                       class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 hidden"
+                                       title="Edit">
+                                        Edit
+                                    </a>
+                                </div>
                             </div>
                             <div class="relative">
                                 <div class="dropdown-container-penerima">
@@ -584,13 +605,36 @@
                 });
 
                 initDropdowns();
+            } else if (event.data.type === 'penerimaAdded') {
+                const newData = event.data.penerima;
+                const select = document.getElementById('penerima_id');
+                if (select && select.value) {
+                    const selectedOption = Array.from(select.options).find(opt => opt.value === select.value);
+                    if (selectedOption) {
+                        selectedOption.text = newData.nama;
+                        selectedOption.setAttribute('data-alamat', newData.alamat || '');
+                        
+                        const searchInput = document.getElementById('search_penerima');
+                        if (searchInput) searchInput.value = newData.nama;
+                        
+                        const alamatTextarea = document.getElementById('alamat_penerima');
+                        if (alamatTextarea) alamatTextarea.value = newData.alamat || '';
+                    }
+                }
+                initDropdowns();
             } else if (event.data.type === 'pengirim-added') {
                 const newData = event.data.data;
                 const select = document.getElementById('pengirim_id');
                 if (select) {
-                    const option = new Option(newData.nama_pengirim, newData.id);
+                    let option = Array.from(select.options).find(opt => opt.value == newData.id);
+                    if (!option) {
+                        option = new Option(newData.nama_pengirim, newData.id);
+                        select.add(option);
+                    } else {
+                        option.text = newData.nama_pengirim;
+                    }
                     option.setAttribute('data-alamat', newData.alamat || '');
-                    select.add(option);
+                    option.setAttribute('data-kontak', newData.contact_person || '');
                     
                     // Select the new pengirim
                     select.value = newData.id;
@@ -599,6 +643,9 @@
                     
                     const alamatTextarea = document.getElementById('alamat_pengirim');
                     if (alamatTextarea) alamatTextarea.value = newData.alamat || '';
+
+                    const kontakInput = document.getElementById('kontak_pengirim');
+                    if (kontakInput) kontakInput.value = newData.contact_person || '';
                 }
                 initDropdowns();
             }
@@ -615,7 +662,8 @@
                 searchId: 'search_pengirim',
                 dropdownId: 'dropdown_options_pengirim',
                 containerClass: 'dropdown-container-pengirim',
-                alamatId: 'alamat_pengirim'
+                alamatId: 'alamat_pengirim',
+                kontakId: 'kontak_pengirim'
             });
 
             // Initialize Penerima dropdown
@@ -845,6 +893,38 @@
 
                 if (popup) {
                     popup.focus();
+                }
+            });
+        }
+
+        // Handle Penerima "Edit" link logic
+        const editPenerimaLink = document.getElementById('edit_penerima_link');
+        const penerimaSelect = document.getElementById('penerima_id');
+        if (editPenerimaLink && penerimaSelect) {
+            editPenerimaLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                const penerimaId = penerimaSelect.value;
+                if (!penerimaId) return;
+
+                let url = "{{ route('tanda-terima.penerima.edit', ':id', false) }}".replace(':id', penerimaId);
+                url += '?popup=1';
+
+                const popup = window.open(
+                    url,
+                    'editPenerima',
+                    'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+                );
+
+                if (popup) {
+                    popup.focus();
+                }
+            });
+
+            penerimaSelect.addEventListener('change', function() {
+                if (this.value) {
+                    editPenerimaLink.classList.remove('hidden');
+                } else {
+                    editPenerimaLink.classList.add('hidden');
                 }
             });
         }

@@ -13,6 +13,7 @@ class Pengirim extends Model
         'kode',
         'nama_pengirim',
         'nickname1',
+        'contact_person',
         'alamat',
         'catatan',
         'status',

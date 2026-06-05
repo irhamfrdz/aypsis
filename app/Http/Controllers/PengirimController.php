@@ -18,7 +18,7 @@ class PengirimController extends Controller
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="template_pengirim.csv"',
         ];
-        $csv = "kode;nama_pengirim;nickname1;catatan;status\n";
+        $csv = "kode;nama_pengirim;nickname1;contact_person;catatan;status\n";
 
         return response($csv, 200, $headers);
     }
@@ -51,23 +51,24 @@ class PengirimController extends Controller
         }
 
         $header = fgetcsv($handle, 0, ';');
-        $expectedHeader = ['kode', 'nama_pengirim', 'nickname1', 'catatan', 'status'];
+        $expectedHeader = ['kode', 'nama_pengirim', 'nickname1', 'contact_person', 'catatan', 'status'];
         if ($header !== $expectedHeader) {
-            return back()->with('error', 'Header CSV tidak sesuai. Harus: kode;nama_pengirim;nickname1;catatan;status');
+            return back()->with('error', 'Header CSV tidak sesuai. Harus: kode;nama_pengirim;nickname1;contact_person;catatan;status');
         }
 
         $rowNum = 1;
         while (($row = fgetcsv($handle, 0, ';')) !== false) {
             $rowNum++;
-            if (count($row) !== 5) {
+            if (count($row) !== 6) {
                 $errors[] = "Baris $rowNum: Jumlah kolom tidak sesuai.";
 
                 continue;
             }
-            [$kode, $nama_pengirim, $nickname1, $catatan, $status] = $row;
+            [$kode, $nama_pengirim, $nickname1, $contact_person, $catatan, $status] = $row;
             $kode = trim($kode);
             $nama_pengirim = trim($nama_pengirim);
             $nickname1 = trim($nickname1);
+            $contact_person = trim($contact_person);
             $catatan = trim($catatan);
             $status = trim($status);
 
@@ -89,7 +90,7 @@ class PengirimController extends Controller
             }
 
             if (! in_array($status, ['active', 'inactive'])) {
-                $errors[] = "Baris $rowNum: Status harus 'active' atau 'inactive'.";
+                $errors[] = "Baris $rowNum: Status harus 'active' or 'inactive'.";
 
                 continue;
             }
@@ -98,6 +99,7 @@ class PengirimController extends Controller
             if ($pengirim) {
                 $pengirim->nama_pengirim = $nama_pengirim;
                 $pengirim->nickname1 = $nickname1 !== '' ? $nickname1 : null;
+                $pengirim->contact_person = $contact_person !== '' ? $contact_person : null;
                 $pengirim->catatan = $catatan;
                 $pengirim->status = $status;
                 $pengirim->save();
@@ -106,6 +108,7 @@ class PengirimController extends Controller
                     'kode' => $kode,
                     'nama_pengirim' => $nama_pengirim,
                     'nickname1' => $nickname1 !== '' ? $nickname1 : null,
+                    'contact_person' => $contact_person !== '' ? $contact_person : null,
                     'catatan' => $catatan,
                     'status' => $status,
                 ]);
@@ -175,6 +178,7 @@ class PengirimController extends Controller
             'kode' => 'required|string|unique:pengirims,kode',
             'nama_pengirim' => 'required|string|max:255',
             'nickname1' => 'nullable|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
@@ -226,6 +230,7 @@ class PengirimController extends Controller
             'kode' => 'required|string|unique:pengirims,kode,'.$id,
             'nama_pengirim' => 'required|string|max:255',
             'nickname1' => 'nullable|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
@@ -296,6 +301,8 @@ class PengirimController extends Controller
             'kode' => 'required|string|unique:pengirims,kode',
             'nama_pengirim' => 'required|string|max:255',
             'nickname1' => 'nullable|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
         ]);
@@ -323,6 +330,7 @@ class PengirimController extends Controller
             'kode' => 'required|string|unique:pengirims,kode,'.$pengirim->id,
             'nama_pengirim' => 'required|string|max:255',
             'nickname1' => 'nullable|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',
