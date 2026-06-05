@@ -1,6 +1,7 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
-$app = require_once __DIR__ . '/bootstrap/app.php';
+
+require __DIR__.'/vendor/autoload.php';
+$app = require_once __DIR__.'/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
@@ -21,7 +22,7 @@ try {
 
         DB::table('biaya_kapal_barang')->where('id', 553)->update([
             'jumlah' => $newJumlah,
-            'subtotal' => $newSubtotal
+            'subtotal' => $newSubtotal,
         ]);
 
         $rowAfter = DB::table('biaya_kapal_barang')->where('id', 553)->first();
@@ -34,5 +35,5 @@ try {
     DB::commit();
 } catch (\Exception $e) {
     DB::rollBack();
-    echo "Error: " . $e->getMessage() . "\n";
+    echo 'Error: '.$e->getMessage()."\n";
 }

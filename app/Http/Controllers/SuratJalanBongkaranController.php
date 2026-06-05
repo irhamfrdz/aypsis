@@ -1310,7 +1310,7 @@ class SuratJalanBongkaranController extends Controller
         // Filter by selected ship and voyage if not view_all
         if (! $request->boolean('view_all')) {
             $query->where('nama_kapal', $request->nama_kapal)
-                  ->where('no_voyage', $request->no_voyage);
+                ->where('no_voyage', $request->no_voyage);
         }
 
         // Filter by search

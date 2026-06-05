@@ -1386,6 +1386,7 @@ class TandaTerimaController extends Controller
                             }
                         }
                     }
+
                     return $kontak;
                 })(),
                 'penerima' => $request->penerima,
@@ -1402,6 +1403,7 @@ class TandaTerimaController extends Controller
                             }
                         }
                     }
+
                     return $kontak;
                 })(),
                 'notify_party' => $request->notify_party,

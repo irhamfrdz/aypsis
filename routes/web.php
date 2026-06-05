@@ -2011,6 +2011,12 @@ Route::middleware([
         Route::put('stock-ban-luar-batam/{id}/hilang', [\App\Http\Controllers\StockBanLuarBatamController::class, 'hilang'])
             ->name('stock-ban-luar-batam.hilang')
             ->middleware('can:stock-ban-update');
+        Route::post('stock-ban-luar-batam/{id}/use', [\App\Http\Controllers\StockBanLuarBatamController::class, 'storeUsage'])
+            ->name('stock-ban-luar-batam.use')
+            ->middleware('can:stock-ban-update');
+        Route::put('stock-ban-luar-batam/{id}/return', [\App\Http\Controllers\StockBanLuarBatamController::class, 'returnToStock'])
+            ->name('stock-ban-luar-batam.return')
+            ->middleware('can:stock-ban-update');
 
         // 💰 Pricelist Uang Jalan Batam Management with permissions
         // Download Template & Import (must be before resource routes)

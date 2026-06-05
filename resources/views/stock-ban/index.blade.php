@@ -1163,7 +1163,7 @@
                                             <button type="button" 
                                                 class="btn-usage-modal text-green-600 hover:text-green-900" 
                                                 data-id="{{ $ban->id }}" 
-                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                data-seri="{{ $ban->nomor_seri ?? '-' }}" data-type="batam"
                                                 title="Gunakan / Pasang">
                                                 <i class="fas fa-wrench"></i>
                                             </button>
@@ -1212,6 +1212,7 @@
                                                 data-id="{{ $ban->id }}"
                                                 data-seri="{{ $ban->nomor_seri ?? '-' }}"
                                                 data-mobil="{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}"
+                                                data-type="batam"
                                                 title="Kembalikan ke Gudang">
                                                 <i class="fas fa-undo"></i>
                                             </button>
@@ -1345,7 +1346,7 @@
                                 @endif
                                 
                                 @if($ban->status == 'Stok')
-                                    <button type="button" class="btn-usage-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Pasang Ban"><i class="fas fa-wrench text-xs"></i></button>
+                                    <button type="button" class="btn-usage-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-type="batam" title="Pasang Ban"><i class="fas fa-wrench text-xs"></i></button>
                                     
                                     <button type="button" class="btn-kirim-batam-modal w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-50 text-cyan-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Kirim ke Batam"><i class="fas fa-truck-loading text-xs"></i></button>
                                     
@@ -1353,7 +1354,7 @@
                                     
                                     <button type="button" class="btn-return-shop-modal w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Kembalikan ke Toko"><i class="fas fa-undo-alt text-xs"></i></button>
                                 @elseif($ban->status == 'Terpakai')
-                                    <button type="button" class="btn-return-modal w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-mobil="{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}" title="Kembalikan ke Gudang"><i class="fas fa-undo text-xs"></i></button>
+                                    <button type="button" class="btn-return-modal w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-mobil="{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}" data-type="batam" title="Kembalikan ke Gudang"><i class="fas fa-undo text-xs"></i></button>
                                 @elseif($ban->status == 'Sedang Dimasak')
                                     <button type="button" class="btn-return-masak-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Selesai Masak"><i class="fas fa-check-circle text-xs"></i></button>
                                 @elseif($ban->status == 'Dikembalikan')
@@ -2353,8 +2354,8 @@
     });
 
     // Global Modal Functions - Must be outside DOMContentLoaded for onclick attributes
-    function openUsageModal(id, seri) {
-        console.log('openUsageModal called with:', id, seri);
+    function openUsageModal(id, seri, type) {
+        console.log('openUsageModal called with:', id, seri, type);
         
         const modalBanSeri = document.getElementById('modal-ban-seri');
         const usageForm = document.getElementById('usageForm');
@@ -2380,7 +2381,13 @@
         }
         
         if (modalBanSeri) modalBanSeri.textContent = seri;
-        if (usageForm) usageForm.action = "{{ url('stock-ban') }}/" + id + "/use";
+        if (usageForm) {
+            if (type === 'batam') {
+                usageForm.action = "{{ url('stock-ban-luar-batam') }}/" + id + "/use";
+            } else {
+                usageForm.action = "{{ url('stock-ban') }}/" + id + "/use";
+            }
+        }
         
         // Update hidden fields for persistence
         const banIdInput = document.getElementById('usage_ban_id');
@@ -2427,8 +2434,8 @@
         DropdownManager.close();
     }
 
-    function openReturnModal(banId, nomorSeri, mobilPolisi) {
-        console.log('openReturnModal called with:', banId, nomorSeri, mobilPolisi);
+    function openReturnModal(banId, nomorSeri, mobilPolisi, type) {
+        console.log('openReturnModal called with:', banId, nomorSeri, mobilPolisi, type);
         
         const modal = document.getElementById('returnBanModal');
         if (!modal) {
@@ -2439,6 +2446,12 @@
         document.getElementById('return_ban_id').value = banId;
         document.getElementById('return_nomor_seri').textContent = nomorSeri || '-';
         document.getElementById('return_mobil').textContent = mobilPolisi || '-';
+        
+        // Save the type in a data attribute on the form
+        const form = document.getElementById('returnBanForm');
+        if (form) {
+            form.setAttribute('data-type', type || 'jakarta');
+        }
         
         // Reset form
         document.getElementById('return_lokasi').value = '';
@@ -2475,7 +2488,12 @@
         }
 
         const form = document.getElementById('returnBanForm');
-        form.action = `{{ url('stock-ban') }}/${banId}/return`;
+        const type = form.getAttribute('data-type') || 'jakarta';
+        if (type === 'batam') {
+            form.action = `{{ url('stock-ban-luar-batam') }}/${banId}/return`;
+        } else {
+            form.action = `{{ url('stock-ban') }}/${banId}/return`;
+        }
         form.submit();
     }
 
@@ -2928,8 +2946,9 @@
                 e.stopPropagation();
                 const id = usageBtn.getAttribute('data-id');
                 const seri = usageBtn.getAttribute('data-seri');
-                console.log('Opening usage modal:', id, seri); // Debug log
-                openUsageModal(id, seri);
+                const type = usageBtn.getAttribute('data-type') || 'jakarta';
+                console.log('Opening usage modal:', id, seri, type); // Debug log
+                openUsageModal(id, seri, type);
                 return;
             }
 
@@ -2965,8 +2984,9 @@
                 const id = returnBtn.getAttribute('data-id');
                 const seri = returnBtn.getAttribute('data-seri');
                 const mobil = returnBtn.getAttribute('data-mobil');
-                console.log('Opening return modal:', id, seri, mobil); // Debug log
-                openReturnModal(id, seri, mobil);
+                const type = returnBtn.getAttribute('data-type') || 'jakarta';
+                console.log('Opening return modal:', id, seri, mobil, type); // Debug log
+                openReturnModal(id, seri, mobil, type);
                 return;
             }
 
