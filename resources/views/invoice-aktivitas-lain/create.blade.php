@@ -1916,7 +1916,10 @@ console.log('Akun COAs data:', akunCoasData);
             $('#jenis_biaya_dropdown').val('').trigger('change');
             
             // Hide LWBP fields
-            if (totalWrapper) totalWrapper.classList.add('hidden');
+            if (totalWrapper) {
+                totalWrapper.classList.add('hidden');
+                if (totalInput) totalInput.removeAttribute('required');
+            }
             if (lwbpBaruWrapper) lwbpBaruWrapper.classList.add('hidden');
             if (lwbpLamaWrapper) lwbpLamaWrapper.classList.add('hidden');
             if (lwbpWrapper) lwbpWrapper.classList.add('hidden');
