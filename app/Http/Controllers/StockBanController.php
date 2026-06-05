@@ -73,22 +73,32 @@ class StockBanController extends Controller
     {
         $date = $request->input('date', date('Y-m-d'));
 
-        // Fetch original creations (existing behavior)
-        $stockBans = StockBan::with(['mobil', 'alatBerat', 'penerima', 'kapal', 'namaStockBan', 'createdBy'])
-            ->whereDate('created_at', $date)
-            ->latest()
-            ->get();
-
-        $stockBanLuarBatams = \App\Models\StockBanLuarBatam::with(['mobil', 'alatBerat', 'penerima', 'kapal', 'namaStockBan', 'createdBy'])
-            ->whereDate('created_at', $date)
-            ->latest()
-            ->get();
-
-        // Fetch all activities from Audit Logs for these models
+        // Fetch all activities from Audit Logs for these models first
         $activities = \App\Models\AuditLog::with(['user', 'auditable'])
             ->whereIn('auditable_type', [StockBan::class, \App\Models\StockBanLuarBatam::class])
             ->whereDate('created_at', $date)
             ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get IDs of StockBan modified or created on this day from AuditLog
+        $modifiedStockBanIds = $activities->where('auditable_type', StockBan::class)->pluck('auditable_id')->toArray();
+        $modifiedStockBanLuarBatamIds = $activities->where('auditable_type', \App\Models\StockBanLuarBatam::class)->pluck('auditable_id')->toArray();
+
+        // Fetch bans that were either created or modified on the selected date
+        $stockBans = StockBan::with(['mobil', 'alatBerat', 'penerima', 'kapal', 'namaStockBan', 'createdBy'])
+            ->where(function ($query) use ($date, $modifiedStockBanIds) {
+                $query->whereDate('created_at', $date)
+                    ->orWhereIn('id', $modifiedStockBanIds);
+            })
+            ->latest()
+            ->get();
+
+        $stockBanLuarBatams = \App\Models\StockBanLuarBatam::with(['mobil', 'alatBerat', 'penerima', 'kapal', 'namaStockBan', 'createdBy'])
+            ->where(function ($query) use ($date, $modifiedStockBanLuarBatamIds) {
+                $query->whereDate('created_at', $date)
+                    ->orWhereIn('id', $modifiedStockBanLuarBatamIds);
+            })
+            ->latest()
             ->get();
 
         return view('stock-ban.input-harian', compact('stockBans', 'stockBanLuarBatams', 'activities', 'date'));
