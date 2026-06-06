@@ -616,8 +616,29 @@ function previewPranotaCatFormat() {
     return `${kode}${cetakan}${month}${year}${runningNumber}`;
 }
 
+function getSelectedItems() {
+    try {
+        return JSON.parse(sessionStorage.getItem('selected_tagihan_cat') || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveSelectedItems(items) {
+    sessionStorage.setItem('selected_tagihan_cat', JSON.stringify(items));
+}
+
+function clearSelectedItems() {
+    sessionStorage.removeItem('selected_tagihan_cat');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOMContentLoaded fired - JavaScript is loading');
+
+    // If page is loaded/reloaded with a success alert, clear selection
+    if (document.querySelector('.bg-green-50')) {
+        clearSelectedItems();
+    }
 
     const selectAllCheckbox = document.getElementById('selectAll');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
@@ -661,6 +682,54 @@ document.addEventListener('DOMContentLoaded', function() {
         pranotaModal: !!pranotaModal
     });
 
+    function toggleSelectItem(checkbox) {
+        let items = getSelectedItems();
+        const id = checkbox.value;
+        
+        if (checkbox.checked) {
+            if (!items.some(item => item.id === id)) {
+                const row = checkbox.closest('tr');
+                const nomorTagihan = row.querySelector('td:nth-child(3)').textContent.trim();
+                const nomorKontainer = row.querySelector('td:nth-child(4) div:first-child').textContent.trim();
+                const vendorName = row.querySelector('td:nth-child(5) div:first-child').textContent.trim();
+                const tanggalPranota = row.querySelector('td:nth-child(7)').textContent.trim();
+                const hasPranota = (tanggalPranota && tanggalPranota !== '-');
+                
+                const realisasiText = row.querySelector('td:nth-child(9)').textContent.trim();
+                const realisasiBiaya = realisasiText !== '-' ? (parseFloat(realisasiText.replace(/[^\d]/g, '')) || 0) : 0;
+                
+                items.push({
+                    id: id,
+                    nomorTagihan: nomorTagihan,
+                    nomorKontainer: nomorKontainer,
+                    vendor: vendorName,
+                    hasPranota: hasPranota,
+                    realisasiBiaya: realisasiBiaya
+                });
+            }
+        } else {
+            items = items.filter(item => item.id !== id);
+        }
+        saveSelectedItems(items);
+    }
+
+    // Restore checkbox states on page load
+    function restoreCheckboxStates() {
+        const items = getSelectedItems();
+        const itemIds = items.map(item => item.id);
+        
+        itemCheckboxes.forEach(checkbox => {
+            if (itemIds.includes(checkbox.value)) {
+                checkbox.checked = true;
+            } else {
+                checkbox.checked = false;
+            }
+        });
+        
+        updateSelectAllState();
+        updateBulkActions();
+    }
+
     // Function to show pranota modal
     window.showPranotaModal = function(ids, isBulk = false) {
         if (!ids || ids.length === 0) {
@@ -673,30 +742,48 @@ document.addEventListener('DOMContentLoaded', function() {
         const ids_array = [];
         const vendors = new Set();
         const itemsWithPranota = [];
+        const storedItems = getSelectedItems();
 
         ids.forEach(id => {
-            const checkbox = document.querySelector(`.item-checkbox[value="${id}"]`);
-            if (!checkbox) return;
-            const row = checkbox.closest('tr');
-            const nomorTagihan = row.querySelector('td:nth-child(3)').textContent.trim();
-            const nomorKontainer = row.querySelector('td:nth-child(4) div:first-child').textContent.trim();
-            const vendorName = row.querySelector('td:nth-child(5) div:first-child').textContent.trim();
-            const tanggalPranota = row.querySelector('td:nth-child(7)').textContent.trim();
+            let itemData = storedItems.find(item => item.id == id);
+            
+            // Fallback to DOM if not found in sessionStorage
+            if (!itemData) {
+                const checkbox = document.querySelector(`.item-checkbox[value="${id}"]`);
+                if (checkbox) {
+                    const row = checkbox.closest('tr');
+                    const nomorTagihan = row.querySelector('td:nth-child(3)').textContent.trim();
+                    const nomorKontainer = row.querySelector('td:nth-child(4) div:first-child').textContent.trim();
+                    const vendorName = row.querySelector('td:nth-child(5) div:first-child').textContent.trim();
+                    const tanggalPranota = row.querySelector('td:nth-child(7)').textContent.trim();
+                    const hasPranota = (tanggalPranota && tanggalPranota !== '-');
+                    
+                    const realisasiText = row.querySelector('td:nth-child(9)').textContent.trim();
+                    const realisasiBiaya = realisasiText !== '-' ? (parseFloat(realisasiText.replace(/[^\d]/g, '')) || 0) : 0;
+                    
+                    itemData = {
+                        id: id,
+                        nomorTagihan: nomorTagihan,
+                        nomorKontainer: nomorKontainer,
+                        vendor: vendorName,
+                        hasPranota: hasPranota,
+                        realisasiBiaya: realisasiBiaya
+                    };
+                }
+            }
+
+            if (!itemData) return;
 
             // Check if item already has pranota
-            if (tanggalPranota && tanggalPranota !== '-') {
-                itemsWithPranota.push(nomorTagihan);
+            if (itemData.hasPranota) {
+                itemsWithPranota.push(itemData.nomorTagihan);
                 return; // Skip this item
             }
 
-            selectedItems.push({
-                nomorTagihan: nomorTagihan,
-                nomorKontainer: nomorKontainer,
-                vendor: vendorName
-            });
+            selectedItems.push(itemData);
             ids_array.push(id);
-            if (vendorName && vendorName !== '-') {
-                vendors.add(vendorName);
+            if (itemData.vendor && itemData.vendor !== '-') {
+                vendors.add(itemData.vendor);
             }
         });
 
@@ -744,15 +831,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Auto-populate vendor field
         document.getElementById('supplier').value = vendorName;
 
-        // Calculate total realisasi biaya
+        // Calculate total realisasi biaya from stored/DOM data
         let totalRealisasi = 0;
         ids_array.forEach(id => {
-            const checkbox = document.querySelector(`.item-checkbox[value="${id}"]`);
-            if (!checkbox) return;
-            const row = checkbox.closest('tr');
-            const biayaText = row.querySelector('td:nth-child(9)').textContent.trim();
-            const biaya = biayaText !== '-' ? parseFloat(biayaText.replace(/[^\d]/g, '')) : 0;
-            totalRealisasi += biaya;
+            const itemData = selectedItems.find(item => item.id == id);
+            if (itemData) {
+                totalRealisasi += itemData.realisasiBiaya || 0;
+            }
         });
 
         // Set realisasi biaya total
@@ -895,8 +980,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Initialize bulk actions on page load
-    updateBulkActions();
+    // Initialize/Restore selection
+    restoreCheckboxStates();
 
     // Handle select all checkbox
     selectAllCheckbox.addEventListener('change', function() {
@@ -905,7 +990,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Only check/uncheck enabled checkboxes
         document.querySelectorAll('.item-checkbox:not([disabled])').forEach(checkbox => {
             checkbox.checked = isChecked;
+            toggleSelectItem(checkbox);
         });
+        updateSelectAllState();
         updateBulkActions();
     });
 
@@ -913,6 +1000,7 @@ document.addEventListener('DOMContentLoaded', function() {
     itemCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', function() {
             console.log('Individual checkbox changed:', this.checked, 'ID:', this.value);
+            toggleSelectItem(this);
             updateSelectAllState();
             updateBulkActions();
         });
@@ -920,14 +1008,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update select all checkbox state
     function updateSelectAllState() {
-        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
         const enabledBoxes = document.querySelectorAll('.item-checkbox:not([disabled])');
         const totalEnabledBoxes = enabledBoxes.length;
-
-        if (checkedBoxes.length === 0) {
+        
+        if (totalEnabledBoxes === 0) {
             selectAllCheckbox.checked = false;
             selectAllCheckbox.indeterminate = false;
-        } else if (checkedBoxes.length === totalEnabledBoxes) {
+            return;
+        }
+
+        const checkedEnabledBoxes = document.querySelectorAll('.item-checkbox:checked:not([disabled])');
+
+        if (checkedEnabledBoxes.length === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (checkedEnabledBoxes.length === totalEnabledBoxes) {
             selectAllCheckbox.checked = true;
             selectAllCheckbox.indeterminate = false;
         } else {
@@ -938,10 +1033,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update bulk actions visibility and count
     function updateBulkActions() {
-        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-        const count = checkedBoxes.length;
+        const items = getSelectedItems();
+        const count = items.length;
 
-        console.log('updateBulkActions called, checked boxes:', count);
+        console.log('updateBulkActions called, selected items count:', count);
         console.log('bulkActions element:', bulkActions);
         console.log('selectedCount element:', selectedCount);
 
@@ -956,17 +1051,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 let hasDifferentVendors = false;
                 let hasItemsWithPranota = false;
 
-                checkedBoxes.forEach(checkbox => {
-                    const row = checkbox.closest('tr');
-                    const vendorName = row.querySelector('td:nth-child(5) div:first-child').textContent.trim();
-                    const tanggalPranota = row.querySelector('td:nth-child(7)').textContent.trim();
-
-                    if (vendorName && vendorName !== '-') {
-                        vendors.add(vendorName);
+                items.forEach(item => {
+                    if (item.vendor && item.vendor !== '-') {
+                        vendors.add(item.vendor);
                     }
 
                     // Check if item already has pranota
-                    if (tanggalPranota && tanggalPranota !== '-') {
+                    if (item.hasPranota) {
                         hasItemsWithPranota = true;
                     }
                 });
@@ -1028,24 +1119,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Cancel selection
     btnCancelSelection.addEventListener('click', function() {
-        itemCheckboxes.forEach(checkbox => {
-            checkbox.checked = false;
-        });
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = false;
-        updateBulkActions();
+        clearSelectedItems();
+        restoreCheckboxStates();
     });
 
     // Bulk delete handler
     btnBulkDelete.addEventListener('click', function() {
-        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-        if (checkedBoxes.length === 0) {
+        const items = getSelectedItems();
+        if (items.length === 0) {
             alert('Pilih minimal satu item untuk dihapus');
             return;
         }
 
-        const ids = Array.from(checkedBoxes).map(cb => cb.value);
-        const message = `Apakah Anda yakin ingin menghapus ${checkedBoxes.length} item yang dipilih?`;
+        const ids = items.map(item => item.id);
+        const message = `Apakah Anda yakin ingin menghapus ${items.length} item yang dipilih?`;
 
         if (confirm(message)) {
             // Create form and submit
@@ -1083,13 +1170,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Bulk status update handler
     btnBulkStatus.addEventListener('click', function() {
-        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-        if (checkedBoxes.length === 0) {
+        const items = getSelectedItems();
+        if (items.length === 0) {
             alert('Pilih minimal satu item untuk update status');
             return;
         }
 
-        const ids = Array.from(checkedBoxes).map(cb => cb.value);
+        const ids = items.map(item => item.id);
         const newStatus = prompt('Masukkan status baru:\n1. pending\n2. masuk pranota\n3. paid\n4. cancelled');
 
         let statusValue = '';
@@ -1104,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (statusValue) {
-            const message = `Apakah Anda yakin ingin mengubah status ${checkedBoxes.length} item menjadi "${statusValue}"?`;
+            const message = `Apakah Anda yakin ingin mengubah status ${items.length} item menjadi "${statusValue}"?`;
             if (confirm(message)) {
                 // Create form and submit
                 const form = document.createElement('form');
@@ -1149,13 +1236,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-        if (checkedBoxes.length === 0) {
+        const items = getSelectedItems();
+        if (items.length === 0) {
             alert('Pilih minimal satu item untuk masukan pranota');
             return;
         }
 
-        const ids = Array.from(checkedBoxes).map(cb => cb.value);
+        const ids = items.map(item => item.id);
         showPranotaModal(ids, true);
     });
 });
