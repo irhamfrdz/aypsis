@@ -129,6 +129,10 @@
                                 <input type="text" id="total_bpjs_display" class="{{ $readonlyInputClasses }} font-bold text-yellow-600" value="Rp {{ number_format($pranotaUangRit->total_bpjs, 0, ',', '.') }}" readonly>
                             </div>
                             <div>
+                                <label for="total_adjustment_display" class="{{ $labelClasses }}">Total Adjusment</label>
+                                <input type="text" id="total_adjustment_display" class="{{ $readonlyInputClasses }} font-bold text-sky-600" value="Rp {{ number_format($pranotaUangRit->total_adjustment, 0, ',', '.') }}" readonly>
+                            </div>
+                            <div>
                                 <label for="grand_total_display" class="{{ $labelClasses }}">Grand Total</label>
                                 <input type="text" id="grand_total_display" class="{{ $readonlyInputClasses }} font-bold text-purple-600" value="Rp {{ number_format($pranotaUangRit->grand_total_bersih, 0, ',', '.') }}" readonly>
                             </div>
@@ -223,6 +227,14 @@
                                                        data-supir="{{ $detail->supir_nama }}"
                                                        min="0">
                                             </div>
+                                            <div>
+                                                <label class="text-xs text-gray-600">Adjusment:</label>
+                                                <input type="number" 
+                                                       name="supir_details[{{ $detail->id }}][adjustment]"
+                                                       class="person-adjustment-input w-full px-2 py-1 text-xs border border-gray-300 rounded"
+                                                       value="{{ $detail->adjustment }}"
+                                                       data-supir="{{ $detail->supir_nama }}">
+                                            </div>
                                         </div>
                                         <input type="hidden" name="supir_details[{{ $detail->id }}][supir_nama]" value="{{ $detail->supir_nama }}">
                                         <input type="hidden" name="supir_details[{{ $detail->id }}][total_uang_supir]" value="{{ $detail->total_uang_supir }}">
@@ -261,6 +273,14 @@
                                 </td>
                                 <td class="px-2 py-3 text-right text-xs font-bold text-yellow-600" id="grandTotalBpjs">
                                     Rp {{ number_format($pranotaUangRit->total_bpjs, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            <tr class="font-semibold text-gray-800 bg-gray-200">
+                                <td class="px-2 py-3 text-xs font-bold" colspan="3">
+                                    TOTAL ADJUSMENT
+                                </td>
+                                <td class="px-2 py-3 text-right text-xs font-bold text-sky-600" id="grandTotalAdjustment">
+                                    Rp {{ number_format($pranotaUangRit->total_adjustment, 0, ',', '.') }}
                                 </td>
                             </tr>
                             <tr class="font-semibold text-gray-800 bg-purple-200">
@@ -318,6 +338,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const personUtangInputs = document.querySelectorAll('.person-utang-input');
         const personTabunganInputs = document.querySelectorAll('.person-tabungan-input');
         const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
+        const personAdjustmentInputs = document.querySelectorAll('.person-adjustment-input');
         
         personUtangInputs.forEach(input => {
             input.addEventListener('input', updateOverallTotals);
@@ -330,16 +351,22 @@ document.addEventListener('DOMContentLoaded', function () {
         personBpjsInputs.forEach(input => {
             input.addEventListener('input', updateOverallTotals);
         });
+
+        personAdjustmentInputs.forEach(input => {
+            input.addEventListener('input', updateOverallTotals);
+        });
     }
     
     function updateOverallTotals() {
         const personUtangInputs = document.querySelectorAll('.person-utang-input');
         const personTabunganInputs = document.querySelectorAll('.person-tabungan-input');
         const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
+        const personAdjustmentInputs = document.querySelectorAll('.person-adjustment-input');
         
         let totalUtang = 0;
         let totalTabungan = 0;
         let totalBpjs = 0;
+        let totalAdjustment = 0;
         
         // Get total uang supir from pranota data (fixed value)
         const totalUangSupir = parseFloat('{{ $pranotaUangRit->total_uang }}') || 0;
@@ -356,14 +383,19 @@ document.addEventListener('DOMContentLoaded', function () {
         personBpjsInputs.forEach(input => {
             totalBpjs += parseFloat(input.value) || 0;
         });
+
+        personAdjustmentInputs.forEach(input => {
+            totalAdjustment += parseFloat(input.value) || 0;
+        });
         
         // Calculate grand total bersih
-        const grandTotalBersih = totalUangSupir - totalUtang - totalTabungan - totalBpjs;
+        const grandTotalBersih = totalUangSupir - totalUtang - totalTabungan - totalBpjs + totalAdjustment;
         
         // Update footer totals
         const grandTotalUtang = document.getElementById('grandTotalUtang');
         const grandTotalTabungan = document.getElementById('grandTotalTabungan');
         const grandTotalBpjs = document.getElementById('grandTotalBpjs');
+        const grandTotalAdjustment = document.getElementById('grandTotalAdjustment');
         const grandTotalKeseluruhan = document.getElementById('grandTotalKeseluruhan');
 
         if (grandTotalUtang) {
@@ -377,6 +409,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (grandTotalBpjs) {
             grandTotalBpjs.textContent = 'Rp ' + totalBpjs.toLocaleString('id-ID');
         }
+
+        if (grandTotalAdjustment) {
+            grandTotalAdjustment.textContent = 'Rp ' + totalAdjustment.toLocaleString('id-ID');
+        }
         
         if (grandTotalKeseluruhan) {
             grandTotalKeseluruhan.textContent = 'Rp ' + grandTotalBersih.toLocaleString('id-ID');
@@ -386,6 +422,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const totalUtangDisplay = document.getElementById('total_utang_display');
         const totalTabunganDisplay = document.getElementById('total_tabungan_display');
         const totalBpjsDisplay = document.getElementById('total_bpjs_display');
+        const totalAdjustmentDisplay = document.getElementById('total_adjustment_display');
         const grandTotalDisplay = document.getElementById('grand_total_display');
         
         if (totalUtangDisplay) {
@@ -398,6 +435,10 @@ document.addEventListener('DOMContentLoaded', function () {
         
         if (totalBpjsDisplay) {
             totalBpjsDisplay.value = 'Rp ' + totalBpjs.toLocaleString('id-ID');
+        }
+
+        if (totalAdjustmentDisplay) {
+            totalAdjustmentDisplay.value = 'Rp ' + totalAdjustment.toLocaleString('id-ID');
         }
         
         if (grandTotalDisplay) {

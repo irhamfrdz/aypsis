@@ -4807,6 +4807,14 @@ Route::middleware(['auth'])->group(function () {
         ->name('tagihan-pelindo.destroy')
         ->middleware('can:tagihan-pelindo-delete');
 
+    // Rincian Kontainer Pelindo routes
+    Route::get('rincian-kontainer-pelindo', [\App\Http\Controllers\RincianKontainerPelindoController::class, 'index'])
+        ->name('rincian-kontainer-pelindo.index')
+        ->middleware('can:tagihan-pelindo-view');
+    Route::delete('rincian-kontainer-pelindo/{id}', [\App\Http\Controllers\RincianKontainerPelindoController::class, 'destroy'])
+        ->name('rincian-kontainer-pelindo.destroy')
+        ->middleware('can:tagihan-pelindo-delete');
+
     // OB (Operasional Bongkaran) routes
     Route::get('ob', [\App\Http\Controllers\ObController::class, 'index'])
         ->name('ob.index')

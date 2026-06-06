@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\TandaTerimaFilteredExport;
 use App\Models\MasterKapal;
 use App\Models\Prospek;
+use App\Models\RincianKontainerPelindo;
 use App\Models\SuratJalan;
 use App\Models\TandaTerima;
 use Illuminate\Http\Request;
@@ -1092,6 +1093,49 @@ class TandaTerimaController extends Controller
 
             // Update related Prospek data for newly created TandaTerima
             $updatedProspekCount = $this->updateRelatedProspekData($tandaTerima, $request);
+
+            // Automatically save container details to rincian_kontainer_pelindos
+            try {
+                $containers = [];
+                if ($tandaTerima->kontainer_details && is_array($tandaTerima->kontainer_details)) {
+                    foreach ($tandaTerima->kontainer_details as $detail) {
+                        if (!empty($detail['nomor_kontainer'])) {
+                            $containers[] = [
+                                'nomor_kontainer' => trim($detail['nomor_kontainer']),
+                                'ukuran' => $detail['size'] ?? $tandaTerima->size,
+                                'no_seal' => $detail['no_seal'] ?? null,
+                            ];
+                        }
+                    }
+                } elseif (!empty($tandaTerima->no_kontainer)) {
+                    $noKontainers = array_map('trim', explode(',', $tandaTerima->no_kontainer));
+                    $sizes = !empty($tandaTerima->size) ? array_map('trim', explode(',', $tandaTerima->size)) : [];
+                    $seals = !empty($tandaTerima->no_seal) ? array_map('trim', explode(',', $tandaTerima->no_seal)) : [];
+                    foreach ($noKontainers as $idx => $noKon) {
+                        if (!empty($noKon)) {
+                            $containers[] = [
+                                'nomor_kontainer' => $noKon,
+                                'ukuran' => $sizes[$idx] ?? $tandaTerima->size,
+                                'no_seal' => $seals[$idx] ?? null,
+                            ];
+                        }
+                    }
+                }
+
+                foreach ($containers as $container) {
+                    RincianKontainerPelindo::create([
+                        'tanda_terima_id' => $tandaTerima->id,
+                        'nomor_kontainer' => $container['nomor_kontainer'],
+                        'ukuran' => $container['ukuran'],
+                        'no_seal' => $container['no_seal'],
+                        'kegiatan' => $tandaTerima->kegiatan,
+                        'estimasi_nama_kapal' => $tandaTerima->estimasi_nama_kapal,
+                        'tanggal' => $tandaTerima->tanggal ?? now(),
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error saving to rincian_kontainer_pelindos: ' . $e->getMessage());
+            }
 
             Log::info('Tanda terima created', [
                 'tanda_terima_id' => $tandaTerima->id,

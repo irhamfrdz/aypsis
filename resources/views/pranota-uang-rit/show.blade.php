@@ -115,6 +115,11 @@
                                    value="Rp {{ number_format($pranotaUangRit->total_bpjs, 0, ',', '.') }}" readonly>
                         </div>
                         <div>
+                            <label for="total_adjustment" class="{{ $labelClasses }}">Total Adjusment</label>
+                            <input type="text" class="{{ $inputClasses }} font-bold text-sky-600" 
+                                   value="Rp {{ number_format($pranotaUangRit->total_adjustment, 0, ',', '.') }}" readonly>
+                        </div>
+                        <div>
                             <label for="grand_total" class="{{ $labelClasses }}">Grand Total</label>
                             <input type="text" class="{{ $inputClasses }} font-bold text-purple-600" 
                                    value="Rp {{ number_format($pranotaUangRit->grand_total_bersih, 0, ',', '.') }}" readonly>
@@ -198,6 +203,9 @@
                                                 <div class="bg-yellow-50 border border-yellow-200 rounded px-2 py-1 text-yellow-700">
                                                     BPJS: Rp {{ number_format($detail->bpjs, 0, ',', '.') }}
                                                 </div>
+                                                <div class="bg-sky-50 border border-sky-200 rounded px-2 py-1 text-sky-700">
+                                                    Adjusment: Rp {{ number_format($detail->adjustment, 0, ',', '.') }}
+                                                </div>
                                                 <div class="bg-purple-50 border border-purple-200 rounded px-2 py-1 font-semibold text-purple-700">
                                                     Total: Rp {{ number_format($detail->grand_total, 0, ',', '.') }}
                                                 </div>
@@ -239,6 +247,14 @@
                             </td>
                             <td class="px-2 py-3 text-right text-xs font-bold text-yellow-600">
                                 Rp {{ number_format($pranotaUangRit->total_bpjs, 0, ',', '.') }}
+                            </td>
+                        </tr>
+                        <tr class="font-semibold text-gray-800 bg-gray-200">
+                            <td class="px-2 py-3 text-xs font-bold" colspan="4">
+                                TOTAL ADJUSMENT
+                            </td>
+                            <td class="px-2 py-3 text-right text-xs font-bold text-sky-600">
+                                Rp {{ number_format($pranotaUangRit->total_adjustment, 0, ',', '.') }}
                             </td>
                         </tr>
                         <tr class="font-semibold text-gray-800 bg-purple-200">

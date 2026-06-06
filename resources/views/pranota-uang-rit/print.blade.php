@@ -200,15 +200,16 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 5%;">No</th>
+                    <th style="width: 4%;">No</th>
                     <th style="width: 8%;">NIK</th>
-                    <th style="width: 28%;">Supir</th>
-                    <th style="width: 6%;">Rit</th>
+                    <th style="width: 24%;">Supir</th>
+                    <th style="width: 5%;">Rit</th>
                     <th style="width: 11%;">Total Uang</th>
-                    <th style="width: 9%;">Hutang</th>
-                    <th style="width: 9%;">Tabungan</th>
+                    <th style="width: 8%;">Hutang</th>
+                    <th style="width: 8%;">Tabungan</th>
                     <th style="width: 8%;">BPJS</th>
-                    <th style="width: 16%;">Grand Total</th>
+                    <th style="width: 10%;">Adjusment</th>
+                    <th style="width: 14%;">Grand Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -237,6 +238,7 @@
                         <td class="text-right">{{ number_format($detail->hutang, 0, ',', '.') }}</td>
                         <td class="text-right">{{ number_format($detail->tabungan, 0, ',', '.') }}</td>
                         <td class="text-right">{{ number_format($detail->bpjs, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($detail->adjustment, 0, ',', '.') }}</td>
                         <td class="text-right">{{ number_format($detail->grand_total, 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
@@ -265,7 +267,8 @@
                         <td class="text-right">-</td>
                         <td class="text-right">-</td>
                         <td class="text-right">-</td>
-                        <td class="text-right">{{ number_format($pranotaUangRit->grand_total_bersih / count($uniqueSupir), 0, ',', '.') }}</td>
+                        <td class="text-right">-</td>
+                        <td class="text-right">{{ number_format(($pranotaUangRit->grand_total_bersih - ($pranotaUangRit->total_adjustment ?? 0)) / count($uniqueSupir), 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
                 @endif
@@ -315,6 +318,13 @@
                         {{ number_format($supirDetails->sum('bpjs'), 0, ',', '.') }}
                     @else
                         {{ number_format(0, 0, ',', '.') }}
+                    @endif
+                </strong></td>
+                <td class="text-right"><strong>
+                    @if($supirDetails && $supirDetails->count() > 0)
+                        {{ number_format($supirDetails->sum('adjustment'), 0, ',', '.') }}
+                    @else
+                        {{ number_format($pranotaUangRit->total_adjustment ?? 0, 0, ',', '.') }}
                     @endif
                 </strong></td>
                 <td class="text-right"><strong>

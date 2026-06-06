@@ -145,6 +145,10 @@
                                 <input type="text" id="total_bpjs_display" class="{{ $readonlyInputClasses }} font-bold text-yellow-600" value="Rp 0" readonly>
                             </div>
                             <div>
+                                <label for="total_adjustment_display" class="{{ $labelClasses }}">Total Adjusment</label>
+                                <input type="text" id="total_adjustment_display" class="{{ $readonlyInputClasses }} font-bold text-sky-600" value="Rp 0" readonly>
+                            </div>
+                            <div>
                                 <label for="grand_total_display" class="{{ $labelClasses }}">Grand Total</label>
                                 <input type="text" id="grand_total_display" class="{{ $readonlyInputClasses }} font-bold text-purple-600" value="Rp 0" readonly>
                             </div>
@@ -222,6 +226,9 @@
                         </div>
                         <div class="text-xs text-blue-700">
                             Total BPJS: <span class="font-semibold text-yellow-600" id="totalBpjsSummary">Rp 0</span>
+                        </div>
+                        <div class="text-xs text-blue-700">
+                            Total Adjusment: <span class="font-semibold text-sky-600" id="totalAdjustmentSummary">Rp 0</span>
                         </div>
                         <div class="text-xs text-blue-700">
                             Grand Total: <span class="font-semibold text-purple-600" id="grandTotalSummary">Rp 0</span>
@@ -495,6 +502,14 @@
                                     Rp 0
                                 </td>
                             </tr>
+                            <tr class="font-semibold text-gray-800 bg-gray-200">
+                                <td class="px-2 py-3 text-xs font-bold" colspan="5">
+                                    TOTAL ADJUSMENT
+                                </td>
+                                <td class="px-2 py-3 text-right text-xs font-bold text-sky-600" id="grandTotalAdjustment">
+                                    Rp 0
+                                </td>
+                            </tr>
                             <tr class="font-semibold text-gray-800 bg-purple-200">
                                 <td class="px-2 py-3 text-xs font-bold" colspan="5">
                                     GRAND TOTAL BERSIH
@@ -710,6 +725,12 @@ document.addEventListener('DOMContentLoaded', function () {
                                    min="0" 
                                    step="1"
                                    data-person="${personId}">
+                            <input type="number" 
+                                   class="person-adjustment-input w-16 px-1 py-1 text-xs border border-sky-300 rounded focus:ring-1 focus:ring-sky-500 focus:border-sky-500 text-right"
+                                   placeholder="Adjusment" 
+                                   value="0"
+                                   step="1"
+                                   data-person="${personId}">
                             <div class="person-grand-total w-20 px-1 py-1 text-xs bg-purple-50 border border-purple-200 rounded text-right font-semibold text-purple-700"
                                  data-person="${personId}">
                                 Rp ${totals.uangSupir.toLocaleString('id-ID')}
@@ -732,6 +753,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const personUtangInputs = document.querySelectorAll('.person-utang-input');
         const personTabunganInputs = document.querySelectorAll('.person-tabungan-input');
         const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
+        const personAdjustmentInputs = document.querySelectorAll('.person-adjustment-input');
         
         personUtangInputs.forEach(input => {
             input.addEventListener('input', updatePersonGrandTotals);
@@ -742,6 +764,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         
         personBpjsInputs.forEach(input => {
+            input.addEventListener('input', updatePersonGrandTotals);
+        });
+
+        personAdjustmentInputs.forEach(input => {
             input.addEventListener('input', updatePersonGrandTotals);
         });
     }
@@ -760,6 +786,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const utangInput = document.querySelector(`.person-utang-input[data-person="${personId}"]`);
             const tabunganInput = document.querySelector(`.person-tabungan-input[data-person="${personId}"]`);
             const bpjsInput = document.querySelector(`.person-bpjs-input[data-person="${personId}"]`);
+            const adjustmentInput = document.querySelector(`.person-adjustment-input[data-person="${personId}"]`);
             
             // Get person's total uang supir from checked checkboxes
             let personUangSupir = 0;
@@ -776,9 +803,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const utang = utangInput ? (parseFloat(utangInput.value) || 0) : 0;
             const tabungan = tabunganInput ? (parseFloat(tabunganInput.value) || 0) : 0;
             const bpjs = bpjsInput ? (parseFloat(bpjsInput.value) || 0) : 0;
+            const adjustment = adjustmentInput ? (parseFloat(adjustmentInput.value) || 0) : 0;
             
-            // Calculate grand total: Uang Supir - Hutang - Tabungan - BPJS
-            const grandTotal = personUangSupir - utang - tabungan - bpjs;
+            // Calculate grand total: Uang Supir - Hutang - Tabungan - BPJS + Adjustment
+            const grandTotal = personUangSupir - utang - tabungan - bpjs + adjustment;
             grandTotalDiv.textContent = 'Rp ' + grandTotal.toLocaleString('id-ID');
         });
         
@@ -790,10 +818,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const personUtangInputs = document.querySelectorAll('.person-utang-input');
         const personTabunganInputs = document.querySelectorAll('.person-tabungan-input');
         const personBpjsInputs = document.querySelectorAll('.person-bpjs-input');
+        const personAdjustmentInputs = document.querySelectorAll('.person-adjustment-input');
         
         let totalUtang = 0;
         let totalTabungan = 0;
         let totalBpjs = 0;
+        let totalAdjustment = 0;
         let totalUangSupir = 0;
         
         // Calculate total uang supir from checked checkboxes
@@ -806,7 +836,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
         
-        // Calculate total hutang, tabungan, and bpjs from person inputs
+        // Calculate total hutang, tabungan, bpjs, and adjustment from person inputs
         personUtangInputs.forEach(input => {
             totalUtang += parseFloat(input.value) || 0;
         });
@@ -818,8 +848,12 @@ document.addEventListener('DOMContentLoaded', function () {
         personBpjsInputs.forEach(input => {
             totalBpjs += parseFloat(input.value) || 0;
         });
+
+        personAdjustmentInputs.forEach(input => {
+            totalAdjustment += parseFloat(input.value) || 0;
+        });
         
-        const overallGrandTotal = totalUangSupir - totalUtang - totalTabungan - totalBpjs;
+        const overallGrandTotal = totalUangSupir - totalUtang - totalTabungan - totalBpjs + totalAdjustment;
         
         // Update display elements
         if (totalUtangDisplay) {
@@ -833,6 +867,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (totalBpjsDisplay) {
             totalBpjsDisplay.value = 'Rp ' + totalBpjs.toLocaleString('id-ID');
         }
+
+        const totalAdjustmentDisplay = document.getElementById('total_adjustment_display');
+        if (totalAdjustmentDisplay) {
+            totalAdjustmentDisplay.value = 'Rp ' + totalAdjustment.toLocaleString('id-ID');
+        }
         
         if (grandTotalDisplay) {
             grandTotalDisplay.value = 'Rp ' + overallGrandTotal.toLocaleString('id-ID');
@@ -842,12 +881,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const totalUtangSummary = document.getElementById('totalUtangSummary');
         const totalTabunganSummary = document.getElementById('totalTabunganSummary');
         const totalBpjsSummary = document.getElementById('totalBpjsSummary');
+        const totalAdjustmentSummary = document.getElementById('totalAdjustmentSummary');
         const grandTotalSummary = document.getElementById('grandTotalSummary');
-
+ 
         if (totalUtangSummary) {
             totalUtangSummary.textContent = 'Rp ' + totalUtang.toLocaleString('id-ID');
         }
-
+ 
         if (totalTabunganSummary) {
             totalTabunganSummary.textContent = 'Rp ' + totalTabungan.toLocaleString('id-ID');
         }
@@ -855,32 +895,41 @@ document.addEventListener('DOMContentLoaded', function () {
         if (totalBpjsSummary) {
             totalBpjsSummary.textContent = 'Rp ' + totalBpjs.toLocaleString('id-ID');
         }
+
+        if (totalAdjustmentSummary) {
+            totalAdjustmentSummary.textContent = 'Rp ' + totalAdjustment.toLocaleString('id-ID');
+        }
         
         if (grandTotalSummary) {
             grandTotalSummary.textContent = 'Rp ' + overallGrandTotal.toLocaleString('id-ID');
         }
-
+ 
         // Update footer totals
         const grandTotalUangSupir = document.getElementById('grandTotalUangSupir');
         const grandTotalUtang = document.getElementById('grandTotalUtang');
         const grandTotalTabungan = document.getElementById('grandTotalTabungan');
         const grandTotalBpjs = document.getElementById('grandTotalBpjs');
+        const grandTotalAdjustment = document.getElementById('grandTotalAdjustment');
         const grandTotalKeseluruhan = document.getElementById('grandTotalKeseluruhan');
-
+ 
         if (grandTotalUangSupir) {
             grandTotalUangSupir.textContent = 'Rp ' + totalUangSupir.toLocaleString('id-ID');
         }
-
+ 
         if (grandTotalUtang) {
             grandTotalUtang.textContent = 'Rp ' + totalUtang.toLocaleString('id-ID');
         }
-
+ 
         if (grandTotalTabungan) {
             grandTotalTabungan.textContent = 'Rp ' + totalTabungan.toLocaleString('id-ID');
         }
         
         if (grandTotalBpjs) {
             grandTotalBpjs.textContent = 'Rp ' + totalBpjs.toLocaleString('id-ID');
+        }
+
+        if (grandTotalAdjustment) {
+            grandTotalAdjustment.textContent = 'Rp ' + totalAdjustment.toLocaleString('id-ID');
         }
         
         if (grandTotalKeseluruhan) {
@@ -1157,6 +1206,25 @@ document.addEventListener('DOMContentLoaded', function () {
             bpjsInput.name = `supir_details[${realSupirNama}][bpjs]`;
             bpjsInput.value = bpjsValue;
             supirDetailsContainer.appendChild(bpjsInput);
+        });
+
+        const personAdjustmentInputs = document.querySelectorAll('.person-adjustment-input');
+        personAdjustmentInputs.forEach(input => {
+            const personId = input.dataset.person;
+            let realSupirNama = personId;
+            for (let cb of suratJalanCheckboxes) {
+                if ((cb.dataset.supir_identifier || cb.dataset.supir_nama) === personId) {
+                    realSupirNama = cb.dataset.supir_nama;
+                    break;
+                }
+            }
+
+            const adjustmentValue = input.value || 0;
+            const adjustmentInput = document.createElement('input');
+            adjustmentInput.type = 'hidden';
+            adjustmentInput.name = `supir_details[${realSupirNama}][adjustment]`;
+            adjustmentInput.value = adjustmentValue;
+            supirDetailsContainer.appendChild(adjustmentInput);
         });
     }
 
