@@ -926,15 +926,17 @@ class PranotaUangRitController extends Controller
                 $bpjs = floatval($details['bpjs'] ?? 0);
                 $adjustment = floatval($details['adjustment'] ?? 0);
 
-                // Update detail per supir using the primary key (ID)
-                // This is more reliable than using the name which caused a type mismatch
-                PranotaUangRitSupirDetail::where('id', $detailId)
-                    ->update([
+                // Update detail per supir using the primary key (ID) via Eloquent model
+                // so that the saving boot event runs and recalculates grand_total
+                $detail = PranotaUangRitSupirDetail::find($detailId);
+                if ($detail) {
+                    $detail->update([
                         'hutang' => $hutang,
                         'tabungan' => $tabungan,
                         'bpjs' => $bpjs,
                         'adjustment' => $adjustment,
                     ]);
+                }
             }
 
             // Recalculate totals from DB to ensure consistency
