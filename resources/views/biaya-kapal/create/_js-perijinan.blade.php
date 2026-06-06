@@ -240,6 +240,23 @@
         } else {
             // Add first perijinan item automatically for new section
             addPerijinanItemToSection(idx);
+
+            // Copy Penerima, Nomor Rekening, and Bank from Section 1 if it exists
+            if (idx > 1) {
+                const firstPenerima = document.querySelector('input[name="perijinan_sections[1][penerima]"]');
+                const firstRekening = document.querySelector('input[name="perijinan_sections[1][nomor_rekening]"]');
+                const firstBank = document.querySelector('select[name="perijinan_sections[1][bank_id]"]');
+
+                if (firstPenerima) {
+                    section.querySelector(`[name="perijinan_sections[${idx}][penerima]"]`).value = firstPenerima.value;
+                }
+                if (firstRekening) {
+                    section.querySelector(`[name="perijinan_sections[${idx}][nomor_rekening]"]`).value = firstRekening.value;
+                }
+                if (firstBank) {
+                    section.querySelector(`[name="perijinan_sections[${idx}][bank_id]"]`).value = firstBank.value;
+                }
+            }
         }
 
         const voyageSelect = section.querySelector('.perijinan-voyage-select');
