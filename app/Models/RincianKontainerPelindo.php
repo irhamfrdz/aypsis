@@ -13,6 +13,8 @@ class RincianKontainerPelindo extends Model
 
     protected $fillable = [
         'tanda_terima_id',
+        'tanda_terima_tanpa_surat_jalan_id',
+        'tanda_terima_lcl_id',
         'nomor_kontainer',
         'ukuran',
         'no_seal',
@@ -24,5 +26,15 @@ class RincianKontainerPelindo extends Model
     public function tandaTerima()
     {
         return $this->belongsTo(TandaTerima::class, 'tanda_terima_id');
+    }
+
+    public function tandaTerimaTanpaSuratJalan()
+    {
+        return $this->belongsTo(TandaTerimaTanpaSuratJalan::class, 'tanda_terima_tanpa_surat_jalan_id');
+    }
+
+    public function tandaTerimaLcl()
+    {
+        return $this->belongsTo(TandaTerimaLcl::class, 'tanda_terima_lcl_id');
     }
 }

@@ -11,6 +11,7 @@ use App\Models\MasterTujuanKirim;
 use App\Models\Penerima;
 use App\Models\Pengirim;
 use App\Models\Prospek;
+use App\Models\RincianKontainerPelindo;
 use App\Models\StockKontainer;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaLclItem;
@@ -1772,6 +1773,25 @@ class TandaTerimaLclController extends Controller
                 'created_by' => Auth::id(),
             ]);
 
+            // Create rincian kontainer Pelindo records for each LCL in this container
+            try {
+                foreach ($pivotRecords as $pivot) {
+                    if ($pivot->tanda_terima_lcl_id) {
+                        RincianKontainerPelindo::create([
+                            'tanda_terima_lcl_id' => $pivot->tanda_terima_lcl_id,
+                            'nomor_kontainer' => $request->nomor_kontainer,
+                            'ukuran' => $pivot->size_kontainer,
+                            'no_seal' => $request->nomor_seal,
+                            'kegiatan' => 'gate in',
+                            'estimasi_nama_kapal' => null,
+                            'tanggal' => $request->tanggal_seal ?? now(),
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error saving to rincian_kontainer_pelindos from LCL seal: ' . $e->getMessage());
+            }
+
             DB::commit();
 
             return redirect()->route('tanda-terima-lcl.stuffing')
@@ -1859,6 +1879,15 @@ class TandaTerimaLclController extends Controller
                 'user_name' => Auth::user()->name,
                 'lcl_count' => $updated,
             ]);
+
+            // Hapus rincian kontainer Pelindo terkait
+            try {
+                RincianKontainerPelindo::where('nomor_kontainer', $request->nomor_kontainer)
+                    ->where('no_seal', $oldSealNumber)
+                    ->delete();
+            } catch (\Exception $e) {
+                \Log::error('Error deleting rincian kontainer Pelindo on unseal: ' . $e->getMessage());
+            }
 
             DB::commit();
 
@@ -2028,6 +2057,25 @@ class TandaTerimaLclController extends Controller
                 'merged_count' => $unsealedRecords->count(),
                 'user_id' => Auth::id(),
             ]);
+
+            // Create rincian kontainer Pelindo records for each merged LCL in this container
+            try {
+                foreach ($unsealedRecords as $record) {
+                    if ($record->tanda_terima_lcl_id) {
+                        RincianKontainerPelindo::create([
+                            'tanda_terima_lcl_id' => $record->tanda_terima_lcl_id,
+                            'nomor_kontainer' => $request->nomor_kontainer,
+                            'ukuran' => $record->size_kontainer,
+                            'no_seal' => $sealedBatch->nomor_seal,
+                            'kegiatan' => 'gate in',
+                            'estimasi_nama_kapal' => null,
+                            'tanggal' => $sealedBatch->tanggal_seal ?? now(),
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::error('Error saving to rincian_kontainer_pelindos from LCL merge batch: ' . $e->getMessage());
+            }
 
             DB::commit();
 

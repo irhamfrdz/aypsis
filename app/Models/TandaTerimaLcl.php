@@ -283,4 +283,9 @@ class TandaTerimaLcl extends Model
                     ->orWhere('nomor_kontainer', '');
             });
     }
+
+    public function rincianKontainerPelindo(): HasMany
+    {
+        return $this->hasMany(RincianKontainerPelindo::class, 'tanda_terima_lcl_id');
+    }
 }

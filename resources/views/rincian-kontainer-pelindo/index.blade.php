@@ -111,8 +111,26 @@
                             <a href="{{ route('tanda-terima.show', $item->tanda_terima_id) }}" class="hover:underline">
                                 TT-{{ $item->tanda_terima_id }}
                             </a>
+                            @elseif($item->tandaTerimaTanpaSuratJalan)
+                            <a href="{{ route('tanda-terima-tanpa-surat-jalan.show', $item->tanda_terima_tanpa_surat_jalan_id) }}" class="hover:underline text-teal-600">
+                                TTSJ-{{ $item->tanda_terima_tanpa_surat_jalan_id }}
+                            </a>
+                            @elseif($item->tandaTerimaLcl)
+                            <a href="{{ route('tanda-terima-lcl.show', $item->tanda_terima_lcl_id) }}" class="hover:underline text-purple-600">
+                                TTLCL-{{ $item->tanda_terima_lcl_id }}
+                            </a>
                             @else
-                            <span class="text-gray-400">TT-{{ $item->tanda_terima_id }}</span>
+                            <span class="text-gray-400">
+                                @if($item->tanda_terima_id)
+                                    TT-{{ $item->tanda_terima_id }}
+                                @elseif($item->tanda_terima_tanpa_surat_jalan_id)
+                                    TTSJ-{{ $item->tanda_terima_tanpa_surat_jalan_id }}
+                                @elseif($item->tanda_terima_lcl_id)
+                                    TTLCL-{{ $item->tanda_terima_lcl_id }}
+                                @else
+                                    -
+                                @endif
+                            </span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">

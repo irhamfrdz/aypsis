@@ -192,4 +192,12 @@ class TandaTerimaTanpaSuratJalan extends Model
     {
         return $this->dimensiItems()->sum('tonase') ?: $this->tonase ?: 0;
     }
+
+    /**
+     * Relationship with Rincian Kontainer Pelindo
+     */
+    public function rincianKontainerPelindo()
+    {
+        return $this->hasMany(RincianKontainerPelindo::class, 'tanda_terima_tanpa_surat_jalan_id');
+    }
 }

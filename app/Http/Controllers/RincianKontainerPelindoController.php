@@ -20,7 +20,7 @@ class RincianKontainerPelindoController extends Controller
         $endDate = $request->input('end_date');
         $perPage = $request->input('per_page', 25);
 
-        $query = RincianKontainerPelindo::with('tandaTerima');
+        $query = RincianKontainerPelindo::with(['tandaTerima', 'tandaTerimaTanpaSuratJalan', 'tandaTerimaLcl']);
 
         // Apply Search (nomor kontainer, seal)
         if ($search) {

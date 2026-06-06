@@ -11,6 +11,7 @@ use App\Models\MasterTujuanKirim;
 use App\Models\Penerima;
 use App\Models\Pengirim;
 use App\Models\Prospek;
+use App\Models\RincianKontainerPelindo;
 use App\Models\StockKontainer;
 use App\Models\TandaTerimaTanpaSuratJalan;
 use App\Models\Term;
@@ -808,6 +809,39 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 ]);
 
                 $prospekCreated = true;
+            }
+
+            // Automatically save container details to rincian_kontainer_pelindos
+            try {
+                $containers = [];
+                if (!empty($tandaTerima->no_kontainer)) {
+                    $noKontainers = array_map('trim', explode(',', $tandaTerima->no_kontainer));
+                    $sizes = !empty($tandaTerima->size_kontainer) ? array_map('trim', explode(',', $tandaTerima->size_kontainer)) : [];
+                    $seals = !empty($tandaTerima->no_seal) ? array_map('trim', explode(',', $tandaTerima->no_seal)) : [];
+                    foreach ($noKontainers as $idx => $noKon) {
+                        if (!empty($noKon)) {
+                            $containers[] = [
+                                'nomor_kontainer' => $noKon,
+                                'ukuran' => $sizes[$idx] ?? $tandaTerima->size_kontainer,
+                                'no_seal' => $seals[$idx] ?? $tandaTerima->no_seal,
+                            ];
+                        }
+                    }
+                }
+
+                foreach ($containers as $container) {
+                    RincianKontainerPelindo::create([
+                        'tanda_terima_tanpa_surat_jalan_id' => $tandaTerima->id,
+                        'nomor_kontainer' => $container['nomor_kontainer'],
+                        'ukuran' => $container['ukuran'],
+                        'no_seal' => $container['no_seal'],
+                        'kegiatan' => $tandaTerima->aktifitas,
+                        'estimasi_nama_kapal' => $tandaTerima->estimasi_naik_kapal,
+                        'tanggal' => $tandaTerima->tanggal_tanda_terima ?? now(),
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error saving to rincian_kontainer_pelindos from TTSJ: ' . $e->getMessage());
             }
 
             DB::commit();
