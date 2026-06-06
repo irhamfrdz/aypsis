@@ -209,6 +209,7 @@
         @php
             $penerimaDisplay = $biayaKapal->penerima ?? ($biayaKapal->perijinanDetails->pluck('penerima')->filter()->unique()->values()->first() ?? '-');
             $rekeningDisplay = $biayaKapal->nomor_rekening ?? ($biayaKapal->perijinanDetails->pluck('nomor_rekening')->filter()->unique()->values()->first() ?? '-');
+            $bankDisplay = $biayaKapal->bank?->name ?? ($biayaKapal->perijinanDetails->map(function($d) { return $d->bank?->name; })->filter()->unique()->values()->first() ?? '-');
             
             $totalGrandTotal = $biayaKapal->perijinanDetails->sum('grand_total');
         @endphp
@@ -229,7 +230,7 @@
                 </tr>
                 <tr>
                     <td>No. Rekening</td>
-                    <td>: {{ $rekeningDisplay }}</td>
+                    <td>: {{ $rekeningDisplay }} ({{ $bankDisplay }})</td>
                     <td></td>
                     <td></td>
                 </tr>

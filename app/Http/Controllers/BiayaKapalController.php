@@ -776,6 +776,7 @@ class BiayaKapalController extends Controller
             'perijinan_sections.*.grand_total' => 'nullable|numeric|min:0',
             'perijinan_sections.*.penerima' => 'nullable|string|max:255',
             'perijinan_sections.*.nomor_rekening' => 'nullable|string|max:255',
+            'perijinan_sections.*.bank_id' => 'nullable|exists:banks,id',
             'perijinan_sections.*.tanggal_invoice_vendor' => 'nullable|date',
             'perijinan_sections.*.keterangan' => 'nullable|string',
             'perijinan_sections.*.jumlah_biaya' => 'nullable|numeric|min:0',
@@ -2207,6 +2208,7 @@ class BiayaKapalController extends Controller
                         'grand_total' => $grandTotal,
                         'penerima' => $section['penerima'] ?? null,
                         'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                        'bank_id' => $section['bank_id'] ?? null,
                         'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                         'keterangan' => $section['keterangan'] ?? null,
                     ]);
@@ -2522,7 +2524,7 @@ class BiayaKapalController extends Controller
         // Check if it's Biaya Perijinan and use specific print template
         if ($biayaKapal->klasifikasiBiaya &&
             stripos($biayaKapal->klasifikasiBiaya->nama, 'perijinan') !== false) {
-            $biayaKapal->load(['perijinanDetails.details']);
+            $biayaKapal->load(['perijinanDetails.details', 'perijinanDetails.bank']);
 
             return view('biaya-kapal.print-perijinan', compact('biayaKapal'));
         }
@@ -2741,7 +2743,7 @@ class BiayaKapalController extends Controller
      */
     public function printPerijinan(BiayaKapal $biayaKapal)
     {
-        $biayaKapal->load(['klasifikasiBiaya', 'perijinanDetails.details']);
+        $biayaKapal->load(['klasifikasiBiaya', 'perijinanDetails.details', 'perijinanDetails.bank']);
 
         return view('biaya-kapal.print-perijinan', compact('biayaKapal'));
     }
@@ -3386,6 +3388,26 @@ class BiayaKapalController extends Controller
             'tanto.*.nomor_rekening' => 'nullable|string|max:100',
             'tanto.*.tanggal_invoice_vendor' => 'nullable|date',
             'tanto.*.keterangan' => 'nullable|string',
+
+            // Perijinan sections
+            'perijinan_sections' => 'nullable|array',
+            'perijinan_sections.*.nama_kapal' => 'nullable|string|max:255',
+            'perijinan_sections.*.no_voyage' => 'nullable|string|max:255',
+            'perijinan_sections.*.nomor_referensi' => 'nullable|string|max:255',
+            'perijinan_sections.*.vendor' => 'nullable|string|max:255',
+            'perijinan_sections.*.lokasi' => 'nullable|string|max:255',
+            'perijinan_sections.*.sub_total' => 'nullable|numeric|min:0',
+            'perijinan_sections.*.grand_total' => 'nullable|numeric|min:0',
+            'perijinan_sections.*.penerima' => 'nullable|string|max:255',
+            'perijinan_sections.*.nomor_rekening' => 'nullable|string|max:255',
+            'perijinan_sections.*.bank_id' => 'nullable|exists:banks,id',
+            'perijinan_sections.*.tanggal_invoice_vendor' => 'nullable|date',
+            'perijinan_sections.*.keterangan' => 'nullable|string',
+            'perijinan_sections.*.jumlah_biaya' => 'nullable|numeric|min:0',
+            'perijinan_sections.*.items' => 'nullable|array',
+            'perijinan_sections.*.items.*.pricelist_perijinan_id' => 'nullable|string',
+            'perijinan_sections.*.items.*.nama_perijinan' => 'nullable|string',
+            'perijinan_sections.*.items.*.tarif' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -4232,51 +4254,50 @@ class BiayaKapalController extends Controller
             }
 
             // PERIJINAN UPDATE
-            if ($request->has('perijinan_sections')) {
+            if (! empty($validated['perijinan_sections'])) {
                 BiayaKapalPerijinan::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 $totalPerijinan = 0;
-                if (! empty($request->perijinan_sections)) {
-                    foreach ($request->perijinan_sections as $section) {
-                        if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) {
-                            continue;
-                        }
-
-                        $jumlah = floatval($section['jumlah_biaya'] ?? 0);
-                        $subTotal = floatval($section['sub_total'] ?? $jumlah);
-                        $grandTotal = floatval($section['grand_total'] ?? $subTotal);
-
-                        $perijinan = BiayaKapalPerijinan::create([
-                            'biaya_kapal_id' => $biayaKapal->id,
-                            'nama_kapal' => $section['nama_kapal'] ?? null,
-                            'no_voyage' => $section['no_voyage'] ?? null,
-                            'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                            'vendor' => $section['vendor'] ?? null,
-                            'lokasi' => $section['lokasi'] ?? null,
-                            'jumlah_biaya' => $jumlah,
-                            'sub_total' => $subTotal,
-                            'grand_total' => $grandTotal,
-                            'penerima' => $section['penerima'] ?? null,
-                            'nomor_rekening' => $section['nomor_rekening'] ?? null,
-                            'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
-                            'keterangan' => $section['keterangan'] ?? null,
-                        ]);
-
-                        if (isset($section['items']) && is_array($section['items'])) {
-                            foreach ($section['items'] as $item) {
-                                if (empty($item['pricelist_perijinan_id']) && empty($item['nama_perijinan'])) {
-                                    continue;
-                                }
-
-                                \App\Models\BiayaKapalPerijinanDetail::create([
-                                    'biaya_kapal_perijinan_id' => $perijinan->id,
-                                    'pricelist_perijinan_id' => ($item['pricelist_perijinan_id'] && $item['pricelist_perijinan_id'] !== 'MANUAL') ? $item['pricelist_perijinan_id'] : null,
-                                    'nama_perijinan' => $item['nama_perijinan'] ?? null,
-                                    'tarif' => floatval($item['tarif'] ?? 0),
-                                ]);
-                            }
-                        }
-                        $totalPerijinan += $grandTotal;
+                foreach ($validated['perijinan_sections'] as $section) {
+                    if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) {
+                        continue;
                     }
+
+                    $jumlah = floatval($section['jumlah_biaya'] ?? 0);
+                    $subTotal = floatval($section['sub_total'] ?? $jumlah);
+                    $grandTotal = floatval($section['grand_total'] ?? $subTotal);
+
+                    $perijinan = BiayaKapalPerijinan::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'nama_kapal' => $section['nama_kapal'] ?? null,
+                        'no_voyage' => $section['no_voyage'] ?? null,
+                        'nomor_referensi' => $section['nomor_referensi'] ?? null,
+                        'vendor' => $section['vendor'] ?? null,
+                        'lokasi' => $section['lokasi'] ?? null,
+                        'jumlah_biaya' => $jumlah,
+                        'sub_total' => $subTotal,
+                        'grand_total' => $grandTotal,
+                        'penerima' => $section['penerima'] ?? null,
+                        'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                        'bank_id' => $section['bank_id'] ?? null,
+                        'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                        'keterangan' => $section['keterangan'] ?? null,
+                    ]);
+
+                    if (isset($section['items']) && is_array($section['items'])) {
+                        foreach ($section['items'] as $item) {
+                            if (empty($item['pricelist_perijinan_id']) && empty($item['nama_perijinan'])) {
+                                continue;
+                            }
+
+                            \App\Models\BiayaKapalPerijinanDetail::create([
+                                'biaya_kapal_perijinan_id' => $perijinan->id,
+                                'pricelist_perijinan_id' => ($item['pricelist_perijinan_id'] && $item['pricelist_perijinan_id'] !== 'MANUAL') ? $item['pricelist_perijinan_id'] : null,
+                                'nama_perijinan' => $item['nama_perijinan'] ?? null,
+                                'tarif' => floatval($item['tarif'] ?? 0),
+                            ]);
+                        }
+                    }
+                    $totalPerijinan += $grandTotal;
                 }
                 if ($totalPerijinan > 0) {
                     $biayaKapal->update(['nominal' => $totalPerijinan]);

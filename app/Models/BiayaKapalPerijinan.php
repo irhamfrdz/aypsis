@@ -22,6 +22,7 @@ class BiayaKapalPerijinan extends Model
         'grand_total',
         'penerima',
         'nomor_rekening',
+        'bank_id',
         'tanggal_invoice_vendor',
         'keterangan',
         'jumlah_biaya',
@@ -33,6 +34,11 @@ class BiayaKapalPerijinan extends Model
         'jumlah_biaya' => 'decimal:2',
         'tanggal_invoice_vendor' => 'date',
     ];
+
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class, 'bank_id');
+    }
 
     public function details()
     {

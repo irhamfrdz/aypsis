@@ -1019,7 +1019,12 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm font-semibold text-gray-800">{{ $detail->nomor_referensi ?: '-' }}</div>
-                                <div class="text-xs text-gray-500 italic">{{ $detail->vendor ?: '-' }}</div>
+                                <div class="text-xs text-gray-500 italic">Vendor: {{ $detail->vendor ?: '-' }}</div>
+                                @if($detail->penerima || $detail->nomor_rekening)
+                                    <div class="text-xs text-indigo-600 font-medium mt-1">
+                                        Trsf: {{ $detail->penerima }} @if($detail->nomor_rekening) ({{ $detail->nomor_rekening }} - {{ $detail->bank?->name ?: '-' }}) @endif
+                                    </div>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 <div class="space-y-1">

@@ -1,9 +1,9 @@
-    // ============= BIAYA PERIJINAN LOGIC (MULTI-SECTION) =============
+// ============= BIAYA PERIJINAN LOGIC (MULTI-SECTION) =============
     let perijinanSectionCounter = 0;
     // Variables already declared in _js-jenis-biaya.blade.php:
     // perijinanWrapper, perijinanSectionsContainer, addPerijinanSectionBtn, addPerijinanSectionBottomBtn
 
-
+    const banksData = {!! json_encode($banks->map(function($b) { return ['id' => $b->id, 'name' => $b->name]; })->toArray()) !!};
 
 
     function initializePerijinanSections() {
@@ -135,6 +135,20 @@
                            placeholder="Nomor rekening bank...">
                 </div>
 
+                <div class="space-y-1">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Pilih Bank</label>
+                    <div class="relative">
+                        <select name="perijinan_sections[${idx}][bank_id]" 
+                                class="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white appearance-none">
+                            <option value="">-- Pilih Bank --</option>
+                            ${banksData.map(bank => `<option value="${bank.id}">${bank.name}</option>`).join('')}
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-blue-300">
+                            <i class="fas fa-university text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Row 7: Nomor Referensi & Tanggal Invoice -->
                 <div class="space-y-1">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Referensi</label>
@@ -211,6 +225,7 @@
             section.querySelector(`[name="perijinan_sections[${idx}][lokasi]"]`).value = initialData.lokasi || '';
             section.querySelector(`[name="perijinan_sections[${idx}][penerima]"]`).value = initialData.penerima || '';
             section.querySelector(`[name="perijinan_sections[${idx}][nomor_rekening]"]`).value = initialData.nomor_rekening || '';
+            section.querySelector(`[name="perijinan_sections[${idx}][bank_id]"]`).value = initialData.bank_id || '';
             section.querySelector(`[name="perijinan_sections[${idx}][tanggal_invoice_vendor]"]`).value = initialData.tanggal_invoice_vendor || '';
             section.querySelector(`[name="perijinan_sections[${idx}][keterangan]"]`).value = initialData.keterangan || '';
             
