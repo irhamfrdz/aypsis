@@ -267,7 +267,8 @@ class PerbaikanKontainerController extends Controller
             foreach ($data['items'] as $item) {
                 $biayaRiil = floatval($item['biaya_riil'] ?? 0);
                 $estimasi = floatval($item['estimasi_biaya'] ?? 0);
-                $totalBiaya += ($biayaRiil > 0) ? $biayaRiil : $estimasi;
+                $biayaCat = floatval($item['biaya_cat'] ?? 0);
+                $totalBiaya += (($biayaRiil > 0) ? $biayaRiil : $estimasi) + $biayaCat;
             }
 
             $pranota = PranotaPerbaikanKontainer::create([

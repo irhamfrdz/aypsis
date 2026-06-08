@@ -182,6 +182,10 @@
                                        data-biaya-riil="{{ $perbaikan->biaya_riil }}"
                                        data-status="{{ $perbaikan->status }}"
                                        data-keterangan-kerusakan="{{ $perbaikan->keterangan_kerusakan }}"
+                                       data-is-cat="{{ $perbaikan->is_cat ? 1 : 0 }}"
+                                       data-biaya-cat="{{ $perbaikan->biaya_cat }}"
+                                       data-vendor-cat="{{ $perbaikan->vendor_cat }}"
+                                       data-jenis-cat="{{ $perbaikan->jenis_cat }}"
                                        @if($perbaikan->status_pranota === 'Sudah') disabled @endif
                                        onchange="updateBulkActions()">
                             </td>
@@ -498,19 +502,29 @@
 
         checked.forEach(cb => {
             if (cb.dataset.bengkel) bengkels.add(cb.dataset.bengkel);
+            if (cb.dataset.isCat === '1' && cb.dataset.vendorCat) bengkels.add(cb.dataset.vendorCat);
             count++;
             const no_perbaikan = cb.dataset.noPerbaikan;
             const no_kontainer = cb.dataset.noKontainer;
             const bengkel = cb.dataset.bengkel;
             const estimasi = parseFloat(cb.dataset.estimasi) || 0;
             const biayaRiil = parseFloat(cb.dataset.biayaRiil) || 0;
-            const biaya = biayaRiil > 0 ? biayaRiil : estimasi;
+            
+            const isCat = cb.dataset.isCat === '1';
+            const biayaCat = isCat ? (parseFloat(cb.dataset.biayaCat) || 0) : 0;
+            const vendorCat = cb.dataset.vendorCat;
+            const jenisCat = cb.dataset.jenisCat;
+
+            const biaya = (biayaRiil > 0 ? biayaRiil : estimasi) + biayaCat;
             totalBiaya += biaya;
 
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td class="px-4 py-3 whitespace-nowrap text-gray-500">${count}</td>
-                <td class="px-4 py-3 whitespace-nowrap font-semibold text-gray-900">${no_perbaikan}</td>
+                <td class="px-4 py-3 whitespace-nowrap font-semibold text-gray-900">
+                    ${no_perbaikan}
+                    ${isCat ? `<span class="block text-[10px] text-blue-600 font-semibold mt-0.5"><i class="fas fa-paint-roller mr-1"></i>Cat: ${jenisCat === 'cat_full' ? 'Full' : 'Sebagian'} (${vendorCat})</span>` : ''}
+                </td>
                 <td class="px-4 py-3 whitespace-nowrap text-gray-700">${no_kontainer}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-gray-700">${bengkel}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-right font-semibold text-indigo-600">Rp ${biaya.toLocaleString('id-ID')}</td>
@@ -589,6 +603,10 @@
                 biaya_riil: cb.dataset.biayaRiil,
                 status: cb.dataset.status,
                 keterangan_kerusakan: cb.dataset.keteranganKerusakan,
+                is_cat: cb.dataset.isCat,
+                biaya_cat: cb.dataset.biayaCat,
+                vendor_cat: cb.dataset.vendorCat,
+                jenis_cat: cb.dataset.jenisCat,
             });
         });
 

@@ -119,7 +119,8 @@
                             @php
                                 $biayaRiil = floatval($item['biaya_riil'] ?? 0);
                                 $estimasi = floatval($item['estimasi_biaya'] ?? 0);
-                                $biayaTerpakai = ($biayaRiil > 0) ? $biayaRiil : $estimasi;
+                                $biayaCat = floatval($item['biaya_cat'] ?? 0);
+                                $biayaTerpakai = (($biayaRiil > 0) ? $biayaRiil : $estimasi) + $biayaCat;
                                 $subtotal += $biayaTerpakai;
                             @endphp
                             <tr class="hover:bg-gray-50 transition-colors">
@@ -139,7 +140,14 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-gray-700">{{ $item['bengkel'] ?? '-' }}</td>
-                                <td class="px-4 py-3 text-gray-700 max-w-xs break-words">{{ $item['keterangan_kerusakan'] ?? (\App\Models\PerbaikanKontainer::find($item['id'] ?? null)->keterangan_kerusakan ?? '-') }}</td>
+                                <td class="px-4 py-3 text-gray-700 max-w-xs break-words">
+                                    {{ $item['keterangan_kerusakan'] ?? (\App\Models\PerbaikanKontainer::find($item['id'] ?? null)->keterangan_kerusakan ?? '-') }}
+                                    @if(!empty($item['is_cat']) && $biayaCat > 0)
+                                        <div class="text-xs text-blue-600 font-semibold mt-1">
+                                            <i class="fas fa-paint-roller mr-1"></i> Cat: {{ $item['jenis_cat'] === 'cat_full' ? 'Full' : 'Sebagian' }} ({{ $item['vendor_cat'] ?? '-' }}) - Rp {{ number_format($biayaCat, 0, ',', '.') }}
+                                        </div>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3 text-right text-gray-600">Rp {{ number_format($estimasi, 0, ',', '.') }}</td>
                                 <td class="px-4 py-3 text-right text-gray-900">
                                     @if($biayaRiil > 0)

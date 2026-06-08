@@ -263,7 +263,8 @@
                     @php
                         $biayaRiil = floatval($item['biaya_riil'] ?? 0);
                         $estimasi = floatval($item['estimasi_biaya'] ?? 0);
-                        $biayaTerpakai = ($biayaRiil > 0) ? $biayaRiil : $estimasi;
+                        $biayaCat = floatval($item['biaya_cat'] ?? 0);
+                        $biayaTerpakai = (($biayaRiil > 0) ? $biayaRiil : $estimasi) + $biayaCat;
                         $grandTotal += $biayaTerpakai;
                     @endphp
                     <tr>
@@ -274,7 +275,12 @@
                             {{ $item['ukuran'] ?? '' }}FT {{ $item['tipe'] ?? '' }}
                         </td>
                         <td>{{ $item['bengkel'] ?? '-' }}</td>
-                        <td style="white-space: normal;">{{ $item['keterangan_kerusakan'] ?? (\App\Models\PerbaikanKontainer::find($item['id'] ?? null)->keterangan_kerusakan ?? '-') }}</td>
+                        <td style="white-space: normal;">
+                            {{ $item['keterangan_kerusakan'] ?? (\App\Models\PerbaikanKontainer::find($item['id'] ?? null)->keterangan_kerusakan ?? '-') }}
+                            @if(!empty($item['is_cat']) && $biayaCat > 0)
+                                <br><small style="color: blue;">(Pengecatan: {{ $item['jenis_cat'] === 'cat_full' ? 'Full' : 'Sebagian' }} oleh {{ $item['vendor_cat'] ?? '-' }} - Rp {{ number_format($biayaCat, 0, ',', '.') }})</small>
+                            @endif
+                        </td>
                         <td class="text-right">{{ number_format($estimasi, 0, ',', '.') }}</td>
                         <td class="text-right font-bold">{{ number_format($biayaTerpakai, 0, ',', '.') }}</td>
                     </tr>
