@@ -157,8 +157,8 @@
                             </label>
                             <select name="status" id="status" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
-                                <option value="pending" {{ old('status', 'pending') === 'pending' ? 'selected' : '' }}>Pending (Draft)</option>
-                                <option value="proses" {{ old('status') === 'proses' ? 'selected' : '' }}>Proses Perbaikan</option>
+                                <option value="pending" {{ old('status') === 'pending' ? 'selected' : '' }}>Pending (Draft)</option>
+                                <option value="proses" {{ old('status', 'proses') === 'proses' ? 'selected' : '' }}>Proses Perbaikan</option>
                                 <option value="selesai" {{ old('status') === 'selesai' ? 'selected' : '' }}>Selesai</option>
                                 <option value="batal" {{ old('status') === 'batal' ? 'selected' : '' }}>Batal</option>
                             </select>
@@ -196,6 +196,51 @@
                                 <input type="number" name="estimasi_biaya" id="estimasi_biaya" 
                                        value="{{ old('estimasi_biaya', 0) }}" min="0" required
                                        class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pengecatan Kontainer (Paint Fields) -->
+                    <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100/80 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-sm font-bold text-blue-900 uppercase tracking-wider"><i class="fas fa-paint-roller mr-2"></i>Pengecatan Kontainer</h4>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="is_cat" id="is_cat" value="1" class="sr-only peer" {{ old('is_cat') ? 'checked' : '' }}>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                <span class="ml-2 text-sm font-medium text-gray-700">Menggunakan Cat</span>
+                            </label>
+                        </div>
+
+                        <div id="paint_fields_container" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+                            <!-- Vendor Cat -->
+                            <div>
+                                <label for="vendor_cat" class="block text-sm font-semibold text-gray-700 mb-1">
+                                    Vendor Cat <span class="text-red-500">*</span>
+                                </label>
+                                <select name="vendor_cat" id="vendor_cat"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+                                    <option value="">-- Pilih Vendor Cat --</option>
+                                    @foreach($paintVendors as $vendor)
+                                        <option value="{{ $vendor->vendor }}" {{ old('vendor_cat') == $vendor->vendor ? 'selected' : '' }}>
+                                            {{ $vendor->vendor }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Biaya Cat -->
+                            <div>
+                                <label for="biaya_cat" class="block text-sm font-semibold text-gray-700 mb-1">
+                                    Biaya Cat (Rp) <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative rounded-lg shadow-sm">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 text-sm">Rp</span>
+                                    </div>
+                                    <input type="number" name="biaya_cat" id="biaya_cat" 
+                                           value="{{ old('biaya_cat', 0) }}" min="0"
+                                           class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -347,6 +392,25 @@
             $('#ukuran').val('');
             $('#tipe_kontainer').val('');
         });
+
+        function togglePaintFields() {
+            if ($('#is_cat').is(':checked')) {
+                $('#paint_fields_container').removeClass('hidden');
+                $('#vendor_cat').prop('required', true);
+                $('#biaya_cat').prop('required', true);
+            } else {
+                $('#paint_fields_container').addClass('hidden');
+                $('#vendor_cat').prop('required', false);
+                $('#biaya_cat').prop('required', false);
+            }
+        }
+
+        $('#is_cat').on('change', function() {
+            togglePaintFields();
+        });
+
+        // Trigger on load
+        togglePaintFields();
 
         // Retain values if validation fails on form submit
         @if(old('no_kontainer'))

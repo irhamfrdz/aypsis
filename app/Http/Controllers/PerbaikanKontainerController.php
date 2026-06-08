@@ -59,8 +59,9 @@ class PerbaikanKontainerController extends Controller
     public function create()
     {
         $bengkels = VendorBengkel::all();
+        $paintVendors = \App\Models\PricelistCat::select('vendor')->distinct()->orderBy('vendor')->get();
 
-        return view('perbaikan-kontainer.create', compact('bengkels'));
+        return view('perbaikan-kontainer.create', compact('bengkels', 'paintVendors'));
     }
 
     /**
@@ -80,9 +81,17 @@ class PerbaikanKontainerController extends Controller
             'estimasi_biaya' => 'required|numeric|min:0',
             'biaya_riil' => 'required_if:status,selesai|nullable|numeric|min:0',
             'status' => 'required|in:pending,proses,selesai,batal',
+            'is_cat' => 'nullable|boolean',
+            'biaya_cat' => 'required_if:is_cat,1|nullable|numeric|min:0',
+            'vendor_cat' => 'required_if:is_cat,1|nullable|string|max:255',
         ]);
 
         $data = $request->all();
+        $data['is_cat'] = $request->has('is_cat') ? true : false;
+        if (! $data['is_cat']) {
+            $data['biaya_cat'] = 0;
+            $data['vendor_cat'] = null;
+        }
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
 
@@ -117,8 +126,9 @@ class PerbaikanKontainerController extends Controller
     {
         $perbaikanKontainer = PerbaikanKontainer::findOrFail($id);
         $bengkels = VendorBengkel::all();
+        $paintVendors = \App\Models\PricelistCat::select('vendor')->distinct()->orderBy('vendor')->get();
 
-        return view('perbaikan-kontainer.edit', compact('perbaikanKontainer', 'bengkels'));
+        return view('perbaikan-kontainer.edit', compact('perbaikanKontainer', 'bengkels', 'paintVendors'));
     }
 
     /**
@@ -140,9 +150,17 @@ class PerbaikanKontainerController extends Controller
             'estimasi_biaya' => 'required|numeric|min:0',
             'biaya_riil' => 'required_if:status,selesai|nullable|numeric|min:0',
             'status' => 'required|in:pending,proses,selesai,batal',
+            'is_cat' => 'nullable|boolean',
+            'biaya_cat' => 'required_if:is_cat,1|nullable|numeric|min:0',
+            'vendor_cat' => 'required_if:is_cat,1|nullable|string|max:255',
         ]);
 
         $data = $request->all();
+        $data['is_cat'] = $request->has('is_cat') ? true : false;
+        if (! $data['is_cat']) {
+            $data['biaya_cat'] = 0;
+            $data['vendor_cat'] = null;
+        }
         $data['updated_by'] = Auth::id();
 
         // Handle auto-completion of selesai status

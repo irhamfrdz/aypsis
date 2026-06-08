@@ -60,7 +60,7 @@
             </div>
 
             <!-- Core Details Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Left Panel: Container Info -->
                 <div class="border border-gray-200 rounded-xl p-4 bg-gray-50">
                     <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-3 pb-1.5 border-b border-gray-200">
@@ -84,7 +84,7 @@
                     </dl>
                 </div>
 
-                <!-- Right Panel: Vendor & Shop Info -->
+                <!-- Middle Panel: Vendor & Shop Info -->
                 <div class="border border-gray-200 rounded-xl p-4 bg-gray-50">
                     <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider mb-3 pb-1.5 border-b border-gray-200">
                         <i class="fas fa-store-alt text-indigo-500 mr-1.5"></i> Informasi Bengkel
@@ -102,6 +102,31 @@
                             <dt class="text-gray-500">Catatan Vendor:</dt>
                             <dd class="text-gray-900 italic text-right max-w-xs truncate">{{ $perbaikanKontainer->bengkel->keterangan ?? '-' }}</dd>
                         </div>
+                    </dl>
+                </div>
+
+                <!-- Right Panel: Paint Info -->
+                <div class="border border-gray-200 rounded-xl p-4 bg-blue-50/30">
+                    <h3 class="text-sm font-bold text-blue-900 uppercase tracking-wider mb-3 pb-1.5 border-b border-blue-200">
+                        <i class="fas fa-paint-roller text-blue-500 mr-1.5"></i> Informasi Pengecatan
+                    </h3>
+                    <dl class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <dt class="text-gray-500">Menggunakan Cat:</dt>
+                            <dd class="font-bold {{ $perbaikanKontainer->is_cat ? 'text-green-600' : 'text-red-500' }}">
+                                {{ $perbaikanKontainer->is_cat ? 'Ya' : 'Tidak' }}
+                            </dd>
+                        </div>
+                        @if($perbaikanKontainer->is_cat)
+                        <div class="flex justify-between">
+                            <dt class="text-gray-500">Vendor Cat:</dt>
+                            <dd class="text-gray-900 font-semibold">{{ $perbaikanKontainer->vendor_cat ?: '-' }}</dd>
+                        </div>
+                        <div class="flex justify-between">
+                            <dt class="text-gray-500">Biaya Cat:</dt>
+                            <dd class="text-gray-900 font-bold">Rp {{ number_format($perbaikanKontainer->biaya_cat, 0, ',', '.') }}</dd>
+                        </div>
+                        @endif
                     </dl>
                 </div>
             </div>

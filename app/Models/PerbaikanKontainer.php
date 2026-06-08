@@ -30,6 +30,9 @@ class PerbaikanKontainer extends Model
         'biaya_riil',
         'status',
         'status_pranota',
+        'is_cat',
+        'biaya_cat',
+        'vendor_cat',
         'created_by',
         'updated_by',
     ];
@@ -39,6 +42,8 @@ class PerbaikanKontainer extends Model
         'tanggal_keluar' => 'date',
         'estimasi_biaya' => 'decimal:2',
         'biaya_riil' => 'decimal:2',
+        'is_cat' => 'boolean',
+        'biaya_cat' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
