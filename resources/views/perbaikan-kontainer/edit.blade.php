@@ -204,10 +204,11 @@
                     <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100/80 space-y-4">
                         <div class="flex items-center justify-between">
                             <h4 class="text-sm font-bold text-blue-900 uppercase tracking-wider"><i class="fas fa-paint-roller mr-2"></i>Pengecatan Kontainer</h4>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" name="is_cat" id="is_cat" value="1" class="sr-only peer" {{ old('is_cat', $perbaikanKontainer->is_cat) ? 'checked' : '' }}>
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                <span class="ml-2 text-sm font-medium text-gray-700">Menggunakan Cat</span>
+                            <label class="inline-flex items-center cursor-pointer gap-2">
+                                <input type="checkbox" name="is_cat" id="is_cat" value="1" 
+                                       class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
+                                       {{ old('is_cat', $perbaikanKontainer->is_cat) ? 'checked' : '' }}>
+                                <span class="text-sm font-medium text-gray-700">Menggunakan Cat</span>
                             </label>
                         </div>
 
