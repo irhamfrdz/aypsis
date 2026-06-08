@@ -12,15 +12,17 @@
         height: 42px;
         border: 1px solid #d1d5db;
         border-radius: 0.5rem;
-        padding: 0.5rem 1rem;
+        padding: 0 1rem;
         display: flex;
         align-items: center;
     }
 
     .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 26px;
+        line-height: normal;
         color: #111827;
         padding-left: 0;
+        padding-right: 20px;
+        width: 100%;
     }
 
     .select2-container--default .select2-selection--single .select2-selection__arrow {
@@ -294,6 +296,7 @@
         $('#no_kontainer_select').select2({
             placeholder: 'Cari nomor kontainer...',
             allowClear: true,
+            width: '100%',
             ajax: {
                 url: '{{ route("supir.api.kontainer.search") }}',
                 dataType: 'json',
