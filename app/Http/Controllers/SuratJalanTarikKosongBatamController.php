@@ -45,12 +45,10 @@ class SuratJalanTarikKosongBatamController extends Controller
         $keneks = Karyawan::where('status', 'active')->where('divisi', 'KENEK')->orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         // Get kontainer data dari 2 table: stock_kontainers dan kontainers
-        $stockKontainersRaw = \App\Models\StockKontainer::whereIn('status', ['available', 'tersedia'])
-            ->orderBy('nomor_seri_gabungan')
+        $stockKontainersRaw = \App\Models\StockKontainer::orderBy('nomor_seri_gabungan')
             ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
 
-        $kontainersRaw = \App\Models\Kontainer::where('status', 'tersedia')
-            ->orderBy('nomor_seri_gabungan')
+        $kontainersRaw = \App\Models\Kontainer::orderBy('nomor_seri_gabungan')
             ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
 
         $allKontainers = collect();
@@ -147,12 +145,10 @@ class SuratJalanTarikKosongBatamController extends Controller
         $mobils = Mobil::orderBy('nomor_polisi')->get();
 
         // Get kontainer data
-        $stockKontainersRaw = \App\Models\StockKontainer::whereIn('status', ['available', 'tersedia'])
-            ->orderBy('nomor_seri_gabungan')
+        $stockKontainersRaw = \App\Models\StockKontainer::orderBy('nomor_seri_gabungan')
             ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
 
-        $kontainersRaw = \App\Models\Kontainer::where('status', 'tersedia')
-            ->orderBy('nomor_seri_gabungan')
+        $kontainersRaw = \App\Models\Kontainer::orderBy('nomor_seri_gabungan')
             ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
 
         $allKontainers = collect();
