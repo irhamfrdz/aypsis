@@ -211,7 +211,7 @@
                             </label>
                         </div>
 
-                        <div id="paint_fields_container" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+                        <div id="paint_fields_container" class="grid grid-cols-1 md:grid-cols-3 gap-4 hidden">
                             <!-- Vendor Cat -->
                             <div>
                                 <label for="vendor_cat" class="block text-sm font-semibold text-gray-700 mb-1">
@@ -225,6 +225,19 @@
                                             {{ $vendor->vendor }}
                                         </option>
                                     @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Jenis/Status Cat -->
+                            <div>
+                                <label for="jenis_cat" class="block text-sm font-semibold text-gray-700 mb-1">
+                                    Status Cat <span class="text-red-500">*</span>
+                                </label>
+                                <select name="jenis_cat" id="jenis_cat"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+                                    <option value="">-- Pilih Status Cat --</option>
+                                    <option value="cat_sebagian" {{ old('jenis_cat') === 'cat_sebagian' ? 'selected' : '' }}>Sebagian</option>
+                                    <option value="cat_full" {{ old('jenis_cat') === 'cat_full' ? 'selected' : '' }}>Full</option>
                                 </select>
                             </div>
 
@@ -397,10 +410,12 @@
             if ($('#is_cat').is(':checked')) {
                 $('#paint_fields_container').removeClass('hidden');
                 $('#vendor_cat').prop('required', true);
+                $('#jenis_cat').prop('required', true);
                 $('#biaya_cat').prop('required', true);
             } else {
                 $('#paint_fields_container').addClass('hidden');
                 $('#vendor_cat').prop('required', false);
+                $('#jenis_cat').prop('required', false);
                 $('#biaya_cat').prop('required', false);
             }
         }

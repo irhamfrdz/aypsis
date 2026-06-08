@@ -84,6 +84,7 @@ class PerbaikanKontainerController extends Controller
             'is_cat' => 'nullable|boolean',
             'biaya_cat' => 'required_if:is_cat,1|nullable|numeric|min:0',
             'vendor_cat' => 'required_if:is_cat,1|nullable|string|max:255',
+            'jenis_cat' => 'required_if:is_cat,1|nullable|string|in:cat_sebagian,cat_full',
         ]);
 
         $data = $request->all();
@@ -91,6 +92,7 @@ class PerbaikanKontainerController extends Controller
         if (! $data['is_cat']) {
             $data['biaya_cat'] = 0;
             $data['vendor_cat'] = null;
+            $data['jenis_cat'] = null;
         }
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
@@ -153,6 +155,7 @@ class PerbaikanKontainerController extends Controller
             'is_cat' => 'nullable|boolean',
             'biaya_cat' => 'required_if:is_cat,1|nullable|numeric|min:0',
             'vendor_cat' => 'required_if:is_cat,1|nullable|string|max:255',
+            'jenis_cat' => 'required_if:is_cat,1|nullable|string|in:cat_sebagian,cat_full',
         ]);
 
         $data = $request->all();
@@ -160,6 +163,7 @@ class PerbaikanKontainerController extends Controller
         if (! $data['is_cat']) {
             $data['biaya_cat'] = 0;
             $data['vendor_cat'] = null;
+            $data['jenis_cat'] = null;
         }
         $data['updated_by'] = Auth::id();
 

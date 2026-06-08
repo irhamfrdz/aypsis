@@ -33,6 +33,7 @@ class PerbaikanKontainer extends Model
         'is_cat',
         'biaya_cat',
         'vendor_cat',
+        'jenis_cat',
         'created_by',
         'updated_by',
     ];

@@ -123,6 +123,18 @@
                             <dd class="text-gray-900 font-semibold">{{ $perbaikanKontainer->vendor_cat ?: '-' }}</dd>
                         </div>
                         <div class="flex justify-between">
+                            <dt class="text-gray-500">Status Cat:</dt>
+                            <dd class="text-gray-900 font-semibold">
+                                @if($perbaikanKontainer->jenis_cat === 'cat_sebagian')
+                                    Sebagian
+                                @elseif($perbaikanKontainer->jenis_cat === 'cat_full')
+                                    Full
+                                @else
+                                    -
+                                @endif
+                            </dd>
+                        </div>
+                        <div class="flex justify-between">
                             <dt class="text-gray-500">Biaya Cat:</dt>
                             <dd class="text-gray-900 font-bold">Rp {{ number_format($perbaikanKontainer->biaya_cat, 0, ',', '.') }}</dd>
                         </div>
