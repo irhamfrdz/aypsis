@@ -137,7 +137,7 @@
                         <!-- Vendor Bengkel -->
                         <div>
                             <label for="vendor_bengkel_id" class="block text-sm font-semibold text-gray-700 mb-1">
-                                Bengkel / Vendor <span class="text-red-500">*</span>
+                                Bengkel / Vendor <span id="vendor_bengkel_required_star" class="text-red-500">*</span>
                             </label>
                             <select name="vendor_bengkel_id" id="vendor_bengkel_id" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
@@ -256,7 +256,7 @@
                     <!-- Keterangan Kerusakan -->
                     <div>
                         <label for="keterangan_kerusakan" class="block text-sm font-semibold text-gray-700 mb-1">
-                            Keterangan Kerusakan / Pekerjaan <span class="text-red-500">*</span>
+                            Keterangan Kerusakan / Pekerjaan <span id="keterangan_kerusakan_required_star" class="text-red-500">*</span>
                         </label>
                         <textarea name="keterangan_kerusakan" id="keterangan_kerusakan" rows="3" required
                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">{{ old('keterangan_kerusakan', $perbaikanKontainer->keterangan_kerusakan) }}</textarea>
@@ -405,11 +405,23 @@
                 $('#vendor_cat').prop('required', true);
                 $('#jenis_cat').prop('required', true);
                 $('#biaya_cat').prop('required', true);
+                
+                // Make bengkel and kerusakan optional
+                $('#vendor_bengkel_id').prop('required', false);
+                $('#vendor_bengkel_required_star').addClass('hidden');
+                $('#keterangan_kerusakan').prop('required', false);
+                $('#keterangan_kerusakan_required_star').addClass('hidden');
             } else {
                 $('#paint_fields_container').addClass('hidden');
                 $('#vendor_cat').prop('required', false);
                 $('#jenis_cat').prop('required', false);
                 $('#biaya_cat').prop('required', false);
+                
+                // Make bengkel and kerusakan required
+                $('#vendor_bengkel_id').prop('required', true);
+                $('#vendor_bengkel_required_star').removeClass('hidden');
+                $('#keterangan_kerusakan').prop('required', true);
+                $('#keterangan_kerusakan_required_star').removeClass('hidden');
             }
         }
 
