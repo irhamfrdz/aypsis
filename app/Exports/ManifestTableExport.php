@@ -524,8 +524,8 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
             $groupUnit = 'Unit';
             $groupDesc = "Container {$size} feet / LCL  (Kantor)";
         } elseif ($row['type'] === 'lcl_manifest_row') {
-            $blNo = $row['group_number'];
-            $hsCode = $row['bl_no'];
+            $blNo = $row['bl_no'];
+            $hsCode = '';
 
             $shipperName = $row['pengirim'];
             $shipperAddress = $row['s_address'];
