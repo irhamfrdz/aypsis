@@ -144,10 +144,11 @@ class StockAmprahanController extends Controller
         }
 
         $masterItems = \App\Models\MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
+        $vendors = \App\Models\VendorAmprahan::orderBy('nama_toko')->get();
 
         $banks = Bank::orderBy('name')->pluck('name')->toArray();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'selectedMobil', 'banks'));
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'selectedMobil', 'banks', 'vendors'));
     }
 
     public function exportExcel(Request $request)
@@ -1580,6 +1581,58 @@ class StockAmprahanController extends Controller
             'fromDate' => $fromDate,
             'toDate' => $toDate,
             'usages' => $usages,
+        ]);
+    }
+
+    public function valuasiPembelianPrint(Request $request)
+    {
+        $request->validate([
+            'from_date' => 'required|date',
+            'to_date' => 'required|date',
+            'lokasi' => 'nullable|string',
+        ]);
+
+        $fromDate = \Carbon\Carbon::parse($request->from_date)->startOfDay();
+        $toDate = \Carbon\Carbon::parse($request->to_date)->endOfDay();
+        $lokasi = $request->lokasi;
+        $lokasiName = 'Semua Lokasi';
+
+        $query = \App\Models\StockAmprahan::with(['masterNamaBarangAmprahan', 'vendorAmprahan', 'usages'])
+            ->where(function ($q) use ($fromDate, $toDate) {
+                $q->whereBetween('tanggal_beli', [$fromDate, $toDate])
+                    ->orWhere(function ($sq) use ($fromDate, $toDate) {
+                        $sq->whereNull('tanggal_beli')->whereBetween('created_at', [$fromDate, $toDate]);
+                    });
+            });
+
+        if ($lokasi) {
+            $lokasiName = $lokasi;
+            if ($lokasi === 'LAINNYA') {
+                $query->where(function ($q) {
+                    $q->whereNotIn('lokasi', ['KANTOR AYP JAKARTA', 'KANTOR AYP BATAM'])
+                        ->orWhereNull('lokasi');
+                });
+            } else {
+                $query->where('lokasi', $lokasi);
+            }
+        }
+
+        // Filter based on Karyawan Cabang (Branch)
+        $user = Auth::user();
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $query->where('lokasi', 'like', '%BATAM%');
+            }
+        }
+
+        $purchases = $query->orderBy('tanggal_beli', 'asc')->orderBy('created_at', 'asc')->get();
+
+        return view('stock-amprahan.valuasi-pembelian-print', [
+            'lokasiName' => $lokasiName,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'purchases' => $purchases,
         ]);
     }
 }

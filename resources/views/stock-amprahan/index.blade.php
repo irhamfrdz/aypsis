@@ -30,6 +30,12 @@
                 </svg>
                 Valuasi Pemakaian
             </button>
+            <button type="button" onclick="openValuasiPembelianModal()" class="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Valuasi Pembelian
+            </button>
             <a href="{{ route('stock-amprahan.export-excel', request()->all()) }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -2232,6 +2238,57 @@
     </div>
 </div>
 
+<!-- Modal Valuasi Pembelian -->
+<div id="valuasiPembelianModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 transition-opacity duration-300">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-lg shadow-2xl rounded-2xl bg-white">
+        <div class="mt-3">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800">Cetak Valuasi Pembelian</h3>
+                <button type="button" onclick="closeValuasiPembelianModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <form action="{{ route('stock-amprahan.valuasi-pembelian-print') }}" method="GET" target="_blank" class="mt-4">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Lokasi</label>
+                    <select name="lokasi" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all text-sm text-gray-700">
+                        <option value="">-- Semua Lokasi --</option>
+                        <option value="KANTOR AYP JAKARTA">KANTOR AYP JAKARTA</option>
+                        <option value="KANTOR AYP BATAM">KANTOR AYP BATAM</option>
+                        <option value="LAINNYA">LAINNYA</option>
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Dari Tanggal <span class="text-red-500">*</span></label>
+                        <input type="date" name="from_date" required value="{{ date('Y-m-01') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all text-sm text-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Sampai Tanggal <span class="text-red-500">*</span></label>
+                        <input type="date" name="to_date" required value="{{ date('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all text-sm text-gray-700">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 border-t pt-4">
+                    <button type="button" onclick="closeValuasiPembelianModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-semibold flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        </svg>
+                        Cetak Laporan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     function openValuasiModal() {
         document.getElementById('valuasiModal').classList.remove('hidden');
@@ -2247,8 +2304,16 @@
         if (typeof oldOnclick === 'function') oldOnclick(event);
         
         const valuasiModal = document.getElementById('valuasiModal');
+        const valuasiPemakaianModal = document.getElementById('valuasiPemakaianModal');
+        const valuasiPembelianModal = document.getElementById('valuasiPembelianModal');
         if (event.target == valuasiModal) {
             closeValuasiModal();
+        }
+        if (event.target == valuasiPemakaianModal) {
+            closeValuasiPemakaianModal();
+        }
+        if (event.target == valuasiPembelianModal) {
+            closeValuasiPembelianModal();
         }
     }
 
@@ -2258,6 +2323,14 @@
     
     function closeValuasiPemakaianModal() {
         document.getElementById('valuasiPemakaianModal').classList.add('hidden');
+    }
+
+    function openValuasiPembelianModal() {
+        document.getElementById('valuasiPembelianModal').classList.remove('hidden');
+    }
+    
+    function closeValuasiPembelianModal() {
+        document.getElementById('valuasiPembelianModal').classList.add('hidden');
     }
 
     function toggleValuasiPemakaiFields() {
