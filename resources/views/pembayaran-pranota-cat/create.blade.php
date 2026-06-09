@@ -4,13 +4,6 @@
 @section('page_title', 'Form Pembayaran Pranota CAT Kontainer')
 
 @section('content')
-    @php
-        use App\Models\PembayaranPranota;
-        // Hitung counter untuk pembayaran pranota CAT
-        $catPaymentCounter = PembayaranPranota::whereHas('pranotas', function($query) {
-            $query->whereHas('tagihanCat');
-        })->count() + 1;
-    @endphp
     <div class="bg-white shadow-lg rounded-lg p-4 max-w-6xl mx-auto">
         @php
             // Definisikan kelas Tailwind untuk input yang lebih compact
