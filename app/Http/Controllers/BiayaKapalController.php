@@ -4662,7 +4662,7 @@ class BiayaKapalController extends Controller
                     $cargoMaxTvSum += $totalTonnage;
                 }
             }
-            $counts['cargo_max_tv_sum'] = $cargoMaxTvSum;
+            $counts['cargo_max_tv_sum'] = round($cargoMaxTvSum, 2);
 
             // Extra cargo tags counting
             foreach ($cargoItems as $item) {
