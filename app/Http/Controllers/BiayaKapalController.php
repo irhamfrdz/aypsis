@@ -4605,7 +4605,6 @@ class BiayaKapalController extends Controller
                 ]);
             }
 
-            // Get BL data (Bongkar) for the selected kapal and voyage
             // Normalize ship name for flexible matching like in getVoyagesByShip
             $normalizedKapal = strtolower(trim(preg_replace('/[.\s]+/', ' ', $kapalNama)));
             $allKeywords = explode(' ', $normalizedKapal);
@@ -4618,8 +4617,9 @@ class BiayaKapalController extends Controller
             }
             $keywords = array_values($keywords);
 
-            $blsQuery = DB::table('bls')
-                ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'sudah_tl', 'max_tv')
+            // Fetch from manifests table instead of bls table
+            $blsQuery = DB::table('manifests')
+                ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'sudah_tl', 'max_tv', 'tonnage', 'volume', 'satuan')
                 ->where('no_voyage', $voyage);
 
             // Add where clause for each keyword for robust matching
@@ -4643,54 +4643,116 @@ class BiayaKapalController extends Controller
                 ],
             ];
 
-            foreach ($bls as $bl) {
-                // Determine if it's CARGO based on tipe_kontainer OR nomor_kontainer
-                $tipeKontainer = strtoupper($bl->tipe_kontainer ?? '');
-                $nomorKontainer = strtoupper($bl->nomor_kontainer ?? '');
-                // specific check if nomor_kontainer contains CARGO (case-insensitive) as requested by user
-                $isCargo = (str_contains($nomorKontainer, 'CARGO') || $tipeKontainer === 'CARGO');
+            // 1. Calculate Cargo
+            $cargoItems = $bls->filter(function ($item) {
+                return strtoupper($item->tipe_kontainer ?? '') === 'CARGO' || empty($item->size_kontainer);
+            });
 
-                if ($isCargo) {
-                    $counts['cargo_max_tv_sum'] += (float) ($bl->max_tv ?? 0);
-                }
+            $cargoGroups = $cargoItems->groupBy(function ($item) {
+                return ($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package');
+            });
 
-                if (! $isCargo) {
-                    // Determine size (default to 20 if not specified)
-                    $size = '20';
-                    if (! empty($bl->size_kontainer)) {
-                        if (str_contains($bl->size_kontainer, '40')) {
-                            $size = '40';
-                        }
-                    }
-
-                    // Determine if EMPTY based on logic from ob/index.blade.php
-                    // Logic: str_contains($barangUpper, 'EMPTY') || ($bl->tipe_kontainer == 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($bl->nomor_kontainer, 'CARGO-')))
-                    $barangUpper = strtoupper($bl->nama_barang ?? '');
-                    $isEmpty = str_contains($barangUpper, 'EMPTY') ||
-                               ($tipeKontainer === 'FCL' && (empty($bl->nomor_kontainer) || str_starts_with($nomorKontainer, 'CARGO-')));
-
-                    if ($isEmpty) {
-                        $counts[$size]['empty']++;
-                    } elseif (! empty($bl->nomor_kontainer)) {
-                        $counts[$size]['full']++;
-
-                        // Count FCL/LCL specifically for OPP/OPT
-                        if (str_contains(strtolower($tipeKontainer), 'fcl')) {
-                            $counts[$size]['fcl']++;
-                        } elseif (str_contains(strtolower($tipeKontainer), 'lcl')) {
-                            $counts[$size]['lcl']++;
-                        }
-                    }
+            $cargoMaxTvSum = 0;
+            foreach ($cargoGroups as $group) {
+                $totalVolume = $group->sum('volume');
+                $totalTonnage = $group->sum('tonnage');
+                if ($totalVolume > 0) {
+                    $cargoMaxTvSum += $totalVolume;
+                } elseif ($totalTonnage > 0) {
+                    $cargoMaxTvSum += $totalTonnage;
                 } else {
-                    // It's cargo, check nama_barang for specific types for OPP/OPT
-                    $namaBarang = strtolower($bl->nama_barang ?? '');
-                    if (str_contains($namaBarang, 'mobil')) {
-                        $counts['extra']['Mobil']++;
-                    } elseif (str_contains($namaBarang, 'trailer')) {
-                        $counts['extra']['Trailer']++;
-                    } elseif (str_contains($namaBarang, 'truck')) {
-                        $counts['extra']['Truck']++;
+                    $cargoMaxTvSum += $group->sum('max_tv');
+                }
+            }
+            $counts['cargo_max_tv_sum'] = $cargoMaxTvSum;
+
+            // Extra cargo tags counting
+            foreach ($cargoItems as $item) {
+                $namaBarang = strtolower($item->nama_barang ?? '');
+                if (str_contains($namaBarang, 'mobil')) {
+                    $counts['extra']['Mobil']++;
+                } elseif (str_contains($namaBarang, 'trailer')) {
+                    $counts['extra']['Trailer']++;
+                } elseif (str_contains($namaBarang, 'truck')) {
+                    $counts['extra']['Truck']++;
+                }
+            }
+
+            // 2. Calculate Containers
+            $containerItems = $bls->reject(function ($item) {
+                return strtoupper($item->tipe_kontainer ?? '') === 'CARGO' || empty($item->size_kontainer);
+            });
+
+            // Group by size and status (full / empty)
+            $groupedContainers = $containerItems->groupBy(function ($item) {
+                $barangUpper = strtoupper($item->nama_barang ?? '');
+                $isEmpty = str_contains($barangUpper, 'EMPTY') ||
+                           (strtoupper($item->tipe_kontainer ?? '') === 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
+
+                $size = '20';
+                if (! empty($item->size_kontainer)) {
+                    if (str_contains($item->size_kontainer, '40')) {
+                        $size = '40';
                     }
+                }
+                $status = $isEmpty ? 'empty' : 'full';
+
+                return $size.'|'.$status;
+            });
+
+            foreach ($groupedContainers as $key => $group) {
+                [$size, $status] = explode('|', $key);
+
+                // Calculate unique container count as in rekap_bongkaran
+                $uniqueContainers = $group->whereNotNull('nomor_kontainer')
+                    ->where('nomor_kontainer', '!=', '')
+                    ->where('nomor_kontainer', '!=', '-')
+                    ->pluck('nomor_kontainer')
+                    ->unique()
+                    ->count();
+
+                $emptyOrDashContainers = $group->filter(function ($item) {
+                    return empty($item->nomor_kontainer) || $item->nomor_kontainer === '-';
+                })->count();
+
+                $totalCount = $uniqueContainers + $emptyOrDashContainers;
+                $counts[$size][$status] = $totalCount;
+
+                // For FCL / LCL counts (only for full containers)
+                if ($status === 'full') {
+                    // FCL unique containers count
+                    $fclUnique = $group->filter(function ($item) {
+                        return str_contains(strtolower($item->tipe_kontainer ?? ''), 'fcl');
+                    })->whereNotNull('nomor_kontainer')
+                        ->where('nomor_kontainer', '!=', '')
+                        ->where('nomor_kontainer', '!=', '-')
+                        ->pluck('nomor_kontainer')
+                        ->unique()
+                        ->count();
+
+                    $fclEmptyOrDash = $group->filter(function ($item) {
+                        return str_contains(strtolower($item->tipe_kontainer ?? ''), 'fcl') &&
+                               (empty($item->nomor_kontainer) || $item->nomor_kontainer === '-');
+                    })->count();
+
+                    $counts[$size]['fcl'] = $fclUnique + $fclEmptyOrDash;
+
+                    // LCL unique containers count
+                    $lclUnique = $group->filter(function ($item) {
+                        return str_contains(strtolower($item->tipe_kontainer ?? ''), 'lcl');
+                    })->whereNotNull('nomor_kontainer')
+                        ->where('nomor_kontainer', '!=', '')
+                        ->where('nomor_kontainer', '!=', '-')
+                        ->pluck('nomor_kontainer')
+                        ->unique()
+                        ->count();
+
+                    $lclEmptyOrDash = $group->filter(function ($item) {
+                        return str_contains(strtolower($item->tipe_kontainer ?? ''), 'lcl') &&
+                               (empty($item->nomor_kontainer) || $item->nomor_kontainer === '-');
+                    })->count();
+
+                    $counts[$size]['lcl'] = $lclUnique + $lclEmptyOrDash;
                 }
             }
 
