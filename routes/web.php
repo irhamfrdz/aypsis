@@ -5140,21 +5140,21 @@ Route::get('api/next-pranota-number', [PranotaTagihanKontainerSewaController::cl
 // Pembayaran Pranota CAT routes (FINAL VERSION - with all CRUD operations)
 Route::prefix('pembayaran-pranota-cat')->name('pembayaran-pranota-cat.')->middleware(['auth'])->group(function () {
     Route::get('/', [PembayaranPranotaCatController::class, 'index'])->name('index')
-        ->middleware('can:pranota-cat-view');
+        ->middleware('can:pembayaran-pranota-cat-view');
     Route::get('/create', [PembayaranPranotaCatController::class, 'create'])->name('create')
-        ->middleware('can:pranota-cat-create');
+        ->middleware('can:pembayaran-pranota-cat-create');
     Route::post('/payment-form', [PembayaranPranotaCatController::class, 'showPaymentForm'])->name('payment-form')
-        ->middleware('can:pranota-cat-view');
+        ->middleware('can:pembayaran-pranota-cat-view');
     Route::post('/', [PembayaranPranotaCatController::class, 'store'])->name('store')
-        ->middleware('can:pranota-cat-create');
+        ->middleware('can:pembayaran-pranota-cat-create');
     Route::get('/{id}', [PembayaranPranotaCatController::class, 'show'])->name('show')
-        ->middleware('can:pranota-cat-view');
+        ->middleware('can:pembayaran-pranota-cat-view');
     Route::get('/{id}/edit', [PembayaranPranotaCatController::class, 'edit'])->name('edit')
-        ->middleware('can:pranota-cat-update');
+        ->middleware('can:pembayaran-pranota-cat-update');
     Route::put('/{id}', [PembayaranPranotaCatController::class, 'update'])->name('update')
-        ->middleware('can:pranota-cat-update');
+        ->middleware('can:pembayaran-pranota-cat-update');
     Route::delete('/{id}', [PembayaranPranotaCatController::class, 'destroy'])->name('destroy')
-        ->middleware('can:pranota-cat-delete');
+        ->middleware('can:pembayaran-pranota-cat-delete');
 });
 
 // Additional route for pembayaran-pranota-cat print
