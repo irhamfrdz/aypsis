@@ -185,6 +185,22 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
                 }
             }
 
+            // Group and sum items with the same name and unit in perincian
+            if (! empty($perincian)) {
+                $groupedPerincian = [];
+                foreach ($perincian as $itemDetail) {
+                    $key = trim(strtoupper($itemDetail['nama'] ?? '')).'|'.trim(strtoupper($itemDetail['satuan'] ?? ''));
+                    if (isset($groupedPerincian[$key])) {
+                        $groupedPerincian[$key]['qty'] = (float) $groupedPerincian[$key]['qty'] + (float) $itemDetail['qty'];
+                        $groupedPerincian[$key]['weight'] = (float) $groupedPerincian[$key]['weight'] + (float) $itemDetail['weight'];
+                        $groupedPerincian[$key]['meass'] = (float) $groupedPerincian[$key]['meass'] + (float) $itemDetail['meass'];
+                    } else {
+                        $groupedPerincian[$key] = $itemDetail;
+                    }
+                }
+                $perincian = array_values($groupedPerincian);
+            }
+
             // Fallback to manifest's own fields if perincian is empty
             if (empty($perincian)) {
                 $perincian = [[
