@@ -2508,7 +2508,7 @@ class BlController extends Controller
         // Hapus "KM." atau "KM" dari awal nama kapal untuk pencarian yang lebih fleksibel
         $kapalClean = preg_replace('/^KM\.?\s*/i', '', $namaKapal);
 
-        $bls = Bl::where(function ($query) use ($namaKapal, $kapalClean) {
+        $bls = \App\Models\Manifest::where(function ($query) use ($namaKapal, $kapalClean) {
             $query->where('nama_kapal', $namaKapal)
                 ->orWhere('nama_kapal', 'like', '%'.$kapalClean.'%');
         })
