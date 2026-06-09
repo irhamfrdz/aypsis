@@ -426,7 +426,7 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
         $groupDesc = '';
 
         if (! empty($row['show_group_fields'])) {
-            $blNo = $row['group_number'];
+            $blNo = $row['bl_no'];
             $shipperName = $row['pengirim'];
             $shipperAddress = $row['s_address'];
 
