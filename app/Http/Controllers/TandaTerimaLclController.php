@@ -1789,7 +1789,7 @@ class TandaTerimaLclController extends Controller
                     }
                 }
             } catch (\Exception $e) {
-                \Log::error('Error saving to rincian_kontainer_pelindos from LCL seal: ' . $e->getMessage());
+                \Log::error('Error saving to rincian_kontainer_pelindos from LCL seal: '.$e->getMessage());
             }
 
             DB::commit();
@@ -1886,7 +1886,7 @@ class TandaTerimaLclController extends Controller
                     ->where('no_seal', $oldSealNumber)
                     ->delete();
             } catch (\Exception $e) {
-                \Log::error('Error deleting rincian kontainer Pelindo on unseal: ' . $e->getMessage());
+                \Log::error('Error deleting rincian kontainer Pelindo on unseal: '.$e->getMessage());
             }
 
             DB::commit();
@@ -2074,7 +2074,7 @@ class TandaTerimaLclController extends Controller
                     }
                 }
             } catch (\Exception $e) {
-                \Log::error('Error saving to rincian_kontainer_pelindos from LCL merge batch: ' . $e->getMessage());
+                \Log::error('Error saving to rincian_kontainer_pelindos from LCL merge batch: '.$e->getMessage());
             }
 
             DB::commit();

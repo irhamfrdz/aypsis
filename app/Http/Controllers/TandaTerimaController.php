@@ -1099,7 +1099,7 @@ class TandaTerimaController extends Controller
                 $containers = [];
                 if ($tandaTerima->kontainer_details && is_array($tandaTerima->kontainer_details)) {
                     foreach ($tandaTerima->kontainer_details as $detail) {
-                        if (!empty($detail['nomor_kontainer'])) {
+                        if (! empty($detail['nomor_kontainer'])) {
                             $containers[] = [
                                 'nomor_kontainer' => trim($detail['nomor_kontainer']),
                                 'ukuran' => $detail['size'] ?? $tandaTerima->size,
@@ -1107,12 +1107,12 @@ class TandaTerimaController extends Controller
                             ];
                         }
                     }
-                } elseif (!empty($tandaTerima->no_kontainer)) {
+                } elseif (! empty($tandaTerima->no_kontainer)) {
                     $noKontainers = array_map('trim', explode(',', $tandaTerima->no_kontainer));
-                    $sizes = !empty($tandaTerima->size) ? array_map('trim', explode(',', $tandaTerima->size)) : [];
-                    $seals = !empty($tandaTerima->no_seal) ? array_map('trim', explode(',', $tandaTerima->no_seal)) : [];
+                    $sizes = ! empty($tandaTerima->size) ? array_map('trim', explode(',', $tandaTerima->size)) : [];
+                    $seals = ! empty($tandaTerima->no_seal) ? array_map('trim', explode(',', $tandaTerima->no_seal)) : [];
                     foreach ($noKontainers as $idx => $noKon) {
-                        if (!empty($noKon)) {
+                        if (! empty($noKon)) {
                             $containers[] = [
                                 'nomor_kontainer' => $noKon,
                                 'ukuran' => $sizes[$idx] ?? $tandaTerima->size,
@@ -1134,7 +1134,7 @@ class TandaTerimaController extends Controller
                     ]);
                 }
             } catch (\Exception $e) {
-                Log::error('Error saving to rincian_kontainer_pelindos: ' . $e->getMessage());
+                Log::error('Error saving to rincian_kontainer_pelindos: '.$e->getMessage());
             }
 
             Log::info('Tanda terima created', [

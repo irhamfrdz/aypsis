@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\RincianKontainerPelindo;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class RincianKontainerPelindoController extends Controller
@@ -24,10 +23,10 @@ class RincianKontainerPelindoController extends Controller
 
         // Apply Search (nomor kontainer, seal)
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nomor_kontainer', 'like', "%{$search}%")
-                  ->orWhere('no_seal', 'like', "%{$search}%")
-                  ->orWhere('kegiatan', 'like', "%{$search}%");
+                    ->orWhere('no_seal', 'like', "%{$search}%")
+                    ->orWhere('kegiatan', 'like', "%{$search}%");
             });
         }
 
@@ -69,9 +68,10 @@ class RincianKontainerPelindoController extends Controller
             return redirect()->route('rincian-kontainer-pelindo.index')
                 ->with('success', 'Rincian kontainer Pelindo berhasil dihapus.');
         } catch (\Exception $e) {
-            Log::error('Error deleting rincian kontainer pelindo: ' . $e->getMessage());
+            Log::error('Error deleting rincian kontainer pelindo: '.$e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+                ->with('error', 'Gagal menghapus data: '.$e->getMessage());
         }
     }
 }

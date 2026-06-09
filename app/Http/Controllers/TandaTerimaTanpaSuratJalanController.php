@@ -814,12 +814,12 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // Automatically save container details to rincian_kontainer_pelindos
             try {
                 $containers = [];
-                if (!empty($tandaTerima->no_kontainer)) {
+                if (! empty($tandaTerima->no_kontainer)) {
                     $noKontainers = array_map('trim', explode(',', $tandaTerima->no_kontainer));
-                    $sizes = !empty($tandaTerima->size_kontainer) ? array_map('trim', explode(',', $tandaTerima->size_kontainer)) : [];
-                    $seals = !empty($tandaTerima->no_seal) ? array_map('trim', explode(',', $tandaTerima->no_seal)) : [];
+                    $sizes = ! empty($tandaTerima->size_kontainer) ? array_map('trim', explode(',', $tandaTerima->size_kontainer)) : [];
+                    $seals = ! empty($tandaTerima->no_seal) ? array_map('trim', explode(',', $tandaTerima->no_seal)) : [];
                     foreach ($noKontainers as $idx => $noKon) {
-                        if (!empty($noKon)) {
+                        if (! empty($noKon)) {
                             $containers[] = [
                                 'nomor_kontainer' => $noKon,
                                 'ukuran' => $sizes[$idx] ?? $tandaTerima->size_kontainer,
@@ -841,7 +841,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     ]);
                 }
             } catch (\Exception $e) {
-                Log::error('Error saving to rincian_kontainer_pelindos from TTSJ: ' . $e->getMessage());
+                Log::error('Error saving to rincian_kontainer_pelindos from TTSJ: '.$e->getMessage());
             }
 
             DB::commit();

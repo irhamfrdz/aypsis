@@ -5706,6 +5706,12 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ->name('bl.import')
         ->middleware('can:bl-create');
 
+    Route::get('bl/rekap-bongkaran/select', [\App\Http\Controllers\BlController::class, 'rekapBongkaranSelect'])->name('bl.rekap-bongkaran.select')
+        ->middleware('can:bl-view');
+
+    Route::get('bl/rekap-bongkaran', [\App\Http\Controllers\BlController::class, 'rekapBongkaran'])->name('bl.rekap-bongkaran')
+        ->middleware('can:bl-view');
+
     Route::get('bl', [\App\Http\Controllers\BlController::class, 'select'])->name('bl.select')
         ->middleware('can:bl-view');
 

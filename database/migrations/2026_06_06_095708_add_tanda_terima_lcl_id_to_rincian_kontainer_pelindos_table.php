@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('rincian_kontainer_pelindos', function (Blueprint $table) {
             $table->unsignedBigInteger('tanda_terima_lcl_id')->nullable()->after('tanda_terima_tanpa_surat_jalan_id');
-            
+
             $table->foreign('tanda_terima_lcl_id', 'fk_rincian_kontainer_tt_lcl')
                 ->references('id')
                 ->on('tanda_terimas_lcl')
