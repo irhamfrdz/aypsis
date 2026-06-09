@@ -12,6 +12,8 @@ class BiayaKapalMeratus extends Model
         'biaya_kapal_id',
         'kapal',
         'voyage',
+        'nomor_kontainer',
+        'bl_id',
         'nomor_referensi',
         'pricelist_meratus_id',
         'jenis_biaya',
@@ -36,6 +38,7 @@ class BiayaKapalMeratus extends Model
     ];
 
     protected $casts = [
+        'bl_id' => 'integer',
         'kuantitas' => 'decimal:2',
         'harga' => 'decimal:2',
         'sub_total' => 'decimal:2',

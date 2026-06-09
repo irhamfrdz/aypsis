@@ -143,6 +143,28 @@
                         </button>
                     </div>
                 </div>
+                
+                <!-- Container Info Panel -->
+                <div class="meratus-container-info-wrapper md:col-span-2 hidden">
+                    <div class="meratus-container-info-content text-xs font-semibold text-blue-800 bg-blue-100/70 border border-blue-200 p-3 rounded-lg flex flex-col gap-2">
+                        <div class="flex flex-wrap gap-x-4 gap-y-1 items-center">
+                            <i class="fas fa-info-circle text-blue-600"></i>
+                            <span>Info Kontainer (Manifest):</span>
+                            <span class="meratus-info-20">20ft: 0</span>
+                            <span class="text-blue-300">|</span>
+                            <span class="meratus-info-40">40ft: 0</span>
+                            <span class="text-blue-300">|</span>
+                            <span class="meratus-info-pelabuhan">Rute: -</span>
+                        </div>
+                        <div class="meratus-info-list-kontainer border-t border-blue-200/40 pt-2 mt-1">
+                            <span class="font-bold text-blue-900 block mb-1.5"><i class="fas fa-boxes mr-1"></i>Nomor Kontainer:</span>
+                            <div class="flex flex-wrap gap-1 meratus-badges-container">
+                                <!-- Container Badges -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="meratus-types-container md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Detail Biaya Tagihan Meratus</label>
                     <div class="meratus-types-list space-y-2 mb-2">
@@ -282,8 +304,17 @@
             loadVoyagesForMeratusSection(sectionIndex, this.value);
         });
         
-        // Manual voyage toggle
+        // Setup voyage change listener
         const voyageSelect = section.querySelector('.voyage-select-meratus');
+        voyageSelect.addEventListener('change', function() {
+            const kapalNama = kapalSelect.value;
+            const voyageValue = this.value;
+            if (kapalNama && voyageValue) {
+                autoFillMeratusForSection(sectionIndex, kapalNama, voyageValue);
+            }
+        });
+        
+        // Manual voyage toggle
         const voyageInput = section.querySelector('.voyage-input-meratus');
         const voyageManualBtn = section.querySelector('.voyage-manual-btn-meratus');
  
@@ -375,17 +406,147 @@
         calculateMeratusSectionTotal(sectionIndex);
     }
     
-    function addTypeToMeratusSection(sectionIndex) {
+    //     // Auto-fill Meratus based on container counts from manifest table
+    function autoFillMeratusForSection(sectionIndex, kapalNama, voyage) {
+        const section = document.querySelector(`.meratus-section[data-section-index="${sectionIndex}"]`);
+        const container = section.querySelector('.meratus-types-list');
+        
+        // Show loading
+        container.innerHTML = '<div class="text-sm text-blue-500 italic py-2"><i class="fas fa-spinner fa-spin mr-2"></i>Menghitung kontainer...</div>';
+        
+        fetch('{{ url("biaya-kapal/get-container-counts") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                kapal: kapalNama,
+                voyage: voyage
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.counts) {
+                container.innerHTML = '';
+                
+                // Store containers list on the section element for dynamic addition
+                const containersList = data.containers_data || [];
+                section.setAttribute('data-containers', JSON.stringify(containersList));
+                
+                // Determine location from pelabuhan_tujuan / pelabuhan_asal / pelabuhan_muat / pelabuhan_bongkar
+                let location = 'Jakarta'; // default
+                const pAsal = (data.pelabuhan_asal || '').toLowerCase();
+                const pTujuan = (data.pelabuhan_tujuan || '').toLowerCase();
+                const pMuat = (data.pelabuhan_muat || '').toLowerCase();
+                const pBongkar = (data.pelabuhan_bongkar || '').toLowerCase();
+                
+                if (pTujuan.includes('batam') || pBongkar.includes('batam') || pAsal.includes('batam') || pMuat.includes('batam')) {
+                    location = 'Batam';
+                } else if (pTujuan.includes('pinang') || pTujuan.includes('kijang') || pBongkar.includes('pinang') || pAsal.includes('pinang') || pAsal.includes('kijang') || pMuat.includes('pinang')) {
+                    location = 'Pinang';
+                }
+                
+                // Calculate quantities
+                const qty20 = (data.counts['20'] ? ((data.counts['20'].full || 0) + (data.counts['20'].empty || 0)) : 0);
+                const qty40 = (data.counts['40'] ? ((data.counts['40'].full || 0) + (data.counts['40'].empty || 0)) : 0);
+                
+                // Update container info display
+                const infoWrapper = section.querySelector('.meratus-container-info-wrapper');
+                const info20 = section.querySelector('.meratus-info-20');
+                const info40 = section.querySelector('.meratus-info-40');
+                const infoPelabuhan = section.querySelector('.meratus-info-pelabuhan');
+                const badgesContainer = section.querySelector('.meratus-badges-container');
+                
+                if (infoWrapper) {
+                    const c20 = data.counts['20'] || { full: 0, empty: 0 };
+                    const c40 = data.counts['40'] || { full: 0, empty: 0 };
+                    
+                    info20.innerHTML = `<span class="font-bold text-blue-900">20ft:</span> ${qty20} (Full: ${c20.full || 0}, Empty: ${c20.empty || 0})`;
+                    info40.innerHTML = `<span class="font-bold text-blue-900">40ft:</span> ${qty40} (Full: ${c40.full || 0}, Empty: ${c40.empty || 0})`;
+                    
+                    const pAsalName = data.pelabuhan_asal || '-';
+                    const pTujuanName = data.pelabuhan_tujuan || '-';
+                    infoPelabuhan.innerHTML = `<span class="font-bold text-blue-900">Rute:</span> ${pAsalName} &rarr; ${pTujuanName}`;
+                    
+                    if (badgesContainer) {
+                        badgesContainer.innerHTML = '';
+                        if (containersList.length > 0) {
+                            containersList.forEach(c => {
+                                const badge = document.createElement('span');
+                                badge.className = 'inline-block bg-blue-200 text-blue-800 px-2 py-0.5 rounded text-[10px] font-mono border border-blue-300';
+                                badge.textContent = `${c.nomor_kontainer} (${c.size})`;
+                                badgesContainer.appendChild(badge);
+                            });
+                        } else {
+                            badgesContainer.innerHTML = '<span class="text-gray-500 italic text-[11px]">Tidak ada nomor kontainer</span>';
+                        }
+                    }
+                    
+                    infoWrapper.classList.remove('hidden');
+                }
+                
+                let addedAny = false;
+                
+                // Filter pricelistMeratusData by matching location
+                const matchedItems = pricelistMeratusData.filter(item => {
+                    const itemLoc = item.lokasi || '';
+                    return itemLoc.toLowerCase() === location.toLowerCase();
+                });
+                
+                matchedItems.forEach(item => {
+                    if (item.size === '20ft') {
+                        const sizeContainers = containersList.filter(c => (c.size || '').includes('20'));
+                        sizeContainers.forEach(c => {
+                            addTypeToMeratusSectionWithValue(sectionIndex, item.id, 1, item.lokasi, item.size, item.harga, c.nomor_kontainer, c.id);
+                            addedAny = true;
+                        });
+                    } else if (item.size === '40ft') {
+                        const sizeContainers = containersList.filter(c => (c.size || '').includes('40'));
+                        sizeContainers.forEach(c => {
+                            addTypeToMeratusSectionWithValue(sectionIndex, item.id, 1, item.lokasi, item.size, item.harga, c.nomor_kontainer, c.id);
+                            addedAny = true;
+                        });
+                    } else {
+                        // flat fee / no size
+                        if (containersList.length > 0) {
+                            addTypeToMeratusSectionWithValue(sectionIndex, item.id, 1, item.lokasi, item.size, item.harga, null, null);
+                            addedAny = true;
+                        }
+                    }
+                });
+                
+                if (!addedAny) {
+                    addTypeToMeratusSection(sectionIndex);
+                }
+                
+                calculateMeratusSectionTotal(sectionIndex);
+            } else {
+                container.innerHTML = '';
+                addTypeToMeratusSection(sectionIndex);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching container counts:', error);
+            container.innerHTML = '';
+            addTypeToMeratusSection(sectionIndex);
+        });
+    }
+
+    // Add Meratus type input with values
+    window.addTypeToMeratusSectionWithValue = function(sectionIndex, pricelistId, quantity, lokasi, size, harga, selectedContainer = null, selectedBlId = null) {
         const section = document.querySelector(`.meratus-section[data-section-index="${sectionIndex}"]`);
         const typesList = section.querySelector('.meratus-types-list');
         
-        // Get meratus options
         let meratusOptions = '<option value="">-- Pilih Jenis Biaya Meratus --</option>';
         pricelistMeratusData.forEach(item => {
+            const selected = item.id == pricelistId ? 'selected' : '';
             const locStr = item.lokasi ? ` (${item.lokasi})` : '';
             const sizeStr = item.size ? ` - ${item.size}` : '';
-            meratusOptions += `<option value="${item.id}" data-harga="${parseInt(item.harga)}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}">${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
+            meratusOptions += `<option value="${item.id}" data-harga="${parseInt(item.harga)}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}" ${selected}>${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
         });
+        
+        const containerOptions = getContainerOptionsForSection(sectionIndex, selectedContainer);
         
         const div = document.createElement('div');
         div.className = 'meratus-type-item flex flex-col gap-1 border p-3 rounded bg-white relative';
@@ -408,40 +569,47 @@
                 </button>
             </div>
             
-            <div class="grid grid-cols-2 lg:grid-cols-6 gap-2 mt-1">
+            <div class="grid grid-cols-2 lg:grid-cols-7 gap-2 mt-1">
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">No. Kontainer</label>
+                    <select name="meratus[${sectionIndex}][nomor_kontainers][]" class="container-select-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" onchange="updateMeratusContainerSize(this)">
+                        ${containerOptions}
+                    </select>
+                    <input type="hidden" name="meratus[${sectionIndex}][bl_ids][]" class="bl-id-input-meratus" value="${selectedBlId || ''}">
+                </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Lokasi</label>
                     <select name="meratus[${sectionIndex}][lokasi_items][]" class="lokasi-select-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
                         <option value="">-- Lokasi --</option>
-                        <option value="Jakarta">Jakarta</option>
-                        <option value="Batam">Batam</option>
-                        <option value="Pinang">Pinang</option>
+                        <option value="Jakarta" ${lokasi === 'Jakarta' ? 'selected' : ''}>Jakarta</option>
+                        <option value="Batam" ${lokasi === 'Batam' ? 'selected' : ''}>Batam</option>
+                        <option value="Pinang" ${lokasi === 'Pinang' ? 'selected' : ''}>Pinang</option>
                     </select>
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Size</label>
                     <select name="meratus[${sectionIndex}][size_items][]" class="size-select-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
                         <option value="">-- Size --</option>
-                        <option value="20ft">20ft</option>
-                        <option value="40ft">40ft</option>
+                        <option value="20ft" ${size === '20ft' ? 'selected' : ''}>20ft</option>
+                        <option value="40ft" ${size === '40ft' ? 'selected' : ''}>40ft</option>
                     </select>
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
-                    <input type="number" name="meratus[${sectionIndex}][custom_prices][]" class="price-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-gray-100" placeholder="0" readonly oninput="calculateMeratusSectionTotal(${sectionIndex})">
+                    <input type="number" name="meratus[${sectionIndex}][custom_prices][]" value="${parseInt(harga) || 0}" class="price-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-gray-100" placeholder="0" readonly oninput="calculateMeratusSectionTotal(${sectionIndex})">
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Kuantitas</label>
-                    <input type="number" step="0.01" min="0" name="meratus[${sectionIndex}][quantities][]" class="quantity-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="0" oninput="calculateMeratusSectionTotal(${sectionIndex})">
+                    <input type="number" step="0.01" min="0" name="meratus[${sectionIndex}][quantities][]" value="${quantity}" class="quantity-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" placeholder="0" oninput="calculateMeratusSectionTotal(${sectionIndex})">
                 </div>
-                <div class="flex items-end pb-1">
+                <div class="flex items-end pb-1 text-center justify-center">
                     <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
                         <input type="hidden" name="meratus[${sectionIndex}][is_muat][]" value="0">
                         <input type="checkbox" value="1" class="is-muat-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
                         Muat
                     </label>
                 </div>
-                <div class="flex items-end pb-1">
+                <div class="flex items-end pb-1 text-center justify-center">
                     <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
                         <input type="hidden" name="meratus[${sectionIndex}][is_bongkar][]" value="0">
                         <input type="checkbox" value="1" class="is-bongkar-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
@@ -452,6 +620,150 @@
         `;
         
         typesList.appendChild(div);
+    };
+
+    function getContainerOptionsForSection(sectionIndex, selectedContainer = null) {
+        const section = document.querySelector(`.meratus-section[data-section-index="${sectionIndex}"]`);
+        let containers = [];
+        if (section && section.hasAttribute('data-containers')) {
+            try {
+                containers = JSON.parse(section.getAttribute('data-containers') || '[]');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        let options = '<option value="">-- Pilih Kontainer --</option>';
+        containers.forEach(c => {
+            let selected = selectedContainer === c.nomor_kontainer ? 'selected' : '';
+            options += `<option value="${c.nomor_kontainer}" data-bl-id="${c.id}" data-size="${c.size}" ${selected}>${c.nomor_kontainer} (${c.size})</option>`;
+        });
+        
+        if (selectedContainer && !containers.some(c => c.nomor_kontainer === selectedContainer)) {
+            options += `<option value="${selectedContainer}" selected>${selectedContainer}</option>`;
+        }
+        
+        return options;
+    }
+
+    window.updateMeratusContainerSize = function(select) {
+        const container = select.closest('.meratus-type-item');
+        const selectedOption = select.options[select.selectedIndex];
+        const blIdInput = container.querySelector('.bl-id-input-meratus');
+        const sizeSelect = container.querySelector('.size-select-meratus');
+        
+        if (selectedOption && selectedOption.value) {
+            const blId = selectedOption.getAttribute('data-bl-id');
+            const size = selectedOption.getAttribute('data-size');
+            
+            blIdInput.value = blId || '';
+            if (size) {
+                let sizeVal = size;
+                if (size === '20') sizeVal = '20ft';
+                if (size === '40') sizeVal = '40ft';
+                sizeSelect.value = sizeVal;
+            }
+        } else {
+            blIdInput.value = '';
+        }
+    };
+
+    window.addTypeToMeratusSection = function(sectionIndex, data = null) {
+        const section = document.querySelector(`.meratus-section[data-section-index="${sectionIndex}"]`);
+        const typesList = section.querySelector('.meratus-types-list');
+        
+        // Get meratus options
+        let meratusOptions = '<option value="">-- Pilih Jenis Biaya Meratus --</option>';
+        pricelistMeratusData.forEach(item => {
+            let selected = data && data.type_id == item.id ? 'selected' : '';
+            const locStr = item.lokasi ? ` (${item.lokasi})` : '';
+            const sizeStr = item.size ? ` - ${item.size}` : '';
+            meratusOptions += `<option value="${item.id}" data-harga="${parseInt(item.harga)}" data-lokasi="${item.lokasi || ''}" data-size="${item.size || ''}" ${selected}>${item.jenis_biaya}${sizeStr}${locStr} - Rp ${parseInt(item.harga).toLocaleString('id-ID')}</option>`;
+        });
+        
+        const isManual = data && data.type_id === 'MANUAL';
+        const selectedContainer = data ? data.nomor_kontainer : null;
+        const selectedBlId = data ? data.bl_id : null;
+        const containerOptions = getContainerOptionsForSection(sectionIndex, selectedContainer);
+        
+        const div = document.createElement('div');
+        div.className = 'meratus-type-item flex flex-col gap-1 border p-3 rounded bg-white relative';
+        div.innerHTML = `
+            <div class="flex gap-2 w-full">
+                <select name="meratus[${sectionIndex}][types][]" class="type-select-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isManual ? 'hidden' : ''}" ${isManual ? 'disabled' : ''} required onchange="updateMeratusPriceFromSelect(this, ${sectionIndex})">
+                    ${meratusOptions}
+                </select>
+                
+                <input type="hidden" name="meratus[${sectionIndex}][types][]" class="hidden-type-manual-meratus" value="MANUAL" ${isManual ? '' : 'disabled'}>
+                
+                <input type="text" name="meratus[${sectionIndex}][manual_names][]" class="type-manual-input-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${isManual ? '' : 'hidden'}" value="${isManual ? (data.manual_name || '') : ''}" placeholder="Nama Biaya Manual">
+                
+                <button type="button" class="type-toggle-btn-meratus px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Switch Input (Master/Manual)" onclick="toggleMeratusTypeInput(this, ${sectionIndex})">
+                    <i class="fas fa-keyboard"></i>
+                </button>
+                    
+                <button type="button" class="text-red-500 hover:text-red-700 ml-1" onclick="this.closest('.meratus-type-item').remove(); calculateMeratusSectionTotal(${sectionIndex})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-2 lg:grid-cols-7 gap-2 mt-1">
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">No. Kontainer</label>
+                    <select name="meratus[${sectionIndex}][nomor_kontainers][]" class="container-select-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" onchange="updateMeratusContainerSize(this)">
+                        ${containerOptions}
+                    </select>
+                    <input type="hidden" name="meratus[${sectionIndex}][bl_ids][]" class="bl-id-input-meratus" value="${selectedBlId || ''}">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Lokasi</label>
+                    <select name="meratus[${sectionIndex}][lokasi_items][]" class="lokasi-select-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Lokasi --</option>
+                        <option value="Jakarta" ${data && data.lokasi === 'Jakarta' ? 'selected' : ''}>Jakarta</option>
+                        <option value="Batam" ${data && data.lokasi === 'Batam' ? 'selected' : ''}>Batam</option>
+                        <option value="Pinang" ${data && data.lokasi === 'Pinang' ? 'selected' : ''}>Pinang</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Size</label>
+                    <select name="meratus[${sectionIndex}][size_items][]" class="size-select-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Size --</option>
+                        <option value="20ft" ${data && data.size === '20ft' ? 'selected' : ''}>20ft</option>
+                        <option value="40ft" ${data && data.size === '40ft' ? 'selected' : ''}>40ft</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
+                    <input type="number" name="meratus[${sectionIndex}][custom_prices][]" class="price-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-gray-100" value="${data ? (data.harga || 0) : 0}" placeholder="0" readonly oninput="calculateMeratusSectionTotal(${sectionIndex})">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-1">Kuantitas</label>
+                    <input type="number" step="0.01" min="0" name="meratus[${sectionIndex}][quantities][]" class="quantity-input-meratus w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500" value="${data ? (data.kuantitas || 0) : 0}" placeholder="0" oninput="calculateMeratusSectionTotal(${sectionIndex})">
+                </div>
+                <div class="flex items-end pb-1 text-center justify-center">
+                    <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
+                        <input type="hidden" name="meratus[${sectionIndex}][is_muat][]" value="${data && data.is_muat ? '1' : '0'}">
+                        <input type="checkbox" value="1" class="is-muat-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" ${data && data.is_muat ? 'checked' : ''} onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
+                        Muat
+                    </label>
+                </div>
+                <div class="flex items-end pb-1 text-center justify-center">
+                    <label class="flex items-center gap-1 text-xs text-gray-700 cursor-pointer">
+                        <input type="hidden" name="meratus[${sectionIndex}][is_bongkar][]" value="${data && data.is_bongkar ? '1' : '0'}">
+                        <input type="checkbox" value="1" class="is-bongkar-checkbox w-4 h-4 rounded text-blue-600 focus:ring-blue-500" ${data && data.is_bongkar ? 'checked' : ''} onchange="this.previousElementSibling.value = this.checked ? '1' : '0'">
+                        Bongkar
+                    </label>
+                </div>
+            </div>
+        `;
+        
+        typesList.appendChild(div);
+        
+        if (isManual) {
+            const toggleBtn = div.querySelector('.type-toggle-btn-meratus');
+            toggleBtn.classList.add('bg-blue-200', 'text-blue-700');
+            toggleBtn.innerHTML = '<i class="fas fa-list"></i>';
+        }
     }
     
     window.removeMeratusSection = function(sectionIndex) {

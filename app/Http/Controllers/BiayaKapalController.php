@@ -816,6 +816,8 @@ class BiayaKapalController extends Controller
             'meratus.*.manual_names' => 'nullable|array',
             'meratus.*.custom_prices' => 'nullable|array',
             'meratus.*.quantities' => 'nullable|array',
+            'meratus.*.nomor_kontainers' => 'nullable|array',
+            'meratus.*.bl_ids' => 'nullable|array',
             'meratus.*.lokasi_items' => 'nullable|array',
             'meratus.*.size_items' => 'nullable|array',
             'meratus.*.is_muat' => 'nullable|array',
@@ -1336,6 +1338,8 @@ class BiayaKapalController extends Controller
                             $jenisBiaya = '';
                             $price = floatval($section['custom_prices'][$typeIndex] ?? 0);
                             $qty = floatval($section['quantities'][$typeIndex] ?? 0);
+                            $nomorKontainer = $section['nomor_kontainers'][$typeIndex] ?? null;
+                            $blId = isset($section['bl_ids'][$typeIndex]) && $section['bl_ids'][$typeIndex] !== '' ? intval($section['bl_ids'][$typeIndex]) : null;
                             $lokasiItem = $section['lokasi_items'][$typeIndex] ?? null;
                             $sizeItem = $section['size_items'][$typeIndex] ?? null;
                             $isMuat = isset($section['is_muat'][$typeIndex]) && $section['is_muat'][$typeIndex] == '1';
@@ -1358,6 +1362,7 @@ class BiayaKapalController extends Controller
                             $pphActive = false;
                             $ppnActive = false;
                             $biayaMaterai = 0;
+                            $adjustment = 0;
 
                             if ($typeIndex == 0) {
                                 $pphRaw = $section['pph'] ?? 0;
@@ -1386,6 +1391,8 @@ class BiayaKapalController extends Controller
                                 'biaya_kapal_id' => $biayaKapal->id,
                                 'kapal' => $section['kapal'] ?? null,
                                 'voyage' => $section['voyage'] ?? null,
+                                'nomor_kontainer' => $nomorKontainer,
+                                'bl_id' => $blId,
                                 'pricelist_meratus_id' => $pricelistId,
                                 'jenis_biaya' => $jenisBiaya,
                                 'lokasi' => $lokasiItem,
@@ -3323,6 +3330,8 @@ class BiayaKapalController extends Controller
             'meratus.*.manual_names' => 'nullable|array',
             'meratus.*.custom_prices' => 'nullable|array',
             'meratus.*.quantities' => 'nullable|array',
+            'meratus.*.nomor_kontainers' => 'nullable|array',
+            'meratus.*.bl_ids' => 'nullable|array',
             'meratus.*.lokasi_items' => 'nullable|array',
             'meratus.*.size_items' => 'nullable|array',
             'meratus.*.is_muat' => 'nullable|array',
@@ -3979,6 +3988,8 @@ class BiayaKapalController extends Controller
                                 $jenisBiaya = '';
                                 $price = floatval($section['custom_prices'][$typeIndex] ?? 0);
                                 $qty = floatval($section['quantities'][$typeIndex] ?? 0);
+                                $nomorKontainer = $section['nomor_kontainers'][$typeIndex] ?? null;
+                                $blId = isset($section['bl_ids'][$typeIndex]) && $section['bl_ids'][$typeIndex] !== '' ? intval($section['bl_ids'][$typeIndex]) : null;
                                 $lokasiItem = $section['lokasi_items'][$typeIndex] ?? null;
                                 $sizeItem = $section['size_items'][$typeIndex] ?? null;
                                 $isMuat = isset($section['is_muat'][$typeIndex]) && $section['is_muat'][$typeIndex] == '1';
@@ -3995,7 +4006,7 @@ class BiayaKapalController extends Controller
 
                                 $subTotal = $price * $qty;
 
-                                // Extract section-level values (only for the first item)
+                                // Extract section-level values (only for the first item to avoid double counting)
                                 $pph = 0;
                                 $ppn = 0;
                                 $pphActive = false;
@@ -4010,6 +4021,7 @@ class BiayaKapalController extends Controller
                                     $ppnRaw = $section['ppn'] ?? 0;
                                     $ppn = floatval($ppnRaw);
 
+                                    // Checkboxes in Laravel are only present if checked
                                     $pphActive = isset($section['pph_active']);
                                     $ppnActive = isset($section['ppn_active']);
 
@@ -4029,6 +4041,8 @@ class BiayaKapalController extends Controller
                                     'biaya_kapal_id' => $biayaKapal->id,
                                     'kapal' => $section['kapal'] ?? null,
                                     'voyage' => $section['voyage'] ?? null,
+                                    'nomor_kontainer' => $nomorKontainer,
+                                    'bl_id' => $blId,
                                     'pricelist_meratus_id' => $pricelistId,
                                     'jenis_biaya' => $jenisBiaya,
                                     'lokasi' => $lokasiItem,
@@ -4619,7 +4633,7 @@ class BiayaKapalController extends Controller
 
             // Fetch from manifests table instead of bls table
             $blsQuery = DB::table('manifests')
-                ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'tonnage', 'volume', 'satuan')
+                ->select('id', 'nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'tonnage', 'volume', 'satuan', 'pelabuhan_asal', 'pelabuhan_tujuan', 'pelabuhan_muat', 'pelabuhan_bongkar')
                 ->where('no_voyage', $voyage);
 
             // Add where clause for each keyword for robust matching
@@ -4754,9 +4768,40 @@ class BiayaKapalController extends Controller
                 }
             }
 
+            $firstBl = $bls->first();
+            $nomorKontainers = $bls->whereNotNull('nomor_kontainer')
+                ->where('nomor_kontainer', '!=', '')
+                ->where('nomor_kontainer', '!=', '-')
+                ->pluck('nomor_kontainer')
+                ->unique()
+                ->values()
+                ->toArray();
+
+            $containersData = $bls->whereNotNull('nomor_kontainer')
+                ->where('nomor_kontainer', '!=', '')
+                ->where('nomor_kontainer', '!=', '-')
+                ->groupBy('nomor_kontainer')
+                ->map(function ($group) {
+                    $first = $group->first();
+
+                    return [
+                        'id' => $first->id,
+                        'nomor_kontainer' => $first->nomor_kontainer,
+                        'size' => $first->size_kontainer,
+                    ];
+                })
+                ->values()
+                ->toArray();
+
             return response()->json([
                 'success' => true,
                 'counts' => $counts,
+                'pelabuhan_asal' => $firstBl ? $firstBl->pelabuhan_asal : null,
+                'pelabuhan_tujuan' => $firstBl ? $firstBl->pelabuhan_tujuan : null,
+                'pelabuhan_muat' => $firstBl ? $firstBl->pelabuhan_muat : null,
+                'pelabuhan_bongkar' => $firstBl ? $firstBl->pelabuhan_bongkar : null,
+                'nomor_kontainers' => $nomorKontainers,
+                'containers_data' => $containersData,
             ]);
         } catch (\Exception $e) {
             return response()->json([
