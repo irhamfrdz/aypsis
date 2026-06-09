@@ -4619,7 +4619,7 @@ class BiayaKapalController extends Controller
 
             // Fetch from manifests table instead of bls table
             $blsQuery = DB::table('manifests')
-                ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'sudah_ob', 'sudah_tl', 'max_tv', 'tonnage', 'volume', 'satuan')
+                ->select('nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'tonnage', 'volume', 'satuan')
                 ->where('no_voyage', $voyage);
 
             // Add where clause for each keyword for robust matching
@@ -4660,8 +4660,6 @@ class BiayaKapalController extends Controller
                     $cargoMaxTvSum += $totalVolume;
                 } elseif ($totalTonnage > 0) {
                     $cargoMaxTvSum += $totalTonnage;
-                } else {
-                    $cargoMaxTvSum += $group->sum('max_tv');
                 }
             }
             $counts['cargo_max_tv_sum'] = $cargoMaxTvSum;
