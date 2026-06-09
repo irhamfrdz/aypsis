@@ -116,9 +116,8 @@
                                     <input type="checkbox" id="select-all" class="h-3 w-3 text-indigo-600 border-gray-300 rounded">
                                 </th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Pranota</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal CAT</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor / Bengkel</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pranota</th>
                                 <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             </tr>
@@ -131,19 +130,10 @@
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->no_invoice }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCatItems() as $tagihan)
-                                            <div>{{ $tagihan->nomor_kontainer }}</div>
-                                        @endforeach
+                                        {{ $pranota->supplier ?? '-' }}
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCatItems() as $tagihan)
-                                            <div>{{ $tagihan->vendor }}</div>
-                                        @endforeach
-                                    </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCatItems() as $tagihan)
-                                            <div>{{ \Carbon\Carbon::parse($tagihan->tanggal_cat)->format('d/M/Y') }}</div>
-                                        @endforeach
+                                        {{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d/M/Y') : '-' }}
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->calculateTotalAmount(), 0, ',', '.') }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
@@ -156,7 +146,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-2 py-4 text-center text-xs text-gray-500">
+                                    <td colspan="6" class="px-2 py-4 text-center text-xs text-gray-500">
                                         Tidak ada pranota CAT kontainer yang tersedia.
                                     </td>
                                 </tr>
@@ -240,7 +230,7 @@
             pranotaCheckboxes.forEach(checkbox => {
                 if (checkbox.checked) {
                     const row = checkbox.closest('tr');
-                    const amountText = row.querySelector('td:nth-child(6)').textContent;
+                    const amountText = row.querySelector('td:nth-child(5)').textContent;
                     const amount = parseFloat(amountText.replace(/Rp\s|,|\./g, '')) || 0;
                     total += amount;
                 }
