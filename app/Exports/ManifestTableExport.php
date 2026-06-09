@@ -293,8 +293,8 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
                     $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
                 }
 
-                // Condense perincian details into 1 row for FCL
-                if (! $item['is_lcl'] && count($perincian) > 1) {
+                // Condense perincian details into 1 row
+                if (count($perincian) > 1) {
                     $pItem = [
                         'qty' => implode("\n", array_column($perincian, 'qty')),
                         'satuan' => implode("\n", array_column($perincian, 'satuan')),
