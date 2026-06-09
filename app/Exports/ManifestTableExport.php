@@ -284,9 +284,13 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
             return strnatcasecmp($a['bl_no'] ?? '', $b['bl_no'] ?? '');
         });
 
-        // Group by bl_no (with unique fallback for empty values to prevent merging)
+        // Group by no_kontainer (with unique fallback for empty/cargo to prevent merging)
         $grouped = $sortedData->groupBy(function ($item) {
-            return $item['bl_no'] ?: ('empty_'.$item['model']->id);
+            if ($item['is_cargo']) {
+                return 'cargo_'.$item['model']->id;
+            }
+
+            return $item['no_kontainer'] ?: ('empty_'.$item['model']->id);
         });
 
         $finalData = collect();
@@ -296,54 +300,115 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
             $firstItem = $items->first();
             $hasInfo = ! empty($firstItem['no_kontainer']) && $firstItem['no_kontainer'] != '-';
 
+            // Check if this group represents an LCL container
+            $isLclGroup = $items->contains('is_lcl', true);
+
             $groupNumber = '';
             if ($hasInfo && ! $firstItem['is_cargo']) {
                 $groupNumber = sprintf('%02d', $groupCounter);
                 $groupCounter++;
             }
 
-            $itemsCount = count($items);
-            foreach ($items as $idx => $item) {
-                $perincian = $item['perincian_items'] ?? [];
-                if (empty($perincian)) {
-                    $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
-                }
+            if ($isLclGroup && $hasInfo) {
+                // Calculate LCL total weight and volume
+                $totalWeight = $items->sum(function ($item) {
+                    return collect($item['perincian_items'])->sum('weight');
+                });
+                $totalVolume = $items->sum(function ($item) {
+                    return collect($item['perincian_items'])->sum('meass');
+                });
 
-                // Condense perincian details into 1 row
-                if (count($perincian) > 1) {
-                    $pItem = [
-                        'qty' => implode("\n", array_column($perincian, 'qty')),
-                        'satuan' => implode("\n", array_column($perincian, 'satuan')),
-                        'nama' => implode("\n", array_column($perincian, 'nama')),
-                        'weight' => implode("\n", array_column($perincian, 'weight')),
-                        'meass' => implode("\n", array_column($perincian, 'meass')),
-                    ];
-                    $perincian = [$pItem];
-                }
+                // 1. Output LCL Container Header Row
+                $headerRow = $firstItem;
+                $headerRow['type'] = 'lcl_container_header';
+                $headerRow['group_number'] = $groupNumber;
+                $headerRow['p_qty'] = '';
+                $headerRow['p_satuan'] = '';
+                $headerRow['p_nama'] = 'General cargo';
+                $headerRow['p_weight'] = $totalWeight;
+                $headerRow['p_meass'] = $totalVolume;
+                $headerRow['pengirim'] = 'Pt. Alexindo Yakinprima - Jakarta';
+                $headerRow['s_address'] = '-';
 
-                foreach ($perincian as $pIdx => $pItem) {
-                    $row = $item;
-                    $row['type'] = 'item';
+                $finalData->push($headerRow);
 
-                    // Group-level details are only written on the first row of the group
-                    $isFirstOfGroup = ($idx === 0 && $pIdx === 0);
-                    if ($isFirstOfGroup) {
-                        $row['group_number'] = $groupNumber;
-                        $row['show_group_fields'] = true;
-                        $row['group_count'] = $itemsCount;
-                    } else {
-                        $row['group_number'] = '';
-                        $row['show_group_fields'] = false;
-                        $row['group_count'] = null;
+                // 2. Output LCL Manifest Rows
+                foreach ($items as $idx => $item) {
+                    $perincian = $item['perincian_items'] ?? [];
+                    if (empty($perincian)) {
+                        $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
                     }
 
-                    $row['p_qty'] = $pItem['qty'];
-                    $row['p_satuan'] = $pItem['satuan'];
-                    $row['p_nama'] = $pItem['nama'];
-                    $row['p_weight'] = $pItem['weight'];
-                    $row['p_meass'] = $pItem['meass'];
+                    // Condense perincian details into 1 row
+                    if (count($perincian) > 1) {
+                        $pItem = [
+                            'qty' => implode("\n", array_column($perincian, 'qty')),
+                            'satuan' => implode("\n", array_column($perincian, 'satuan')),
+                            'nama' => implode("\n", array_column($perincian, 'nama')),
+                            'weight' => implode("\n", array_column($perincian, 'weight')),
+                            'meass' => implode("\n", array_column($perincian, 'meass')),
+                        ];
+                        $perincian = [$pItem];
+                    }
 
-                    $finalData->push($row);
+                    foreach ($perincian as $pItem) {
+                        $row = $item;
+                        $row['type'] = 'lcl_manifest_row';
+                        $row['group_number'] = $groupNumber.chr(65 + $idx); // e.g., 01A, 01B...
+
+                        $row['p_qty'] = $pItem['qty'];
+                        $row['p_satuan'] = $pItem['satuan'];
+                        $row['p_nama'] = $pItem['nama'];
+                        $row['p_weight'] = $pItem['weight'];
+                        $row['p_meass'] = $pItem['meass'];
+
+                        $finalData->push($row);
+                    }
+                }
+            } else {
+                // FCL or Cargo (Normal)
+                $itemsCount = count($items);
+                foreach ($items as $idx => $item) {
+                    $perincian = $item['perincian_items'] ?? [];
+                    if (empty($perincian)) {
+                        $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
+                    }
+
+                    // Condense perincian details into 1 row
+                    if (count($perincian) > 1) {
+                        $pItem = [
+                            'qty' => implode("\n", array_column($perincian, 'qty')),
+                            'satuan' => implode("\n", array_column($perincian, 'satuan')),
+                            'nama' => implode("\n", array_column($perincian, 'nama')),
+                            'weight' => implode("\n", array_column($perincian, 'weight')),
+                            'meass' => implode("\n", array_column($perincian, 'meass')),
+                        ];
+                        $perincian = [$pItem];
+                    }
+
+                    foreach ($perincian as $pIdx => $pItem) {
+                        $row = $item;
+                        $row['type'] = 'item';
+
+                        $isFirstOfGroup = ($idx === 0 && $pIdx === 0);
+                        if ($isFirstOfGroup) {
+                            $row['group_number'] = $groupNumber;
+                            $row['show_group_fields'] = true;
+                            $row['group_count'] = $itemsCount;
+                        } else {
+                            $row['group_number'] = '';
+                            $row['show_group_fields'] = false;
+                            $row['group_count'] = null;
+                        }
+
+                        $row['p_qty'] = $pItem['qty'];
+                        $row['p_satuan'] = $pItem['satuan'];
+                        $row['p_nama'] = $pItem['nama'];
+                        $row['p_weight'] = $pItem['weight'];
+                        $row['p_meass'] = $pItem['meass'];
+
+                        $finalData->push($row);
+                    }
                 }
             }
         }
@@ -417,16 +482,18 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
             ? (is_string($row['tanggal']) ? Carbon::parse($row['tanggal'])->format('d/m/Y') : $row['tanggal']->format('d/m/Y'))
             : '';
 
-        $noKontainer = $row['no_kontainer'];
-        $noSeal = $row['no_seal'];
+        $isLclManifestRow = ($row['type'] === 'lcl_manifest_row');
+        $noKontainer = $isLclManifestRow ? '' : $row['no_kontainer'];
+        $noSeal = $isLclManifestRow ? '' : $row['no_seal'];
         $size = $row['size'] ?: '20';
 
         $isCargo = $row['is_cargo'];
-        $containerQty = $isCargo ? '' : 1;
-        $containerUnit = $isCargo ? '' : 'Unit';
-        $containerDesc = $isCargo ? '' : "Container {$size} feet stc :";
+        $containerQty = ($isCargo || $isLclManifestRow) ? '' : 1;
+        $containerUnit = ($isCargo || $isLclManifestRow) ? '' : 'Unit';
+        $containerDesc = ($isCargo || $isLclManifestRow) ? '' : "Container {$size} feet stc :";
 
         $blNo = '';
+        $hsCode = '';
         $shipperName = '';
         $shipperAddress = '';
         $shipperNpwp = '';
@@ -441,11 +508,27 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
         $groupUnit = '';
         $groupDesc = '';
 
-        if (! empty($row['show_group_fields'])) {
-            $blNo = $row['bl_no'];
+        if ($row['type'] === 'lcl_container_header') {
+            $blNo = $row['group_number'];
             $shipperName = $row['pengirim'];
             $shipperAddress = $row['s_address'];
+            $shipperNpwp = '-';
+            $consigneeName = '';
+            $consigneeAddress = '';
+            $consigneeNpwp = '-';
+            $notifyName = '';
+            $notifyAddress = '';
+            $notifyNpwp = '-';
+            $deliveryAddress = '';
+            $groupCount = 1;
+            $groupUnit = 'Unit';
+            $groupDesc = "Container {$size} feet / LCL  (Kantor)";
+        } elseif ($row['type'] === 'lcl_manifest_row') {
+            $blNo = $row['group_number'];
+            $hsCode = $row['bl_no'];
 
+            $shipperName = $row['pengirim'];
+            $shipperAddress = $row['s_address'];
             $sLookup = $this->penerimaLookup[strtoupper(trim($row['pengirim']))] ?? null;
             $shipperNpwp = $sLookup['npwp'] ?? '-';
 
@@ -463,16 +546,40 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
             if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {
                 $deliveryAddress .= ' Telp.'.$row['p_cp'];
             }
+        } else {
+            if (! empty($row['show_group_fields'])) {
+                $blNo = $row['bl_no'];
+                $shipperName = $row['pengirim'];
+                $shipperAddress = $row['s_address'];
 
-            $groupCount = $row['group_count'];
-            $groupUnit = 'Unit';
-            $groupDesc = "Container {$size} feet / FCL  (Kantor)";
+                $sLookup = $this->penerimaLookup[strtoupper(trim($row['pengirim']))] ?? null;
+                $shipperNpwp = $sLookup['npwp'] ?? '-';
+
+                $consigneeNpwp = $row['p_npwp'];
+                $consigneeName = $row['penerima'];
+                $consigneeAddress = $row['p_address'];
+
+                $notifyName = $row['model']->notify_party ?: $row['penerima'];
+                $nName = strtoupper(trim($notifyName));
+                $nLookup = $this->penerimaLookup[$nName] ?? null;
+                $notifyAddress = $row['model']->alamat_notify_party ?: ($nLookup['address'] ?? $row['p_address']);
+                $notifyNpwp = $nLookup['npwp'] ?? $consigneeNpwp;
+
+                $deliveryAddress = trim($consigneeName).'    '.trim($consigneeAddress);
+                if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {
+                    $deliveryAddress .= ' Telp.'.$row['p_cp'];
+                }
+
+                $groupCount = $row['group_count'];
+                $groupUnit = 'Unit';
+                $groupDesc = "Container {$size} feet / FCL  (Kantor)";
+            }
         }
 
         return [
             '', // A: Spacer
             $blNo, // B: B/L NO.
-            '', // C: HS CODE
+            $hsCode, // C: HS CODE
             $noKontainer, // D: MARK AND NUMBERS
             $noSeal, // E: SEAL NO.
             $containerQty, // F: Container Qty (1)
