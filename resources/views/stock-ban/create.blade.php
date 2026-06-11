@@ -387,30 +387,34 @@
 
 @push('scripts')
 <script>
-    // JSON arrays for mobil and karyawan lists to avoid massive DOM rendering overhead
-    const rawMobils = @json($mobils->map(function($m) {
-        $displayPlat = $m->nomor_polisi;
-        if (empty($displayPlat) && stripos($m->jenis, 'buntut') !== false) {
-            $displayPlat = $m->no_kir ?? '-';
-        }
-        $displayText = ($displayPlat ?? '-') . ' (' . $m->merek . ' - ' . $m->jenis . ')';
-        if (stripos($m->jenis, 'buntut') !== false) {
-            $displayText .= ' - ' . ($m->lokasi ?? '-');
-        }
-        return [
-            'id' => $m->id,
-            'text' => $displayText,
-            'search' => strtolower($displayText)
-        ];
-    }));
+    @php
+        $rawMobilsData = $mobils->map(function($m) {
+            $displayPlat = $m->nomor_polisi;
+            if (empty($displayPlat) && stripos($m->jenis, 'buntut') !== false) {
+                $displayPlat = $m->no_kir ?? '-';
+            }
+            $displayText = ($displayPlat ?? '-') . ' (' . $m->merek . ' - ' . $m->jenis . ')';
+            if (stripos($m->jenis, 'buntut') !== false) {
+                $displayText .= ' - ' . ($m->lokasi ?? '-');
+            }
+            return [
+                'id' => $m->id,
+                'text' => $displayText,
+                'search' => strtolower($displayText)
+            ];
+        });
 
-    const rawKaryawans = @json($karyawans->map(function($k) {
-        return [
-            'id' => $k->id,
-            'text' => $k->nama_lengkap,
-            'search' => strtolower($k->nama_lengkap)
-        ];
-    }));
+        $rawKaryawansData = $karyawans->map(function($k) {
+            return [
+                'id' => $k->id,
+                'text' => $k->nama_lengkap,
+                'search' => strtolower($k->nama_lengkap)
+            ];
+        });
+    @endphp
+
+    const rawMobils = @json($rawMobilsData);
+    const rawKaryawans = @json($rawKaryawansData);
 
     (function() {
                 function initMobilSelect() {
