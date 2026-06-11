@@ -253,24 +253,7 @@
                                 </div>
                                 <div class="custom-select-options" id="mobil-options-list">
                                     <div class="custom-select-option" data-value="" data-text="-- Tidak Dipasang --">-- Tidak Dipasang --</div>
-                                    @foreach($mobils as $mobil)
-                                        @php
-                                            $displayPlat = $mobil->nomor_polisi;
-                                            if (empty($displayPlat) && stripos($mobil->jenis, 'buntut') !== false) {
-                                                $displayPlat = $mobil->no_kir ?? '-';
-                                            }
-                                            $displayText = ($displayPlat ?? '-') . ' (' . $mobil->merek . ' - ' . $mobil->jenis . ')';
-                                            if (stripos($mobil->jenis, 'buntut') !== false) {
-                                                $displayText .= ' - ' . ($mobil->lokasi ?? '-');
-                                            }
-                                        @endphp
-                                        <div class="custom-select-option" 
-                                             data-value="{{ $mobil->id }}" 
-                                             data-search="{{ strtolower($displayText) }}"
-                                             data-text="{{ $displayText }}">
-                                            {{ $displayText }}
-                                        </div>
-                                    @endforeach
+                                    <!-- Options populated dynamically by JS -->
                                 </div>
                                 <div id="no-mobil-results" class="hidden p-4 text-center text-sm text-gray-500">
                                     Mobil tidak ditemukan
@@ -348,14 +331,7 @@
                                 </div>
                                 <div class="custom-select-options" id="penerima-options-list">
                                     <div class="custom-select-option" data-value="" data-text="-- Pilih Penerima --">-- Pilih Penerima --</div>
-                                    @foreach($karyawans as $karyawan)
-                                        <div class="custom-select-option" 
-                                             data-value="{{ $karyawan->id }}" 
-                                             data-search="{{ strtolower($karyawan->nama_lengkap) }}"
-                                             data-text="{{ $karyawan->nama_lengkap }}">
-                                            {{ $karyawan->nama_lengkap }}
-                                        </div>
-                                    @endforeach
+                                    <!-- Options populated dynamically by JS -->
                                 </div>
                                 <div id="no-penerima-results" class="hidden p-4 text-center text-sm text-gray-500">
                                     Penerima tidak ditemukan
@@ -411,9 +387,33 @@
 
 @push('scripts')
 <script>
+    // JSON arrays for mobil and karyawan lists to avoid massive DOM rendering overhead
+    const rawMobils = @json($mobils->map(function($m) {
+        $displayPlat = $m->nomor_polisi;
+        if (empty($displayPlat) && stripos($m->jenis, 'buntut') !== false) {
+            $displayPlat = $m->no_kir ?? '-';
+        }
+        $displayText = ($displayPlat ?? '-') . ' (' . $m->merek . ' - ' . $m->jenis . ')';
+        if (stripos($m->jenis, 'buntut') !== false) {
+            $displayText .= ' - ' . ($m->lokasi ?? '-');
+        }
+        return [
+            'id' => $m->id,
+            'text' => $displayText,
+            'search' => strtolower($displayText)
+        ];
+    }));
+
+    const rawKaryawans = @json($karyawans->map(function($k) {
+        return [
+            'id' => $k->id,
+            'text' => $k->nama_lengkap,
+            'search' => strtolower($k->nama_lengkap)
+        ];
+    }));
+
     (function() {
-        function initMobilSelect() {
-            // ... (keep this function as is, it's just the searchable dropdown logic) ...
+                function initMobilSelect() {
             const selectContainer = document.getElementById('mobil-select-container');
             const selectButton = document.getElementById('mobil-select-button');
             const selectDropdown = document.getElementById('mobil-select-dropdown');
@@ -424,33 +424,55 @@
             const selectedText = document.getElementById('mobil-selected-text');
 
             if (!selectContainer || !selectButton || !selectDropdown || !searchInput || !optionsList || !hiddenInput || !selectedText) {
-                // elements might be hidden/removed by dynamic logic, but we should check strictly
-                // actually the dynamic logic only hides parents, elements exist in DOM.
                 return;
             }
             
             if (selectButton.dataset.mobilInit === '1') return;
             selectButton.dataset.mobilInit = '1';
 
-            function updateSelectedState(value) {
-                const options = optionsList.querySelectorAll('.custom-select-option');
-                options.forEach(opt => {
-                    if (opt.getAttribute('data-value') === (value || '').toString()) {
-                        opt.classList.add('selected');
-                    } else {
-                        opt.classList.remove('selected');
+            function renderOptions(filterTerm = '') {
+                const term = filterTerm.toLowerCase().trim();
+                optionsList.innerHTML = '';
+                
+                // Add default option
+                const defaultDiv = document.createElement('div');
+                defaultDiv.className = 'custom-select-option';
+                defaultDiv.setAttribute('data-value', '');
+                defaultDiv.setAttribute('data-text', '-- Tidak Dipasang --');
+                defaultDiv.textContent = '-- Tidak Dipasang --';
+                if (!hiddenInput.value) {
+                    defaultDiv.classList.add('selected');
+                }
+                optionsList.appendChild(defaultDiv);
+
+                let renderedCount = 0;
+                for (let i = 0; i < rawMobils.length; i++) {
+                    const item = rawMobils[i];
+                    if (!term || item.search.includes(term)) {
+                        const optDiv = document.createElement('div');
+                        optDiv.className = 'custom-select-option';
+                        optDiv.setAttribute('data-value', item.id);
+                        optDiv.setAttribute('data-text', item.text);
+                        optDiv.textContent = item.text;
+                        if (hiddenInput.value === item.id.toString()) {
+                            optDiv.classList.add('selected');
+                        }
+                        optionsList.appendChild(optDiv);
+                        renderedCount++;
+                        if (renderedCount >= 30) {
+                            break; // Virtualized DOM: only render max 30 items
+                        }
                     }
-                });
+                }
+                
+                noResults.classList.toggle('hidden', renderedCount > 0 || term === '');
             }
 
             function selectMobil(id, text) {
                 hiddenInput.value = id;
                 selectedText.textContent = text;
                 closeDropdown();
-                updateSelectedState(id);
             }
-
-            updateSelectedState(hiddenInput.value);
 
             let dropdownAppended = false;
             const originalParent = selectDropdown.parentNode;
@@ -458,8 +480,7 @@
 
             function openDropdown() {
                 searchInput.value = '';
-                const options = optionsList.querySelectorAll('.custom-select-option');
-                options.forEach(opt => opt.classList.remove('hidden'));
+                renderOptions('');
                 noResults.classList.add('hidden');
 
                 const rect = selectButton.getBoundingClientRect();
@@ -514,19 +535,7 @@
             });
 
             searchInput.addEventListener('input', function() {
-                const term = this.value.toLowerCase().trim();
-                const options = optionsList.querySelectorAll('.custom-select-option');
-                let count = 0;
-                options.forEach(opt => {
-                    const searchData = opt.getAttribute('data-search') || '';
-                    if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
-                        opt.classList.remove('hidden');
-                        count++;
-                    } else {
-                        opt.classList.add('hidden');
-                    }
-                });
-                noResults.classList.toggle('hidden', count > 0);
+                renderOptions(this.value);
             });
 
             optionsList.addEventListener('click', function(e) {
@@ -558,25 +567,49 @@
             if (selectButton.dataset.penerimaInit === '1') return;
             selectButton.dataset.penerimaInit = '1';
 
-            function updateSelectedState(value) {
-                const options = optionsList.querySelectorAll('.custom-select-option');
-                options.forEach(opt => {
-                    if (opt.getAttribute('data-value') === (value || '').toString()) {
-                        opt.classList.add('selected');
-                    } else {
-                        opt.classList.remove('selected');
+            function renderOptions(filterTerm = '') {
+                const term = filterTerm.toLowerCase().trim();
+                optionsList.innerHTML = '';
+                
+                // Add default option
+                const defaultDiv = document.createElement('div');
+                defaultDiv.className = 'custom-select-option';
+                defaultDiv.setAttribute('data-value', '');
+                defaultDiv.setAttribute('data-text', '-- Pilih Penerima --');
+                defaultDiv.textContent = '-- Pilih Penerima --';
+                if (!hiddenInput.value) {
+                    defaultDiv.classList.add('selected');
+                }
+                optionsList.appendChild(defaultDiv);
+
+                let renderedCount = 0;
+                for (let i = 0; i < rawKaryawans.length; i++) {
+                    const item = rawKaryawans[i];
+                    if (!term || item.search.includes(term)) {
+                        const optDiv = document.createElement('div');
+                        optDiv.className = 'custom-select-option';
+                        optDiv.setAttribute('data-value', item.id);
+                        optDiv.setAttribute('data-text', item.text);
+                        optDiv.textContent = item.text;
+                        if (hiddenInput.value === item.id.toString()) {
+                            optDiv.classList.add('selected');
+                        }
+                        optionsList.appendChild(optDiv);
+                        renderedCount++;
+                        if (renderedCount >= 30) {
+                            break; // Virtualized DOM: only render max 30 items
+                        }
                     }
-                });
+                }
+                
+                noResults.classList.toggle('hidden', renderedCount > 0 || term === '');
             }
 
             function selectPenerima(id, text) {
                 hiddenInput.value = id;
                 selectedText.textContent = text;
                 closeDropdown();
-                updateSelectedState(id);
             }
-
-            updateSelectedState(hiddenInput.value);
 
             let dropdownAppended = false;
             const originalParent = selectDropdown.parentNode;
@@ -584,8 +617,7 @@
 
             function openDropdown() {
                 searchInput.value = '';
-                const options = optionsList.querySelectorAll('.custom-select-option');
-                options.forEach(opt => opt.classList.remove('hidden'));
+                renderOptions('');
                 noResults.classList.add('hidden');
 
                 const rect = selectButton.getBoundingClientRect();
@@ -640,19 +672,7 @@
             });
 
             searchInput.addEventListener('input', function() {
-                const term = this.value.toLowerCase().trim();
-                const options = optionsList.querySelectorAll('.custom-select-option');
-                let count = 0;
-                options.forEach(opt => {
-                    const searchData = opt.getAttribute('data-search') || '';
-                    if (searchData.includes(term) || opt.textContent.toLowerCase().includes(term)) {
-                        opt.classList.remove('hidden');
-                        count++;
-                    } else {
-                        opt.classList.add('hidden');
-                    }
-                });
-                noResults.classList.toggle('hidden', count > 0);
+                renderOptions(this.value);
             });
 
             optionsList.addEventListener('click', function(e) {
