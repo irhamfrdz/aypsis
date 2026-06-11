@@ -256,9 +256,10 @@
                 <thead>
                     <tr>
                         <th style="width: 8%;">No</th>
-                        <th style="width: 35%;">Nama Kapal</th>
-                        <th style="width: 25%;">No. Voyage</th>
-                        <th style="width: 32%;">Nominal</th>
+                        <th style="width: 25%;">Nama Kapal</th>
+                        <th style="width: 20%;">No. Voyage</th>
+                        <th style="width: 25%;">Catatan</th>
+                        <th style="width: 22%;">Nominal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -273,16 +274,17 @@
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td>{{ $detail->kapal ?? '-' }}</td>
                             <td class="text-center">{{ $detail->voyage ?? '-' }}</td>
+                            <td>{{ $detail->catatan ?? '-' }}</td>
                             <td class="text-right">Rp {{ number_format($detail->nominal, 0, ',', '.') }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="text-center">Tidak ada data detail operasional</td>
+                            <td colspan="5" class="text-center">Tidak ada data detail operasional</td>
                         </tr>
                     @endforelse
                     
                     <tr class="total-row">
-                        <td colspan="3" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
