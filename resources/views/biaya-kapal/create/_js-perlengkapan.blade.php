@@ -123,7 +123,13 @@
         fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
             .then(r => r.json())
             .then(data => {
-                if (data.success && data.voyages && data.voyages.length > 0) {
+                if (data.success && data.voyages_detailed && data.voyages_detailed.length > 0) {
+                    let html = '<option value="">-- Pilih Voyage --</option>';
+                    data.voyages_detailed.forEach(v => {
+                        html += `<option value="${v.no_voyage}">${v.no_voyage} (${v.tanggal})</option>`;
+                    });
+                    voyageSelect.innerHTML = html;
+                } else if (data.success && data.voyages && data.voyages.length > 0) {
                     let html = '<option value="">-- Pilih Voyage --</option>';
                     data.voyages.forEach(v => {
                         html += `<option value="${v}">${v}</option>`;

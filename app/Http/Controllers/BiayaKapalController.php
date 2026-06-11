@@ -4479,11 +4479,11 @@ class BiayaKapalController extends Controller
                 }
             });
 
-            $voyagesFromNaikKapal = $voyagesFromNaikKapalQuery->distinct()->pluck('no_voyage');
+            $voyagesFromNaikKapalQuery->select('no_voyage', DB::raw('MIN(COALESCE(tanggal_muat, created_at)) as tanggal'));
+            $voyagesFromNaikKapal = $voyagesFromNaikKapalQuery->groupBy('no_voyage')->get();
 
             // Use robust keyword matching for BLs query
             $voyagesFromBlsQuery = DB::table('bls')
-                ->select('no_voyage')
                 ->whereNotNull('no_voyage')
                 ->where('no_voyage', '!=', '');
 
@@ -4494,19 +4494,37 @@ class BiayaKapalController extends Controller
                 }
             });
 
-            $voyagesFromBls = $voyagesFromBlsQuery->distinct()->pluck('no_voyage');
+            $voyagesFromBlsQuery->select('no_voyage', DB::raw('MIN(COALESCE(tanggal_berangkat, created_at)) as tanggal'));
+            $voyagesFromBls = $voyagesFromBlsQuery->groupBy('no_voyage')->get();
 
-            // Merge and get unique voyages
-            $voyages = $voyagesFromNaikKapal->merge($voyagesFromBls)
-                ->unique()
-                ->sort()
-                ->values();
+            // Merge and get unique voyages with dates
+            $voyageDates = [];
+            foreach ($voyagesFromNaikKapal as $row) {
+                $voyageDates[$row->no_voyage] = $row->tanggal;
+            }
+            foreach ($voyagesFromBls as $row) {
+                if (!isset($voyageDates[$row->no_voyage]) || $row->tanggal < $voyageDates[$row->no_voyage]) {
+                    $voyageDates[$row->no_voyage] = $row->tanggal;
+                }
+            }
+            ksort($voyageDates);
 
-            Log::info('getVoyagesByShip results', ['nama_kapal' => $namaKapal, 'voyages_count' => count($voyages), 'voyages_sample' => array_slice($voyages->toArray(), 0, 5)]);
+            $voyages = array_keys($voyageDates);
+            $voyagesDetailed = [];
+            foreach ($voyageDates as $no_voyage => $date) {
+                $formattedDate = $date ? \Carbon\Carbon::parse($date)->format('d/M/Y') : '-';
+                $voyagesDetailed[] = [
+                    'no_voyage' => $no_voyage,
+                    'tanggal' => $formattedDate,
+                ];
+            }
+
+            Log::info('getVoyagesByShip results', ['nama_kapal' => $namaKapal, 'voyages_count' => count($voyages), 'voyages_sample' => array_slice($voyages, 0, 5)]);
 
             return response()->json([
                 'success' => true,
                 'voyages' => $voyages,
+                'voyages_detailed' => $voyagesDetailed,
             ]);
         } catch (\Exception $e) {
             Log::error('getVoyagesByShip error', ['error' => $e->getMessage(), 'nama_kapal' => $namaKapal]);
