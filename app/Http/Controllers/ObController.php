@@ -2757,6 +2757,40 @@ class ObController extends Controller
             $bl->catatan_ob = 'Proses TL Bongkar (Tanda Langsung) - Langsung Dibongkar';
             $bl->save();
 
+            // Record to history and update container gudangs_id
+            try {
+                if ($bl->nomor_kontainer) {
+                    $targetGudangId = null;
+                    if ($bl->ke) {
+                        $gudang = \App\Models\Gudang::where('nama_gudang', $bl->ke)->first();
+                        if ($gudang) {
+                            $targetGudangId = $gudang->id;
+                        }
+                    }
+
+                    if ($targetGudangId) {
+                        StockKontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
+                            ->update(['gudangs_id' => $targetGudangId]);
+
+                        Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
+                            ->update(['gudangs_id' => $targetGudangId]);
+                    }
+
+                    $typeKontainer = Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)->exists() ? 'kontainer' : 'stock';
+                    HistoryKontainer::create([
+                        'nomor_kontainer' => $bl->nomor_kontainer,
+                        'tipe_kontainer' => $typeKontainer,
+                        'jenis_kegiatan' => 'Masuk',
+                        'tanggal_kegiatan' => now(),
+                        'gudang_id' => $targetGudangId,
+                        'keterangan' => 'OB TL Bongkar (Tanda Langsung) dari Kapal: '.($bl->nama_kapal ?? '-').'. Voyage: '.($bl->no_voyage ?? '-'),
+                        'created_by' => $user->id,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to update gudangs_id or history in processTLBongkar: '.$e->getMessage());
+            }
+
             // If BL is linked to a Prospek, update its status to 'sudah_muat'
             try {
                 if ($bl->prospek_id) {
@@ -2894,6 +2928,10 @@ class ObController extends Controller
 
             DB::beginTransaction();
 
+            // Set destination as 'ON BOARD' for TL Muat
+            $naikKapal->ke = 'ON BOARD';
+            $naikKapal->save();
+
             // Check if CARGO container (always create new BL, no dedup)
             $isCargoContainer = (
                 strtoupper(trim($naikKapal->prospek->tipe ?? $naikKapal->tipe_kontainer ?? '')) === 'CARGO' ||
@@ -2958,6 +2996,40 @@ class ObController extends Controller
             $naikKapal->catatan_ob = 'Proses TL (Tanda Langsung) - Langsung Dimuat';
             $naikKapal->is_tl = true;
             $naikKapal->save();
+
+            // Record to history and update container gudangs_id
+            try {
+                if ($naikKapal->nomor_kontainer) {
+                    $targetGudangId = null;
+                    if ($naikKapal->ke) {
+                        $gudang = \App\Models\Gudang::where('nama_gudang', $naikKapal->ke)->first();
+                        if ($gudang) {
+                            $targetGudangId = $gudang->id;
+                        }
+                    }
+
+                    if ($targetGudangId) {
+                        StockKontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)
+                            ->update(['gudangs_id' => $targetGudangId]);
+
+                        Kontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)
+                            ->update(['gudangs_id' => $targetGudangId]);
+                    }
+
+                    $typeKontainer = Kontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)->exists() ? 'kontainer' : 'stock';
+                    HistoryKontainer::create([
+                        'nomor_kontainer' => $naikKapal->nomor_kontainer,
+                        'tipe_kontainer' => $typeKontainer,
+                        'jenis_kegiatan' => 'Masuk',
+                        'tanggal_kegiatan' => now(),
+                        'gudang_id' => $targetGudangId,
+                        'keterangan' => 'OB TL ke Kapal: '.($naikKapal->nama_kapal ?? '-').'. Voyage: '.($naikKapal->no_voyage ?? '-'),
+                        'created_by' => $user->id,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to update gudangs_id or history in processTL: '.$e->getMessage());
+            }
 
             // If NaikKapal is linked to a Prospek, update its status to 'sudah_muat'
             try {
