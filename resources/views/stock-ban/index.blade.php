@@ -1195,24 +1195,7 @@
                                              @endif
 
                                              @if($ban->kondisi != 'afkir')
-                                             <button type="button" 
-                                                 class="btn-kirim-modal text-blue-500 hover:text-blue-700" 
-                                                 data-id="{{ $ban->id }}" 
-                                                 data-seri="{{ $ban->nomor_seri ?? '-' }}"
-                                                 data-destination="Batam"
-                                                 title="Kirim Ke Batam">
-                                                 <i class="fas fa-truck-loading"></i>
-                                             </button>
-
-                                             <button type="button" 
-                                                 class="btn-kirim-tp-modal text-teal-500 hover:text-teal-700" 
-                                                 data-id="{{ $ban->id }}" 
-                                                 data-seri="{{ $ban->nomor_seri ?? '-' }}"
-                                                 data-destination="Tanjung Pinang"
-                                                 title="Kirim Ke Tanjung Pinang">
-                                                 <i class="fas fa-paper-plane"></i>
-                                             </button>
-
+                                             
                                              <button type="button" 
                                                  class="btn-return-shop-modal text-red-500 hover:text-red-700" 
                                                  data-id="{{ $ban->id }}" 
@@ -1362,10 +1345,6 @@
                                 
                                 @if($ban->status == 'Stok')
                                     <button type="button" class="btn-usage-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-type="batam" title="Pasang Ban"><i class="fas fa-wrench text-xs"></i></button>
-                                    
-                                    <button type="button" class="btn-kirim-batam-modal w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-50 text-cyan-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Kirim ke Batam"><i class="fas fa-truck-loading text-xs"></i></button>
-                                    
-                                    <button type="button" class="btn-kirim-tp-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-destination="Tanjung Pinang" title="Kirim ke Tanjung Pinang"><i class="fas fa-paper-plane text-xs"></i></button>
                                     
                                     <button type="button" class="btn-return-shop-modal w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Kembalikan ke Toko"><i class="fas fa-undo-alt text-xs"></i></button>
                                 @elseif($ban->status == 'Terpakai')
