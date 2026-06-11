@@ -952,6 +952,21 @@
                         <p class="text-xs text-indigo-600 mt-1">Lokasi</p>
                     </div>
 
+                    <!-- Garasi Batam -->
+                    @php
+                        $garasiBatam = $banBatamList->filter(function($ban) {
+                            return stripos($ban->lokasi, 'Garasi Batam') !== false && $ban->status === 'Stok';
+                        })->count();
+                    @endphp
+                    <div id="card-batam-garasi-batam" onclick="setCardFilter('garasi-batam', true)" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-orange-600 uppercase">Garasi Batam</span>
+                            <i class="fas fa-warehouse text-orange-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-orange-900">{{ $garasiBatam }}</div>
+                        <p class="text-xs text-orange-600 mt-1">Lokasi</p>
+                    </div>
+
                     <!-- Ban Asli Stok -->
                     @php
                         $banAsliStokBtm = $banBatamList->where('kondisi', 'asli')->where('status', 'Stok')->count();
@@ -2771,6 +2786,7 @@
                 'dikembalikan': 'ring-rose-400',
                 'dijual': 'ring-amber-400',
                 'gudang-batam': 'ring-indigo-400',
+                'garasi-batam': 'ring-orange-400',
                 'dikirim-tp': 'ring-teal-400',
                 'rusak-stok': 'ring-red-400',
                 'rusak-terjual': 'ring-orange-400',
@@ -3109,6 +3125,7 @@
                     else if (currentCardFilter === 'garasi-pluit') filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
                     else if (currentCardFilter === 'ruko-10') filterMatch = lokasi.includes('ruko 10') && status === 'stok';
                     else if (currentCardFilter === 'gudang-batam') filterMatch = lokasi.includes('gudang batam') && status === 'stok';
+                    else if (currentCardFilter === 'garasi-batam') filterMatch = lokasi.includes('garasi batam') && status === 'stok';
                     else if (currentCardFilter === 'asli-stok') filterMatch = kondisi === 'asli' && status === 'stok';
                     else if (currentCardFilter === 'dikirim') filterMatch = status === 'dikirim ke batam';
                     else if (currentCardFilter === 'dikirim-tp') filterMatch = status === 'dikirim ke tanjung pinang';
@@ -3161,6 +3178,7 @@
                     else if (currentCardFilter === 'garasi-pluit') filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
                     else if (currentCardFilter === 'ruko-10') filterMatch = lokasi.includes('ruko 10') && status === 'stok';
                     else if (currentCardFilter === 'gudang-batam') filterMatch = lokasi.includes('gudang batam') && status === 'stok';
+                    else if (currentCardFilter === 'garasi-batam') filterMatch = lokasi.includes('garasi batam') && status === 'stok';
                     else if (currentCardFilter === 'asli-stok') filterMatch = kondisi === 'asli' && status === 'stok';
                     else if (currentCardFilter === 'dikirim') filterMatch = status === 'dikirim ke batam';
                     else if (currentCardFilter === 'dikirim-tp') filterMatch = status === 'dikirim ke tanjung pinang';
