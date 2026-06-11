@@ -668,6 +668,7 @@ class BiayaKapalController extends Controller
             'operasional_sections.*.total_nominal' => 'nullable|numeric|min:0',
             'operasional_sections.*.dp' => 'nullable|numeric|min:0',
             'operasional_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
+            'operasional_sections.*.catatan' => 'nullable|string',
 
             // TRUCKING SECTIONS: New structure
             'trucking_sections' => 'nullable|array',
@@ -2143,6 +2144,7 @@ class BiayaKapalController extends Controller
                         'total_nominal' => 0,
                         'dp' => 0,
                         'sisa_pembayaran' => 0,
+                        'catatan' => $section['catatan'] ?? null,
                     ]);
 
                     $operasionalDetails[] = "[$kapalName - Voyage $voyageName] = Rp ".number_format($nominal, 0, ',', '.');
@@ -3189,6 +3191,9 @@ class BiayaKapalController extends Controller
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
 
             'operasional_sections.*.nominal' => 'nullable|numeric|min:0',
+            'operasional_sections.*.kapal' => 'nullable|string|max:255',
+            'operasional_sections.*.voyage' => 'nullable|string|max:255',
+            'operasional_sections.*.catatan' => 'nullable|string',
 
             // Buruh sections validation
             'kapal_sections' => 'nullable|array',
@@ -3626,6 +3631,7 @@ class BiayaKapalController extends Controller
                             'total_nominal' => 0,
                             'dp' => 0,
                             'sisa_pembayaran' => 0,
+                            'catatan' => $section['catatan'] ?? null,
                         ]);
                     }
                 }

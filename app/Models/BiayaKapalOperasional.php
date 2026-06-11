@@ -15,6 +15,7 @@ class BiayaKapalOperasional extends Model
         'total_nominal',
         'dp',
         'sisa_pembayaran',
+        'catatan',
     ];
 
     public function biayaKapal()

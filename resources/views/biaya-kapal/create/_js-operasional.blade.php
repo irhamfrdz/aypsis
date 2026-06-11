@@ -54,7 +54,7 @@
                 ${sectionIndex > 0 ? `<button type="button" onclick="removeOperasionalSection(${sectionIndex})" class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition"><i class="fas fa-times mr-1"></i>Hapus</button>` : ''}
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kapal</label>
                     <select name="operasional_sections[${sectionIndex}][kapal]" class="kapal-select-operasional w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required>
@@ -66,6 +66,10 @@
                     <select name="operasional_sections[${sectionIndex}][voyage]" id="voyage_operasional_${sectionIndex}" class="voyage-select-operasional w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" disabled required>
                         <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
                     </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                    <input type="text" name="operasional_sections[${sectionIndex}][catatan]" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Catatan operasional...">
                 </div>
                 <div>
                      <label class="block text-sm font-medium text-gray-700 mb-1">Nominal</label>
@@ -130,8 +134,10 @@
             fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(namaKapal)}`)
                 .then(response => response.json())
                 .then(data => {
-                    // Adapt to the response format (data.voyages which is array of strings)
-                    const voyages = data.voyages ? data.voyages.map(v => ({ nomor_voyage: v })) : [];
+                    const voyages = data.voyages_detailed ? data.voyages_detailed.map(v => ({ 
+                        nomor_voyage: v.no_voyage,
+                        label: `${v.no_voyage} (${v.tanggal})`
+                    })) : (data.voyages ? data.voyages.map(v => ({ nomor_voyage: v, label: v })) : []);
                     cachedVoyages[namaKapal] = voyages; // Cache it
                     populateVoyageSelect(voyageSelect, voyages);
                 })
@@ -149,7 +155,7 @@
         } else {
             let options = '<option value="">-- Pilih Voyage --</option>';
             voyages.forEach(v => {
-                options += `<option value="${v.nomor_voyage}">${v.nomor_voyage}</option>`;
+                options += `<option value="${v.nomor_voyage}">${v.label || v.nomor_voyage}</option>`;
             });
             selectElement.innerHTML = options;
             selectElement.disabled = false;
