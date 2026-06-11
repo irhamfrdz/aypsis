@@ -1872,6 +1872,17 @@ Route::middleware([
 
         Route::resource('pembayaran-biaya-kapal', \App\Http\Controllers\PembayaranBiayaKapalController::class);
 
+        // Rekap Biaya Kapal Routes
+        Route::get('rekap-biaya-kapal', [\App\Http\Controllers\RekapBiayaKapalController::class, 'index'])
+            ->name('rekap-biaya-kapal.index')
+            ->middleware('can:biaya-kapal-view');
+        Route::get('rekap-biaya-kapal/show', [\App\Http\Controllers\RekapBiayaKapalController::class, 'show'])
+            ->name('rekap-biaya-kapal.show')
+            ->middleware('can:biaya-kapal-view');
+        Route::get('rekap-biaya-kapal/get-voyages', [\App\Http\Controllers\RekapBiayaKapalController::class, 'getVoyages'])
+            ->name('rekap-biaya-kapal.get-voyages')
+            ->middleware('can:biaya-kapal-view');
+
         // 🏢 Master Gudang (Warehouse Master) Management with permissions
         // Import & Template routes (must be before resource routes)
         Route::get('master-gudang/template/download', [\App\Http\Controllers\MasterGudangController::class, 'template'])

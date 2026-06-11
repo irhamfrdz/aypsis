@@ -1051,6 +1051,15 @@
         </div>
         @endif
 
+        {{-- Rekap Biaya Kapal --}}
+        @if($user && $user->can('biaya-kapal-view'))
+        <div class="mx-2 mb-3">
+            <a href="{{ route('rekap-biaya-kapal.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('rekap-biaya-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Rekap Biaya Kapal</span>
+            </a>
+        </div>
+        @endif
+
         {{-- Master Kendaraan --}}
         @if($user && $user->can('master-mobil-view'))
         <div class="mx-2 mb-3">
