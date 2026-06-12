@@ -265,6 +265,11 @@
                     <input type="hidden" name="tanto[${sectionIndex}][adjustment]" class="adjustment-value-tanto" value="0">
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Biaya Admin</label>
+                    <input type="text" class="admin-display-tanto w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="Rp 0">
+                    <input type="hidden" name="tanto[${sectionIndex}][biaya_admin]" class="admin-value-tanto" value="0">
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Grand Total</label>
                     <input type="text" class="grand-total-display-tanto w-full px-3 py-2 border border-gray-300 rounded-lg bg-emerald-50 font-semibold cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="tanto[${sectionIndex}][grand_total]" class="grand-total-value-tanto" value="0">
@@ -379,7 +384,22 @@
             }
             calculateTantoSectionTotal(sectionIndex);
         });
- 
+
+        // Admin Manual edit listener
+        const adminDisplay = section.querySelector('.admin-display-tanto');
+        const adminValue = section.querySelector('.admin-value-tanto');
+        adminDisplay.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, '');
+            if (val) {
+                this.value = 'Rp ' + parseInt(val).toLocaleString('id-ID');
+                adminValue.value = val;
+            } else {
+                this.value = 'Rp 0';
+                adminValue.value = 0;
+            }
+            calculateTantoSectionTotal(sectionIndex);
+        });
+
         // Adjustment Manual edit listener
         const adjustmentDisplay = section.querySelector('.adjustment-display-tanto');
         const adjustmentValue = section.querySelector('.adjustment-value-tanto');
@@ -856,9 +876,10 @@
         const pphForCalculation = pphActive ? pph : 0;
         const ppnForCalculation = ppnActive ? ppn : 0;
         const materaiValue = parseFloat(section.querySelector('.materai-value-tanto').value) || 0;
+        const adminValue = parseFloat(section.querySelector('.admin-value-tanto').value) || 0;
         const adjustmentValue = parseFloat(section.querySelector('.adjustment-value-tanto').value) || 0;
         
-        const grandTotal = subTotal + ppnForCalculation - pphForCalculation + materaiValue + adjustmentValue;
+        const grandTotal = subTotal + ppnForCalculation - pphForCalculation + materaiValue + adminValue + adjustmentValue;
         
         section.querySelector('.grand-total-display-tanto').value = grandTotal > 0 ? `Rp ${grandTotal.toLocaleString('id-ID')}` : 'Rp 0';
         section.querySelector('.grand-total-value-tanto').value = grandTotal;
