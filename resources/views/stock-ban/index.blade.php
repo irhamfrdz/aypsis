@@ -661,7 +661,7 @@
                                                 title="Selesai Masak (Kembali ke Gudang)">
                                                 <i class="fas fa-check-circle"></i>
                                             </button>
-                                        @elseif($ban->status == 'Dikembalikan')
+                                        @elseif($ban->status == 'Dikembalikan' || $ban->status == 'Rusak')
                                             <button type="button" 
                                                 class="btn-restore-stock-modal text-green-600 hover:text-green-900"
                                                 data-id="{{ $ban->id }}"
@@ -794,7 +794,7 @@
                                     <button type="button" class="btn-return-modal w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-mobil="{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}" title="Kembalikan ke Gudang"><i class="fas fa-undo text-xs"></i></button>
                                 @elseif($ban->status == 'Sedang Dimasak')
                                     <button type="button" class="btn-return-masak-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Selesai Masak"><i class="fas fa-check-circle text-xs"></i></button>
-                                @elseif($ban->status == 'Dikembalikan')
+                                @elseif($ban->status == 'Dikembalikan' || $ban->status == 'Rusak')
                                     <button type="button" class="btn-restore-stock-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jadikan Stok Kembali"><i class="fas fa-undo text-xs"></i></button>
                                 @endif
                                 @if($ban->status !== 'Dijual' && $ban->status !== 'Dikembalikan' && $ban->status !== 'Hilang')
@@ -1222,7 +1222,7 @@
                                                 title="Selesai Masak (Kembali ke Gudang)">
                                                 <i class="fas fa-check-circle"></i>
                                             </button>
-                                        @elseif($ban->status == 'Dikembalikan')
+                                        @elseif($ban->status == 'Dikembalikan' || $ban->status == 'Rusak')
                                             <button type="button" 
                                                 class="btn-restore-stock-modal text-green-600 hover:text-green-900"
                                                 data-id="{{ $ban->id }}"
@@ -1351,7 +1351,7 @@
                                     <button type="button" class="btn-return-modal w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-mobil="{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}" data-type="batam" title="Kembalikan ke Gudang"><i class="fas fa-undo text-xs"></i></button>
                                 @elseif($ban->status == 'Sedang Dimasak')
                                     <button type="button" class="btn-return-masak-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Selesai Masak"><i class="fas fa-check-circle text-xs"></i></button>
-                                @elseif($ban->status == 'Dikembalikan')
+                                @elseif($ban->status == 'Dikembalikan' || $ban->status == 'Rusak')
                                     <button type="button" class="btn-restore-stock-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jadikan Stok Kembali"><i class="fas fa-undo text-xs"></i></button>
                                 @endif
                                 @if($ban->status !== 'Dijual' && $ban->status !== 'Dikembalikan' && $ban->status !== 'Hilang')

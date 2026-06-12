@@ -926,8 +926,8 @@ class StockBanController extends Controller
     {
         $stockBan = StockBan::findOrFail($id);
 
-        if ($stockBan->status !== 'Dikembalikan') {
-            return redirect()->route('stock-ban.index')->with('error', 'Hanya ban dengan status "Dikembalikan" yang bisa dikembalikan ke stok.');
+        if ($stockBan->status !== 'Dikembalikan' && $stockBan->status !== 'Rusak') {
+            return redirect()->route('stock-ban.index')->with('error', 'Hanya ban dengan status "Dikembalikan" atau "Rusak" yang bisa dikembalikan ke stok.');
         }
 
         $request->validate([
