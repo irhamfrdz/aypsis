@@ -168,6 +168,7 @@
                         @foreach($pricelistRings as $ring)
                             <option value="{{ $ring['value'] }}" 
                                     data-rates="{{ json_encode($ring['rates']) }}"
+                                    data-rates-prev="{{ json_encode($ring['rates_prev']) }}"
                                     {{ old('tujuan_pengambilan', $selectedOrder->tujuan_ambil ?? '') == $ring['value'] ? 'selected' : '' }}>
                                 {{ $ring['label'] }}
                             </option>
@@ -420,12 +421,18 @@
                 <input type="hidden" name="status" value="active">
                 
                 <div class="md:col-span-2 mt-4 pt-4 border-t">
-                    <div class="flex items-center justify-between mb-1">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                         <label class="block text-sm font-bold text-gray-800">Nominal Uang Jalan</label>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" name="tanpa_uang_jalan" value="1" id="tanpa_uang_jalan" class="form-checkbox text-indigo-600 rounded">
-                            <span class="ml-2 text-sm font-medium text-gray-700">Tidak Menggunakan Uang Jalan</span>
-                        </label>
+                        <div class="flex flex-wrap gap-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="use_prev_bbm" value="1" id="use_prev_bbm" class="form-checkbox text-indigo-600 rounded">
+                                <span class="ml-2 text-sm font-medium text-purple-700 font-semibold">Gunakan Tarif BBM Bulan Sebelumnya</span>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="tanpa_uang_jalan" value="1" id="tanpa_uang_jalan" class="form-checkbox text-indigo-600 rounded">
+                                <span class="ml-2 text-sm font-medium text-gray-700">Tidak Menggunakan Uang Jalan</span>
+                            </label>
+                        </div>
                     </div>
                     <input type="text" name="uang_jalan" id="uang_jalan" 
                            value="{{ old('uang_jalan', number_format($defaultUangJalan, 0, ',', '.')) }}"
@@ -657,7 +664,8 @@
         const selectedOption = tujuanSelect.options[tujuanSelect.selectedIndex];
         if (!selectedOption) return;
         
-        const ratesData = selectedOption.getAttribute('data-rates');
+        const usePrevBbm = document.getElementById('use_prev_bbm')?.checked;
+        const ratesData = selectedOption.getAttribute(usePrevBbm ? 'data-rates-prev' : 'data-rates');
         if (!ratesData) return;
 
         try {
@@ -683,6 +691,9 @@
     if (tujuanSelect) tujuanSelect.addEventListener('change', calculateUangJalan);
     if (sizeSelect) sizeSelect.addEventListener('change', calculateUangJalan);
     if (feSelect) feSelect.addEventListener('change', calculateUangJalan);
+    if (document.getElementById('use_prev_bbm')) {
+        document.getElementById('use_prev_bbm').addEventListener('change', calculateUangJalan);
+    }
 
     // Initial calculation if values are present
     calculateUangJalan();

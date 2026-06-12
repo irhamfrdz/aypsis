@@ -165,9 +165,30 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        $pricelistRings = PricelistUangJalanBatam::select('ring', 'expedisi', 'status', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty')
+        $prevBbm = \App\Models\KelolaBbm::orderBy('tahun', 'desc')->orderBy('bulan', 'desc')->skip(1)->first();
+        $prevPersentase = $prevBbm ? $prevBbm->persentase : 0;
+
+        $pricelistRings = PricelistUangJalanBatam::select(
+            'ring', 'expedisi', 'status',
+            'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty',
+            'tarif_20ft_full_base', 'tarif_20ft_empty_base', 'tarif_40ft_full_base', 'tarif_40ft_empty_base'
+        )
             ->get()
-            ->map(function ($item) {
+            ->map(function ($item) use ($prevPersentase) {
+                if ($prevPersentase <= 5) {
+                    $prev20Full = $item->tarif_20ft_full_base ?? $item->tarif_20ft_full;
+                    $prev20Empty = $item->tarif_20ft_empty_base ?? $item->tarif_20ft_empty;
+                    $prev40Full = $item->tarif_40ft_full_base ?? $item->tarif_40ft_full;
+                    $prev40Empty = $item->tarif_40ft_empty_base ?? $item->tarif_40ft_empty;
+                } else {
+                    $perubahanTarif = $prevPersentase - 5;
+                    $faktorPengali = 1 + ($perubahanTarif / 100);
+                    $prev20Full = round(($item->tarif_20ft_full_base ?? $item->tarif_20ft_full) * $faktorPengali);
+                    $prev20Empty = round(($item->tarif_20ft_empty_base ?? $item->tarif_20ft_empty) * $faktorPengali);
+                    $prev40Full = round(($item->tarif_40ft_full_base ?? $item->tarif_40ft_full) * $faktorPengali);
+                    $prev40Empty = round(($item->tarif_40ft_empty_base ?? $item->tarif_40ft_empty) * $faktorPengali);
+                }
+
                 return [
                     'value' => 'Ring '.$item->ring.' '.$item->expedisi,
                     'label' => 'Ring '.$item->ring.' '.$item->expedisi,
@@ -176,6 +197,12 @@ class SuratJalanBatamController extends Controller
                         '20_Empty' => $item->tarif_20ft_empty,
                         '40_Full' => $item->tarif_40ft_full,
                         '40_Empty' => $item->tarif_40ft_empty,
+                    ],
+                    'rates_prev' => [
+                        '20_Full' => $prev20Full,
+                        '20_Empty' => $prev20Empty,
+                        '40_Full' => $prev40Full,
+                        '40_Empty' => $prev40Empty,
                     ],
                 ];
             })
@@ -313,9 +340,30 @@ class SuratJalanBatamController extends Controller
             ->values()
             ->toArray();
 
-        $pricelistRings = PricelistUangJalanBatam::select('ring', 'expedisi', 'status', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty')
+        $prevBbm = \App\Models\KelolaBbm::orderBy('tahun', 'desc')->orderBy('bulan', 'desc')->skip(1)->first();
+        $prevPersentase = $prevBbm ? $prevBbm->persentase : 0;
+
+        $pricelistRings = PricelistUangJalanBatam::select(
+            'ring', 'expedisi', 'status',
+            'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty',
+            'tarif_20ft_full_base', 'tarif_20ft_empty_base', 'tarif_40ft_full_base', 'tarif_40ft_empty_base'
+        )
             ->get()
-            ->map(function ($item) {
+            ->map(function ($item) use ($prevPersentase) {
+                if ($prevPersentase <= 5) {
+                    $prev20Full = $item->tarif_20ft_full_base ?? $item->tarif_20ft_full;
+                    $prev20Empty = $item->tarif_20ft_empty_base ?? $item->tarif_20ft_empty;
+                    $prev40Full = $item->tarif_40ft_full_base ?? $item->tarif_40ft_full;
+                    $prev40Empty = $item->tarif_40ft_empty_base ?? $item->tarif_40ft_empty;
+                } else {
+                    $perubahanTarif = $prevPersentase - 5;
+                    $faktorPengali = 1 + ($perubahanTarif / 100);
+                    $prev20Full = round(($item->tarif_20ft_full_base ?? $item->tarif_20ft_full) * $faktorPengali);
+                    $prev20Empty = round(($item->tarif_20ft_empty_base ?? $item->tarif_20ft_empty) * $faktorPengali);
+                    $prev40Full = round(($item->tarif_40ft_full_base ?? $item->tarif_40ft_full) * $faktorPengali);
+                    $prev40Empty = round(($item->tarif_40ft_empty_base ?? $item->tarif_40ft_empty) * $faktorPengali);
+                }
+
                 return [
                     'value' => 'Ring '.$item->ring.' '.$item->expedisi,
                     'label' => 'Ring '.$item->ring.' '.$item->expedisi,
@@ -324,6 +372,12 @@ class SuratJalanBatamController extends Controller
                         '20_Empty' => $item->tarif_20ft_empty,
                         '40_Full' => $item->tarif_40ft_full,
                         '40_Empty' => $item->tarif_40ft_empty,
+                    ],
+                    'rates_prev' => [
+                        '20_Full' => $prev20Full,
+                        '20_Empty' => $prev20Empty,
+                        '40_Full' => $prev40Full,
+                        '40_Empty' => $prev40Empty,
                     ],
                 ];
             })
