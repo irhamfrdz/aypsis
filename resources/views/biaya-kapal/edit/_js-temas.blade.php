@@ -85,10 +85,6 @@
             btn.innerHTML = '<i class="fas fa-keyboard"></i>';
             btn.title = "Switch to Manual Input";
             
-            priceInput.readOnly = true;
-            priceInput.classList.add('bg-gray-100');
-            priceInput.classList.remove('bg-white');
-            
             updateTemasPriceFromSelect(select, sectionIndex);
         }
         
@@ -619,7 +615,7 @@
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
-                    <input type="number" name="temas[${sectionIndex}][custom_prices][]" value="${parseInt(harga) || 0}" class="price-input-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-gray-100" placeholder="0" readonly oninput="calculateTemasSectionTotal(${sectionIndex})">
+                    <input type="number" name="temas[${sectionIndex}][custom_prices][]" value="${parseInt(harga) || 0}" class="price-input-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-white" placeholder="0" oninput="calculateTemasSectionTotal(${sectionIndex})">
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Kuantitas</label>
@@ -756,7 +752,7 @@
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Harga Satuan (Rp)</label>
-                    <input type="number" name="temas[${sectionIndex}][custom_prices][]" class="price-input-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 ${isManual ? 'bg-white' : 'bg-gray-100'}" value="${data ? (data.harga || 0) : 0}" placeholder="0" ${isManual ? '' : 'readonly'} oninput="calculateTemasSectionTotal(${sectionIndex})">
+                    <input type="number" name="temas[${sectionIndex}][custom_prices][]" class="price-input-temas w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 bg-white" value="${data ? (data.harga || 0) : 0}" placeholder="0" oninput="calculateTemasSectionTotal(${sectionIndex})">
                 </div>
                 <div>
                     <label class="text-xs text-gray-500 block mb-1">Kuantitas</label>
