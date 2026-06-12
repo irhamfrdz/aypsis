@@ -8,9 +8,9 @@
             <i class="fas fa-arrow-left mr-2"></i> Kembali ke Pemilihan
         </a>
         <div class="flex space-x-2">
-            <button onclick="window.print()" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-xl shadow-sm hover:bg-indigo-700 focus:outline-none transition duration-150 ease-in-out">
+            <a href="{{ route('bl.rekap-bongkaran.print', ['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage]) }}" target="_blank" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-xl shadow-sm hover:bg-indigo-700 focus:outline-none transition duration-150 ease-in-out">
                 <i class="fas fa-print mr-2"></i> Cetak / Print
-            </button>
+            </a>
         </div>
     </div>
 </div>

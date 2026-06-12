@@ -5724,6 +5724,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('bl/rekap-bongkaran', [\App\Http\Controllers\BlController::class, 'rekapBongkaran'])->name('bl.rekap-bongkaran')
         ->middleware('can:bl-view');
 
+    Route::get('bl/rekap-bongkaran/print', [\App\Http\Controllers\BlController::class, 'rekapBongkaranPrint'])->name('bl.rekap-bongkaran.print')
+        ->middleware('can:bl-view');
+
     Route::get('bl', [\App\Http\Controllers\BlController::class, 'select'])->name('bl.select')
         ->middleware('can:bl-view');
 
