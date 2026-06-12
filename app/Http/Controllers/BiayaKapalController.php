@@ -535,7 +535,7 @@ class BiayaKapalController extends Controller
         // Meratus Sections Cleaning
         if (isset($data['meratus']) && is_array($data['meratus'])) {
             foreach ($data['meratus'] as &$section) {
-                $numericMeratus = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'grand_total'];
+                $numericMeratus = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'biaya_admin', 'grand_total'];
                 foreach ($numericMeratus as $f) {
                     if (isset($section[$f]) && is_string($section[$f])) {
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
@@ -549,7 +549,7 @@ class BiayaKapalController extends Controller
         // Temas Sections Cleaning
         if (isset($data['temas']) && is_array($data['temas'])) {
             foreach ($data['temas'] as &$section) {
-                $numericTemas = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'grand_total'];
+                $numericTemas = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'biaya_admin', 'grand_total'];
                 foreach ($numericTemas as $f) {
                     if (isset($section[$f]) && is_string($section[$f])) {
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
@@ -563,7 +563,7 @@ class BiayaKapalController extends Controller
         // Tanto Sections Cleaning
         if (isset($data['tanto']) && is_array($data['tanto'])) {
             foreach ($data['tanto'] as &$section) {
-                $numericTanto = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'grand_total'];
+                $numericTanto = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'biaya_admin', 'grand_total'];
                 foreach ($numericTanto as $f) {
                     if (isset($section[$f]) && is_string($section[$f])) {
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
@@ -830,6 +830,7 @@ class BiayaKapalController extends Controller
             'meratus.*.ppn_active' => 'nullable',
             'meratus.*.biaya_materai' => 'nullable|numeric',
             'meratus.*.adjustment' => 'nullable|numeric',
+            'meratus.*.biaya_admin' => 'nullable|numeric',
             'meratus.*.grand_total' => 'nullable|numeric',
             'meratus.*.nomor_referensi' => 'nullable|string|max:100',
             'meratus.*.penerima' => 'nullable|string|max:255',
@@ -858,6 +859,7 @@ class BiayaKapalController extends Controller
             'temas.*.ppn_active' => 'nullable',
             'temas.*.biaya_materai' => 'nullable|numeric',
             'temas.*.adjustment' => 'nullable|numeric',
+            'temas.*.biaya_admin' => 'nullable|numeric',
             'temas.*.grand_total' => 'nullable|numeric',
             'temas.*.nomor_referensi' => 'nullable|string|max:100',
             'temas.*.penerima' => 'nullable|string|max:255',
@@ -886,6 +888,7 @@ class BiayaKapalController extends Controller
             'tanto.*.ppn_active' => 'nullable',
             'tanto.*.biaya_materai' => 'nullable|numeric',
             'tanto.*.adjustment' => 'nullable|numeric',
+            'tanto.*.biaya_admin' => 'nullable|numeric',
             'tanto.*.grand_total' => 'nullable|numeric',
             'tanto.*.nomor_referensi' => 'nullable|string|max:100',
             'tanto.*.penerima' => 'nullable|string|max:255',
@@ -1385,12 +1388,15 @@ class BiayaKapalController extends Controller
 
                                 $adjustmentRaw = $section['adjustment'] ?? 0;
                                 $adjustment = floatval($adjustmentRaw);
+
+                                $biayaAdminRaw = $section['biaya_admin'] ?? 0;
+                                $biayaAdmin = floatval($biayaAdminRaw);
                             }
 
                             $pphForCalc = $pphActive ? $pph : 0;
                             $ppnForCalc = $ppnActive ? $ppn : 0;
 
-                            $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment : 0);
+                            $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment + $biayaAdmin : 0);
 
                             BiayaKapalMeratus::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
@@ -1413,6 +1419,7 @@ class BiayaKapalController extends Controller
                                 'ppn_active' => $ppnActive,
                                 'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
                                 'adjustment' => $typeIndex == 0 ? $adjustment : 0,
+                                'biaya_admin' => $typeIndex == 0 ? $biayaAdmin : 0,
                                 'grand_total' => $grandTotal,
                                 'penerima' => $section['penerima'] ?? null,
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
@@ -1483,12 +1490,15 @@ class BiayaKapalController extends Controller
 
                                 $adjustmentRaw = $section['adjustment'] ?? 0;
                                 $adjustment = floatval($adjustmentRaw);
+
+                                $biayaAdminRaw = $section['biaya_admin'] ?? 0;
+                                $biayaAdmin = floatval($biayaAdminRaw);
                             }
 
                             $pphForCalc = $pphActive ? $pph : 0;
                             $ppnForCalc = $ppnActive ? $ppn : 0;
 
-                            $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment : 0);
+                            $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment + $biayaAdmin : 0);
 
                             \App\Models\BiayaKapalTemas::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
@@ -1511,6 +1521,7 @@ class BiayaKapalController extends Controller
                                 'ppn_active' => $ppnActive,
                                 'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
                                 'adjustment' => $typeIndex == 0 ? $adjustment : 0,
+                                'biaya_admin' => $typeIndex == 0 ? $biayaAdmin : 0,
                                 'grand_total' => $grandTotal,
                                 'penerima' => $section['penerima'] ?? null,
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
@@ -1581,12 +1592,15 @@ class BiayaKapalController extends Controller
 
                                 $adjustmentRaw = $section['adjustment'] ?? 0;
                                 $adjustment = floatval($adjustmentRaw);
+
+                                $biayaAdminRaw = $section['biaya_admin'] ?? 0;
+                                $biayaAdmin = floatval($biayaAdminRaw);
                             }
 
                             $pphForCalc = $pphActive ? $pph : 0;
                             $ppnForCalc = $ppnActive ? $ppn : 0;
 
-                            $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment : 0);
+                            $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment + $biayaAdmin : 0);
 
                             BiayaKapalTanto::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
@@ -1609,6 +1623,7 @@ class BiayaKapalController extends Controller
                                 'ppn_active' => $ppnActive,
                                 'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
                                 'adjustment' => $typeIndex == 0 ? $adjustment : 0,
+                                'biaya_admin' => $typeIndex == 0 ? $biayaAdmin : 0,
                                 'grand_total' => $grandTotal,
                                 'penerima' => $section['penerima'] ?? null,
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
@@ -3148,7 +3163,7 @@ class BiayaKapalController extends Controller
         // Meratus Sections Cleaning
         if (isset($data['meratus']) && is_array($data['meratus'])) {
             foreach ($data['meratus'] as &$section) {
-                $numericMeratus = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'grand_total'];
+                $numericMeratus = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'biaya_admin', 'grand_total'];
                 foreach ($numericMeratus as $f) {
                     if (isset($section[$f]) && is_string($section[$f])) {
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
@@ -3162,7 +3177,7 @@ class BiayaKapalController extends Controller
         // Temas Sections Cleaning
         if (isset($data['temas']) && is_array($data['temas'])) {
             foreach ($data['temas'] as &$section) {
-                $numericTemas = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'grand_total'];
+                $numericTemas = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'biaya_admin', 'grand_total'];
                 foreach ($numericTemas as $f) {
                     if (isset($section[$f]) && is_string($section[$f])) {
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
@@ -3176,7 +3191,7 @@ class BiayaKapalController extends Controller
         // Tanto Sections Cleaning
         if (isset($data['tanto']) && is_array($data['tanto'])) {
             foreach ($data['tanto'] as &$section) {
-                $numericTanto = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'grand_total'];
+                $numericTanto = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'biaya_admin', 'grand_total'];
                 foreach ($numericTanto as $f) {
                     if (isset($section[$f]) && is_string($section[$f])) {
                         $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
@@ -3356,6 +3371,8 @@ class BiayaKapalController extends Controller
             'meratus.*.sub_total' => 'nullable|numeric|min:0',
             'meratus.*.pph' => 'nullable|numeric|min:0',
             'meratus.*.biaya_materai' => 'nullable|numeric',
+            'meratus.*.adjustment' => 'nullable|numeric',
+            'meratus.*.biaya_admin' => 'nullable|numeric',
             'meratus.*.grand_total' => 'nullable|numeric',
             'meratus.*.nomor_referensi' => 'nullable|string|max:100',
             'meratus.*.penerima' => 'nullable|string|max:255',
@@ -3382,6 +3399,7 @@ class BiayaKapalController extends Controller
             'temas.*.ppn_active' => 'nullable',
             'temas.*.biaya_materai' => 'nullable|numeric',
             'temas.*.adjustment' => 'nullable|numeric',
+            'temas.*.biaya_admin' => 'nullable|numeric',
             'temas.*.grand_total' => 'nullable|numeric',
             'temas.*.nomor_referensi' => 'nullable|string|max:100',
             'temas.*.penerima' => 'nullable|string|max:255',
@@ -3408,6 +3426,7 @@ class BiayaKapalController extends Controller
             'tanto.*.ppn_active' => 'nullable',
             'tanto.*.biaya_materai' => 'nullable|numeric',
             'tanto.*.adjustment' => 'nullable|numeric',
+            'tanto.*.biaya_admin' => 'nullable|numeric',
             'tanto.*.grand_total' => 'nullable|numeric',
             'tanto.*.nomor_referensi' => 'nullable|string|max:100',
             'tanto.*.penerima' => 'nullable|string|max:255',
@@ -4048,12 +4067,15 @@ class BiayaKapalController extends Controller
 
                                     $adjustmentRaw = $section['adjustment'] ?? 0;
                                     $adjustment = floatval($adjustmentRaw);
+
+                                    $biayaAdminRaw = $section['biaya_admin'] ?? 0;
+                                    $biayaAdmin = floatval($biayaAdminRaw);
                                 }
 
                                 $pphForCalc = $pphActive ? $pph : 0;
                                 $ppnForCalc = $ppnActive ? $ppn : 0;
 
-                                $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment : 0);
+                                $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment + $biayaAdmin : 0);
 
                                 BiayaKapalMeratus::create([
                                     'biaya_kapal_id' => $biayaKapal->id,
@@ -4076,6 +4098,7 @@ class BiayaKapalController extends Controller
                                     'ppn_active' => $ppnActive,
                                     'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
                                     'adjustment' => $typeIndex == 0 ? $adjustment : 0,
+                                    'biaya_admin' => $typeIndex == 0 ? $biayaAdmin : 0,
                                     'grand_total' => $grandTotal,
                                     'penerima' => $section['penerima'] ?? null,
                                     'nomor_rekening' => $section['nomor_rekening'] ?? null,
@@ -4148,12 +4171,15 @@ class BiayaKapalController extends Controller
 
                                     $adjustmentRaw = $section['adjustment'] ?? 0;
                                     $adjustment = floatval($adjustmentRaw);
+
+                                    $biayaAdminRaw = $section['biaya_admin'] ?? 0;
+                                    $biayaAdmin = floatval($biayaAdminRaw);
                                 }
 
                                 $pphForCalc = $pphActive ? $pph : 0;
                                 $ppnForCalc = $ppnActive ? $ppn : 0;
 
-                                $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment : 0);
+                                $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment + $biayaAdmin : 0);
 
                                 \App\Models\BiayaKapalTemas::create([
                                     'biaya_kapal_id' => $biayaKapal->id,
@@ -4176,6 +4202,7 @@ class BiayaKapalController extends Controller
                                     'ppn_active' => $ppnActive,
                                     'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
                                     'adjustment' => $typeIndex == 0 ? $adjustment : 0,
+                                    'biaya_admin' => $typeIndex == 0 ? $biayaAdmin : 0,
                                     'grand_total' => $grandTotal,
                                     'penerima' => $section['penerima'] ?? null,
                                     'nomor_rekening' => $section['nomor_rekening'] ?? null,
@@ -4248,12 +4275,15 @@ class BiayaKapalController extends Controller
 
                                     $adjustmentRaw = $section['adjustment'] ?? 0;
                                     $adjustment = floatval($adjustmentRaw);
+
+                                    $biayaAdminRaw = $section['biaya_admin'] ?? 0;
+                                    $biayaAdmin = floatval($biayaAdminRaw);
                                 }
 
                                 $pphForCalc = $pphActive ? $pph : 0;
                                 $ppnForCalc = $ppnActive ? $ppn : 0;
 
-                                $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment : 0);
+                                $grandTotal = $subTotal + $ppnForCalc - $pphForCalc + ($typeIndex == 0 ? $biayaMaterai + $adjustment + $biayaAdmin : 0);
 
                                 BiayaKapalTanto::create([
                                     'biaya_kapal_id' => $biayaKapal->id,
@@ -4276,6 +4306,7 @@ class BiayaKapalController extends Controller
                                     'ppn_active' => $ppnActive,
                                     'biaya_materai' => $typeIndex == 0 ? $biayaMaterai : 0,
                                     'adjustment' => $typeIndex == 0 ? $adjustment : 0,
+                                    'biaya_admin' => $typeIndex == 0 ? $biayaAdmin : 0,
                                     'grand_total' => $grandTotal,
                                     'penerima' => $section['penerima'] ?? null,
                                     'nomor_rekening' => $section['nomor_rekening'] ?? null,

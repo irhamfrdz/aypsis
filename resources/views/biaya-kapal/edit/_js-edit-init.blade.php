@@ -256,6 +256,7 @@
                          'ppn_active' => ($firstItem->ppn > 0),
                          'biaya_materai' => $firstItem->biaya_materai ?? 0,
                          'adjustment' => $firstItem->adjustment ?? 0,
+                         'biaya_admin' => $firstItem->biaya_admin ?? 0,
                          'grand_total' => $firstItem->grand_total ?? 0,
                      ];
                  }
@@ -301,6 +302,7 @@
                          'ppn_active' => ($firstItem->ppn > 0),
                          'biaya_materai' => $firstItem->biaya_materai ?? 0,
                          'adjustment' => $firstItem->adjustment ?? 0,
+                         'biaya_admin' => $firstItem->biaya_admin ?? 0,
                          'grand_total' => $firstItem->grand_total ?? 0,
                      ];
                  }
@@ -346,6 +348,7 @@
                          'ppn_active' => ($firstItem->ppn > 0),
                          'biaya_materai' => $firstItem->biaya_materai ?? 0,
                          'adjustment' => $firstItem->adjustment ?? 0,
+                         'biaya_admin' => $firstItem->biaya_admin ?? 0,
                          'grand_total' => $firstItem->grand_total ?? 0,
                      ];
                  }
