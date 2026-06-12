@@ -17,7 +17,7 @@
 
 <!-- Print & Preview Layout -->
 <div class="container mx-auto px-4 py-6 max-w-4xl">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12 print:shadow-none print:border-none print:p-0">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12 print:shadow-none print:border-none print:p-0 print-half-folio">
         
         <!-- Document Title -->
         <div class="text-center mb-8 border-b-2 border-double border-gray-300 pb-4">
@@ -25,7 +25,7 @@
         </div>
 
         <!-- Metadata Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-sm md:text-base border border-gray-200 rounded-xl p-4 md:p-6 bg-gray-50/50 print:bg-white print:border-gray-300">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-sm md:text-base border border-gray-200 rounded-xl p-4 md:p-6 bg-gray-50/50 print:bg-white print:border-gray-300 metadata-grid">
             <div class="space-y-2">
                 <div class="flex">
                     <span class="font-bold text-gray-700 w-32 uppercase">Nama Kapal</span>
@@ -37,10 +37,6 @@
                 </div>
             </div>
             <div class="space-y-2">
-                <div class="flex">
-                    <span class="font-bold text-gray-700 w-32 uppercase">Dari</span>
-                    <span class="text-gray-900">: {{ $dari }}</span>
-                </div>
                 <div class="flex">
                     <span class="font-bold text-gray-700 w-32 uppercase">Est Tiba</span>
                     <span class="text-gray-900">: {{ $estTiba }}</span>
@@ -113,9 +109,14 @@
 
 <style>
 @media print {
+    @page {
+        size: 165.1mm 215.9mm; /* Half-Folio */
+        margin: 5mm;
+    }
     body {
         background-color: white !important;
         color: black !important;
+        font-size: 10px !important;
     }
     .no-print {
         display: none !important;
@@ -139,6 +140,26 @@
         margin: 0 !important;
         max-width: 100% !important;
         width: 100% !important;
+    }
+    .print-half-folio {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+    .print-half-folio h1 {
+        font-size: 16px !important;
+        margin-bottom: 8px !important;
+    }
+    .print-half-folio .metadata-grid {
+        font-size: 10px !important;
+        padding: 8px !important;
+        margin-bottom: 12px !important;
+    }
+    .print-half-folio table {
+        font-size: 9px !important;
+    }
+    .print-half-folio th, .print-half-folio td {
+        padding: 4px 6px !important;
     }
 }
 </style>
