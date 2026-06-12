@@ -235,6 +235,7 @@
             $displayPPN = 0; // Untuk tampilan baris di tabel
             $totalAdjustment = 0;
             $totalMaterai = 0;
+            $totalAdmin = 0;
             $totalGrandTotal = 0;
             
             foreach($temasDetails as $detail) {
@@ -270,6 +271,7 @@
                 
                 $totalAdjustment += $detail->adjustment;
                 $totalMaterai += $detail->biaya_materai;
+                $totalAdmin += $detail->biaya_admin;
                 $totalGrandTotal += $detail->grand_total;
             }
         @endphp
@@ -404,6 +406,15 @@
                     <td>BIAYA MATERAI</td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalMaterai, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+
+                @if($totalAdmin > 0)
+                <tr>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td>BIAYA ADMIN</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">Rp {{ number_format($totalAdmin, 0, ',', '.') }}</td>
                 </tr>
                 @endif
 
