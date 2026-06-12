@@ -43,11 +43,11 @@ class FixObTlHistory extends Command
             ->where('is_tl', true)
             ->get();
 
-        $this->info("Found " . $naikKapals->count() . " TL Muat records in naik_kapal table.");
+        $this->info('Found '.$naikKapals->count().' TL Muat records in naik_kapal table.');
 
         foreach ($naikKapals as $naikKapal) {
             $nomorKontainer = $naikKapal->nomor_kontainer;
-            if (!$nomorKontainer) {
+            if (! $nomorKontainer) {
                 continue;
             }
 
@@ -58,6 +58,7 @@ class FixObTlHistory extends Command
 
             if ($exists) {
                 $this->line("History log for {$nomorKontainer} (Muat) already exists. Skipping.");
+
                 continue;
             }
 
@@ -81,7 +82,7 @@ class FixObTlHistory extends Command
             }
 
             $typeKontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->exists() ? 'kontainer' : 'stock';
-            
+
             // Create history
             HistoryKontainer::create([
                 'nomor_kontainer' => $nomorKontainer,
@@ -103,11 +104,11 @@ class FixObTlHistory extends Command
             ->where('sudah_tl', true)
             ->get();
 
-        $this->info("Found " . $bls->count() . " TL Bongkar records in bls table.");
+        $this->info('Found '.$bls->count().' TL Bongkar records in bls table.');
 
         foreach ($bls as $bl) {
             $nomorKontainer = $bl->nomor_kontainer;
-            if (!$nomorKontainer) {
+            if (! $nomorKontainer) {
                 continue;
             }
 
@@ -118,6 +119,7 @@ class FixObTlHistory extends Command
 
             if ($exists) {
                 $this->line("History log for {$nomorKontainer} (Bongkar) already exists. Skipping.");
+
                 continue;
             }
 

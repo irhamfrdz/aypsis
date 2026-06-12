@@ -1,0 +1,16 @@
+{
+    "request_kapal": "KM MERATUS AMPANA",
+    "request_voyage": "MERATUSWS114N",
+    "records": [
+        {
+            "id": 346,
+            "apportioned": {
+                "nominal": "2745000.00",
+                "ppn": "0.00",
+                "pph": "0.00",
+                "total_biaya": null
+            },
+            "oppOptDetails_count": 49
+        }
+    ]
+}

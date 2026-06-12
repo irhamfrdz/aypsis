@@ -62,8 +62,8 @@ class RekapBiayaKapalController extends Controller
         $parentShips = is_array($record->nama_kapal) ? $record->nama_kapal : ($record->nama_kapal ? [$record->nama_kapal] : []);
         $parentVoyages = is_array($record->no_voyage) ? $record->no_voyage : ($record->no_voyage ? [$record->no_voyage] : []);
 
-        $parentShipsLower = array_map(fn($s) => strtolower(trim($s)), $parentShips);
-        $parentVoyagesLower = array_map(fn($v) => strtolower(trim($v)), $parentVoyages);
+        $parentShipsLower = array_map(fn ($s) => strtolower(trim($s)), $parentShips);
+        $parentVoyagesLower = array_map(fn ($v) => strtolower(trim($v)), $parentVoyages);
 
         return in_array($kapalLower, $parentShipsLower) && in_array($voyageLower, $parentVoyagesLower);
     }
@@ -128,7 +128,7 @@ class RekapBiayaKapalController extends Controller
         $voyageLower = strtolower(trim($voyage));
 
         $hasDetails = false;
-        
+
         $nominal = 0;
         $ppn = 0;
         $pph = 0;
@@ -137,39 +137,39 @@ class RekapBiayaKapalController extends Controller
         // 1. Biaya Buruh (barangDetails / tenagaKerjaDetails)
         if ($item->barangDetails->count() > 0 || $item->tenagaKerjaDetails->count() > 0) {
             $hasDetails = true;
-            $barangItems = $item->barangDetails->filter(fn($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
-            $tkItems = $item->tenagaKerjaDetails->filter(fn($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
-            
+            $barangItems = $item->barangDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+            $tkItems = $item->tenagaKerjaDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+
             $subtotalBarang = $barangItems->sum('subtotal');
             $subtotalTk = $tkItems->sum('nominal');
-            
+
             $adjustment = 0;
             $firstBarang = $barangItems->first();
             if ($firstBarang) {
                 $adjustment = $firstBarang->adjustment ?? 0;
             }
-            
+
             if ($barangItems->count() > 0) {
                 $nominal = $subtotalBarang + $adjustment;
             } else {
                 $nominal = $subtotalTk;
             }
-            
+
             $parentNominal = $item->nominal ?: 1;
             $ratio = $nominal / $parentNominal;
             $ppn = $item->ppn * $ratio;
             $pph = $item->pph * $ratio;
             $total = $nominal + $ppn - $pph;
         }
-        
+
         // 2. Biaya Air (airDetails)
         elseif ($item->airDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->airDetails->filter(fn($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+            $details = $item->airDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
             $nominal = $details->sum('sub_total');
             $pph = $details->sum('pph');
             $total = $details->sum('grand_total');
-            
+
             $parentNominal = $item->nominal ?: 1;
             $ratio = $nominal / $parentNominal;
             $ppn = $item->ppn * $ratio;
@@ -178,19 +178,19 @@ class RekapBiayaKapalController extends Controller
         // 3. Biaya TKBM (tkbmDetails)
         elseif ($item->tkbmDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->tkbmDetails->filter(fn($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
-            
+            $details = $item->tkbmDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+
             $subtotal = $details->sum('subtotal');
             $adjustment = 0;
             $first = $details->first();
             if ($first) {
                 $adjustment = $first->adjustment ?? 0;
             }
-            
+
             $nominal = $subtotal + $adjustment;
             $pph = $details->sum('pph');
             $total = $details->sum('grand_total');
-            
+
             $parentNominal = $item->nominal ?: 1;
             $ratio = $nominal / $parentNominal;
             $ppn = $item->ppn * $ratio;
@@ -199,11 +199,11 @@ class RekapBiayaKapalController extends Controller
         // 4. Biaya Trucking (truckingDetails)
         elseif ($item->truckingDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->truckingDetails->filter(fn($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+            $details = $item->truckingDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
             $nominal = $details->sum('subtotal');
             $pph = $details->sum('pph');
             $total = $details->sum('total_biaya');
-            
+
             $parentNominal = $item->nominal ?: 1;
             $ratio = $nominal / $parentNominal;
             $ppn = $item->ppn * $ratio;
@@ -212,11 +212,11 @@ class RekapBiayaKapalController extends Controller
         // 5. Stuffing (stuffingDetails)
         elseif ($item->stuffingDetails->count() > 0) {
             $hasDetails = true;
-            $details = $item->stuffingDetails->filter(fn($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
+            $details = $item->stuffingDetails->filter(fn ($d) => strtolower(trim($d->kapal)) === $kapalLower && strtolower(trim($d->voyage)) === $voyageLower);
             $nominal = $details->sum('subtotal');
             $pph = $details->sum('pph');
             $total = $details->sum('total_biaya');
-            
+
             $parentNominal = $item->nominal ?: 1;
             $ratio = $nominal / $parentNominal;
             $ppn = $item->ppn * $ratio;
@@ -239,10 +239,10 @@ class RekapBiayaKapalController extends Controller
                 'demurrageDetails',
                 'operasionalDetails',
             ];
-            
+
             foreach ($relations as $rel) {
                 if ($item->{$rel}->count() > 0) {
-                    $details = $item->{$rel}->filter(fn($d) => isset($d->kapal) && strtolower(trim($d->kapal)) === $kapalLower && isset($d->voyage) && strtolower(trim($d->voyage)) === $voyageLower);
+                    $details = $item->{$rel}->filter(fn ($d) => isset($d->kapal) && strtolower(trim($d->kapal)) === $kapalLower && isset($d->voyage) && strtolower(trim($d->voyage)) === $voyageLower);
                     if ($details->count() > 0) {
                         $hasDetails = true;
                         $nominal += $details->sum('subtotal') ?: $details->sum('nominal') ?: $details->sum('total_biaya');
@@ -253,7 +253,7 @@ class RekapBiayaKapalController extends Controller
             }
         }
 
-        if (!$hasDetails) {
+        if (! $hasDetails) {
             $nominal = $item->nominal;
             $ppn = $item->ppn;
             $pph = $item->pph;
@@ -275,7 +275,7 @@ class RekapBiayaKapalController extends Controller
     {
         $kapals = [];
         $records = BiayaKapal::with($this->relations)->get();
-        
+
         foreach ($records as $record) {
             $data = $this->getShipsAndVoyagesForRecord($record);
             foreach ($data['ships'] as $ship) {
@@ -293,13 +293,13 @@ class RekapBiayaKapalController extends Controller
     public function getVoyages(Request $request)
     {
         $selectedShip = $request->query('kapal');
-        if (!$selectedShip) {
+        if (! $selectedShip) {
             return response()->json([]);
         }
 
         $voyages = [];
         $records = BiayaKapal::with($this->relations)->get();
-        
+
         $selectedShipLower = strtolower(trim($selectedShip));
 
         foreach ($records as $record) {
@@ -319,9 +319,9 @@ class RekapBiayaKapalController extends Controller
                 }
             }
 
-            if (!$hasAnyDetails) {
+            if (! $hasAnyDetails) {
                 $parentShips = is_array($record->nama_kapal) ? $record->nama_kapal : ($record->nama_kapal ? [$record->nama_kapal] : []);
-                $parentShipsLower = array_map(fn($s) => strtolower(trim($s)), $parentShips);
+                $parentShipsLower = array_map(fn ($s) => strtolower(trim($s)), $parentShips);
                 if (in_array($selectedShipLower, $parentShipsLower)) {
                     $parentVoyages = is_array($record->no_voyage) ? $record->no_voyage : ($record->no_voyage ? [$record->no_voyage] : []);
                     foreach ($parentVoyages as $voyage) {
@@ -355,7 +355,7 @@ class RekapBiayaKapalController extends Controller
         $allRelations = array_merge(['klasifikasiBiaya', 'vendor'], $this->relations);
         $biayaKapals = BiayaKapal::with($allRelations)
             ->get()
-            ->filter(function($record) use ($kapal, $voyage) {
+            ->filter(function ($record) use ($kapal, $voyage) {
                 return $this->recordHasShipAndVoyage($record, $kapal, $voyage);
             });
 
@@ -366,14 +366,14 @@ class RekapBiayaKapalController extends Controller
 
         // Calculate summaries based on apportioned costs
         $summary = [
-            'total_nominal' => $biayaKapals->sum(fn($item) => $item->apportioned['nominal']),
-            'total_ppn' => $biayaKapals->sum(fn($item) => $item->apportioned['ppn']),
-            'total_pph' => $biayaKapals->sum(fn($item) => $item->apportioned['pph']),
-            'grand_total' => $biayaKapals->sum(fn($item) => $item->apportioned['total_biaya']),
+            'total_nominal' => $biayaKapals->sum(fn ($item) => $item->apportioned['nominal']),
+            'total_ppn' => $biayaKapals->sum(fn ($item) => $item->apportioned['ppn']),
+            'total_pph' => $biayaKapals->sum(fn ($item) => $item->apportioned['pph']),
+            'grand_total' => $biayaKapals->sum(fn ($item) => $item->apportioned['total_biaya']),
         ];
 
         // Group by classification/jenis_biaya
-        $grouped = $biayaKapals->groupBy(function($item) {
+        $grouped = $biayaKapals->groupBy(function ($item) {
             return $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain';
         });
 

@@ -289,7 +289,9 @@
                                  'harga' => $i->harga,
                                  'kuantitas' => $i->kuantitas,
                                  'is_muat' => $i->is_muat,
-                                 'is_bongkar' => $i->is_bongkar
+                                 'is_bongkar' => $i->is_bongkar,
+                                  'nomor_kontainer' => $i->nomor_kontainer,
+                                  'bl_id' => $i->bl_id
                              ];
                          })->toArray(),
                          'sub_total' => $firstItem->sub_total ?? 0,
@@ -332,7 +334,9 @@
                                  'harga' => $i->harga,
                                  'kuantitas' => $i->kuantitas,
                                  'is_muat' => $i->is_muat,
-                                 'is_bongkar' => $i->is_bongkar
+                                 'is_bongkar' => $i->is_bongkar,
+                                  'nomor_kontainer' => $i->nomor_kontainer,
+                                  'bl_id' => $i->bl_id
                              ];
                          })->toArray(),
                          'sub_total' => $firstItem->sub_total ?? 0,

@@ -845,6 +845,8 @@ class BiayaKapalController extends Controller
             'temas.*.manual_names' => 'nullable|array',
             'temas.*.custom_prices' => 'nullable|array',
             'temas.*.quantities' => 'nullable|array',
+            'temas.*.nomor_kontainers' => 'nullable|array',
+            'temas.*.bl_ids' => 'nullable|array',
             'temas.*.lokasi_items' => 'nullable|array',
             'temas.*.size_items' => 'nullable|array',
             'temas.*.is_muat' => 'nullable|array',
@@ -1437,6 +1439,8 @@ class BiayaKapalController extends Controller
                             $jenisBiaya = '';
                             $price = floatval($section['custom_prices'][$typeIndex] ?? 0);
                             $qty = floatval($section['quantities'][$typeIndex] ?? 0);
+                            $nomorKontainer = $section['nomor_kontainers'][$typeIndex] ?? null;
+                            $blId = isset($section['bl_ids'][$typeIndex]) && $section['bl_ids'][$typeIndex] !== '' ? intval($section['bl_ids'][$typeIndex]) : null;
                             $lokasiItem = $section['lokasi_items'][$typeIndex] ?? null;
                             $sizeItem = $section['size_items'][$typeIndex] ?? null;
                             $isMuat = isset($section['is_muat'][$typeIndex]) && $section['is_muat'][$typeIndex] == '1';
@@ -1488,6 +1492,8 @@ class BiayaKapalController extends Controller
                                 'biaya_kapal_id' => $biayaKapal->id,
                                 'kapal' => $section['kapal'] ?? null,
                                 'voyage' => $section['voyage'] ?? null,
+                                'nomor_kontainer' => $nomorKontainer,
+                                'bl_id' => $blId,
                                 'pricelist_temas_id' => $pricelistId,
                                 'jenis_biaya' => $jenisBiaya,
                                 'lokasi' => $lokasiItem,
@@ -4095,6 +4101,8 @@ class BiayaKapalController extends Controller
                                 $jenisBiaya = '';
                                 $price = floatval($section['custom_prices'][$typeIndex] ?? 0);
                                 $qty = floatval($section['quantities'][$typeIndex] ?? 0);
+                                $nomorKontainer = $section['nomor_kontainers'][$typeIndex] ?? null;
+                                $blId = isset($section['bl_ids'][$typeIndex]) && $section['bl_ids'][$typeIndex] !== '' ? intval($section['bl_ids'][$typeIndex]) : null;
                                 $lokasiItem = $section['lokasi_items'][$typeIndex] ?? null;
                                 $sizeItem = $section['size_items'][$typeIndex] ?? null;
                                 $isMuat = isset($section['is_muat'][$typeIndex]) && $section['is_muat'][$typeIndex] == '1';
@@ -4145,6 +4153,8 @@ class BiayaKapalController extends Controller
                                     'biaya_kapal_id' => $biayaKapal->id,
                                     'kapal' => $section['kapal'] ?? null,
                                     'voyage' => $section['voyage'] ?? null,
+                                    'nomor_kontainer' => $nomorKontainer,
+                                    'bl_id' => $blId,
                                     'pricelist_temas_id' => $pricelistId,
                                     'jenis_biaya' => $jenisBiaya,
                                     'lokasi' => $lokasiItem,
@@ -4509,7 +4519,7 @@ class BiayaKapalController extends Controller
                 $voyageDates[$row->no_voyage] = $row->tanggal;
             }
             foreach ($voyagesFromBls as $row) {
-                if (!isset($voyageDates[$row->no_voyage]) || $row->tanggal < $voyageDates[$row->no_voyage]) {
+                if (! isset($voyageDates[$row->no_voyage]) || $row->tanggal < $voyageDates[$row->no_voyage]) {
                     $voyageDates[$row->no_voyage] = $row->tanggal;
                 }
             }
