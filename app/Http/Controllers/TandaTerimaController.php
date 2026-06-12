@@ -2165,28 +2165,6 @@ class TandaTerimaController extends Controller
                 $prospeksToUpdate = $prospeksToUpdate->merge($prospeksByNoSuratJalan);
             }
 
-            // Method 3: Find by nomor_kontainer (fallback)
-            if ($request->has('nomor_kontainer') && is_array($request->nomor_kontainer)) {
-                $nomorKontainers = array_filter($request->nomor_kontainer, function ($value) {
-                    return ! empty(trim($value));
-                });
-
-                if (! empty($nomorKontainers)) {
-                    // Match nomor_kontainer that equals or contains the given container values (CSV matching)
-                    $prospeksByKontainer = \App\Models\Prospek::where('tipe', '!=', 'LCL')
-                        ->where(function ($q) use ($nomorKontainers) {
-                            foreach ($nomorKontainers as $containerValue) {
-                                $v = trim($containerValue);
-                                // match exact equal or CSV contains
-                                $q->orWhere('nomor_kontainer', $v)
-                                    ->orWhere('nomor_kontainer', 'like', '%'.$v.'%');
-                            }
-                        })->get();
-                    $prospeksToUpdate = $prospeksToUpdate->merge($prospeksByKontainer);
-                    Log::info('Prospek search by nomor_kontainer used (excluding LCL); results: '.$prospeksByKontainer->count(), ['search_kontainers' => $nomorKontainers]);
-                }
-            }
-
             // Remove duplicates based on ID
             $prospeksToUpdate = $prospeksToUpdate->unique('id');
 
