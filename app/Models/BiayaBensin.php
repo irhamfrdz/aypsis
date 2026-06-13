@@ -11,6 +11,7 @@ class BiayaBensin extends Model
     protected $fillable = [
         'tanggal',
         'mobil_id',
+        'nomor_kartu',
         'karyawan_id',
         'km_awal',
         'km_akhir',

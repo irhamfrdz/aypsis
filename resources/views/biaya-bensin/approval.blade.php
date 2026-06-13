@@ -33,6 +33,7 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobil</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kartu</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM Awal/Akhir</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Liter</th>
@@ -51,6 +52,9 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <div class="font-medium text-gray-900">{{ $item->mobil->nomor_polisi ?? '-' }}</div>
                                 <div class="text-xs text-gray-500">{{ $item->mobil->kode_no ?? '-' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $item->nomor_kartu ?: '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $item->supir->nama_panggilan ?: $item->supir->nama_lengkap ?? '-' }}
@@ -99,7 +103,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-12 text-center">
+                            <td colspan="10" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-check-circle text-gray-300 text-5xl mb-4"></i>
                                     <h3 class="text-lg font-medium text-gray-900 mb-1">Semua bersih!</h3>

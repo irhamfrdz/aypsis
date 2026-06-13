@@ -44,7 +44,13 @@ class BiayaBensinController extends Controller
 
         $lastHargaPerLiter = $lastEntry && $lastEntry->liter > 0 ? round($lastEntry->biaya / $lastEntry->liter, 2) : null;
 
-        return view('biaya-bensin.create', compact('mobils', 'supirs', 'lastHargaPerLiter'));
+        $lastNomorKartu = BiayaBensin::where('created_by', Auth::id())
+            ->whereNotNull('nomor_kartu')
+            ->where('nomor_kartu', '!=', '')
+            ->orderBy('id', 'desc')
+            ->value('nomor_kartu');
+
+        return view('biaya-bensin.create', compact('mobils', 'supirs', 'lastHargaPerLiter', 'lastNomorKartu'));
     }
 
     /**
@@ -55,6 +61,7 @@ class BiayaBensinController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'mobil_id' => 'required|exists:mobils,id',
+            'nomor_kartu' => 'nullable|string|max:50',
             'karyawan_id' => 'required|exists:karyawans,id',
             'km_awal' => 'nullable|integer',
             'km_akhir' => 'nullable|integer',
@@ -132,6 +139,7 @@ class BiayaBensinController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'mobil_id' => 'required|exists:mobils,id',
+            'nomor_kartu' => 'nullable|string|max:50',
             'karyawan_id' => 'required|exists:karyawans,id',
             'km_awal' => 'nullable|integer',
             'km_akhir' => 'nullable|integer',
