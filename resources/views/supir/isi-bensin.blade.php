@@ -55,7 +55,7 @@
         <!-- Form Container -->
         <div class="bg-white rounded-3xl shadow-xl shadow-gray-100 border border-gray-200 overflow-hidden">
             <div class="p-8">
-                <form action="{{ route('supir.isi-bensin.store') }}" method="POST" class="space-y-6">
+                <form action="{{ route('supir.isi-bensin.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                     @csrf
                     
                     <div class="space-y-4">
@@ -132,6 +132,18 @@
                             </label>
                             <textarea name="keterangan" id="keterangan" rows="3" placeholder="Opsional..."
                                       class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-gray-900 font-medium text-sm transition-all resize-none">{{ old('keterangan') }}</textarea>
+                        </div>
+
+                        <!-- Bukti Pembelian -->
+                        <div>
+                            <label for="bukti_beli" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                                Lampirkan Bukti Pembelian (Foto / PDF)
+                            </label>
+                            <input type="file" name="bukti_beli" id="bukti_beli" accept="image/*,application/pdf"
+                                   class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-gray-900 font-medium text-sm transition-all">
+                            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-1.5 ml-1">
+                                Format: JPG, JPEG, PNG, atau PDF. Maksimal 10 MB.
+                            </p>
                         </div>
                     </div>
 

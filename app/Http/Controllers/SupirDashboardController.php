@@ -924,7 +924,15 @@ class SupirDashboardController extends Controller
             'liter' => 'required|numeric',
             'biaya' => 'required|numeric',
             'keterangan' => 'nullable|string',
+            'bukti_beli' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
+
+        if ($request->hasFile('bukti_beli')) {
+            $file = $request->file('bukti_beli');
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('bukti-bensin', $filename, 'public');
+            $validated['bukti_beli'] = $path;
+        }
 
         $validated['karyawan_id'] = $user->karyawan->id ?? null;
         $validated['created_by'] = $user->id;

@@ -96,6 +96,11 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center space-x-2">
+                                    @if($item->bukti_beli)
+                                        <a href="{{ asset('storage/' . $item->bukti_beli) }}" target="_blank" class="p-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors" title="Lihat Bukti Beli">
+                                            <i class="fas fa-file-invoice"></i>
+                                        </a>
+                                    @endif
                                     @can('biaya-bensin-update')
                                         <a href="{{ route('biaya-bensin.edit', $item) }}" class="p-2 bg-amber-100 text-amber-700 rounded-md hover:bg-amber-200 transition-colors" title="Edit">
                                             <i class="fas fa-edit"></i>
