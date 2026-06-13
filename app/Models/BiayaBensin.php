@@ -19,12 +19,16 @@ class BiayaBensin extends Model
         'keterangan',
         'created_by',
         'bukti_beli',
+        'status',
+        'approved_by',
+        'approved_at',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
         'liter' => 'decimal:2',
         'biaya' => 'decimal:2',
+        'approved_at' => 'datetime',
     ];
 
     public function mobil()
@@ -40,5 +44,10 @@ class BiayaBensin extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

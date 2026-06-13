@@ -11,13 +11,28 @@
             </h1>
             <p class="text-gray-600 mt-1">Kelola pencatatan biaya bensin kendaraan</p>
         </div>
-        @can('biaya-bensin-create')
-            <a href="{{ route('biaya-bensin.create') }}" 
-               class="inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200">
-                <i class="fas fa-plus mr-2"></i>
-                Catat Biaya Bensin
-            </a>
-        @endcan
+        <div class="flex items-center space-x-3">
+            @can('biaya-bensin-update')
+                <a href="{{ route('biaya-bensin.approval') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200">
+                    <i class="fas fa-check-double mr-2"></i>
+                    Approval
+                    @php
+                        $pendingCount = \App\Models\BiayaBensin::where('status', 'pending')->count();
+                    @endphp
+                    @if($pendingCount > 0)
+                        <span class="ml-2 px-2 py-0.5 text-xs font-bold bg-red-500 text-white rounded-full">{{ $pendingCount }}</span>
+                    @endif
+                </a>
+            @endcan
+            @can('biaya-bensin-create')
+                <a href="{{ route('biaya-bensin.create') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200">
+                    <i class="fas fa-plus mr-2"></i>
+                    Catat Biaya Bensin
+                </a>
+            @endcan
+        </div>
     </div>
 
     <!-- Success Message -->
@@ -64,6 +79,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM Awal/Akhir</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Liter</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
@@ -90,6 +106,15 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                                 Rp {{ number_format($item->biaya, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                @if($item->status === 'pending')
+                                    <span class="px-2.5 py-1 text-xs font-bold bg-amber-100 text-amber-800 rounded-full">Pending</span>
+                                @elseif($item->status === 'approved')
+                                    <span class="px-2.5 py-1 text-xs font-bold bg-green-100 text-green-800 rounded-full">Approved</span>
+                                @else
+                                    <span class="px-2.5 py-1 text-xs font-bold bg-red-100 text-red-800 rounded-full">Rejected</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-xs">
                                 {{ $item->creator->name ?? '-' }}
@@ -120,7 +145,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-12 text-center">
+                            <td colspan="9" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-gas-pump text-gray-300 text-5xl mb-4"></i>
                                     <h3 class="text-lg font-medium text-gray-900 mb-1">Belum ada catatan biaya bensin</h3>

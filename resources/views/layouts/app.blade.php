@@ -1722,8 +1722,21 @@
 
                 {{-- Biaya Bensin --}}
                 @if($user && ($user->can('biaya-bensin-view') || $user->is_admin))
-                    <a href="{{ route('biaya-bensin.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('biaya-bensin.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('biaya-bensin.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('biaya-bensin.*') && !Request::routeIs('biaya-bensin.approval') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Biaya Bensin</span>
+                    </a>
+                @endif
+
+                {{-- Approval Isi Bensin --}}
+                @if($user && ($user->can('biaya-bensin-update') || $user->is_admin))
+                    <a href="{{ route('biaya-bensin.approval') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('biaya-bensin.approval') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Approval Isi Bensin</span>
+                        @php
+                            $pendingBensinCount = \App\Models\BiayaBensin::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingBensinCount > 0)
+                            <span class="ml-auto bg-red-500 text-white rounded-full px-1.5 py-0.5 text-[10px] font-bold">{{ $pendingBensinCount }}</span>
+                        @endif
                     </a>
                 @endif
 

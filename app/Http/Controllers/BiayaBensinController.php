@@ -55,6 +55,7 @@ class BiayaBensinController extends Controller
         ]);
 
         $validated['created_by'] = Auth::id();
+        $validated['status'] = 'approved';
 
         $item = BiayaBensin::create($validated);
 
@@ -145,7 +146,7 @@ class BiayaBensinController extends Controller
         $item = BiayaBensin::findOrFail($id);
         $oldValues = $item->toArray();
         $item->delete();
-
+ 
         AuditLog::create([
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->name,
@@ -160,7 +161,84 @@ class BiayaBensinController extends Controller
             'user_agent' => $request->userAgent(),
             'url' => $request->fullUrl(),
         ]);
-
+ 
         return redirect()->route('biaya-bensin.index')->with('success', 'Biaya bensin berhasil dihapus.');
+    }
+
+    /**
+     * Display pending fuel entries for approval.
+     */
+    public function approvalList()
+    {
+        $items = BiayaBensin::with(['mobil', 'supir', 'creator'])
+            ->where('status', 'pending')
+            ->orderBy('tanggal', 'desc')
+            ->paginate(20);
+
+        return view('biaya-bensin.approval', compact('items'));
+    }
+
+    /**
+     * Approve the specified fuel entry.
+     */
+    public function approve(Request $request, $id)
+    {
+        $item = BiayaBensin::findOrFail($id);
+        $oldValues = $item->toArray();
+        
+        $item->update([
+            'status' => 'approved',
+            'approved_by' => Auth::id(),
+            'approved_at' => now(),
+        ]);
+
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->name,
+            'auditable_type' => 'App\Models\BiayaBensin',
+            'auditable_id' => $item->id,
+            'action' => 'approved',
+            'module' => 'biaya_bensin',
+            'description' => 'Menyetujui biaya bensin',
+            'old_values' => $oldValues,
+            'new_values' => $item->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'url' => $request->fullUrl(),
+        ]);
+
+        return redirect()->back()->with('success', 'Catatan bensin berhasil disetujui.');
+    }
+
+    /**
+     * Reject the specified fuel entry.
+     */
+    public function reject(Request $request, $id)
+    {
+        $item = BiayaBensin::findOrFail($id);
+        $oldValues = $item->toArray();
+        
+        $item->update([
+            'status' => 'rejected',
+            'approved_by' => Auth::id(),
+            'approved_at' => now(),
+        ]);
+
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->name,
+            'auditable_type' => 'App\Models\BiayaBensin',
+            'auditable_id' => $item->id,
+            'action' => 'rejected',
+            'module' => 'biaya_bensin',
+            'description' => 'Menolak biaya bensin',
+            'old_values' => $oldValues,
+            'new_values' => $item->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'url' => $request->fullUrl(),
+        ]);
+
+        return redirect()->back()->with('success', 'Catatan bensin berhasil ditolak.');
     }
 }

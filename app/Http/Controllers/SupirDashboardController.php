@@ -936,6 +936,7 @@ class SupirDashboardController extends Controller
 
         $validated['karyawan_id'] = $user->karyawan->id ?? null;
         $validated['created_by'] = $user->id;
+        $validated['status'] = 'pending';
 
         $item = \App\Models\BiayaBensin::create($validated);
 

@@ -1820,6 +1820,16 @@ Route::middleware([
             ->middleware('can:biaya-kapal-view');
 
         // ⛽ Biaya Bensin Routes
+        Route::get('biaya-bensin/approval', [BiayaBensinController::class, 'approvalList'])
+            ->name('biaya-bensin.approval')
+            ->middleware('can:biaya-bensin-view');
+        Route::post('biaya-bensin/{id}/approve', [BiayaBensinController::class, 'approve'])
+            ->name('biaya-bensin.approve')
+            ->middleware('can:biaya-bensin-update');
+        Route::post('biaya-bensin/{id}/reject', [BiayaBensinController::class, 'reject'])
+            ->name('biaya-bensin.reject')
+            ->middleware('can:biaya-bensin-update');
+
         Route::resource('biaya-bensin', BiayaBensinController::class)->middleware([
             'index' => 'can:biaya-bensin-view',
             'show' => 'can:biaya-bensin-view',
