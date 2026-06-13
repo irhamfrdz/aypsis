@@ -66,6 +66,11 @@
                        class="px-4 py-2 rounded-xl text-sm font-bold transition-all {{ Request::routeIs('supir.cek-kendaraan.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900' }}">
                        <i class="fas fa-clipboard-check mr-2"></i> Cek Unit
                     </a>
+
+                    <a href="{{ route('supir.isi-bensin') }}" 
+                       class="px-4 py-2 rounded-xl text-sm font-bold transition-all {{ Request::routeIs('supir.isi-bensin') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900' }}">
+                       <i class="fas fa-gas-pump mr-2"></i> Isi Bensin
+                    </a>
                 </div>
             </nav>
         </div>

@@ -890,6 +890,66 @@ class SupirDashboardController extends Controller
     }
 
     /**
+     * Display fuel input form for supir
+     */
+    public function isiBensin()
+    {
+        $user = Auth::user();
+        if (! $user->isSupir()) {
+            abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
+        }
+
+        $karyawanId = $user->karyawan->id ?? null;
+        $mobil = \App\Models\Mobil::where('karyawan_id', $karyawanId)->first();
+        $mobils = \App\Models\Mobil::all();
+
+        return view('supir.isi-bensin', compact('mobil', 'mobils', 'karyawanId'));
+    }
+
+    /**
+     * Store fuel input from supir
+     */
+    public function isiBensinStore(Request $request)
+    {
+        $user = Auth::user();
+        if (! $user->isSupir()) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'mobil_id' => 'required|exists:mobils,id',
+            'km_awal' => 'nullable|integer',
+            'km_akhir' => 'nullable|integer',
+            'liter' => 'required|numeric',
+            'biaya' => 'required|numeric',
+            'keterangan' => 'nullable|string',
+        ]);
+
+        $validated['karyawan_id'] = $user->karyawan->id ?? null;
+        $validated['created_by'] = $user->id;
+
+        $item = \App\Models\BiayaBensin::create($validated);
+
+        \App\Models\AuditLog::create([
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'auditable_type' => 'App\Models\BiayaBensin',
+            'auditable_id' => $item->id,
+            'action' => 'created',
+            'module' => 'biaya_bensin',
+            'description' => 'Mencatat biaya bensin oleh supir',
+            'old_values' => null,
+            'new_values' => $item->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'url' => $request->fullUrl(),
+        ]);
+
+        return redirect()->route('supir.dashboard')->with('success', 'Catatan bensin berhasil disimpan.');
+    }
+
+    /**
      * Normalize ship name by removing dots, multiple spaces, and converting to uppercase
      */
     private function normalizeShipName($name)

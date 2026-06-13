@@ -4537,6 +4537,12 @@ Route::middleware([
             ->name('cek-kendaraan.store');
         Route::get('/cek-kendaraan/{cekKendaraan}', [\App\Http\Controllers\SupirCekKendaraanController::class, 'show'])
             ->name('cek-kendaraan.show');
+
+        // Isi Bensin
+        Route::get('/isi-bensin', [SupirDashboardController::class, 'isiBensin'])
+            ->name('isi-bensin');
+        Route::post('/isi-bensin', [SupirDashboardController::class, 'isiBensinStore'])
+            ->name('isi-bensin.store');
     });
 
     // --- Rute Penyelesaian Tugas ---
