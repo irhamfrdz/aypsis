@@ -538,40 +538,30 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
         $containerUnit = $isCargo ? '' : 'Unit';
         $containerDesc = $isCargo ? '' : "Container {$size} feet stc :";
 
-        $shipperName = '';
-        $shipperAddress = '';
-        $shipperNpwp = '';
-        $consigneeName = '';
-        $consigneeAddress = '';
-        $consigneeNpwp = '';
-        $notifyName = '';
-        $notifyAddress = '';
-        $notifyNpwp = '';
-        $deliveryAddress = '';
+        $shipperName = $row['pengirim'];
+        $shipperAddress = $row['s_address'];
+
+        $sLookup = $this->penerimaLookup[strtoupper(trim($row['pengirim']))] ?? null;
+        $shipperNpwp = $sLookup['npwp'] ?? '-';
+
+        $consigneeNpwp = $row['p_npwp'];
+        $consigneeName = $row['penerima'];
+        $consigneeAddress = $row['p_address'];
+
+        $notifyName = $row['penerima'];
+        $notifyAddress = $row['p_address'];
+        $notifyNpwp = $consigneeNpwp;
+
+        $deliveryAddress = trim($consigneeName).'    '.trim($consigneeAddress);
+        if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {
+            $deliveryAddress .= ' Telp.'.$row['p_cp'];
+        }
+
         $groupCount = '';
         $groupUnit = '';
         $groupDesc = '';
 
         if (! empty($row['show_group_fields'])) {
-            $shipperName = $row['pengirim'];
-            $shipperAddress = $row['s_address'];
-
-            $sLookup = $this->penerimaLookup[strtoupper(trim($row['pengirim']))] ?? null;
-            $shipperNpwp = $sLookup['npwp'] ?? '-';
-
-            $consigneeNpwp = $row['p_npwp'];
-            $consigneeName = $row['penerima'];
-            $consigneeAddress = $row['p_address'];
-
-            $notifyName = $row['penerima'];
-            $notifyAddress = $row['p_address'];
-            $notifyNpwp = $consigneeNpwp;
-
-            $deliveryAddress = trim($consigneeName).'    '.trim($consigneeAddress);
-            if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {
-                $deliveryAddress .= ' Telp.'.$row['p_cp'];
-            }
-
             $groupCount = $row['group_count'];
             $groupUnit = 'Unit';
             $groupDesc = "Container {$size} feet / FCL  (Kantor)";
