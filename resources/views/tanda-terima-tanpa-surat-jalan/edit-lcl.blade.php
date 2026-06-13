@@ -2142,6 +2142,9 @@ function saveScannerResult() {
         // Initialize supir dropdown (non-Select2)
         initializeSupirDropdown();
         
+        // Initialize term dropdown
+        initializeTermDropdown();
+        
         // Initialize tujuan pengiriman dropdown
         initializeTujuanPengirimanDropdown();
         
@@ -2286,6 +2289,82 @@ function saveScannerResult() {
         console.log('✓ Select2 berhasil diinisialisasi pada', totalInitialized, 'dropdown');
     }
     
+    function initializeTermDropdown() {
+        const searchInput = document.getElementById('termSearch');
+        const dropdown = document.getElementById('termDropdown');
+        const hiddenSelect = document.getElementById('term_id');
+        const options = document.querySelectorAll('.term-option');
+
+        // Remove required attribute from hidden select to prevent focus issues
+        if (hiddenSelect) {
+            hiddenSelect.removeAttribute('required');
+        }
+
+        // Add custom validation to search input instead
+        if (searchInput) {
+            searchInput.setAttribute('required', 'required');
+            searchInput.setAttribute('data-term-validation', 'true');
+        }
+
+        searchInput.addEventListener('focus', function() {
+            dropdown.classList.remove('hidden');
+        });
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            let hasVisibleOptions = false;
+
+            // Clear validation state when user types
+            this.setCustomValidity('');
+            
+            options.forEach(option => {
+                const text = option.getAttribute('data-text').toLowerCase();
+                if (text.includes(searchTerm)) {
+                    option.style.display = 'block';
+                    hasVisibleOptions = true;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+
+            dropdown.classList.remove('hidden');
+        });
+
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const text = this.getAttribute('data-text');
+
+                hiddenSelect.value = value;
+                searchInput.value = text;
+                searchInput.setCustomValidity(''); // Clear any validation errors
+                dropdown.classList.add('hidden');
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#termSearch') && !e.target.closest('#termDropdown')) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Custom validation for form submission
+        searchInput.addEventListener('invalid', function() {
+            if (!hiddenSelect.value) {
+                this.setCustomValidity('Silakan pilih salah satu term dari daftar.');
+            }
+        });
+
+        // Validate on blur
+        searchInput.addEventListener('blur', function() {
+            if (this.value && !hiddenSelect.value) {
+                this.setCustomValidity('Silakan pilih salah satu term dari daftar yang tersedia.');
+            } else if (!this.value) {
+                this.setCustomValidity('Term wajib dipilih.');
+            }
+        });
+    }
+
     // Initialize supir dropdown
     function initializeSupirDropdown() {
         const searchInput = document.getElementById('supirSearch');
