@@ -208,6 +208,32 @@
         </button>
     </div>
 
+    @php
+        $displayVendor = $pranota->vendor;
+        if (is_array($pranota->items)) {
+            $vendors = [];
+            foreach ($pranota->items as $item) {
+                $biayaRiil = floatval($item['biaya_riil'] ?? 0);
+                $estimasi = floatval($item['estimasi_biaya'] ?? 0);
+                $biayaCat = floatval($item['biaya_cat'] ?? 0);
+                $biayaPerbaikanOnly = ($biayaRiil > 0) ? $biayaRiil : $estimasi;
+
+                if (isset($printType) && $printType === 'cat') {
+                    if ($biayaCat > 0 && !empty($item['vendor_cat'])) {
+                        $vendors[] = trim($item['vendor_cat']);
+                    }
+                } elseif (isset($printType) && $printType === 'perbaikan') {
+                    if ($biayaPerbaikanOnly > 0 && !empty($item['bengkel'])) {
+                        $vendors[] = trim($item['bengkel']);
+                    }
+                }
+            }
+            if (!empty($vendors)) {
+                $displayVendor = implode(', ', array_unique($vendors));
+            }
+        }
+    @endphp
+
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -230,7 +256,7 @@
                 <td>{{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d F Y') : '-' }}</td>
                 <td class="label">Vendor/Bengkel</td>
                 <td class="separator">:</td>
-                <td>{{ $pranota->vendor ?? '-' }}</td>
+                <td>{{ $displayVendor ?? '-' }}</td>
             </tr>
             <tr>
                 <td class="label">Bank / Rekening</td>
@@ -286,7 +312,7 @@
                         <td class="text-center">
                             {{ $item['ukuran'] ?? '' }}FT {{ $item['tipe'] ?? '' }}
                         </td>
-                        <td>{{ $item['bengkel'] ?? '-' }}</td>
+                        <td>{{ (isset($printType) && $printType === 'cat') ? ($item['vendor_cat'] ?? '-') : ($item['bengkel'] ?? '-') }}</td>
                         <td style="white-space: normal;">
                             {{ $item['keterangan_kerusakan'] ?? (\App\Models\PerbaikanKontainer::find($item['id'] ?? null)->keterangan_kerusakan ?? '-') }}
                             @if(!empty($item['is_cat']) && $biayaCat > 0)
