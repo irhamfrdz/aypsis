@@ -2068,6 +2068,19 @@ Route::middleware([
                 'destroy' => 'can:master-kelola-bbm-delete',
             ]);
 
+        // ⛽ Pembelian Minyak / BBM Batam with permissions
+        Route::resource('pembelian-bbm-batam', \App\Http\Controllers\PembelianBbmBatamController::class)
+            ->names('pembelian-bbm-batam')
+            ->middleware([
+                'index' => 'can:pembelian-bbm-batam-view',
+                'show' => 'can:pembelian-bbm-batam-view',
+                'create' => 'can:pembelian-bbm-batam-create',
+                'store' => 'can:pembelian-bbm-batam-create',
+                'edit' => 'can:pembelian-bbm-batam-edit',
+                'update' => 'can:pembelian-bbm-batam-edit',
+                'destroy' => 'can:pembelian-bbm-batam-delete',
+            ]);
+
         // ⚓ Master Pelabuhan (Port Master) Management with permissions
         Route::resource('master-pelabuhan', \App\Http\Controllers\MasterPelabuhanController::class)
             ->names([

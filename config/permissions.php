@@ -128,6 +128,17 @@ return [
                 'tagihan-pelindo-delete' => 'Hapus Tagihan',
             ],
         ],
+        'pembelian-bbm-batam' => [
+            'name' => 'Pembelian BBM Batam',
+            'description' => 'Menu pembelian BBM Batam',
+            'required' => true,
+            'sub_modules' => [
+                'pembelian-bbm-batam-view' => 'View Pembelian BBM Batam',
+                'pembelian-bbm-batam-create' => 'Buat Pembelian BBM Batam',
+                'pembelian-bbm-batam-edit' => 'Edit Pembelian BBM Batam',
+                'pembelian-bbm-batam-delete' => 'Hapus Pembelian BBM Batam',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
@@ -166,5 +177,8 @@ return [
 
         // Tagihan Pelindo - butuh tagihan-pelindo-view
         'tagihan-pelindo' => ['tagihan-pelindo-view'],
+
+        // Pembelian BBM Batam - butuh pembelian-bbm-batam-view
+        'pembelian-bbm-batam' => ['pembelian-bbm-batam-view'],
     ],
 ];

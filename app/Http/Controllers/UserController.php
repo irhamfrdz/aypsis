@@ -721,6 +721,7 @@ class UserController extends Controller
                 'kwitansi' => 'kwitansi',
                 'master-buruh' => 'master-buruh',
                 'biaya-bensin' => 'biaya-bensin',
+                'pembelian-bbm-batam' => 'pembelian-bbm-batam',
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
@@ -3133,6 +3134,25 @@ class UserController extends Controller
                             'create' => $module.'-create',
                             'update' => $module.'-update',
                             'delete' => $module.'-delete',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle pembelian-bbm-batam permissions explicitly
+                    if ($module === 'pembelian-bbm-batam' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        $actionMap = [
+                            'view' => 'pembelian-bbm-batam-view',
+                            'create' => 'pembelian-bbm-batam-create',
+                            'update' => 'pembelian-bbm-batam-edit',
+                            'delete' => 'pembelian-bbm-batam-delete',
                         ];
 
                         if (isset($actionMap[$action])) {

@@ -628,6 +628,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pembelian BBM Batam --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="inline-block w-3 h-3 bg-red-100 rounded-full mr-3"></span>
+                                        <div class="text-sm font-medium">Pembelian BBM Batam</div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembelian-bbm-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembelian-bbm-batam']['view']) && $userMatrixPermissions['pembelian-bbm-batam']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembelian-bbm-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembelian-bbm-batam']['create']) && $userMatrixPermissions['pembelian-bbm-batam']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembelian-bbm-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembelian-bbm-batam']['update']) && $userMatrixPermissions['pembelian-bbm-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembelian-bbm-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembelian-bbm-batam']['delete']) && $userMatrixPermissions['pembelian-bbm-batam']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Term --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
