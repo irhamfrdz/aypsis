@@ -277,7 +277,7 @@
                     <th style="width: 13%;">NO. KONTAINER</th>
                     <th style="width: 12%;">UKURAN & TIPE</th>
                     <th style="width: 15%;">BENGKEL</th>
-                    <th style="width: 17%;">KETERANGAN KERUSAKAN</th>
+                    <th style="width: 17%;">{{ (isset($printType) && $printType === 'cat') ? 'KETERANGAN CAT' : 'KETERANGAN KERUSAKAN' }}</th>
                     <th style="width: 11%;">ESTIMASI</th>
                     <th style="width: 12%;">REALISASI</th>
                 </tr>
@@ -314,9 +314,13 @@
                         </td>
                         <td>{{ (isset($printType) && $printType === 'cat') ? ($item['vendor_cat'] ?? '-') : ($item['bengkel'] ?? '-') }}</td>
                         <td style="white-space: normal;">
-                            {{ $item['keterangan_kerusakan'] ?? (\App\Models\PerbaikanKontainer::find($item['id'] ?? null)->keterangan_kerusakan ?? '-') }}
-                            @if(!empty($item['is_cat']) && $biayaCat > 0)
-                                <br><small style="color: blue;">(Pengecatan: {{ $item['jenis_cat'] === 'cat_full' ? 'Full' : 'Sebagian' }} oleh {{ $item['vendor_cat'] ?? '-' }} - Rp {{ number_format($biayaCat, 0, ',', '.') }})</small>
+                            @if(isset($printType) && $printType === 'cat')
+                                Pengecatan {{ (isset($item['jenis_cat']) && $item['jenis_cat'] === 'cat_full') ? 'Full' : 'Sebagian' }}
+                            @else
+                                {{ $item['keterangan_kerusakan'] ?? (\App\Models\PerbaikanKontainer::find($item['id'] ?? null)->keterangan_kerusakan ?? '-') }}
+                                @if(!empty($item['is_cat']) && $biayaCat > 0)
+                                    <br><small style="color: blue;">(Pengecatan: {{ $item['jenis_cat'] === 'cat_full' ? 'Full' : 'Sebagian' }} oleh {{ $item['vendor_cat'] ?? '-' }} - Rp {{ number_format($biayaCat, 0, ',', '.') }})</small>
+                                @endif
                             @endif
                         </td>
                         <td class="text-right">{{ number_format((isset($printType) && $printType === 'cat') ? 0 : $estimasi, 0, ',', '.') }}</td>
