@@ -52,7 +52,15 @@ class BiayaBensinController extends Controller
             'liter' => 'required|numeric',
             'biaya' => 'required|numeric',
             'keterangan' => 'nullable|string',
+            'bukti_beli' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
+
+        if ($request->hasFile('bukti_beli')) {
+            $file = $request->file('bukti_beli');
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('bukti-bensin', $filename, 'public');
+            $validated['bukti_beli'] = $path;
+        }
 
         $validated['created_by'] = Auth::id();
         $validated['status'] = 'approved';
@@ -116,7 +124,18 @@ class BiayaBensinController extends Controller
             'liter' => 'required|numeric',
             'biaya' => 'required|numeric',
             'keterangan' => 'nullable|string',
+            'bukti_beli' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
+
+        if ($request->hasFile('bukti_beli')) {
+            if ($item->bukti_beli && \Illuminate\Support\Facades\Storage::disk('public')->exists($item->bukti_beli)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($item->bukti_beli);
+            }
+            $file = $request->file('bukti_beli');
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('bukti-bensin', $filename, 'public');
+            $validated['bukti_beli'] = $path;
+        }
 
         $item->update($validated);
 

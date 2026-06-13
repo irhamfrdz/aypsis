@@ -18,7 +18,7 @@
 
     <!-- Form Card -->
     <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-        <form action="{{ route('biaya-bensin.update', $item->id) }}" method="POST" class="p-8">
+        <form action="{{ route('biaya-bensin.update', $item->id) }}" method="POST" enctype="multipart/form-data" class="p-8">
             @csrf
             @method('PUT')
             
@@ -106,6 +106,20 @@
                         <textarea name="keterangan" id="keterangan" rows="3" placeholder="Tambahkan catatan jika diperlukan..."
                                   class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm">{{ old('keterangan', $item->keterangan) }}</textarea>
                         @error('keterangan') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="bukti_beli" class="block text-sm font-semibold text-gray-700 mb-2">Bukti Beli (Photo/PDF)</label>
+                        @if($item->bukti_beli)
+                            <div class="mb-3 flex items-center gap-2">
+                                <a href="{{ asset('storage/' . $item->bukti_beli) }}" target="_blank" class="inline-flex items-center text-sm font-semibold text-amber-600 hover:text-amber-700">
+                                    <i class="fas fa-file-alt mr-1.5"></i> Lihat Bukti Saat Ini
+                                </a>
+                            </div>
+                        @endif
+                        <input type="file" name="bukti_beli" id="bukti_beli" accept="image/*,application/pdf"
+                               class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none sm:text-sm">
+                        @error('bukti_beli') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>

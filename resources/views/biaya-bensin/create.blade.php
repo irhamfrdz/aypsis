@@ -22,7 +22,7 @@
         <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
             <div class="h-1.5 bg-amber-500"></div>
             
-            <form action="{{ route('biaya-bensin.store') }}" method="POST" class="p-6 md:p-10">
+            <form action="{{ route('biaya-bensin.store') }}" method="POST" enctype="multipart/form-data" class="p-6 md:p-10">
                 @csrf
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -116,6 +116,13 @@
                             <label for="keterangan" class="block text-sm font-bold text-gray-700 mb-2">Keterangan</label>
                             <textarea name="keterangan" id="keterangan" rows="3" placeholder="Opsional..."
                                       class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all text-gray-900 resize-none">{{ old('keterangan') }}</textarea>
+                        </div>
+
+                        <div>
+                            <label for="bukti_beli" class="block text-sm font-bold text-gray-700 mb-2">Lampirkan Bukti Beli (Photo/PDF)</label>
+                            <input type="file" name="bukti_beli" id="bukti_beli" accept="image/*,application/pdf"
+                                   class="block w-full text-sm text-gray-900 border border-gray-200 rounded-xl cursor-pointer bg-gray-50 focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200">
+                            @error('bukti_beli') <p class="mt-2 text-sm text-red-500">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </div>
