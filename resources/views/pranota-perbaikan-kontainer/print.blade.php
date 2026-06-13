@@ -278,8 +278,12 @@
                     <th style="width: 12%;">UKURAN & TIPE</th>
                     <th style="width: 15%;">BENGKEL</th>
                     <th style="width: 17%;">{{ (isset($printType) && $printType === 'cat') ? 'KETERANGAN CAT' : 'KETERANGAN KERUSAKAN' }}</th>
+                    @if(!isset($printType) || $printType !== 'cat')
                     <th style="width: 11%;">ESTIMASI</th>
                     <th style="width: 12%;">REALISASI</th>
+                    @else
+                    <th style="width: 23%;">GRAND TOTAL</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -323,26 +327,28 @@
                                 @endif
                             @endif
                         </td>
-                        <td class="text-right">{{ number_format((isset($printType) && $printType === 'cat') ? 0 : $estimasi, 0, ',', '.') }}</td>
+                        @if(!isset($printType) || $printType !== 'cat')
+                        <td class="text-right">{{ number_format($estimasi, 0, ',', '.') }}</td>
+                        @endif
                         <td class="text-right font-bold">{{ number_format($biayaTerpakai, 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
                     <tr style="background-color: #f9f9f9; font-weight: bold;">
-                        <td colspan="7" class="text-right px-4">SUBTOTAL</td>
+                        <td colspan="{{ (isset($printType) && $printType === 'cat') ? 6 : 7 }}" class="text-right px-4">SUBTOTAL</td>
                         <td class="text-right">{{ number_format($grandTotal, 0, ',', '.') }}</td>
                     </tr>
                     @if(empty($printType) && $pranota->adjustment != 0)
                     <tr style="font-weight: bold;">
-                        <td colspan="7" class="text-right px-4">ADJUSTMENT</td>
+                        <td colspan="{{ (isset($printType) && $printType === 'cat') ? 6 : 7 }}" class="text-right px-4">ADJUSTMENT</td>
                         <td class="text-right">{{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
                     </tr>
                     <tr style="background-color: #eee; font-weight: bold; font-size: 9px;">
-                        <td colspan="7" class="text-right px-4">TOTAL AKHIR</td>
+                        <td colspan="{{ (isset($printType) && $printType === 'cat') ? 6 : 7 }}" class="text-right px-4">TOTAL AKHIR</td>
                         <td class="text-right">{{ number_format($grandTotal + $pranota->adjustment, 0, ',', '.') }}</td>
                     </tr>
                     @endif
                 @else
-                    <tr><td colspan="8" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
+                    <tr><td colspan="{{ (isset($printType) && $printType === 'cat') ? 7 : 8 }}" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
                 @endif
             </tbody>
         </table>
