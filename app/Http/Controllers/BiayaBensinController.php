@@ -60,9 +60,14 @@ class BiayaBensinController extends Controller
             'km_akhir' => 'nullable|integer',
             'liter' => 'required|numeric',
             'biaya' => 'required|numeric',
+            'harga_per_liter' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
             'bukti_beli' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
+
+        if (empty($validated['harga_per_liter']) && $validated['liter'] > 0) {
+            $validated['harga_per_liter'] = round($validated['biaya'] / $validated['liter'], 2);
+        }
 
         if ($request->hasFile('bukti_beli')) {
             $file = $request->file('bukti_beli');
@@ -132,9 +137,14 @@ class BiayaBensinController extends Controller
             'km_akhir' => 'nullable|integer',
             'liter' => 'required|numeric',
             'biaya' => 'required|numeric',
+            'harga_per_liter' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
             'bukti_beli' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
+
+        if (empty($validated['harga_per_liter']) && $validated['liter'] > 0) {
+            $validated['harga_per_liter'] = round($validated['biaya'] / $validated['liter'], 2);
+        }
 
         if ($request->hasFile('bukti_beli')) {
             if ($item->bukti_beli && \Illuminate\Support\Facades\Storage::disk('public')->exists($item->bukti_beli)) {

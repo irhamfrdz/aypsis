@@ -16,6 +16,7 @@ class BiayaBensin extends Model
         'km_akhir',
         'liter',
         'biaya',
+        'harga_per_liter',
         'keterangan',
         'created_by',
         'bukti_beli',
@@ -28,6 +29,7 @@ class BiayaBensin extends Model
         'tanggal' => 'date',
         'liter' => 'decimal:2',
         'biaya' => 'decimal:2',
+        'harga_per_liter' => 'decimal:2',
         'approved_at' => 'datetime',
     ];
 

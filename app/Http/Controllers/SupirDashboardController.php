@@ -937,6 +937,10 @@ class SupirDashboardController extends Controller
         $validated['karyawan_id'] = $user->karyawan->id ?? null;
         $validated['created_by'] = $user->id;
         $validated['status'] = 'pending';
+        
+        if (!empty($validated['liter']) && $validated['liter'] > 0) {
+            $validated['harga_per_liter'] = round($validated['biaya'] / $validated['liter'], 2);
+        }
 
         $item = \App\Models\BiayaBensin::create($validated);
 
