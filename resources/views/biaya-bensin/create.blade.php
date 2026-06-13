@@ -48,7 +48,7 @@
                                     <option value="">Pilih Mobil...</option>
                                     @foreach($mobils as $mobil)
                                         <option value="{{ $mobil->id }}" {{ old('mobil_id') == $mobil->id ? 'selected' : '' }}>
-                                            {{ $mobil->nopol }} - {{ $mobil->merk }} {{ $mobil->tipe }}
+                                            {{ $mobil->nomor_polisi }} - {{ $mobil->kode_no }} ({{ $mobil->merek }} {{ $mobil->jenis }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -63,7 +63,7 @@
                                     <option value="">Pilih Supir...</option>
                                     @foreach($supirs as $supir)
                                         <option value="{{ $supir->id }}" {{ old('karyawan_id') == $supir->id ? 'selected' : '' }}>
-                                            {{ $supir->nama }}
+                                            {{ $supir->nama_panggilan ?: $supir->nama_lengkap }}
                                         </option>
                                     @endforeach
                                 </select>
