@@ -35,7 +35,16 @@ class BiayaBensinController extends Controller
         $mobils = Mobil::all();
         $supirs = Karyawan::where('divisi', 'LIKE', '%supir%')->orWhere('pekerjaan', 'LIKE', '%supir%')->get();
 
-        return view('biaya-bensin.create', compact('mobils', 'supirs'));
+        $lastEntry = BiayaBensin::where('created_by', Auth::id())
+            ->where('liter', '>', 0)
+            ->where('biaya', '>', 0)
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $lastHargaPerLiter = $lastEntry && $lastEntry->liter > 0 ? round($lastEntry->biaya / $lastEntry->liter, 2) : null;
+
+        return view('biaya-bensin.create', compact('mobils', 'supirs', 'lastHargaPerLiter'));
     }
 
     /**

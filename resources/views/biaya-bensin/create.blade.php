@@ -93,13 +93,21 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
                                 <label for="liter" class="block text-sm font-bold text-gray-700 mb-2">Volume <span class="text-red-500">*</span></label>
                                 <div class="relative">
                                     <input type="number" step="0.01" name="liter" id="liter" value="{{ old('liter') }}" required placeholder="0.00"
                                            class="block w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-gray-900">
                                     <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 font-bold">L</div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="harga_per_liter" class="block text-sm font-bold text-gray-700 mb-2">Harga per Liter</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 font-bold">Rp</div>
+                                    <input type="number" id="harga_per_liter" value="{{ $lastHargaPerLiter }}" placeholder="0"
+                                           class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all font-bold text-gray-900">
                                 </div>
                             </div>
                             <div>
@@ -190,6 +198,26 @@
             const mobilId = selectedOption.data('mobil-id');
             if (mobilId) {
                 $('#mobil_id').val(mobilId).trigger('change');
+            }
+        });
+
+        function calculateBiaya() {
+            const liter = parseFloat($('#liter').val()) || 0;
+            const harga = parseFloat($('#harga_per_liter').val()) || 0;
+            if (liter > 0 && harga > 0) {
+                $('#biaya').val(Math.round(liter * harga));
+            }
+        }
+
+        $('#liter, #harga_per_liter').on('input', function() {
+            calculateBiaya();
+        });
+
+        $('#biaya').on('input', function() {
+            const biaya = parseFloat($(this).val()) || 0;
+            const liter = parseFloat($('#liter').val()) || 0;
+            if (biaya > 0 && liter > 0) {
+                $('#harga_per_liter').val(Math.round((biaya / liter) * 100) / 100);
             }
         });
     });
