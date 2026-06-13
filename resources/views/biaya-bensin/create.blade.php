@@ -201,23 +201,39 @@
             }
         });
 
-        function calculateBiaya() {
-            const liter = parseFloat($('#liter').val()) || 0;
+        $('#liter').on('input', function() {
+            const liter = parseFloat($(this).val()) || 0;
             const harga = parseFloat($('#harga_per_liter').val()) || 0;
             if (liter > 0 && harga > 0) {
                 $('#biaya').val(Math.round(liter * harga));
             }
-        }
+        });
 
-        $('#liter, #harga_per_liter').on('input', function() {
-            calculateBiaya();
+        $('#harga_per_liter').on('input', function() {
+            const harga = parseFloat($(this).val()) || 0;
+            const liter = parseFloat($('#liter').val()) || 0;
+            const biaya = parseFloat($('#biaya').val()) || 0;
+            if (harga > 0) {
+                if (document.activeElement.id === 'harga_per_liter') {
+                    if (liter > 0) {
+                        $('#biaya').val(Math.round(liter * harga));
+                    } else if (biaya > 0) {
+                        $('#liter').val(Math.round((biaya / harga) * 100) / 100);
+                    }
+                }
+            }
         });
 
         $('#biaya').on('input', function() {
             const biaya = parseFloat($(this).val()) || 0;
+            const harga = parseFloat($('#harga_per_liter').val()) || 0;
             const liter = parseFloat($('#liter').val()) || 0;
-            if (biaya > 0 && liter > 0) {
-                $('#harga_per_liter').val(Math.round((biaya / liter) * 100) / 100);
+            if (biaya > 0) {
+                if (harga > 0) {
+                    $('#liter').val(Math.round((biaya / harga) * 100) / 100);
+                } else if (liter > 0) {
+                    $('#harga_per_liter').val(Math.round((biaya / liter) * 100) / 100);
+                }
             }
         });
     });
