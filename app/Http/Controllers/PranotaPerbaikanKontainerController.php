@@ -54,11 +54,12 @@ class PranotaPerbaikanKontainerController extends Controller
     /**
      * Print the specified pranota perbaikan kontainer.
      */
-    public function print($id)
+    public function print($id, Request $request)
     {
         $pranota = PranotaPerbaikanKontainer::findOrFail($id);
+        $printType = $request->query('type');
 
-        return view('pranota-perbaikan-kontainer.print', compact('pranota'));
+        return view('pranota-perbaikan-kontainer.print', compact('pranota', 'printType'));
     }
 
     /**

@@ -19,7 +19,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width={{ $currentPaper['width'] }}, initial-scale=1.0">
-    <title>PRANOTA PERBAIKAN KONTAINER - {{ $pranota->nomor_pranota }}</title>
+    <title>PRANOTA PERBAIKAN KONTAINER @if(isset($printType) && $printType === 'cat') (KHUSUS TAGIHAN CAT) @elseif(isset($printType) && $printType === 'perbaikan') (KHUSUS PERBAIKAN KONTAINER) @endif - {{ $pranota->nomor_pranota }}</title>
     <style>
         * {
             margin: 0;
@@ -211,7 +211,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>PRANOTA PERBAIKAN KONTAINER</h1>
+            <h1>PRANOTA PERBAIKAN KONTAINER @if(isset($printType) && $printType === 'cat') <br><span style="font-size: 11px; color: #555;">(KHUSUS TAGIHAN CAT)</span> @elseif(isset($printType) && $printType === 'perbaikan') <br><span style="font-size: 11px; color: #555;">(KHUSUS PERBAIKAN KONTAINER)</span> @endif</h1>
         </div>
 
         <!-- Info Section -->
@@ -264,7 +264,19 @@
                         $biayaRiil = floatval($item['biaya_riil'] ?? 0);
                         $estimasi = floatval($item['estimasi_biaya'] ?? 0);
                         $biayaCat = floatval($item['biaya_cat'] ?? 0);
-                        $biayaTerpakai = (($biayaRiil > 0) ? $biayaRiil : $estimasi) + $biayaCat;
+                        
+                        $biayaPerbaikanOnly = ($biayaRiil > 0) ? $biayaRiil : $estimasi;
+                        
+                        if (isset($printType) && $printType === 'cat') {
+                            if ($biayaCat <= 0) continue;
+                            $biayaTerpakai = $biayaCat;
+                        } elseif (isset($printType) && $printType === 'perbaikan') {
+                            if ($biayaPerbaikanOnly <= 0) continue;
+                            $biayaTerpakai = $biayaPerbaikanOnly;
+                        } else {
+                            $biayaTerpakai = $biayaPerbaikanOnly + $biayaCat;
+                        }
+                        
                         $grandTotal += $biayaTerpakai;
                     @endphp
                     <tr>
@@ -281,7 +293,7 @@
                                 <br><small style="color: blue;">(Pengecatan: {{ $item['jenis_cat'] === 'cat_full' ? 'Full' : 'Sebagian' }} oleh {{ $item['vendor_cat'] ?? '-' }} - Rp {{ number_format($biayaCat, 0, ',', '.') }})</small>
                             @endif
                         </td>
-                        <td class="text-right">{{ number_format($estimasi, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format((isset($printType) && $printType === 'cat') ? 0 : $estimasi, 0, ',', '.') }}</td>
                         <td class="text-right font-bold">{{ number_format($biayaTerpakai, 0, ',', '.') }}</td>
                     </tr>
                     @endforeach
@@ -289,7 +301,7 @@
                         <td colspan="7" class="text-right px-4">SUBTOTAL</td>
                         <td class="text-right">{{ number_format($grandTotal, 0, ',', '.') }}</td>
                     </tr>
-                    @if($pranota->adjustment != 0)
+                    @if(empty($printType) && $pranota->adjustment != 0)
                     <tr style="font-weight: bold;">
                         <td colspan="7" class="text-right px-4">ADJUSTMENT</td>
                         <td class="text-right">{{ number_format($pranota->adjustment, 0, ',', '.') }}</td>

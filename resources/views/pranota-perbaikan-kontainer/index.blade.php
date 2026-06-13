@@ -158,13 +158,25 @@
                                     <i class="fas fa-eye text-base"></i>
                                 </a>
                                 @can('pranota-perbaikan-kontainer-print')
-                                <a href="{{ route('pranota-perbaikan-kontainer.print', $pranota->id) }}" 
-                                   target="_blank"
-                                   class="text-green-600 hover:text-green-900 inline-flex items-center p-1" 
-                                   title="Cetak">
-                                    <i class="fas fa-print text-base"></i>
-                                </a>
-                                @endcan
+                                 <a href="{{ route('pranota-perbaikan-kontainer.print', $pranota->id) }}" 
+                                    target="_blank"
+                                    class="text-green-600 hover:text-green-900 inline-flex items-center p-1" 
+                                    title="Cetak Lengkap">
+                                     <i class="fas fa-print text-base"></i>
+                                 </a>
+                                 <a href="{{ route('pranota-perbaikan-kontainer.print', [$pranota->id, 'type' => 'cat']) }}" 
+                                    target="_blank"
+                                    class="text-teal-600 hover:text-teal-900 inline-flex items-center p-1" 
+                                    title="Cetak Khusus Cat Saja">
+                                     <i class="fas fa-paint-roller text-base"></i>
+                                 </a>
+                                 <a href="{{ route('pranota-perbaikan-kontainer.print', [$pranota->id, 'type' => 'perbaikan']) }}" 
+                                    target="_blank"
+                                    class="text-indigo-600 hover:text-indigo-900 inline-flex items-center p-1" 
+                                    title="Cetak Khusus Perbaikan Kontainer Saja">
+                                     <i class="fas fa-tools text-base"></i>
+                                 </a>
+                                 @endcan
                                 @can('pranota-perbaikan-kontainer-delete')
                                 <form action="{{ route('pranota-perbaikan-kontainer.destroy', $pranota->id) }}" 
                                       method="POST" 

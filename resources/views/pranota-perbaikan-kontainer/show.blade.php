@@ -24,7 +24,15 @@
                 @can('pranota-perbaikan-kontainer-print')
                 <a href="{{ route('pranota-perbaikan-kontainer.print', $pranota->id) }}" target="_blank"
                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm">
-                    <i class="fas fa-print mr-2"></i> Cetak Pranota
+                    <i class="fas fa-print mr-2"></i> Cetak Lengkap
+                </a>
+                <a href="{{ route('pranota-perbaikan-kontainer.print', [$pranota->id, 'type' => 'cat']) }}" target="_blank"
+                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 transition-colors shadow-sm">
+                    <i class="fas fa-paint-roller mr-2"></i> Cetak Cat Saja
+                </a>
+                <a href="{{ route('pranota-perbaikan-kontainer.print', [$pranota->id, 'type' => 'perbaikan']) }}" target="_blank"
+                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm">
+                    <i class="fas fa-tools mr-2"></i> Cetak Perbaikan Saja
                 </a>
                 @endcan
             </div>
