@@ -903,7 +903,22 @@ class SupirDashboardController extends Controller
         $mobil = \App\Models\Mobil::where('karyawan_id', $karyawanId)->first();
         $mobils = \App\Models\Mobil::all();
 
-        return view('supir.isi-bensin', compact('mobil', 'mobils', 'karyawanId'));
+        $lastEntry = \App\Models\BiayaBensin::where('created_by', $user->id)
+            ->where('liter', '>', 0)
+            ->where('biaya', '>', 0)
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $lastHargaPerLiter = $lastEntry && $lastEntry->liter > 0 ? round($lastEntry->biaya / $lastEntry->liter, 2) : null;
+
+        $lastNomorKartu = \App\Models\BiayaBensin::where('created_by', $user->id)
+            ->whereNotNull('nomor_kartu')
+            ->where('nomor_kartu', '!=', '')
+            ->orderBy('id', 'desc')
+            ->value('nomor_kartu');
+
+        return view('supir.isi-bensin', compact('mobil', 'mobils', 'karyawanId', 'lastHargaPerLiter', 'lastNomorKartu'));
     }
 
     /**
@@ -919,13 +934,19 @@ class SupirDashboardController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'mobil_id' => 'required|exists:mobils,id',
+            'nomor_kartu' => 'nullable|string|max:50',
             'km_awal' => 'nullable|integer',
             'km_akhir' => 'nullable|integer',
             'liter' => 'required|numeric',
             'biaya' => 'required|numeric',
+            'harga_per_liter' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
             'bukti_beli' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
+
+        if (empty($validated['harga_per_liter']) && $validated['liter'] > 0) {
+            $validated['harga_per_liter'] = round($validated['biaya'] / $validated['liter'], 2);
+        }
 
         if ($request->hasFile('bukti_beli')) {
             $file = $request->file('bukti_beli');
@@ -937,10 +958,6 @@ class SupirDashboardController extends Controller
         $validated['karyawan_id'] = $user->karyawan->id ?? null;
         $validated['created_by'] = $user->id;
         $validated['status'] = 'pending';
-        
-        if (!empty($validated['liter']) && $validated['liter'] > 0) {
-            $validated['harga_per_liter'] = round($validated['biaya'] / $validated['liter'], 2);
-        }
 
         $item = \App\Models\BiayaBensin::create($validated);
 

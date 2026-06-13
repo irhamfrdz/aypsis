@@ -89,6 +89,20 @@
                             </div>
                         </div>
 
+                        <!-- Nomor Kartu -->
+                        <div>
+                            <label for="nomor_kartu" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                                Nomor Kartu
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                                <input type="text" name="nomor_kartu" id="nomor_kartu" value="{{ old('nomor_kartu', $lastNomorKartu ?? '') }}" placeholder="Masukkan nomor kartu..."
+                                       class="w-full pl-12 pr-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-gray-900 font-bold text-sm transition-all">
+                            </div>
+                        </div>
+
                         <!-- KM Awal & Akhir -->
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -107,21 +121,37 @@
                             </div>
                         </div>
 
-                        <!-- Volume (L) & Biaya -->
-                        <div class="grid grid-cols-2 gap-4">
+                        <!-- Volume (L), Harga per Liter & Biaya -->
+                        <div class="grid grid-cols-3 gap-3">
                             <div>
                                 <label for="liter" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
-                                    Volume (Liter) <span class="text-red-500 font-bold">*</span>
+                                    Volume (L) <span class="text-red-500 font-bold">*</span>
                                 </label>
-                                <input type="number" step="0.01" name="liter" id="liter" value="{{ old('liter') }}" required placeholder="0.00"
-                                       class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-gray-900 font-bold text-sm transition-all">
+                                <div class="relative">
+                                    <input type="number" step="0.01" name="liter" id="liter" value="{{ old('liter') }}" required placeholder="0.00"
+                                           class="w-full pl-5 pr-8 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-gray-900 font-bold text-sm transition-all">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400 font-bold text-xs">L</div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="harga_per_liter" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
+                                    Harga/Liter
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 font-bold text-xs">Rp</div>
+                                    <input type="number" name="harga_per_liter" id="harga_per_liter" value="{{ old('harga_per_liter', $lastHargaPerLiter ?? '') }}" placeholder="0"
+                                           class="w-full pl-9 pr-3 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-gray-900 font-bold text-sm transition-all">
+                                </div>
                             </div>
                             <div>
                                 <label for="biaya" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">
-                                    Total Biaya (Rp) <span class="text-red-500 font-bold">*</span>
+                                    Total (Rp) <span class="text-red-500 font-bold">*</span>
                                 </label>
-                                <input type="number" name="biaya" id="biaya" value="{{ old('biaya') }}" required placeholder="0"
-                                       class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-gray-900 font-bold text-sm transition-all">
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-indigo-500 font-bold text-xs">Rp</div>
+                                    <input type="number" name="biaya" id="biaya" value="{{ old('biaya') }}" required placeholder="0"
+                                           class="w-full pl-9 pr-3 py-4 bg-indigo-50 border border-indigo-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 text-gray-900 font-bold text-sm transition-all">
+                                </div>
                             </div>
                         </div>
 
@@ -170,3 +200,49 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const literEl = document.getElementById('liter');
+        const hargaEl = document.getElementById('harga_per_liter');
+        const biayaEl = document.getElementById('biaya');
+
+        literEl.addEventListener('input', function() {
+            const liter = parseFloat(this.value) || 0;
+            const harga = parseFloat(hargaEl.value) || 0;
+            if (liter > 0 && harga > 0) {
+                biayaEl.value = Math.round(liter * harga);
+            }
+        });
+
+        hargaEl.addEventListener('input', function() {
+            const harga = parseFloat(this.value) || 0;
+            const liter = parseFloat(literEl.value) || 0;
+            const biaya = parseFloat(biayaEl.value) || 0;
+            if (harga > 0) {
+                if (document.activeElement === hargaEl) {
+                    if (liter > 0) {
+                        biayaEl.value = Math.round(liter * harga);
+                    } else if (biaya > 0) {
+                        literEl.value = Math.round((biaya / harga) * 100) / 100;
+                    }
+                }
+            }
+        });
+
+        biayaEl.addEventListener('input', function() {
+            const biaya = parseFloat(this.value) || 0;
+            const harga = parseFloat(hargaEl.value) || 0;
+            const liter = parseFloat(literEl.value) || 0;
+            if (biaya > 0) {
+                if (harga > 0) {
+                    literEl.value = Math.round((biaya / harga) * 100) / 100;
+                } else if (liter > 0) {
+                    hargaEl.value = Math.round((biaya / liter) * 100) / 100;
+                }
+            }
+        });
+    });
+</script>
+@endpush
