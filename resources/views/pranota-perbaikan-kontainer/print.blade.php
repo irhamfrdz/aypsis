@@ -273,11 +273,12 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">NO</th>
-                    <th style="width: 15%;">NO. PERBAIKAN</th>
-                    <th style="width: 13%;">NO. KONTAINER</th>
+                    <th style="width: 11%;">NO. PERBAIKAN</th>
+                    <th style="width: 11%;">TGL. PERBAIKAN</th>
+                    <th style="width: 12%;">NO. KONTAINER</th>
                     <th style="width: 12%;">UKURAN & TIPE</th>
-                    <th style="width: 15%;">BENGKEL</th>
-                    <th style="width: 17%;">{{ (isset($printType) && $printType === 'cat') ? 'KETERANGAN CAT' : 'KETERANGAN KERUSAKAN' }}</th>
+                    <th style="width: 12%;">BENGKEL</th>
+                    <th style="width: 14%;">{{ (isset($printType) && $printType === 'cat') ? 'KETERANGAN CAT' : 'KETERANGAN KERUSAKAN' }}</th>
                     @if(!isset($printType) || $printType !== 'cat')
                     <th style="width: 11%;">ESTIMASI</th>
                     <th style="width: 12%;">REALISASI</th>
@@ -308,10 +309,14 @@
                         }
                         
                         $grandTotal += $biayaTerpakai;
+                        
+                        $perbaikan = \App\Models\PerbaikanKontainer::find($item['id'] ?? null);
+                        $tanggalPerbaikan = $perbaikan && $perbaikan->tanggal_masuk ? $perbaikan->tanggal_masuk->format('d/m/Y') : '-';
                     @endphp
                     <tr>
                         <td class="text-center">{{ $i++ }}</td>
                         <td class="text-center font-bold">{{ $item['no_perbaikan'] ?? '-' }}</td>
+                        <td class="text-center">{{ $tanggalPerbaikan }}</td>
                         <td class="text-center">{{ $item['no_kontainer'] ?? '-' }}</td>
                         <td class="text-center">
                             {{ $item['ukuran'] ?? '' }}FT {{ $item['tipe'] ?? '' }}
@@ -321,7 +326,7 @@
                             @if(isset($printType) && $printType === 'cat')
                                 Pengecatan {{ (isset($item['jenis_cat']) && $item['jenis_cat'] === 'cat_full') ? 'Full' : 'Sebagian' }}
                             @else
-                                {{ $item['keterangan_kerusakan'] ?? (\App\Models\PerbaikanKontainer::find($item['id'] ?? null)->keterangan_kerusakan ?? '-') }}
+                                {{ $item['keterangan_kerusakan'] ?? ($perbaikan->keterangan_kerusakan ?? '-') }}
                                 @if(!empty($item['is_cat']) && $biayaCat > 0)
                                     <br><small style="color: blue;">(Pengecatan: {{ $item['jenis_cat'] === 'cat_full' ? 'Full' : 'Sebagian' }} oleh {{ $item['vendor_cat'] ?? '-' }} - Rp {{ number_format($biayaCat, 0, ',', '.') }})</small>
                                 @endif
@@ -334,21 +339,21 @@
                     </tr>
                     @endforeach
                     <tr style="background-color: #f9f9f9; font-weight: bold;">
-                        <td colspan="{{ (isset($printType) && $printType === 'cat') ? 6 : 7 }}" class="text-right px-4">SUBTOTAL</td>
+                        <td colspan="{{ (isset($printType) && $printType === 'cat') ? 7 : 8 }}" class="text-right px-4">SUBTOTAL</td>
                         <td class="text-right">{{ number_format($grandTotal, 0, ',', '.') }}</td>
                     </tr>
                     @if(empty($printType) && $pranota->adjustment != 0)
                     <tr style="font-weight: bold;">
-                        <td colspan="{{ (isset($printType) && $printType === 'cat') ? 6 : 7 }}" class="text-right px-4">ADJUSTMENT</td>
+                        <td colspan="{{ (isset($printType) && $printType === 'cat') ? 7 : 8 }}" class="text-right px-4">ADJUSTMENT</td>
                         <td class="text-right">{{ number_format($pranota->adjustment, 0, ',', '.') }}</td>
                     </tr>
                     <tr style="background-color: #eee; font-weight: bold; font-size: 9px;">
-                        <td colspan="{{ (isset($printType) && $printType === 'cat') ? 6 : 7 }}" class="text-right px-4">TOTAL AKHIR</td>
+                        <td colspan="{{ (isset($printType) && $printType === 'cat') ? 7 : 8 }}" class="text-right px-4">TOTAL AKHIR</td>
                         <td class="text-right">{{ number_format($grandTotal + $pranota->adjustment, 0, ',', '.') }}</td>
                     </tr>
                     @endif
                 @else
-                    <tr><td colspan="{{ (isset($printType) && $printType === 'cat') ? 7 : 8 }}" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
+                    <tr><td colspan="{{ (isset($printType) && $printType === 'cat') ? 8 : 9 }}" class="text-center" style="color: #999;">Tidak ada data item</td></tr>
                 @endif
             </tbody>
         </table>
