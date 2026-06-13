@@ -118,7 +118,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
         $manifestedTTs = \Illuminate\Support\Facades\DB::table('manifests')
             ->whereNotNull('nomor_tanda_terima')
             ->where('nomor_tanda_terima', '!=', '')
-            ->select('nomor_tanda_terima', 'nama_kapal', 'no_voyage', 'tanggal_berangkat')
+            ->select('nomor_tanda_terima', 'nama_kapal', 'no_voyage', 'tanggal_berangkat', 'nomor_bl', 'nomor_kontainer', 'no_seal', 'size_kontainer', 'tipe_kontainer')
             ->get()
             ->keyBy('nomor_tanda_terima');
 
@@ -173,9 +173,9 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     'tanggal' => $item->tanggal,
                     'no_tt' => $noTt,
                     'no_sj_pabrik' => $item->surat_jalan_pabrik,
-                    'no_kontainer' => $item->no_kontainer,
-                    'no_seal' => $item->no_seal,
-                    'size' => $item->size,
+                    'no_kontainer' => $manifest?->nomor_kontainer ?: $item->no_kontainer,
+                    'no_seal' => $manifest?->no_seal ?: $item->no_seal,
+                    'size' => $manifest?->size_kontainer ?: $item->size,
                     'pengirim' => $item->pengirim,
                     'shipper_address_raw' => $item->alamat_pengirim,
                     'penerima' => $item->penerima,
@@ -188,6 +188,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     'perincian_items' => $items,
                     'nama_kapal' => $manifest?->nama_kapal ?? null,
                     'no_voyage' => $manifest?->no_voyage ?? null,
+                    'bl_no' => $manifest?->nomor_bl ?? null,
+                    'tipe_kontainer' => $manifest?->tipe_kontainer ?? null,
                 ];
             });
         $data = $data->concat($ttStandard);
@@ -234,9 +236,9 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     'tanggal' => $item->tanggal_tanda_terima,
                     'no_tt' => $noTt,
                     'no_sj_pabrik' => $item->surat_jalan_pabrik,
-                    'no_kontainer' => $item->no_kontainer,
-                    'no_seal' => $item->no_seal,
-                    'size' => $item->size_kontainer,
+                    'no_kontainer' => $manifest?->nomor_kontainer ?: $item->no_kontainer,
+                    'no_seal' => $manifest?->no_seal ?: $item->no_seal,
+                    'size' => $manifest?->size_kontainer ?: $item->size_kontainer,
                     'pengirim' => $item->pengirim,
                     'shipper_address_raw' => $item->alamat_pengirim,
                     'penerima' => $item->penerima,
@@ -249,6 +251,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     'perincian_items' => $items,
                     'nama_kapal' => $manifest?->nama_kapal ?? null,
                     'no_voyage' => $manifest?->no_voyage ?? null,
+                    'bl_no' => $manifest?->nomor_bl ?? null,
+                    'tipe_kontainer' => $manifest?->tipe_kontainer ?? null,
                 ];
             });
         $data = $data->concat($ttTSJ);
@@ -294,9 +298,9 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     'tanggal' => $item->tanggal_tanda_terima,
                     'no_tt' => $noTt,
                     'no_sj_pabrik' => $item->surat_jalan_pabrik,
-                    'no_kontainer' => $item->nomor_kontainer,
-                    'no_seal' => $item->nomor_seal,
-                    'size' => $item->kontainerPivot->first()->size_kontainer ?? '-',
+                    'no_kontainer' => $manifest?->nomor_kontainer ?: $item->nomor_kontainer,
+                    'no_seal' => $manifest?->no_seal ?: $item->nomor_seal,
+                    'size' => $manifest?->size_kontainer ?: ($item->kontainerPivot->first()->size_kontainer ?? '-'),
                     'pengirim' => $item->nama_pengirim,
                     'shipper_address_raw' => $item->alamat_pengirim,
                     'penerima' => $item->nama_penerima,
@@ -309,6 +313,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     'perincian_items' => $items,
                     'nama_kapal' => $manifest?->nama_kapal ?? null,
                     'no_voyage' => $manifest?->no_voyage ?? null,
+                    'bl_no' => $manifest?->nomor_bl ?? null,
+                    'tipe_kontainer' => $manifest?->tipe_kontainer ?? null,
                 ];
             });
         $data = $data->concat($ttLCL);
@@ -330,6 +336,14 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
 
             // Add manifest status
             $item['naik_kapal'] = $manifestedTTs->has($item['no_tt']);
+
+            // Determine LCL
+            $item['is_lcl'] = ($item['source'] === 'LCL') || 
+                              (stripos($item['size'] ?? '', 'LCL') !== false) ||
+                              (! empty($item['tipe_kontainer']) && stripos($item['tipe_kontainer'], 'LCL') !== false);
+            // Determine Cargo
+            $item['is_cargo'] = (stripos($item['size'] ?? '', 'Cargo') !== false) ||
+                                (! empty($item['tipe_kontainer']) && stripos($item['tipe_kontainer'], 'Cargo') !== false);
 
             return $item;
         });
@@ -406,6 +420,32 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
             return 'empty_'.$key;
         });
 
+        // Sort grouped collection: LCL groups first, then FCL, then Cargo/empty last
+        $grouped = $grouped->sort(function ($a, $b) {
+            $isLclA = $a->contains('is_lcl', true);
+            $isLclB = $b->contains('is_lcl', true);
+
+            $isCargoA = $a->contains('is_cargo', true) || empty($a->first()['no_kontainer']) || $a->first()['no_kontainer'] === '-';
+            $isCargoB = $b->contains('is_cargo', true) || empty($b->first()['no_kontainer']) || $b->first()['no_kontainer'] === '-';
+
+            if ($isLclA && ! $isLclB) {
+                return -1; // a (LCL) comes first
+            }
+            if (! $isLclA && $isLclB) {
+                return 1; // b (LCL) comes first
+            }
+
+            if ($isCargoA && ! $isCargoB) {
+                return 1; // a (Cargo/empty) comes last
+            }
+            if (! $isCargoA && $isCargoB) {
+                return -1; // b (Cargo/empty) comes last
+            }
+
+            // Natural sort by container number if both are FCL or both are LCL
+            return strnatcasecmp($a->first()['no_kontainer'] ?? '', $b->first()['no_kontainer'] ?? '');
+        });
+
         $finalData = collect();
         $groupCounter = 1;
 
@@ -413,52 +453,115 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
             $firstItem = $items->first();
             $hasInfo = ! empty($firstItem['no_kontainer']) && $firstItem['no_kontainer'] != '-';
 
-            // Determine if LCL or Cargo
-            $isLcl = ($firstItem['source'] === 'LCL') || (stripos($firstItem['size'] ?? '', 'LCL') !== false);
-            $isCargo = (stripos($firstItem['size'] ?? '', 'Cargo') !== false);
+            // Check if this group represents an LCL container
+            $isLclGroup = $items->contains('is_lcl', true);
 
             $groupNumber = '';
-            // If the group has container info and is not cargo, assign it a group number
-            if ($hasInfo && ! $isCargo) {
+            if ($hasInfo && ! $firstItem['is_cargo']) {
                 $groupNumber = sprintf('%02d', $groupCounter);
                 $groupCounter++;
             }
 
-            $itemsCount = count($items);
-            foreach ($items as $idx => $item) {
-                $perincian = $item['perincian_items'] ?? [];
-                if (empty($perincian)) {
-                    $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
-                }
+            if ($isLclGroup && $hasInfo) {
+                // Calculate LCL total weight and volume
+                $totalWeight = $items->sum(function ($item) {
+                    return collect($item['perincian_items'])->sum('weight');
+                });
+                $totalVolume = $items->sum(function ($item) {
+                    return collect($item['perincian_items'])->sum('meass');
+                });
 
-                // Determine if LCL for this specific item
-                $itemIsLcl = ($item['source'] === 'LCL') || (stripos($item['size'] ?? '', 'LCL') !== false);
+                // 1. Output LCL Container Header Row
+                $headerRow = $firstItem;
+                $headerRow['type'] = 'lcl_container_header';
+                $headerRow['group_number'] = $groupNumber;
+                $headerRow['p_qty'] = '';
+                $headerRow['p_satuan'] = '';
+                $headerRow['p_nama'] = 'General cargo';
+                $headerRow['p_weight'] = $totalWeight;
+                $headerRow['p_meass'] = $totalVolume;
+                $headerRow['pengirim'] = 'Pt. Alexindo Yakinprima - Jakarta';
+                $headerRow['s_address'] = '-';
 
-                foreach ($perincian as $pIdx => $pItem) {
-                    $row = $item;
-                    $row['type'] = 'item';
-                    $row['is_lcl'] = $itemIsLcl;
-                    $row['is_cargo'] = (stripos($item['size'] ?? '', 'Cargo') !== false);
+                $finalData->push($headerRow);
 
-                    // Group-level details are only written on the first row of the group
-                    $isFirstOfGroup = ($idx === 0 && $pIdx === 0);
-                    if ($isFirstOfGroup) {
-                        $row['group_number'] = $groupNumber;
-                        $row['show_group_fields'] = true;
-                        $row['group_count'] = $itemsCount;
-                    } else {
-                        $row['group_number'] = '';
-                        $row['show_group_fields'] = false;
-                        $row['group_count'] = null;
+                // 2. Output LCL Manifest Rows
+                foreach ($items as $idx => $item) {
+                    $perincian = $item['perincian_items'] ?? [];
+                    if (empty($perincian)) {
+                        $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
                     }
 
-                    $row['p_qty'] = $pItem['qty'];
-                    $row['p_satuan'] = $pItem['satuan'];
-                    $row['p_nama'] = $pItem['nama'];
-                    $row['p_weight'] = $pItem['weight'];
-                    $row['p_meass'] = $pItem['meass'];
+                    // Condense perincian details into 1 row
+                    if (count($perincian) > 1) {
+                        $pItem = [
+                            'qty' => implode("\n", array_column($perincian, 'qty')),
+                            'satuan' => implode("\n", array_column($perincian, 'satuan')),
+                            'nama' => implode("\n", array_column($perincian, 'nama')),
+                            'weight' => implode("\n", array_column($perincian, 'weight')),
+                            'meass' => implode("\n", array_column($perincian, 'meass')),
+                        ];
+                        $perincian = [$pItem];
+                    }
 
-                    $finalData->push($row);
+                    foreach ($perincian as $pItem) {
+                        $row = $item;
+                        $row['type'] = 'lcl_manifest_row';
+                        $row['group_number'] = $groupNumber.chr(65 + $idx); // e.g., 01A, 01B...
+
+                        $row['p_qty'] = $pItem['qty'];
+                        $row['p_satuan'] = $pItem['satuan'];
+                        $row['p_nama'] = $pItem['nama'];
+                        $row['p_weight'] = $pItem['weight'];
+                        $row['p_meass'] = $pItem['meass'];
+
+                        $finalData->push($row);
+                    }
+                }
+            } else {
+                // FCL or Cargo (Normal)
+                $itemsCount = count($items);
+                foreach ($items as $idx => $item) {
+                    $perincian = $item['perincian_items'] ?? [];
+                    if (empty($perincian)) {
+                        $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
+                    }
+
+                    // Condense perincian details into 1 row
+                    if (count($perincian) > 1) {
+                        $pItem = [
+                            'qty' => implode("\n", array_column($perincian, 'qty')),
+                            'satuan' => implode("\n", array_column($perincian, 'satuan')),
+                            'nama' => implode("\n", array_column($perincian, 'nama')),
+                            'weight' => implode("\n", array_column($perincian, 'weight')),
+                            'meass' => implode("\n", array_column($perincian, 'meass')),
+                        ];
+                        $perincian = [$pItem];
+                    }
+
+                    foreach ($perincian as $pIdx => $pItem) {
+                        $row = $item;
+                        $row['type'] = 'item';
+
+                        $isFirstOfGroup = ($idx === 0 && $pIdx === 0);
+                        if ($isFirstOfGroup) {
+                            $row['group_number'] = $groupNumber;
+                            $row['show_group_fields'] = true;
+                            $row['group_count'] = $itemsCount;
+                        } else {
+                            $row['group_number'] = '';
+                            $row['show_group_fields'] = false;
+                            $row['group_count'] = null;
+                        }
+
+                        $row['p_qty'] = $pItem['qty'];
+                        $row['p_satuan'] = $pItem['satuan'];
+                        $row['p_nama'] = $pItem['nama'];
+                        $row['p_weight'] = $pItem['weight'];
+                        $row['p_meass'] = $pItem['meass'];
+
+                        $finalData->push($row);
+                    }
                 }
             }
         }
@@ -525,56 +628,108 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
             return $arr;
         }
 
-        $formattedDate = ! empty($row['tanggal'])
-            ? (is_string($row['tanggal']) ? Carbon::parse($row['tanggal'])->format('d/m/Y') : $row['tanggal']->format('d/m/Y'))
-            : '';
-
-        $noKontainer = $row['no_kontainer'];
-        $noSeal = $row['no_seal'];
+        $isLclManifestRow = ($row['type'] === 'lcl_manifest_row');
+        $noKontainer = $isLclManifestRow ? '' : $row['no_kontainer'];
+        $noSeal = $isLclManifestRow ? '' : $row['no_seal'];
         $size = $row['size'] ?: '20';
 
         $isCargo = $row['is_cargo'];
-        $containerQty = $isCargo ? '' : 1;
-        $containerUnit = $isCargo ? '' : 'Unit';
-        $containerDesc = $isCargo ? '' : "Container {$size} feet stc :";
+        $containerQty = ($isCargo || $isLclManifestRow) ? '' : 1;
+        $containerUnit = ($isCargo || $isLclManifestRow) ? '' : 'Unit';
+        $containerDesc = ($isCargo || $isLclManifestRow) ? '' : "Container {$size} feet stc :";
 
-        $shipperName = $row['pengirim'];
-        $shipperAddress = $row['s_address'];
-
-        $sLookup = $this->penerimaLookup[strtoupper(trim($row['pengirim']))] ?? null;
-        $shipperNpwp = $sLookup['npwp'] ?? '-';
-
-        $consigneeNpwp = $row['p_npwp'];
-        $consigneeName = $row['penerima'];
-        $consigneeAddress = $row['p_address'];
-
-        $notifyName = $row['penerima'];
-        $notifyAddress = $row['p_address'];
-        $notifyNpwp = $consigneeNpwp;
-
-        $deliveryAddress = trim($consigneeName).'    '.trim($consigneeAddress);
-        if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {
-            $deliveryAddress .= ' Telp.'.$row['p_cp'];
-        }
-
+        $blNo = '';
+        $hsCode = '';
+        $shipperName = '';
+        $shipperAddress = '';
+        $shipperNpwp = '';
+        $consigneeName = '';
+        $consigneeAddress = '';
+        $consigneeNpwp = '';
+        $notifyName = '';
+        $notifyAddress = '';
+        $notifyNpwp = '';
+        $deliveryAddress = '';
         $groupCount = '';
         $groupUnit = '';
         $groupDesc = '';
 
-        if (! empty($row['show_group_fields'])) {
-            $groupCount = $row['group_count'];
+        if ($row['type'] === 'lcl_container_header') {
+            $blNo = $row['group_number'];
+            $shipperName = $row['pengirim'];
+            $shipperAddress = $row['s_address'];
+            $shipperNpwp = '-';
+            $consigneeName = '';
+            $consigneeAddress = '';
+            $consigneeNpwp = '-';
+            $notifyName = '';
+            $notifyAddress = '';
+            $notifyNpwp = '-';
+            $deliveryAddress = '';
+            $groupCount = 1;
             $groupUnit = 'Unit';
-            $groupDesc = "Container {$size} feet / FCL  (Kantor)";
+            $groupDesc = "Container {$size} feet / LCL  (Kantor)";
+        } elseif ($row['type'] === 'lcl_manifest_row') {
+            $blNo = $row['bl_no'] ?: $row['group_number'];
+            $hsCode = '';
+
+            $shipperName = $row['pengirim'];
+            $shipperAddress = $row['s_address'];
+            $sLookup = $this->penerimaLookup[strtoupper(trim($row['pengirim']))] ?? null;
+            $shipperNpwp = $sLookup['npwp'] ?? '-';
+
+            $consigneeNpwp = $row['p_npwp'];
+            $consigneeName = $row['penerima'];
+            $consigneeAddress = $row['p_address'];
+
+            $notifyName = $row['penerima'];
+            $notifyAddress = $row['p_address'];
+            $notifyNpwp = $consigneeNpwp;
+
+            $deliveryAddress = trim($consigneeName).'    '.trim($consigneeAddress);
+            if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {
+                $deliveryAddress .= ' Telp.'.$row['p_cp'];
+            }
+        } else {
+            $shipperName = $row['pengirim'];
+            $shipperAddress = $row['s_address'];
+
+            $sLookup = $this->penerimaLookup[strtoupper(trim($row['pengirim']))] ?? null;
+            $shipperNpwp = $sLookup['npwp'] ?? '-';
+
+            $consigneeNpwp = $row['p_npwp'];
+            $consigneeName = $row['penerima'];
+            $consigneeAddress = $row['p_address'];
+
+            $notifyName = $row['penerima'];
+            $notifyAddress = $row['p_address'];
+            $notifyNpwp = $consigneeNpwp;
+
+            $deliveryAddress = trim($consigneeName).'    '.trim($consigneeAddress);
+            if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {
+                $deliveryAddress .= ' Telp.'.$row['p_cp'];
+            }
+
+            if (! empty($row['show_group_fields'])) {
+                $blNo = $row['bl_no'];
+                $groupCount = $row['group_count'];
+                $groupUnit = 'Unit';
+                $groupDesc = "Container {$size} feet / FCL  (Kantor)";
+            }
         }
+
+        $formattedDate = ! empty($row['tanggal'])
+            ? (is_string($row['tanggal']) ? Carbon::parse($row['tanggal'])->format('d/m/Y') : $row['tanggal']->format('d/m/Y'))
+            : '';
 
         return [
             '', // A: Spacer
-            '', // B: B/L NO. (Left empty per user request)
-            '', // C: HS CODE (Left empty per user request)
+            $blNo, // B: B/L NO.
+            $hsCode, // C: HS CODE
             $noKontainer, // D: MARK AND NUMBERS
             $noSeal, // E: SEAL NO.
-            $containerQty, // F: Container Qty (1)
-            $containerUnit, // G: Container Satuan ('Unit')
+            $containerQty, // F: Container Qty
+            $containerUnit, // G: Container Satuan
             $containerDesc, // H: Container Description
             $row['p_qty'], // I: Manifest Qty
             $row['p_satuan'], // J: Manifest Satuan
