@@ -62,7 +62,7 @@
                                 <select name="karyawan_id" id="karyawan_id" required class="select2 block w-full">
                                     <option value="">Pilih Supir...</option>
                                     @foreach($supirs as $supir)
-                                        <option value="{{ $supir->id }}" {{ old('karyawan_id') == $supir->id ? 'selected' : '' }}>
+                                        <option value="{{ $supir->id }}" data-mobil-id="{{ $mobils->where('karyawan_id', $supir->id)->first()?->id ?? '' }}" {{ old('karyawan_id') == $supir->id ? 'selected' : '' }}>
                                             {{ $supir->nama_panggilan ?: $supir->nama_lengkap }}
                                         </option>
                                     @endforeach
@@ -176,6 +176,14 @@
     $(document).ready(function() {
         $('.select2').select2({
             width: '100%'
+        });
+
+        $('#karyawan_id').on('change', function() {
+            const selectedOption = $(this).find('option:selected');
+            const mobilId = selectedOption.data('mobil-id');
+            if (mobilId) {
+                $('#mobil_id').val(mobilId).trigger('change');
+            }
         });
     });
 </script>
