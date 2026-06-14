@@ -139,6 +139,17 @@ return [
                 'pembelian-bbm-batam-delete' => 'Hapus Pembelian BBM Batam',
             ],
         ],
+        'master-kartu-bensin-batam' => [
+            'name' => 'Master Kartu Bensin Batam',
+            'description' => 'Menu master kartu bensin Batam',
+            'required' => true,
+            'sub_modules' => [
+                'master-kartu-bensin-batam-view' => 'View Kartu Bensin Batam',
+                'master-kartu-bensin-batam-create' => 'Buat Kartu Bensin Batam',
+                'master-kartu-bensin-batam-edit' => 'Edit Kartu Bensin Batam',
+                'master-kartu-bensin-batam-delete' => 'Hapus Kartu Bensin Batam',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
@@ -180,5 +191,8 @@ return [
 
         // Pembelian BBM Batam - butuh pembelian-bbm-batam-view
         'pembelian-bbm-batam' => ['pembelian-bbm-batam-view'],
+
+        // Master Kartu Bensin Batam - butuh master-kartu-bensin-batam-view
+        'master-kartu-bensin-batam' => ['master-kartu-bensin-batam-view'],
     ],
 ];

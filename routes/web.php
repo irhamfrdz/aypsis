@@ -2091,6 +2091,19 @@ Route::middleware([
                 'destroy' => 'can:pembelian-bbm-batam-delete',
             ]);
 
+        // 💳 Master Kartu Bensin Batam with permissions
+        Route::resource('master-kartu-bensin-batam', \App\Http\Controllers\MasterKartuBensinBatamController::class)
+            ->names('master-kartu-bensin-batam')
+            ->middleware([
+                'index' => 'can:master-kartu-bensin-batam-view',
+                'show' => 'can:master-kartu-bensin-batam-view',
+                'create' => 'can:master-kartu-bensin-batam-create',
+                'store' => 'can:master-kartu-bensin-batam-create',
+                'edit' => 'can:master-kartu-bensin-batam-edit',
+                'update' => 'can:master-kartu-bensin-batam-edit',
+                'destroy' => 'can:master-kartu-bensin-batam-delete',
+            ]);
+
         // ⚓ Master Pelabuhan (Port Master) Management with permissions
         Route::resource('master-pelabuhan', \App\Http\Controllers\MasterPelabuhanController::class)
             ->names([
