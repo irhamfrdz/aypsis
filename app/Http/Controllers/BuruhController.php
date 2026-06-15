@@ -26,7 +26,7 @@ class BuruhController extends Controller
             });
         }
 
-        $buruhs = $query->orderBy('nama', 'asc')->paginate(20);
+        $buruhs = $query->orderBy('nik', 'asc')->paginate(20);
 
         return view('buruh.index', compact('buruhs'));
     }
