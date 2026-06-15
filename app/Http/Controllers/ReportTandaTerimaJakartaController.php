@@ -210,6 +210,26 @@ class ReportTandaTerimaJakartaController extends Controller
                 return -1;
             }
 
+            // If both are LCL, sort by container number
+            if ($isLclA && $isLclB) {
+                return strnatcasecmp($a->first()['no_kontainer'] ?? '', $b->first()['no_kontainer'] ?? '');
+            }
+
+            // For FCL and Cargo, sort by pengirim and penerima so same shipper/consignee are adjacent
+            $pengirimA = trim($a->first()['pengirim'] ?? '');
+            $penerimaA = trim($a->first()['penerima'] ?? '');
+            $pengirimB = trim($b->first()['pengirim'] ?? '');
+            $penerimaB = trim($b->first()['penerima'] ?? '');
+
+            $compPengirim = strcasecmp($pengirimA, $pengirimB);
+            if ($compPengirim !== 0) {
+                return $compPengirim;
+            }
+            $compPenerima = strcasecmp($penerimaA, $penerimaB);
+            if ($compPenerima !== 0) {
+                return $compPenerima;
+            }
+
             return strnatcasecmp($a->first()['no_kontainer'] ?? '', $b->first()['no_kontainer'] ?? '');
         });
 

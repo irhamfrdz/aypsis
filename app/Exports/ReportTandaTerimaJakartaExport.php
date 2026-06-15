@@ -449,7 +449,26 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                 return -1; // b (Cargo/empty) comes last
             }
 
-            // Natural sort by container number if both are FCL or both are LCL
+            // If both are LCL, sort by container number
+            if ($isLclA && $isLclB) {
+                return strnatcasecmp($a->first()['no_kontainer'] ?? '', $b->first()['no_kontainer'] ?? '');
+            }
+
+            // For FCL and Cargo, sort by pengirim and penerima so same shipper/consignee are adjacent
+            $pengirimA = trim($a->first()['pengirim'] ?? '');
+            $penerimaA = trim($a->first()['penerima'] ?? '');
+            $pengirimB = trim($b->first()['pengirim'] ?? '');
+            $penerimaB = trim($b->first()['penerima'] ?? '');
+
+            $compPengirim = strcasecmp($pengirimA, $pengirimB);
+            if ($compPengirim !== 0) {
+                return $compPengirim;
+            }
+            $compPenerima = strcasecmp($penerimaA, $penerimaB);
+            if ($compPenerima !== 0) {
+                return $compPenerima;
+            }
+
             return strnatcasecmp($a->first()['no_kontainer'] ?? '', $b->first()['no_kontainer'] ?? '');
         });
 
