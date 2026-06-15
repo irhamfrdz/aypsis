@@ -417,10 +417,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                 return $item['no_kontainer'].'|'.$seal;
             }
 
-            $pengirim = trim($item['pengirim'] ?? '');
-            $penerima = trim($item['penerima'] ?? '');
-
-            return 'empty_'.$pengirim.'|'.$penerima;
+            return 'empty_'.$key;
         });
 
         // Sort grouped collection: LCL groups first, then FCL, then Cargo/empty last
@@ -488,13 +485,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
 
                 $finalData->push($headerRow);
 
-                // Group LCL items by pengirim & penerima to make identical ones adjacent
-                $lclItems = $items->groupBy(function ($item) {
-                    return trim($item['pengirim'] ?? '').'|'.trim($item['penerima'] ?? '');
-                })->collapse();
-
                 // 2. Output LCL Manifest Rows
-                foreach ($lclItems as $idx => $item) {
+                foreach ($items as $idx => $item) {
                     $perincian = $item['perincian_items'] ?? [];
                     if (empty($perincian)) {
                         $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
@@ -527,14 +519,9 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     }
                 }
             } else {
-                // Group normal items by pengirim & penerima to make identical ones adjacent
-                $normalItems = $items->groupBy(function ($item) {
-                    return trim($item['pengirim'] ?? '').'|'.trim($item['penerima'] ?? '');
-                })->collapse();
-
                 // FCL or Cargo (Normal)
-                $itemsCount = count($normalItems);
-                foreach ($normalItems as $idx => $item) {
+                $itemsCount = count($items);
+                foreach ($items as $idx => $item) {
                     $perincian = $item['perincian_items'] ?? [];
                     if (empty($perincian)) {
                         $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
