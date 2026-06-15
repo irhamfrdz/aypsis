@@ -87,19 +87,7 @@
                     </select>
                 </div>
 
-                <!-- Supir / Karyawan -->
-                <div>
-                    <label for="karyawan_id" class="block text-sm font-semibold text-gray-700 mb-2">Hubungkan Supir (Opsional)</label>
-                    <select name="karyawan_id" id="karyawan_id"
-                            class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        <option value="">-- Pilih Supir --</option>
-                        @foreach($karyawans as $karyawan)
-                        <option value="{{ $karyawan->id }}" {{ old('karyawan_id') == $karyawan->id ? 'selected' : '' }}>
-                            {{ $karyawan->nama_lengkap }} @if($karyawan->nik) ({{ $karyawan->nik }}) @endif
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
+
 
                 <!-- Keterangan -->
                 <div class="md:col-span-2">

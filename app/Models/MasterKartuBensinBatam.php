@@ -17,7 +17,6 @@ class MasterKartuBensinBatam extends Model
         'nama_kartu',
         'provider',
         'mobil_id',
-        'karyawan_id',
         'status',
         'saldo',
         'keterangan',
@@ -40,11 +39,6 @@ class MasterKartuBensinBatam extends Model
     public function mobil()
     {
         return $this->belongsTo(Mobil::class, 'mobil_id');
-    }
-
-    public function karyawan()
-    {
-        return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
 
     public function createdBy()

@@ -67,7 +67,7 @@
                             <i class="fas fa-search"></i>
                         </span>
                         <input type="text" name="search" value="{{ request('search') }}"
-                               placeholder="Cari nomor kartu, nama, provider, supir, nopol..."
+                               placeholder="Cari nomor kartu, nama, provider, nopol..."
                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
                     </div>
                 </div>
@@ -110,7 +110,6 @@
                         <th class="px-6 py-4">Nama Kartu</th>
                         <th class="px-6 py-4">Provider</th>
                         <th class="px-6 py-4">Kendaraan (No Polisi)</th>
-                        <th class="px-6 py-4">Supir / Driver</th>
                         <th class="px-6 py-4">Saldo</th>
                         <th class="px-6 py-4">Status</th>
                         <th class="px-6 py-4">Keterangan</th>
@@ -127,15 +126,6 @@
                             @if($item->mobil)
                             <span class="px-2.5 py-1 bg-gray-100 text-gray-800 rounded-md font-semibold text-xs border border-gray-200">
                                 {{ $item->mobil->nomor_polisi }}
-                            </span>
-                            @else
-                            <span class="text-gray-400">-</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4">
-                            @if($item->karyawan)
-                            <span class="font-medium text-gray-800">
-                                {{ $item->karyawan->nama_lengkap }}
                             </span>
                             @else
                             <span class="text-gray-400">-</span>
@@ -177,7 +167,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="px-6 py-10 text-center text-gray-500">
+                        <td colspan="8" class="px-6 py-10 text-center text-gray-500">
                             <i class="fas fa-folder-open text-3xl mb-3 block text-gray-300"></i>
                             Tidak ada data kartu bensin Batam ditemukan.
                         </td>

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Karyawan;
 use App\Models\MasterKartuBensinBatam;
 use App\Models\Mobil;
 use Illuminate\Http\Request;
@@ -14,7 +13,7 @@ class MasterKartuBensinBatamController extends Controller
      */
     public function index(Request $request)
     {
-        $query = MasterKartuBensinBatam::with(['mobil', 'karyawan', 'createdBy', 'updatedBy']);
+        $query = MasterKartuBensinBatam::with(['mobil', 'createdBy', 'updatedBy']);
 
         // Search filter
         if ($request->has('search') && ! empty($request->search)) {
@@ -26,10 +25,6 @@ class MasterKartuBensinBatamController extends Controller
                     ->orWhere('keterangan', 'like', "%{$search}%")
                     ->orWhereHas('mobil', function ($mq) use ($search) {
                         $mq->where('nomor_polisi', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('karyawan', function ($kq) use ($search) {
-                        $kq->where('nama_lengkap', 'like', "%{$search}%")
-                            ->orWhere('nama_panggilan', 'like', "%{$search}%");
                     });
             });
         }
@@ -56,9 +51,8 @@ class MasterKartuBensinBatamController extends Controller
     public function create()
     {
         $mobils = Mobil::orderBy('nomor_polisi')->get();
-        $karyawans = Karyawan::orderBy('nama_lengkap')->get();
 
-        return view('master-kartu-bensin-batam.create', compact('mobils', 'karyawans'));
+        return view('master-kartu-bensin-batam.create', compact('mobils'));
     }
 
     /**
@@ -71,7 +65,6 @@ class MasterKartuBensinBatamController extends Controller
             'nama_kartu' => 'required|string|max:255',
             'provider' => 'required|string|max:255',
             'mobil_id' => 'nullable|exists:mobils,id',
-            'karyawan_id' => 'nullable|exists:karyawans,id',
             'status' => 'required|in:aktif,tidak_aktif',
             'saldo' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
@@ -93,9 +86,8 @@ class MasterKartuBensinBatamController extends Controller
     {
         $item = MasterKartuBensinBatam::findOrFail($id);
         $mobils = Mobil::orderBy('nomor_polisi')->get();
-        $karyawans = Karyawan::orderBy('nama_lengkap')->get();
 
-        return view('master-kartu-bensin-batam.edit', compact('item', 'mobils', 'karyawans'));
+        return view('master-kartu-bensin-batam.edit', compact('item', 'mobils'));
     }
 
     /**
@@ -110,7 +102,6 @@ class MasterKartuBensinBatamController extends Controller
             'nama_kartu' => 'required|string|max:255',
             'provider' => 'required|string|max:255',
             'mobil_id' => 'nullable|exists:mobils,id',
-            'karyawan_id' => 'nullable|exists:karyawans,id',
             'status' => 'required|in:aktif,tidak_aktif',
             'saldo' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',

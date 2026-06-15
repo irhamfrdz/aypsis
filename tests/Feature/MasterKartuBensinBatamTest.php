@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Karyawan;
 use App\Models\MasterKartuBensinBatam;
 use App\Models\Mobil;
 use App\Models\User;
@@ -63,14 +62,12 @@ class MasterKartuBensinBatamTest extends TestCase
         $this->actingAs($user);
 
         $mobil = Mobil::factory()->create();
-        $karyawan = Karyawan::factory()->create();
 
         $data = [
             'nomor_kartu' => '1234567890',
             'nama_kartu' => 'Kartu Test Batam',
             'provider' => 'Pertamina Brizzi',
             'mobil_id' => $mobil->id,
-            'karyawan_id' => $karyawan->id,
             'status' => 'aktif',
             'saldo' => 150000,
             'keterangan' => 'Kartu bbm uji coba',
