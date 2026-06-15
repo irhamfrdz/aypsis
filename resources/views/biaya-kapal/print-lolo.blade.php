@@ -384,7 +384,7 @@
                             @endif
                             @if($detail->pph > 0)
                             <div class="rincian-item">
-                                <span>PPH (REIMBURSE):</span>
+                                <span>PPH (2%):</span>
                                 <span>{{ number_format($detail->pph, 0, ',', '.') }}</span>
                             </div>
                             @endif
