@@ -195,6 +195,15 @@
                                         <i class="fas fa-eye text-xs"></i>
                                     </a>
                                     @endcan
+
+                                    @if($biaya->jenis_biaya === 'KB024')
+                                    <a href="{{ route('biaya-kapal.export-buruh', $biaya->id) }}"
+                                       class="inline-flex items-center px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded transition duration-150"
+                                       title="Download Excel"
+                                       target="_blank">
+                                        <i class="fas fa-file-excel text-xs"></i>
+                                    </a>
+                                    @endif
                                     
                                     @can('biaya-kapal-view')
                                         @if($biaya->meratusDetails->count() > 0)

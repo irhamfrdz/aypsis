@@ -1858,6 +1858,10 @@ Route::middleware([
             ->name('biaya-kapal.print-tanto')
             ->middleware('can:biaya-kapal-view');
 
+        Route::get('biaya-kapal/{biayaKapal}/export-buruh', [\App\Http\Controllers\BiayaKapalController::class, 'exportBuruh'])
+            ->name('biaya-kapal.export-buruh')
+            ->middleware('can:biaya-kapal-view');
+
         Route::get('biaya-kapal', [\App\Http\Controllers\BiayaKapalController::class, 'index'])
             ->name('biaya-kapal.index')
             ->middleware('can:biaya-kapal-view');

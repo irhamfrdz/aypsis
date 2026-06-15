@@ -5149,4 +5149,25 @@ class BiayaKapalController extends Controller
 
         return (float) $value;
     }
+
+    /**
+     * Export Biaya Buruh (KB024) to Excel.
+     */
+    public function exportBuruh($id)
+    {
+        $biayaKapal = BiayaKapal::with([
+            'klasifikasiBiaya',
+            'barangDetails.pricelistBuruh',
+            'tenagaKerjaDetails.buruh',
+            'bank',
+        ])->findOrFail($id);
+
+        if ($biayaKapal->jenis_biaya !== 'KB024') {
+            return redirect()->back()->with('error', 'Ekspor Excel hanya didukung untuk jenis Biaya Buruh.');
+        }
+
+        $filename = 'biaya-buruh-'.str_slug($biayaKapal->nomor_invoice).'.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\BiayaBuruhExport($biayaKapal), $filename);
+    }
 }
