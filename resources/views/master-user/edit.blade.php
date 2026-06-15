@@ -4215,6 +4215,21 @@
                 const searchInput = document.getElementById('permission_search');
                 if (!searchInput) return;
 
+                function getTextElement(row) {
+                    // Try to find div.text-sm first (new style submodule/row)
+                    const divText = row.querySelector('td:first-child div.text-sm') || row.querySelector('.submodule div.text-sm');
+                    if (divText && divText.textContent.trim() !== '') return divText;
+                    
+                    // Try to find the span containing text (old style submodule/row)
+                    const spans = row.querySelectorAll('td:first-child span, .submodule span');
+                    for (const span of spans) {
+                        if (span.textContent.trim() !== '' && !span.classList.contains('text-sm') && !span.classList.contains('rounded-full')) {
+                            return span;
+                        }
+                    }
+                    return null;
+                }
+
                 searchInput.addEventListener('input', function() {
                     const query = this.value.toLowerCase().trim();
                     const moduleRows = document.querySelectorAll('.module-row');
@@ -4229,12 +4244,12 @@
                         });
                         submoduleRows.forEach(row => {
                             row.style.display = (row.classList.contains('visible') ? 'table-row' : 'none');
-                            const textElem = row.querySelector('.submodule span:not(.text-sm)') || row.querySelector('.submodule div.text-sm');
+                            const textElem = getTextElement(row);
                             if (textElem) textElem.innerHTML = textElem.textContent;
                         });
                         singleRows.forEach(row => {
                             row.style.display = '';
-                            const span = row.querySelector('td:first-child span:not(.text-sm)') || row.querySelector('td:first-child div.text-sm');
+                            const span = getTextElement(row);
                             if (span) span.innerHTML = span.textContent;
                         });
                         return;
@@ -4244,7 +4259,7 @@
                     const matchedSubmodules = new Set();
 
                     submoduleRows.forEach(row => {
-                        const textElement = row.querySelector('.submodule span:not(.text-sm)') || row.querySelector('.submodule div.text-sm');
+                        const textElement = getTextElement(row);
                         if (!textElement) return;
                         const text = textElement.textContent.toLowerCase();
                         if (text.includes(query)) {
@@ -4285,7 +4300,7 @@
                     });
 
                     singleRows.forEach(row => {
-                        const textElement = row.querySelector('td:first-child span:not(.text-sm)') || row.querySelector('td:first-child div.text-sm');
+                        const textElement = getTextElement(row);
                         if (textElement) {
                             const text = textElement.textContent.toLowerCase();
                             if (text.includes(query)) {
