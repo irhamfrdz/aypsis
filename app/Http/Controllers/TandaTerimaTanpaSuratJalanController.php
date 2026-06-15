@@ -527,7 +527,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // Auto-save to prospek
             'simpan_ke_prospek' => 'nullable|string|max:1',
             // Validation for uploaded images
-            'gambar_tanda_terima' => 'nullable|array|max:5',
+            'gambar_tanda_terima' => 'nullable|array|max:15',
             'gambar_tanda_terima.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
         ]);
 
@@ -1001,7 +1001,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'no_plat' => 'nullable|string|max:20',
             'catatan' => 'nullable|string',
             // Image handling for update
-            'gambar_tanda_terima' => 'nullable|array|max:5',
+            'gambar_tanda_terima' => 'nullable|array|max:15',
             'gambar_tanda_terima.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:10240', // 10MB per file
             'hapus_gambar' => 'nullable|array',
             'hapus_gambar.*' => 'nullable|string',
@@ -1070,9 +1070,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
             // Merge existing and new uploads
             $mergedImages = array_values(array_filter(array_merge($existingImages, $newUploads)));
-            // Enforce max 5 images
-            if (count($mergedImages) > 5) {
-                $mergedImages = array_slice($mergedImages, 0, 5);
+            // Enforce max 15 images
+            if (count($mergedImages) > 15) {
+                $mergedImages = array_slice($mergedImages, 0, 15);
             }
             if (! empty($mergedImages)) {
                 $validated['gambar_tanda_terima'] = json_encode($mergedImages);
