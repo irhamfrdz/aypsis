@@ -405,6 +405,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
             ['source', 'asc'],
             ['no_kontainer', 'asc'],
             ['no_seal', 'asc'],
+            ['pengirim', 'asc'],
+            ['penerima', 'asc'],
             ['tanggal', 'desc'],
         ]);
 
@@ -417,7 +419,10 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                 return $item['no_kontainer'].'|'.$seal;
             }
 
-            return 'empty_'.$key;
+            $pengirim = trim($item['pengirim'] ?? '');
+            $penerima = trim($item['penerima'] ?? '');
+
+            return 'empty_'.$pengirim.'|'.$penerima;
         });
 
         // Sort grouped collection: LCL groups first, then FCL, then Cargo/empty last

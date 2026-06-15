@@ -168,6 +168,8 @@ class ReportTandaTerimaJakartaController extends Controller
             ['source', 'asc'],
             ['no_kontainer', 'asc'],
             ['no_seal', 'asc'],
+            ['pengirim', 'asc'],
+            ['penerima', 'asc'],
             ['tanggal', 'desc'],
         ]);
     }
