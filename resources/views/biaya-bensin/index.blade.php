@@ -92,14 +92,14 @@
                                 {{ $item->tanggal->format('d/m/Y') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <div class="font-medium text-gray-900">{{ $item->mobil->nopol ?? '-' }}</div>
-                                <div class="text-xs text-gray-500">{{ $item->mobil->kode_mobil ?? '-' }}</div>
+                                <div class="font-medium text-gray-900">{{ $item->mobil->nomor_polisi ?? '-' }}</div>
+                                <div class="text-xs text-gray-500">{{ $item->mobil->kode_no ?? '-' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $item->nomor_kartu ?: '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $item->supir->nama ?? '-' }}
+                                {{ $item->supir ? ($item->supir->nama_panggilan ?: $item->supir->nama_lengkap) : '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <div>{{ number_format($item->km_awal, 0, ',', '.') }} KM</div>
