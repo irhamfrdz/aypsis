@@ -2593,12 +2593,16 @@ class BlController extends Controller
                 $size = $parts[1];
                 $status = $parts[2];
 
-                // For containers, count unique container numbers (LCL is counted as 1 container)
-                $uniqueContainers = $group->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')->pluck('nomor_kontainer')->unique()->count();
-                $emptyContainers = $group->filter(function ($item) {
-                    return empty($item->nomor_kontainer) || $item->nomor_kontainer === '-';
-                })->count();
-                $totalKuantitas = $uniqueContainers + $emptyContainers;
+                if ($status === 'empty') {
+                    $totalKuantitas = $group->count();
+                } else {
+                    // For containers, count unique container numbers (LCL is counted as 1 container)
+                    $uniqueContainers = $group->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')->pluck('nomor_kontainer')->unique()->count();
+                    $emptyContainers = $group->filter(function ($item) {
+                        return empty($item->nomor_kontainer) || $item->nomor_kontainer === '-';
+                    })->count();
+                    $totalKuantitas = $uniqueContainers + $emptyContainers;
+                }
 
                 $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container {$size} feet";
                 $satuan = 'Unit';
@@ -2732,12 +2736,16 @@ class BlController extends Controller
                 $size = $parts[1];
                 $status = $parts[2];
 
-                // For containers, count unique container numbers (LCL is counted as 1 container)
-                $uniqueContainers = $group->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')->pluck('nomor_kontainer')->unique()->count();
-                $emptyContainers = $group->filter(function ($item) {
-                    return empty($item->nomor_kontainer) || $item->nomor_kontainer === '-';
-                })->count();
-                $totalKuantitas = $uniqueContainers + $emptyContainers;
+                if ($status === 'empty') {
+                    $totalKuantitas = $group->count();
+                } else {
+                    // For containers, count unique container numbers (LCL is counted as 1 container)
+                    $uniqueContainers = $group->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')->pluck('nomor_kontainer')->unique()->count();
+                    $emptyContainers = $group->filter(function ($item) {
+                        return empty($item->nomor_kontainer) || $item->nomor_kontainer === '-';
+                    })->count();
+                    $totalKuantitas = $uniqueContainers + $emptyContainers;
+                }
 
                 $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container {$size} feet";
                 $satuan = 'Unit';
