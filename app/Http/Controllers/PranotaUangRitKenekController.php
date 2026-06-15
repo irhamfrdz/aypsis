@@ -1423,16 +1423,31 @@ class PranotaUangRitKenekController extends Controller
         // Get surat jalan numbers from the combined field
         $suratJalanNomors = array_map('trim', explode(', ', $pranotaUangRitKenek->no_surat_jalan));
 
+        // Separate regular and bongkaran numbers
+        $regularNomors = [];
+        $bongkaranNomors = [];
+
+        foreach ($suratJalanNomors as $nomor) {
+            if (str_ends_with($nomor, ' (Bongkaran)')) {
+                $bongkaranNomors[] = trim(str_replace(' (Bongkaran)', '', $nomor));
+            } else {
+                $regularNomors[] = $nomor;
+            }
+        }
+
         // Get surat jalan data - sorted by kenek name alphabetically
-        $suratJalans = SuratJalan::whereIn('no_surat_jalan', $suratJalanNomors)
-            ->orderBy('kenek', 'asc')
-            ->orderBy('tanggal_surat_jalan', 'desc')
-            ->get();
+        $suratJalans = collect();
+        if (! empty($regularNomors)) {
+            $suratJalans = SuratJalan::whereIn('no_surat_jalan', $regularNomors)
+                ->orderBy('kenek', 'asc')
+                ->orderBy('tanggal_surat_jalan', 'desc')
+                ->get();
+        }
 
         // Also check for surat jalan bongkaran if exists - sorted by kenek name alphabetically
         $suratJalanBongkarans = collect();
-        if ($pranotaUangRitKenek->surat_jalan_bongkaran_id) {
-            $suratJalanBongkarans = SuratJalanBongkaran::whereIn('nomor_surat_jalan', $suratJalanNomors)
+        if (! empty($bongkaranNomors)) {
+            $suratJalanBongkarans = SuratJalanBongkaran::whereIn('nomor_surat_jalan', $bongkaranNomors)
                 ->orderBy('kenek', 'asc')
                 ->orderBy('tanggal_surat_jalan', 'desc')
                 ->get();
@@ -1539,7 +1554,7 @@ class PranotaUangRitKenekController extends Controller
         // Add surat jalan bongkaran if exists
         foreach ($suratJalanBongkarans as $sj) {
             $sheet->setCellValue('A'.$row, $no);
-            $sheet->setCellValue('B'.$row, $sj->no_surat_jalan.' (Bongkaran)');
+            $sheet->setCellValue('B'.$row, $sj->nomor_surat_jalan.' (Bongkaran)');
             $sheet->setCellValue('C'.$row, $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-');
             $sheet->setCellValue('D'.$row, 'Bongkar');
             $sheet->setCellValue('E'.$row, $sj->supir ?? '-');
