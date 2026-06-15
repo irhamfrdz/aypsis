@@ -405,8 +405,6 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
             ['source', 'asc'],
             ['no_kontainer', 'asc'],
             ['no_seal', 'asc'],
-            ['pengirim', 'asc'],
-            ['penerima', 'asc'],
             ['tanggal', 'desc'],
         ]);
 
@@ -490,8 +488,13 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
 
                 $finalData->push($headerRow);
 
+                // Group LCL items by pengirim & penerima to make identical ones adjacent
+                $lclItems = $items->groupBy(function ($item) {
+                    return trim($item['pengirim'] ?? '').'|'.trim($item['penerima'] ?? '');
+                })->collapse();
+
                 // 2. Output LCL Manifest Rows
-                foreach ($items as $idx => $item) {
+                foreach ($lclItems as $idx => $item) {
                     $perincian = $item['perincian_items'] ?? [];
                     if (empty($perincian)) {
                         $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
@@ -524,9 +527,14 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     }
                 }
             } else {
+                // Group normal items by pengirim & penerima to make identical ones adjacent
+                $normalItems = $items->groupBy(function ($item) {
+                    return trim($item['pengirim'] ?? '').'|'.trim($item['penerima'] ?? '');
+                })->collapse();
+
                 // FCL or Cargo (Normal)
-                $itemsCount = count($items);
-                foreach ($items as $idx => $item) {
+                $itemsCount = count($normalItems);
+                foreach ($normalItems as $idx => $item) {
                     $perincian = $item['perincian_items'] ?? [];
                     if (empty($perincian)) {
                         $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];

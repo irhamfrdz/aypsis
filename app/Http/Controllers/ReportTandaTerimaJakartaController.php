@@ -158,7 +158,7 @@ class ReportTandaTerimaJakartaController extends Controller
             });
         $data = $data->concat($ttLCL);
 
-        return $data->sortBy([
+        $sortedData = $data->sortBy([
             [function ($item) {
                 $hasContainer = ! empty($item['no_kontainer']) && $item['no_kontainer'] != '-';
                 $hasSeal = ! empty($item['no_seal']) && $item['no_seal'] != '-';
@@ -168,9 +168,14 @@ class ReportTandaTerimaJakartaController extends Controller
             ['source', 'asc'],
             ['no_kontainer', 'asc'],
             ['no_seal', 'asc'],
-            ['pengirim', 'asc'],
-            ['penerima', 'asc'],
             ['tanggal', 'desc'],
         ]);
+
+        return $sortedData->groupBy(function ($item) {
+            $hasContainer = ! empty($item['no_kontainer']) && $item['no_kontainer'] != '-';
+            $containerKey = $hasContainer ? ($item['no_kontainer'].'|'.($item['no_seal'] ?: 'none')) : 'no_container';
+
+            return $containerKey.'|'.trim($item['pengirim'] ?? '').'|'.trim($item['penerima'] ?? '');
+        })->collapse();
     }
 }
