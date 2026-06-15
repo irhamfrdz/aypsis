@@ -97,7 +97,34 @@ class BiayaBensinController extends Controller
         $validated['created_by'] = Auth::id();
         $validated['status'] = 'approved';
 
-        $item = BiayaBensin::create($validated);
+        $item = \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+            $createdItem = BiayaBensin::create($validated);
+
+            if (! empty($validated['nomor_kartu'])) {
+                $card = MasterKartuBensinBatam::where('nomor_kartu', $validated['nomor_kartu'])->first();
+                if ($card) {
+                    $oldSaldo = floatval($card->saldo);
+                    $newSaldo = $oldSaldo - floatval($validated['biaya']);
+                    $card->saldo = $newSaldo;
+                    $card->save();
+
+                    $mobil = Mobil::find($validated['mobil_id']);
+                    $mobilPlat = $mobil ? $mobil->nomor_polisi : '-';
+
+                    $card->histories()->create([
+                        'tanggal' => now(),
+                        'tipe' => 'berkurang',
+                        'nominal' => floatval($validated['biaya']),
+                        'saldo_sebelum' => $oldSaldo,
+                        'saldo_sesudah' => $newSaldo,
+                        'keterangan' => 'Pengisian bensin Kendaraan '.$mobilPlat,
+                        'created_by' => Auth::id(),
+                    ]);
+                }
+            }
+
+            return $createdItem;
+        });
 
         AuditLog::create([
             'user_id' => Auth::id(),
@@ -106,7 +133,7 @@ class BiayaBensinController extends Controller
             'auditable_id' => $item->id,
             'action' => 'created',
             'module' => 'biaya_bensin',
-            'description' => 'Mencatat biaya bensin baru',
+            'description' => 'Mencatat biaya bensin baru dan memotong saldo kartu',
             'old_values' => null,
             'new_values' => $item->toArray(),
             'ip_address' => $request->ip(),
