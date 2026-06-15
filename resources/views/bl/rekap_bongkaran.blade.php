@@ -21,7 +21,7 @@
         
         <!-- Document Title -->
         <div class="text-center mb-8 border-b-2 border-double border-gray-300 pb-4">
-            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 uppercase tracking-wider underline">Rekapan Bongkaran Barang</h1>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-900 uppercase tracking-wider underline">Rekapan Bongkar/Muat Barang</h1>
         </div>
 
         <!-- Metadata Grid -->
@@ -81,7 +81,7 @@
                     @empty
                         <tr>
                             <td colspan="5" class="border border-gray-400 px-4 py-6 text-center text-gray-500 italic">
-                                Tidak ada data bongkaran untuk kapal dan voyage ini.
+                                Tidak ada data bongkar/muat untuk kapal dan voyage ini.
                             </td>
                         </tr>
                     @endforelse

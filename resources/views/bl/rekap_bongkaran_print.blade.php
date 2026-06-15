@@ -45,7 +45,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width={{ $currentPaper['width'] }}, initial-scale=1.0">
-    <title>Rekapan Bongkaran Barang - {{ $namaKapal }}</title>
+    <title>Rekapan Bongkar/Muat Barang - {{ $namaKapal }}</title>
     <style>
         * {
             margin: 0;
@@ -213,7 +213,7 @@
 
     <div class="container">
         <div class="header">
-            <h1>REKAPAN BONGKARAN BARANG</h1>
+            <h1>REKAPAN BONGKAR/MUAT BARANG</h1>
         </div>
 
         <div class="info-section">
