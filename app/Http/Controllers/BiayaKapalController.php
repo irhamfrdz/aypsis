@@ -5166,7 +5166,7 @@ class BiayaKapalController extends Controller
             return redirect()->back()->with('error', 'Ekspor Excel hanya didukung untuk jenis Biaya Buruh.');
         }
 
-        $filename = 'biaya-buruh-'.str_slug($biayaKapal->nomor_invoice).'.xlsx';
+        $filename = 'biaya-buruh-'.\Illuminate\Support\Str::slug($biayaKapal->nomor_invoice).'.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\BiayaBuruhExport($biayaKapal), $filename);
     }
