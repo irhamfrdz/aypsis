@@ -172,10 +172,7 @@ class ReportTandaTerimaJakartaController extends Controller
         ]);
 
         return $sortedData->groupBy(function ($item) {
-            $hasContainer = ! empty($item['no_kontainer']) && $item['no_kontainer'] != '-';
-            $containerKey = $hasContainer ? ($item['no_kontainer'].'|'.($item['no_seal'] ?: 'none')) : 'no_container';
-
-            return $containerKey.'|'.trim($item['pengirim'] ?? '').'|'.trim($item['penerima'] ?? '');
+            return trim($item['pengirim'] ?? '').'|'.trim($item['penerima'] ?? '');
         })->collapse();
     }
 }
