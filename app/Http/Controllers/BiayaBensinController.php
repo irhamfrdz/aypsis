@@ -78,7 +78,7 @@ class BiayaBensinController extends Controller
 
         if ($request->hasFile('bukti_beli')) {
             $file = $request->file('bukti_beli');
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $filename = time().'_'.preg_replace('/\s+/', '_', $file->getClientOriginalName());
             $path = $file->storeAs('bukti-bensin', $filename, 'public');
             $validated['bukti_beli'] = $path;
         }
@@ -159,7 +159,7 @@ class BiayaBensinController extends Controller
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($item->bukti_beli);
             }
             $file = $request->file('bukti_beli');
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $filename = time().'_'.preg_replace('/\s+/', '_', $file->getClientOriginalName());
             $path = $file->storeAs('bukti-bensin', $filename, 'public');
             $validated['bukti_beli'] = $path;
         }
@@ -192,7 +192,7 @@ class BiayaBensinController extends Controller
         $item = BiayaBensin::findOrFail($id);
         $oldValues = $item->toArray();
         $item->delete();
- 
+
         AuditLog::create([
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->name,
@@ -207,7 +207,7 @@ class BiayaBensinController extends Controller
             'user_agent' => $request->userAgent(),
             'url' => $request->fullUrl(),
         ]);
- 
+
         return redirect()->route('biaya-bensin.index')->with('success', 'Biaya bensin berhasil dihapus.');
     }
 
@@ -231,7 +231,7 @@ class BiayaBensinController extends Controller
     {
         $item = BiayaBensin::findOrFail($id);
         $oldValues = $item->toArray();
-        
+
         $item->update([
             'status' => 'approved',
             'approved_by' => Auth::id(),
@@ -263,7 +263,7 @@ class BiayaBensinController extends Controller
     {
         $item = BiayaBensin::findOrFail($id);
         $oldValues = $item->toArray();
-        
+
         $item->update([
             'status' => 'rejected',
             'approved_by' => Auth::id(),

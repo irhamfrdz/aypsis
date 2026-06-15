@@ -67,6 +67,13 @@
                     </select>
                 </div>
 
+                <!-- Saldo -->
+                <div>
+                    <label for="saldo" class="block text-sm font-semibold text-gray-700 mb-2">Saldo</label>
+                    <input type="number" name="saldo" id="saldo" value="{{ old('saldo', $item->saldo) }}" min="0" placeholder="0"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
                 <!-- Mobil / Kendaraan -->
                 <div>
                     <label for="mobil_id" class="block text-sm font-semibold text-gray-700 mb-2">Hubungkan Kendaraan (Opsional)</label>

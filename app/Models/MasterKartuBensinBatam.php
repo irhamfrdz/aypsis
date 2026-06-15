@@ -19,6 +19,7 @@ class MasterKartuBensinBatam extends Model
         'mobil_id',
         'karyawan_id',
         'status',
+        'saldo',
         'keterangan',
         'created_by',
         'updated_by',
@@ -26,6 +27,7 @@ class MasterKartuBensinBatam extends Model
 
     protected $casts = [
         'status' => 'string',
+        'saldo' => 'decimal:2',
     ];
 
     // Scope for active cards

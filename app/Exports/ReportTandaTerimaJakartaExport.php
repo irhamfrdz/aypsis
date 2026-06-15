@@ -338,7 +338,7 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
             $item['naik_kapal'] = $manifestedTTs->has($item['no_tt']);
 
             // Determine LCL
-            $item['is_lcl'] = ($item['source'] === 'LCL') || 
+            $item['is_lcl'] = ($item['source'] === 'LCL') ||
                               (stripos($item['size'] ?? '', 'LCL') !== false) ||
                               (! empty($item['tipe_kontainer']) && stripos($item['tipe_kontainer'], 'LCL') !== false);
             // Determine Cargo

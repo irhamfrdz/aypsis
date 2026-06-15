@@ -73,9 +73,11 @@ class MasterKartuBensinBatamController extends Controller
             'mobil_id' => 'nullable|exists:mobils,id',
             'karyawan_id' => 'nullable|exists:karyawans,id',
             'status' => 'required|in:aktif,tidak_aktif',
+            'saldo' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
 
+        $validated['saldo'] = $validated['saldo'] ?? 0;
         $validated['created_by'] = auth()->id();
 
         MasterKartuBensinBatam::create($validated);
@@ -110,9 +112,11 @@ class MasterKartuBensinBatamController extends Controller
             'mobil_id' => 'nullable|exists:mobils,id',
             'karyawan_id' => 'nullable|exists:karyawans,id',
             'status' => 'required|in:aktif,tidak_aktif',
+            'saldo' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
 
+        $validated['saldo'] = $validated['saldo'] ?? 0;
         $validated['updated_by'] = auth()->id();
 
         $item->update($validated);

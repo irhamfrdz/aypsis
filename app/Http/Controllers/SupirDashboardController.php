@@ -950,7 +950,7 @@ class SupirDashboardController extends Controller
 
         if ($request->hasFile('bukti_beli')) {
             $file = $request->file('bukti_beli');
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $filename = time().'_'.preg_replace('/\s+/', '_', $file->getClientOriginalName());
             $path = $file->storeAs('bukti-bensin', $filename, 'public');
             $validated['bukti_beli'] = $path;
         }

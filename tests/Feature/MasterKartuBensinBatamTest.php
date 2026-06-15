@@ -2,11 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\MasterKartuBensinBatam;
-use App\Models\Permission;
-use App\Models\User;
-use App\Models\Mobil;
 use App\Models\Karyawan;
+use App\Models\MasterKartuBensinBatam;
+use App\Models\Mobil;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -73,6 +72,7 @@ class MasterKartuBensinBatamTest extends TestCase
             'mobil_id' => $mobil->id,
             'karyawan_id' => $karyawan->id,
             'status' => 'aktif',
+            'saldo' => 150000,
             'keterangan' => 'Kartu bbm uji coba',
         ];
 
@@ -84,6 +84,7 @@ class MasterKartuBensinBatamTest extends TestCase
             'nama_kartu' => 'Kartu Test Batam',
             'provider' => 'Pertamina Brizzi',
             'status' => 'aktif',
+            'saldo' => 150000,
         ]);
     }
 
@@ -124,6 +125,7 @@ class MasterKartuBensinBatamTest extends TestCase
             'nama_kartu' => 'Kartu Diupdate',
             'provider' => 'Pertamina BNI',
             'status' => 'tidak_aktif',
+            'saldo' => 250000,
             'keterangan' => 'Keterangan diupdate',
         ];
 
@@ -134,6 +136,7 @@ class MasterKartuBensinBatamTest extends TestCase
             'id' => $card->id,
             'nama_kartu' => 'Kartu Diupdate',
             'status' => 'tidak_aktif',
+            'saldo' => 250000,
         ]);
     }
 

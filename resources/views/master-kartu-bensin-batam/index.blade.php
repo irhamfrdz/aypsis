@@ -111,6 +111,7 @@
                         <th class="px-6 py-4">Provider</th>
                         <th class="px-6 py-4">Kendaraan (No Polisi)</th>
                         <th class="px-6 py-4">Supir / Driver</th>
+                        <th class="px-6 py-4">Saldo</th>
                         <th class="px-6 py-4">Status</th>
                         <th class="px-6 py-4">Keterangan</th>
                         <th class="px-6 py-4 text-center">Aksi</th>
@@ -139,6 +140,9 @@
                             @else
                             <span class="text-gray-400">-</span>
                             @endif
+                        </td>
+                        <td class="px-6 py-4 font-semibold text-gray-900">
+                            Rp {{ number_format($item->saldo ?? 0, 0, ',', '.') }}
                         </td>
                         <td class="px-6 py-4">
                             @if($item->status == 'aktif')
@@ -173,7 +177,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-10 text-center text-gray-500">
+                        <td colspan="9" class="px-6 py-10 text-center text-gray-500">
                             <i class="fas fa-folder-open text-3xl mb-3 block text-gray-300"></i>
                             Tidak ada data kartu bensin Batam ditemukan.
                         </td>
