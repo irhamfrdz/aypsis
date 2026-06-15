@@ -4229,12 +4229,12 @@
                         });
                         submoduleRows.forEach(row => {
                             row.style.display = (row.classList.contains('visible') ? 'table-row' : 'none');
-                            const textElem = row.querySelector('.submodule span:not(.text-sm)');
+                            const textElem = row.querySelector('.submodule span:not(.text-sm)') || row.querySelector('.submodule div.text-sm');
                             if (textElem) textElem.innerHTML = textElem.textContent;
                         });
                         singleRows.forEach(row => {
                             row.style.display = '';
-                            const span = row.querySelector('td:first-child span:not(.text-sm)');
+                            const span = row.querySelector('td:first-child span:not(.text-sm)') || row.querySelector('td:first-child div.text-sm');
                             if (span) span.innerHTML = span.textContent;
                         });
                         return;
@@ -4244,7 +4244,7 @@
                     const matchedSubmodules = new Set();
 
                     submoduleRows.forEach(row => {
-                        const textElement = row.querySelector('.submodule span:not(.text-sm)');
+                        const textElement = row.querySelector('.submodule span:not(.text-sm)') || row.querySelector('.submodule div.text-sm');
                         if (!textElement) return;
                         const text = textElement.textContent.toLowerCase();
                         if (text.includes(query)) {
@@ -4285,7 +4285,7 @@
                     });
 
                     singleRows.forEach(row => {
-                        const textElement = row.querySelector('td:first-child span:not(.text-sm)');
+                        const textElement = row.querySelector('td:first-child span:not(.text-sm)') || row.querySelector('td:first-child div.text-sm');
                         if (textElement) {
                             const text = textElement.textContent.toLowerCase();
                             if (text.includes(query)) {
