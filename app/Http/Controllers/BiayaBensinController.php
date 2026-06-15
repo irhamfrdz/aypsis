@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\BiayaBensin;
 use App\Models\Karyawan;
+use App\Models\MasterKartuBensinBatam;
 use App\Models\Mobil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,7 @@ class BiayaBensinController extends Controller
     {
         $mobils = Mobil::all();
         $supirs = Karyawan::where('divisi', 'LIKE', '%supir%')->orWhere('pekerjaan', 'LIKE', '%supir%')->get();
+        $kartus = MasterKartuBensinBatam::all();
 
         $lastEntry = BiayaBensin::where('created_by', Auth::id())
             ->where('liter', '>', 0)
@@ -50,7 +52,7 @@ class BiayaBensinController extends Controller
             ->orderBy('id', 'desc')
             ->value('nomor_kartu');
 
-        return view('biaya-bensin.create', compact('mobils', 'supirs', 'lastHargaPerLiter', 'lastNomorKartu'));
+        return view('biaya-bensin.create', compact('mobils', 'supirs', 'lastHargaPerLiter', 'lastNomorKartu', 'kartus'));
     }
 
     /**
@@ -124,8 +126,9 @@ class BiayaBensinController extends Controller
         $item = BiayaBensin::findOrFail($id);
         $mobils = Mobil::all();
         $supirs = Karyawan::where('divisi', 'LIKE', '%supir%')->orWhere('pekerjaan', 'LIKE', '%supir%')->get();
+        $kartus = MasterKartuBensinBatam::all();
 
-        return view('biaya-bensin.edit', compact('item', 'mobils', 'supirs'));
+        return view('biaya-bensin.edit', compact('item', 'mobils', 'supirs', 'kartus'));
     }
 
     /**

@@ -61,11 +61,14 @@
                     <div>
                         <label for="nomor_kartu" class="block text-sm font-semibold text-gray-700 mb-2">Nomor Kartu</label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-credit-card text-gray-400"></i>
-                            </div>
-                            <input type="text" name="nomor_kartu" id="nomor_kartu" value="{{ old('nomor_kartu', $item->nomor_kartu) }}" placeholder="Masukkan nomor kartu..."
-                                   class="block w-full pl-10 border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm">
+                            <select name="nomor_kartu" id="nomor_kartu" class="select2 block w-full">
+                                <option value="">Pilih Nomor Kartu...</option>
+                                @foreach($kartus as $kartu)
+                                    <option value="{{ $kartu->nomor_kartu }}" {{ old('nomor_kartu', $item->nomor_kartu) == $kartu->nomor_kartu ? 'selected' : '' }}>
+                                        {{ $kartu->nomor_kartu }} - {{ $kartu->nama_kartu }} ({{ $kartu->provider }})
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         @error('nomor_kartu') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                     </div>
