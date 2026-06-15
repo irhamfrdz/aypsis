@@ -47,7 +47,7 @@
                                 <select name="mobil_id" id="mobil_id" required class="select2 block w-full">
                                     <option value="">Pilih Mobil...</option>
                                     @foreach($mobils as $mobil)
-                                        <option value="{{ $mobil->id }}" {{ old('mobil_id') == $mobil->id ? 'selected' : '' }}>
+                                        <option value="{{ $mobil->id }}" data-last-km-akhir="{{ $mobil->last_km_akhir }}" {{ old('mobil_id') == $mobil->id ? 'selected' : '' }}>
                                             {{ $mobil->nomor_polisi ?: '-' }}
                                         </option>
                                     @endforeach
@@ -98,8 +98,8 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="km_awal" class="block text-sm font-bold text-gray-700 mb-2">KM Awal</label>
-                                <input type="number" name="km_awal" id="km_awal" value="{{ old('km_awal') }}" placeholder="0"
-                                       class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all text-gray-900">
+                                <input type="number" name="km_awal" id="km_awal" value="{{ old('km_awal') }}" placeholder="0" readonly
+                                       class="block w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl focus:outline-none transition-all text-gray-900 cursor-not-allowed">
                             </div>
                             <div>
                                 <label for="km_akhir" class="block text-sm font-bold text-gray-700 mb-2">KM Akhir</label>
@@ -215,6 +215,16 @@
                 $('#mobil_id').val(mobilId).trigger('change');
             }
         });
+
+        $('#mobil_id').on('change', function() {
+            const selectedOption = $(this).find('option:selected');
+            const lastKmAkhir = selectedOption.data('last-km-akhir');
+            if (lastKmAkhir !== undefined) {
+                $('#km_awal').val(lastKmAkhir);
+            } else {
+                $('#km_awal').val(0);
+            }
+        }).trigger('change');
 
         $('#liter').on('input', function() {
             const liter = parseFloat($(this).val()) || 0;

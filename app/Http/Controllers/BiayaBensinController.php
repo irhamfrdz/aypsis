@@ -33,7 +33,16 @@ class BiayaBensinController extends Controller
      */
     public function create()
     {
-        $mobils = Mobil::all();
+        $mobils = Mobil::all()->map(function ($mobil) {
+            $lastBensin = BiayaBensin::where('mobil_id', $mobil->id)
+                ->whereNotNull('km_akhir')
+                ->orderBy('tanggal', 'desc')
+                ->orderBy('id', 'desc')
+                ->first();
+            $mobil->last_km_akhir = $lastBensin ? $lastBensin->km_akhir : 0;
+
+            return $mobil;
+        });
         $supirs = Karyawan::where('divisi', 'LIKE', '%supir%')->orWhere('pekerjaan', 'LIKE', '%supir%')->get();
         $kartus = MasterKartuBensinBatam::all();
 
