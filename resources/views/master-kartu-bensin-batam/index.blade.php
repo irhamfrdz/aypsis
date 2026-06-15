@@ -148,11 +148,14 @@
                         <td class="px-6 py-4 text-gray-600 max-w-xs truncate" title="{{ $item->keterangan }}">{{ $item->keterangan ?? '-' }}</td>
                         <td class="px-6 py-4 text-center whitespace-nowrap">
                             <div class="flex justify-center items-center gap-3">
-                                @can('master-kartu-bensin-batam-edit')
-                                <a href="{{ route('master-kartu-bensin-batam.edit', $item->id) }}" class="text-blue-600 hover:text-blue-900 transition" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                @endcan
+                                 <a href="{{ route('master-kartu-bensin-batam.history', $item->id) }}" class="text-green-600 hover:text-green-900 transition" title="Riwayat Saldo">
+                                     <i class="fas fa-history"></i>
+                                 </a>
+                                 @can('master-kartu-bensin-batam-edit')
+                                 <a href="{{ route('master-kartu-bensin-batam.edit', $item->id) }}" class="text-blue-600 hover:text-blue-900 transition" title="Edit">
+                                     <i class="fas fa-edit"></i>
+                                 </a>
+                                 @endcan
                                 @can('master-kartu-bensin-batam-delete')
                                 <form action="{{ route('master-kartu-bensin-batam.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data kartu bensin ini?')" class="inline">
                                     @csrf

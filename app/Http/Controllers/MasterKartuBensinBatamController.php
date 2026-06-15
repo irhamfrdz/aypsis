@@ -73,7 +73,19 @@ class MasterKartuBensinBatamController extends Controller
         $validated['saldo'] = $validated['saldo'] ?? 0;
         $validated['created_by'] = auth()->id();
 
-        MasterKartuBensinBatam::create($validated);
+        $card = MasterKartuBensinBatam::create($validated);
+
+        if ($card->saldo > 0) {
+            $card->histories()->create([
+                'tanggal' => now(),
+                'tipe' => 'bertambah',
+                'nominal' => $card->saldo,
+                'saldo_sebelum' => 0,
+                'saldo_sesudah' => $card->saldo,
+                'keterangan' => 'Saldo awal saat kartu didaftarkan',
+                'created_by' => auth()->id(),
+            ]);
+        }
 
         return redirect()->route('master-kartu-bensin-batam.index')
             ->with('success', 'Data kartu bensin Batam berhasil ditambahkan.');
@@ -107,10 +119,26 @@ class MasterKartuBensinBatamController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        $validated['saldo'] = $validated['saldo'] ?? 0;
+        $oldSaldo = floatval($item->saldo);
+        $newSaldo = floatval($validated['saldo'] ?? 0);
+        $validated['saldo'] = $newSaldo;
         $validated['updated_by'] = auth()->id();
 
         $item->update($validated);
+
+        if ($newSaldo != $oldSaldo) {
+            $tipe = $newSaldo > $oldSaldo ? 'bertambah' : 'berkurang';
+            $nominal = abs($newSaldo - $oldSaldo);
+            $item->histories()->create([
+                'tanggal' => now(),
+                'tipe' => $tipe,
+                'nominal' => $nominal,
+                'saldo_sebelum' => $oldSaldo,
+                'saldo_sesudah' => $newSaldo,
+                'keterangan' => 'Penyesuaian saldo kartu',
+                'created_by' => auth()->id(),
+            ]);
+        }
 
         return redirect()->route('master-kartu-bensin-batam.index')
             ->with('success', 'Data kartu bensin Batam berhasil diperbarui.');
@@ -126,5 +154,16 @@ class MasterKartuBensinBatamController extends Controller
 
         return redirect()->route('master-kartu-bensin-batam.index')
             ->with('success', 'Data kartu bensin Batam berhasil dihapus.');
+    }
+
+    /**
+     * Display the usage history of the specified resource.
+     */
+    public function history($id)
+    {
+        $card = MasterKartuBensinBatam::findOrFail($id);
+        $histories = $card->histories()->with('createdBy')->latest()->paginate(25);
+
+        return view('master-kartu-bensin-batam.history', compact('card', 'histories'));
     }
 }

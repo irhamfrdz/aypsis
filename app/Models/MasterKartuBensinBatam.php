@@ -50,4 +50,9 @@ class MasterKartuBensinBatam extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function histories()
+    {
+        return $this->hasMany(MasterKartuBensinBatamHistory::class, 'master_kartu_bensin_batam_id');
+    }
 }

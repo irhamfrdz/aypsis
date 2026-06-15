@@ -83,6 +83,12 @@ class MasterKartuBensinBatamTest extends TestCase
             'status' => 'aktif',
             'saldo' => 150000,
         ]);
+        $this->assertDatabaseHas('master_kartu_bensin_batam_histories', [
+            'nominal' => 150000,
+            'tipe' => 'bertambah',
+            'saldo_sebelum' => 0,
+            'saldo_sesudah' => 150000,
+        ]);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
@@ -115,6 +121,7 @@ class MasterKartuBensinBatamTest extends TestCase
             'nama_kartu' => 'Kartu Awal',
             'provider' => 'Pertamina',
             'status' => 'aktif',
+            'saldo' => 100000,
         ]);
 
         $data = [
@@ -134,6 +141,13 @@ class MasterKartuBensinBatamTest extends TestCase
             'nama_kartu' => 'Kartu Diupdate',
             'status' => 'tidak_aktif',
             'saldo' => 250000,
+        ]);
+        $this->assertDatabaseHas('master_kartu_bensin_batam_histories', [
+            'master_kartu_bensin_batam_id' => $card->id,
+            'nominal' => 150000, // 250k - 100k
+            'tipe' => 'bertambah',
+            'saldo_sebelum' => 100000,
+            'saldo_sesudah' => 250000,
         ]);
     }
 
@@ -156,5 +170,24 @@ class MasterKartuBensinBatamTest extends TestCase
         $this->assertDatabaseMissing('master_kartu_bensin_batams', [
             'id' => $card->id,
         ]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_can_display_history_page()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $card = MasterKartuBensinBatam::create([
+            'nomor_kartu' => '88888888',
+            'nama_kartu' => 'Kartu Test History',
+            'provider' => 'Pertamina',
+            'status' => 'aktif',
+        ]);
+
+        $response = $this->get(route('master-kartu-bensin-batam.history', $card->id));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('master-kartu-bensin-batam.history');
     }
 }

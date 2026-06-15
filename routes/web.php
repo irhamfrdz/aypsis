@@ -2091,6 +2091,10 @@ Route::middleware([
                 'destroy' => 'can:pembelian-bbm-batam-delete',
             ]);
 
+        Route::get('master-kartu-bensin-batam/{id}/history', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'history'])
+            ->name('master-kartu-bensin-batam.history')
+            ->middleware('can:master-kartu-bensin-batam-view');
+
         // 💳 Master Kartu Bensin Batam with permissions
         Route::resource('master-kartu-bensin-batam', \App\Http\Controllers\MasterKartuBensinBatamController::class)
             ->names('master-kartu-bensin-batam')
