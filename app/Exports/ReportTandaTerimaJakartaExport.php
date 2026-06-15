@@ -417,6 +417,13 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                 return $item['no_kontainer'].'|'.$seal;
             }
 
+            if ($item['source'] === 'Standard') {
+                $pengirim = trim($item['pengirim'] ?? '');
+                $penerima = trim($item['penerima'] ?? '');
+
+                return 'empty_standard_'.$pengirim.'|'.$penerima;
+            }
+
             return 'empty_'.$key;
         });
 
@@ -485,8 +492,17 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
 
                 $finalData->push($headerRow);
 
+                // Group LCL items by pengirim & penerima for Standard source items
+                $lclItems = $items->groupBy(function ($item, $k) {
+                    if ($item['source'] === 'Standard') {
+                        return 'standard_'.trim($item['pengirim'] ?? '').'|'.trim($item['penerima'] ?? '');
+                    }
+
+                    return 'other_'.$k;
+                })->collapse();
+
                 // 2. Output LCL Manifest Rows
-                foreach ($items as $idx => $item) {
+                foreach ($lclItems as $idx => $item) {
                     $perincian = $item['perincian_items'] ?? [];
                     if (empty($perincian)) {
                         $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];
@@ -519,9 +535,18 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
                     }
                 }
             } else {
+                // Group normal items by pengirim & penerima for Standard source items
+                $normalItems = $items->groupBy(function ($item, $k) {
+                    if ($item['source'] === 'Standard') {
+                        return 'standard_'.trim($item['pengirim'] ?? '').'|'.trim($item['penerima'] ?? '');
+                    }
+
+                    return 'other_'.$k;
+                })->collapse();
+
                 // FCL or Cargo (Normal)
-                $itemsCount = count($items);
-                foreach ($items as $idx => $item) {
+                $itemsCount = count($normalItems);
+                foreach ($normalItems as $idx => $item) {
                     $perincian = $item['perincian_items'] ?? [];
                     if (empty($perincian)) {
                         $perincian = [['qty' => '', 'satuan' => '', 'nama' => '', 'weight' => '', 'meass' => '']];

@@ -171,8 +171,63 @@ class ReportTandaTerimaJakartaController extends Controller
             ['tanggal', 'desc'],
         ]);
 
-        return $sortedData->groupBy(function ($item) {
-            return trim($item['pengirim'] ?? '').'|'.trim($item['penerima'] ?? '');
-        })->collapse();
+        $grouped = $sortedData->groupBy(function ($item, $key) {
+            $hasContainer = ! empty($item['no_kontainer']) && $item['no_kontainer'] != '-';
+            if ($hasContainer) {
+                $seal = $item['no_seal'] ?: 'none';
+
+                return $item['no_kontainer'].'|'.$seal;
+            }
+
+            if ($item['source'] === 'Standard') {
+                $pengirim = trim($item['pengirim'] ?? '');
+                $penerima = trim($item['penerima'] ?? '');
+
+                return 'empty_standard_'.$pengirim.'|'.$penerima;
+            }
+
+            return 'empty_'.$key;
+        });
+
+        $grouped = $grouped->sort(function ($a, $b) {
+            $isLclA = $a->contains('is_lcl', true);
+            $isLclB = $b->contains('is_lcl', true);
+
+            $isCargoA = $a->contains('is_cargo', true) || empty($a->first()['no_kontainer']) || $a->first()['no_kontainer'] === '-';
+            $isCargoB = $b->contains('is_cargo', true) || empty($b->first()['no_kontainer']) || $b->first()['no_kontainer'] === '-';
+
+            if ($isLclA && ! $isLclB) {
+                return -1;
+            }
+            if (! $isLclA && $isLclB) {
+                return 1;
+            }
+
+            if ($isCargoA && ! $isCargoB) {
+                return 1;
+            }
+            if (! $isCargoA && $isCargoB) {
+                return -1;
+            }
+
+            return strnatcasecmp($a->first()['no_kontainer'] ?? '', $b->first()['no_kontainer'] ?? '');
+        });
+
+        $finalData = collect();
+        foreach ($grouped as $items) {
+            $groupedItems = $items->groupBy(function ($item, $k) {
+                if ($item['source'] === 'Standard') {
+                    return 'standard_'.trim($item['pengirim'] ?? '').'|'.trim($item['penerima'] ?? '');
+                }
+
+                return 'other_'.$k;
+            })->collapse();
+
+            foreach ($groupedItems as $item) {
+                $finalData->push($item);
+            }
+        }
+
+        return $finalData;
     }
 }
