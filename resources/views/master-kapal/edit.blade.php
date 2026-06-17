@@ -210,7 +210,7 @@
                                name="gross_tonnage"
                                value="{{ old('gross_tonnage', $masterKapal->gross_tonnage) }}"
                                min="0"
-                               step="0.01"
+                               step="any"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('gross_tonnage') border-red-500 @enderror"
                                placeholder="0.00">
                     </div>
@@ -233,7 +233,7 @@
                                name="deadweight_tonnage"
                                value="{{ old('deadweight_tonnage', $masterKapal->deadweight_tonnage) }}"
                                min="0"
-                               step="0.01"
+                               step="any"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('deadweight_tonnage') border-red-500 @enderror"
                                placeholder="0.00">
                     </div>
@@ -253,7 +253,7 @@
                                name="length_overall"
                                value="{{ old('length_overall', $masterKapal->length_overall) }}"
                                min="0"
-                               step="0.01"
+                               step="any"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('length_overall') border-red-500 @enderror"
                                placeholder="0.00">
                     </div>
