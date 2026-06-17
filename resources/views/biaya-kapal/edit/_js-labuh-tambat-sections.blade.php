@@ -295,6 +295,7 @@
                 this.classList.remove('bg-slate-200', 'text-slate-700');
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
+        });
         const bankSelect = section.querySelector('.bank-select-labuh-tambat');
         if (sectionIndex > 1) {
             const firstBankSelect = document.querySelector('.bank-select-labuh-tambat');
