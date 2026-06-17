@@ -2,6 +2,28 @@
 
 @section('title', 'Buat Pembayaran Pranota OB Antar Gudang')
 
+@push('styles')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container { width: 100% !important; }
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        padding: 5px 10px !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.375rem !important;
+        background-color: #ffffff !important;
+    }
+    .select2-container .select2-selection--single .select2-selection__rendered {
+        line-height: 26px !important;
+        font-size: 0.875rem !important;
+    }
+    .select2-container .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
     <div class="bg-white shadow-sm rounded-lg overflow-hidden border border-teal-100">
@@ -13,7 +35,7 @@
                         <i class="fas fa-file-invoice-dollar mr-2"></i>
                         Buat Pembayaran Pranota OB Antar Gudang
                     </h5>
-                    <p class="text-teal-100 text-xs mt-1">Buat record pembayaran dan jurnal double-entry otomatis</p>
+                    <p class="text-teal-100 text-xs mt-1">Buat record pembayaran and jurnal double-entry otomatis</p>
                 </div>
                 <div>
                     <a href="{{ route('pembayaran-pranota-ob-antar-gudang.index') }}"
@@ -72,7 +94,7 @@
 
                     <div>
                         <label for="akun_bank_id" class="block text-xs font-semibold text-gray-700 uppercase mb-1">Pilih Bank/Kas (COA)</label>
-                        <select name="akun_bank_id" id="akun_bank_id" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500" required>
+                        <select name="akun_bank_id" id="akun_bank_id" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 coa-select" required>
                             <option value="">-- Pilih Bank --</option>
                             @foreach ($akunBank as $akun)
                                 <option value="{{ $akun->id }}" {{ old('akun_bank_id') == $akun->id ? 'selected' : '' }}>
@@ -84,7 +106,7 @@
 
                     <div>
                         <label for="akun_coa_id" class="block text-xs font-semibold text-gray-700 uppercase mb-1">Pilih Akun Biaya (COA)</label>
-                        <select name="akun_coa_id" id="akun_coa_id" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500" required>
+                        <select name="akun_coa_id" id="akun_coa_id" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 coa-select" required>
                             <option value="">-- Pilih Akun Biaya --</option>
                             @foreach ($akunBiaya as $akun)
                                 <option value="{{ $akun->id }}" {{ old('akun_coa_id') == $akun->id ? 'selected' : '' }}>
@@ -176,6 +198,7 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const selectAll = document.getElementById('select-all');
@@ -223,8 +246,18 @@
 
         penyesuaianInput.addEventListener('input', recalculate);
 
+        // Initialize Select2 directly since it is loaded in layouts/app.blade.php
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('.coa-select').select2({
+                width: '100%',
+                placeholder: '-- Pilih --',
+                allowClear: true
+            });
+        }
+
         // Run initially
         recalculate();
     });
 </script>
+@endpush
 @endsection
