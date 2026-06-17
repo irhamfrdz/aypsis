@@ -140,7 +140,42 @@ class ApprovalOrderController extends Controller
      */
     public function edit($id)
     {
-        $order = Order::with(['pengirim', 'jenisBarang', 'term'])->findOrFail($id);
+        $order = Order::with(['pengirim', 'jenisBarang', 'term', 'suratJalans.tandaTerima'])->findOrFail($id);
+
+        // If order's sender or receiver fields are empty, try to populate them from the first Tanda Terima
+        if (! $order->pengirim_id || ! $order->penerima_id || ! $order->alamat_pengirim || ! $order->alamat_penerima) {
+            $firstTt = $order->suratJalans->map(fn ($sj) => $sj->tandaTerima)->filter()->first();
+            if ($firstTt) {
+                // Populate Pengirim
+                if (! $order->pengirim_id && $firstTt->pengirim) {
+                    $matchingPengirim = \App\Models\Pengirim::where('nama_pengirim', $firstTt->pengirim)->first();
+                    if ($matchingPengirim) {
+                        $order->pengirim_id = $matchingPengirim->id;
+                    }
+                }
+                if (! $order->alamat_pengirim && $firstTt->alamat_pengirim) {
+                    $order->alamat_pengirim = $firstTt->alamat_pengirim;
+                }
+                if (! $order->kontak_pengirim && $firstTt->kontak_pengirim) {
+                    $order->kontak_pengirim = $firstTt->kontak_pengirim;
+                }
+
+                // Populate Penerima
+                if (! $order->penerima_id && $firstTt->penerima) {
+                    $matchingPenerima = \App\Models\Penerima::where('nama_penerima', $firstTt->penerima)->first();
+                    if ($matchingPenerima) {
+                        $order->penerima_id = $matchingPenerima->id;
+                    }
+                }
+                if (! $order->alamat_penerima && $firstTt->alamat_penerima) {
+                    $order->alamat_penerima = $firstTt->alamat_penerima;
+                }
+                if (! $order->kontak_penerima && $firstTt->kontak_penerima) {
+                    $order->kontak_penerima = $firstTt->kontak_penerima;
+                }
+            }
+        }
+
         $terms = Term::orderBy('kode')->get();
         $penerimas = Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
         $pengirims = \App\Models\Pengirim::where('status', 'active')->orderBy('nama_pengirim')->get();
@@ -273,7 +308,8 @@ class ApprovalOrderController extends Controller
 
                 // Update TandaTerima
                 if ($suratJalan->tandaTerima) {
-                    $suratJalan->tandaTerima->update([
+                    $tandaTerima = $suratJalan->tandaTerima;
+                    $tandaTerima->update([
                         'pengirim' => $namaPengirim,
                         'alamat_pengirim' => $alamatPengirim,
                         'penerima' => $namaPenerima,
@@ -286,6 +322,57 @@ class ApprovalOrderController extends Controller
                         'satuan' => count($dimensiItems) > 0 ? ($dimensiItems[0]['satuan'] ?? null) : null,
                         'term' => $termName,
                     ]);
+
+                    // Sync Prospek associated with this TandaTerima
+                    $prospeks = \App\Models\Prospek::where('tanda_terima_id', $tandaTerima->id)->get();
+                    foreach ($prospeks as $prospek) {
+                        $prospek->update([
+                            'pt_pengirim' => $namaPengirim,
+                            'tujuan_pengiriman' => $tandaTerima->tujuan_pengiriman,
+                            'nama_supir' => $tandaTerima->supir,
+                            'barang' => $tandaTerima->jenis_barang,
+                            'nama_kapal' => $tandaTerima->estimasi_nama_kapal,
+                        ]);
+
+                        // Sync Manifest associated with this Prospek
+                        $manifests = \App\Models\Manifest::where('prospek_id', $prospek->id)->get();
+                        foreach ($manifests as $manifest) {
+                            $manifest->update([
+                                'penerima' => $namaPenerima,
+                                'alamat_penerima' => $alamatPenerima,
+                                'pengirim' => $namaPengirim,
+                                'alamat_pengirim' => $alamatPengirim,
+                                'nomor_tanda_terima' => $tandaTerima->no_tanda_terima,
+                                'no_seal' => $tandaTerima->no_seal,
+                                'kuantitas' => $totalJumlah,
+                                'satuan' => count($dimensiItems) > 0 ? ($dimensiItems[0]['satuan'] ?? null) : null,
+                                'volume' => $totalVolume,
+                                'tonnage' => $totalTonase,
+                                'alamat_pengiriman' => $alamatPenerima,
+                                'term' => $termName,
+                            ]);
+                        }
+                    }
+
+                    // Sync Manifest that matches by nomor_tanda_terima
+                    if ($tandaTerima->no_tanda_terima) {
+                        $manifestsByNo = \App\Models\Manifest::where('nomor_tanda_terima', $tandaTerima->no_tanda_terima)->get();
+                        foreach ($manifestsByNo as $manifest) {
+                            $manifest->update([
+                                'penerima' => $namaPenerima,
+                                'alamat_penerima' => $alamatPenerima,
+                                'pengirim' => $namaPengirim,
+                                'alamat_pengirim' => $alamatPengirim,
+                                'no_seal' => $tandaTerima->no_seal,
+                                'kuantitas' => $totalJumlah,
+                                'satuan' => count($dimensiItems) > 0 ? ($dimensiItems[0]['satuan'] ?? null) : null,
+                                'volume' => $totalVolume,
+                                'tonnage' => $totalTonase,
+                                'alamat_pengiriman' => $alamatPenerima,
+                                'term' => $termName,
+                            ]);
+                        }
+                    }
                 }
             }
 

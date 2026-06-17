@@ -65,9 +65,9 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->appendOutputTo(storage_path('logs/grand-total-recalculation.log'));
 
-        // Update manifest and tanda terima penerima every 30 minutes
+        // Update manifest and tanda terima penerima frequency
         $schedule->command('manifest:update-penerima --all')->everyThirtyMinutes()->withoutOverlapping();
-        $schedule->command('tanda-terima:update-penerima --all')->everyThirtyMinutes()->withoutOverlapping();
+        $schedule->command('tanda-terima:update-penerima --all')->everyTenMinutes()->withoutOverlapping();
     }
 
     /**

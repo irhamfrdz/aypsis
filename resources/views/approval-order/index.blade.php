@@ -43,7 +43,7 @@ use Illuminate\Support\Str;
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                         </span>
-                        <span>Auto-update: <span class="font-bold text-blue-600">30 Menit (Server)</span></span>
+                        <span>Auto-update: <span class="font-bold text-blue-600">10 Menit (Server)</span></span>
                         <span class="text-gray-300">|</span>
                         <span>Terakhir: <span id="last-update-time" class="font-bold">{{ $lastUpdateStr }}</span></span>
                     </div>

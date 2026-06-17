@@ -11,6 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
+        $isSqlite = \DB::connection()->getDriverName() === 'sqlite';
+        try {
+            if ($isSqlite) {
+                \DB::statement('DROP INDEX IF EXISTS `surat_jalan_bongkarans_kapal_id_index`');
+            } else {
+                \DB::statement('ALTER TABLE `surat_jalan_bongkarans` DROP INDEX IF EXISTS `surat_jalan_bongkarans_kapal_id_index`');
+            }
+        } catch (\Exception $e) {
+            // Continue if index doesn't exist
+        }
+
         Schema::table('surat_jalan_bongkarans', function (Blueprint $table) {
             // Add nama_kapal column if it doesn't exist
             if (! Schema::hasColumn('surat_jalan_bongkarans', 'nama_kapal')) {

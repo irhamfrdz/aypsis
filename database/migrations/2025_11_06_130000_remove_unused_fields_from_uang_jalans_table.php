@@ -18,25 +18,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $isSqlite = \DB::connection()->getDriverName() === 'sqlite';
-        try {
-            if ($isSqlite) {
-                \DB::statement('DROP INDEX IF EXISTS `uang_jalans_tanggal_pemberian_index`');
-            } else {
-                \DB::statement('ALTER TABLE uang_jalans DROP INDEX IF EXISTS uang_jalans_tanggal_pemberian_index');
-            }
-        } catch (\Exception $e) {
-            // Continue if index doesn't exist
-        }
+        $indexesToDrop = [
+            'uang_jalans_tanggal_pemberian_index',
+            'uang_jalans_status_tanggal_pemberian_index',
+            'tanggal_pemberian',
+        ];
 
-        try {
-            if ($isSqlite) {
-                \DB::statement('DROP INDEX IF EXISTS `tanggal_pemberian`');
-            } else {
-                \DB::statement('ALTER TABLE uang_jalans DROP INDEX IF EXISTS tanggal_pemberian');
+        $isSqlite = \DB::connection()->getDriverName() === 'sqlite';
+        foreach ($indexesToDrop as $indexName) {
+            try {
+                if ($isSqlite) {
+                    \DB::statement("DROP INDEX IF EXISTS `{$indexName}`");
+                } else {
+                    \DB::statement("ALTER TABLE uang_jalans DROP INDEX IF EXISTS `{$indexName}`");
+                }
+            } catch (\Exception $e) {
+                // Continue if index doesn't exist
             }
-        } catch (\Exception $e) {
-            // Continue if index doesn't exist
         }
 
         Schema::table('uang_jalans', function (Blueprint $table) {
