@@ -574,4 +574,28 @@ class MasterKapalController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Print SPKBM document as PDF
+     */
+    public function printSpkbm(Request $request, MasterKapal $masterKapal)
+    {
+        $validated = $request->validate([
+            'nomor_surat' => 'required|string|max:255',
+            'hal' => 'required|string|max:255',
+            'ditujukan_kepada' => 'required|string',
+            'voyage' => 'required|string|max:255',
+            'rencana_tiba' => 'required|string|max:255',
+            'rencana_sandar' => 'required|string|max:255',
+            'rencana_bongkar' => 'required|string',
+            'rencana_muat' => 'required|string',
+            'tujuan' => 'required|string|max:255',
+        ]);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('master-kapal.print-spkbm', compact('masterKapal', 'validated'));
+
+        $filename = 'SPKBM_'.str_replace('/', '_', $validated['nomor_surat']).'.pdf';
+
+        return $pdf->stream($filename);
+    }
 }

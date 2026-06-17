@@ -278,6 +278,12 @@
                                        title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    <button type="button"
+                                            onclick="openPrintSpkbmModal('{{ $kapal->id }}', '{{ e($kapal->nama_kapal) }}')"
+                                            class="inline-flex items-center px-2 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded text-xs transition duration-150"
+                                            title="Print SPKBM">
+                                        <i class="fas fa-print"></i>
+                                    </button>
                                     @endcan
                                     @can('master-kapal.edit')
                                     <a href="{{ route('master-kapal.edit', $kapal->id) }}"
@@ -359,8 +365,146 @@
             dropdown.classList.add('hidden');
         }
     });
+
+    // Print SPKBM functions
+    function openPrintSpkbmModal(id, name) {
+        document.getElementById('printSpkbmKapalName').textContent = name;
+        const form = document.getElementById('printSpkbmForm');
+        form.action = '/master-kapal/' + id + '/print-spkbm';
+        
+        // Reset form
+        form.reset();
+        
+        const modal = document.getElementById('printSpkbmModal');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closePrintSpkbmModal() {
+        const modal = document.getElementById('printSpkbmModal');
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    document.getElementById('printSpkbmModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePrintSpkbmModal();
+        }
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closePrintSpkbmModal();
+        }
+    });
 </script>
 @endpush
+
+<!-- Print SPKBM Modal -->
+<div id="printSpkbmModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full hidden z-50 transition-all duration-300">
+    <div class="relative top-10 mx-auto p-0 border-0 w-full max-w-2xl shadow-2xl rounded-xl bg-white transform transition-all duration-300">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center justify-center h-10 w-10 rounded-full bg-green-100">
+                    <i class="fas fa-print text-green-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Print SPKBM</h3>
+                    <p class="text-sm text-gray-600" id="printSpkbmKapalName">-</p>
+                </div>
+            </div>
+            <button type="button" onclick="closePrintSpkbmModal()" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-2 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <form id="printSpkbmForm" method="POST" target="_blank" class="p-6 space-y-4">
+            @csrf
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="nomor_surat" class="block text-sm font-medium text-gray-700">Nomor Surat <span class="text-red-500">*</span></label>
+                    <input type="text" name="nomor_surat" id="nomor_surat" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                           placeholder="Contoh: 010/AYP-SPKBM/VI/2026">
+                </div>
+                <div>
+                    <label for="hal" class="block text-sm font-medium text-gray-700">Hal <span class="text-red-500">*</span></label>
+                    <input type="text" name="hal" id="hal" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                           placeholder="Contoh: Surat Penunjukan Kerja Bongkar Muat (SPKBM)">
+                </div>
+            </div>
+
+            <div>
+                <label for="ditujukan_kepada" class="block text-sm font-medium text-gray-700">Ditujukan Kepada <span class="text-red-500">*</span></label>
+                <textarea name="ditujukan_kepada" id="ditujukan_kepada" rows="3" required
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          placeholder="Nama Penerima / Perusahaan / Instansi&#10;Alamat Penerima"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="voyage" class="block text-sm font-medium text-gray-700">Voyage <span class="text-red-500">*</span></label>
+                    <input type="text" name="voyage" id="voyage" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                           placeholder="Contoh: 08/JP">
+                </div>
+                <div>
+                    <label for="tujuan" class="block text-sm font-medium text-gray-700">Tujuan <span class="text-red-500">*</span></label>
+                    <input type="text" name="tujuan" id="tujuan" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                           placeholder="Contoh: Kijang - Pekanbaru">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="rencana_tiba" class="block text-sm font-medium text-gray-700">Rencana Tiba <span class="text-red-500">*</span></label>
+                    <input type="text" name="rencana_tiba" id="rencana_tiba" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                           placeholder="Contoh: Rabu, 17 Juni 2026">
+                </div>
+                <div>
+                    <label for="rencana_sandar" class="block text-sm font-medium text-gray-700">Rencana Sandar <span class="text-red-500">*</span></label>
+                    <input type="text" name="rencana_sandar" id="rencana_sandar" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                           placeholder="Contoh: Rabu, 17 Juni 2026">
+                </div>
+            </div>
+
+            <div>
+                <label for="rencana_bongkar" class="block text-sm font-medium text-gray-700">Rencana Bongkar <span class="text-red-500">*</span></label>
+                <textarea name="rencana_bongkar" id="rencana_bongkar" rows="2" required
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          placeholder="Contoh:&#10;- 200 Box Container 20' isi Sembako&#10;- 50 Box Container 40' Empty"></textarea>
+            </div>
+
+            <div>
+                <label for="rencana_muat" class="block text-sm font-medium text-gray-700">Rencana Muat <span class="text-red-500">*</span></label>
+                <textarea name="rencana_muat" id="rencana_muat" rows="2" required
+                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          placeholder="Contoh:&#10;- 150 Box Container 20' isi Karet&#10;- 30 Box Container 40' isi Kayu"></textarea>
+            </div>
+
+            <!-- Footer / Buttons -->
+            <div class="pt-4 border-t border-gray-200 flex justify-end space-x-2">
+                <button type="button" onclick="closePrintSpkbmModal()"
+                        class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all duration-200">
+                    Batal
+                </button>
+                <button type="submit" onclick="setTimeout(closePrintSpkbmModal, 500)"
+                        class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all duration-200">
+                    <i class="fas fa-print mr-2"></i> Cetak PDF
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- Audit Log Modal -->
 @include('components.audit-log-modal')
