@@ -234,7 +234,7 @@
                             <td class="px-3 py-2 whitespace-nowrap text-center text-sm text-gray-900">
                                 @if($kapal->gross_tonnage)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                        {{ number_format($kapal->gross_tonnage, 1) }}
+                                        {{ number_format($kapal->gross_tonnage, 3) }}
                                     </span>
                                 @else
                                     <span class="text-gray-400 text-xs">-</span>

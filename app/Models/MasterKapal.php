@@ -61,17 +61,17 @@ class MasterKapal extends Model
 
     public function getFormattedGrossTonnageAttribute()
     {
-        return $this->gross_tonnage ? number_format($this->gross_tonnage, 2) : '-';
+        return $this->gross_tonnage ? number_format($this->gross_tonnage, 3) : '-';
     }
 
     public function getFormattedDeadweightTonnageAttribute()
     {
-        return $this->deadweight_tonnage ? number_format($this->deadweight_tonnage, 2) : '-';
+        return $this->deadweight_tonnage ? number_format($this->deadweight_tonnage, 3) : '-';
     }
 
     public function getFormattedLengthOverallAttribute()
     {
-        return $this->length_overall ? number_format($this->length_overall, 2) : '-';
+        return $this->length_overall ? number_format($this->length_overall, 3) : '-';
     }
 
     public function getFormattedTotalKapasitasAttribute()

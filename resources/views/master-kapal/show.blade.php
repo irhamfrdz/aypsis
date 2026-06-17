@@ -143,7 +143,7 @@
                             @if($masterKapal->gross_tonnage)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                     <i class="fas fa-weight-hanging mr-1"></i>
-                                    {{ number_format($masterKapal->gross_tonnage, 2) }}
+                                    {{ number_format($masterKapal->gross_tonnage, 3) }}
                                 </span>
                             @else
                                 -
@@ -157,7 +157,7 @@
                             @if($masterKapal->deadweight_tonnage)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                                     <i class="fas fa-weight-hanging mr-1"></i>
-                                    {{ number_format($masterKapal->deadweight_tonnage, 2) }}
+                                    {{ number_format($masterKapal->deadweight_tonnage, 3) }}
                                 </span>
                             @else
                                 -
@@ -171,7 +171,7 @@
                             @if($masterKapal->length_overall)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                     <i class="fas fa-ruler-combined mr-1"></i>
-                                    {{ number_format($masterKapal->length_overall, 2) }} m
+                                    {{ number_format($masterKapal->length_overall, 3) }} m
                                 </span>
                             @else
                                 -
@@ -288,7 +288,7 @@
                             <div>
                                 <p class="text-sm font-medium text-yellow-600">Gross Tonnage</p>
                                 <p class="text-2xl font-bold text-yellow-900">
-                                    {{ $masterKapal->gross_tonnage ? number_format($masterKapal->gross_tonnage, 2) : '0' }}
+                                    {{ $masterKapal->gross_tonnage ? number_format($masterKapal->gross_tonnage, 3) : '0' }}
                                 </p>
 
                             </div>
@@ -304,7 +304,7 @@
                             <div>
                                 <p class="text-sm font-medium text-orange-600">Deadweight Tonnage</p>
                                 <p class="text-2xl font-bold text-orange-900">
-                                    {{ $masterKapal->deadweight_tonnage ? number_format($masterKapal->deadweight_tonnage, 2) : '0' }}
+                                    {{ $masterKapal->deadweight_tonnage ? number_format($masterKapal->deadweight_tonnage, 3) : '0' }}
                                 </p>
                             </div>
                             <div class="bg-orange-100 rounded-full p-3">
@@ -319,7 +319,7 @@
                             <div>
                                 <p class="text-sm font-medium text-red-600">Length Overall (LOA)</p>
                                 <p class="text-2xl font-bold text-red-900">
-                                    {{ $masterKapal->length_overall ? number_format($masterKapal->length_overall, 2) . ' m' : '0' }}
+                                    {{ $masterKapal->length_overall ? number_format($masterKapal->length_overall, 3) . ' m' : '0' }}
                                 </p>
                             </div>
                             <div class="bg-red-100 rounded-full p-3">
