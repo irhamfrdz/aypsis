@@ -28,6 +28,8 @@ class KapalExport implements FromCollection, ShouldAutoSize, WithEvents, WithHea
                 $kapal->kapasitas_kontainer_palka ?? '',
                 $kapal->kapasitas_kontainer_deck ?? '',
                 $kapal->gross_tonnage ?? '',
+                $kapal->deadweight_tonnage ?? '',
+                $kapal->length_overall ?? '',
                 $totalKapasitas > 0 ? $totalKapasitas : '',
                 $kapal->catatan ?? '',
                 ucfirst($kapal->status ?? ''),
@@ -54,6 +56,8 @@ class KapalExport implements FromCollection, ShouldAutoSize, WithEvents, WithHea
             'Kapasitas Palka',
             'Kapasitas Deck',
             'Gross Tonnage',
+            'Deadweight Tonnage',
+            'Length Overall',
             'Total Kapasitas',
             'Catatan',
             'Status',
@@ -68,8 +72,8 @@ class KapalExport implements FromCollection, ShouldAutoSize, WithEvents, WithHea
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $highestRow = $sheet->getHighestRow();
-                $sheet->getStyle('A1:N1')->getFont()->setBold(true);
-                $sheet->getStyle("A1:N{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                $sheet->getStyle('A1:P1')->getFont()->setBold(true);
+                $sheet->getStyle("A1:P{$highestRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
             },
         ];
     }

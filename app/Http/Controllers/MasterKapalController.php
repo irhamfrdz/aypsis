@@ -81,6 +81,8 @@ class MasterKapalController extends Controller
             'kapasitas_kontainer_palka' => 'nullable|integer|min:0',
             'kapasitas_kontainer_deck' => 'nullable|integer|min:0',
             'gross_tonnage' => 'nullable|numeric|min:0',
+            'deadweight_tonnage' => 'nullable|numeric|min:0',
+            'length_overall' => 'nullable|numeric|min:0',
             'catatan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
         ]);
@@ -129,6 +131,8 @@ class MasterKapalController extends Controller
             'kapasitas_kontainer_palka' => 'nullable|integer|min:0',
             'kapasitas_kontainer_deck' => 'nullable|integer|min:0',
             'gross_tonnage' => 'nullable|numeric|min:0',
+            'deadweight_tonnage' => 'nullable|numeric|min:0',
+            'length_overall' => 'nullable|numeric|min:0',
             'catatan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
         ]);
@@ -185,13 +189,13 @@ class MasterKapalController extends Controller
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
             // Header with capacity fields included
-            fputcsv($file, ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'kapasitas_kontainer_palka', 'kapasitas_kontainer_deck', 'gross_tonnage', 'catatan', 'status'], ';');
+            fputcsv($file, ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'kapasitas_kontainer_palka', 'kapasitas_kontainer_deck', 'gross_tonnage', 'deadweight_tonnage', 'length_overall', 'catatan', 'status'], ';');
 
             // Example data rows with capacity examples
-            fputcsv($file, ['K001', 'KP-001', 'MV SEJAHTERA', 'SEJAHTERA', 'PT Pelayaran Indonesia', '120', '80', '2500.50', 'Kapal kontainer 20 feet', 'aktif'], ';');
-            fputcsv($file, ['K002', 'KP-002', 'MV NUSANTARA', 'NUSA', 'PT Samudera Lines', '150', '100', '3200.75', 'Kapal cargo besar', 'aktif'], ';');
-            fputcsv($file, ['K003', 'KP-003', 'MV BAHARI', '', 'PT Pelni', '', '', '1800.00', 'Kapal penumpang', 'nonaktif'], ';');
-            fputcsv($file, ['K004', '', 'MV SRIKANDI', 'KANDI', 'PT Berlian Shipping', '90', '60', '', '', 'aktif'], ';');
+            fputcsv($file, ['K001', 'KP-001', 'MV SEJAHTERA', 'SEJAHTERA', 'PT Pelayaran Indonesia', '120', '80', '2500.50', '3500.00', '120.50', 'Kapal kontainer 20 feet', 'aktif'], ';');
+            fputcsv($file, ['K002', 'KP-002', 'MV NUSANTARA', 'NUSA', 'PT Samudera Lines', '150', '100', '3200.75', '4500.00', '140.20', 'Kapal cargo besar', 'aktif'], ';');
+            fputcsv($file, ['K003', 'KP-003', 'MV BAHARI', '', 'PT Pelni', '', '', '1800.00', '2200.00', '98.00', 'Kapal penumpang', 'nonaktif'], ';');
+            fputcsv($file, ['K004', '', 'MV SRIKANDI', 'KANDI', 'PT Berlian Shipping', '90', '60', '', '', '', '', 'aktif'], ';');
 
             fclose($file);
         };
@@ -244,15 +248,19 @@ class MasterKapalController extends Controller
             }, $header);
 
             // Validate header - Support both import template and export format
-            $expectedImportHeader = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'kapasitas_kontainer_palka', 'kapasitas_kontainer_deck', 'gross_tonnage', 'catatan', 'status'];
+            $expectedImportHeader = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'kapasitas_kontainer_palka', 'kapasitas_kontainer_deck', 'gross_tonnage', 'deadweight_tonnage', 'length_overall', 'catatan', 'status'];
+            $expectedImportHeaderMed = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'kapasitas_kontainer_palka', 'kapasitas_kontainer_deck', 'gross_tonnage', 'catatan', 'status'];
             $expectedImportHeaderOld = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'catatan', 'status']; // Legacy format
-            $expectedExportHeader = ['No', 'Kode', 'Kode Kapal', 'Nama Kapal', 'Nickname', 'Pelayaran (Pemilik)', 'Kapasitas Palka', 'Kapasitas Deck', 'Gross Tonnage', 'Total Kapasitas', 'Catatan', 'Status', 'Tanggal Dibuat', 'Tanggal Diperbarui'];
+            $expectedExportHeader = ['No', 'Kode', 'Kode Kapal', 'Nama Kapal', 'Nickname', 'Pelayaran (Pemilik)', 'Kapasitas Palka', 'Kapasitas Deck', 'Gross Tonnage', 'Deadweight Tonnage', 'Length Overall', 'Total Kapasitas', 'Catatan', 'Status', 'Tanggal Dibuat', 'Tanggal Diperbarui'];
+            $expectedExportHeaderMed = ['No', 'Kode', 'Kode Kapal', 'Nama Kapal', 'Nickname', 'Pelayaran (Pemilik)', 'Kapasitas Palka', 'Kapasitas Deck', 'Gross Tonnage', 'Total Kapasitas', 'Catatan', 'Status', 'Tanggal Dibuat', 'Tanggal Diperbarui'];
 
             $isImportFormat = ($header === $expectedImportHeader);
+            $isImportFormatMed = ($header === $expectedImportHeaderMed);
             $isImportFormatOld = ($header === $expectedImportHeaderOld);
             $isExportFormat = ($header === $expectedExportHeader);
+            $isExportFormatMed = ($header === $expectedExportHeaderMed);
 
-            if (! $isImportFormat && ! $isImportFormatOld && ! $isExportFormat) {
+            if (! $isImportFormat && ! $isImportFormatMed && ! $isImportFormatOld && ! $isExportFormat && ! $isExportFormatMed) {
                 return redirect()
                     ->back()
                     ->with('error', 'Format header CSV tidak sesuai. 
@@ -278,8 +286,11 @@ class MasterKapalController extends Controller
                 }
 
                 // Parse data based on format
+                $deadweight_tonnage = null;
+                $length_overall = null;
+
                 if ($isImportFormat) {
-                    // New Import template format: kode;kode_kapal;nama_kapal;nickname;pelayaran;kapasitas_kontainer_palka;kapasitas_kontainer_deck;gross_tonnage;catatan;status
+                    // New Import template format: kode;kode_kapal;nama_kapal;nickname;pelayaran;kapasitas_kontainer_palka;kapasitas_kontainer_deck;gross_tonnage;deadweight_tonnage;length_overall;catatan;status
                     $kode = trim($row[0]);
                     $kode_kapal = ! empty(trim($row[1])) ? trim($row[1]) : null;
                     $nama_kapal = trim($row[2]);
@@ -288,7 +299,21 @@ class MasterKapalController extends Controller
                     $kapasitas_palka = isset($row[5]) && ! empty(trim($row[5])) ? (float) trim($row[5]) : null;
                     $kapasitas_deck = isset($row[6]) && ! empty(trim($row[6])) ? (float) trim($row[6]) : null;
                     $gross_tonnage = isset($row[7]) && ! empty(trim($row[7])) ? (float) trim($row[7]) : null;
-                    $catatan = ! empty(trim($row[8])) ? trim($row[8]) : null;
+                    $deadweight_tonnage = isset($row[8]) && ! empty(trim($row[8])) ? (float) trim($row[8]) : null;
+                    $length_overall = isset($row[9]) && ! empty(trim($row[9])) ? (float) trim($row[9]) : null;
+                    $catatan = isset($row[10]) && ! empty(trim($row[10])) ? trim($row[10]) : null;
+                    $status = trim($row[11]);
+                } elseif ($isImportFormatMed) {
+                    // Intermediate Import format
+                    $kode = trim($row[0]);
+                    $kode_kapal = ! empty(trim($row[1])) ? trim($row[1]) : null;
+                    $nama_kapal = trim($row[2]);
+                    $nickname = ! empty(trim($row[3])) ? trim($row[3]) : null;
+                    $pelayaran = ! empty(trim($row[4])) ? trim($row[4]) : null;
+                    $kapasitas_palka = isset($row[5]) && ! empty(trim($row[5])) ? (float) trim($row[5]) : null;
+                    $kapasitas_deck = isset($row[6]) && ! empty(trim($row[6])) ? (float) trim($row[6]) : null;
+                    $gross_tonnage = isset($row[7]) && ! empty(trim($row[7])) ? (float) trim($row[7]) : null;
+                    $catatan = isset($row[8]) && ! empty(trim($row[8])) ? trim($row[8]) : null;
                     $status = trim($row[9]);
                 } elseif ($isImportFormatOld) {
                     // Old Import template format: kode;kode_kapal;nama_kapal;nickname;pelayaran;catatan;status
@@ -303,16 +328,22 @@ class MasterKapalController extends Controller
                     $kapasitas_palka = null;
                     $kapasitas_deck = null;
                     $gross_tonnage = null;
+                } elseif ($isExportFormat) {
+                    // Export format with DWT/LOA
+                    $kode = trim($row[1]); // Column B: Kode
+                    $kode_kapal = ! empty(trim($row[2])) ? trim($row[2]) : null; // Column C: Kode Kapal
+                    $nama_kapal = trim($row[3]); // Column D: Nama Kapal
+                    $nickname = ! empty(trim($row[4])) ? trim($row[4]) : null; // Column E: Nickname
+                    $pelayaran = ! empty(trim($row[5])) ? trim($row[5]) : null; // Column F: Pelayaran (Pemilik)
+                    $kapasitas_palka = isset($row[6]) && ! empty(trim($row[6])) ? (float) trim($row[6]) : null; // Column G: Kapasitas Palka
+                    $kapasitas_deck = isset($row[7]) && ! empty(trim($row[7])) ? (float) trim($row[7]) : null; // Column H: Kapasitas Deck
+                    $gross_tonnage = isset($row[8]) && ! empty(trim($row[8])) ? (float) trim($row[8]) : null; // Column I: Gross Tonnage
+                    $deadweight_tonnage = isset($row[9]) && ! empty(trim($row[9])) ? (float) trim($row[9]) : null; // Column J: Deadweight Tonnage
+                    $length_overall = isset($row[10]) && ! empty(trim($row[10])) ? (float) trim($row[10]) : null; // Column K: Length Overall
+                    $catatan = isset($row[12]) && ! empty(trim($row[12])) ? trim($row[12]) : null; // Column M: Catatan
+                    $status = trim($row[13]); // Column N: Status
                 } else {
-                    // Export format: No,Kode,Kode Kapal,Nama Kapal,Nickname,Pelayaran (Pemilik),Kapasitas Palka,Kapasitas Deck,Gross Tonnage,Total Kapasitas,Catatan,Status,Tanggal Dibuat,Tanggal Diperbarui
-                    // Make sure we have enough columns
-                    if (count($row) < 12) {
-                        $errors[] = "Baris {$rowNumber}: Format export tidak lengkap, minimal 12 kolom diperlukan";
-                        $skipped++;
-
-                        continue;
-                    }
-
+                    // Intermediate Export format
                     $kode = trim($row[1]); // Column B: Kode
                     $kode_kapal = ! empty(trim($row[2])) ? trim($row[2]) : null; // Column C: Kode Kapal
                     $nama_kapal = trim($row[3]); // Column D: Nama Kapal
@@ -376,6 +407,12 @@ class MasterKapalController extends Controller
                     if ($gross_tonnage !== null) {
                         $updateData['gross_tonnage'] = $gross_tonnage;
                     }
+                    if ($deadweight_tonnage !== null) {
+                        $updateData['deadweight_tonnage'] = $deadweight_tonnage;
+                    }
+                    if ($length_overall !== null) {
+                        $updateData['length_overall'] = $length_overall;
+                    }
 
                     $existing->update($updateData);
                     $updated++;
@@ -390,6 +427,8 @@ class MasterKapalController extends Controller
                         'kapasitas_kontainer_palka' => $kapasitas_palka,
                         'kapasitas_kontainer_deck' => $kapasitas_deck,
                         'gross_tonnage' => $gross_tonnage,
+                        'deadweight_tonnage' => $deadweight_tonnage,
+                        'length_overall' => $length_overall,
                         'catatan' => $catatan,
                         'status' => $normalizedStatus,
                     ]);
@@ -497,6 +536,8 @@ class MasterKapalController extends Controller
                 'Kapasitas Palka',
                 'Kapasitas Deck',
                 'Gross Tonnage',
+                'Deadweight Tonnage',
+                'Length Overall',
                 'Total Kapasitas',
                 'Catatan',
                 'Status',
@@ -518,6 +559,8 @@ class MasterKapalController extends Controller
                     $kapal->kapasitas_kontainer_palka ?? '',
                     $kapal->kapasitas_kontainer_deck ?? '',
                     $kapal->gross_tonnage ?? '',
+                    $kapal->deadweight_tonnage ?? '',
+                    $kapal->length_overall ?? '',
                     $totalKapasitas > 0 ? $totalKapasitas : '',
                     $kapal->catatan ?? '',
                     ucfirst($kapal->status),

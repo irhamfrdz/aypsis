@@ -195,13 +195,56 @@
                                value="{{ old('gross_tonnage') }}"
                                min="0"
                                step="0.01"
-                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('gross_tonnage') border-red-500 @else border_gray-300 @enderror"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('gross_tonnage') border-red-500 @else border-gray-300 @enderror"
                                placeholder="0.00">
                     </div>
                     @error('gross_tonnage')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                     <p class="mt-1 text-xs text-gray-500">Gross tonnage kapal dalam ton</p>
+                </div>
+            </div>
+
+            <!-- Row 4: Deadweight Tonnage & Length Overall -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="deadweight_tonnage" class="block text-sm font-medium text-gray-700 mb-2">
+                        Deadweight Tonnage (DWT)
+                    </label>
+                    <div class="relative">
+                        <input type="number"
+                               id="deadweight_tonnage"
+                               name="deadweight_tonnage"
+                               value="{{ old('deadweight_tonnage') }}"
+                               min="0"
+                               step="0.01"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('deadweight_tonnage') border-red-500 @enderror"
+                               placeholder="0.00">
+                    </div>
+                    @error('deadweight_tonnage')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-xs text-gray-500">Deadweight tonnage kapal dalam ton</p>
+                </div>
+
+                <div>
+                    <label for="length_overall" class="block text-sm font-medium text-gray-700 mb-2">
+                        Length Overall (LOA)
+                    </label>
+                    <div class="relative">
+                        <input type="number"
+                               id="length_overall"
+                               name="length_overall"
+                               value="{{ old('length_overall') }}"
+                               min="0"
+                               step="0.01"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('length_overall') border-red-500 @enderror"
+                               placeholder="0.00">
+                    </div>
+                    @error('length_overall')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-xs text-gray-500">Length overall (LOA) kapal dalam meter</p>
                 </div>
             </div>
 

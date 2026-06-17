@@ -137,13 +137,41 @@
                         </dd>
                     </div>
 
-                    <div class="flex pb-3">
+                    <div class="flex border-b border-gray-100 pb-3">
                         <dt class="w-40 text-sm font-medium text-gray-500">Gross Tonnage</dt>
                         <dd class="flex-1 text-sm text-gray-900">
                             @if($masterKapal->gross_tonnage)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                     <i class="fas fa-weight-hanging mr-1"></i>
                                     {{ number_format($masterKapal->gross_tonnage, 2) }}
+                                </span>
+                            @else
+                                -
+                            @endif
+                        </dd>
+                    </div>
+
+                    <div class="flex border-b border-gray-100 pb-3">
+                        <dt class="w-40 text-sm font-medium text-gray-500">Deadweight Tonnage</dt>
+                        <dd class="flex-1 text-sm text-gray-900">
+                            @if($masterKapal->deadweight_tonnage)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                    <i class="fas fa-weight-hanging mr-1"></i>
+                                    {{ number_format($masterKapal->deadweight_tonnage, 2) }}
+                                </span>
+                            @else
+                                -
+                            @endif
+                        </dd>
+                    </div>
+
+                    <div class="flex pb-3">
+                        <dt class="w-40 text-sm font-medium text-gray-500">Length Overall (LOA)</dt>
+                        <dd class="flex-1 text-sm text-gray-900">
+                            @if($masterKapal->length_overall)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <i class="fas fa-ruler-combined mr-1"></i>
+                                    {{ number_format($masterKapal->length_overall, 2) }} m
                                 </span>
                             @else
                                 -
@@ -198,14 +226,14 @@
             </div>
 
             <!-- Capacity Summary Section -->
-            @if($masterKapal->kapasitas_kontainer_palka || $masterKapal->kapasitas_kontainer_deck || $masterKapal->gross_tonnage)
+            @if($masterKapal->kapasitas_kontainer_palka || $masterKapal->kapasitas_kontainer_deck || $masterKapal->gross_tonnage || $masterKapal->deadweight_tonnage || $masterKapal->length_overall)
             <div class="mt-8 pt-6 border-t border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <i class="fas fa-chart-bar text-blue-500 mr-2"></i>
                     Kapasitas & Spesifikasi Teknis
                 </h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <!-- Kapasitas Palka -->
                     <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
                         <div class="flex items-center justify-between">
@@ -266,6 +294,36 @@
                             </div>
                             <div class="bg-yellow-100 rounded-full p-3">
                                 <i class="fas fa-weight-hanging text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deadweight Tonnage -->
+                    <div class="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-orange-600">Deadweight Tonnage</p>
+                                <p class="text-2xl font-bold text-orange-900">
+                                    {{ $masterKapal->deadweight_tonnage ? number_format($masterKapal->deadweight_tonnage, 2) : '0' }}
+                                </p>
+                            </div>
+                            <div class="bg-orange-100 rounded-full p-3">
+                                <i class="fas fa-weight-hanging text-orange-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Length Overall -->
+                    <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-red-600">Length Overall (LOA)</p>
+                                <p class="text-2xl font-bold text-red-900">
+                                    {{ $masterKapal->length_overall ? number_format($masterKapal->length_overall, 2) . ' m' : '0' }}
+                                </p>
+                            </div>
+                            <div class="bg-red-100 rounded-full p-3">
+                                <i class="fas fa-ruler-combined text-red-600 text-xl"></i>
                             </div>
                         </div>
                     </div>
