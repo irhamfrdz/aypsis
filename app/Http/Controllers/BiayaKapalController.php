@@ -4790,19 +4790,23 @@ class BiayaKapalController extends Controller
             foreach ($groupedContainers as $key => $group) {
                 [$size, $status] = explode('|', $key);
 
-                // Calculate unique container count as in rekap_bongkaran
-                $uniqueContainers = $group->whereNotNull('nomor_kontainer')
-                    ->where('nomor_kontainer', '!=', '')
-                    ->where('nomor_kontainer', '!=', '-')
-                    ->pluck('nomor_kontainer')
-                    ->unique()
-                    ->count();
+                if ($status === 'empty') {
+                    $totalCount = $group->count();
+                } else {
+                    // Calculate unique container count as in rekap_bongkaran
+                    $uniqueContainers = $group->whereNotNull('nomor_kontainer')
+                        ->where('nomor_kontainer', '!=', '')
+                        ->where('nomor_kontainer', '!=', '-')
+                        ->pluck('nomor_kontainer')
+                        ->unique()
+                        ->count();
 
-                $emptyOrDashContainers = $group->filter(function ($item) {
-                    return empty($item->nomor_kontainer) || $item->nomor_kontainer === '-';
-                })->count();
+                    $emptyOrDashContainers = $group->filter(function ($item) {
+                        return empty($item->nomor_kontainer) || $item->nomor_kontainer === '-';
+                    })->count();
 
-                $totalCount = $uniqueContainers + $emptyOrDashContainers;
+                    $totalCount = $uniqueContainers + $emptyOrDashContainers;
+                }
                 $counts[$size][$status] = $totalCount;
 
                 // For FCL / LCL counts (only for full containers)
