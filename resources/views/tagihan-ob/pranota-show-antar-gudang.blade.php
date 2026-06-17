@@ -29,6 +29,28 @@
         </div>
 
         <div class="p-6">
+            @if (session('success'))
+                <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md mb-4" role="alert">
+                    <div class="flex justify-between items-center">
+                        <span>{{ session('success') }}</span>
+                        <button type="button" class="text-green-500 hover:text-green-700" onclick="this.parentElement.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4" role="alert">
+                    <div class="flex justify-between items-center">
+                        <span>{{ session('error') }}</span>
+                        <button type="button" class="text-red-500 hover:text-red-700" onclick="this.parentElement.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
             {{-- Info Cards Grid --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 {{-- Info Utama --}}
@@ -46,6 +68,22 @@
                         <div class="flex justify-between">
                             <span class="text-xs text-gray-500">Dibuat Oleh:</span>
                             <span class="text-xs font-semibold text-gray-900">{{ $pranota->creator->name ?? '-' }}</span>
+                        </div>
+                        <div class="flex justify-between items-center border-t border-gray-200 pt-2 mt-2">
+                            <span class="text-xs text-gray-500">Status Pembayaran:</span>
+                            <form action="{{ route('pranota-ob-antar-gudang.update-status', $pranota->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin mengubah status pembayaran pranota ini?')">
+                                @csrf
+                                @method('PATCH')
+                                @if(($pranota->status_pembayaran ?? 'Belum Lunas') === 'Lunas')
+                                    <button type="submit" name="status_pembayaran" value="Belum Lunas" class="inline-flex px-2 py-0.5 text-[10px] font-bold rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition duration-150 cursor-pointer" title="Klik untuk ubah ke Belum Lunas">
+                                        <i class="fas fa-check-circle mr-1"></i> Lunas
+                                    </button>
+                                @else
+                                    <button type="submit" name="status_pembayaran" value="Lunas" class="inline-flex px-2 py-0.5 text-[10px] font-bold rounded-full bg-red-100 text-red-800 hover:bg-red-200 transition duration-150 cursor-pointer" title="Klik untuk ubah ke Lunas">
+                                        <i class="fas fa-times-circle mr-1"></i> Belum Lunas
+                                    </button>
+                                @endif
+                            </form>
                         </div>
                     </div>
                 </div>

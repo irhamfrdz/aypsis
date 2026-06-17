@@ -17,6 +17,7 @@ class PranotaObAntarGudang extends Model
         'alasan_adjustment',
         'grand_total',
         'created_by',
+        'status_pembayaran',
     ];
 
     public function creator()

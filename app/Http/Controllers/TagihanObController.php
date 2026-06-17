@@ -542,4 +542,29 @@ class TagihanObController extends Controller
 
         return view('tagihan-ob.pranota-print-antar-gudang', compact('pranota'));
     }
+
+    /**
+     * Update payment status of the specified pranota ob antar gudang.
+     */
+    public function updateStatusPranotaAntarGudang(Request $request, $id)
+    {
+        if (! Auth::user()->can('pranota-ob-antar-gudang-view')) {
+            abort(403);
+        }
+
+        $request->validate([
+            'status_pembayaran' => 'required|in:Lunas,Belum Lunas',
+        ]);
+
+        try {
+            $pranota = \App\Models\PranotaObAntarGudang::findOrFail($id);
+            $pranota->update([
+                'status_pembayaran' => $request->status_pembayaran,
+            ]);
+
+            return redirect()->back()->with('success', 'Status pembayaran Pranota OB Antar Gudang ' . $pranota->nomor_pranota . ' berhasil diubah menjadi ' . $request->status_pembayaran . '.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengubah status pembayaran: ' . $e->getMessage());
+        }
+    }
 }

@@ -81,6 +81,7 @@
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Adjustment</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Grand Total</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
                             <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -107,6 +108,21 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-teal-900">Rp {{ number_format($item->grand_total, 0, ',', '.') }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs">
+                                    <form action="{{ route('pranota-ob-antar-gudang.update-status', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin mengubah status pembayaran pranota ini?')">
+                                        @csrf
+                                        @method('PATCH')
+                                        @if(($item->status_pembayaran ?? 'Belum Lunas') === 'Lunas')
+                                            <button type="submit" name="status_pembayaran" value="Belum Lunas" class="inline-flex px-2.5 py-1 text-xs font-bold rounded-full bg-green-100 text-green-800 hover:bg-green-200 transition duration-150 cursor-pointer" title="Klik untuk ubah ke Belum Lunas">
+                                                <i class="fas fa-check-circle mr-1"></i> Lunas
+                                            </button>
+                                        @else
+                                            <button type="submit" name="status_pembayaran" value="Lunas" class="inline-flex px-2.5 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800 hover:bg-red-200 transition duration-150 cursor-pointer" title="Klik untuk ubah ke Lunas">
+                                                <i class="fas fa-times-circle mr-1"></i> Belum Lunas
+                                            </button>
+                                        @endif
+                                    </form>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">{{ $item->creator->name ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
                                     <div class="flex justify-center space-x-1">
@@ -135,7 +151,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-12 text-center">
+                                <td colspan="10" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center">
                                         <i class="fas fa-inbox text-gray-400 text-4xl mb-4"></i>
                                         <p class="text-gray-500 text-sm">Belum ada data pranota OB Antar Gudang</p>

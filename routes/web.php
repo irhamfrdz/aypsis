@@ -4999,6 +4999,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('pranota-ob-antar-gudang.destroy')
         ->middleware('can:pranota-ob-antar-gudang-delete');
 
+    Route::patch('pranota-ob-antar-gudang/{id}/status', [\App\Http\Controllers\TagihanObController::class, 'updateStatusPranotaAntarGudang'])
+        ->name('pranota-ob-antar-gudang.update-status')
+        ->middleware('can:pranota-ob-antar-gudang-view');
+
     Route::get('tagihan-ob', [\App\Http\Controllers\TagihanObController::class, 'index'])
         ->name('tagihan-ob.index')
         ->middleware('can:tagihan-ob-view');
