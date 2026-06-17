@@ -3366,6 +3366,23 @@
                                 <td><input type="checkbox" name="permissions[pembayaran-pranota-ob][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-ob']['export']) && $userMatrixPermissions['pembayaran-pranota-ob']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Pembayaran Pranota OB Antar Gudang --}}
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span class="text-teal-600 font-bold">Pembayaran Pranota OB Antar Gudang</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-ob-antar-gudang][view]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-ob-antar-gudang.view') || (isset($userMatrixPermissions['pembayaran-pranota-ob-antar-gudang']['view']) && $userMatrixPermissions['pembayaran-pranota-ob-antar-gudang']['view']) || ($user && $user->can('pembayaran-pranota-ob-antar-gudang-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-ob-antar-gudang][create]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-ob-antar-gudang.create') || (isset($userMatrixPermissions['pembayaran-pranota-ob-antar-gudang']['create']) && $userMatrixPermissions['pembayaran-pranota-ob-antar-gudang']['create']) || ($user && $user->can('pembayaran-pranota-ob-antar-gudang-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-ob-antar-gudang][update]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-ob-antar-gudang.update') || (isset($userMatrixPermissions['pembayaran-pranota-ob-antar-gudang']['update']) && $userMatrixPermissions['pembayaran-pranota-ob-antar-gudang']['update']) || ($user && $user->can('pembayaran-pranota-ob-antar-gudang-edit'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-ob-antar-gudang][delete]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-ob-antar-gudang.delete') || (isset($userMatrixPermissions['pembayaran-pranota-ob-antar-gudang']['delete']) && $userMatrixPermissions['pembayaran-pranota-ob-antar-gudang']['delete']) || ($user && $user->can('pembayaran-pranota-ob-antar-gudang-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-ob-antar-gudang][print]" value="1" class="permission-checkbox" @if(old('permissions.pembayaran-pranota-ob-antar-gudang.print') || (isset($userMatrixPermissions['pembayaran-pranota-ob-antar-gudang']['print']) && $userMatrixPermissions['pembayaran-pranota-ob-antar-gudang']['print']) || ($user && $user->can('pembayaran-pranota-ob-antar-gudang-print'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pembayaran Pranota Surat Jalan --}}
                             <tr class="submodule-row" data-parent="pembayaran">
                                 <td class="submodule">

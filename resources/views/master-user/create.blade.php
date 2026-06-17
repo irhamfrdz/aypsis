@@ -1809,6 +1809,22 @@
                                 <td><input type="checkbox" name="permissions[pembayaran-ob][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
+                            {{-- Pembayaran Pranota OB Antar Gudang --}}
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center text-teal-600 font-bold">
+                                        <span>Pembayaran Pranota OB Antar Gudang</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-ob-antar-gudang][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-ob-antar-gudang][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-ob-antar-gudang][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-ob-antar-gudang][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-ob-antar-gudang][print]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             <tr class="submodule-row" data-parent="pembayaran">
                                 <td class="submodule">
                                     <div class="flex items-center">
