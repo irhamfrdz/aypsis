@@ -5006,28 +5006,28 @@ Route::middleware(['auth'])->group(function () {
     // Pembayaran Pranota OB Antar Gudang
     Route::get('pembayaran-pranota-ob-antar-gudang', [\App\Http\Controllers\PembayaranPranotaObAntarGudangController::class, 'index'])
         ->name('pembayaran-pranota-ob-antar-gudang.index')
-        ->middleware('can:pranota-ob-antar-gudang-view');
+        ->middleware('can:pembayaran-pranota-ob-antar-gudang-view');
     Route::get('pembayaran-pranota-ob-antar-gudang/create', [\App\Http\Controllers\PembayaranPranotaObAntarGudangController::class, 'create'])
         ->name('pembayaran-pranota-ob-antar-gudang.create')
-        ->middleware('can:pranota-ob-antar-gudang-view');
+        ->middleware('can:pembayaran-pranota-ob-antar-gudang-create');
     Route::post('pembayaran-pranota-ob-antar-gudang', [\App\Http\Controllers\PembayaranPranotaObAntarGudangController::class, 'store'])
         ->name('pembayaran-pranota-ob-antar-gudang.store')
-        ->middleware('can:pranota-ob-antar-gudang-view');
+        ->middleware('can:pembayaran-pranota-ob-antar-gudang-create');
     Route::get('pembayaran-pranota-ob-antar-gudang/{id}', [\App\Http\Controllers\PembayaranPranotaObAntarGudangController::class, 'show'])
         ->name('pembayaran-pranota-ob-antar-gudang.show')
-        ->middleware('can:pranota-ob-antar-gudang-view');
+        ->middleware('can:pembayaran-pranota-ob-antar-gudang-view');
     Route::get('pembayaran-pranota-ob-antar-gudang/{id}/edit', [\App\Http\Controllers\PembayaranPranotaObAntarGudangController::class, 'edit'])
         ->name('pembayaran-pranota-ob-antar-gudang.edit')
-        ->middleware('can:pranota-ob-antar-gudang-view');
+        ->middleware('can:pembayaran-pranota-ob-antar-gudang-edit');
     Route::put('pembayaran-pranota-ob-antar-gudang/{id}', [\App\Http\Controllers\PembayaranPranotaObAntarGudangController::class, 'update'])
         ->name('pembayaran-pranota-ob-antar-gudang.update')
-        ->middleware('can:pranota-ob-antar-gudang-view');
+        ->middleware('can:pembayaran-pranota-ob-antar-gudang-edit');
     Route::delete('pembayaran-pranota-ob-antar-gudang/{id}', [\App\Http\Controllers\PembayaranPranotaObAntarGudangController::class, 'destroy'])
         ->name('pembayaran-pranota-ob-antar-gudang.destroy')
-        ->middleware('can:pranota-ob-antar-gudang-delete');
+        ->middleware('can:pembayaran-pranota-ob-antar-gudang-delete');
     Route::get('pembayaran-pranota-ob-antar-gudang/{id}/print', [\App\Http\Controllers\PembayaranPranotaObAntarGudangController::class, 'print'])
         ->name('pembayaran-pranota-ob-antar-gudang.print')
-        ->middleware('can:pranota-ob-antar-gudang-view');
+        ->middleware('can:pembayaran-pranota-ob-antar-gudang-print');
 
     Route::get('tagihan-ob', [\App\Http\Controllers\TagihanObController::class, 'index'])
         ->name('tagihan-ob.index')
