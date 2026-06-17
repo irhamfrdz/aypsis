@@ -536,6 +536,7 @@
     </div>
 
 {{-- Script --}}
+@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const selectAllCheckbox = document.getElementById('select-all');
@@ -804,14 +805,9 @@
             });
         }
         
-        // Load Select2 JS dynamically
-        if (typeof jQuery !== 'undefined') {
-            const select2Script = document.createElement('script');
-            select2Script.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
-            select2Script.onload = function() {
-                initializeSelect2();
-            };
-            document.head.appendChild(select2Script);
+        // Initialize Select2 directly since it is loaded in layouts/app.blade.php
+        if (typeof $.fn.select2 !== 'undefined') {
+            initializeSelect2();
         }
 
         function initializeSelect2() {
@@ -1034,6 +1030,7 @@
         updateSupirList();
     });
 </script>
+@endpush
 
 
 
