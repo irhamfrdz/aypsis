@@ -176,6 +176,7 @@
                     'grand_total' => $labuh->grand_total,
                     'penerima' => $labuh->penerima,
                     'nomor_rekening' => $labuh->nomor_rekening,
+                    'bank_id' => $labuh->bank_id,
                     'tanggal_invoice_vendor' => $labuh->tanggal_invoice_vendor ? \Carbon\Carbon::parse($labuh->tanggal_invoice_vendor)->format('Y-m-d') : null,
                     'types' => [],
                 ];
@@ -764,8 +765,9 @@
                     // Set No. Referensi
                     if (myData.nomor_referensi) section.querySelector('.no-referensi-input-labuh-tambat').value = myData.nomor_referensi;
                     
-                    // Set Penerima, Rekening, Invoice date
+                    // Set Penerima, Bank, Rekening, Invoice date
                     if (myData.penerima) section.querySelector('.penerima-input-labuh-tambat').value = myData.penerima;
+                    if (myData.bank_id) section.querySelector('.bank-select-labuh-tambat').value = myData.bank_id;
                     if (myData.nomor_rekening) section.querySelector('.nomor-rekening-input-labuh-tambat').value = myData.nomor_rekening;
                     if (myData.tanggal_invoice_vendor) section.querySelector('.tanggal-invoice-vendor-input-labuh-tambat').value = myData.tanggal_invoice_vendor;
                     if (myData.biaya_materai) {

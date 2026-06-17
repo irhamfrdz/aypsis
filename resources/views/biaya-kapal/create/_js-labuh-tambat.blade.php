@@ -107,6 +107,12 @@
         uniqueLokasis.forEach(loc => {
             lokasiOptions += `<option value="${loc}">${loc}</option>`;
         });
+
+        // Bank options
+        let bankOptions = '<option value="">-- Pilih Bank --</option>';
+        @foreach($banks as $bank)
+            bankOptions += `<option value="{{ $bank->id }}">{{ $bank->name }}</option>`;
+        @endforeach
         
         section.innerHTML = `
             <div class="flex items-center justify-between mb-4">
@@ -213,6 +219,12 @@
                     <input type="text" name="labuh_tambat[${sectionIndex}][penerima]" class="penerima-input-labuh-tambat w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500" placeholder="Masukkan nama penerima">
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Bank</label>
+                    <select name="labuh_tambat[${sectionIndex}][bank_id]" class="bank-select-labuh-tambat w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500">
+                        ${bankOptions}
+                    </select>
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Rekening</label>
                     <input type="text" name="labuh_tambat[${sectionIndex}][nomor_rekening]" class="nomor-rekening-input-labuh-tambat w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500" placeholder="Masukkan nomor rekening">
                 </div>
@@ -283,8 +295,23 @@
                 this.classList.remove('bg-slate-200', 'text-slate-700');
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
+        const bankSelect = section.querySelector('.bank-select-labuh-tambat');
+        if (sectionIndex > 1) {
+            const firstBankSelect = document.querySelector('.bank-select-labuh-tambat');
+            if (firstBankSelect && firstBankSelect.value) {
+                bankSelect.value = firstBankSelect.value;
+            }
+        }
+        bankSelect.addEventListener('change', function() {
+            if (sectionIndex === 1) {
+                document.querySelectorAll('.bank-select-labuh-tambat').forEach((select, idx) => {
+                    if (idx > 0) {
+                        select.value = this.value;
+                    }
+                });
+            }
         });
-        
+
         calculateLabuhTambatSectionTotal(sectionIndex);
     }
     

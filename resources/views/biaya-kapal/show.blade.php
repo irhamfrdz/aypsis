@@ -536,7 +536,7 @@
                         @if($first->nomor_rekening)
                         <div>
                             <span class="text-gray-500">No. Rekening:</span>
-                            <span class="font-semibold">{{ $first->nomor_rekening }}</span>
+                            <span class="font-semibold">{{ $first->nomor_rekening }} {{ $first->bank ? '(' . $first->bank->name . ')' : '' }}</span>
                         </div>
                         @endif
                         @if($first->nomor_referensi)
@@ -792,7 +792,7 @@
                         @if($first->nomor_rekening)
                         <div>
                             <span class="text-gray-500">No. Rekening:</span>
-                            <span class="font-semibold">{{ $first->nomor_rekening }}</span>
+                            <span class="font-semibold">{{ $first->nomor_rekening }} {{ $first->bank ? '(' . $first->bank->name . ')' : '' }}</span>
                         </div>
                         @endif
                         @if($first->nomor_referensi)

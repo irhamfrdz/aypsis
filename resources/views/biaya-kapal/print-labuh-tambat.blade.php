@@ -5,6 +5,11 @@
     $vendorDisplay = $firstItem->vendor ?? ($biayaKapal->nama_vendor ?? '-');
     $penerimaDisplay = $biayaKapal->penerima ?: ($firstItem->penerima ?? '-');
     $rekeningDisplay = $firstItem->nomor_rekening ?? ($biayaKapal->nomor_rekening ?? '-');
+    if ($firstItem && $firstItem->bank) {
+        $rekeningDisplay .= ' (' . $firstItem->bank->name . ')';
+    } elseif ($biayaKapal->bank) {
+        $rekeningDisplay .= ' (' . $biayaKapal->bank->name . ')';
+    }
 
     $isAbqori = str_contains(strtoupper($vendorDisplay), 'ABQORI');
 

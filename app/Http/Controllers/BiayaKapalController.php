@@ -806,6 +806,7 @@ class BiayaKapalController extends Controller
             'labuh_tambat.*.lokasi' => 'nullable|string|max:255',
             'labuh_tambat.*.penerima' => 'nullable|string|max:255',
             'labuh_tambat.*.nomor_rekening' => 'nullable|string|max:100',
+            'labuh_tambat.*.bank_id' => 'nullable|exists:banks,id',
             'labuh_tambat.*.nomor_referensi' => 'nullable|string|max:100',
             'labuh_tambat.*.tanggal_invoice_vendor' => 'nullable|date',
 
@@ -1309,6 +1310,7 @@ class BiayaKapalController extends Controller
                                 'grand_total' => $grandTotal,
                                 'penerima' => $section['penerima'] ?? null,
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                                'bank_id' => $section['bank_id'] ?? null,
                                 'nomor_referensi' => $section['nomor_referensi'] ?? null,
                                 'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                             ]);
@@ -3351,6 +3353,7 @@ class BiayaKapalController extends Controller
             'labuh_tambat.*.lokasi' => 'nullable|string|max:255',
             'labuh_tambat.*.penerima' => 'nullable|string|max:255',
             'labuh_tambat.*.nomor_rekening' => 'nullable|string|max:100',
+            'labuh_tambat.*.bank_id' => 'nullable|exists:banks,id',
             'labuh_tambat.*.nomor_referensi' => 'nullable|string|max:100',
             'labuh_tambat.*.tanggal_invoice_vendor' => 'nullable|date',
 
@@ -3987,6 +3990,7 @@ class BiayaKapalController extends Controller
                                     'grand_total' => $grandTotal,
                                     'penerima' => $section['penerima'] ?? null,
                                     'nomor_rekening' => $section['nomor_rekening'] ?? null,
+                                    'bank_id' => $section['bank_id'] ?? null,
                                     'nomor_referensi' => $section['nomor_referensi'] ?? null,
                                     'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
                                 ]);
