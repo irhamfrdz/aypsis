@@ -913,7 +913,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             },
             body: JSON.stringify({
-                dry_run: isDryRun
+                dry_run: isDryRun,
+                nama_kapal: '{{ $namaKapal }}',
+                no_voyage: '{{ $noVoyage }}'
             })
         })
         .then(response => response.json())

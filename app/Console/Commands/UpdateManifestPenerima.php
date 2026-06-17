@@ -18,6 +18,8 @@ class UpdateManifestPenerima extends Command
      */
     protected $signature = 'manifest:update-penerima
                             {--manifest-id= : ID manifest tertentu yang ingin diupdate}
+                            {--nama-kapal= : Nama kapal untuk membatasi update}
+                            {--no-voyage= : Nomor voyage untuk membatasi update}
                             {--all : Update semua manifest}
                             {--dry-run : Preview changes tanpa update database}';
 
@@ -37,6 +39,8 @@ class UpdateManifestPenerima extends Command
         $this->newLine();
 
         $manifestId = $this->option('manifest-id');
+        $namaKapal = $this->option('nama-kapal');
+        $noVoyage = $this->option('no-voyage');
         $dryRun = $this->option('dry-run');
 
         if ($dryRun) {
@@ -55,7 +59,14 @@ class UpdateManifestPenerima extends Command
             $this->info('--- Memproses Update Prospek ---');
 
             // Query prospek yang memiliki tanda_terima_id
-            $prospeks = Prospek::whereNotNull('tanda_terima_id')->with('tandaTerima')->get();
+            $prospekQuery = Prospek::whereNotNull('tanda_terima_id')->with('tandaTerima');
+            if ($namaKapal) {
+                $prospekQuery->where('nama_kapal', $namaKapal);
+            }
+            if ($noVoyage) {
+                $prospekQuery->where('no_voyage', $noVoyage);
+            }
+            $prospeks = $prospekQuery->get();
 
             if ($prospeks->isNotEmpty()) {
                 $bar = $this->output->createProgressBar($prospeks->count());
@@ -124,9 +135,15 @@ class UpdateManifestPenerima extends Command
             $this->newLine();
             $this->info('--- Memproses Update Prospek (dari Tanda Terima Tanpa Surat Jalan) ---');
 
-            $prospeksTttsj = Prospek::whereNull('tanda_terima_id')
-                ->where('keterangan', 'LIKE', '%Tanda Terima Tanpa Surat Jalan:%')
-                ->get();
+            $prospeksTttsqQuery = Prospek::whereNull('tanda_terima_id')
+                ->where('keterangan', 'LIKE', '%Tanda Terima Tanpa Surat Jalan:%');
+            if ($namaKapal) {
+                $prospeksTttsqQuery->where('nama_kapal', $namaKapal);
+            }
+            if ($noVoyage) {
+                $prospeksTttsqQuery->where('no_voyage', $noVoyage);
+            }
+            $prospeksTttsj = $prospeksTttsqQuery->get();
 
             if ($prospeksTttsj->isNotEmpty()) {
                 $bar = $this->output->createProgressBar($prospeksTttsj->count());
@@ -205,6 +222,16 @@ class UpdateManifestPenerima extends Command
 
             if ($manifestId) {
                 $query->where('id', $manifestId);
+            }
+
+            if ($namaKapal) {
+                $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
+                $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+                $query->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal]);
+            }
+
+            if ($noVoyage) {
+                $query->where('no_voyage', trim($noVoyage));
             }
 
             $manifests = $query->get();

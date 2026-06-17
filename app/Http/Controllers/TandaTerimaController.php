@@ -2359,11 +2359,24 @@ class TandaTerimaController extends Controller
     {
         try {
             $dryRun = $request->input('dry_run', false);
+            $namaKapal = $request->input('nama_kapal');
+            $noVoyage = $request->input('no_voyage');
 
             // Prepare command arguments
-            $arguments = ['--all' => true];
+            $arguments = [];
             if ($dryRun) {
                 $arguments['--dry-run'] = true;
+            }
+            if ($namaKapal) {
+                $arguments['--nama-kapal'] = $namaKapal;
+            }
+            if ($noVoyage) {
+                $arguments['--no-voyage'] = $noVoyage;
+            }
+
+            // If no ship and voyage constraint, fall back to --all
+            if (! $namaKapal && ! $noVoyage) {
+                $arguments['--all'] = true;
             }
 
             // Run artisan command and capture output
