@@ -6312,4 +6312,46 @@ Route::middleware(['auth',
     Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/print', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'print'])
         ->name('pranota-perbaikan-kontainer.print')
         ->middleware('can:pranota-perbaikan-kontainer-print');
+
+    // 📦 PORTAL SEWA KONTAINER MODULE ROUTES
+    Route::prefix('sewa-kontainer')->name('sewa-kontainer.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\SewaKontainerController::class, 'index'])->name('index');
+
+        // Master Data CRUD
+        Route::post('/master/customer', [\App\Http\Controllers\SewaKontainerController::class, 'storeCustomer'])->name('customer.store');
+        Route::put('/master/customer/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateCustomer'])->name('customer.update');
+        Route::delete('/master/customer/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteCustomer'])->name('customer.delete');
+
+        Route::post('/master/tipe', [\App\Http\Controllers\SewaKontainerController::class, 'storeTipe'])->name('tipe.store');
+        Route::put('/master/tipe/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateTipe'])->name('tipe.update');
+        Route::delete('/master/tipe/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteTipe'])->name('tipe.delete');
+
+        Route::post('/master/ukuran', [\App\Http\Controllers\SewaKontainerController::class, 'storeUkuran'])->name('ukuran.store');
+        Route::put('/master/ukuran/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateUkuran'])->name('ukuran.update');
+        Route::delete('/master/ukuran/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteUkuran'])->name('ukuran.delete');
+
+        Route::post('/master/kontainer', [\App\Http\Controllers\SewaKontainerController::class, 'storeKontainer'])->name('kontainer.store');
+        Route::put('/master/kontainer/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateKontainer'])->name('kontainer.update');
+        Route::delete('/master/kontainer/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteKontainer'])->name('kontainer.delete');
+
+        Route::post('/master/tarif', [\App\Http\Controllers\SewaKontainerController::class, 'storeTarif'])->name('tarif.store');
+        Route::put('/master/tarif/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateTarif'])->name('tarif.update');
+        Route::delete('/master/tarif/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteTarif'])->name('tarif.delete');
+
+        // Transaksi Sewa (Contracts)
+        Route::post('/sewa', [\App\Http\Controllers\SewaKontainerController::class, 'storeSewa'])->name('sewa.store');
+        Route::put('/sewa/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateSewa'])->name('sewa.update');
+        Route::post('/sewa/{id}/terminate', [\App\Http\Controllers\SewaKontainerController::class, 'terminateSewa'])->name('sewa.terminate');
+        Route::delete('/sewa/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteSewa'])->name('sewa.delete');
+
+        // Invoice Groups
+        Route::post('/invoice', [\App\Http\Controllers\SewaKontainerController::class, 'storeInvoice'])->name('invoice.store');
+        Route::delete('/invoice/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteInvoice'])->name('invoice.delete');
+
+        // Payment Override
+        Route::post('/tagihan/{id}/override', [\App\Http\Controllers\SewaKontainerController::class, 'payTagihanOverride'])->name('tagihan.override');
+
+        // Bulk JSON Restorations
+        Route::post('/import', [\App\Http\Controllers\SewaKontainerController::class, 'importBackup'])->name('import');
+    });
 });
