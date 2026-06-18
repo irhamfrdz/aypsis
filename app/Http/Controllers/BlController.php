@@ -2764,4 +2764,316 @@ class BlController extends Controller
 
         return view('bl.rekap_bongkaran_print', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'items', 'totalAmount'));
     }
+
+    /**
+     * Show the selection form for Rekap Bongkaran Perincian.
+     */
+    public function rekapBongkaranPerincianSelect()
+    {
+        $user = Auth::user();
+
+        // Check permission (same as bl-view)
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-view')
+                ->exists();
+
+            if (! $hasPermission) {
+                abort(403, 'Tidak memiliki akses untuk melihat Rekap Bongkaran Perincian');
+            }
+        }
+
+        // Get ships from master data
+        $masterKapals = MasterKapal::orderBy('nama_kapal')->get();
+
+        return view('bl.rekap_bongkaran_perincian_select', compact('masterKapals'));
+    }
+
+    /**
+     * Show the Rekap Bongkaran Perincian report.
+     */
+    public function rekapBongkaranPerincian(Request $request)
+    {
+        $user = Auth::user();
+
+        // Check permission
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-view')
+                ->exists();
+
+            if (! $hasPermission) {
+                abort(403, 'Tidak memiliki akses untuk melihat Rekap Bongkaran Perincian');
+            }
+        }
+
+        $namaKapal = $request->get('nama_kapal');
+        $noVoyage = $request->get('no_voyage');
+
+        if (! $namaKapal || ! $noVoyage) {
+            return redirect()->route('bl.rekap-bongkaran-perincian.select')->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu');
+        }
+
+        // Hapus "KM." atau "KM" dari awal nama kapal untuk pencarian yang lebih fleksibel
+        $kapalClean = preg_replace('/^KM\.?\s*/i', '', $namaKapal);
+
+        $bls = \App\Models\Manifest::where(function ($query) use ($namaKapal, $kapalClean) {
+            $query->where('nama_kapal', $namaKapal)
+                ->orWhere('nama_kapal', 'like', '%'.$kapalClean.'%');
+        })
+            ->where('no_voyage', $noVoyage)
+            ->get();
+
+        // Fetch details from PergerakanKapal
+        $pergerakan = \App\Models\PergerakanKapal::where(function ($q) use ($namaKapal, $kapalClean) {
+            $q->where('nama_kapal', $namaKapal)
+                ->orWhere('nama_kapal', 'like', '%'.$kapalClean.'%');
+        })
+            ->where('voyage', $noVoyage)
+            ->first();
+
+        $estTiba = '-';
+        if ($pergerakan && $pergerakan->tanggal_sandar) {
+            $estTiba = $pergerakan->tanggal_sandar->translatedFormat('d F Y');
+        } elseif ($bls->count() > 0) {
+            $firstBl = $bls->first();
+            if ($firstBl->tanggal_berangkat) {
+                $estTiba = \Carbon\Carbon::parse($firstBl->tanggal_berangkat)->translatedFormat('d F Y');
+            }
+        }
+
+        $dari = '-';
+        if ($pergerakan && $pergerakan->tujuan_asal) {
+            $dari = $pergerakan->tujuan_asal;
+        } elseif ($bls->count() > 0) {
+            $dari = $bls->first()->pelabuhan_asal ?: '-';
+        }
+
+        // Grouping the items
+        $items = $bls->groupBy(function ($item) {
+            $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
+            if ($isCargo) {
+                return 'cargo|'.($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package');
+            } else {
+                $barangUpper = strtoupper($item->nama_barang ?? '');
+                $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
+
+                $size = trim(str_ireplace(['ft', 'feet', ' '], '', $item->size_kontainer ?? ''));
+                if (empty($size)) {
+                    $size = '20';
+                }
+
+                $status = $isEmpty ? 'empty' : 'full';
+
+                return 'container|'.$size.'|'.$status;
+            }
+        })->map(function ($group, $key) {
+            $parts = explode('|', $key);
+            $type = $parts[0];
+
+            if ($type === 'cargo') {
+                $namaBarang = $parts[1];
+                $satuan = $parts[2];
+                $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
+
+                $totalVolume = $group->sum('volume_perincian');
+                $totalTonnage = $group->sum('tonnage_perincian');
+
+                $amount = null;
+                $unit = '';
+
+                if ($totalVolume > 0) {
+                    $amount = $totalVolume;
+                    $unit = 'm3';
+                } elseif ($totalTonnage > 0) {
+                    $amount = $totalTonnage;
+                    $unit = 'ton';
+                }
+
+                return [
+                    'kuantitas' => $totalKuantitas,
+                    'satuan' => $satuan,
+                    'nama_barang' => $namaBarang,
+                    'amount' => $amount,
+                    'unit' => $unit,
+                ];
+            } else {
+                $size = $parts[1];
+                $status = $parts[2];
+
+                if ($status === 'empty') {
+                    $totalKuantitas = $group->count();
+                } else {
+                    // For containers, count unique container numbers (LCL is counted as 1 container)
+                    $uniqueContainers = $group->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')->pluck('nomor_kontainer')->unique()->count();
+                    $emptyContainers = $group->filter(function ($item) {
+                        return empty($item->nomor_kontainer) || $item->nomor_kontainer === '-';
+                    })->count();
+                    $totalKuantitas = $uniqueContainers + $emptyContainers;
+                }
+
+                $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container {$size} feet";
+                $satuan = 'Unit';
+
+                return [
+                    'kuantitas' => $totalKuantitas,
+                    'satuan' => $satuan,
+                    'nama_barang' => $namaBarang,
+                    'amount' => null,
+                    'unit' => '',
+                ];
+            }
+        })->values();
+
+        $totalAmount = $items->sum('amount');
+
+        return view('bl.rekap_bongkaran_perincian', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'items', 'totalAmount'));
+    }
+
+    /**
+     * Show the Rekap Bongkaran Perincian report for print.
+     */
+    public function rekapBongkaranPerincianPrint(Request $request)
+    {
+        $user = Auth::user();
+
+        // Check permission
+        if (! in_array($user->role, ['admin', 'user_admin'])) {
+            $hasPermission = DB::table('user_permissions')
+                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
+                ->where('user_permissions.user_id', $user->id)
+                ->where('permissions.name', 'bl-view')
+                ->exists();
+
+            if (! $hasPermission) {
+                abort(403, 'Tidak memiliki akses untuk melihat Rekap Bongkaran Perincian');
+            }
+        }
+
+        $namaKapal = $request->get('nama_kapal');
+        $noVoyage = $request->get('no_voyage');
+
+        if (! $namaKapal || ! $noVoyage) {
+            return redirect()->route('bl.rekap-bongkaran-perincian.select')->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu');
+        }
+
+        // Hapus "KM." atau "KM" dari awal nama kapal untuk pencarian yang lebih fleksibel
+        $kapalClean = preg_replace('/^KM\.?\s*/i', '', $namaKapal);
+
+        $bls = \App\Models\Manifest::where(function ($query) use ($namaKapal, $kapalClean) {
+            $query->where('nama_kapal', $namaKapal)
+                ->orWhere('nama_kapal', 'like', '%'.$kapalClean.'%');
+        })
+            ->where('no_voyage', $noVoyage)
+            ->get();
+
+        // Fetch details from PergerakanKapal
+        $pergerakan = \App\Models\PergerakanKapal::where(function ($q) use ($namaKapal, $kapalClean) {
+            $q->where('nama_kapal', $namaKapal)
+                ->orWhere('nama_kapal', 'like', '%'.$kapalClean.'%');
+        })
+            ->where('voyage', $noVoyage)
+            ->first();
+
+        $estTiba = '-';
+        if ($pergerakan && $pergerakan->tanggal_sandar) {
+            $estTiba = $pergerakan->tanggal_sandar->translatedFormat('d F Y');
+        } elseif ($bls->count() > 0) {
+            $firstBl = $bls->first();
+            if ($firstBl->tanggal_berangkat) {
+                $estTiba = \Carbon\Carbon::parse($firstBl->tanggal_berangkat)->translatedFormat('d F Y');
+            }
+        }
+
+        $dari = '-';
+        if ($pergerakan && $pergerakan->tujuan_asal) {
+            $dari = $pergerakan->tujuan_asal;
+        } elseif ($bls->count() > 0) {
+            $dari = $bls->first()->pelabuhan_asal ?: '-';
+        }
+
+        // Grouping the items
+        $items = $bls->groupBy(function ($item) {
+            $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
+            if ($isCargo) {
+                return 'cargo|'.($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package');
+            } else {
+                $barangUpper = strtoupper($item->nama_barang ?? '');
+                $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
+
+                $size = trim(str_ireplace(['ft', 'feet', ' '], '', $item->size_kontainer ?? ''));
+                if (empty($size)) {
+                    $size = '20';
+                }
+
+                $status = $isEmpty ? 'empty' : 'full';
+
+                return 'container|'.$size.'|'.$status;
+            }
+        })->map(function ($group, $key) {
+            $parts = explode('|', $key);
+            $type = $parts[0];
+
+            if ($type === 'cargo') {
+                $namaBarang = $parts[1];
+                $satuan = $parts[2];
+                $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
+
+                $totalVolume = $group->sum('volume_perincian');
+                $totalTonnage = $group->sum('tonnage_perincian');
+
+                $amount = null;
+                $unit = '';
+
+                if ($totalVolume > 0) {
+                    $amount = $totalVolume;
+                    $unit = 'm3';
+                } elseif ($totalTonnage > 0) {
+                    $amount = $totalTonnage;
+                    $unit = 'ton';
+                }
+
+                return [
+                    'kuantitas' => $totalKuantitas,
+                    'satuan' => $satuan,
+                    'nama_barang' => $namaBarang,
+                    'amount' => $amount,
+                    'unit' => $unit,
+                ];
+            } else {
+                $size = $parts[1];
+                $status = $parts[2];
+
+                if ($status === 'empty') {
+                    $totalKuantitas = $group->count();
+                } else {
+                    // For containers, count unique container numbers (LCL is counted as 1 container)
+                    $uniqueContainers = $group->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')->pluck('nomor_kontainer')->unique()->count();
+                    $emptyContainers = $group->filter(function ($item) {
+                        return empty($item->nomor_kontainer) || $item->nomor_kontainer === '-';
+                    })->count();
+                    $totalKuantitas = $uniqueContainers + $emptyContainers;
+                }
+
+                $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container {$size} feet";
+                $satuan = 'Unit';
+
+                return [
+                    'kuantitas' => $totalKuantitas,
+                    'satuan' => $satuan,
+                    'nama_barang' => $namaBarang,
+                    'amount' => null,
+                    'unit' => '',
+                ];
+            }
+        })->values();
+
+        $totalAmount = $items->sum('amount');
+
+        return view('bl.rekap_bongkaran_perincian_print', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'items', 'totalAmount'));
+    }
 }
