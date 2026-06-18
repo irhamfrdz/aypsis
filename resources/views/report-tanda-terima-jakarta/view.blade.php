@@ -67,6 +67,17 @@
 
     <!-- Filter Bar -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-5 py-3 mb-4 flex flex-wrap items-center gap-3">
+        <!-- Search Input -->
+        <div class="flex items-center gap-2 min-w-[240px] flex-1 md:flex-initial">
+            <span class="text-sm font-semibold text-gray-600 whitespace-nowrap">
+                <i class="fas fa-search text-gray-400 mr-1"></i>Cari:
+            </span>
+            <input type="text" id="filter-search" oninput="applySearchFilter(this.value)" placeholder="Cari TT, kontainer, pengirim, dll..."
+                class="w-full text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-purple-200 focus:border-purple-400">
+        </div>
+
+        <div class="hidden lg:block w-px h-6 bg-gray-200 mx-1"></div>
+
         <div class="flex flex-wrap items-center gap-3">
             <span class="text-sm font-semibold text-gray-600 mr-1">
                 <i class="fas fa-filter text-gray-400 mr-1"></i>Filter Status:
@@ -255,6 +266,12 @@
     let currentTujuanFilter = 'semua';
     let currentKapalFilter = 'semua';
     let currentVoyageFilter = 'semua';
+    let currentSearchFilter = '';
+
+    function applySearchFilter(query) {
+        currentSearchFilter = query.toLowerCase().trim();
+        runCombinedFilter();
+    }
 
     function applyStatusFilter(filter) {
         currentStatusFilter = filter;
@@ -312,7 +329,13 @@
                 matchVoyage = voyage === currentVoyageFilter;
             }
 
-            const show = matchStatus && matchTujuan && matchKapal && matchVoyage;
+            let matchSearch = true;
+            if (currentSearchFilter !== '') {
+                const rowText = row.textContent.toLowerCase();
+                matchSearch = rowText.includes(currentSearchFilter);
+            }
+
+            const show = matchStatus && matchTujuan && matchKapal && matchVoyage && matchSearch;
             row.style.display = show ? '' : 'none';
             if (show) visibleCount++;
         });
