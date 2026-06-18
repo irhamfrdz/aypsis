@@ -66,6 +66,16 @@
                     </div>
                 </div>
             </div>
+
+            <div class="mb-4 p-4 bg-white rounded-lg border-2 border-dashed border-rose-300">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-sm font-semibold text-gray-800">Pilih Tanda Terima <span class="text-red-500">*</span></label>
+                    <button type="button" onclick="addTandaTerimaToSection(${sectionIndex})" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white text-xs rounded-lg transition flex items-center gap-1">
+                        <i class="fas fa-plus"></i> Tambah Tanda Terima
+                    </button>
+                </div>
+                <div class="stuffing-tt-container"></div>
+            </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-2">
                 <div>
@@ -73,8 +83,8 @@
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-gray-400">Rp</span>
                         <input type="text" name="stuffing_sections[${sectionIndex}][subtotal]" 
-                               class="stuffing-subtotal-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-0 text-right" 
-                               value="0" readonly>
+                               class="stuffing-subtotal-input w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 text-right" 
+                               value="0">
                     </div>
                 </div>
                 <div class="hidden">
@@ -125,6 +135,25 @@
                 this.innerHTML = '<i class="fas fa-keyboard"></i>';
             }
         });
+
+        // Setup manual subtotal calculation
+        const subtotalInput = section.querySelector('.stuffing-subtotal-input');
+        if (subtotalInput) {
+            subtotalInput.addEventListener('input', function() {
+                // Remove non-numeric chars
+                let rawValue = this.value.replace(/[^0-9]/g, '');
+                const numericValue = parseFloat(rawValue) || 0;
+                
+                // Format back to rupiah
+                if (rawValue) {
+                    this.value = new Intl.NumberFormat('id-ID').format(numericValue);
+                } else {
+                    this.value = '';
+                }
+                
+                calculateStuffingTotals(sectionIndex);
+            });
+        }
 
         return section;
     }
@@ -328,20 +357,7 @@
         const pphInput = section.querySelector('.stuffing-pph-input');
         const totalInput = section.querySelector('.stuffing-total-input');
         
-        // In edit mode, we might not have .tt-price-value yet unless we add it to tt details.
-        // For now, let's assume we want to calculate based on number of TTs or something, 
-        // or actually, the user might need to input prices.
-        // In create.blade.php, it seems it might be fetching prices.
-        
-        // Let's implement a simple version or wait for user feedback if they want auto-calculation from pricelist.
-        // For now, I'll just add the functions so they exist.
-        
-        let subtotal = 0;
-        const ttWrappers = section.querySelectorAll('.tt-search-wrapper');
-        // If there's a price field, use it.
-        section.querySelectorAll('.tt-price-input').forEach(input => {
-            subtotal += parseFloat(input.value.replace(/\./g, '')) || 0;
-        });
+        let subtotal = parseFloat(subtotalInput.value.replace(/[^0-9]/g, '')) || 0;
 
         const pph = 0; // No PPH
         const total = subtotal - pph;
@@ -350,7 +366,6 @@
             return new Intl.NumberFormat('id-ID').format(Math.round(val));
         };
 
-        if (subtotalInput) subtotalInput.value = formatRupiah(subtotal);
         if (pphInput) pphInput.value = formatRupiah(pph);
         if (totalInput) totalInput.value = formatRupiah(total);
 

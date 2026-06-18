@@ -143,6 +143,8 @@
                 'kapal' => $stuff->kapal,
                 'voyage' => $stuff->voyage,
                 'tanda_terima_ids' => $stuff->tanda_terima_ids ?? [],
+                'subtotal' => $stuff->subtotal,
+                'total_biaya' => $stuff->total_biaya,
             ];
         }
 
@@ -663,9 +665,21 @@
                         } else {
                             addTandaTerimaToSection(sectionIndex);
                         }
+
+                        if (myData.subtotal !== undefined) {
+                            const subtotalInput = section.querySelector('.stuffing-subtotal-input');
+                            if (subtotalInput) {
+                                subtotalInput.value = new Intl.NumberFormat('id-ID').format(myData.subtotal);
+                            }
+                            const totalInput = section.querySelector('.stuffing-total-input');
+                            if (totalInput) {
+                                totalInput.value = new Intl.NumberFormat('id-ID').format(myData.total_biaya || myData.subtotal);
+                            }
+                        }
                     }
                 })();
             });
+            calculateTotalFromAllStuffingSections();
         }
         // 7. TRUCKING SECTIONS
         if (existingTruckingSections.length > 0) {
