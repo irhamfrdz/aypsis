@@ -120,8 +120,16 @@
                     <p class="text-base text-gray-900">{{ $manifest->tonnage ?? '-' }}</p>
                 </div>
                 <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Tonnage Perincian</label>
+                    <p class="text-base text-gray-900">{{ $manifest->tonnage_perincian ?? '-' }}</p>
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">Volume</label>
                     <p class="text-base text-gray-900">{{ $manifest->volume ?? '-' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Volume/Kubikasi Perincian</label>
+                    <p class="text-base text-gray-900">{{ $manifest->volume_perincian ?? '-' }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">Satuan</label>

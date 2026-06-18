@@ -33,7 +33,9 @@ class Manifest extends Model
         'alamat_pengiriman',
         'contact_person',
         'tonnage',
+        'tonnage_perincian',
         'volume',
+        'volume_perincian',
         'satuan',
         'term',
         'kuantitas',
@@ -48,7 +50,9 @@ class Manifest extends Model
         'tanggal_berangkat' => 'date',
         'penerimaan' => 'date',
         'tonnage' => 'decimal:3',
+        'tonnage_perincian' => 'decimal:3',
         'volume' => 'decimal:3',
+        'volume_perincian' => 'decimal:3',
         'kuantitas' => 'integer',
     ];
 

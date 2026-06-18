@@ -180,6 +180,18 @@
                     </div>
 
                     <div>
+                        <label for="tonnage_perincian" class="block text-sm font-medium text-gray-700 mb-2">Tonnage Perincian</label>
+                        <input type="number" step="0.001" name="tonnage_perincian" id="tonnage_perincian" value="{{ old('tonnage_perincian', $manifest->tonnage_perincian) }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                    </div>
+
+                    <div>
+                        <label for="volume_perincian" class="block text-sm font-medium text-gray-700 mb-2">Volume/Kubikasi Perincian</label>
+                        <input type="number" step="0.001" name="volume_perincian" id="volume_perincian" value="{{ old('volume_perincian', $manifest->volume_perincian) }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                    </div>
+
+                    <div>
                         <label for="satuan" class="block text-sm font-medium text-gray-700 mb-2">Satuan</label>
                         <input type="text" name="satuan" id="satuan" value="{{ old('satuan', $manifest->satuan) }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
