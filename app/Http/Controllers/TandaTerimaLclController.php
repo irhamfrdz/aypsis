@@ -395,10 +395,56 @@ class TandaTerimaLclController extends Controller
             'nomor_seal' => 'nullable|string|max:255',
             'jenis_kontainer' => 'nullable|in:HC,STD,RF,OT,FR,Dry Container',
             'tujuan_pengiriman' => 'required|exists:master_tujuan_kirim,id',
+            'gambar_surat_jalan' => 'nullable|array|max:5',
+            'gambar_surat_jalan.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'hapus_gambar' => 'nullable|array',
+            'hapus_gambar.*' => 'nullable|string',
         ]);
 
         DB::transaction(function () use ($request, $tandaTerima) {
             $ukuranArray = $request->ukuran ?? [];
+
+            // Handle image deletions (existing images removed by user)
+            $existingImages = $tandaTerima->gambar_surat_jalan ?: [];
+            if (is_string($existingImages)) {
+                $decoded = json_decode($existingImages, true);
+                $existingImages = is_array($decoded) ? $decoded : [];
+            }
+
+            $hapusGambar = $request->input('hapus_gambar', []);
+            if (is_array($hapusGambar) && count($hapusGambar)) {
+                foreach ($hapusGambar as $pathToDelete) {
+                    // Normalize storage path (strip possible asset prefix)
+                    $normalizedPath = ltrim(preg_replace('#^https?://[^/]+/storage/#', '', $pathToDelete), '/');
+                    // Remove from existingImages
+                    $existingImages = array_values(array_filter($existingImages, function ($v) use ($normalizedPath) {
+                        return $v !== $normalizedPath && ltrim($v, '/') !== ltrim($normalizedPath, '/');
+                    }));
+                    // Remove from storage if present
+                    if (Storage::disk('public')->exists($normalizedPath)) {
+                        Storage::disk('public')->delete($normalizedPath);
+                    }
+                }
+            }
+
+            // Handle new image uploads
+            $newUploads = [];
+            if ($request->hasFile('gambar_surat_jalan')) {
+                foreach ($request->file('gambar_surat_jalan') as $file) {
+                    if ($file && $file->isValid()) {
+                        $fileName = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+                        $path = $file->storeAs('tanda-terima-lcl/gambar-surat-jalan', $fileName, 'public');
+                        $newUploads[] = $path;
+                    }
+                }
+            }
+
+            // Merge existing and new uploads
+            $mergedImages = array_values(array_filter(array_merge($existingImages, $newUploads)));
+            // Enforce max 5 images
+            if (count($mergedImages) > 5) {
+                $mergedImages = array_slice($mergedImages, 0, 5);
+            }
 
             // Update main record (without nama_barang - it's now handled in items)
             $tandaTerima->update([
@@ -439,6 +485,7 @@ class TandaTerimaLclController extends Controller
                 'supir' => $request->supir,
                 'no_plat' => $request->no_plat,
                 'tujuan_pengiriman_id' => $request->tujuan_pengiriman,
+                'gambar_surat_jalan' => ! empty($mergedImages) ? $mergedImages : null,
                 'updated_by' => Auth::id(),
             ]);
 
