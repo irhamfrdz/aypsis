@@ -75,6 +75,9 @@ class SuratJalanBongkaran extends Model
         'tanggal_ambil_barang',
         'lokasi',
         'f_e',
+        'lembur',
+        'nginap',
+        'tidak_lembur_nginap',
     ];
 
     protected $casts = [
@@ -88,6 +91,9 @@ class SuratJalanBongkaran extends Model
         'jumlah_terbayar' => 'decimal:2',
         'jumlah_retur' => 'integer',
         'jumlah_kontainer' => 'integer',
+        'lembur' => 'boolean',
+        'nginap' => 'boolean',
+        'tidak_lembur_nginap' => 'boolean',
     ];
 
     protected $dates = [
