@@ -1908,7 +1908,7 @@
             const harga = parseFloat(item.harga || 0);
             const adjustment = parseFloat(item.adjustment || 0);
             const jumlah = parseFloat(item.jumlah || 0);
-            const biaya = (harga * jumlah) + adjustment;
+            const biaya = Math.round((harga * jumlah) + adjustment);
             totalBiaya += biaya;
 
             const row = document.createElement('tr');
@@ -1948,7 +1948,7 @@
         const original = parseFloat(display.dataset.original || 0);
         const adj = parseFloat(document.getElementById('adjustment').value || 0);
         const total = original + adj;
-        display.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+        display.textContent = `Rp ${Math.round(total).toLocaleString('id-ID')}`;
     }
 
     const adjInput = document.getElementById('adjustment');
