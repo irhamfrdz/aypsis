@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PenerimaExport;
 use App\Models\Penerima;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\PenerimaExport;
 
 class PenerimaController extends Controller
 {
@@ -68,7 +67,7 @@ class PenerimaController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        return Excel::download(new PenerimaExport($request->all()), 'master-penerima-' . date('YmdHis') . '.xlsx');
+        return Excel::download(new PenerimaExport($request->all()), 'master-penerima-'.date('YmdHis').'.xlsx');
     }
 
     /**
@@ -128,7 +127,7 @@ class PenerimaController extends Controller
         $penerima = Penerima::findOrFail($id);
 
         $request->validate([
-            'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima,' . $id,
+            'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima,'.$id,
             'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
@@ -305,7 +304,7 @@ class PenerimaController extends Controller
     public function updateForTandaTerima(Request $request, Penerima $penerima)
     {
         $validated = $request->validate([
-            'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima,' . $penerima->id,
+            'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima,'.$penerima->id,
             'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',

@@ -208,6 +208,15 @@
                         <input type="text" name="term" id="term" value="{{ old('term', $manifest->term) }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                     </div>
+
+                    <div>
+                        <label for="hs_code" class="block text-sm font-medium text-gray-700 mb-2">HS Code</label>
+                        <input type="text" name="hs_code" id="hs_code" value="{{ old('hs_code', $manifest->hs_code) }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 @error('hs_code') border-red-500 @enderror">
+                        @error('hs_code')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </div>
 

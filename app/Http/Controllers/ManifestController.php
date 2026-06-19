@@ -215,6 +215,7 @@ class ManifestController extends Controller
             'satuan' => 'nullable|string|max:255',
             'term' => 'nullable|string|max:255',
             'kuantitas' => 'nullable|integer',
+            'hs_code' => 'nullable|string|max:255',
             'penerimaan' => 'nullable|date',
         ]);
 
@@ -297,6 +298,7 @@ class ManifestController extends Controller
             'satuan' => 'nullable|string|max:255',
             'term' => 'nullable|string|max:255',
             'kuantitas' => 'nullable|integer',
+            'hs_code' => 'nullable|string|max:255',
             'penerimaan' => 'nullable|date',
         ]);
 

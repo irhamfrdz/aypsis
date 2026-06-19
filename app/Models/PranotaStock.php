@@ -71,6 +71,7 @@ class PranotaStock extends Model
                 return $it;
             }, $items);
         }
+
         return $items;
     }
 }

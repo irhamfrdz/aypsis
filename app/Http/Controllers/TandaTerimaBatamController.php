@@ -231,9 +231,9 @@ class TandaTerimaBatamController extends Controller
 
         if ($tipe === 'langsir') {
             $langsir = \App\Models\LangsirBatam::findOrFail($suratJalanId);
-            
+
             // Map LangsirBatam fields to standard SuratJalanBatam structure:
-            $mappedSj = new \App\Models\SuratJalanBatam();
+            $mappedSj = new \App\Models\SuratJalanBatam;
             $mappedSj->id = $langsir->id;
             $mappedSj->no_surat_jalan = $langsir->no_transaksi;
             $mappedSj->tanggal_surat_jalan = $langsir->tanggal;
@@ -242,10 +242,10 @@ class TandaTerimaBatamController extends Controller
             $mappedSj->no_kontainer = $langsir->no_kontainer;
             $mappedSj->size = $langsir->size;
             $mappedSj->no_seal = $langsir->no_seal;
-            $mappedSj->kegiatan = 'Langsir: ' . $langsir->keterangan;
+            $mappedSj->kegiatan = 'Langsir: '.$langsir->keterangan;
             $mappedSj->tipe_kontainer = 'fcl';
             $mappedSj->jumlah_kontainer = 1;
-            
+
             $suratJalan = $mappedSj;
         } else {
             $suratJalan = SuratJalanBatam::with(['orderBatam.pengirim'])->findOrFail($suratJalanId);
@@ -318,7 +318,7 @@ class TandaTerimaBatamController extends Controller
         try {
             if ($tipe === 'langsir') {
                 $langsir = \App\Models\LangsirBatam::findOrFail($request->surat_jalan_id);
-                $suratJalan = new \App\Models\SuratJalanBatam();
+                $suratJalan = new \App\Models\SuratJalanBatam;
                 $suratJalan->id = $langsir->id;
                 $suratJalan->no_surat_jalan = $langsir->no_transaksi;
                 $suratJalan->tanggal_surat_jalan = $langsir->tanggal;
@@ -327,7 +327,7 @@ class TandaTerimaBatamController extends Controller
                 $suratJalan->no_kontainer = $langsir->no_kontainer;
                 $suratJalan->size = $langsir->size;
                 $suratJalan->no_seal = $langsir->no_seal;
-                $suratJalan->kegiatan = 'Langsir: ' . $langsir->keterangan;
+                $suratJalan->kegiatan = 'Langsir: '.$langsir->keterangan;
                 $suratJalan->tipe_kontainer = 'fcl';
                 $suratJalan->jumlah_kontainer = 1;
             } else {

@@ -39,6 +39,7 @@ class Manifest extends Model
         'satuan',
         'term',
         'kuantitas',
+        'hs_code',
         'penerimaan',
         'notify_party',
         'alamat_notify_party',

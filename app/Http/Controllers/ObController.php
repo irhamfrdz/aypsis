@@ -3661,18 +3661,18 @@ class ObController extends Controller
 
         $request->validate([
             // Mode baru: per-kontainer supir berbeda
-            'items'             => 'nullable|array',
+            'items' => 'nullable|array',
             'items.*.nomor_kontainer' => 'required_with:items|string',
-            'items.*.supir_id'  => 'required_with:items|exists:karyawans,id',
+            'items.*.supir_id' => 'required_with:items|exists:karyawans,id',
             // Mode lama: satu supir untuk semua (backward compat)
-            'nomor_kontainers'  => 'nullable|string',
-            'supir_id'          => 'nullable|exists:karyawans,id',
+            'nomor_kontainers' => 'nullable|string',
+            'supir_id' => 'nullable|exists:karyawans,id',
             // Common
-            'ke_gudang_id'      => 'required|exists:gudangs,id',
-            'nama_kapal'        => 'nullable|string',
-            'no_voyage'         => 'nullable|string',
-            'kegiatan'          => 'nullable|string|in:muat,bongkar',
-            'catatan'           => 'nullable|string',
+            'ke_gudang_id' => 'required|exists:gudangs,id',
+            'nama_kapal' => 'nullable|string',
+            'no_voyage' => 'nullable|string',
+            'kegiatan' => 'nullable|string|in:muat,bongkar',
+            'catatan' => 'nullable|string',
         ]);
 
         // Build unified list: [{nomor_kontainer, supir_id}]
@@ -3681,7 +3681,7 @@ class ObController extends Controller
             $nomorList = collect($request->items)
                 ->map(fn ($item) => [
                     'nomor_kontainer' => strtoupper(trim(preg_replace('/[^A-Z0-9]/i', '', $item['nomor_kontainer'] ?? ''))),
-                    'supir_id'        => $item['supir_id'],
+                    'supir_id' => $item['supir_id'],
                 ])
                 ->filter(fn ($item) => strlen($item['nomor_kontainer']) >= 3 && $item['supir_id'])
                 ->values()
@@ -3711,11 +3711,11 @@ class ObController extends Controller
             ], 422);
         }
 
-        $namaKapal  = $request->nama_kapal;
-        $noVoyage   = $request->no_voyage;
-        $kegiatan   = $request->kegiatan; // 'muat' or 'bongkar' or null
+        $namaKapal = $request->nama_kapal;
+        $noVoyage = $request->no_voyage;
+        $kegiatan = $request->kegiatan; // 'muat' or 'bongkar' or null
         $keGudangId = $request->ke_gudang_id;
-        $catatan    = $request->catatan;
+        $catatan = $request->catatan;
 
         $gudang = Gudang::find($keGudangId);
 
@@ -3726,12 +3726,12 @@ class ObController extends Controller
 
         foreach ($nomorList as $item) {
             $nomorKontainer = $item['nomor_kontainer'];
-            $supirId        = $item['supir_id'];
+            $supirId = $item['supir_id'];
 
             $result = [
                 'nomor_kontainer' => $nomorKontainer,
-                'status'          => null,
-                'message'         => '',
+                'status' => null,
+                'message' => '',
             ];
 
             // Cari record: utamakan naik_kapal jika kegiatan=muat, bls jika kegiatan=bongkar
@@ -3751,18 +3751,18 @@ class ObController extends Controller
 
                 if ($naikKapal) {
                     if ($naikKapal->sudah_ob) {
-                        $result['status']  = 'already_ob';
+                        $result['status'] = 'already_ob';
                         $result['message'] = 'Sudah OB (naik kapal)';
                         $alreadyObCount++;
                     } else {
                         try {
                             DB::beginTransaction();
 
-                            $naikKapal->sudah_ob    = true;
-                            $naikKapal->supir_id    = $supirId;
-                            $naikKapal->tanggal_ob  = now();
-                            $naikKapal->catatan_ob  = $catatan;
-                            $naikKapal->updated_by  = $user->id;
+                            $naikKapal->sudah_ob = true;
+                            $naikKapal->supir_id = $supirId;
+                            $naikKapal->tanggal_ob = now();
+                            $naikKapal->catatan_ob = $catatan;
+                            $naikKapal->updated_by = $user->id;
                             if ($naikKapal->is_tl) {
                                 $naikKapal->is_tl = false;
                             }
@@ -3779,13 +3779,13 @@ class ObController extends Controller
 
                                 try {
                                     HistoryKontainer::create([
-                                        'nomor_kontainer'  => $naikKapal->nomor_kontainer,
-                                        'tipe_kontainer'   => Kontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)->exists() ? 'kontainer' : 'stock',
-                                        'jenis_kegiatan'   => 'Masuk',
+                                        'nomor_kontainer' => $naikKapal->nomor_kontainer,
+                                        'tipe_kontainer' => Kontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)->exists() ? 'kontainer' : 'stock',
+                                        'jenis_kegiatan' => 'Masuk',
                                         'tanggal_kegiatan' => now(),
-                                        'gudang_id'        => $gudang->id,
-                                        'keterangan'       => 'OB Bulk via Textarea. Kapal: '.($naikKapal->nama_kapal ?? '-').'. Voyage: '.($naikKapal->no_voyage ?? '-'),
-                                        'created_by'       => Auth::id(),
+                                        'gudang_id' => $gudang->id,
+                                        'keterangan' => 'OB Bulk via Textarea. Kapal: '.($naikKapal->nama_kapal ?? '-').'. Voyage: '.($naikKapal->no_voyage ?? '-'),
+                                        'created_by' => Auth::id(),
                                     ]);
                                 } catch (\Exception $he) {
                                     \Log::warning('Bulk OB: history insert failed: '.$he->getMessage());
@@ -3803,22 +3803,22 @@ class ObController extends Controller
                                 $existingBl = $blQ->first();
                             }
                             if (! $existingBl) {
-                                $bl                  = new Bl;
+                                $bl = new Bl;
                                 $bl->nomor_kontainer = $naikKapal->nomor_kontainer;
-                                $bl->no_seal         = mb_substr($naikKapal->no_seal ?? '', 0, 255);
-                                $bl->nama_barang     = mb_substr($naikKapal->jenis_barang ?? '', 0, 255);
-                                $bl->tipe_kontainer  = ($naikKapal->prospek && $naikKapal->prospek->tipe) ? $naikKapal->prospek->tipe : $naikKapal->tipe_kontainer;
-                                $bl->size_kontainer  = $naikKapal->size_kontainer;
-                                $bl->nama_kapal      = mb_substr($naikKapal->nama_kapal ?? '', 0, 255);
-                                $bl->no_voyage       = mb_substr($naikKapal->no_voyage ?? '', 0, 255);
-                                $bl->asal_kontainer  = mb_substr($naikKapal->asal_kontainer ?? '', 0, 255);
-                                $bl->ke              = mb_substr($naikKapal->ke ?? '', 0, 255);
-                                $bl->tonnage         = $naikKapal->total_tonase ?? 0;
-                                $bl->volume          = $naikKapal->total_volume ?? 0;
-                                $bl->kuantitas       = $naikKapal->kuantitas ?? 1;
-                                $bl->sudah_ob        = false;
-                                $bl->supir_id        = null;
-                                $lastBl              = Bl::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
+                                $bl->no_seal = mb_substr($naikKapal->no_seal ?? '', 0, 255);
+                                $bl->nama_barang = mb_substr($naikKapal->jenis_barang ?? '', 0, 255);
+                                $bl->tipe_kontainer = ($naikKapal->prospek && $naikKapal->prospek->tipe) ? $naikKapal->prospek->tipe : $naikKapal->tipe_kontainer;
+                                $bl->size_kontainer = $naikKapal->size_kontainer;
+                                $bl->nama_kapal = mb_substr($naikKapal->nama_kapal ?? '', 0, 255);
+                                $bl->no_voyage = mb_substr($naikKapal->no_voyage ?? '', 0, 255);
+                                $bl->asal_kontainer = mb_substr($naikKapal->asal_kontainer ?? '', 0, 255);
+                                $bl->ke = mb_substr($naikKapal->ke ?? '', 0, 255);
+                                $bl->tonnage = $naikKapal->total_tonase ?? 0;
+                                $bl->volume = $naikKapal->total_volume ?? 0;
+                                $bl->kuantitas = $naikKapal->kuantitas ?? 1;
+                                $bl->sudah_ob = false;
+                                $bl->supir_id = null;
+                                $lastBl = Bl::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
                                 if ($lastBl && $lastBl->nomor_bl) {
                                     preg_match('/\d+/', $lastBl->nomor_bl, $m);
                                     $bl->nomor_bl = 'BL-'.str_pad((isset($m[0]) ? intval($m[0]) : 0) + 1, 6, '0', STR_PAD_LEFT);
@@ -3832,14 +3832,14 @@ class ObController extends Controller
 
                             DB::commit();
 
-                            $result['status']  = 'success';
+                            $result['status'] = 'success';
                             $result['message'] = 'Berhasil OB (naik kapal)';
                             $successCount++;
                             $processed = true;
                         } catch (\Exception $e) {
                             DB::rollBack();
                             \Log::error('Bulk OB naik_kapal error for '.$nomorKontainer.': '.$e->getMessage());
-                            $result['status']  = 'error';
+                            $result['status'] = 'error';
                             $result['message'] = 'Error: '.$e->getMessage();
                         }
                     }
@@ -3860,15 +3860,15 @@ class ObController extends Controller
 
                 if ($bl) {
                     if ($bl->sudah_ob) {
-                        $result['status']  = 'already_ob';
+                        $result['status'] = 'already_ob';
                         $result['message'] = 'Sudah OB (bongkar/BL)';
                         $alreadyObCount++;
                     } else {
                         try {
                             DB::beginTransaction();
 
-                            $bl->sudah_ob   = true;
-                            $bl->supir_id   = $supirId;
+                            $bl->sudah_ob = true;
+                            $bl->supir_id = $supirId;
                             $bl->tanggal_ob = now();
                             $bl->catatan_ob = $catatan;
                             $bl->updated_by = $user->id;
@@ -3889,14 +3889,14 @@ class ObController extends Controller
 
                             DB::commit();
 
-                            $result['status']  = 'success';
+                            $result['status'] = 'success';
                             $result['message'] = 'Berhasil OB (bongkar/BL)';
                             $successCount++;
                             $processed = true;
                         } catch (\Exception $e) {
                             DB::rollBack();
                             \Log::error('Bulk OB BL error for '.$nomorKontainer.': '.$e->getMessage());
-                            $result['status']  = 'error';
+                            $result['status'] = 'error';
                             $result['message'] = 'Error: '.$e->getMessage();
                         }
                     }
@@ -3905,7 +3905,7 @@ class ObController extends Controller
             }
 
             if (! $processed) {
-                $result['status']  = 'not_found';
+                $result['status'] = 'not_found';
                 $result['message'] = 'Kontainer tidak ditemukan';
                 $notFoundCount++;
             }
@@ -3917,13 +3917,13 @@ class ObController extends Controller
         $summary = "Diproses: {$totalProcessed} kontainer. Berhasil OB: {$successCount}. Sudah OB sebelumnya: {$alreadyObCount}. Tidak ditemukan: {$notFoundCount}.";
 
         return response()->json([
-            'success'       => $successCount > 0,
-            'message'       => $summary,
-            'results'       => $results,
+            'success' => $successCount > 0,
+            'message' => $summary,
+            'results' => $results,
             'success_count' => $successCount,
-            'already_ob'    => $alreadyObCount,
-            'not_found'     => $notFoundCount,
-            'total'         => $totalProcessed,
+            'already_ob' => $alreadyObCount,
+            'not_found' => $notFoundCount,
+            'total' => $totalProcessed,
         ]);
     }
 }
