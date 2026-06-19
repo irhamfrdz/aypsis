@@ -4955,6 +4955,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('ob/kirim-manifest', [\App\Http\Controllers\ObController::class, 'kirimManifest'])
         ->name('ob.kirim-manifest')
         ->middleware('can:ob-view');
+    Route::post('ob/mark-as-ob-bulk', [\App\Http\Controllers\ObController::class, 'markAsOBBulkByKontainer'])
+        ->name('ob.mark-as-ob-bulk')
+        ->middleware('can:ob-view');
 
     // Fix CARGO Manifests Script
     Route::get('ob/fix-cargo-manifests', function () {
@@ -6323,19 +6326,15 @@ Route::middleware(['auth',
         Route::delete('/master/customer/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteCustomer'])->name('customer.delete');
 
         Route::post('/master/tipe', [\App\Http\Controllers\SewaKontainerController::class, 'storeTipe'])->name('tipe.store');
-        Route::put('/master/tipe/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateTipe'])->name('tipe.update');
         Route::delete('/master/tipe/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteTipe'])->name('tipe.delete');
 
         Route::post('/master/ukuran', [\App\Http\Controllers\SewaKontainerController::class, 'storeUkuran'])->name('ukuran.store');
-        Route::put('/master/ukuran/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateUkuran'])->name('ukuran.update');
         Route::delete('/master/ukuran/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteUkuran'])->name('ukuran.delete');
 
         Route::post('/master/kontainer', [\App\Http\Controllers\SewaKontainerController::class, 'storeKontainer'])->name('kontainer.store');
-        Route::put('/master/kontainer/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateKontainer'])->name('kontainer.update');
         Route::delete('/master/kontainer/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteKontainer'])->name('kontainer.delete');
 
         Route::post('/master/tarif', [\App\Http\Controllers\SewaKontainerController::class, 'storeTarif'])->name('tarif.store');
-        Route::put('/master/tarif/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateTarif'])->name('tarif.update');
         Route::delete('/master/tarif/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteTarif'])->name('tarif.delete');
 
         // Transaksi Sewa (Contracts)
@@ -6346,12 +6345,20 @@ Route::middleware(['auth',
 
         // Invoice Groups
         Route::post('/invoice', [\App\Http\Controllers\SewaKontainerController::class, 'storeInvoice'])->name('invoice.store');
-        Route::delete('/invoice/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteInvoice'])->name('invoice.delete');
+        Route::put('/invoice/{nomor}', [\App\Http\Controllers\SewaKontainerController::class, 'updateInvoice'])->name('invoice.update');
+        Route::delete('/invoice/{nomor}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteInvoice'])->name('invoice.delete');
 
-        // Payment Override
-        Route::post('/tagihan/{id}/override', [\App\Http\Controllers\SewaKontainerController::class, 'payTagihanOverride'])->name('tagihan.override');
+        // Tagihan inline update
+        Route::post('/tagihan/{id}/update', [\App\Http\Controllers\SewaKontainerController::class, 'updateTagihan'])->name('tagihan.update');
 
-        // Bulk JSON Restorations
-        Route::post('/import', [\App\Http\Controllers\SewaKontainerController::class, 'importBackup'])->name('import');
+        // Bulk payment import
+        Route::post('/import-payment', [\App\Http\Controllers\SewaKontainerController::class, 'importPayment'])->name('import.payment');
+
+        // Backup / Restore JSON
+        Route::get('/export-json', [\App\Http\Controllers\SewaKontainerController::class, 'exportJson'])->name('export.json');
+        Route::post('/import-json', [\App\Http\Controllers\SewaKontainerController::class, 'importJson'])->name('import.json');
+
+        // Kontainer info AJAX helper
+        Route::get('/kontainer-info/{noKontainer}', [\App\Http\Controllers\SewaKontainerController::class, 'getKontainerInfo'])->name('kontainer.info');
     });
 });

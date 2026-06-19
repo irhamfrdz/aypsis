@@ -58,7 +58,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
                         <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pembayaran</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                             <div class="flex items-end gap-1">
                                 <div class="flex-1">
                                     <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran</label>
@@ -69,10 +69,16 @@
                             </div>
                             <div>
                                 <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
-                                <input type="text" name="tanggal_kas_display" id="tanggal_kas_display"
-                                    value="{{ now()->format('d/m/Y') }}"
-                                    class="{{ $readonlyInputClasses }}" readonly>
-                                <input type="hidden" name="tanggal_kas" id="tanggal_kas" value="{{ now()->toDateString() }}">
+                                <input type="date" name="tanggal_kas" id="tanggal_kas"
+                                    value="{{ old('tanggal_kas', now()->toDateString()) }}"
+                                    class="{{ $inputClasses }}" required>
+                            </div>
+                            <div>
+                                <label for="nomor_accurate" class="{{ $labelClasses }}">Nomor Accurate</label>
+                                <input type="text" name="nomor_accurate" id="nomor_accurate"
+                                    value="{{ old('nomor_accurate') }}"
+                                    placeholder="Nomor Accurate"
+                                    class="{{ $inputClasses }}">
                             </div>
                         </div>
                     </div>
@@ -252,12 +258,34 @@
             updateNomorPembayaran();
         }
 
-        // Keep tanggal_kas hidden field synced with current date
+        // Date input initialized with old or default value
         const tanggalKas = document.getElementById('tanggal_kas');
-        if (tanggalKas) {
-            // Keep hidden field with today's date for validation
+        if (tanggalKas && !tanggalKas.value) {
             tanggalKas.value = new Date().toISOString().split('T')[0];
         }
+
+        // Mencegah double submit / double book
+        document.getElementById('pembayaranForm').addEventListener('submit', function(e) {
+            const bankSelect = document.getElementById('bank');
+            if (!bankSelect.value) {
+                e.preventDefault();
+                alert('Pilih bank terlebih dahulu.');
+                bankSelect.focus();
+                return false;
+            }
+
+            const jenisTransaksi = document.getElementById('jenis_transaksi');
+            if (!jenisTransaksi.value) {
+                e.preventDefault();
+                alert('Pilih jenis transaksi.');
+                jenisTransaksi.focus();
+                return false;
+            }
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+        });
     });
 </script>
 @endsection

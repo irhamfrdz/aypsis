@@ -252,6 +252,10 @@
                     <td style="padding: 3px; font-weight: bold;">Status:</td>
                     <td style="padding: 3px; border-bottom: 1px solid #333;">{{ ucfirst($pembayaran->status) }}</td>
                 </tr>
+                <tr>
+                    <td style="padding: 3px; font-weight: bold;">Nomor Accurate:</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;" colspan="3">{{ $pembayaran->nomor_accurate ?? '-' }}</td>
+                </tr>
             </table>
         </div>
 

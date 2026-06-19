@@ -133,18 +133,20 @@ class PembayaranPranotaCatController extends Controller
 
             $request->validate([
                 'nomor_pembayaran' => 'required|string',
+                'nomor_accurate' => 'nullable|string|max:255',
                 'bank' => 'required|string|max:255',
                 'jenis_transaksi' => 'required|in:debit,credit',
                 'tanggal_kas' => 'required|date',
                 'pranota_ids' => 'required|array|min:1',
                 'pranota_ids.*' => 'exists:pranota_tagihan_cat,id',
                 'total_tagihan_penyesuaian' => 'nullable|numeric',
+                'penyesuaian' => 'nullable|numeric',
                 'alasan_penyesuaian' => 'nullable|string',
                 'keterangan' => 'nullable|string',
             ]);
 
             $pranotaIds = $request->input('pranota_ids');
-            $penyesuaian = floatval($request->input('total_tagihan_penyesuaian', 0));
+            $penyesuaian = floatval($request->input('total_tagihan_penyesuaian', $request->input('penyesuaian', 0)));
 
             // Get and validate pranota records
             $pranotas = PranotaTagihanCat::whereIn('id', $pranotaIds)->get();
@@ -173,6 +175,7 @@ class PembayaranPranotaCatController extends Controller
             $pembayaran = PembayaranPranotaCat::create([
                 'nomor_pembayaran' => $request->nomor_pembayaran,
                 'nomor_cetakan' => 1,
+                'nomor_accurate' => $request->nomor_accurate,
                 'bank' => $request->bank,
                 'jenis_transaksi' => $request->jenis_transaksi,
                 'tanggal_kas' => $request->tanggal_kas,

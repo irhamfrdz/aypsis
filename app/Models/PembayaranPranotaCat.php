@@ -16,6 +16,7 @@ class PembayaranPranotaCat extends Model
     protected $fillable = [
         'nomor_pembayaran',
         'nomor_cetakan',
+        'nomor_accurate',
         'bank',
         'jenis_transaksi',
         'tanggal_kas',

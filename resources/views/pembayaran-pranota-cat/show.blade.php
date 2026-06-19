@@ -30,6 +30,10 @@
                             <dd class="text-sm text-gray-900">{{ $pembayaran->nomor_pembayaran }}</dd>
                         </div>
                         <div>
+                            <dt class="text-sm font-medium text-gray-500">Nomor Accurate</dt>
+                            <dd class="text-sm text-gray-900">{{ $pembayaran->nomor_accurate ?? '-' }}</dd>
+                        </div>
+                        <div>
                             <dt class="text-sm font-medium text-gray-500">Tanggal Kas</dt>
                             <dd class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($pembayaran->tanggal_kas)->format('d/m/Y') }}</dd>
                         </div>

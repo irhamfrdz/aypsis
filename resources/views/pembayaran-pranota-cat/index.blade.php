@@ -64,6 +64,11 @@
                                 <div class="text-sm font-medium text-gray-900">
                                     {{ $pembayaran->nomor_pembayaran }}
                                 </div>
+                                @if($pembayaran->nomor_accurate)
+                                    <div class="text-xs text-indigo-600 font-semibold">
+                                        Accurate: {{ $pembayaran->nomor_accurate }}
+                                    </div>
+                                @endif
                                 <div class="text-sm text-gray-500">
                                     ID: #{{ $pembayaran->id }}
                                 </div>

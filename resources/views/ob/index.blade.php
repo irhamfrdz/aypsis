@@ -127,6 +127,9 @@
                 <button onclick="openUpdateSizeModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-sync-alt md:mr-2"></i><span class="hidden md:inline">Update Size</span>
                 </button>
+                <button onclick="openBulkTextareaModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                    <i class="fas fa-list-alt md:mr-2"></i><span class="hidden md:inline">OB via Textarea</span>
+                </button>
                 <a href="{{ route('ob.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-arrow-left md:mr-2"></i><span class="hidden md:inline">Pilih Kapal Lain</span>
                 </a>
@@ -1369,6 +1372,154 @@
                     <i class="fas fa-plus mr-2"></i>
                     Konfirmasi Masuk Pranota
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Bulk OB via Textarea -->
+<div id="bulkTextareaModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-4 mx-auto p-4 border w-[98%] max-w-3xl shadow-lg rounded-md bg-white">
+        <div class="mt-1">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-2 border-b">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900"><i class="fas fa-list-alt text-teal-600 mr-2"></i>OB Massal via Textarea</h3>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Paste nomor kontainer → Parse → Isi supir per kontainer → Tandai OB</p>
+                </div>
+                <button type="button" onclick="closeBulkTextareaModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="flex items-center gap-2 mt-2 mb-3">
+                <div id="bulk_step1_badge" class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-teal-100 text-teal-700">
+                    <span class="w-4 h-4 rounded-full bg-teal-600 text-white flex items-center justify-center text-[9px]">1</span>
+                    Input Nomor Kontainer
+                </div>
+                <i class="fas fa-chevron-right text-gray-300 text-[10px]"></i>
+                <div id="bulk_step2_badge" class="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-400">
+                    <span class="w-4 h-4 rounded-full bg-gray-300 text-white flex items-center justify-center text-[9px]">2</span>
+                    Isi Supir per Kontainer
+                </div>
+            </div>
+
+            <!-- STEP 1: Textarea -->
+            <div id="bulk_step1" class="space-y-3">
+                <div>
+                    <label for="bulk_nomor_kontainers" class="block text-xs font-medium text-gray-700 mb-1">
+                        Nomor Kontainer <span class="text-red-500">*</span>
+                        <span class="text-gray-400 font-normal ml-1">(satu per baris, atau pisahkan dengan koma/titik koma)</span>
+                    </label>
+                    <textarea id="bulk_nomor_kontainers"
+                              rows="8"
+                              placeholder="ABCD1234567&#10;EFGH8901234&#10;IJKL5678901"
+                              class="w-full px-3 py-2 text-xs font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
+                    <p id="bulk_textarea_counter" class="text-[10px] text-gray-400 mt-0.5">0 nomor kontainer terdeteksi</p>
+                </div>
+
+                <!-- Global Ke / Tujuan (berlaku untuk semua) -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="bulk_ke_gudang_id" class="block text-xs font-medium text-gray-700 mb-1">Ke (Tujuan) <span class="text-red-500">*</span></label>
+                        <select id="bulk_ke_gudang_id"
+                                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <option value="">Pilih Lokasi Tujuan</option>
+                            @foreach($gudangs as $gudang)
+                                <option value="{{ $gudang->id }}" {{ request('kegiatan') === 'muat'
+                                    ? (strtoupper($gudang->nama_gudang) === 'ON BOARD' ? 'selected' : '')
+                                    : ($gudang->nama_gudang == 'SS JKT' ? 'selected' : '') }}>
+                                    {{ $gudang->nama_gudang }} {{ $gudang->lokasi ? '('.$gudang->lokasi.')' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label for="bulk_catatan" class="block text-xs font-medium text-gray-700 mb-1">Catatan (Opsional)</label>
+                        <input type="text" id="bulk_catatan"
+                               class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                               placeholder="Catatan untuk semua kontainer...">
+                    </div>
+                </div>
+
+                <!-- Step 1 Footer -->
+                <div class="flex justify-end gap-2 pt-2 border-t">
+                    <button type="button" onclick="closeBulkTextareaModal()"
+                            class="px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-md">
+                        Batal
+                    </button>
+                    <button type="button" onclick="parseBulkKontainers()"
+                            class="px-4 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-md">
+                        <i class="fas fa-table mr-1"></i>Parse & Isi Supir
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Per-row Supir Table -->
+            <div id="bulk_step2" class="hidden space-y-3">
+                <!-- Quick fill supir for all -->
+                <div class="bg-teal-50 border border-teal-200 rounded-md px-3 py-2 flex items-center gap-3">
+                    <span class="text-xs font-medium text-teal-800 whitespace-nowrap"><i class="fas fa-magic mr-1"></i>Isi semua supir:</span>
+                    <div class="relative flex-1">
+                        <input type="text" id="bulk_supir_fill_all"
+                               placeholder="Cari & pilih supir untuk semua kontainer..."
+                               autocomplete="off"
+                               class="w-full px-2 py-1.5 text-xs border border-teal-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <div id="bulk_fill_all_dropdown" class="hidden absolute left-0 right-0 top-full mt-0.5 border border-gray-300 rounded-md bg-white max-h-40 overflow-y-auto shadow-lg z-10">
+                            @foreach($supirs as $supir)
+                                <div class="bulk-fill-all-option px-2 py-1.5 cursor-pointer hover:bg-teal-50 text-xs"
+                                     data-value="{{ $supir->id }}"
+                                     data-text="{{ $supir->nama_panggilan }}{{ $supir->plat ? ' ('.$supir->plat.')' : '' }}">
+                                    {{ $supir->nama_panggilan }} - {{ $supir->nama_lengkap }}
+                                    @if($supir->plat)<span class="text-gray-500">({{ $supir->plat }})</span>@endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Per-container table -->
+                <div class="border border-gray-200 rounded-md overflow-hidden">
+                    <div class="max-h-72 overflow-y-auto">
+                        <table class="min-w-full text-xs">
+                            <thead class="bg-gray-50 sticky top-0 shadow-sm">
+                                <tr>
+                                    <th class="px-2 py-2 text-left text-gray-600 font-semibold w-6">#</th>
+                                    <th class="px-2 py-2 text-left text-gray-600 font-semibold">Nomor Kontainer</th>
+                                    <th class="px-2 py-2 text-left text-gray-600 font-semibold min-w-[220px]">Supir <span class="text-red-500">*</span></th>
+                                    <th class="px-2 py-2 text-left text-gray-600 font-semibold w-16">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bulk_rows_tbody" class="divide-y divide-gray-100 bg-white"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Result summary (shown after submit) -->
+                <div id="bulk_result_area" class="hidden">
+                    <div id="bulk_result_summary" class="text-xs"></div>
+                </div>
+
+                <!-- Step 2 Footer -->
+                <div class="flex justify-between items-center pt-2 border-t">
+                    <button type="button" onclick="backToStep1()"
+                            class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-medium rounded-md">
+                        <i class="fas fa-arrow-left mr-1"></i>Kembali
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeBulkTextareaModal()"
+                                class="px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-md">
+                            Tutup
+                        </button>
+                        <button type="button" id="btnBulkOBSubmit" onclick="submitBulkOB()"
+                                class="px-4 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-md">
+                            <i class="fas fa-check mr-1"></i>Tandai Semua OB
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2704,6 +2855,300 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+// ===== BULK OB VIA TEXTAREA =====
+
+// Supir data from PHP (for dropdowns in JS)
+const BULK_SUPIRS = {!! json_encode($supirs->map(function($s) { return ['id' => $s->id, 'text' => $s->nama_panggilan . ($s->plat ? ' ('.$s->plat.')' : ''), 'full' => $s->nama_panggilan . ' - ' . $s->nama_lengkap . ($s->plat ? ' ('.$s->plat.')' : '')]; })->values()) !!};
+
+function openBulkTextareaModal() {
+    // Full reset
+    document.getElementById('bulk_nomor_kontainers').value = '';
+    document.getElementById('bulk_catatan').value = '';
+    document.getElementById('bulk_textarea_counter').textContent = '0 nomor kontainer terdeteksi';
+    document.getElementById('bulk_result_area').classList.add('hidden');
+    document.getElementById('bulk_rows_tbody').innerHTML = '';
+
+    // Reset steps
+    document.getElementById('bulk_step1').classList.remove('hidden');
+    document.getElementById('bulk_step2').classList.add('hidden');
+    document.getElementById('bulk_step1_badge').className = 'flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-teal-100 text-teal-700';
+    document.getElementById('bulk_step1_badge').querySelector('span').className = 'w-4 h-4 rounded-full bg-teal-600 text-white flex items-center justify-center text-[9px]';
+    document.getElementById('bulk_step2_badge').className = 'flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-400';
+    document.getElementById('bulk_step2_badge').querySelector('span').className = 'w-4 h-4 rounded-full bg-gray-300 text-white flex items-center justify-center text-[9px]';
+
+    document.getElementById('bulkTextareaModal').classList.remove('hidden');
+    setTimeout(() => document.getElementById('bulk_nomor_kontainers').focus(), 100);
+}
+
+function closeBulkTextareaModal() {
+    document.getElementById('bulkTextareaModal').classList.add('hidden');
+}
+
+function backToStep1() {
+    document.getElementById('bulk_step1').classList.remove('hidden');
+    document.getElementById('bulk_step2').classList.add('hidden');
+    document.getElementById('bulk_result_area').classList.add('hidden');
+}
+
+// Close when clicking outside modal
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('bulkTextareaModal');
+    if (e.target === modal) closeBulkTextareaModal();
+});
+
+// Counter textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('bulk_nomor_kontainers');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            const lines = this.value.split(/[\r\n,;]+/).map(l => l.trim().replace(/[^A-Za-z0-9]/g, '')).filter(l => l.length >= 3);
+            const unique = [...new Set(lines)];
+            document.getElementById('bulk_textarea_counter').textContent = unique.length + ' nomor kontainer terdeteksi';
+        });
+    }
+
+    // Fill-all supir dropdown
+    const fillAllInput = document.getElementById('bulk_supir_fill_all');
+    const fillAllDropdown = document.getElementById('bulk_fill_all_dropdown');
+    const fillAllOptions = document.querySelectorAll('.bulk-fill-all-option');
+
+    if (fillAllInput) {
+        fillAllInput.addEventListener('focus', () => fillAllDropdown.classList.remove('hidden'));
+        fillAllInput.addEventListener('input', function() {
+            const term = this.value.toLowerCase();
+            fillAllDropdown.classList.remove('hidden');
+            fillAllOptions.forEach(opt => {
+                opt.style.display = opt.getAttribute('data-text').toLowerCase().includes(term) || opt.textContent.toLowerCase().includes(term) ? 'block' : 'none';
+            });
+        });
+    }
+
+    fillAllOptions.forEach(opt => {
+        opt.addEventListener('click', function() {
+            const id   = this.getAttribute('data-value');
+            const text = this.getAttribute('data-text');
+            // Fill all rows
+            document.querySelectorAll('.bulk-row-supir-select').forEach(sel => {
+                sel.value = id;
+                sel.closest('tr').querySelector('.bulk-supir-badge').textContent = text;
+                sel.closest('tr').querySelector('.bulk-supir-badge').className = 'bulk-supir-badge text-[10px] font-medium text-teal-700';
+            });
+            fillAllInput.value = text;
+            fillAllDropdown.classList.add('hidden');
+        });
+    });
+
+    document.addEventListener('click', function(e) {
+        if (fillAllDropdown && !fillAllDropdown.contains(e.target) && e.target !== fillAllInput) {
+            fillAllDropdown.classList.add('hidden');
+        }
+    });
+});
+
+function parseBulkKontainers() {
+    const raw = document.getElementById('bulk_nomor_kontainers').value;
+    const keGudangId = document.getElementById('bulk_ke_gudang_id').value;
+
+    if (!raw.trim()) {
+        alert('Silakan isi nomor kontainer terlebih dahulu');
+        return;
+    }
+    if (!keGudangId) {
+        alert('Silakan pilih lokasi tujuan (Ke) terlebih dahulu');
+        return;
+    }
+
+    const lines = raw.split(/[\r\n,;]+/)
+        .map(l => l.trim().replace(/[^A-Za-z0-9]/g, '').toUpperCase())
+        .filter(l => l.length >= 3);
+    const unique = [...new Set(lines)];
+
+    if (unique.length === 0) {
+        alert('Tidak ada nomor kontainer yang valid (minimal 3 karakter)');
+        return;
+    }
+
+    // Build per-row table
+    const tbody = document.getElementById('bulk_rows_tbody');
+    tbody.innerHTML = '';
+
+    unique.forEach((nomor, idx) => {
+        // Build supir options
+        const options = BULK_SUPIRS.map(s =>
+            `<option value="${s.id}">${s.text}</option>`
+        ).join('');
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-50';
+        tr.dataset.nomor = nomor;
+        tr.innerHTML = `
+            <td class="px-2 py-1.5 text-gray-400 text-[10px]">${idx + 1}</td>
+            <td class="px-2 py-1.5 font-mono font-semibold text-gray-800">${nomor}</td>
+            <td class="px-2 py-1.5">
+                <select class="bulk-row-supir-select w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-teal-500"
+                        onchange="onRowSupirChange(this)">
+                    <option value="">-- Pilih Supir --</option>
+                    ${options}
+                </select>
+            </td>
+            <td class="px-2 py-1.5">
+                <span class="bulk-row-status inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500">Belum</span>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Switch to step 2
+    document.getElementById('bulk_step1').classList.add('hidden');
+    document.getElementById('bulk_step2').classList.remove('hidden');
+    document.getElementById('bulk_result_area').classList.add('hidden');
+
+    // Update step badges
+    document.getElementById('bulk_step1_badge').className = 'flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-500';
+    document.getElementById('bulk_step2_badge').className = 'flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-teal-100 text-teal-700';
+    document.getElementById('bulk_step2_badge').querySelector('span').className = 'w-4 h-4 rounded-full bg-teal-600 text-white flex items-center justify-center text-[9px]';
+
+    // Reset fill-all
+    document.getElementById('bulk_supir_fill_all').value = '';
+
+    // Reset submit button
+    const btn = document.getElementById('btnBulkOBSubmit');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check mr-1"></i>Tandai Semua OB';
+}
+
+function onRowSupirChange(sel) {
+    const badge = sel.closest('tr').querySelector('.bulk-row-status');
+    if (sel.value) {
+        badge.textContent = '✓';
+        badge.className = 'bulk-row-status inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-teal-100 text-teal-700';
+    } else {
+        badge.textContent = 'Belum';
+        badge.className = 'bulk-row-status inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500';
+    }
+}
+
+function submitBulkOB() {
+    const keGudangId = document.getElementById('bulk_ke_gudang_id').value;
+    const catatan    = document.getElementById('bulk_catatan').value.trim();
+
+    if (!keGudangId) {
+        alert('Silakan pilih lokasi tujuan (Ke) terlebih dahulu');
+        return;
+    }
+
+    // Collect per-row items
+    const rows = document.querySelectorAll('#bulk_rows_tbody tr');
+    const items = [];
+    const missing = [];
+
+    rows.forEach(row => {
+        const nomor   = row.dataset.nomor;
+        const supirId = row.querySelector('.bulk-row-supir-select').value;
+        if (!supirId) {
+            missing.push(nomor);
+        } else {
+            items.push({ nomor_kontainer: nomor, supir_id: supirId });
+        }
+    });
+
+    if (missing.length > 0) {
+        const proceed = confirm(`${missing.length} kontainer belum dipilih supirnya:\n${missing.slice(0, 5).join(', ')}${missing.length > 5 ? ' ...' : ''}\n\nLanjutkan hanya untuk kontainer yang sudah dipilih supirnya?`);
+        if (!proceed) return;
+    }
+
+    if (items.length === 0) {
+        alert('Tidak ada kontainer dengan supir yang dipilih. Silakan isi supir terlebih dahulu.');
+        return;
+    }
+
+    const btn = document.getElementById('btnBulkOBSubmit');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Memproses...';
+
+    fetch('/ob/mark-as-ob-bulk', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            items:       items,
+            ke_gudang_id: keGudangId,
+            nama_kapal:   @json($namaKapal ?? null),
+            no_voyage:    @json($noVoyage ?? null),
+            kegiatan:     @json(request('kegiatan') ?? null),
+            catatan:      catatan
+        })
+    })
+    .then(async response => {
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+        const data = isJson ? await response.json() : null;
+        if (!response.ok) throw new Error(data?.message || `HTTP ${response.status}`);
+        return data;
+    })
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check mr-1"></i>Tandai Semua OB';
+
+        // Update per-row status badges
+        (data.results || []).forEach(item => {
+            const row = [...document.querySelectorAll('#bulk_rows_tbody tr')]
+                .find(r => r.dataset.nomor === item.nomor_kontainer);
+            if (!row) return;
+            const badge = row.querySelector('.bulk-row-status');
+            if (item.status === 'success') {
+                badge.textContent = '✓ OB';
+                badge.className = 'bulk-row-status inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-100 text-green-800';
+            } else if (item.status === 'already_ob') {
+                badge.textContent = 'Sdh OB';
+                badge.className = 'bulk-row-status inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-700';
+            } else if (item.status === 'not_found') {
+                badge.textContent = 'Tdk Ada';
+                badge.className = 'bulk-row-status inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-700';
+            } else {
+                badge.textContent = 'Error';
+                badge.className = 'bulk-row-status inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-red-200 text-red-900';
+            }
+        });
+
+        // Summary
+        const resultArea = document.getElementById('bulk_result_area');
+        resultArea.classList.remove('hidden');
+        const summaryEl = document.getElementById('bulk_result_summary');
+        summaryEl.innerHTML = `
+            <div class="flex flex-wrap gap-2">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <i class="fas fa-check-circle mr-1"></i>Berhasil: ${data.success_count}
+                </span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <i class="fas fa-info-circle mr-1"></i>Sudah OB: ${data.already_ob}
+                </span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <i class="fas fa-exclamation-circle mr-1"></i>Tdk ditemukan: ${data.not_found}
+                </span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    Total: ${data.total}
+                </span>
+            </div>
+        `;
+
+        if (data.success_count > 0) {
+            showNotification(data.message, 'success');
+            setTimeout(() => window.location.reload(), 2500);
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check mr-1"></i>Tandai Semua OB';
+        showNotification('Terjadi kesalahan: ' + error.message, 'error');
+        console.error('Bulk OB error:', error);
+    });
+}
+// ===== END BULK OB VIA TEXTAREA =====
 </script>
 
 @endsection

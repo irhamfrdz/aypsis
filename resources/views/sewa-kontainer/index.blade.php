@@ -1,934 +1,1733 @@
 @extends('layouts.app')
 
-@section('title', 'Sewa Kontainer')
-@section('page_title', 'Portal Sewa Kontainer')
-
-@push('styles')
-<style>
-    /* Premium visual effects */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(226, 232, 240, 0.8);
-    }
-    .theme-transition {
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    /* Tab active styles */
-    .tab-active {
-        border-bottom-width: 2px;
-    }
-</style>
-@endpush
+@section('title', 'Penyewaan Kontainer')
 
 @section('content')
-<div class="flex-1 overflow-y-auto p-6 theme-transition" id="sewa-viewport">
-    <!-- Top Bar with Mode selector & Info -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <i class="fas fa-ship text-emerald-600" id="header-icon"></i>
-                <span>Portal Sewa Kontainer</span>
-                <span class="text-xs px-2.5 py-1 rounded-full font-bold uppercase border theme-transition" id="badge-mode">
-                    Sewa Out (Lessor)
-                </span>
-            </h2>
-            <p class="text-sm text-gray-500 mt-1" id="mode-desc">
-                Sistem kalkulasi proris maret ke januari (30 hari) & tahun kabisat februari (28/29 hari)
-            </p>
-        </div>
+{{-- ============================================================
+     SEWA KONTAINER — Full Feature (Feature Parity with Prototype)
+     Mode: Sewa Out (Lessor) | Sewa In (Lessee)
+     ============================================================ --}}
 
-        <!-- Mode Toggle Switch -->
-        <div class="bg-gray-200 p-1 rounded-xl flex gap-1 border border-gray-300">
-            <button onclick="setAppMode('sewa_out')" id="btn-sewa-out" class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer bg-white text-emerald-700 shadow-sm">
-                <i class="fas fa-sign-out-alt"></i> Sewa Out (Lessor)
+<style>
+/* ── Variables ── */
+:root {
+    --sewa-primary: #059669; /* emerald-600 */
+    --sewa-primary-light: #d1fae5;
+    --sewa-primary-ring: rgba(5,150,105,.15);
+}
+body.mode-sewa-in {
+    --sewa-primary: #4f46e5; /* indigo-600 */
+    --sewa-primary-light: #e0e7ff;
+    --sewa-primary-ring: rgba(79,70,229,.15);
+}
+/* ── Tabs ── */
+.sk-main-tab   { padding:.7rem 1.1rem; font-size:.8rem; font-weight:600; border-bottom:2px solid transparent; color:#6b7280; transition:all .2s; white-space:nowrap; cursor:pointer; }
+.sk-main-tab.active  { border-color:var(--sewa-primary); color:var(--sewa-primary); }
+.sk-main-tab:hover:not(.active) { color:#374151; border-color:#d1d5db; }
+.sk-tab-content { display:none; }
+.sk-tab-content.active { display:block; }
+/* ── Sub-tabs ── */
+.sk-sub-tab { padding:.45rem .9rem; font-size:.75rem; font-weight:500; border-radius:.6rem; cursor:pointer; color:#64748b; transition:all .15s; }
+.sk-sub-tab.active { background:white; color:var(--sewa-primary); box-shadow:0 1px 3px rgba(0,0,0,.1); }
+.sk-sub-tab:hover:not(.active) { background:#f1f5f9; }
+/* ── KPI ── */
+.sk-kpi { background:white; border:1px solid #e5e7eb; border-radius:1rem; padding:1.1rem 1.3rem; }
+.sk-kpi-val { font-size:1.4rem; font-weight:800; line-height:1.1; }
+/* ── Table ── */
+.sk-table { width:100%; border-collapse:collapse; font-size:.8rem; }
+.sk-table thead th { background:#f8fafc; padding:.7rem .9rem; text-align:left; font-weight:700; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em; color:#64748b; white-space:nowrap; border-bottom:1px solid #e2e8f0; }
+.sk-table tbody td { padding:.6rem .9rem; border-bottom:1px solid #f1f5f9; color:#374151; vertical-align:middle; }
+.sk-table tbody tr:hover { background:#f8fafc; }
+/* ── Status Badges ── */
+.badge { display:inline-flex; align-items:center; padding:.18rem .55rem; border-radius:9999px; font-size:.67rem; font-weight:700; text-transform:uppercase; white-space:nowrap; }
+.badge-belum-ditagih { background:#f1f5f9; color:#64748b; }
+.badge-pranota  { background:#ede9fe; color:#6d28d9; }
+.badge-belum-bayar { background:#fee2e2; color:#991b1b; }
+.badge-lunas    { background:#d1fae5; color:#065f46; }
+.badge-aktif    { background:#dcfce7; color:#14532d; }
+.badge-selesai  { background:#f1f5f9; color:#475569; }
+.badge-harian   { background:#fef3c7; color:#78350f; }
+.badge-prorate  { background:#fce7f3; color:#831843; }
+.badge-bulanan  { background:#dbeafe; color:#1e3a8a; }
+/* ── Buttons ── */
+.sk-btn-primary { display:inline-flex; align-items:center; gap:.35rem; padding:.45rem 1rem; background:var(--sewa-primary); color:white; border-radius:.6rem; font-size:.78rem; font-weight:600; cursor:pointer; border:none; transition:filter .15s; }
+.sk-btn-primary:hover { filter:brightness(.9); }
+.sk-btn-sm { padding:.3rem .65rem; font-size:.72rem; font-weight:600; border-radius:.45rem; cursor:pointer; border:none; transition:all .15s; display:inline-flex; align-items:center; gap:.25rem; }
+.sk-btn-ghost { background:#f1f5f9; color:#475569; }
+.sk-btn-ghost:hover { background:#e2e8f0; }
+.sk-btn-red  { background:#fee2e2; color:#991b1b; }
+.sk-btn-red:hover  { background:#fecaca; }
+.sk-btn-green { background:#d1fae5; color:#065f46; }
+.sk-btn-green:hover { background:#a7f3d0; }
+/* ── Forms ── */
+.sk-form-group { margin-bottom:.8rem; }
+.sk-label { display:block; font-size:.72rem; font-weight:600; color:#475569; margin-bottom:.25rem; }
+.sk-input { width:100%; border:1px solid #e2e8f0; border-radius:.6rem; padding:.45rem .75rem; font-size:.8rem; outline:none; transition:border-color .15s, box-shadow .15s; background:white; }
+.sk-input:focus { border-color:var(--sewa-primary); box-shadow:0 0 0 3px var(--sewa-primary-ring); }
+/* ── Cards ── */
+.sk-card { background:white; border:1px solid #e5e7eb; border-radius:1.1rem; overflow:hidden; }
+.sk-card-header { padding:.9rem 1.2rem; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; gap:.5rem; flex-wrap:wrap; }
+/* ── Sewa Cards ── */
+.sewa-card { background:white; border:1px solid #e5e7eb; border-radius:1rem; overflow:hidden; transition:box-shadow .2s; }
+.sewa-card:hover { box-shadow:0 4px 20px rgba(0,0,0,.08); }
+.sewa-card-periods td { padding:.3rem .5rem; font-size:.72rem; }
+/* ── Notification ── */
+#sk-notification { position:fixed; top:1.2rem; right:1.2rem; z-index:9999; min-width:280px; max-width:420px; padding:.7rem 1rem; border-radius:.75rem; font-size:.8rem; font-weight:600; display:none; align-items:center; gap:.5rem; box-shadow:0 4px 20px rgba(0,0,0,.15); }
+#sk-notification.success { background:#d1fae5; color:#065f46; border:1px solid #a7f3d0; }
+#sk-notification.error   { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+/* ── Pagination ── */
+.sk-pagination { display:flex; align-items:center; gap:.3rem; flex-wrap:wrap; }
+.sk-page-btn { padding:.3rem .55rem; border:1px solid #e2e8f0; border-radius:.4rem; font-size:.72rem; cursor:pointer; background:white; transition:all .15s; }
+.sk-page-btn:hover:not(:disabled) { background:#f1f5f9; }
+.sk-page-btn.active { background:var(--sewa-primary); color:white; border-color:var(--sewa-primary); }
+.sk-page-btn:disabled { opacity:.4; cursor:not-allowed; }
+/* ── Inline edit ── */
+.editable-cell { cursor:pointer; padding:.15rem .3rem; border-radius:.3rem; transition:background .15s; min-width:60px; display:inline-block; }
+.editable-cell:hover { background:#f1f5f9; }
+/* ── Modal ── */
+.sk-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; display:none; align-items:center; justify-content:center; padding:1rem; }
+.sk-modal-overlay.active { display:flex; }
+.sk-modal { background:white; border-radius:1.2rem; padding:1.5rem; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; position:relative; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+.sk-modal-lg { max-width:780px; }
+</style>
+
+<div id="sk-notification" role="alert"></div>
+
+<div class="space-y-5">
+{{-- ══════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════ --}}
+<div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:var(--sewa-primary)">
+                <i class="fas fa-shipping-fast text-white text-sm"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-800" id="sk-page-title">Penyewaan Kontainer — Sewa Out</h2>
+                <p class="text-xs text-gray-400" id="sk-page-subtitle">Manajemen Rental Kontainer sebagai Lessor</p>
+            </div>
+        </div>
+    </div>
+    <div class="flex items-center gap-3">
+        {{-- Clock --}}
+        <div class="text-xs text-gray-400 font-mono hidden md:block" id="sk-clock"></div>
+        {{-- Mode toggle --}}
+        <div class="flex bg-gray-100 rounded-xl p-1 gap-1 text-xs font-bold">
+            <button id="btn-mode-out" onclick="setMode('out')" class="px-3 py-1.5 rounded-lg bg-white shadow-sm text-emerald-700 transition-all">
+                <i class="fas fa-arrow-up-from-bracket mr-1"></i>Sewa Out
             </button>
-            <button onclick="setAppMode('sewa_in')" id="btn-sewa-in" class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer text-gray-600 hover:bg-gray-100">
-                <i class="fas fa-sign-in-alt"></i> Sewa In (Lessee)
+            <button id="btn-mode-in" onclick="setMode('in')" class="px-3 py-1.5 rounded-lg text-gray-500 transition-all">
+                <i class="fas fa-arrow-down-to-bracket mr-1"></i>Sewa In
             </button>
         </div>
     </div>
+</div>
 
-    <!-- KPI Summary Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                <i class="fas fa-box text-2xl"></i>
-            </div>
-            <div>
-                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Total Kontainer</p>
-                <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ count($kontainers) }}</h3>
-            </div>
-        </div>
+{{-- ══════════════════════════════════════════════════
+     KPI CARDS
+══════════════════════════════════════════════════ --}}
+@php
+    $totalKontainer  = $kontainers->count();
+    $sewaAktif       = $sewas->where('status_sewa', 'Aktif')->count();
+    $belumLunas      = $tagihans->whereIn('status_bayar', ['Belum Bayar', 'Pranota'])->sum('jumlah_tagihan');
+    $totalRealisasi  = $tagihans->where('status_bayar', 'Lunas')->sum('jumlah_tagihan');
+@endphp
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="sk-kpi">
+        <div class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Total Unit Kontainer</div>
+        <div class="sk-kpi-val text-gray-800">{{ $totalKontainer }}</div>
+        <div class="text-xs text-gray-400 mt-0.5">unit terdaftar</div>
+    </div>
+    <div class="sk-kpi">
+        <div class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Rental Aktif</div>
+        <div class="sk-kpi-val" style="color:var(--sewa-primary)">{{ $sewaAktif }}</div>
+        <div class="text-xs text-gray-400 mt-0.5">kontrak berjalan</div>
+    </div>
+    <div class="sk-kpi">
+        <div class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Belum Lunas</div>
+        <div class="sk-kpi-val text-red-600">Rp {{ number_format($belumLunas, 0, ',', '.') }}</div>
+        <div class="text-xs text-gray-400 mt-0.5">outstanding tagihan</div>
+    </div>
+    <div class="sk-kpi">
+        <div class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Total Realisasi</div>
+        <div class="sk-kpi-val text-emerald-600">Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</div>
+        <div class="text-xs text-gray-400 mt-0.5">pembayaran diterima</div>
+    </div>
+</div>
 
-        <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
-                <i class="fas fa-file-contract text-2xl"></i>
-            </div>
-            <div>
-                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Rental Aktif</p>
-                <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ count($sewas->where('status_sewa', 'Aktif')) }}</h3>
-            </div>
-        </div>
+{{-- ══════════════════════════════════════════════════
+     MAIN TABS
+══════════════════════════════════════════════════ --}}
+<div>
+<div class="border-b border-gray-200 flex overflow-x-auto">
+    <button class="sk-main-tab active" onclick="switchMainTab('billing', this)"><i class="fas fa-file-invoice-dollar mr-1.5"></i>Billing & Pembayaran</button>
+    <button class="sk-main-tab" onclick="switchMainTab('contracts', this)"><i class="fas fa-handshake mr-1.5"></i>Transaksi Sewa</button>
+    <button class="sk-main-tab" onclick="switchMainTab('master', this)"><i class="fas fa-database mr-1.5"></i>Master Database</button>
+    <button class="sk-main-tab" onclick="switchMainTab('import', this)"><i class="fas fa-file-excel mr-1.5"></i>Import / Backup</button>
+</div>
 
-        <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-red-50 text-red-600 rounded-xl">
-                <i class="fas fa-clock text-2xl"></i>
-            </div>
-            <div>
-                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Belum Lunas</p>
-                <h3 class="text-2xl font-bold text-gray-800 mt-1 text-red-600">
-                    Rp {{ number_format($tagihans->whereIn('status_bayar', ['Belum Bayar', 'Belum Ditagih'])->sum('jumlah_tagihan'), 0, ',', '.') }}
-                </h3>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl" id="kpi-lunas-icon">
-                <i class="fas fa-check-circle text-2xl"></i>
-            </div>
-            <div>
-                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Total Realisasi</p>
-                <h3 class="text-2xl font-bold text-gray-800 mt-1 text-emerald-600" id="kpi-lunas-val">
-                    Rp {{ number_format($tagihans->where('status_bayar', 'Lunas')->sum('jumlah_tagihan'), 0, ',', '.') }}
-                </h3>
-            </div>
-        </div>
+{{-- ══════════════════════════════════════════════════
+     TAB 1: BILLING & PEMBAYARAN
+══════════════════════════════════════════════════ --}}
+<div id="tab-billing" class="sk-tab-content active pt-5">
+    {{-- Sub-tabs --}}
+    <div class="flex bg-slate-50 border border-slate-200 rounded-xl p-1 gap-1 mb-5 overflow-x-auto">
+        <button class="sk-sub-tab active" onclick="switchBillingTab('sheet', this)">📋 Sheet</button>
+        <button class="sk-sub-tab" onclick="switchBillingTab('group', this)">📁 Group Invoice</button>
+        <button class="sk-sub-tab" onclick="switchBillingTab('collective', this)">📑 Collective</button>
+        <button class="sk-sub-tab" onclick="switchBillingTab('report', this)">📊 Laporan</button>
     </div>
 
-    <!-- Navigation Tabs -->
-    <div class="border-b border-gray-200 mb-6 flex overflow-x-auto gap-4">
-        <button onclick="switchTab('billing')" id="tab-billing" class="tab-btn py-3 px-4 text-sm font-semibold border-b-2 border-emerald-600 text-emerald-600">
-            <i class="fas fa-file-invoice-dollar mr-2"></i>Billing & Pembayaran
-        </button>
-        <button onclick="switchTab('contracts')" id="tab-contracts" class="tab-btn py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700">
-            <i class="fas fa-handshake mr-2"></i>Transaksi Kontrak
-        </button>
-        <button onclick="switchTab('master')" id="tab-master" class="tab-btn py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700">
-            <i class="fas fa-database mr-2"></i>Master Database
-        </button>
-        <button onclick="switchTab('import')" id="tab-import" class="tab-btn py-3 px-4 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700">
-            <i class="fas fa-file-excel mr-2"></i>Bulk Import/Backup
-        </button>
-    </div>
-
-    <!-- Tab 1: Billing & Tagihan -->
-    <div id="content-billing" class="tab-content">
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="p-5 border-b border-gray-200 flex flex-wrap justify-between items-center gap-4">
-                <h4 class="font-bold text-gray-800 text-lg">Daftar Tagihan Periodik</h4>
-                <div class="flex gap-2">
-                    <button onclick="openInvoiceModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
-                        <i class="fas fa-file-invoice mr-1"></i> Buat Invoice Grup
-                    </button>
-                </div>
+    {{-- ─── Sheet View ─── --}}
+    <div id="billing-sheet" class="billing-sub">
+        {{-- Filters --}}
+        <div class="bg-white border border-gray-200 rounded-xl p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+                <label class="sk-label" id="lbl-filter-customer">Customer / Vendor</label>
+                <select id="filter-customer" class="sk-input text-sm" onchange="applyFilters()">
+                    <option value="">Semua</option>
+                    @foreach($customers as $c)
+                    <option value="{{ $c->id_customer }}">{{ $c->nama_customer }}</option>
+                    @endforeach
+                </select>
             </div>
-            
+            <div>
+                <label class="sk-label">Status Bayar</label>
+                <select id="filter-status" class="sk-input text-sm" onchange="applyFilters()">
+                    <option value="">Semua</option>
+                    <option value="Belum Ditagih">Belum Ditagih</option>
+                    <option value="Pranota">Pranota</option>
+                    <option value="Belum Bayar">Belum Bayar</option>
+                    <option value="Lunas">Lunas</option>
+                </select>
+            </div>
+            <div>
+                <label class="sk-label">Cari No Kontainer</label>
+                <input id="filter-kontainer" type="text" class="sk-input text-sm" placeholder="AMFU..." oninput="applyFilters()">
+            </div>
+            <div class="flex items-end gap-2">
+                <button onclick="selectAllVisible()" class="sk-btn-sm sk-btn-ghost flex-1"><i class="fas fa-check-square mr-1"></i>Pilih Semua</button>
+                <button onclick="clearFilters()" class="sk-btn-sm sk-btn-ghost"><i class="fas fa-undo"></i></button>
+            </div>
+        </div>
+        {{-- Bulk actions --}}
+        <div id="bulk-actions" class="hidden bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-4 flex items-center gap-3 flex-wrap">
+            <span class="text-sm font-bold text-emerald-800" id="bulk-count">0 dipilih</span>
+            <button onclick="openInvoiceModal()" class="sk-btn-sm" style="background:var(--sewa-primary);color:white"><i class="fas fa-file-invoice mr-1"></i>Buat Invoice Grup</button>
+            <button onclick="bulkSetStatus('Pranota')" class="sk-btn-sm" style="background:#ede9fe;color:#5b21b6"><i class="fas fa-stamp mr-1"></i>Set Pranota</button>
+            <button onclick="clearSelection()" class="sk-btn-sm sk-btn-ghost ml-auto"><i class="fas fa-times"></i></button>
+        </div>
+        {{-- Table --}}
+        <div class="sk-card">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="sk-table" id="billing-table">
                     <thead>
-                        <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase tracking-wider text-[10px] font-bold">
-                            <th class="p-4">Tagihan ID</th>
-                            <th class="p-4">Customer</th>
-                            <th class="p-4">Kontainer</th>
-                            <th class="p-4">Bulan Ke</th>
-                            <th class="p-4">Rentang Tanggal</th>
-                            <th class="p-4">Tipe Tarif</th>
-                            <th class="p-4">Estimasi Tagihan</th>
-                            <th class="p-4">Status Bayar</th>
-                            <th class="p-4">Invoice No</th>
-                            <th class="p-4 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
-                        @forelse($tagihans as $tagihan)
-                        <tr class="hover:bg-gray-50/70 transition-colors">
-                            <td class="p-4 font-mono text-xs">{{ $tagihan->id_tagihan }}</td>
-                            <td class="p-4 font-semibold">{{ $tagihan->transaksi->customer->nama_customer ?? '-' }}</td>
-                            <td class="p-4">{{ $tagihan->transaksi->kontainer->no_kontainer ?? '-' }}</td>
-                            <td class="p-4 text-center">{{ $tagihan->bulan_ke }}</td>
-                            <td class="p-4 text-xs">
-                                {{ date('d/m/Y', strtotime($tagihan->tanggal_awal)) }} - {{ date('d/m/Y', strtotime($tagihan->tanggal_akhir)) }}
-                                <br><span class="text-[10px] text-gray-400">({{ $tagihan->jumlah_hari }} hari)</span>
-                            </td>
-                            <td class="p-4 text-xs font-semibold">{{ $tagihan->tipe_tarif }}</td>
-                            <td class="p-4 font-bold text-gray-800">
-                                Rp {{ number_format($tagihan->jumlah_tagihan, 0, ',', '.') }}
-                            </td>
-                            <td class="p-4">
-                                <span class="px-2 py-1 rounded-full text-xs font-bold uppercase
-                                    @if($tagihan->status_bayar === 'Lunas') bg-emerald-100 text-emerald-800
-                                    @elseif($tagihan->status_bayar === 'Belum Bayar') bg-red-100 text-red-800
-                                    @elseif($tagihan->status_bayar === 'Pranota') bg-indigo-100 text-indigo-800
-                                    @else bg-gray-100 text-gray-800
-                                    @endif">
-                                    {{ $tagihan->status_bayar }}
-                                </span>
-                            </td>
-                            <td class="p-4 text-xs font-mono text-blue-600 font-semibold">{{ $tagihan->nomor_invoice_grup ?: '-' }}</td>
-                            <td class="p-4 text-center">
-                                <button onclick="editPaymentOverride('{{ json_encode($tagihan) }}')" class="p-1 px-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-bold transition-all">
-                                    <i class="fas fa-edit mr-1"></i> Override
-                                </button>
-                            </td>
-                        </tr>
-                        @empty
                         <tr>
-                            <td colspan="10" class="p-8 text-center text-gray-400">Belum ada tagihan periodik yang tergenerate.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tab 2: Transaksi Kontrak -->
-    <div id="content-contracts" class="tab-content hidden">
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="p-5 border-b border-gray-200 flex justify-between items-center">
-                <h4 class="font-bold text-gray-800 text-lg">Daftar Kontrak Sewa Kontainer</h4>
-                <button onclick="openSewaModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all">
-                    <i class="fas fa-plus mr-1"></i> Tambah Kontrak Baru
-                </button>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase tracking-wider text-[10px] font-bold">
-                            <th class="p-4">Sewa ID</th>
-                            <th class="p-4">No Kontainer</th>
-                            <th class="p-4">Customer</th>
-                            <th class="p-4">Tanggal Sewa</th>
-                            <th class="p-4">Tanggal Kembali</th>
-                            <th class="p-4">Tarif Bulanan</th>
-                            <th class="p-4">Tarif Harian</th>
-                            <th class="p-4">Jenis Tarif</th>
-                            <th class="p-4">Status</th>
-                            <th class="p-4 text-center">Aksi</th>
+                            <th class="w-8"><input type="checkbox" id="chk-all" onchange="toggleAllCheckboxes(this)" class="rounded"></th>
+                            <th onclick="sortTable('id_tagihan')" class="cursor-pointer hover:bg-gray-100">Tagihan ID <i class="fas fa-sort text-gray-300 ml-1"></i></th>
+                            <th onclick="sortTable('customer')" class="cursor-pointer hover:bg-gray-100" id="th-customer">Customer <i class="fas fa-sort text-gray-300 ml-1"></i></th>
+                            <th>No Kontainer</th>
+                            <th onclick="sortTable('bulan_ke')" class="cursor-pointer hover:bg-gray-100">Bln</th>
+                            <th>Rentang Periode</th>
+                            <th>Tarif</th>
+                            <th onclick="sortTable('jumlah_tagihan')" class="cursor-pointer hover:bg-gray-100">Estimasi Tagihan</th>
+                            <th>Override</th>
+                            <th>PPN (11%)</th>
+                            <th>PPh (2%)</th>
+                            <th>Tgl Tagihan</th>
+                            <th>Tgl Bayar</th>
+                            <th>No Bayar</th>
+                            <th onclick="sortTable('status_bayar')" class="cursor-pointer hover:bg-gray-100">Status</th>
+                            <th>No Invoice</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
-                        @forelse($sewas as $sewa)
-                        <tr class="hover:bg-gray-50/70 transition-colors">
-                            <td class="p-4 font-mono text-xs">{{ $sewa->id_sewa }}</td>
-                            <td class="p-4 font-bold">{{ $sewa->no_kontainer }}</td>
-                            <td class="p-4 font-semibold">{{ $sewa->customer->nama_customer ?? '-' }}</td>
-                            <td class="p-4">{{ date('d/m/Y', strtotime($sewa->tanggal_sewa)) }}</td>
-                            <td class="p-4">{{ $sewa->tanggal_kembali ? date('d/m/Y', strtotime($sewa->tanggal_kembali)) : '-' }}</td>
-                            <td class="p-4">Rp {{ number_format($sewa->tarif_bulanan, 0, ',', '.') }}</td>
-                            <td class="p-4">Rp {{ number_format($sewa->tarif_harian, 0, ',', '.') }}</td>
-                            <td class="p-4">{{ $sewa->jenis_tarif }}</td>
-                            <td class="p-4">
-                                <span class="px-2 py-0.5 rounded-full text-xs font-bold uppercase {{ $sewa->status_sewa === 'Aktif' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                    {{ $sewa->status_sewa }}
+                    <tbody id="billing-tbody">
+                        @forelse($tagihans as $t)
+                        @php
+                            $statusClass = match($t->status_bayar) {
+                                'Belum Ditagih' => 'badge-belum-ditagih',
+                                'Pranota' => 'badge-pranota',
+                                'Belum Bayar' => 'badge-belum-bayar',
+                                'Lunas' => 'badge-lunas',
+                                default => 'badge-belum-ditagih'
+                            };
+                            $tarifClass = match($t->tipe_tarif) {
+                                'BULANAN' => 'badge-bulanan',
+                                'HARIAN' => 'badge-harian',
+                                'PRORATE' => 'badge-prorate',
+                                default => 'badge-belum-ditagih'
+                            };
+                        @endphp
+                        <tr class="billing-row"
+                            data-id="{{ $t->id_tagihan }}"
+                            data-status="{{ $t->status_bayar }}"
+                            data-customer="{{ $t->transaksi->id_customer ?? '' }}"
+                            data-kontainer="{{ $t->transaksi->no_kontainer ?? '' }}"
+                            data-bulan-ke="{{ $t->bulan_ke }}"
+                            data-jumlah="{{ $t->jumlah_tagihan }}">
+                            <td><input type="checkbox" class="row-chk rounded" value="{{ $t->id_tagihan }}" onchange="onRowCheck()"></td>
+                            <td class="font-mono text-xs text-gray-400">{{ $t->id_tagihan }}</td>
+                            <td class="font-semibold">{{ $t->transaksi->customer->nama_customer ?? '-' }}</td>
+                            <td class="font-mono font-bold text-xs">{{ $t->transaksi->no_kontainer ?? '-' }}</td>
+                            <td class="text-center">{{ $t->bulan_ke }}</td>
+                            <td class="text-xs">
+                                {{ date('d/m/y', strtotime($t->tanggal_awal)) }} — {{ date('d/m/y', strtotime($t->tanggal_akhir)) }}
+                                <br><span class="text-gray-400">({{ $t->jumlah_hari }} hr)</span>
+                            </td>
+                            <td><span class="badge {{ $tarifClass }}">{{ $t->tipe_tarif }}</span></td>
+                            <td class="font-bold">Rp {{ number_format($t->jumlah_tagihan, 0, ',', '.') }}</td>
+                            <td>
+                                <span class="editable-cell text-xs font-mono" onclick="inlineEdit(this, '{{ $t->id_tagihan }}', 'jumlah_tagihan_override')">
+                                    {{ $t->jumlah_tagihan_override ? 'Rp '.number_format($t->jumlah_tagihan_override,0,',','.') : '—' }}
                                 </span>
                             </td>
-                            <td class="p-4 text-center flex justify-center gap-2">
-                                @if($sewa->status_sewa === 'Aktif')
-                                <button onclick="terminateSewa('{{ $sewa->id_sewa }}')" class="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition-all">
-                                    <i class="fas fa-calendar-times"></i> Kembalikan
-                                </button>
-                                @endif
-                                <button onclick="editSewa('{{ json_encode($sewa) }}')" class="px-2.5 py-1 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg text-xs font-bold transition-all">
+                            <td class="text-xs font-mono">{{ $t->ppn ? number_format($t->ppn,0,',','.') : '—' }}</td>
+                            <td class="text-xs font-mono">{{ $t->pph ? number_format($t->pph,0,',','.') : '—' }}</td>
+                            <td>
+                                <span class="editable-cell text-xs" onclick="inlineEdit(this, '{{ $t->id_tagihan }}', 'tanggal_tagihan')">
+                                    {{ $t->tanggal_tagihan ? date('d/m/y', strtotime($t->tanggal_tagihan)) : '—' }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="editable-cell text-xs" onclick="inlineEdit(this, '{{ $t->id_tagihan }}', 'tanggal_bayar')">
+                                    {{ $t->tanggal_bayar ? date('d/m/y', strtotime($t->tanggal_bayar)) : '—' }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="editable-cell text-xs font-mono" onclick="inlineEdit(this, '{{ $t->id_tagihan }}', 'nomor_bayar')">
+                                    {{ $t->nomor_bayar ?: '—' }}
+                                </span>
+                            </td>
+                            <td><span class="badge {{ $statusClass }}">{{ $t->status_bayar }}</span></td>
+                            <td class="text-xs font-mono text-blue-600">{{ $t->nomor_invoice_grup ?: '—' }}</td>
+                            <td>
+                                <button onclick="openTagihanModal('{{ $t->id_tagihan }}')" class="sk-btn-sm sk-btn-ghost">
                                     <i class="fas fa-edit"></i> Edit
                                 </button>
                             </td>
                         </tr>
                         @empty
-                        <tr>
-                            <td colspan="10" class="p-8 text-center text-gray-400">Belum ada transaksi sewa kontainer.</td>
-                        </tr>
+                        <tr><td colspan="17" class="py-10 text-center text-gray-400">Belum ada tagihan periodik.</td></tr>
                         @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-3 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
+                <span class="text-xs text-gray-400" id="billing-info">Menampilkan <span id="billing-count">0</span> tagihan</span>
+                <div class="sk-pagination" id="billing-pagination"></div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ─── Group Invoice View ─── --}}
+    <div id="billing-group" class="billing-sub hidden">
+        <div class="space-y-4">
+        @forelse($invoices as $inv)
+        @php
+            $invTagihans  = $inv->tagihans;
+            $totalEstimasi= $invTagihans->sum('jumlah_tagihan');
+            $totalBayar   = ($totalEstimasi + $inv->adjustment_biaya);
+        @endphp
+        <div class="sk-card">
+            <div class="sk-card-header">
+                <div>
+                    <div class="font-bold text-gray-800 font-mono">{{ $inv->nomor_invoice }}</div>
+                    <div class="text-xs text-gray-400 mt-0.5">{{ $inv->customer->nama_customer ?? '-' }} · {{ date('d/m/Y', strtotime($inv->tanggal_invoice)) }}</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="badge {{ $inv->status_pembayaran === 'Lunas' ? 'badge-lunas' : 'badge-belum-bayar' }}">{{ $inv->status_pembayaran }}</span>
+                    <button onclick="openEditInvoiceModal('{{ $inv->nomor_invoice }}', '{{ addslashes($inv->deskripsi) }}', {{ $inv->adjustment_biaya }}, '{{ addslashes($inv->adjustment_keterangan) }}')" class="sk-btn-sm sk-btn-ghost"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteInvoice('{{ $inv->nomor_invoice }}')" class="sk-btn-sm sk-btn-red"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            <div class="p-4 overflow-x-auto">
+                <table class="sk-table text-xs">
+                    <thead><tr><th>Tagihan ID</th><th>No Kontainer</th><th>Bulan</th><th>Periode</th><th>Tarif</th><th>Estimasi</th><th>Status</th></tr></thead>
+                    <tbody>
+                    @foreach($invTagihans as $it)
+                    <tr>
+                        <td class="font-mono text-gray-400 text-xs">{{ $it->id_tagihan }}</td>
+                        <td class="font-mono font-bold">{{ $it->transaksi->no_kontainer ?? '-' }}</td>
+                        <td class="text-center">{{ $it->bulan_ke }}</td>
+                        <td>{{ date('d/m/y', strtotime($it->tanggal_awal)) }} – {{ date('d/m/y', strtotime($it->tanggal_akhir)) }}</td>
+                        <td><span class="badge badge-{{ strtolower($it->tipe_tarif) }}">{{ $it->tipe_tarif }}</span></td>
+                        <td class="font-bold">Rp {{ number_format($it->jumlah_tagihan, 0, ',', '.') }}</td>
+                        <td><span class="badge {{ match($it->status_bayar){ 'Lunas'=>'badge-lunas','Belum Bayar'=>'badge-belum-bayar','Pranota'=>'badge-pranota',default=>'badge-belum-ditagih'} }}">{{ $it->status_bayar }}</span></td>
+                    </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-4 pb-4 flex flex-wrap gap-4 text-xs">
+                <div class="flex-1">
+                    @if($inv->deskripsi)<p class="text-gray-500"><i class="fas fa-note-sticky mr-1"></i>{{ $inv->deskripsi }}</p>@endif
+                    @if($inv->adjustment_keterangan)<p class="text-amber-600"><i class="fas fa-exclamation-circle mr-1"></i>Adj: {{ $inv->adjustment_keterangan }}</p>@endif
+                </div>
+                <div class="text-right space-y-0.5">
+                    <div class="text-gray-500">Estimasi: <strong class="text-gray-800">Rp {{ number_format($totalEstimasi, 0, ',', '.') }}</strong></div>
+                    @if($inv->adjustment_biaya != 0)
+                    <div class="text-amber-600">Adjustment: <strong>Rp {{ number_format($inv->adjustment_biaya, 0, ',', '.') }}</strong></div>
+                    @endif
+                    <div class="text-base font-bold" style="color:var(--sewa-primary)">Total: Rp {{ number_format($totalBayar, 0, ',', '.') }}</div>
+                </div>
+            </div>
+        </div>
+        @empty
+        <div class="text-center py-12 text-gray-400"><i class="fas fa-folder-open text-4xl mb-3 block"></i>Belum ada invoice grup.</div>
+        @endforelse
+        </div>
+    </div>
+
+    {{-- ─── Collective View ─── --}}
+    <div id="billing-collective" class="billing-sub hidden">
+        <div class="sk-card">
+            <div class="sk-card-header">
+                <h4 class="font-bold text-gray-800">Collective Invoice View — Satu Baris per Nota</h4>
+                <div class="text-xs text-gray-400">Klik baris untuk update status massal</div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="sk-table">
+                    <thead><tr><th>No Invoice</th><th id="th-customer-coll">Customer</th><th>Tgl Invoice</th><th>Jml Tagihan</th><th>Adj</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
+                    <tbody>
+                    @forelse($invoices as $inv)
+                    <tr>
+                        <td class="font-mono font-bold text-blue-700 text-xs">{{ $inv->nomor_invoice }}</td>
+                        <td class="font-semibold">{{ $inv->customer->nama_customer ?? '-' }}</td>
+                        <td class="text-xs">{{ date('d/m/Y', strtotime($inv->tanggal_invoice)) }}</td>
+                        <td>Rp {{ number_format($inv->tagihans->sum('jumlah_tagihan'), 0, ',', '.') }}</td>
+                        <td class="{{ $inv->adjustment_biaya >= 0 ? 'text-emerald-600' : 'text-red-600' }}">{{ $inv->adjustment_biaya != 0 ? number_format($inv->adjustment_biaya, 0, ',', '.') : '—' }}</td>
+                        <td class="font-bold">Rp {{ number_format($inv->tagihans->sum('jumlah_tagihan') + $inv->adjustment_biaya, 0, ',', '.') }}</td>
+                        <td><span class="badge {{ $inv->status_pembayaran === 'Lunas' ? 'badge-lunas' : 'badge-belum-bayar' }}">{{ $inv->status_pembayaran }}</span></td>
+                        <td>
+                            @if($inv->status_pembayaran !== 'Lunas')
+                            <button onclick="quickLunasInvoice('{{ $inv->nomor_invoice }}')" class="sk-btn-sm sk-btn-green"><i class="fas fa-check"></i> Lunas</button>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="8" class="py-8 text-center text-gray-400">Belum ada invoice.</td></tr>
+                    @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Tab 3: Master Database -->
-    <div id="content-master" class="tab-content hidden">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Customers -->
-            <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                    <h5 class="font-bold text-gray-800">Master Customer</h5>
-                    <button onclick="openCustomerModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all">
-                        <i class="fas fa-plus"></i> Tambah
-                    </button>
-                </div>
-                <div class="p-4 max-h-96 overflow-y-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-xs text-gray-500 font-bold border-b border-gray-100 pb-2">
-                                <th class="pb-2">ID Customer</th>
-                                <th class="pb-2">Nama Customer</th>
-                                <th class="pb-2 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm">
-                            @foreach($customers as $c)
-                            <tr>
-                                <td class="py-2.5 font-mono text-xs">{{ $c->id_customer }}</td>
-                                <td class="py-2.5 font-semibold">{{ $c->nama_customer }}</td>
-                                <td class="py-2.5 text-right">
-                                    <button onclick="deleteMaster('customer', '{{ $c->id_customer }}')" class="text-red-500 hover:text-red-700 transition-colors">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+    {{-- ─── Laporan View ─── --}}
+    <div id="billing-report" class="billing-sub hidden">
+        @php
+            $reportByCustomer = $tagihans->groupBy(fn($t) => $t->transaksi->customer->nama_customer ?? 'Unknown');
+        @endphp
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        @foreach($reportByCustomer as $custName => $custTagihans)
+        <div class="sk-card">
+            <div class="sk-card-header">
+                <h5 class="font-bold text-gray-800">{{ $custName }}</h5>
+                <span class="text-xs text-gray-400">{{ $custTagihans->count() }} tagihan</span>
             </div>
-
-            <!-- Tipe Kontainer -->
-            <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                    <h5 class="font-bold text-gray-800">Tipe Kontainer</h5>
-                    <button onclick="openTipeModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all">
-                        <i class="fas fa-plus"></i> Tambah
-                    </button>
-                </div>
-                <div class="p-4 max-h-96 overflow-y-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-xs text-gray-500 font-bold border-b border-gray-100 pb-2">
-                                <th class="pb-2">ID Tipe</th>
-                                <th class="pb-2">Nama Tipe</th>
-                                <th class="pb-2 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm">
-                            @foreach($tipes as $t)
-                            <tr>
-                                <td class="py-2.5 font-mono text-xs">{{ $t->id_tipe }}</td>
-                                <td class="py-2.5 font-semibold">{{ $t->nama_tipe }}</td>
-                                <td class="py-2.5 text-right">
-                                    <button onclick="deleteMaster('tipe', '{{ $t->id_tipe }}')" class="text-red-500 hover:text-red-700 transition-colors">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Ukuran Kontainer -->
-            <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                    <h5 class="font-bold text-gray-800">Ukuran Kontainer</h5>
-                    <button onclick="openUkuranModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all">
-                        <i class="fas fa-plus"></i> Tambah
-                    </button>
-                </div>
-                <div class="p-4 max-h-96 overflow-y-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-xs text-gray-500 font-bold border-b border-gray-100 pb-2">
-                                <th class="pb-2">ID Ukuran</th>
-                                <th class="pb-2">Deskripsi Ukuran</th>
-                                <th class="pb-2 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm">
-                            @foreach($ukurans as $u)
-                            <tr>
-                                <td class="py-2.5 font-mono text-xs">{{ $u->id_ukuran }}</td>
-                                <td class="py-2.5 font-semibold">{{ $u->deskripsi_ukuran }}</td>
-                                <td class="py-2.5 text-right">
-                                    <button onclick="deleteMaster('ukuran', '{{ $u->id_ukuran }}')" class="text-red-500 hover:text-red-700 transition-colors">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Master Kontainer -->
-            <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
-                    <h5 class="font-bold text-gray-800">Master Unit Kontainer</h5>
-                    <button onclick="openKontainerModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all">
-                        <i class="fas fa-plus"></i> Tambah
-                    </button>
-                </div>
-                <div class="p-4 max-h-96 overflow-y-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="text-xs text-gray-500 font-bold border-b border-gray-100 pb-2">
-                                <th class="pb-2">No Kontainer</th>
-                                <th class="pb-2">Customer</th>
-                                <th class="pb-2">Tipe / Ukuran</th>
-                                <th class="pb-2 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm">
-                            @foreach($kontainers as $k)
-                            <tr>
-                                <td class="py-2.5 font-bold">{{ $k->no_kontainer }}</td>
-                                <td class="py-2.5">{{ $k->customer->nama_customer ?? '-' }}</td>
-                                <td class="py-2.5 text-xs">{{ $k->tipe->nama_tipe ?? '-' }} / {{ $k->ukuran->deskripsi_ukuran ?? '-' }}</td>
-                                <td class="py-2.5 text-right">
-                                    <button onclick="deleteMaster('kontainer', '{{ $k->no_kontainer }}')" class="text-red-500 hover:text-red-700 transition-colors">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+            <div class="p-4 space-y-2 text-sm">
+                <div class="flex justify-between"><span class="text-gray-500">Belum Ditagih</span><span class="font-bold">Rp {{ number_format($custTagihans->where('status_bayar','Belum Ditagih')->sum('jumlah_tagihan'), 0, ',', '.') }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Pranota/Draft</span><span class="font-bold text-purple-600">Rp {{ number_format($custTagihans->where('status_bayar','Pranota')->sum('jumlah_tagihan'), 0, ',', '.') }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Belum Bayar</span><span class="font-bold text-red-600">Rp {{ number_format($custTagihans->where('status_bayar','Belum Bayar')->sum('jumlah_tagihan'), 0, ',', '.') }}</span></div>
+                <div class="flex justify-between border-t pt-2"><span class="font-bold text-gray-700">Lunas</span><span class="font-bold text-emerald-600">Rp {{ number_format($custTagihans->where('status_bayar','Lunas')->sum('jumlah_tagihan'), 0, ',', '.') }}</span></div>
             </div>
         </div>
-    </div>
-
-    <!-- Tab 4: Excel Bulk Import / Backup -->
-    <div id="content-import" class="tab-content hidden">
-        <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm p-6 max-w-2xl mx-auto">
-            <h4 class="text-lg font-bold text-gray-800 mb-2">Restorasi Data JSON / Bulk Import</h4>
-            <p class="text-sm text-gray-500 mb-6">
-                Unggah file JSON backup dari sistem portable portal penyewaan kontainer offline untuk merekonsiliasi seluruh data ke database lokal.
-            </p>
-
-            <form action="{{ route('sewa-kontainer.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
-                @csrf
-                <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-emerald-500 transition-all cursor-pointer">
-                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
-                    <p class="text-xs text-gray-500">Pilih berkas format cadangan `.json` (.json backup)</p>
-                    <input type="file" name="backup_file" required class="mt-4 mx-auto block text-xs">
-                </div>
-
-                <div class="flex justify-end gap-2">
-                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
-                        <i class="fas fa-sync-alt mr-1"></i> Pulihkan & Sinkronisasi
-                    </button>
-                </div>
-            </form>
+        @endforeach
+        @if($reportByCustomer->isEmpty())
+        <div class="text-center py-12 text-gray-400 col-span-2">Belum ada data tagihan.</div>
+        @endif
         </div>
     </div>
 </div>
 
-<!-- Modal 1: Payment Override Form -->
-<div id="paymentOverrideModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-        <h4 class="font-bold text-gray-800 text-lg mb-4 flex items-center gap-2">
-            <i class="fas fa-edit text-emerald-600"></i> Override Tagihan Periodik
-        </h4>
-        <form id="overrideForm" onsubmit="submitOverride(event)">
-            @csrf
-            <input type="hidden" name="id_tagihan" id="ov-id-tagihan">
-            
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Status Bayar</label>
-                    <select name="status_bayar" id="ov-status-bayar" class="w-full border border-gray-300 p-2 rounded-lg text-sm bg-white">
-                        <option value="Belum Ditagih">Belum Ditagih</option>
-                        <option value="Pranota">Pranota</option>
-                        <option value="Belum Bayar">Belum Bayar</option>
-                        <option value="Lunas">Lunas</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Nomor Invoice Grup</label>
-                    <input type="text" name="nomor_invoice_grup" id="ov-nomor-invoice" class="w-full border border-gray-300 p-2 rounded-lg text-sm">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Tanggal Tagihan</label>
-                    <input type="date" name="tanggal_tagihan" id="ov-tgl-tagihan" class="w-full border border-gray-300 p-2 rounded-lg text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Tanggal Bayar</label>
-                    <input type="date" name="tanggal_bayar" id="ov-tgl-bayar" class="w-full border border-gray-300 p-2 rounded-lg text-sm">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Jumlah Tagihan Aktual (Override)</label>
-                    <input type="number" name="jumlah_tagihan_override" id="ov-tagihan-override" class="w-full border border-gray-300 p-2 rounded-lg text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Jumlah Bayar</label>
-                    <input type="number" name="jumlah_bayar" id="ov-jumlah-bayar" class="w-full border border-gray-300 p-2 rounded-lg text-sm">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">PPN (Masukan/Keluaran)</label>
-                    <input type="number" name="ppn" id="ov-ppn" class="w-full border border-gray-300 p-2 rounded-lg text-sm" placeholder="11%">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">PPh 23</label>
-                    <input type="number" name="pph" id="ov-pph" class="w-full border border-gray-300 p-2 rounded-lg text-sm" placeholder="2%">
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 mb-1">Nomor Bukti Bayar / EBK</label>
-                <input type="text" name="nomor_bayar" id="ov-nomor-bayar" class="w-full border border-gray-300 p-2 rounded-lg text-sm">
-            </div>
-
-            <div class="flex justify-end gap-2 mt-6">
-                <button type="button" onclick="closeOverrideModal()" class="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all">
-                    Batal
-                </button>
-                <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
-                    Simpan Perubahan
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal 2: Create Contract (Sewa) -->
-<div id="sewaModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-        <h4 class="font-bold text-gray-800 text-lg mb-4">Tambah Kontrak Rental Kontainer</h4>
-        <form id="sewaForm" onsubmit="submitSewa(event)">
-            @csrf
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 mb-1">Unit Kontainer</label>
-                <select name="no_kontainer" required class="w-full border border-gray-300 p-2 rounded-lg text-sm bg-white">
-                    @foreach($kontainers as $k)
-                    <option value="{{ $k->no_kontainer }}">{{ $k->no_kontainer }} ({{ $k->tipe->nama_tipe ?? '' }} {{ $k->ukuran->deskripsi_ukuran ?? '' }})</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 mb-1">Customer / Penyewa</label>
-                <select name="id_customer" required class="w-full border border-gray-300 p-2 rounded-lg text-sm bg-white">
-                    @foreach($customers as $c)
-                    <option value="{{ $c->id_customer }}">{{ $c->nama_customer }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Tanggal Mulai Sewa</label>
-                    <input type="date" name="tanggal_sewa" required class="w-full border border-gray-300 p-2 rounded-lg text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Tanggal Kembali (Optional)</label>
-                    <input type="date" name="tanggal_kembali" class="w-full border border-gray-300 p-2 rounded-lg text-sm">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Tarif Bulanan</label>
-                    <input type="number" name="tarif_bulanan" required class="w-full border border-gray-300 p-2 rounded-lg text-sm" placeholder="Contoh: 3000000">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Tarif Harian</label>
-                    <input type="number" name="tarif_harian" required class="w-full border border-gray-300 p-2 rounded-lg text-sm" placeholder="Contoh: 150000">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Jenis Tarif Utama</label>
-                    <select name="jenis_tarif" class="w-full border border-gray-300 p-2 rounded-lg text-sm bg-white">
-                        <option value="Bulanan">Bulanan</option>
-                        <option value="Harian">Harian</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Status Sewa</label>
-                    <select name="status_sewa" class="w-full border border-gray-300 p-2 rounded-lg text-sm bg-white">
-                        <option value="Aktif">Aktif</option>
-                        <option value="Selesai">Selesai</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 mb-1">Catatan</label>
-                <textarea name="catatan" class="w-full border border-gray-300 p-2 rounded-lg text-sm" rows="3"></textarea>
-            </div>
-
-            <div class="flex justify-end gap-2 mt-6">
-                <button type="button" onclick="closeSewaModal()" class="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-xs font-bold hover:bg-gray-50 transition-all">
-                    Batal
-                </button>
-                <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">
-                    Simpan Kontrak
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal 3: Master Customer -->
-<div id="customerModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-200">
-        <h4 class="font-bold text-gray-800 text-lg mb-4">Tambah Master Customer</h4>
-        <form id="customerForm" onsubmit="submitCustomer(event)">
-            @csrf
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 mb-1">Nama Customer</label>
-                <input type="text" name="nama_customer" required class="w-full border border-gray-300 p-2 rounded-lg text-sm">
-            </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="closeModal('customerModal')" class="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-xs font-bold hover:bg-gray-50">Batal</button>
-                <button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Simpan</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal 4: Master Tipe -->
-<div id="tipeModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-200">
-        <h4 class="font-bold text-gray-800 text-lg mb-4">Tambah Master Tipe</h4>
-        <form id="tipeForm" onsubmit="submitTipe(event)">
-            @csrf
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 mb-1">Nama Tipe (e.g. Dry, Reefer)</label>
-                <input type="text" name="nama_tipe" required class="w-full border border-gray-300 p-2 rounded-lg text-sm">
-            </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="closeModal('tipeModal')" class="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-xs font-bold hover:bg-gray-50">Batal</button>
-                <button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Simpan</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal 5: Master Ukuran -->
-<div id="ukuranModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-200">
-        <h4 class="font-bold text-gray-800 text-lg mb-4">Tambah Master Ukuran</h4>
-        <form id="ukuranForm" onsubmit="submitUkuran(event)">
-            @csrf
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 mb-1">Deskripsi Ukuran (e.g. 20', 40')</label>
-                <input type="text" name="deskripsi_ukuran" required class="w-full border border-gray-300 p-2 rounded-lg text-sm">
-            </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="closeModal('ukuranModal')" class="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-xs font-bold hover:bg-gray-50">Batal</button>
-                <button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Simpan</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal 6: Master Unit Kontainer -->
-<div id="kontainerModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-200">
-        <h4 class="font-bold text-gray-800 text-lg mb-4">Tambah Unit Kontainer</h4>
-        <form id="kontainerForm" onsubmit="submitKontainer(event)">
-            @csrf
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 mb-1">Nomor Kontainer</label>
-                <input type="text" name="no_kontainer" required class="w-full border border-gray-300 p-2 rounded-lg text-sm" placeholder="Contoh: AMFU3153692">
-            </div>
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 mb-1">Owner / Customer</label>
-                <select name="id_customer" required class="w-full border border-gray-300 p-2 rounded-lg text-sm bg-white">
-                    @foreach($customers as $c)
-                    <option value="{{ $c->id_customer }}">{{ $c->nama_customer }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Tipe</label>
-                    <select name="id_tipe" required class="w-full border border-gray-300 p-2 rounded-lg text-sm bg-white">
-                        @foreach($tipes as $t)
-                        <option value="{{ $t->id_tipe }}">{{ $t->nama_tipe }}</option>
+{{-- ══════════════════════════════════════════════════
+     TAB 2: TRANSAKSI SEWA
+══════════════════════════════════════════════════ --}}
+<div id="tab-contracts" class="sk-tab-content pt-5">
+    {{-- Form buat sewa --}}
+    <div class="sk-card mb-5">
+        <div class="sk-card-header">
+            <h4 class="font-bold text-gray-800" id="contracts-form-title">Buat Kontrak Sewa Baru</h4>
+            <button onclick="toggleNewSewaForm()" id="btn-toggle-sewa-form" class="sk-btn-primary">
+                <i class="fas fa-plus"></i><span>Buat Kontrak</span>
+            </button>
+        </div>
+        <div id="new-sewa-form" class="hidden p-5 border-t border-gray-100">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="lg:col-span-1">
+                    <label class="sk-label">No Kontainer</label>
+                    <select id="sewa-no-kontainer" class="sk-input text-sm" onchange="onKontainerSelect(this.value)">
+                        <option value="">— Pilih Kontainer —</option>
+                        @foreach($kontainers as $k)
+                        <option value="{{ $k->no_kontainer }}" data-customer="{{ $k->id_customer }}" data-tipe="{{ $k->id_tipe }}" data-ukuran="{{ $k->id_ukuran }}">
+                            {{ $k->no_kontainer }} ({{ $k->customer->nama_customer ?? '-' }})
+                        </option>
                         @endforeach
                     </select>
+                    <div id="sewa-tarif-info" class="mt-2 text-xs text-gray-400 hidden bg-blue-50 rounded-lg p-2 border border-blue-100"></div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Ukuran</label>
-                    <select name="id_ukuran" required class="w-full border border-gray-300 p-2 rounded-lg text-sm bg-white">
-                        @foreach($ukurans as $u)
-                        <option value="{{ $u->id_ukuran }}">{{ $u->deskripsi_ukuran }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            <div class="flex justify-end gap-2">
-                <button type="button" onclick="closeModal('kontainerModal')" class="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-xs font-bold hover:bg-gray-50">Batal</button>
-                <button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Simpan</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal 7: Create Invoice Group -->
-<div id="invoiceModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-xl shadow-2xl border border-gray-200">
-        <h4 class="font-bold text-gray-800 text-lg mb-4">Buat Invoice Group Baru</h4>
-        <form id="invoiceForm" onsubmit="submitInvoice(event)">
-            @csrf
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Nomor Invoice</label>
-                    <input type="text" name="nomor_invoice" required class="w-full border border-gray-300 p-2 rounded-lg text-sm" placeholder="INV/2026/0618/001">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Customer / Vendor</label>
-                    <select name="id_customer" required class="w-full border border-gray-300 p-2 rounded-lg text-sm bg-white">
+                    <label class="sk-label" id="lbl-sewa-customer">Customer</label>
+                    <select id="sewa-id-customer" class="sk-input text-sm">
+                        <option value="">— Pilih Customer —</option>
                         @foreach($customers as $c)
                         <option value="{{ $c->id_customer }}">{{ $c->nama_customer }}</option>
                         @endforeach
                     </select>
                 </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Tanggal Invoice</label>
-                    <input type="date" name="tanggal_invoice" required class="w-full border border-gray-300 p-2 rounded-lg text-sm">
+                    <label class="sk-label">Tanggal Mulai Sewa</label>
+                    <input id="sewa-tanggal-sewa" type="date" class="sk-input" value="{{ date('Y-m-d') }}">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Status Pembayaran</label>
-                    <select name="status_pembayaran" class="w-full border border-gray-300 p-2 rounded-lg text-sm bg-white">
-                        <option value="Belum Bayar">Belum Bayar</option>
-                        <option value="Lunas">Lunas</option>
+                    <label class="sk-label">Jenis Tarif</label>
+                    <select id="sewa-jenis-tarif" class="sk-input text-sm" onchange="onJenisTarifChange()">
+                        <option value="Bulanan">Bulanan</option>
+                        <option value="Harian">Harian</option>
                     </select>
                 </div>
-            </div>
-
-            <!-- List of eligible Tagihans for this Invoice -->
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 mb-2">Pilih Tagihan Periodik untuk digabung:</label>
-                <div class="border border-gray-200 rounded-lg p-3 max-h-40 overflow-y-auto space-y-2">
-                    @foreach($tagihans->whereNull('nomor_invoice_grup') as $tg)
-                    <label class="flex items-center gap-2 text-xs">
-                        <input type="checkbox" name="list_id_tagihan[]" value="{{ $tg->id_tagihan }}" class="rounded text-emerald-600 focus:ring-emerald-500">
-                        <span class="font-mono">{{ $tg->id_tagihan }}</span> - 
-                        <span>{{ $tg->transaksi->kontainer->no_kontainer ?? '' }} Bulan ke-{{ $tg->bulan_ke }} (Rp {{ number_format($tg->jumlah_tagihan, 0, ',', '.') }})</span>
-                    </label>
-                    @endforeach
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Adjustment Biaya (Optional)</label>
-                    <input type="number" name="adjustment_biaya" class="w-full border border-gray-300 p-2 rounded-lg text-sm" placeholder="Contoh: -150000">
+                    <label class="sk-label">Tarif Bulanan (Rp)</label>
+                    <input id="sewa-tarif-bulanan" type="number" class="sk-input" placeholder="0">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">Keterangan Adjustment</label>
-                    <input type="text" name="adjustment_keterangan" class="w-full border border-gray-300 p-2 rounded-lg text-sm" placeholder="Potongan diskon / klaim">
+                    <label class="sk-label">Tarif Harian (Rp)</label>
+                    <input id="sewa-tarif-harian" type="number" class="sk-input" placeholder="0">
+                </div>
+                <div class="lg:col-span-3">
+                    <label class="sk-label">Catatan (Opsional)</label>
+                    <textarea id="sewa-catatan" rows="2" class="sk-input resize-none" placeholder="Catatan tambahan..."></textarea>
                 </div>
             </div>
-
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-gray-500 mb-1">Deskripsi Invoice</label>
-                <textarea name="deskripsi" class="w-full border border-gray-300 p-2 rounded-lg text-sm" rows="2"></textarea>
+            <div class="flex gap-3 mt-4">
+                <button onclick="submitNewSewa()" class="sk-btn-primary"><i class="fas fa-save"></i>Simpan Kontrak</button>
+                <button onclick="toggleNewSewaForm()" class="sk-btn-sm sk-btn-ghost px-4 py-2">Batal</button>
             </div>
+        </div>
+    </div>
 
-            <div class="flex justify-end gap-2 mt-6">
-                <button type="button" onclick="closeModal('invoiceModal')" class="px-4 py-2 border border-gray-200 text-gray-500 rounded-xl text-xs font-bold hover:bg-gray-50">Batal</button>
-                <button type="submit" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">Buat Invoice</button>
+    {{-- Search --}}
+    <div class="mb-4 flex gap-3">
+        <input id="contracts-search" type="text" class="sk-input max-w-sm text-sm" placeholder="Cari No Kontainer / Customer..." oninput="filterContracts()">
+        <select id="contracts-status-filter" class="sk-input max-w-xs text-sm" onchange="filterContracts()">
+            <option value="">Semua Status</option>
+            <option value="Aktif">Aktif</option>
+            <option value="Selesai">Selesai</option>
+        </select>
+    </div>
+
+    {{-- Cards --}}
+    <div class="space-y-4" id="contracts-container">
+    @forelse($sewas as $sewa)
+    @php
+        $durasi = '';
+        $tglSewa = \Carbon\Carbon::parse($sewa->tanggal_sewa);
+        $tglKembali = $sewa->tanggal_kembali ? \Carbon\Carbon::parse($sewa->tanggal_kembali) : null;
+        $endDate = $tglKembali ?? \Carbon\Carbon::now();
+        $months = (int)$tglSewa->diffInMonths($endDate);
+        $days = (int)$tglSewa->copy()->addMonths($months)->diffInDays($endDate);
+        if ($months > 0 && $days > 0) $durasi = "{$months} Bln + {$days} Hr";
+        elseif ($months > 0) $durasi = "{$months} Bulan";
+        else $durasi = "{$days} Hari";
+
+        $sewaTagihans = $sewa->tagihans ?? collect();
+        $lunas = $sewaTagihans->where('status_bayar', 'Lunas')->count();
+        $total = $sewaTagihans->count();
+        $outstanding = $sewaTagihans->whereIn('status_bayar', ['Belum Bayar', 'Pranota'])->sum('jumlah_tagihan');
+    @endphp
+    <div class="sewa-card"
+         data-search="{{ strtolower($sewa->no_kontainer . ' ' . ($sewa->customer->nama_customer ?? '')) }}"
+         data-status="{{ $sewa->status_sewa }}">
+        {{-- Card Header --}}
+        <div class="p-4 border-b border-gray-100 flex flex-wrap items-start justify-between gap-3">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                    <span class="font-mono font-black text-gray-900 text-base">{{ $sewa->no_kontainer }}</span>
+                    <span class="badge {{ $sewa->status_sewa === 'Aktif' ? 'badge-aktif' : 'badge-selesai' }}">{{ $sewa->status_sewa }}</span>
+                    @if($sewa->jenis_tarif === 'Bulanan')
+                    <span class="badge badge-bulanan">Bulanan</span>
+                    @else
+                    <span class="badge badge-harian">Harian</span>
+                    @endif
+                </div>
+                <div class="text-sm font-semibold text-gray-700">{{ $sewa->customer->nama_customer ?? '-' }}</div>
+                <div class="text-xs text-gray-400 mt-0.5">
+                    {{ date('d/m/Y', strtotime($sewa->tanggal_sewa)) }}
+                    @if($sewa->tanggal_kembali) → {{ date('d/m/Y', strtotime($sewa->tanggal_kembali)) }} @else → Sekarang @endif
+                    · <strong>{{ $durasi }}</strong>
+                </div>
+                @if($sewa->catatan)
+                <div class="text-xs text-amber-600 mt-1"><i class="fas fa-sticky-note mr-1"></i>{{ $sewa->catatan }}</div>
+                @endif
             </div>
-        </form>
+            <div class="text-right shrink-0">
+                <div class="text-xs text-gray-400">Tarif Bulanan</div>
+                <div class="font-bold text-gray-800">Rp {{ number_format($sewa->tarif_bulanan, 0, ',', '.') }}</div>
+                <div class="text-xs text-gray-400 mt-1">Tarif Harian</div>
+                <div class="font-bold text-gray-800">Rp {{ number_format($sewa->tarif_harian, 0, ',', '.') }}</div>
+            </div>
+        </div>
+        {{-- Billing Summary --}}
+        <div class="px-4 py-2 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-4 text-xs">
+            <span>Periode: <strong>{{ $total }}</strong></span>
+            <span class="text-emerald-600">Lunas: <strong>{{ $lunas }}</strong></span>
+            @if($outstanding > 0)
+            <span class="text-red-600">Outstanding: <strong>Rp {{ number_format($outstanding, 0, ',', '.') }}</strong></span>
+            @endif
+        </div>
+        {{-- Periods mini table --}}
+        @if($sewaTagihans->count() > 0)
+        <div class="px-4 pb-3 pt-2 overflow-x-auto">
+            <table class="sk-table text-xs sewa-card-periods">
+                <thead><tr><th>Bln</th><th>Periode</th><th>Hari</th><th>Tarif</th><th>Tagihan</th><th>Status</th><th>No Invoice</th></tr></thead>
+                <tbody>
+                @foreach($sewaTagihans->sortBy('bulan_ke') as $p)
+                <tr>
+                    <td class="text-center font-bold">{{ $p->bulan_ke }}</td>
+                    <td>{{ date('d/m/y', strtotime($p->tanggal_awal)) }} – {{ date('d/m/y', strtotime($p->tanggal_akhir)) }}</td>
+                    <td class="text-center">{{ $p->jumlah_hari }}</td>
+                    <td><span class="badge badge-{{ strtolower($p->tipe_tarif) }}">{{ $p->tipe_tarif }}</span></td>
+                    <td class="font-bold">Rp {{ number_format($p->jumlah_tagihan, 0, ',', '.') }}</td>
+                    <td><span class="badge {{ match($p->status_bayar){ 'Lunas'=>'badge-lunas','Belum Bayar'=>'badge-belum-bayar','Pranota'=>'badge-pranota',default=>'badge-belum-ditagih'} }}">{{ $p->status_bayar }}</span></td>
+                    <td class="font-mono text-blue-600 text-xs">{{ $p->nomor_invoice_grup ?: '—' }}</td>
+                </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
+        {{-- Actions --}}
+        <div class="px-4 pb-4 flex gap-2 flex-wrap">
+            <button onclick="openEditSewaModal({{ $sewa->id_sewa ? "'".$sewa->id_sewa."'" : 'null' }})" class="sk-btn-sm sk-btn-ghost"><i class="fas fa-edit mr-1"></i>Edit</button>
+            @if($sewa->status_sewa === 'Aktif')
+            <button onclick="openTerminateModal('{{ $sewa->id_sewa }}')" class="sk-btn-sm" style="background:#fef3c7;color:#92400e"><i class="fas fa-calendar-times mr-1"></i>Kembalikan</button>
+            @endif
+            <button onclick="deleteSewa('{{ $sewa->id_sewa }}')" class="sk-btn-sm sk-btn-red"><i class="fas fa-trash mr-1"></i>Hapus</button>
+        </div>
+    </div>
+    @empty
+    <div class="text-center py-16 text-gray-400"><i class="fas fa-box-open text-5xl mb-4 block"></i>Belum ada transaksi sewa.</div>
+    @endforelse
     </div>
 </div>
 
-@endsection
+{{-- ══════════════════════════════════════════════════
+     TAB 3: MASTER DATABASE
+══════════════════════════════════════════════════ --}}
+<div id="tab-master" class="sk-tab-content pt-5">
+    {{-- Sub-tab nav --}}
+    <div class="flex bg-slate-50 border border-slate-200 rounded-xl p-1 gap-1 mb-5 overflow-x-auto">
+        <button class="sk-sub-tab active" onclick="switchMasterTab('customer', this)"><span id="lbl-master-customer">1. Customer</span></button>
+        <button class="sk-sub-tab" onclick="switchMasterTab('tipe', this)">2. Tipe Kontainer</button>
+        <button class="sk-sub-tab" onclick="switchMasterTab('ukuran', this)">3. Ukuran</button>
+        <button class="sk-sub-tab" onclick="switchMasterTab('kontainer', this)">4. Kontainer</button>
+        <button class="sk-sub-tab" onclick="switchMasterTab('tarif', this)">5. Tarif Sewa</button>
+    </div>
 
-@push('scripts')
+    {{-- ─── Master Customer ─── --}}
+    <div id="master-customer" class="master-sub">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                <h3 class="font-semibold text-slate-800 text-sm mb-4" id="lbl-form-customer">Input Customer Baru</h3>
+                <div class="sk-form-group">
+                    <label class="sk-label" id="lbl-input-customer">Nama Customer</label>
+                    <input id="input-customer-name" type="text" class="sk-input" placeholder="CV. Samudera Raya">
+                </div>
+                <button onclick="submitCustomer()" class="sk-btn-primary w-full justify-center"><i class="fas fa-save mr-1.5"></i>Simpan</button>
+            </div>
+            <div class="lg:col-span-2">
+                <input type="text" id="search-customer" class="sk-input mb-3" placeholder="Cari nama customer..." oninput="filterMasterTable('customer', this.value)">
+                <div class="sk-card">
+                    <table class="sk-table" id="table-customer">
+                        <thead><tr><th id="th-cust">Nama Customer</th><th class="text-right w-20">Aksi</th></tr></thead>
+                        <tbody>
+                        @foreach($customers as $c)
+                        <tr data-search="{{ strtolower($c->nama_customer) }}">
+                            <td class="font-semibold">{{ $c->nama_customer }}</td>
+                            <td class="text-right"><button onclick="deleteMaster('customer','{{ $c->id_customer }}','{{ addslashes($c->nama_customer) }}')" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>
+                        </tr>
+                        @endforeach
+                        @if($customers->isEmpty())<tr><td colspan="2" class="py-6 text-center text-gray-400">Tidak ada data</td></tr>@endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ─── Master Tipe ─── --}}
+    <div id="master-tipe" class="master-sub hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                <h3 class="font-semibold text-slate-800 text-sm mb-4">Input Tipe Baru</h3>
+                <div class="sk-form-group">
+                    <label class="sk-label">Nama Tipe Kontainer</label>
+                    <input id="input-tipe-name" type="text" class="sk-input" placeholder="Dry, Reefer, Flat Rack">
+                </div>
+                <button onclick="submitTipe()" class="sk-btn-primary w-full justify-center"><i class="fas fa-save mr-1.5"></i>Simpan</button>
+            </div>
+            <div class="lg:col-span-2">
+                <input type="text" id="search-tipe" class="sk-input mb-3" placeholder="Cari tipe..." oninput="filterMasterTable('tipe', this.value)">
+                <div class="sk-card">
+                    <table class="sk-table" id="table-tipe">
+                        <thead><tr><th>Nama Tipe</th><th class="text-right w-20">Aksi</th></tr></thead>
+                        <tbody>
+                        @foreach($tipes as $t)
+                        <tr data-search="{{ strtolower($t->nama_tipe) }}">
+                            <td class="font-semibold">{{ $t->nama_tipe }}</td>
+                            <td class="text-right"><button onclick="deleteMaster('tipe','{{ $t->id_tipe }}','{{ addslashes($t->nama_tipe) }}')" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>
+                        </tr>
+                        @endforeach
+                        @if($tipes->isEmpty())<tr><td colspan="2" class="py-6 text-center text-gray-400">Tidak ada data</td></tr>@endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ─── Master Ukuran ─── --}}
+    <div id="master-ukuran" class="master-sub hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                <h3 class="font-semibold text-slate-800 text-sm mb-4">Input Ukuran</h3>
+                <div class="sk-form-group">
+                    <label class="sk-label">Ukuran (Cukup Angka)</label>
+                    <input id="input-ukuran-desc" type="text" class="sk-input" placeholder="Ketik 20 atau 40 (auto format ke 20')">
+                    <p class="text-xs text-gray-400 mt-1">Sistem otomatis tambahkan petik tunggal (')</p>
+                </div>
+                <button onclick="submitUkuran()" class="sk-btn-primary w-full justify-center"><i class="fas fa-save mr-1.5"></i>Simpan</button>
+            </div>
+            <div class="lg:col-span-2">
+                <input type="text" id="search-ukuran" class="sk-input mb-3" placeholder="Cari ukuran..." oninput="filterMasterTable('ukuran', this.value)">
+                <div class="sk-card">
+                    <table class="sk-table" id="table-ukuran">
+                        <thead><tr><th>Ukuran</th><th class="text-right w-20">Aksi</th></tr></thead>
+                        <tbody>
+                        @foreach($ukurans as $u)
+                        <tr data-search="{{ strtolower($u->deskripsi_ukuran) }}">
+                            <td class="font-mono font-bold text-emerald-800">{{ $u->deskripsi_ukuran }}</td>
+                            <td class="text-right"><button onclick="deleteMaster('ukuran','{{ $u->id_ukuran }}','{{ addslashes($u->deskripsi_ukuran) }}')" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>
+                        </tr>
+                        @endforeach
+                        @if($ukurans->isEmpty())<tr><td colspan="2" class="py-6 text-center text-gray-400">Tidak ada data</td></tr>@endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ─── Master Kontainer ─── --}}
+    <div id="master-kontainer" class="master-sub hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                <h3 class="font-semibold text-slate-800 text-sm mb-4">Daftarkan Kontainer</h3>
+                <div class="sk-form-group">
+                    <label class="sk-label">Nomor Kontainer (Wajib Unik)</label>
+                    <input id="input-kontainer-no" type="text" class="sk-input font-mono uppercase" placeholder="AMFU3153692">
+                </div>
+                <div class="sk-form-group">
+                    <label class="sk-label" id="lbl-kontainer-customer">Customer Terkait</label>
+                    <select id="input-kontainer-customer" class="sk-input text-sm">
+                        <option value="">— Pilih Customer —</option>
+                        @foreach($customers as $c)<option value="{{ $c->id_customer }}">{{ $c->nama_customer }}</option>@endforeach
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div class="sk-form-group mb-0">
+                        <label class="sk-label">Tipe</label>
+                        <select id="input-kontainer-tipe" class="sk-input text-sm">
+                            <option value="">— Tipe —</option>
+                            @foreach($tipes as $t)<option value="{{ $t->id_tipe }}">{{ $t->nama_tipe }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div class="sk-form-group mb-0">
+                        <label class="sk-label">Ukuran</label>
+                        <select id="input-kontainer-ukuran" class="sk-input text-sm">
+                            <option value="">— Ukuran —</option>
+                            @foreach($ukurans as $u)<option value="{{ $u->id_ukuran }}">{{ $u->deskripsi_ukuran }}</option>@endforeach
+                        </select>
+                    </div>
+                </div>
+                <button onclick="submitKontainer()" class="sk-btn-primary w-full justify-center"><i class="fas fa-save mr-1.5"></i>Simpan</button>
+            </div>
+            <div class="lg:col-span-2">
+                <input type="text" id="search-kontainer" class="sk-input mb-3" placeholder="Cari No Kontainer / Customer..." oninput="filterMasterTable('kontainer', this.value)">
+                <div class="sk-card overflow-x-auto">
+                    <table class="sk-table" id="table-kontainer">
+                        <thead><tr><th>NO KONTAINER</th><th id="th-kont-customer">CUSTOMER</th><th>TIPE</th><th>UKURAN</th><th>STATUS</th><th class="text-right w-16">AKSI</th></tr></thead>
+                        <tbody>
+                        @foreach($kontainers as $k)
+                        <tr data-search="{{ strtolower($k->no_kontainer . ' ' . ($k->customer->nama_customer ?? '')) }}">
+                            <td class="font-mono font-black text-gray-900">{{ $k->no_kontainer }}</td>
+                            <td>{{ $k->customer->nama_customer ?? '-' }}</td>
+                            <td class="font-medium">{{ $k->tipe->nama_tipe ?? '-' }}</td>
+                            <td class="font-mono font-semibold text-emerald-700">{{ $k->ukuran->deskripsi_ukuran ?? '-' }}</td>
+                            <td><span class="badge badge-aktif">Aktif</span></td>
+                            <td class="text-right"><button onclick="deleteMaster('kontainer','{{ $k->no_kontainer }}','{{ $k->no_kontainer }}')" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>
+                        </tr>
+                        @endforeach
+                        @if($kontainers->isEmpty())<tr><td colspan="6" class="py-6 text-center text-gray-400">Tidak ada data</td></tr>@endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ─── Master Tarif ─── --}}
+    <div id="master-tarif" class="master-sub hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                <h3 class="font-semibold text-slate-800 text-sm mb-4">Set Master Tarif</h3>
+                <div class="sk-form-group">
+                    <label class="sk-label" id="lbl-tarif-customer">Customer</label>
+                    <select id="input-tarif-customer" class="sk-input text-sm">
+                        <option value="">— Pilih Customer —</option>
+                        @foreach($customers as $c)<option value="{{ $c->id_customer }}">{{ $c->nama_customer }}</option>@endforeach
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="sk-form-group">
+                        <label class="sk-label">Tipe</label>
+                        <select id="input-tarif-tipe" class="sk-input text-sm">
+                            <option value="">— Tipe —</option>
+                            @foreach($tipes as $t)<option value="{{ $t->id_tipe }}">{{ $t->nama_tipe }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div class="sk-form-group">
+                        <label class="sk-label">Ukuran</label>
+                        <select id="input-tarif-ukuran" class="sk-input text-sm">
+                            <option value="">— Ukuran —</option>
+                            @foreach($ukurans as $u)<option value="{{ $u->id_ukuran }}">{{ $u->deskripsi_ukuran }}</option>@endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="sk-form-group">
+                    <label class="sk-label">Tarif Bulanan (Rp)</label>
+                    <input id="input-tarif-bulanan" type="number" class="sk-input" placeholder="0">
+                </div>
+                <div class="sk-form-group">
+                    <label class="sk-label">Tarif Harian (Rp)</label>
+                    <input id="input-tarif-harian" type="number" class="sk-input" placeholder="0">
+                </div>
+                <div class="sk-form-group">
+                    <label class="sk-label">Berlaku Mulai</label>
+                    <input id="input-tarif-mulai" type="date" class="sk-input" value="{{ date('Y-m-d') }}">
+                </div>
+                <p class="text-xs text-amber-600 mb-3"><i class="fas fa-info-circle mr-1"></i>Tarif aktif sebelumnya akan otomatis ditutup</p>
+                <button onclick="submitTarif()" class="sk-btn-primary w-full justify-center"><i class="fas fa-save mr-1.5"></i>Simpan Tarif</button>
+            </div>
+            <div class="lg:col-span-2">
+                <div class="sk-card overflow-x-auto">
+                    <table class="sk-table">
+                        <thead><tr><th id="th-tarif-customer">Customer</th><th>Tipe</th><th>Ukuran</th><th>Tarif Bulanan</th><th>Tarif Harian</th><th>Mulai</th><th>Akhir</th><th class="text-right w-16">Aksi</th></tr></thead>
+                        <tbody>
+                        @foreach($tarifs as $trf)
+                        <tr class="{{ is_null($trf->tanggal_akhir_berlaku) ? '' : 'opacity-60' }}">
+                            <td class="font-semibold">{{ $trf->customer->nama_customer ?? '-' }}</td>
+                            <td>{{ $trf->tipe->nama_tipe ?? '-' }}</td>
+                            <td class="font-mono text-emerald-700 font-semibold">{{ $trf->ukuran->deskripsi_ukuran ?? '-' }}</td>
+                            <td class="font-bold">Rp {{ number_format($trf->tarif_bulanan, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($trf->tarif_harian, 0, ',', '.') }}</td>
+                            <td class="text-xs">{{ date('d/m/y', strtotime($trf->tanggal_mulai_berlaku)) }}</td>
+                            <td class="text-xs">{{ $trf->tanggal_akhir_berlaku ? date('d/m/y', strtotime($trf->tanggal_akhir_berlaku)) : '<span class="badge badge-aktif">Aktif</span>' }}</td>
+                            <td class="text-right"><button onclick="deleteMaster('tarif','{{ $trf->id_tarif }}','tarif ini')" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>
+                        </tr>
+                        @endforeach
+                        @if($tarifs->isEmpty())<tr><td colspan="8" class="py-6 text-center text-gray-400">Tidak ada data</td></tr>@endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ══════════════════════════════════════════════════
+     TAB 4: IMPORT / BACKUP
+══════════════════════════════════════════════════ --}}
+<div id="tab-import" class="sk-tab-content pt-5">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {{-- Import Pembayaran --}}
+        <div class="sk-card">
+            <div class="sk-card-header"><h4 class="font-bold text-gray-800"><i class="fas fa-paste mr-2 text-blue-500"></i>Import Pembayaran Bulk</h4></div>
+            <div class="p-5 space-y-4">
+                <p class="text-xs text-gray-500">Format per baris: <code class="bg-gray-100 px-1 rounded font-mono">no_bukti; tanggal_bayar; nomor_nota</code></p>
+                <p class="text-xs text-gray-400">Contoh: <code class="font-mono text-xs">TRF-001; 15/06/2025; INV-202506-01</code></p>
+                <textarea id="import-payment-text" rows="8" class="sk-input resize-none font-mono text-xs" placeholder="# Tempel data pembayaran di sini...&#10;TRF-001; 15/06/2025; INV-202506-01&#10;TRF-002; 15/06/2025; INV-202506-02"></textarea>
+                <button onclick="submitImportPayment()" class="sk-btn-primary w-full justify-center"><i class="fas fa-upload mr-1.5"></i>Proses Import Pembayaran</button>
+                <div id="import-payment-result" class="hidden text-xs space-y-1 max-h-48 overflow-y-auto"></div>
+            </div>
+        </div>
+        {{-- Backup / Restore --}}
+        <div class="space-y-5">
+            <div class="sk-card">
+                <div class="sk-card-header"><h4 class="font-bold text-gray-800"><i class="fas fa-download mr-2 text-green-500"></i>Export Backup JSON</h4></div>
+                <div class="p-5">
+                    <p class="text-xs text-gray-500 mb-4">Download semua data (Customer, Tipe, Ukuran, Kontainer, Tarif, Sewa, Tagihan, Invoice) sebagai file JSON untuk backup.</p>
+                    <a href="{{ route('sewa-kontainer.export.json') }}" class="sk-btn-primary w-full justify-center" target="_blank">
+                        <i class="fas fa-file-arrow-down mr-1.5"></i>Download Backup JSON
+                    </a>
+                </div>
+            </div>
+            <div class="sk-card">
+                <div class="sk-card-header"><h4 class="font-bold text-gray-800"><i class="fas fa-upload mr-2 text-amber-500"></i>Restore dari JSON Backup</h4></div>
+                <div class="p-5 space-y-3">
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        <strong>Peringatan:</strong> Restore akan menghapus & mengganti SEMUA data yang ada sekarang dengan data dari file backup.
+                    </div>
+                    <input type="file" id="backup-file-input" accept=".json" class="sk-input text-xs">
+                    <button onclick="submitRestoreJson()" class="w-full py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-bold transition-all">
+                        <i class="fas fa-rotate-right mr-1.5"></i>Restore Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>{{-- end tabs --}}
+</div>{{-- end space-y-5 --}}
+
+{{-- ══════════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════════ --}}
+
+{{-- Modal: Edit Tagihan --}}
+<div id="modal-tagihan" class="sk-modal-overlay">
+    <div class="sk-modal sk-modal-lg">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-gray-800">Edit Tagihan Periodik</h3>
+            <button onclick="closeModal('modal-tagihan')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        <input type="hidden" id="edit-tagihan-id">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="sk-form-group">
+                <label class="sk-label">Status Bayar</label>
+                <select id="edit-status-bayar" class="sk-input">
+                    <option value="Belum Ditagih">Belum Ditagih</option>
+                    <option value="Pranota">Pranota (Draft)</option>
+                    <option value="Belum Bayar">Belum Bayar</option>
+                    <option value="Lunas">Lunas</option>
+                </select>
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">No Invoice Grup</label>
+                <input id="edit-nomor-invoice" type="text" class="sk-input font-mono" placeholder="INV-202506-01">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Tanggal Tagihan</label>
+                <input id="edit-tgl-tagihan" type="date" class="sk-input">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Tanggal Bayar</label>
+                <input id="edit-tgl-bayar" type="date" class="sk-input">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Jumlah Override (Rp)</label>
+                <input id="edit-override" type="number" class="sk-input" placeholder="Kosong = gunakan estimasi">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Nomor Bukti Bayar</label>
+                <input id="edit-nomor-bayar" type="text" class="sk-input font-mono" placeholder="TRF-001">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">PPN 11% (Rp, auto-calc)</label>
+                <input id="edit-ppn" type="number" class="sk-input">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">PPh 2% (Rp, auto-calc)</label>
+                <input id="edit-pph" type="number" class="sk-input">
+            </div>
+            <div class="md:col-span-2 sk-form-group">
+                <label class="sk-label">Keterangan Selisih</label>
+                <input id="edit-keterangan-selisih" type="text" class="sk-input" placeholder="Keterangan jika ada selisih...">
+            </div>
+        </div>
+        <div class="flex gap-3 mt-5">
+            <button onclick="submitTagihanEdit()" class="sk-btn-primary flex-1 justify-center"><i class="fas fa-save mr-1.5"></i>Simpan Perubahan</button>
+            <button onclick="closeModal('modal-tagihan')" class="sk-btn-sm sk-btn-ghost px-6 py-2">Batal</button>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: Buat Invoice Grup --}}
+<div id="modal-invoice" class="sk-modal-overlay">
+    <div class="sk-modal">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-gray-800">Buat Invoice Grup</h3>
+            <button onclick="closeModal('modal-invoice')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        <div id="invoice-selection-info" class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800 mb-4"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="sk-form-group">
+                <label class="sk-label">Nomor Invoice</label>
+                <input id="inv-nomor" type="text" class="sk-input font-mono" placeholder="INV-202506-01">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Customer</label>
+                <select id="inv-customer" class="sk-input text-sm">
+                    @foreach($customers as $c)<option value="{{ $c->id_customer }}">{{ $c->nama_customer }}</option>@endforeach
+                </select>
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Tanggal Invoice</label>
+                <input id="inv-tanggal" type="date" class="sk-input" value="{{ date('Y-m-d') }}">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Status</label>
+                <select id="inv-status" class="sk-input text-sm">
+                    <option value="Belum Bayar">Belum Bayar</option>
+                    <option value="Lunas">Lunas</option>
+                </select>
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Adjustment Biaya (+ / -)</label>
+                <input id="inv-adjustment" type="number" class="sk-input" placeholder="0">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Keterangan Adjustment</label>
+                <input id="inv-adj-ket" type="text" class="sk-input" placeholder="Biaya admin, diskon, dll">
+            </div>
+            <div class="md:col-span-2 sk-form-group">
+                <label class="sk-label">Deskripsi Invoice</label>
+                <input id="inv-deskripsi" type="text" class="sk-input" placeholder="Tagihan Sewa Kontainer Bulan...">
+            </div>
+        </div>
+        <div class="flex gap-3 mt-5">
+            <button onclick="submitNewInvoice()" class="sk-btn-primary flex-1 justify-center"><i class="fas fa-file-invoice mr-1.5"></i>Buat Invoice</button>
+            <button onclick="closeModal('modal-invoice')" class="sk-btn-sm sk-btn-ghost px-6 py-2">Batal</button>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: Edit Invoice --}}
+<div id="modal-edit-invoice" class="sk-modal-overlay">
+    <div class="sk-modal">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-gray-800">Edit Invoice Grup</h3>
+            <button onclick="closeModal('modal-edit-invoice')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        <input type="hidden" id="edit-invoice-nomor">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="sk-form-group">
+                <label class="sk-label">Status Pembayaran</label>
+                <select id="edit-inv-status" class="sk-input text-sm">
+                    <option value="Belum Bayar">Belum Bayar</option>
+                    <option value="Lunas">Lunas</option>
+                </select>
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Tanggal Bayar</label>
+                <input id="edit-inv-tgl-bayar" type="date" class="sk-input">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Nomor Bayar</label>
+                <input id="edit-inv-nomor-bayar" type="text" class="sk-input font-mono" placeholder="TRF-001">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Adjustment Biaya</label>
+                <input id="edit-inv-adjustment" type="number" class="sk-input" placeholder="0">
+            </div>
+            <div class="md:col-span-2 sk-form-group">
+                <label class="sk-label">Keterangan Adjustment</label>
+                <input id="edit-inv-adj-ket" type="text" class="sk-input">
+            </div>
+        </div>
+        <div class="flex gap-3 mt-5">
+            <button onclick="submitEditInvoice()" class="sk-btn-primary flex-1 justify-center"><i class="fas fa-save mr-1.5"></i>Simpan</button>
+            <button onclick="closeModal('modal-edit-invoice')" class="sk-btn-sm sk-btn-ghost px-6 py-2">Batal</button>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: Edit Sewa --}}
+<div id="modal-edit-sewa" class="sk-modal-overlay">
+    <div class="sk-modal">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-gray-800">Edit Transaksi Sewa</h3>
+            <button onclick="closeModal('modal-edit-sewa')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        <input type="hidden" id="edit-sewa-id">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="sk-form-group">
+                <label class="sk-label">Tanggal Sewa</label>
+                <input id="edit-sewa-tanggal" type="date" class="sk-input">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Tanggal Kembali (isi untuk selesai)</label>
+                <input id="edit-sewa-kembali" type="date" class="sk-input">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Jenis Tarif</label>
+                <select id="edit-sewa-jenis" class="sk-input text-sm">
+                    <option value="Bulanan">Bulanan</option>
+                    <option value="Harian">Harian</option>
+                </select>
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Tarif Bulanan (Rp)</label>
+                <input id="edit-sewa-bulanan" type="number" class="sk-input">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Tarif Harian (Rp)</label>
+                <input id="edit-sewa-harian" type="number" class="sk-input">
+            </div>
+            <div class="sk-form-group">
+                <label class="sk-label">Catatan</label>
+                <input id="edit-sewa-catatan" type="text" class="sk-input">
+            </div>
+        </div>
+        <div class="flex gap-3 mt-5">
+            <button onclick="submitEditSewa()" class="sk-btn-primary flex-1 justify-center"><i class="fas fa-save mr-1.5"></i>Simpan</button>
+            <button onclick="closeModal('modal-edit-sewa')" class="sk-btn-sm sk-btn-ghost px-6 py-2">Batal</button>
+        </div>
+    </div>
+</div>
+
+{{-- Modal: Terminate Sewa --}}
+<div id="modal-terminate" class="sk-modal-overlay">
+    <div class="sk-modal">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="font-bold text-gray-800">Kembalikan Kontainer</h3>
+            <button onclick="closeModal('modal-terminate')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        <input type="hidden" id="terminate-sewa-id">
+        <div class="sk-form-group">
+            <label class="sk-label">Tanggal Kembali</label>
+            <input id="terminate-tgl" type="date" class="sk-input" value="{{ date('Y-m-d') }}">
+        </div>
+        <p class="text-xs text-amber-600 mt-2"><i class="fas fa-info-circle mr-1"></i>Status sewa akan berubah menjadi Selesai dan periode akhir akan di-prorate.</p>
+        <div class="flex gap-3 mt-5">
+            <button onclick="submitTerminate()" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-bold"><i class="fas fa-calendar-check mr-1.5"></i>Konfirmasi Kembalikan</button>
+            <button onclick="closeModal('modal-terminate')" class="sk-btn-sm sk-btn-ghost px-6 py-2">Batal</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    let appMode = localStorage.getItem('sewa_kontainer_app_mode') || 'sewa_out';
+// ══════════════════════════════════════════════════
+// CONSTANTS & STATE
+// ══════════════════════════════════════════════════
+const ROUTES = {
+    customer:   { store: '{{ route("sewa-kontainer.customer.store") }}',  del: '{{ url("master/sewa-kontainer/master/customer") }}/' },
+    tipe:       { store: '{{ route("sewa-kontainer.tipe.store") }}',      del: '{{ url("master/sewa-kontainer/master/tipe") }}/' },
+    ukuran:     { store: '{{ route("sewa-kontainer.ukuran.store") }}',    del: '{{ url("master/sewa-kontainer/master/ukuran") }}/' },
+    kontainer:  { store: '{{ route("sewa-kontainer.kontainer.store") }}', del: '{{ url("master/sewa-kontainer/master/kontainer") }}/' },
+    tarif:      { store: '{{ route("sewa-kontainer.tarif.store") }}',     del: '{{ url("master/sewa-kontainer/master/tarif") }}/' },
+    sewa:       { store: '{{ route("sewa-kontainer.sewa.store") }}',      base: '{{ url("master/sewa-kontainer/sewa") }}/' },
+    tagihan:    { base: '{{ url("master/sewa-kontainer/tagihan") }}/' },
+    invoice:    { store: '{{ route("sewa-kontainer.invoice.store") }}',   base: '{{ url("master/sewa-kontainer/invoice") }}/' },
+    importPayment: '{{ route("sewa-kontainer.import.payment") }}',
+    importJson:    '{{ route("sewa-kontainer.import.json") }}',
+    kontainerInfo: '{{ url("master/sewa-kontainer/kontainer-info") }}/',
+};
+const CSRF = '{{ csrf_token() }}';
+let appMode = 'out'; // 'out' | 'in'
+let selectedTagihanIds = [];
+let billingPage = 1;
+const BILLING_PAGE_SIZE = 20;
+let billingSort = { col: 'bulan_ke', dir: 'asc' };
+let allBillingRows = [];
+let filteredBillingRows = [];
 
-    $(document).ready(function() {
-        applyThemeMode(appMode);
+// ══════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════
+function showNotif(msg, type = 'success') {
+    const el = document.getElementById('sk-notification');
+    el.className = 'sk-notification ' + type;
+    el.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> ${msg}`;
+    el.style.display = 'flex';
+    setTimeout(() => el.style.display = 'none', 4500);
+}
+
+async function apiPost(url, data = {}, method = 'POST') {
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || json.errors ? Object.values(json.errors || {})[0] : 'Terjadi kesalahan');
+        }
+        return json;
+    } catch(e) {
+        showNotif(e.message || 'Error jaringan', 'error');
+        throw e;
+    }
+}
+
+async function apiDelete(url) {
+    return apiPost(url, {}, 'DELETE');
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+window.addEventListener('click', e => { if(e.target.classList.contains('sk-modal-overlay')) closeModal(e.target.id); });
+
+// ══════════════════════════════════════════════════
+// CLOCK
+// ══════════════════════════════════════════════════
+function updateClock() {
+    const now = new Date();
+    const wib = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('sk-clock').textContent =
+        `${pad(wib.getDate())}/${pad(wib.getMonth()+1)}/${wib.getFullYear()} ${pad(wib.getHours())}:${pad(wib.getMinutes())}:${pad(wib.getSeconds())} WIB`;
+}
+updateClock(); setInterval(updateClock, 1000);
+
+// ══════════════════════════════════════════════════
+// MODE TOGGLE (Sewa Out / Sewa In)
+// ══════════════════════════════════════════════════
+function setMode(mode) {
+    appMode = mode;
+    const isIn = mode === 'in';
+    document.body.classList.toggle('mode-sewa-in', isIn);
+    document.getElementById('btn-mode-out').className = 'px-3 py-1.5 rounded-lg transition-all text-xs font-bold ' + (!isIn ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500');
+    document.getElementById('btn-mode-in').className  = 'px-3 py-1.5 rounded-lg transition-all text-xs font-bold ' + (isIn  ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-500');
+    document.getElementById('sk-page-title').textContent    = isIn ? 'Penyewaan Kontainer — Sewa In'  : 'Penyewaan Kontainer — Sewa Out';
+    document.getElementById('sk-page-subtitle').textContent = isIn ? 'Manajemen Rental sebagai Lessee (Penyewa)' : 'Manajemen Rental sebagai Lessor (Pemilik)';
+
+    const custLabel = isIn ? 'Vendor / Owner' : 'Customer';
+    const custLabels = ['lbl-filter-customer','th-customer','th-customer-coll','lbl-sewa-customer','lbl-master-customer','lbl-form-customer','lbl-input-customer','lbl-kontainer-customer','lbl-tarif-customer','th-cust','th-kont-customer','th-tarif-customer'];
+    custLabels.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = custLabel; });
+    document.getElementById('lbl-master-customer').textContent = `1. ${custLabel}`;
+}
+
+// ══════════════════════════════════════════════════
+// TAB NAVIGATION
+// ══════════════════════════════════════════════════
+function switchMainTab(name, btn) {
+    document.querySelectorAll('.sk-tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.sk-main-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
+function switchBillingTab(name, btn) {
+    document.querySelectorAll('.billing-sub').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.sk-sub-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('billing-' + name).classList.remove('hidden');
+    btn.classList.add('active');
+    if (name === 'sheet') initBillingTable();
+}
+
+function switchMasterTab(name, btn) {
+    document.querySelectorAll('.master-sub').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('#tab-master .sk-sub-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('master-' + name).classList.remove('hidden');
+    btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════
+// BILLING TABLE — Filter, Sort, Paginate
+// ══════════════════════════════════════════════════
+function initBillingTable() {
+    allBillingRows = Array.from(document.querySelectorAll('.billing-row'));
+    applyFilters();
+}
+
+function applyFilters() {
+    const custFilter    = document.getElementById('filter-customer').value;
+    const statusFilter  = document.getElementById('filter-status').value;
+    const kontFilter    = document.getElementById('filter-kontainer').value.toLowerCase();
+
+    filteredBillingRows = allBillingRows.filter(row => {
+        if (custFilter   && row.dataset.customer !== custFilter) return false;
+        if (statusFilter && row.dataset.status   !== statusFilter) return false;
+        if (kontFilter   && !row.dataset.kontainer.toLowerCase().includes(kontFilter)) return false;
+        return true;
     });
 
-    function setAppMode(mode) {
-        appMode = mode;
-        localStorage.setItem('sewa_kontainer_app_mode', mode);
-        applyThemeMode(mode);
+    sortFilteredRows();
+    billingPage = 1;
+    renderBillingPage();
+}
+
+function sortTable(col) {
+    if (billingSort.col === col) billingSort.dir = billingSort.dir === 'asc' ? 'desc' : 'asc';
+    else { billingSort.col = col; billingSort.dir = 'asc'; }
+    sortFilteredRows();
+    renderBillingPage();
+}
+
+function sortFilteredRows() {
+    filteredBillingRows.sort((a, b) => {
+        let aVal, bVal;
+        if (billingSort.col === 'jumlah_tagihan') { aVal = parseFloat(a.dataset.jumlah); bVal = parseFloat(b.dataset.jumlah); }
+        else if (billingSort.col === 'bulan_ke')  { aVal = parseInt(a.dataset.bulanKe);  bVal = parseInt(b.dataset.bulanKe); }
+        else if (billingSort.col === 'customer')  { aVal = a.dataset.customer; bVal = b.dataset.customer; }
+        else if (billingSort.col === 'status_bayar') { aVal = a.dataset.status; bVal = b.dataset.status; }
+        else { aVal = a.dataset.id; bVal = b.dataset.id; }
+        if (aVal < bVal) return billingSort.dir === 'asc' ? -1 : 1;
+        if (aVal > bVal) return billingSort.dir === 'asc' ? 1 : -1;
+        return 0;
+    });
+}
+
+function renderBillingPage() {
+    const tbody  = document.getElementById('billing-tbody');
+    const total  = filteredBillingRows.length;
+    const pages  = Math.max(1, Math.ceil(total / BILLING_PAGE_SIZE));
+    billingPage  = Math.min(billingPage, pages);
+    const start  = (billingPage - 1) * BILLING_PAGE_SIZE;
+    const slice  = filteredBillingRows.slice(start, start + BILLING_PAGE_SIZE);
+
+    // Show/hide rows
+    allBillingRows.forEach(row => { row.style.display = 'none'; });
+    slice.forEach(row => { row.style.display = ''; });
+
+    document.getElementById('billing-count').textContent = total;
+    renderPagination(pages);
+}
+
+function renderPagination(pages) {
+    const pg = document.getElementById('billing-pagination');
+    pg.innerHTML = '';
+    if (pages <= 1) return;
+
+    const makeBtn = (label, page, disabled = false, active = false) => {
+        const b = document.createElement('button');
+        b.className = 'sk-page-btn' + (active ? ' active' : '');
+        b.textContent = label;
+        b.disabled = disabled;
+        b.onclick = () => { billingPage = page; renderBillingPage(); };
+        return b;
+    };
+
+    pg.appendChild(makeBtn('«', 1, billingPage === 1));
+    pg.appendChild(makeBtn('‹', billingPage - 1, billingPage === 1));
+
+    const range = [billingPage - 1, billingPage, billingPage + 1].filter(p => p >= 1 && p <= pages);
+    range.forEach(p => pg.appendChild(makeBtn(p, p, false, p === billingPage)));
+
+    pg.appendChild(makeBtn('›', billingPage + 1, billingPage === pages));
+    pg.appendChild(makeBtn('»', pages, billingPage === pages));
+}
+
+function clearFilters() {
+    document.getElementById('filter-customer').value  = '';
+    document.getElementById('filter-status').value    = '';
+    document.getElementById('filter-kontainer').value = '';
+    applyFilters();
+}
+
+// ══════════════════════════════════════════════════
+// CHECKBOX SELECTION
+// ══════════════════════════════════════════════════
+function toggleAllCheckboxes(master) {
+    const visible = Array.from(document.querySelectorAll('.billing-row')).filter(r => r.style.display !== 'none');
+    visible.forEach(r => r.querySelector('.row-chk').checked = master.checked);
+    onRowCheck();
+}
+
+function selectAllVisible() {
+    const visible = Array.from(document.querySelectorAll('.billing-row')).filter(r => r.style.display !== 'none');
+    visible.forEach(r => r.querySelector('.row-chk').checked = true);
+    onRowCheck();
+}
+
+function clearSelection() {
+    document.querySelectorAll('.row-chk').forEach(c => c.checked = false);
+    document.getElementById('chk-all').checked = false;
+    onRowCheck();
+}
+
+function onRowCheck() {
+    selectedTagihanIds = Array.from(document.querySelectorAll('.row-chk:checked')).map(c => c.value);
+    const bulk = document.getElementById('bulk-actions');
+    const count = document.getElementById('bulk-count');
+    if (selectedTagihanIds.length > 0) {
+        bulk.classList.remove('hidden');
+        count.textContent = selectedTagihanIds.length + ' dipilih';
+    } else {
+        bulk.classList.add('hidden');
     }
+}
 
-    function applyThemeMode(mode) {
-        const viewport = $('#sewa-viewport');
-        const badge = $('#badge-mode');
-        const desc = $('#mode-desc');
-        const icon = $('#header-icon');
-        const btnSewaOut = $('#btn-sewa-out');
-        const btnSewaIn = $('#btn-sewa-in');
-        
-        // Tab buttons color transitions
-        const tabBtns = $('.tab-btn');
+// ══════════════════════════════════════════════════
+// INLINE EDIT
+// ══════════════════════════════════════════════════
+function inlineEdit(el, tagihanId, field) {
+    const oldText = el.textContent.trim();
+    const input = document.createElement('input');
+    input.type  = field.includes('tgl') || field.includes('tanggal') ? 'date' : 'text';
+    input.className = 'sk-input py-0.5 text-xs w-32';
+    input.value = oldText === '—' ? '' : oldText.replace(/[Rp\s\.]/g, '');
+    el.replaceWith(input);
+    input.focus();
 
-        if (mode === 'sewa_in') {
-            badge.text('Pihak Penyewa (Sewa In)');
-            badge.addClass('bg-indigo-100 text-indigo-800 border-indigo-200').removeClass('bg-emerald-100 text-emerald-800 border-emerald-200');
-            desc.text('Sistem kontrol biaya pengeluaran, PPN Masukan, PPh 23, serta rekonsiliasi tagihan dari Vendor');
-            icon.addClass('text-indigo-600').removeClass('text-emerald-600');
-            
-            btnSewaIn.addClass('bg-white text-indigo-700 shadow-sm').removeClass('text-gray-600 hover:bg-gray-100');
-            btnSewaOut.addClass('text-gray-600 hover:bg-gray-100').removeClass('bg-white text-emerald-700 shadow-sm');
-            
-            // Adjust theme for tab borders & active states
-            $('.tab-btn').each(function() {
-                if ($(this).hasClass('text-emerald-600')) {
-                    $(this).addClass('text-indigo-600 border-indigo-600').removeClass('text-emerald-600 border-emerald-600');
-                }
-            });
-            $('#kpi-lunas-icon').addClass('bg-indigo-50 text-indigo-600').removeClass('bg-emerald-50 text-emerald-600');
-            $('#kpi-lunas-val').addClass('text-indigo-600').removeClass('text-emerald-600');
+    const save = async () => {
+        try {
+            await apiPost(ROUTES.tagihan.base + tagihanId + '/update', { [field]: input.value || null });
+            showNotif('Tersimpan!');
+            setTimeout(() => location.reload(), 800);
+        } catch (e) {
+            const span = document.createElement('span');
+            span.className = 'editable-cell text-xs';
+            span.textContent = oldText;
+            span.onclick = () => inlineEdit(span, tagihanId, field);
+            input.replaceWith(span);
+        }
+    };
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', e => { if(e.key === 'Enter') save(); if(e.key === 'Escape') { input.replaceWith(el); } });
+}
+
+// ══════════════════════════════════════════════════
+// TAGIHAN MODAL
+// ══════════════════════════════════════════════════
+function openTagihanModal(id) {
+    document.getElementById('edit-tagihan-id').value = id;
+    const row = document.querySelector(`.billing-row[data-id="${id}"]`);
+    if (row) {
+        const cells = row.querySelectorAll('td');
+        // Pre-fill from data attributes (rough)
+        document.getElementById('edit-status-bayar').value = row.dataset.status;
+    }
+    openModal('modal-tagihan');
+}
+
+async function submitTagihanEdit() {
+    const id = document.getElementById('edit-tagihan-id').value;
+    const data = {
+        status_bayar:            document.getElementById('edit-status-bayar').value,
+        nomor_invoice_grup:      document.getElementById('edit-nomor-invoice').value || null,
+        tanggal_tagihan:         document.getElementById('edit-tgl-tagihan').value || null,
+        tanggal_bayar:           document.getElementById('edit-tgl-bayar').value || null,
+        jumlah_tagihan_override: document.getElementById('edit-override').value || null,
+        nomor_bayar:             document.getElementById('edit-nomor-bayar').value || null,
+        ppn:                     document.getElementById('edit-ppn').value || null,
+        pph:                     document.getElementById('edit-pph').value || null,
+        keterangan_selisih:      document.getElementById('edit-keterangan-selisih').value || null,
+    };
+    await apiPost(ROUTES.tagihan.base + id + '/update', data);
+    showNotif('Tagihan berhasil diupdate!');
+    closeModal('modal-tagihan');
+    setTimeout(() => location.reload(), 800);
+}
+
+// Auto-calc PPN/PPh when override changes
+document.getElementById('edit-override').addEventListener('input', function() {
+    const ov = parseFloat(this.value) || 0;
+    document.getElementById('edit-ppn').value = ov > 0 ? Math.round(ov * 0.11) : '';
+    document.getElementById('edit-pph').value = ov > 0 ? Math.round(ov * 0.02) : '';
+});
+
+// ══════════════════════════════════════════════════
+// INVOICE MODAL
+// ══════════════════════════════════════════════════
+function openInvoiceModal() {
+    const count = selectedTagihanIds.length;
+    if (count === 0) { showNotif('Pilih minimal 1 tagihan terlebih dahulu', 'error'); return; }
+    document.getElementById('invoice-selection-info').innerHTML =
+        `<i class="fas fa-info-circle mr-1"></i> <strong>${count}</strong> tagihan dipilih akan dimasukkan ke invoice ini.`;
+    const now = new Date();
+    const ym  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}`;
+    document.getElementById('inv-nomor').value = `INV-${ym}-01`;
+    openModal('modal-invoice');
+}
+
+async function submitNewInvoice() {
+    const data = {
+        nomor_invoice:         document.getElementById('inv-nomor').value,
+        id_customer:           document.getElementById('inv-customer').value,
+        tanggal_invoice:       document.getElementById('inv-tanggal').value,
+        status_pembayaran:     document.getElementById('inv-status').value,
+        adjustment_biaya:      parseFloat(document.getElementById('inv-adjustment').value) || 0,
+        adjustment_keterangan: document.getElementById('inv-adj-ket').value || null,
+        deskripsi:             document.getElementById('inv-deskripsi').value || null,
+        list_id_tagihan:       selectedTagihanIds,
+    };
+    await apiPost(ROUTES.invoice.store, data);
+    showNotif('Invoice berhasil dibuat!');
+    closeModal('modal-invoice');
+    setTimeout(() => location.reload(), 800);
+}
+
+function openEditInvoiceModal(nomor, deskripsi, adjustment, adjKet) {
+    document.getElementById('edit-invoice-nomor').value    = nomor;
+    document.getElementById('edit-inv-adjustment').value   = adjustment;
+    document.getElementById('edit-inv-adj-ket').value      = adjKet;
+    openModal('modal-edit-invoice');
+}
+
+async function submitEditInvoice() {
+    const nomor = document.getElementById('edit-invoice-nomor').value;
+    const data  = {
+        status_pembayaran:     document.getElementById('edit-inv-status').value,
+        tanggal_bayar:         document.getElementById('edit-inv-tgl-bayar').value || null,
+        nomor_bayar:           document.getElementById('edit-inv-nomor-bayar').value || null,
+        adjustment_biaya:      parseFloat(document.getElementById('edit-inv-adjustment').value) || 0,
+        adjustment_keterangan: document.getElementById('edit-inv-adj-ket').value || null,
+    };
+    await apiPost(ROUTES.invoice.base + nomor, data, 'PUT');
+    showNotif('Invoice berhasil diupdate!');
+    closeModal('modal-edit-invoice');
+    setTimeout(() => location.reload(), 800);
+}
+
+async function deleteInvoice(nomor) {
+    if (!confirm(`Hapus invoice ${nomor}? Tagihan yang terkait akan kembali ke status Belum Ditagih.`)) return;
+    await apiDelete(ROUTES.invoice.base + nomor);
+    showNotif('Invoice dihapus!');
+    setTimeout(() => location.reload(), 800);
+}
+
+async function quickLunasInvoice(nomor) {
+    if (!confirm(`Tandai invoice ${nomor} sebagai Lunas?`)) return;
+    await apiPost(ROUTES.invoice.base + nomor, { status_pembayaran: 'Lunas' }, 'PUT');
+    showNotif('Invoice ditandai Lunas!');
+    setTimeout(() => location.reload(), 800);
+}
+
+// ══════════════════════════════════════════════════
+// BULK STATUS UPDATE
+// ══════════════════════════════════════════════════
+async function bulkSetStatus(status) {
+    if (selectedTagihanIds.length === 0) return;
+    for (const id of selectedTagihanIds) {
+        await apiPost(ROUTES.tagihan.base + id + '/update', { status_bayar: status });
+    }
+    showNotif(`${selectedTagihanIds.length} tagihan diubah ke ${status}`);
+    setTimeout(() => location.reload(), 800);
+}
+
+// ══════════════════════════════════════════════════
+// SEWA FORM
+// ══════════════════════════════════════════════════
+function toggleNewSewaForm() {
+    const form = document.getElementById('new-sewa-form');
+    form.classList.toggle('hidden');
+}
+
+async function onKontainerSelect(noKontainer) {
+    if (!noKontainer) return;
+    try {
+        const res = await fetch(ROUTES.kontainerInfo + noKontainer, { headers: { Accept: 'application/json' } });
+        const json = await res.json();
+        const info = document.getElementById('sewa-tarif-info');
+        if (json.kontainer) {
+            // Auto-set customer
+            document.getElementById('sewa-id-customer').value = json.kontainer.id_customer;
+        }
+        if (json.activeTarif) {
+            const t = json.activeTarif;
+            info.classList.remove('hidden');
+            info.innerHTML = `<i class="fas fa-tag mr-1 text-blue-500"></i>Tarif aktif: <strong>Rp ${Number(t.tarif_bulanan).toLocaleString('id-ID')}/bln</strong>, <strong>Rp ${Number(t.tarif_harian).toLocaleString('id-ID')}/hari</strong>`;
+            document.getElementById('sewa-tarif-bulanan').value = t.tarif_bulanan;
+            document.getElementById('sewa-tarif-harian').value  = t.tarif_harian;
         } else {
-            badge.text('Pihak Pemilik (Sewa Out)');
-            badge.addClass('bg-emerald-100 text-emerald-800 border-emerald-200').removeClass('bg-indigo-100 text-indigo-800 border-indigo-200');
-            desc.text('Sistem kalkulasi proris maret ke januari (30 hari) & tahun kabisat februari (28/29 hari)');
-            icon.addClass('text-emerald-600').removeClass('text-indigo-600');
-            
-            btnSewaOut.addClass('bg-white text-emerald-700 shadow-sm').removeClass('text-gray-600 hover:bg-gray-100');
-            btnSewaIn.addClass('text-gray-600 hover:bg-gray-100').removeClass('bg-white text-indigo-700 shadow-sm');
-            
-            $('.tab-btn').each(function() {
-                if ($(this).hasClass('text-indigo-600')) {
-                    $(this).addClass('text-emerald-600 border-emerald-600').removeClass('text-indigo-600 border-indigo-600');
-                }
-            });
-            $('#kpi-lunas-icon').addClass('bg-emerald-50 text-emerald-600').removeClass('bg-indigo-50 text-indigo-600');
-            $('#kpi-lunas-val').addClass('text-emerald-600').removeClass('text-indigo-600');
+            info.classList.remove('hidden');
+            info.innerHTML = '<i class="fas fa-exclamation-triangle mr-1 text-amber-500"></i>Tidak ada tarif aktif untuk kombinasi ini. Isi manual.';
         }
-    }
+    } catch(e) {}
+}
 
-    function switchTab(tab) {
-        $('.tab-content').addClass('hidden');
-        $(`#content-${tab}`).removeClass('hidden');
+async function submitNewSewa() {
+    const data = {
+        no_kontainer:  document.getElementById('sewa-no-kontainer').value,
+        id_customer:   document.getElementById('sewa-id-customer').value,
+        tanggal_sewa:  document.getElementById('sewa-tanggal-sewa').value,
+        jenis_tarif:   document.getElementById('sewa-jenis-tarif').value,
+        tarif_bulanan: parseFloat(document.getElementById('sewa-tarif-bulanan').value) || 0,
+        tarif_harian:  parseFloat(document.getElementById('sewa-tarif-harian').value) || 0,
+        catatan:       document.getElementById('sewa-catatan').value || null,
+    };
+    await apiPost(ROUTES.sewa.store, data);
+    showNotif('Kontrak sewa berhasil dibuat! Periode tagihan di-generate otomatis.');
+    setTimeout(() => location.reload(), 1000);
+}
 
-        $('.tab-btn').removeClass('border-emerald-600 text-emerald-600 border-indigo-600 text-indigo-600').addClass('border-transparent text-gray-500 hover:text-gray-700');
-        
-        const activeColorClass = appMode === 'sewa_in' ? 'border-indigo-600 text-indigo-600' : 'border-emerald-600 text-emerald-600';
-        $(`#tab-${tab}`).addClass(activeColorClass).removeClass('border-transparent text-gray-500');
-    }
+function openEditSewaModal(id) {
+    // Find card data — we pass id to the modal
+    document.getElementById('edit-sewa-id').value = id;
+    openModal('modal-edit-sewa');
+}
 
-    // Modal Helpers
-    function openModal(id) {
-        $(`#${id}`).removeClass('hidden');
-    }
-    function closeModal(id) {
-        $(`#${id}`).addClass('hidden');
-    }
+async function submitEditSewa() {
+    const id   = document.getElementById('edit-sewa-id').value;
+    const data = {
+        tanggal_sewa:    document.getElementById('edit-sewa-tanggal').value,
+        tanggal_kembali: document.getElementById('edit-sewa-kembali').value || null,
+        jenis_tarif:     document.getElementById('edit-sewa-jenis').value,
+        tarif_bulanan:   parseFloat(document.getElementById('edit-sewa-bulanan').value) || 0,
+        tarif_harian:    parseFloat(document.getElementById('edit-sewa-harian').value) || 0,
+        catatan:         document.getElementById('edit-sewa-catatan').value || null,
+    };
+    await apiPost(ROUTES.sewa.base + id, data, 'PUT');
+    showNotif('Sewa berhasil diupdate!');
+    closeModal('modal-edit-sewa');
+    setTimeout(() => location.reload(), 800);
+}
 
-    // Customer
-    function openCustomerModal() { openModal('customerModal'); }
-    function submitCustomer(e) {
-        e.preventDefault();
-        $.post('{{ route("sewa-kontainer.customer.store") }}', $('#customerForm').serialize(), function() {
-            location.reload();
-        });
-    }
+function openTerminateModal(id) {
+    document.getElementById('terminate-sewa-id').value = id;
+    openModal('modal-terminate');
+}
 
-    // Tipe
-    function openTipeModal() { openModal('tipeModal'); }
-    function submitTipe(e) {
-        e.preventDefault();
-        $.post('{{ route("sewa-kontainer.tipe.store") }}', $('#tipeForm').serialize(), function() {
-            location.reload();
-        });
-    }
+async function submitTerminate() {
+    const id  = document.getElementById('terminate-sewa-id').value;
+    const tgl = document.getElementById('terminate-tgl').value;
+    await apiPost(ROUTES.sewa.base + id + '/terminate', { tanggal_kembali: tgl });
+    showNotif('Kontainer berhasil dikembalikan!');
+    closeModal('modal-terminate');
+    setTimeout(() => location.reload(), 800);
+}
 
-    // Ukuran
-    function openUkuranModal() { openModal('ukuranModal'); }
-    function submitUkuran(e) {
-        e.preventDefault();
-        $.post('{{ route("sewa-kontainer.ukuran.store") }}', $('#ukuranForm').serialize(), function() {
-            location.reload();
-        });
-    }
+async function deleteSewa(id) {
+    if (!confirm('Hapus transaksi sewa ini beserta semua periode tagihan terkait?')) return;
+    await apiDelete(ROUTES.sewa.base + id);
+    showNotif('Transaksi sewa dihapus!');
+    setTimeout(() => location.reload(), 800);
+}
 
-    // Kontainer
-    function openKontainerModal() { openModal('kontainerModal'); }
-    function submitKontainer(e) {
-        e.preventDefault();
-        $.post('{{ route("sewa-kontainer.kontainer.store") }}', $('#kontainerForm').serialize(), function() {
-            location.reload();
-        });
-    }
+// ══════════════════════════════════════════════════
+// FILTER CONTRACTS
+// ══════════════════════════════════════════════════
+function filterContracts() {
+    const q   = document.getElementById('contracts-search').value.toLowerCase();
+    const st  = document.getElementById('contracts-status-filter').value;
+    document.querySelectorAll('.sewa-card').forEach(card => {
+        const matchQ  = !q  || card.dataset.search.includes(q);
+        const matchSt = !st || card.dataset.status === st;
+        card.style.display = (matchQ && matchSt) ? '' : 'none';
+    });
+}
 
-    // Master Delete
-    function deleteMaster(type, id) {
-        if (confirm(`Apakah Anda yakin ingin menghapus data master ${type} ini?`)) {
-            $.ajax({
-                url: `/sewa-kontainer/master/${type}/${id}`,
-                type: 'DELETE',
-                data: { _token: '{{ csrf_token() }}' },
-                success: function() {
-                    location.reload();
-                }
-            });
-        }
-    }
+// ══════════════════════════════════════════════════
+// MASTER CRUD
+// ══════════════════════════════════════════════════
+async function submitCustomer() {
+    const name = document.getElementById('input-customer-name').value.trim();
+    if (!name) { showNotif('Nama customer wajib diisi', 'error'); return; }
+    await apiPost(ROUTES.customer.store, { nama_customer: name });
+    showNotif('Customer berhasil ditambahkan!');
+    setTimeout(() => location.reload(), 800);
+}
 
-    // Sewa Contract Modal
-    function openSewaModal() { openModal('sewaModal'); }
-    function closeSewaModal() { closeModal('sewaModal'); }
-    function submitSewa(e) {
-        e.preventDefault();
-        $.post('{{ route("sewa-kontainer.sewa.store") }}', $('#sewaForm').serialize(), function() {
-            location.reload();
-        });
-    }
+async function submitTipe() {
+    const name = document.getElementById('input-tipe-name').value.trim();
+    if (!name) { showNotif('Nama tipe wajib diisi', 'error'); return; }
+    await apiPost(ROUTES.tipe.store, { nama_tipe: name });
+    showNotif('Tipe berhasil ditambahkan!');
+    setTimeout(() => location.reload(), 800);
+}
 
-    // Terminate Contract
-    function terminateSewa(id) {
-        const tgl = prompt('Masukkan tanggal pengembalian kontainer (YYYY-MM-DD):', '{{ date("Y-m-d") }}');
-        if (tgl) {
-            $.post(`/sewa-kontainer/sewa/${id}/terminate`, {
-                _token: '{{ csrf_token() }}',
-                tanggal_kembali: tgl
-            }, function() {
-                location.reload();
-            });
-        }
-    }
+async function submitUkuran() {
+    const desc = document.getElementById('input-ukuran-desc').value.trim();
+    if (!desc) { showNotif('Ukuran wajib diisi', 'error'); return; }
+    await apiPost(ROUTES.ukuran.store, { deskripsi_ukuran: desc });
+    showNotif('Ukuran berhasil ditambahkan!');
+    setTimeout(() => location.reload(), 800);
+}
 
-    // Payment Override Modal
-    function editPaymentOverride(tagihanJson) {
-        const tagihan = JSON.parse(tagihanJson);
-        $('#ov-id-tagihan').val(tagihan.id_tagihan);
-        $('#ov-status-bayar').val(tagihan.status_bayar);
-        $('#ov-nomor-invoice').val(tagihan.nomor_invoice_grup);
-        $('#ov-tgl-tagihan').val(tagihan.tanggal_tagihan);
-        $('#ov-tgl-bayar').val(tagihan.tanggal_bayar);
-        $('#ov-tagihan-override').val(tagihan.jumlah_tagihan_override);
-        $('#ov-jumlah-bayar').val(tagihan.jumlah_bayar);
-        $('#ov-ppn').val(tagihan.ppn);
-        $('#ov-pph').val(tagihan.pph);
-        $('#ov-nomor-bayar').val(tagihan.nomor_bayar);
-        openModal('paymentOverrideModal');
+async function submitKontainer() {
+    const data = {
+        no_kontainer: document.getElementById('input-kontainer-no').value.trim().toUpperCase(),
+        id_customer:  document.getElementById('input-kontainer-customer').value,
+        id_tipe:      document.getElementById('input-kontainer-tipe').value,
+        id_ukuran:    document.getElementById('input-kontainer-ukuran').value,
+    };
+    if (!data.no_kontainer || !data.id_customer || !data.id_tipe || !data.id_ukuran) {
+        showNotif('Semua field wajib diisi', 'error'); return;
     }
-    function closeOverrideModal() { closeModal('paymentOverrideModal'); }
-    
-    function submitOverride(e) {
-        e.preventDefault();
-        const id = $('#ov-id-tagihan').val();
-        $.post(`/sewa-kontainer/tagihan/${id}/override`, $('#overrideForm').serialize(), function() {
-            location.reload();
-        });
-    }
+    await apiPost(ROUTES.kontainer.store, data);
+    showNotif('Kontainer berhasil didaftarkan!');
+    setTimeout(() => location.reload(), 800);
+}
 
-    // Invoice
-    function openInvoiceModal() { openModal('invoiceModal'); }
-    function submitInvoice(e) {
-        e.preventDefault();
-        $.post('{{ route("sewa-kontainer.invoice.store") }}', $('#invoiceForm').serialize(), function() {
-            location.reload();
-        });
+async function submitTarif() {
+    const data = {
+        id_customer:           document.getElementById('input-tarif-customer').value,
+        id_tipe:               document.getElementById('input-tarif-tipe').value,
+        id_ukuran:             document.getElementById('input-tarif-ukuran').value,
+        tarif_bulanan:         parseFloat(document.getElementById('input-tarif-bulanan').value) || 0,
+        tarif_harian:          parseFloat(document.getElementById('input-tarif-harian').value) || 0,
+        tanggal_mulai_berlaku: document.getElementById('input-tarif-mulai').value,
+    };
+    if (!data.id_customer || !data.id_tipe || !data.id_ukuran) {
+        showNotif('Customer, Tipe, dan Ukuran wajib dipilih', 'error'); return;
     }
+    await apiPost(ROUTES.tarif.store, data);
+    showNotif('Tarif berhasil disimpan!');
+    setTimeout(() => location.reload(), 800);
+}
+
+async function deleteMaster(type, id, name) {
+    if (!confirm(`Hapus "${name}"? Tindakan ini tidak bisa dibatalkan.`)) return;
+    await apiDelete(ROUTES[type].del + id);
+    showNotif(`"${name}" berhasil dihapus!`);
+    setTimeout(() => location.reload(), 800);
+}
+
+// ══════════════════════════════════════════════════
+// MASTER TABLE FILTER
+// ══════════════════════════════════════════════════
+function filterMasterTable(type, query) {
+    const q     = query.toLowerCase();
+    const tbody = document.querySelector(`#table-${type} tbody`);
+    if (!tbody) return;
+    tbody.querySelectorAll('tr[data-search]').forEach(row => {
+        row.style.display = !q || row.dataset.search.includes(q) ? '' : 'none';
+    });
+}
+
+// ══════════════════════════════════════════════════
+// IMPORT PAYMENT
+// ══════════════════════════════════════════════════
+async function submitImportPayment() {
+    const payload = document.getElementById('import-payment-text').value.trim();
+    if (!payload) { showNotif('Payload kosong', 'error'); return; }
+    const res  = await apiPost(ROUTES.importPayment, { payload });
+    const div  = document.getElementById('import-payment-result');
+    div.classList.remove('hidden');
+    div.innerHTML = res.results.map(r =>
+        `<div class="${r.status==='ok'?'text-emerald-600':'text-red-600'}">
+         <i class="fas fa-${r.status==='ok'?'check':'times'}-circle mr-1"></i>
+         Baris ${r.line}: ${r.msg}
+         </div>`
+    ).join('');
+    showNotif(`${res.applied} pembayaran berhasil diproses!`);
+    setTimeout(() => location.reload(), 2000);
+}
+
+// ══════════════════════════════════════════════════
+// RESTORE JSON
+// ══════════════════════════════════════════════════
+async function submitRestoreJson() {
+    const fileInput = document.getElementById('backup-file-input');
+    if (!fileInput.files.length) { showNotif('Pilih file JSON terlebih dahulu', 'error'); return; }
+    if (!confirm('PERINGATAN: Semua data saat ini akan dihapus dan diganti dengan data dari file backup. Lanjutkan?')) return;
+
+    const formData = new FormData();
+    formData.append('backup_file', fileInput.files[0]);
+    formData.append('_token', CSRF);
+
+    const res = await fetch(ROUTES.importJson, { method: 'POST', body: formData });
+    const json = await res.json();
+    if (json.success) {
+        showNotif(json.message || 'Data berhasil dipulihkan!');
+        setTimeout(() => location.reload(), 1000);
+    } else {
+        showNotif(json.message || 'Gagal memulihkan data', 'error');
+    }
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    initBillingTable();
+});
 </script>
-@endpush
+@endsection

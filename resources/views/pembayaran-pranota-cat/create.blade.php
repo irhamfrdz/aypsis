@@ -45,7 +45,6 @@
 
             {{-- Hidden inputs for additional data --}}
             <input type="hidden" name="nomor_pembayaran" id="nomor_pembayaran_hidden" value="">
-            <input type="hidden" name="tanggal_kas" value="{{ now()->toDateString() }}">
 
             <!-- Data Pembayaran & Bank -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
@@ -53,7 +52,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
                         <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pembayaran</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                             <div class="flex items-end gap-1">
                                 <div class="flex-1">
                                     <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran</label>
@@ -65,10 +64,16 @@
                             </div>
                             <div>
                                 <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
-                                <input type="text" id="tanggal_kas"
-                                    value="{{ now()->format('d/M/Y') }}"
-                                    class="{{ $readonlyInputClasses }}" readonly required>
-                                <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
+                                <input type="date" name="tanggal_kas" id="tanggal_kas"
+                                    value="{{ old('tanggal_kas', now()->toDateString()) }}"
+                                    class="{{ $inputClasses }}" required>
+                            </div>
+                            <div>
+                                <label for="nomor_accurate" class="{{ $labelClasses }}">Nomor Accurate</label>
+                                <input type="text" name="nomor_accurate" id="nomor_accurate"
+                                    value="{{ old('nomor_accurate') }}"
+                                    placeholder="Nomor Accurate"
+                                    class="{{ $inputClasses }}">
                             </div>
                         </div>
                     </div>
@@ -308,6 +313,11 @@
                 jenisTransaksi.focus();
                 return false;
             }
+
+            // Mencegah double submit / double book
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
         });
 
         // Penyesuaian change
