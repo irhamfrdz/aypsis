@@ -766,6 +766,8 @@ class ReportTandaTerimaJakartaExport implements FromCollection, WithCustomStartC
             ? (is_string($row['tanggal']) ? Carbon::parse($row['tanggal'])->format('d/m/Y') : $row['tanggal']->format('d/m/Y'))
             : '';
 
+        $blNo = ''; // Empty per request
+
         return [
             '', // A: Spacer
             $blNo, // B: B/L NO.
