@@ -84,9 +84,17 @@
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
                         <h4 class="text-sm font-semibold text-gray-800 mb-2">Bank & Transaksi</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <div>
+                            <div class="relative">
                                 <label for="bank" class="{{ $labelClasses }}">Pilih Bank</label>
-                                <select name="bank" id="bank" class="{{ $inputClasses }}" required>
+                                <div class="relative">
+                                    <input type="text" id="bankSearch" placeholder="Cari bank..." 
+                                        class="mt-1 block w-full rounded-md border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-sm p-2 transition-colors pr-8"
+                                        autocomplete="off">
+                                    <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                                <select name="bank" id="bank" class="hidden" required>
                                     <option value="">-- Pilih Bank --</option>
                                     @foreach($akunCoa as $akun)
                                         <option value="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor ?? '000' }}" {{ old('bank') == $akun->nama_akun ? 'selected' : '' }}>
@@ -94,6 +102,14 @@
                                         </option>
                                     @endforeach
                                 </select>
+                                <div id="bankDropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                                    <div id="bankOptions" class="py-1">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                    <div id="noBankResults" class="hidden px-3 py-2 text-xs text-gray-500 text-center">
+                                        Tidak ada bank yang sesuai
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label for="jenis_transaksi" class="{{ $labelClasses }}">Jenis Transaksi</label>
@@ -342,6 +358,86 @@
         const bankSelect = document.getElementById('bank');
         if (bankSelect.value) {
             updateNomorPembayaran();
+        }
+
+        // Bank search dropdown functionality
+        const bankSearch = document.getElementById('bankSearch');
+        const bankDropdown = document.getElementById('bankDropdown');
+        const bankOptions = document.getElementById('bankOptions');
+        const noBankResults = document.getElementById('noBankResults');
+
+        if (bankSearch && bankSelect && bankDropdown && bankOptions) {
+            const banks = Array.from(bankSelect.options).slice(1); // Skip empty option
+            
+            function renderBankOptions(filteredBanks) {
+                bankOptions.innerHTML = '';
+                
+                if (filteredBanks.length === 0) {
+                    bankOptions.classList.add('hidden');
+                    noBankResults.classList.remove('hidden');
+                } else {
+                    bankOptions.classList.remove('hidden');
+                    noBankResults.classList.add('hidden');
+                    
+                    filteredBanks.forEach(option => {
+                        const div = document.createElement('div');
+                        div.className = 'px-3 py-2 text-sm hover:bg-indigo-50 cursor-pointer transition-colors';
+                        div.textContent = option.text;
+                        div.dataset.value = option.value;
+                        
+                        div.addEventListener('click', function() {
+                            bankSelect.value = this.dataset.value;
+                            bankSearch.value = this.textContent;
+                            bankDropdown.classList.add('hidden');
+                            
+                            // Trigger change event
+                            bankSelect.dispatchEvent(new Event('change'));
+                        });
+                        
+                        bankOptions.appendChild(div);
+                    });
+                }
+            }
+
+            // Show dropdown on focus
+            bankSearch.addEventListener('focus', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filtered = banks.filter(option => 
+                    option.text.toLowerCase().includes(searchTerm)
+                );
+                renderBankOptions(filtered);
+                bankDropdown.classList.remove('hidden');
+            });
+
+            // Filter on input
+            bankSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filtered = banks.filter(option => 
+                    option.text.toLowerCase().includes(searchTerm)
+                );
+                renderBankOptions(filtered);
+                bankDropdown.classList.remove('hidden');
+                
+                if (!searchTerm) {
+                    bankSelect.value = '';
+                    updateNomorPembayaran();
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!bankSearch.contains(e.target) && !bankDropdown.contains(e.target)) {
+                    bankDropdown.classList.add('hidden');
+                }
+            });
+
+            // Set initial value if bank was previously selected
+            if (bankSelect.value) {
+                const selectedOption = bankSelect.options[bankSelect.selectedIndex];
+                if (selectedOption) {
+                    bankSearch.value = selectedOption.text;
+                }
+            }
         }
     });
 </script>
