@@ -4712,7 +4712,7 @@ class BiayaKapalController extends Controller
 
             // Fetch from manifests table instead of bls table
             $blsQuery = DB::table('manifests')
-                ->select('id', 'nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'tonnage', 'volume', 'satuan', 'pelabuhan_asal', 'pelabuhan_tujuan', 'pelabuhan_muat', 'pelabuhan_bongkar')
+                ->select('id', 'nama_barang', 'size_kontainer', 'nomor_kontainer', 'tipe_kontainer', 'tonnage', 'volume', 'tonnage_perincian', 'volume_perincian', 'satuan', 'pelabuhan_asal', 'pelabuhan_tujuan', 'pelabuhan_muat', 'pelabuhan_bongkar')
                 ->where('no_voyage', $voyage);
 
             // Add where clause for each keyword for robust matching
@@ -4747,15 +4747,15 @@ class BiayaKapalController extends Controller
 
             $cargoMaxTvSum = 0;
             foreach ($cargoGroups as $group) {
-                $totalVolume = $group->sum('volume');
-                $totalTonnage = $group->sum('tonnage');
+                $totalVolume = $group->sum('volume_perincian');
+                $totalTonnage = $group->sum('tonnage_perincian');
                 if ($totalVolume > 0) {
                     $cargoMaxTvSum += $totalVolume;
                 } elseif ($totalTonnage > 0) {
                     $cargoMaxTvSum += $totalTonnage;
                 }
             }
-            $counts['cargo_max_tv_sum'] = round($cargoMaxTvSum);
+            $counts['cargo_max_tv_sum'] = round($cargoMaxTvSum, 3);
 
             // Extra cargo tags counting
             foreach ($cargoItems as $item) {
