@@ -85,7 +85,7 @@ class PenerimaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_penerima' => 'required|string|max:255',
+            'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima',
             'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
@@ -128,7 +128,7 @@ class PenerimaController extends Controller
         $penerima = Penerima::findOrFail($id);
 
         $request->validate([
-            'nama_penerima' => 'required|string|max:255',
+            'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima,' . $id,
             'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
@@ -221,7 +221,7 @@ class PenerimaController extends Controller
     public function storeForOrder(Request $request)
     {
         $request->validate([
-            'nama_penerima' => 'required|string|max:255',
+            'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima',
             'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
@@ -262,7 +262,7 @@ class PenerimaController extends Controller
     public function storeForTandaTerima(Request $request)
     {
         $validated = $request->validate([
-            'nama_penerima' => 'required|string|max:255',
+            'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
             'status' => 'required|in:active,inactive',
@@ -305,7 +305,7 @@ class PenerimaController extends Controller
     public function updateForTandaTerima(Request $request, Penerima $penerima)
     {
         $validated = $request->validate([
-            'nama_penerima' => 'required|string|max:255',
+            'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima,' . $penerima->id,
             'contact_person' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
