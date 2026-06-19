@@ -124,28 +124,53 @@
 
         <!-- Search Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <form method="GET" action="{{ route('penerima.index') }}" class="flex flex-col sm:flex-row gap-4">
-                <div class="flex-1">
-                    <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
-                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        Cari Penerima
-                    </label>
-                    <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Cari berdasarkan nama penerima, contact person, atau catatan..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+            <form method="GET" action="{{ route('penerima.index') }}" class="flex flex-col gap-4">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            Cari Penerima
+                        </label>
+                        <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Cari berdasarkan nama penerima, contact person, atau catatan..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                        @if(request('filter'))
+                            <input type="hidden" name="filter" value="{{ request('filter') }}">
+                        @endif
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            Cari
+                        </button>
+                        @if(request('search') || request('filter'))
+                            <a href="{{ route('penerima.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                                Reset
+                            </a>
+                        @endif
+                    </div>
                 </div>
-                <div class="flex items-end gap-2">
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+
+                <!-- Quick Filters -->
+                <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100">
+                    <span class="text-xs font-medium text-gray-500 mr-2">Filter Cepat:</span>
+                    <a href="{{ request('filter') === 'similar' ? route('penerima.index', request()->except(['filter', 'page'])) : route('penerima.index', array_merge(request()->except('page'), ['filter' => 'similar'])) }}" 
+                       class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold {{ request('filter') === 'similar' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-200' }}">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                         </svg>
-                        Cari
-                    </button>
-                    @if(request('search'))
-                        <a href="{{ route('penerima.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                            Reset
-                        </a>
-                    @endif
+                        Nama Mirip/Sama
+                    </a>
+                    <a href="{{ request('filter') === 'no_alamat' ? route('penerima.index', request()->except(['filter', 'page'])) : route('penerima.index', array_merge(request()->except('page'), ['filter' => 'no_alamat'])) }}" 
+                       class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold {{ request('filter') === 'no_alamat' ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-200' }}">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Tidak Punya Alamat
+                    </a>
                 </div>
             </form>
         </div>

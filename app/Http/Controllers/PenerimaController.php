@@ -28,7 +28,37 @@ class PenerimaController extends Controller
             });
         }
 
-        $penerimas = $query->paginate(15);
+        // Handle quick filters
+        if ($request->has('filter')) {
+            if ($request->filter === 'no_alamat') {
+                $query->where(function ($q) {
+                    $q->whereNull('alamat')
+                        ->orWhere('alamat', '')
+                        ->orWhere('alamat', '-');
+                });
+            } elseif ($request->filter === 'similar') {
+                $allPenerimas = Penerima::select('id', 'nama_penerima')->get();
+                $grouped = [];
+                foreach ($allPenerimas as $p) {
+                    $clean = strtoupper($p->nama_penerima);
+                    $clean = preg_replace('/\b(PT|CV|UD|TB|TOKO|Tbk)\b\.?/i', '', $clean);
+                    $clean = preg_replace('/[^A-Z0-9]/', '', $clean);
+                    $clean = trim($clean);
+                    if (! empty($clean)) {
+                        $grouped[$clean][] = $p->id;
+                    }
+                }
+                $duplicateIds = [];
+                foreach ($grouped as $ids) {
+                    if (count($ids) > 1) {
+                        $duplicateIds = array_merge($duplicateIds, $ids);
+                    }
+                }
+                $query->whereIn('id', $duplicateIds);
+            }
+        }
+
+        $penerimas = $query->paginate(15)->withQueryString();
 
         return view('master-penerima.index', compact('penerimas'));
     }
