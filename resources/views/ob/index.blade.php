@@ -1411,12 +1411,12 @@
             <div id="bulk_step1" class="space-y-3">
                 <div>
                     <label for="bulk_nomor_kontainers" class="block text-xs font-medium text-gray-700 mb-1">
-                        Nomor Kontainer <span class="text-red-500">*</span>
-                        <span class="text-gray-400 font-normal ml-1">(satu per baris, atau pisahkan dengan koma/titik koma)</span>
+                        Nomor Kontainer & Supir <span class="text-red-500">*</span>
+                        <span class="text-gray-400 font-normal ml-1">(satu per baris, contoh: ABCD1234567, Budi atau ABCD1234567 Budi)</span>
                     </label>
                     <textarea id="bulk_nomor_kontainers"
                               rows="8"
-                              placeholder="ABCD1234567&#10;EFGH8901234&#10;IJKL5678901"
+                              placeholder="ABCD1234567, Budi&#10;EFGH8901234 Joko&#10;IJKL5678901 - Asep"
                               class="w-full px-3 py-2 text-xs font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
                     <p id="bulk_textarea_counter" class="text-[10px] text-gray-400 mt-0.5">0 nomor kontainer terdeteksi</p>
                 </div>
@@ -2901,8 +2901,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const textarea = document.getElementById('bulk_nomor_kontainers');
     if (textarea) {
         textarea.addEventListener('input', function() {
-            const lines = this.value.split(/[\r\n,;]+/).map(l => l.trim().replace(/[^A-Za-z0-9]/g, '')).filter(l => l.length >= 3);
-            const unique = [...new Set(lines)];
+            const lines = this.value.split(/[\r\n]+/);
+            const kontainers = [];
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+                let parts = line.split(/[,;\t|]+/).map(p => p.trim());
+                if (parts.length === 1) {
+                    if (line.includes(' - ')) {
+                        parts = line.split(' - ').map(p => p.trim());
+                    } else {
+                        const firstSpaceIdx = line.indexOf(' ');
+                        if (firstSpaceIdx !== -1) {
+                            parts = [line.substring(0, firstSpaceIdx).trim(), line.substring(firstSpaceIdx + 1).trim()];
+                        }
+                    }
+                }
+                const nomor = parts[0].replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                if (nomor.length >= 3) {
+                    kontainers.push(nomor);
+                }
+            });
+            const unique = [...new Set(kontainers)];
             document.getElementById('bulk_textarea_counter').textContent = unique.length + ' nomor kontainer terdeteksi';
         });
     }
@@ -2930,8 +2950,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Fill all rows
             document.querySelectorAll('.bulk-row-supir-select').forEach(sel => {
                 sel.value = id;
-                sel.closest('tr').querySelector('.bulk-supir-badge').textContent = text;
-                sel.closest('tr').querySelector('.bulk-supir-badge').className = 'bulk-supir-badge text-[10px] font-medium text-teal-700';
+                onRowSupirChange(sel);
             });
             fillAllInput.value = text;
             fillAllDropdown.classList.add('hidden');
@@ -2958,12 +2977,38 @@ function parseBulkKontainers() {
         return;
     }
 
-    const lines = raw.split(/[\r\n,;]+/)
-        .map(l => l.trim().replace(/[^A-Za-z0-9]/g, '').toUpperCase())
-        .filter(l => l.length >= 3);
-    const unique = [...new Set(lines)];
+    const lines = raw.split(/[\r\n]+/);
+    const items = [];
+    const seenKontainers = new Set();
+    
+    lines.forEach(line => {
+        line = line.trim();
+        if (!line) return;
+        
+        let parts = line.split(/[,;\t|]+/).map(p => p.trim());
+        if (parts.length === 1) {
+            if (line.includes(' - ')) {
+                parts = line.split(' - ').map(p => p.trim());
+            } else {
+                const firstSpaceIdx = line.indexOf(' ');
+                if (firstSpaceIdx !== -1) {
+                    parts = [line.substring(0, firstSpaceIdx).trim(), line.substring(firstSpaceIdx + 1).trim()];
+                }
+            }
+        }
+        
+        const nomor = parts[0].replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        if (nomor.length >= 3 && !seenKontainers.has(nomor)) {
+            seenKontainers.add(nomor);
+            const supirText = parts[1] ? parts[1].trim() : '';
+            items.push({
+                nomor: nomor,
+                supirText: supirText
+            });
+        }
+    });
 
-    if (unique.length === 0) {
+    if (items.length === 0) {
         alert('Tidak ada nomor kontainer yang valid (minimal 3 karakter)');
         return;
     }
@@ -2972,18 +3017,37 @@ function parseBulkKontainers() {
     const tbody = document.getElementById('bulk_rows_tbody');
     tbody.innerHTML = '';
 
-    unique.forEach((nomor, idx) => {
+    items.forEach((item, idx) => {
+        // Try to match supir by name
+        let matchedSupirId = "";
+        if (item.supirText) {
+            const query = item.supirText.toLowerCase();
+            const match = BULK_SUPIRS.find(s => 
+                s.text.toLowerCase().includes(query) || 
+                s.full.toLowerCase().includes(query)
+            );
+            if (match) {
+                matchedSupirId = match.id;
+            }
+        }
+
         // Build supir options
         const options = BULK_SUPIRS.map(s =>
-            `<option value="${s.id}">${s.text}</option>`
+            `<option value="${s.id}" ${s.id == matchedSupirId ? 'selected' : ''}>${s.text}</option>`
         ).join('');
 
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-gray-50';
-        tr.dataset.nomor = nomor;
+        tr.dataset.nomor = item.nomor;
+        
+        const badgeText = matchedSupirId ? '✓' : 'Belum';
+        const badgeClass = matchedSupirId 
+            ? 'bulk-row-status inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-teal-100 text-teal-700'
+            : 'bulk-row-status inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500';
+
         tr.innerHTML = `
             <td class="px-2 py-1.5 text-gray-400 text-[10px]">${idx + 1}</td>
-            <td class="px-2 py-1.5 font-mono font-semibold text-gray-800">${nomor}</td>
+            <td class="px-2 py-1.5 font-mono font-semibold text-gray-800">${item.nomor}</td>
             <td class="px-2 py-1.5">
                 <select class="bulk-row-supir-select w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-teal-500"
                         onchange="onRowSupirChange(this)">
@@ -2992,7 +3056,7 @@ function parseBulkKontainers() {
                 </select>
             </td>
             <td class="px-2 py-1.5">
-                <span class="bulk-row-status inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500">Belum</span>
+                <span class="bulk-row-status ${badgeClass}">${badgeText}</span>
             </td>
         `;
         tbody.appendChild(tr);
