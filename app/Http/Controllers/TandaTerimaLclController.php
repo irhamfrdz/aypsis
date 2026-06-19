@@ -43,18 +43,24 @@ class TandaTerimaLclController extends Controller
         $masterTujuanKirims = MasterTujuanKirim::all();
         $penerimas = Penerima::where('status', 'active')->get()->map(function ($item) {
             return [
+                'id' => $item->id,
+                'type' => 'penerima',
                 'nama' => $item->nama_penerima,
                 'alamat' => $item->alamat,
             ];
         });
         $pengirims = Pengirim::where('status', 'active')->get()->map(function ($item) {
             return [
+                'id' => $item->id,
+                'type' => 'pengirim',
                 'nama' => $item->nama_pengirim,
                 'alamat' => $item->alamat,
             ];
         });
         $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function ($item) {
             return [
+                'id' => $item->id,
+                'type' => 'master',
                 'nama' => $item->nama,
                 'alamat' => $item->alamat,
             ];
@@ -294,18 +300,24 @@ class TandaTerimaLclController extends Controller
         $masterTujuanKirims = MasterTujuanKirim::all();
         $penerimas = Penerima::where('status', 'active')->get()->map(function ($item) {
             return [
+                'id' => $item->id,
+                'type' => 'penerima',
                 'nama' => $item->nama_penerima,
                 'alamat' => $item->alamat,
             ];
         });
         $pengirims = Pengirim::where('status', 'active')->get()->map(function ($item) {
             return [
+                'id' => $item->id,
+                'type' => 'pengirim',
                 'nama' => $item->nama_pengirim,
                 'alamat' => $item->alamat,
             ];
         });
         $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function ($item) {
             return [
+                'id' => $item->id,
+                'type' => 'master',
                 'nama' => $item->nama,
                 'alamat' => $item->alamat,
             ];

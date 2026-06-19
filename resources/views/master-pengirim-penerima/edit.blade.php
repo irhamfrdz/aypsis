@@ -39,6 +39,10 @@
         @csrf
         @method('PUT')
 
+        @if(request()->has('popup'))
+            <input type="hidden" name="popup" value="1">
+        @endif
+
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Informasi</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -110,10 +114,17 @@
         </div>
 
         <div class="flex items-center justify-end gap-3">
-            <a href="{{ route('master-pengirim-penerima.index') }}"
-               class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition duration-200">
-                <i class="fas fa-times mr-2"></i> Batal
-            </a>
+            @if(request()->has('popup'))
+                <button type="button" onclick="window.close()"
+                        class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition duration-200">
+                    <i class="fas fa-times mr-2"></i> Batal
+                </button>
+            @else
+                <a href="{{ route('master-pengirim-penerima.index') }}"
+                   class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition duration-200">
+                    <i class="fas fa-times mr-2"></i> Batal
+                </a>
+            @endif
             <button type="submit"
                     class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition duration-200">
                 <i class="fas fa-save mr-2"></i> Update

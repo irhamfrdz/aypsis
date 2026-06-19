@@ -169,6 +169,13 @@ class MasterPengirimPenerimaController extends Controller
 
             DB::commit();
 
+            if ($request->has('popup')) {
+                return view('master-pengirim-penerima.popup-success', [
+                    'penerima' => $masterPengirimPenerima,
+                    'message' => 'Data berhasil diupdate!',
+                ]);
+            }
+
             return redirect()->route('master-pengirim-penerima.index')
                 ->with('success', 'Data berhasil diupdate');
         } catch (\Exception $e) {

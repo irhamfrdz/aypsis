@@ -284,19 +284,29 @@
                                             Nama Penerima <span class="text-red-500">*</span>
                                         </label>
                                         <div class="flex gap-2">
-                                            <select name="nama_penerima" required
+                                            <select name="nama_penerima" id="nama_penerima" required
                                                     class="select2-penerima flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm">
                                                 <option value="">-- Pilih Penerima --</option>
                                                 @if(isset($masterPengirimPenerima))
                                                     @foreach($masterPengirimPenerima as $item)
                                                         <option value="{{ $item->nama }}" 
                                                                 data-alamat="{{ $item->alamat }}"
+                                                                data-id="{{ $item->id ?? '' }}"
+                                                                data-type="{{ $item->type ?? '' }}"
                                                                 {{ old('nama_penerima', $tandaTerima->nama_penerima) == $item->nama ? 'selected' : '' }}>
                                                             {{ $item->nama }}
                                                         </option>
                                                     @endforeach
                                                 @endif
                                             </select>
+                                            <button type="button" 
+                                                    id="edit_penerima_btn"
+                                                    class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors flex items-center hidden"
+                                                    title="Edit Penerima">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </button>
                                             <button type="button" 
                                                     onclick="openPenerimaPopup()"
                                                     class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors flex items-center"
@@ -397,19 +407,29 @@
                                             Nama Pengirim <span class="text-red-500">*</span>
                                         </label>
                                         <div class="flex gap-2">
-                                            <select name="nama_pengirim" required
+                                            <select name="nama_pengirim" id="nama_pengirim" required
                                                     class="select2-pengirim flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm">
                                                 <option value="">-- Pilih Pengirim --</option>
                                                 @if(isset($masterPengirimPenerima))
                                                     @foreach($masterPengirimPenerima as $item)
                                                         <option value="{{ $item->nama }}"
                                                                 data-alamat="{{ $item->alamat }}"
+                                                                data-id="{{ $item->id ?? '' }}"
+                                                                data-type="{{ $item->type ?? '' }}"
                                                                 {{ old('nama_pengirim', $tandaTerima->nama_pengirim) == $item->nama ? 'selected' : '' }}>
                                                             {{ $item->nama }}
                                                         </option>
                                                     @endforeach
                                                 @endif
                                             </select>
+                                            <button type="button" 
+                                                    id="edit_pengirim_btn"
+                                                    class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors flex items-center hidden"
+                                                    title="Edit Pengirim">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </button>
                                             <button type="button" 
                                                     onclick="openPengirimPopup()"
                                                     class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors flex items-center"
@@ -2147,6 +2167,38 @@ function saveScannerResult() {
         
         // Initialize tujuan pengiriman dropdown
         initializeTujuanPengirimanDropdown();
+
+        // Toggle edit button when select2 changes
+        $('#nama_penerima').on('change', function() {
+            const val = $(this).val();
+            if (val) {
+                $('#edit_penerima_btn').removeClass('hidden');
+            } else {
+                $('#edit_penerima_btn').addClass('hidden');
+            }
+        });
+        $('#nama_pengirim').on('change', function() {
+            const val = $(this).val();
+            if (val) {
+                $('#edit_pengirim_btn').removeClass('hidden');
+            } else {
+                $('#edit_pengirim_btn').addClass('hidden');
+            }
+        });
+        
+        // Trigger initial check
+        setTimeout(function() {
+            $('#nama_penerima, #nama_pengirim').trigger('change');
+        }, 500);
+
+        $('#edit_penerima_btn').on('click', function(e) {
+            e.preventDefault();
+            openPenerimaEditPopup();
+        });
+        $('#edit_pengirim_btn').on('click', function(e) {
+            e.preventDefault();
+            openPengirimEditPopup();
+        });
         
         // Wait for Select2 to be fully loaded with retry mechanism
         function waitForSelect2(callback, attempts) {
@@ -2550,6 +2602,84 @@ function saveScannerResult() {
             `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
         );
     }
+
+    // Function to open popup for editing selected penerima
+    function openPenerimaEditPopup() {
+        lastPopupOpened = 'penerima-edit';
+        const select = document.getElementById('nama_penerima');
+        if (!select) return;
+        const selectedOption = select.options[select.selectedIndex];
+        if (!selectedOption || !selectedOption.value) return;
+        
+        const id = selectedOption.getAttribute('data-id');
+        const type = selectedOption.getAttribute('data-type');
+        if (!id) {
+            alert('Tidak dapat mengedit data ini.');
+            return;
+        }
+        
+        let url = '';
+        if (type === 'penerima') {
+            url = "{{ route('tanda-terima.penerima.edit', ':id', false) }}".replace(':id', id);
+        } else if (type === 'pengirim') {
+            url = "{{ route('tanda-terima.pengirim.edit', ':id', false) }}".replace(':id', id);
+        } else if (type === 'master') {
+            url = "{{ route('master-pengirim-penerima.edit', ':id', false) }}".replace(':id', id);
+        }
+        
+        if (!url) return;
+        url += (url.includes('?') ? '&' : '?') + 'popup=1';
+        
+        const popupWidth = 700;
+        const popupHeight = 600;
+        const left = (screen.width - popupWidth) / 2;
+        const top = (screen.height - popupHeight) / 2;
+        
+        window.open(
+            url,
+            'EditPenerima',
+            `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+    }
+
+    // Function to open popup for editing selected pengirim
+    function openPengirimEditPopup() {
+        lastPopupOpened = 'pengirim-edit';
+        const select = document.getElementById('nama_pengirim');
+        if (!select) return;
+        const selectedOption = select.options[select.selectedIndex];
+        if (!selectedOption || !selectedOption.value) return;
+        
+        const id = selectedOption.getAttribute('data-id');
+        const type = selectedOption.getAttribute('data-type');
+        if (!id) {
+            alert('Tidak dapat mengedit data ini.');
+            return;
+        }
+        
+        let url = '';
+        if (type === 'penerima') {
+            url = "{{ route('tanda-terima.penerima.edit', ':id', false) }}".replace(':id', id);
+        } else if (type === 'pengirim') {
+            url = "{{ route('tanda-terima.pengirim.edit', ':id', false) }}".replace(':id', id);
+        } else if (type === 'master') {
+            url = "{{ route('master-pengirim-penerima.edit', ':id', false) }}".replace(':id', id);
+        }
+        
+        if (!url) return;
+        url += (url.includes('?') ? '&' : '?') + 'popup=1';
+        
+        const popupWidth = 700;
+        const popupHeight = 600;
+        const left = (screen.width - popupWidth) / 2;
+        const top = (screen.height - popupHeight) / 2;
+        
+        window.open(
+            url,
+            'EditPengirim',
+            `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+    }
     
     // Listen for messages from popup window
     window.addEventListener('message', function(event) {
@@ -2558,81 +2688,117 @@ function saveScannerResult() {
             return;
         }
         
-        if (event.data && event.data.type === 'penerimaAdded') {
-            const penerimaData = event.data.penerima;
+        if (event.data && (event.data.type === 'penerimaAdded' || event.data.type === 'penerima-added')) {
+            const isEdit = lastPopupOpened === 'penerima-edit' || lastPopupOpened === 'pengirim-edit';
+            const data = event.data.type === 'penerima-added' ? event.data.data : event.data.penerima;
             const $ = window.select2Jq || window.jQuery || (typeof jQuery !== 'undefined' ? jQuery : null);
-            console.log('Received penerima data:', penerimaData);
+            console.log('Received data:', data, 'isEdit:', isEdit);
             
-            // Determine which one should be selected
-            const selectAsPenerima = lastPopupOpened === 'penerima';
-            const selectAsPengirim = lastPopupOpened === 'pengirim';
-            const selectAsNotify = lastPopupOpened === 'notify';
-            
-            // Create new option for all penerima dropdowns
-            const newOptionPenerima = new Option(
-                penerimaData.nama,
-                penerimaData.nama,
-                selectAsPenerima,
-                selectAsPenerima
-            );
-            $(newOptionPenerima).attr('data-alamat', penerimaData.alamat || '');
-            
-            // Create new option for all pengirim dropdowns
-            const newOptionPengirim = new Option(
-                penerimaData.nama,
-                penerimaData.nama,
-                selectAsPengirim,
-                selectAsPengirim
-            );
-            $(newOptionPengirim).attr('data-alamat', penerimaData.alamat || '');
+            if (isEdit) {
+                // Update the selected option in the active dropdown
+                const selectId = lastPopupOpened === 'penerima-edit' ? 'nama_penerima' : 'nama_pengirim';
+                const select = document.getElementById(selectId);
+                if (select) {
+                    const selectedOption = select.options[select.selectedIndex];
+                    if (selectedOption) {
+                        selectedOption.text = data.nama;
+                        selectedOption.value = data.nama;
+                        selectedOption.setAttribute('data-alamat', data.alamat || '');
+                        
+                        // Trigger change so Select2 updates
+                        $(select).trigger('change');
+                    }
+                }
+                
+                // Update addresses
+                if (lastPopupOpened === 'penerima-edit') {
+                    $('textarea[name="alamat_penerima"], textarea[name="alamat_penerima[]"]').val(data.alamat || '');
+                } else {
+                    $('textarea[name="alamat_pengirim"], textarea[name="alamat_pengirim[]"]').val(data.alamat || '');
+                }
+            } else {
+                // Determine which one should be selected
+                const selectAsPenerima = lastPopupOpened === 'penerima';
+                const selectAsPengirim = lastPopupOpened === 'pengirim';
+                const selectAsNotify = lastPopupOpened === 'notify';
+                
+                // Create new option for all penerima dropdowns
+                const newOptionPenerima = new Option(
+                    data.nama,
+                    data.nama,
+                    selectAsPenerima,
+                    selectAsPenerima
+                );
+                $(newOptionPenerima).attr('data-alamat', data.alamat || '');
+                $(newOptionPenerima).attr('data-id', data.id || '');
+                $(newOptionPenerima).attr('data-type', data.type || (lastPopupOpened === 'penerima' ? 'penerima' : 'master'));
+                
+                // Create new option for all pengirim dropdowns
+                const newOptionPengirim = new Option(
+                    data.nama,
+                    data.nama,
+                    selectAsPengirim,
+                    selectAsPengirim
+                );
+                $(newOptionPengirim).attr('data-alamat', data.alamat || '');
+                $(newOptionPengirim).attr('data-id', data.id || '');
+                $(newOptionPengirim).attr('data-type', data.type || (lastPopupOpened === 'pengirim' ? 'pengirim' : 'master'));
 
-            // Create new option for all notify dropdowns
-            const newOptionNotify = new Option(
-                penerimaData.nama,
-                penerimaData.nama,
-                selectAsNotify,
-                selectAsNotify
-            );
-            $(newOptionNotify).attr('data-alamat', penerimaData.alamat || '');
-            
-            // Add to all penerima dropdowns
-            $('.select2-penerima').each(function() {
-                $(this).append($(newOptionPenerima).clone());
+                // Create new option for all notify dropdowns
+                const newOptionNotify = new Option(
+                    data.nama,
+                    data.nama,
+                    selectAsNotify,
+                    selectAsNotify
+                );
+                $(newOptionNotify).attr('data-alamat', data.alamat || '');
+                $(newOptionNotify).attr('data-id', data.id || '');
+                $(newOptionNotify).attr('data-type', data.type || 'master');
+                
+                // Add to all penerima dropdowns
+                $('.select2-penerima').each(function() {
+                    $(this).append($(newOptionPenerima).clone());
+                    if (selectAsPenerima) {
+                        $(this).trigger('change');
+                    }
+                });
+                
+                // Add to all pengirim dropdowns
+                $('.select2-pengirim').each(function() {
+                    $(this).append($(newOptionPengirim).clone());
+                    if (selectAsPengirim) {
+                        $(this).trigger('change');
+                    }
+                });
+
+                // Add to all notify dropdowns
+                $('.select2-notify').each(function() {
+                    $(this).append($(newOptionNotify).clone());
+                    if (selectAsNotify) {
+                        $(this).trigger('change');
+                    }
+                });
+
+                // Auto-fill alamat
                 if (selectAsPenerima) {
-                    $(this).trigger('change');
+                    $('textarea[name="alamat_penerima"], textarea[name="alamat_penerima[]"]').val(data.alamat || '');
+                } else if (selectAsPengirim) {
+                    $('textarea[name="alamat_pengirim"], textarea[name="alamat_pengirim[]"]').val(data.alamat || '');
+                } else if (selectAsNotify) {
+                    $('#alamat_notify_party').val(data.alamat || '');
                 }
-            });
-            
-            // Add to all pengirim dropdowns
-            $('.select2-pengirim').each(function() {
-                $(this).append($(newOptionPengirim).clone());
-                if (selectAsPengirim) {
-                    $(this).trigger('change');
-                }
-            });
-
-            // Add to all notify dropdowns
-            $('.select2-notify').each(function() {
-                $(this).append($(newOptionNotify).clone());
-                if (selectAsNotify) {
-                    $(this).trigger('change');
-                }
-            });
-
-            // Auto-fill alamat
-            if (selectAsPenerima) {
-                $('#alamat_penerima').val(penerimaData.alamat || '');
-            } else if (selectAsPengirim) {
-                $('#alamat_pengirim').val(penerimaData.alamat || '');
-            } else if (selectAsNotify) {
-                $('#alamat_notify_party').val(penerimaData.alamat || '');
             }
             
             // Show success notification
             const successMsg = document.createElement('div');
             successMsg.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg z-50';
             successMsg.innerHTML = `
-                <strong>Berhasil!</strong> ${penerimaData.nama} telah ditambahkan.
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span><strong>${data.nama}</strong> berhasil ${isEdit ? 'diperbarui' : 'ditambahkan'}!</span>
+                </div>
             `;
             document.body.appendChild(successMsg);
             

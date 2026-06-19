@@ -63,4 +63,31 @@ class MasterPengirimPenerima extends Model
 
         return 'PP-'.$newNumber;
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($model) {
+            if ($model->isDirty('alamat')) {
+                $names = array_filter([
+                    $model->nama,
+                    $model->getOriginal('nama'),
+                ]);
+                if (!empty($names)) {
+                    TandaTerimaLcl::whereIn('nama_pengirim', $names)
+                        ->update(['alamat_pengirim' => $model->alamat]);
+                    TandaTerimaLcl::whereIn('nama_penerima', $names)
+                        ->update(['alamat_penerima' => $model->alamat]);
+                    TandaTerimaLcl::whereIn('notify_party', $names)
+                        ->update(['alamat_notify_party' => $model->alamat]);
+
+                    TandaTerima::whereIn('pengirim', $names)
+                        ->update(['alamat_pengirim' => $model->alamat]);
+                    TandaTerima::whereIn('penerima', $names)
+                        ->update(['alamat_penerima' => $model->alamat]);
+                    TandaTerima::whereIn('notify_party', $names)
+                        ->update(['alamat_notify_party' => $model->alamat]);
+                }
+            }
+        });
+    }
 }
