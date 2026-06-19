@@ -56,6 +56,9 @@ class PembayaranPranotaStockController extends Controller
         }
 
         $pranotaStocks = $pranotaQuery->orderBy('tanggal_pranota', 'desc')->get();
+        foreach ($pranotaStocks as $pranota) {
+            $pranota->items = $pranota->hydrated_items;
+        }
 
         $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
             ->orWhere('nama_akun', 'LIKE', '%bank%')
@@ -111,9 +114,10 @@ class PembayaranPranotaStockController extends Controller
 
                 // Calculate subtotal for this pranota
                 $subtotal = 0;
-                if (is_array($pranota->items)) {
-                    foreach ($pranota->items as $item) {
-                        $subtotal += ($item['harga'] ?? 0) * ($item['jumlah'] ?? 0);
+                $hydrated = $pranota->hydrated_items;
+                if (is_array($hydrated)) {
+                    foreach ($hydrated as $item) {
+                        $subtotal += (($item['harga'] ?? 0) * ($item['jumlah'] ?? 0)) + ($item['adjustment'] ?? 0);
                     }
                 }
                 $subtotal += $pranota->adjustment ?? 0;
@@ -184,6 +188,10 @@ class PembayaranPranotaStockController extends Controller
             ->orderBy('tanggal_pranota', 'desc')
             ->get();
 
+        foreach ($pranotaStocks as $pranota) {
+            $pranota->items = $pranota->hydrated_items;
+        }
+
         $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
             ->orWhere('nama_akun', 'LIKE', '%bank%')
             ->orWhere('nama_akun', 'LIKE', '%kas%')
@@ -236,9 +244,10 @@ class PembayaranPranotaStockController extends Controller
                 $pranota = PranotaStock::findOrFail($pranotaId);
 
                 $subtotal = 0;
-                if (is_array($pranota->items)) {
-                    foreach ($pranota->items as $i) {
-                        $subtotal += ($i['harga'] ?? 0) * ($i['jumlah'] ?? 0);
+                $hydrated = $pranota->hydrated_items;
+                if (is_array($hydrated)) {
+                    foreach ($hydrated as $i) {
+                        $subtotal += (($i['harga'] ?? 0) * ($i['jumlah'] ?? 0)) + ($i['adjustment'] ?? 0);
                     }
                 }
                 $subtotal += $pranota->adjustment ?? 0;

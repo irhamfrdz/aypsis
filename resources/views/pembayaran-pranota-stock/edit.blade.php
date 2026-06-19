@@ -128,7 +128,7 @@
                                     $totalBill = 0;
                                     if(is_array($pranota->items)) {
                                         foreach($pranota->items as $it) {
-                                            $totalBill += ($it['harga'] ?? 0) * ($it['jumlah'] ?? 0);
+                                            $totalBill += (($it['harga'] ?? 0) * ($it['jumlah'] ?? 0)) + ($it['adjustment'] ?? 0);
                                         }
                                     }
                                     $totalBill += $pranota->adjustment ?? 0;
