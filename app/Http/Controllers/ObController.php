@@ -3751,9 +3751,69 @@ class ObController extends Controller
 
                 if ($naikKapal) {
                     if ($naikKapal->sudah_ob) {
-                        $result['status'] = 'already_ob';
-                        $result['message'] = 'Sudah OB (naik kapal)';
-                        $alreadyObCount++;
+                        try {
+                            DB::beginTransaction();
+
+                            $naikKapal->supir_id = $supirId;
+                            $naikKapal->catatan_ob = $catatan;
+                            $naikKapal->updated_by = $user->id;
+                            if ($naikKapal->is_tl) {
+                                $naikKapal->is_tl = false;
+                            }
+                            $naikKapal->save();
+
+                            // Update gudang jika ada nomor kontainer
+                            if ($naikKapal->nomor_kontainer && $gudang) {
+                                StockKontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)
+                                    ->update(['gudangs_id' => $keGudangId]);
+                                Kontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)
+                                    ->update(['gudangs_id' => $keGudangId]);
+                                $naikKapal->ke = $gudang->nama_gudang;
+                                $naikKapal->save();
+
+                                try {
+                                    HistoryKontainer::create([
+                                        'nomor_kontainer' => $naikKapal->nomor_kontainer,
+                                        'tipe_kontainer' => Kontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)->exists() ? 'kontainer' : 'stock',
+                                        'jenis_kegiatan' => 'Masuk',
+                                        'tanggal_kegiatan' => now(),
+                                        'gudang_id' => $gudang->id,
+                                        'keterangan' => 'Update OB Bulk via Textarea. Kapal: '.($naikKapal->nama_kapal ?? '-').'. Voyage: '.($naikKapal->no_voyage ?? '-'),
+                                        'created_by' => Auth::id(),
+                                    ]);
+                                } catch (\Exception $he) {
+                                    \Log::warning('Bulk OB Update: history insert failed: '.$he->getMessage());
+                                }
+                            }
+
+                            // Update existing BL as well
+                            $isCargoContainer = stripos($naikKapal->nomor_kontainer ?? '', 'CARGO') !== false ||
+                                strtoupper(trim($naikKapal->tipe_kontainer ?? '')) === 'CARGO';
+                            if (! $isCargoContainer) {
+                                $existingBl = Bl::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                                    ->where('no_voyage', $naikKapal->no_voyage)
+                                    ->where('nama_kapal', $naikKapal->nama_kapal)
+                                    ->first();
+                                if ($existingBl) {
+                                    $existingBl->asal_kontainer = mb_substr($naikKapal->asal_kontainer ?? '', 0, 255);
+                                    $existingBl->ke = mb_substr($naikKapal->ke ?? '', 0, 255);
+                                    $existingBl->updated_by = $user->id;
+                                    $existingBl->save();
+                                }
+                            }
+
+                            DB::commit();
+
+                            $result['status'] = 'success';
+                            $result['message'] = 'Berhasil update data OB (naik kapal)';
+                            $successCount++;
+                            $processed = true;
+                        } catch (\Exception $e) {
+                            DB::rollBack();
+                            \Log::error('Bulk OB naik_kapal update error for '.$nomorKontainer.': '.$e->getMessage());
+                            $result['status'] = 'error';
+                            $result['message'] = 'Error: '.$e->getMessage();
+                        }
                     } else {
                         try {
                             DB::beginTransaction();
@@ -3860,9 +3920,39 @@ class ObController extends Controller
 
                 if ($bl) {
                     if ($bl->sudah_ob) {
-                        $result['status'] = 'already_ob';
-                        $result['message'] = 'Sudah OB (bongkar/BL)';
-                        $alreadyObCount++;
+                        try {
+                            DB::beginTransaction();
+
+                            $bl->supir_id = $supirId;
+                            $bl->catatan_ob = $catatan;
+                            $bl->updated_by = $user->id;
+                            if ($bl->sudah_tl) {
+                                $bl->sudah_tl = false;
+                            }
+                            $bl->save();
+
+                            // Update gudang jika ada nomor kontainer
+                            if ($bl->nomor_kontainer && $gudang) {
+                                StockKontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
+                                    ->update(['gudangs_id' => $keGudangId]);
+                                Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
+                                    ->update(['gudangs_id' => $keGudangId]);
+                                $bl->ke = $gudang->nama_gudang;
+                                $bl->save();
+                            }
+
+                            DB::commit();
+
+                            $result['status'] = 'success';
+                            $result['message'] = 'Berhasil update data OB (bongkar/BL)';
+                            $successCount++;
+                            $processed = true;
+                        } catch (\Exception $e) {
+                            DB::rollBack();
+                            \Log::error('Bulk OB BL update error for '.$nomorKontainer.': '.$e->getMessage());
+                            $result['status'] = 'error';
+                            $result['message'] = 'Error: '.$e->getMessage();
+                        }
                     } else {
                         try {
                             DB::beginTransaction();
