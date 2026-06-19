@@ -2174,6 +2174,10 @@ Route::middleware([
             ->name('penerima.import-excel')
             ->middleware('can:master-penerima-create');
 
+        Route::get('master/penerima-export', [PenerimaController::class, 'exportExcel'])
+            ->name('penerima.export')
+            ->middleware('can:master-penerima-view');
+
         Route::resource('master/penerima', PenerimaController::class)
             ->names('penerima')
             ->middleware([

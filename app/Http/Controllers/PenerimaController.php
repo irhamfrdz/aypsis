@@ -6,8 +6,8 @@ use App\Models\Penerima;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-// use Maatwebsite\Excel\Facades\Excel; // Commented out until Export class is created
-// use App\Exports\PenerimaExport; // Commented out until Export class is created
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PenerimaExport;
 
 class PenerimaController extends Controller
 {
@@ -61,6 +61,14 @@ class PenerimaController extends Controller
         $penerimas = $query->paginate(15)->withQueryString();
 
         return view('master-penerima.index', compact('penerimas'));
+    }
+
+    /**
+     * Export the resource to Excel.
+     */
+    public function exportExcel(Request $request)
+    {
+        return Excel::download(new PenerimaExport($request->all()), 'master-penerima-' . date('YmdHis') . '.xlsx');
     }
 
     /**
