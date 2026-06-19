@@ -54,6 +54,7 @@ class TandaTerimaBatamController extends Controller
     {
         $search = $request->input('search', '');
         $status = $request->input('status', 'belum_ada_tanda_terima');
+        $tipe = $request->input('tipe', 'standard');
 
         $statusOptions = [
             'semua' => 'Semua Status',
@@ -61,34 +62,99 @@ class TandaTerimaBatamController extends Controller
             'sudah_ada_tanda_terima' => 'Sudah Ada Tanda Terima',
         ];
 
-        $query = SuratJalanBatam::with(['orderBatam.pengirim']);
+        if ($tipe === 'bongkaran') {
+            $query = \App\Models\SuratJalanBongkaranBatam::with(['bl', 'tandaTerima'])->where('lokasi', 'batam');
 
-        // Filter status checkpoint (must be checked point to create Tanda Terima)
-        $query->where('status', 'sudah_checkpoint');
+            if ($status === 'belum_ada_tanda_terima') {
+                $query->whereDoesntHave('tandaTerima');
+            } elseif ($status === 'sudah_ada_tanda_terima') {
+                $query->whereHas('tandaTerima');
+            }
 
-        if ($status === 'belum_ada_tanda_terima') {
-            $query->whereDoesntHave('tandaTerima');
-        } elseif ($status === 'sudah_ada_tanda_terima') {
-            $query->whereHas('tandaTerima');
-        }
+            if (! empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                        ->orWhere('supir', 'like', "%{$search}%")
+                        ->orWhere('no_plat', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%")
+                        ->orWhere('no_bl', 'like', "%{$search}%");
+                });
+            }
+            $suratJalans = $query->orderBy('created_at', 'desc')->paginate(50);
+        } elseif ($tipe === 'tarik_kosong') {
+            $query = \App\Models\SuratJalanTarikKosongBatam::with(['tandaTerima']);
 
-        if (! empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('no_surat_jalan', 'like', "%{$search}%")
-                    ->orWhere('supir', 'like', "%{$search}%")
-                    ->orWhere('no_plat', 'like', "%{$search}%")
-                    ->orWhere('no_kontainer', 'like', "%{$search}%")
-                    ->orWhereHas('orderBatam', function ($orderQuery) use ($search) {
-                        $orderQuery->whereHas('pengirim', function ($pengirimQuery) use ($search) {
-                            $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
+            if ($status === 'belum_ada_tanda_terima') {
+                $query->whereDoesntHave('tandaTerima');
+            } elseif ($status === 'sudah_ada_tanda_terima') {
+                $query->whereHas('tandaTerima');
+            }
+
+            if (! empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('no_surat_jalan', 'like', "%{$search}%")
+                        ->orWhere('supir', 'like', "%{$search}%")
+                        ->orWhere('no_plat', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%");
+                });
+            }
+            $suratJalans = $query->orderBy('created_at', 'desc')->paginate(50);
+        } elseif ($tipe === 'langsir') {
+            $query = \App\Models\LangsirBatam::query();
+
+            if ($status === 'belum_ada_tanda_terima') {
+                $query->whereNotExists(function ($q) {
+                    $q->select(DB::raw(1))
+                        ->from('tanda_terima_batams')
+                        ->whereColumn('tanda_terima_batams.no_surat_jalan', 'langsir_batams.no_transaksi');
+                });
+            } elseif ($status === 'sudah_ada_tanda_terima') {
+                $query->whereExists(function ($q) {
+                    $q->select(DB::raw(1))
+                        ->from('tanda_terima_batams')
+                        ->whereColumn('tanda_terima_batams.no_surat_jalan', 'langsir_batams.no_transaksi');
+                });
+            }
+
+            if (! empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('no_transaksi', 'like', "%{$search}%")
+                        ->orWhere('supir', 'like', "%{$search}%")
+                        ->orWhere('no_plat', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%");
+                });
+            }
+            $suratJalans = $query->orderBy('created_at', 'desc')->paginate(50);
+        } else {
+            // standard
+            $query = SuratJalanBatam::with(['orderBatam.pengirim']);
+
+            // Filter status checkpoint (must be checked point to create Tanda Terima)
+            $query->where('status', 'sudah_checkpoint');
+
+            if ($status === 'belum_ada_tanda_terima') {
+                $query->whereDoesntHave('tandaTerima');
+            } elseif ($status === 'sudah_ada_tanda_terima') {
+                $query->whereHas('tandaTerima');
+            }
+
+            if (! empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('no_surat_jalan', 'like', "%{$search}%")
+                        ->orWhere('supir', 'like', "%{$search}%")
+                        ->orWhere('no_plat', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%")
+                        ->orWhereHas('orderBatam', function ($orderQuery) use ($search) {
+                            $orderQuery->whereHas('pengirim', function ($pengirimQuery) use ($search) {
+                                $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
+                            });
                         });
-                    });
-            });
+                });
+            }
+            $suratJalans = $query->orderBy('created_at', 'desc')->paginate(50);
         }
 
-        $suratJalans = $query->orderBy('created_at', 'desc')->paginate(50);
-
-        return view('tanda-terima-batam.select_surat_jalan', compact('suratJalans', 'search', 'status', 'statusOptions'));
+        return view('tanda-terima-batam.select_surat_jalan', compact('suratJalans', 'search', 'status', 'statusOptions', 'tipe'));
     }
 
     /**
@@ -98,28 +164,56 @@ class TandaTerimaBatamController extends Controller
     {
         $search = $request->input('search', '');
         $status = $request->input('status', '');
+        $tab = $request->input('tab', 'standard');
 
         $lastUpdateStr = now()->format('H:i');
 
-        $query = TandaTerimaBatam::with(['suratJalan.orderBatam.pengirim']);
-
-        if (! empty($search)) {
-            $query->where(function ($q) use ($search) {
-                $q->where('no_surat_jalan', 'like', "%{$search}%")
-                    ->orWhere('no_kontainer', 'like', "%{$search}%")
-                    ->orWhere('supir', 'like', "%{$search}%")
-                    ->orWhere('no_plat', 'like', "%{$search}%")
-                    ->orWhere('penerima', 'like', "%{$search}%");
-            });
+        if ($tab === 'bongkaran') {
+            $query = \App\Models\TandaTerimaBongkaranBatam::with(['suratJalanBongkaran', 'gudang', 'creator']);
+            if (! empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('nomor_tanda_terima', 'LIKE', "%{$search}%")
+                        ->orWhere('no_kontainer', 'LIKE', "%{$search}%")
+                        ->orWhereHas('suratJalanBongkaran', function ($q) use ($search) {
+                            $q->where('nomor_surat_jalan', 'LIKE', "%{$search}%");
+                        });
+                });
+            }
+            if (! empty($status)) {
+                $query->where('status', $status);
+            }
+            $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(25);
+        } elseif ($tab === 'tarik_kosong') {
+            $query = \App\Models\TandaTerimaSuratJalanTarikKosongBatam::with(['suratJalan', 'creator']);
+            if (! empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('no_tanda_terima', 'like', "%{$search}%")
+                        ->orWhere('no_surat_jalan', 'like', "%{$search}%")
+                        ->orWhere('supir', 'like', "%{$search}%")
+                        ->orWhere('no_plat', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%");
+                });
+            }
+            $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(25);
+        } else {
+            // standard
+            $query = TandaTerimaBatam::with(['suratJalan.orderBatam.pengirim']);
+            if (! empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('no_surat_jalan', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%")
+                        ->orWhere('supir', 'like', "%{$search}%")
+                        ->orWhere('no_plat', 'like', "%{$search}%")
+                        ->orWhere('penerima', 'like', "%{$search}%");
+                });
+            }
+            if (! empty($status)) {
+                $query->where('status', $status);
+            }
+            $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(25);
         }
 
-        if (! empty($status)) {
-            $query->where('status', $status);
-        }
-
-        $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(25);
-
-        return view('tanda-terima-batam.index', compact('tandaTerimas', 'search', 'status', 'lastUpdateStr'));
+        return view('tanda-terima-batam.index', compact('tandaTerimas', 'search', 'status', 'tab', 'lastUpdateStr'));
     }
 
     /**
@@ -128,17 +222,38 @@ class TandaTerimaBatamController extends Controller
     public function create(Request $request)
     {
         $suratJalanId = $request->input('surat_jalan_id');
+        $tipe = $request->input('tipe', 'standard');
 
         if (! $suratJalanId) {
             return redirect()->route('tanda-terima-batam.select-surat-jalan')
                 ->with('error', 'Silakan pilih surat jalan terlebih dahulu');
         }
 
-        $suratJalan = SuratJalanBatam::with(['orderBatam.pengirim'])->findOrFail($suratJalanId);
+        if ($tipe === 'langsir') {
+            $langsir = \App\Models\LangsirBatam::findOrFail($suratJalanId);
+            
+            // Map LangsirBatam fields to standard SuratJalanBatam structure:
+            $mappedSj = new \App\Models\SuratJalanBatam();
+            $mappedSj->id = $langsir->id;
+            $mappedSj->no_surat_jalan = $langsir->no_transaksi;
+            $mappedSj->tanggal_surat_jalan = $langsir->tanggal;
+            $mappedSj->supir = $langsir->supir;
+            $mappedSj->no_plat = $langsir->no_plat;
+            $mappedSj->no_kontainer = $langsir->no_kontainer;
+            $mappedSj->size = $langsir->size;
+            $mappedSj->no_seal = $langsir->no_seal;
+            $mappedSj->kegiatan = 'Langsir: ' . $langsir->keterangan;
+            $mappedSj->tipe_kontainer = 'fcl';
+            $mappedSj->jumlah_kontainer = 1;
+            
+            $suratJalan = $mappedSj;
+        } else {
+            $suratJalan = SuratJalanBatam::with(['orderBatam.pengirim'])->findOrFail($suratJalanId);
 
-        if ($suratJalan->tandaTerima) {
-            return redirect()->route('tanda-terima-batam.edit', $suratJalan->tandaTerima->id)
-                ->with('info', 'Tanda terima untuk surat jalan ini sudah ada.');
+            if ($suratJalan->tandaTerima) {
+                return redirect()->route('tanda-terima-batam.edit', $suratJalan->tandaTerima->id)
+                    ->with('info', 'Tanda terima untuk surat jalan ini sudah ada.');
+            }
         }
 
         $masterKapals = MasterKapal::where('status', 'aktif')->orderBy('nama_kapal')->get();
@@ -185,18 +300,44 @@ class TandaTerimaBatamController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'surat_jalan_id' => 'required|exists:surat_jalan_batams,id',
+        $tipe = $request->input('tipe', 'standard');
+
+        $validationRules = [
             'tanggal' => 'required|date',
-            // ... add other validations as needed
-        ]);
+        ];
+
+        if ($tipe === 'langsir') {
+            $validationRules['surat_jalan_id'] = 'required|exists:langsir_batams,id';
+        } else {
+            $validationRules['surat_jalan_id'] = 'required|exists:surat_jalan_batams,id';
+        }
+
+        $request->validate($validationRules);
 
         DB::beginTransaction();
         try {
-            $suratJalan = SuratJalanBatam::with(['orderBatam.pengirim'])->findOrFail($request->surat_jalan_id);
+            if ($tipe === 'langsir') {
+                $langsir = \App\Models\LangsirBatam::findOrFail($request->surat_jalan_id);
+                $suratJalan = new \App\Models\SuratJalanBatam();
+                $suratJalan->id = $langsir->id;
+                $suratJalan->no_surat_jalan = $langsir->no_transaksi;
+                $suratJalan->tanggal_surat_jalan = $langsir->tanggal;
+                $suratJalan->supir = $langsir->supir;
+                $suratJalan->no_plat = $langsir->no_plat;
+                $suratJalan->no_kontainer = $langsir->no_kontainer;
+                $suratJalan->size = $langsir->size;
+                $suratJalan->no_seal = $langsir->no_seal;
+                $suratJalan->kegiatan = 'Langsir: ' . $langsir->keterangan;
+                $suratJalan->tipe_kontainer = 'fcl';
+                $suratJalan->jumlah_kontainer = 1;
+            } else {
+                $suratJalan = SuratJalanBatam::with(['orderBatam.pengirim'])->findOrFail($request->surat_jalan_id);
+            }
 
             $tandaTerima = new TandaTerimaBatam;
-            $tandaTerima->surat_jalan_batam_id = $suratJalan->id;
+            if ($tipe !== 'langsir') {
+                $tandaTerima->surat_jalan_batam_id = $suratJalan->id;
+            }
             $tandaTerima->no_surat_jalan = $suratJalan->no_surat_jalan;
             $tandaTerima->tanggal_surat_jalan = $suratJalan->tanggal_surat_jalan;
             $tandaTerima->supir = $suratJalan->supir;
@@ -224,7 +365,9 @@ class TandaTerimaBatamController extends Controller
             $tandaTerima->save();
 
             // Link to ProspekBatam
-            $tandaTerima->autoLinkProspek();
+            if ($tipe !== 'langsir') {
+                $tandaTerima->autoLinkProspek();
+            }
 
             DB::commit();
 

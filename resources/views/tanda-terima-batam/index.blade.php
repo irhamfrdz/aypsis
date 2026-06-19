@@ -44,23 +44,140 @@
 
     <!-- Main Card -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="p-6 border-b border-gray-200">
+        <div class="p-6 border-b border-gray-200 flex justify-between items-center flex-wrap gap-4">
             <h2 class="text-lg font-semibold text-gray-900">Daftar Tanda Terima Batam</h2>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-200 px-6">
+            <a href="{{ route('tanda-terima-batam.index', ['tab' => 'standard', 'search' => request('search')]) }}" 
+               class="py-3 px-6 font-medium text-sm border-b-2 transition duration-200 {{ $tab === 'standard' ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                Standard
+            </a>
+            <a href="{{ route('tanda-terima-batam.index', ['tab' => 'bongkaran', 'search' => request('search')]) }}" 
+               class="py-3 px-6 font-medium text-sm border-b-2 transition duration-200 {{ $tab === 'bongkaran' ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                Bongkaran
+            </a>
+            <a href="{{ route('tanda-terima-batam.index', ['tab' => 'tarik_kosong', 'search' => request('search')]) }}" 
+               class="py-3 px-6 font-medium text-sm border-b-2 transition duration-200 {{ $tab === 'tarik_kosong' ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                Tarik Kosong
+            </a>
         </div>
 
         <div class="p-6">
             <!-- Filter & Search -->
             <form method="GET" action="{{ route('tanda-terima-batam.index') }}" class="mb-6">
+                <input type="hidden" name="tab" value="{{ $tab }}">
                 <div class="flex gap-3">
                     <div class="flex-grow">
-                        <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Cari surat jalan, kontainer, supir..." value="{{ request('search') }}">
+                        <input type="text" name="search" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Cari nomor SJ, kontainer, supir..." value="{{ request('search') }}">
                     </div>
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">Cari</button>
-                    <a href="{{ route('tanda-terima-batam.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg">Reset</a>
+                    <a href="{{ route('tanda-terima-batam.index', ['tab' => $tab]) }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg">Reset</a>
                 </div>
             </form>
 
             <div class="overflow-x-auto">
+                @if($tab === 'bongkaran')
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor TT</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal TT</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor SJ</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">No Kontainer</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gudang</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($tandaTerimas as $tt)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-3 py-4 whitespace-nowrap text-gray-500">
+                                {{ ($tandaTerimas->currentPage() - 1) * $tandaTerimas->perPage() + $loop->iteration }}
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap font-semibold text-teal-700">
+                                {{ $tt->nomor_tanda_terima }}
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap text-gray-600">
+                                {{ $tt->tanggal_tanda_terima ? $tt->tanggal_tanda_terima->format('d/m/Y') : '-' }}
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap text-gray-900 font-medium">
+                                {{ $tt->suratJalanBongkaran->nomor_surat_jalan ?? '-' }}
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap text-gray-600">
+                                {{ $tt->no_kontainer ?? '-' }}
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap text-gray-600">
+                                {{ $tt->gudang->nama_gudang ?? '-' }}
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap text-center space-x-2">
+                                <form action="{{ route('tanda-terima-bongkaran-batam.destroy', $tt->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus tanda terima bongkaran ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="px-3 py-8 text-center text-gray-500 font-medium">Tidak ada data</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+                @elseif($tab === 'tarik_kosong')
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor TT</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal TT</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor SJ</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">No Kontainer</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supir / No Plat</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($tandaTerimas as $tt)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-3 py-4 whitespace-nowrap text-gray-500">
+                                {{ ($tandaTerimas->currentPage() - 1) * $tandaTerimas->perPage() + $loop->iteration }}
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap font-semibold text-blue-700">
+                                {{ $tt->no_tanda_terima }}
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap text-gray-600">
+                                {{ $tt->tanggal_tanda_terima ? $tt->tanggal_tanda_terima->format('d/m/Y') : '-' }}
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap text-gray-900 font-medium">
+                                {{ $tt->no_surat_jalan }}
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap text-gray-600">
+                                {{ $tt->no_kontainer ?? '-' }}
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap text-gray-600">
+                                <div>{{ $tt->supir ?: '-' }}</div>
+                                <div class="text-xs text-gray-400">{{ $tt->no_plat ?: '-' }}</div>
+                            </td>
+                            <td class="px-3 py-4 whitespace-nowrap text-center space-x-2">
+                                <a href="{{ route('tanda-terima-surat-jalan-tarik-kosong-batam.show', $tt->id) }}" class="text-blue-600 hover:text-blue-800"><i class="fas fa-eye"></i></a>
+                                <a href="{{ route('tanda-terima-surat-jalan-tarik-kosong-batam.edit', $tt->id) }}" class="text-amber-600 hover:text-amber-800"><i class="fas fa-edit"></i></a>
+                                <form action="{{ route('tanda-terima-surat-jalan-tarik-kosong-batam.destroy', $tt->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus tanda terima tarik kosong ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-800"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="px-3 py-8 text-center text-gray-500 font-medium">Tidak ada data</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+                @else
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
                         <tr>
@@ -95,8 +212,8 @@
                                 <div class="text-xs text-gray-400">{{ $tt->no_seal ?: '-' }}</div>
                             </td>
                             <td class="px-3 py-4 whitespace-nowrap text-gray-600">
-                                <div>{{ $tt->nama_kapal ?: '-' }}</div>
-                                <div class="text-xs text-gray-400">{{ $tt->no_voyage ?: '-' }}</div>
+                                <div>{{ $tt->estimasi_nama_kapal ?: '-' }}</div>
+                                <div class="text-xs text-gray-400">{{ $tt->nomor_ro ?: '-' }}</div>
                             </td>
                             <td class="px-3 py-4 whitespace-nowrap">
                                 <span class="px-2 py-1 text-xs rounded-full {{ $tt->status == 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
@@ -119,6 +236,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                @endif
             </div>
             
             <div class="mt-4">

@@ -43,4 +43,9 @@ class SuratJalanTarikKosongBatam extends Model
     {
         return $this->belongsTo(User::class, 'input_by');
     }
+
+    public function tandaTerima()
+    {
+        return $this->hasOne(TandaTerimaSuratJalanTarikKosongBatam::class, 'surat_jalan_tarik_kosong_batam_id');
+    }
 }

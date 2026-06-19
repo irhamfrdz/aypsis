@@ -88,6 +88,7 @@
                         </div>
                     @endif
                     <input type="hidden" name="surat_jalan_id" value="{{ $suratJalan->id }}">
+                    <input type="hidden" name="tipe" value="{{ request('tipe', 'standard') }}">
 
                     <div class="space-y-6">
                         <!-- Informasi Surat Jalan Section -->
