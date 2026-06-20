@@ -3210,14 +3210,29 @@ class BiayaKapalController extends Controller
             'tanggal' => 'required|date',
             'nomor_invoice' => 'required|string|max:50|unique:biaya_kapals,nomor_invoice,'.$biayaKapal->id,
             'nomor_referensi' => 'nullable|string|max:100',
-            'nama_kapal' => 'nullable|string|max:255',
+            'nama_kapal' => 'nullable|array',
+            'nama_kapal.*' => 'string|max:255',
+            'no_voyage' => 'nullable|array',
+            'no_voyage.*' => 'string',
+            'no_bl' => 'nullable|array',
+            'no_bl.*' => 'string',
             'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
-            'nominal' => 'required|numeric|min:0',
+            'vendor_id' => 'nullable|exists:pricelist_biaya_dokumen,id',
+            'nominal' => 'nullable|numeric|min:0',
+            'penerima' => 'nullable|string|max:255',
             'nama_vendor' => 'nullable|string|max:255',
             'nomor_rekening' => 'nullable|string|max:100',
             'bank_id' => 'nullable|exists:banks,id',
             'keterangan' => 'nullable|string',
             'bukti' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:2048',
+            'ppn' => 'nullable|numeric|min:0',
+            'pph' => 'nullable|numeric|min:0',
+            'total_biaya' => 'nullable|numeric|min:0',
+            'dp' => 'nullable|numeric|min:0',
+            'sisa_pembayaran' => 'nullable|numeric|min:0',
+            'pph_dokumen' => 'nullable|numeric|min:0',
+            'grand_total_dokumen' => 'nullable|numeric|min:0',
+            'biaya_materai' => 'nullable|numeric|min:0',
 
             'operasional_sections.*.nominal' => 'nullable|numeric|min:0',
             'operasional_sections.*.kapal' => 'nullable|string|max:255',
@@ -3471,6 +3486,11 @@ class BiayaKapalController extends Controller
                 $validated['bukti'] = $filePath;
             }
 
+            // Ensure nominal is not null for section-based jenis biaya
+            if (! isset($validated['nominal']) || $validated['nominal'] === null || $validated['nominal'] === '') {
+                $validated['nominal'] = 0;
+            }
+
             $biayaKapal->update($validated);
 
             // AIR UPDATE
@@ -3701,6 +3721,9 @@ class BiayaKapalController extends Controller
                         ]);
                     }
                 }
+                // Auto-calculate nominal for stuffing from section totals
+                $totalStuffing = BiayaKapalStuffing::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
+                $biayaKapal->update(['nominal' => $totalStuffing]);
             }
 
             // TRUCKING UPDATE
@@ -3723,6 +3746,9 @@ class BiayaKapalController extends Controller
                         ]);
                     }
                 }
+                // Auto-calculate nominal for trucking from section totals
+                $totalTrucking = BiayaKapalTrucking::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
+                $biayaKapal->update(['nominal' => $totalTrucking]);
             }
 
             // THC UPDATE (NEW)
