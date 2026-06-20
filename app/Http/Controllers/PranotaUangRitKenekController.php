@@ -153,7 +153,7 @@ class PranotaUangRitKenekController extends Controller
         $baseQuery->where('status_pembayaran_uang_rit_kenek', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR) // Filter yang belum dibayar kenek
             ->whereNotIn('id', function ($query) {
                 $query->select('surat_jalan_id')
-                    ->from('pranota_uang_rits')
+                    ->from('pranota_uang_rit_keneks')
                     ->whereNotNull('surat_jalan_id')
                     ->whereNotIn('status', ['cancelled']);
             })
@@ -246,7 +246,7 @@ class PranotaUangRitKenekController extends Controller
         $baseQueryBeforeDate->where('status_pembayaran_uang_rit_kenek', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)
             ->whereNotIn('id', function ($query) {
                 $query->select('surat_jalan_id')
-                    ->from('pranota_uang_rits')
+                    ->from('pranota_uang_rit_keneks')
                     ->whereNotNull('surat_jalan_id')
                     ->whereNotIn('status', ['cancelled']);
             })
@@ -273,7 +273,7 @@ class PranotaUangRitKenekController extends Controller
 
         $eligibleCount = (clone $baseQuery)->count();
         $pranotaUsedCount = (clone $baseQuery)->whereIn('id', function ($subQuery) {
-            $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+            $subQuery->select('surat_jalan_id')->from('pranota_uang_rit_keneks')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
         })->count();
 
         // Get final surat jalans (no need to reapply filters, they're already in baseQuery)
@@ -283,7 +283,7 @@ class PranotaUangRitKenekController extends Controller
         // Get examples for debugging
         $eligibleExamples = (clone $baseQuery)->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'tanggal_checkpoint', 'tanggal_surat_jalan']);
         $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function ($subQuery) {
-            $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+            $subQuery->select('surat_jalan_id')->from('pranota_uang_rit_keneks')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
         })->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'tanggal_checkpoint', 'tanggal_surat_jalan']);
         $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'status_pembayaran_uang_rit', 'tanggal_surat_jalan']);
 
@@ -354,7 +354,7 @@ class PranotaUangRitKenekController extends Controller
                 })
                 ->whereNotIn('id', function ($query) {
                     $query->select('surat_jalan_bongkaran_id')
-                        ->from('pranota_uang_rits')
+                        ->from('pranota_uang_rit_keneks')
                         ->whereNotNull('surat_jalan_bongkaran_id')
                         ->whereNotIn('status', ['cancelled']);
                 })
@@ -411,7 +411,7 @@ class PranotaUangRitKenekController extends Controller
             ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR) // Filter yang belum dibayar
             ->whereNotIn('id', function ($subQuery) {
                 $subQuery->select('surat_jalan_id')
-                    ->from('pranota_uang_rits')
+                    ->from('pranota_uang_rit_keneks')
                     ->whereNotNull('surat_jalan_id')
                     ->whereNotIn('status', ['cancelled']);
             })
@@ -458,13 +458,13 @@ class PranotaUangRitKenekController extends Controller
         // Compute counts for debugging/help messages
         $eligibleCount = (clone $baseQuery)->count();
         $pranotaUsedCount = (clone $baseQuery)->whereIn('id', function ($subQuery) {
-            $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+            $subQuery->select('surat_jalan_id')->from('pranota_uang_rit_keneks')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
         })->count();
         $finalFilteredCount = (clone $query)->count();
 
         $eligibleExamples = (clone $baseQuery)->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'tanggal_checkpoint']);
         $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function ($subQuery) {
-            $subQuery->select('surat_jalan_id')->from('pranota_uang_rits')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
+            $subQuery->select('surat_jalan_id')->from('pranota_uang_rit_keneks')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
         })->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'tanggal_checkpoint']);
         $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'status_pembayaran_uang_rit']);
 
