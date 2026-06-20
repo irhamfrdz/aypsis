@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ProspekExport;
+use App\Exports\ProspekManifestExport;
 use App\Models\Bl;
 use App\Models\MasterKapal;
 use App\Models\NaikKapal;
@@ -162,7 +163,12 @@ class ProspekController extends Controller
             $filters = $request->query();
             $prospekIds = $request->input('prospek_ids', []);
             $fileName = 'prospek_export_'.date('Ymd_His').'.xlsx';
-            $export = new ProspekExport($filters, $prospekIds);
+
+            if ($request->input('template') === 'manifest') {
+                $export = new ProspekManifestExport($filters, $prospekIds);
+            } else {
+                $export = new ProspekExport($filters, $prospekIds);
+            }
 
             return Excel::download($export, $fileName);
         } catch (\Exception $e) {

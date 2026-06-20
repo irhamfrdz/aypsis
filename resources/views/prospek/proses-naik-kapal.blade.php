@@ -756,6 +756,9 @@
                 const tInput = document.createElement('input');
                 tInput.type = 'hidden'; tInput.name = 'tujuan_id'; tInput.value = '{{ $tujuanId }}';
                 exportForm.appendChild(tInput);
+                const templateInput = document.createElement('input');
+                templateInput.type = 'hidden'; templateInput.name = 'template'; templateInput.value = 'manifest';
+                exportForm.appendChild(templateInput);
                 document.body.appendChild(exportForm);
                 exportForm.submit();
                 document.body.removeChild(exportForm);
