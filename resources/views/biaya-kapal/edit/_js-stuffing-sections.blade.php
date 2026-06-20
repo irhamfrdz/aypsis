@@ -222,6 +222,7 @@
                 <!-- Selected TT details show here -->
             </div>
             <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][id]" class="selected-tt-id">
+            <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][type]" class="selected-tt-type" value="tanda_terima">
         `;
         
         container.appendChild(wrapper);
@@ -232,6 +233,13 @@
         const section = document.querySelector(`[data-stuffing-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.stuffing-tt-container');
         const ttIndex = container.children.length;
+        
+        let actualId = ttId;
+        let actualType = 'tanda_terima';
+        if (ttId && typeof ttId === 'object') {
+            actualId = ttId.id;
+            actualType = ttId.type || 'tanda_terima';
+        }
         
         const wrapper = document.createElement('div');
         wrapper.className = 'tt-search-wrapper mb-3 border p-3 rounded bg-white relative';
@@ -248,19 +256,20 @@
             <div class="tt-selected-details hidden text-xs text-gray-600 bg-gray-50 p-2 rounded">
                 <!-- Selected TT details show here -->
             </div>
-            <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][id]" class="selected-tt-id" value="${ttId}">
+            <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][id]" class="selected-tt-id" value="${actualId}">
+            <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][type]" class="selected-tt-type" value="${actualType}">
         `;
         
         container.appendChild(wrapper);
         setupTtSearch(wrapper);
         
-        if (ttId) {
-            fetch(`{{ url('biaya-kapal/get-tanda-terima-details') }}/${ttId}`)
+        if (actualId) {
+            fetch(`{{ url('biaya-kapal/get-tanda-terima-details') }}/${actualId}?type=${actualType}`)
                 .then(response => response.json())
                 .then(res => {
                     if (res.success) {
                         wrapper.querySelector('.tt-search-input').value = res.data.no_surat_jalan;
-                        showTtDetails(ttId, wrapper.querySelector('.tt-selected-details'));
+                        showTtDetails(actualId, actualType, wrapper.querySelector('.tt-selected-details'));
                     }
                 });
         }
@@ -297,8 +306,23 @@
                                 item.addEventListener('click', () => {
                                     searchInput.value = tt.no_surat_jalan;
                                     selectedIdInput.value = tt.id;
+                                    
+                                    // Update or add type input
+                                    let typeInput = wrapper.querySelector('.selected-tt-type');
+                                    if (!typeInput) {
+                                        typeInput = document.createElement('input');
+                                        typeInput.type = 'hidden';
+                                        const idName = selectedIdInput.getAttribute('name');
+                                        if (idName) {
+                                            typeInput.setAttribute('name', idName.replace('[id]', '[type]'));
+                                        }
+                                        typeInput.className = 'selected-tt-type';
+                                        wrapper.appendChild(typeInput);
+                                    }
+                                    typeInput.value = tt.type || 'tanda_terima';
+
                                     resultsDropdown.classList.add('hidden');
-                                    showTtDetails(tt.id, detailsDiv);
+                                    showTtDetails(tt.id, tt.type || 'tanda_terima', detailsDiv);
                                 });
                                 resultsDropdown.appendChild(item);
                             });
@@ -318,8 +342,8 @@
         });
     }
     
-    function showTtDetails(id, container) {
-        fetch(`{{ url('biaya-kapal/get-tanda-terima-details') }}/${id}`)
+    function showTtDetails(id, type, container) {
+        fetch(`{{ url('biaya-kapal/get-tanda-terima-details') }}/${id}?type=${type}`)
             .then(response => response.json())
             .then(res => {
                 if (res.success) {
@@ -329,7 +353,7 @@
                             <div><strong>Pengirim:</strong> ${tt.pengirim}</div>
                             <div><strong>Penerima:</strong> ${tt.penerima}</div>
                             <div><strong>No. Kontainer:</strong> ${tt.no_kontainer || '-'}</div>
-                            <div><strong>Tipe:</strong> ${tt.tipe_kontainer || '-'} (${tt.size || '-'})</div>
+                            <div><strong>Tipe:</strong> ${type === 'tanda_terima_lcl' ? 'LCL' : (type === 'tanda_terima_tanpa_surat_jalan' ? 'Tanpa SJ' : 'FCL')}</div>
                             <div class="col-span-2"><strong>Tujuan:</strong> ${tt.tujuan_pengiriman || '-'}</div>
                         </div>
                     `;

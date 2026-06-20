@@ -993,7 +993,10 @@ class BiayaKapalController extends Controller
                     if (isset($section['tanda_terima']) && is_array($section['tanda_terima'])) {
                         foreach ($section['tanda_terima'] as $tt) {
                             if (! empty($tt['id'])) {
-                                $ttIds[] = $tt['id'];
+                                $ttIds[] = [
+                                    'id' => (int) $tt['id'],
+                                    'type' => $tt['type'] ?? 'tanda_terima',
+                                ];
                             }
                         }
                     }
@@ -3712,7 +3715,10 @@ class BiayaKapalController extends Controller
                         if (isset($section['tanda_terima']) && is_array($section['tanda_terima'])) {
                             foreach ($section['tanda_terima'] as $tt) {
                                 if (! empty($tt['id'])) {
-                                    $ttIds[] = $tt['id'];
+                                    $ttIds[] = [
+                                        'id' => (int) $tt['id'],
+                                        'type' => $tt['type'] ?? 'tanda_terima',
+                                    ];
                                 }
                             }
                         }
