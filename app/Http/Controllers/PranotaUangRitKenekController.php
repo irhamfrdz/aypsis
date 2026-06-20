@@ -1231,17 +1231,17 @@ class PranotaUangRitKenekController extends Controller
                     ->orWhere('nama_panggilan', $kenekNama);
             })->first();
 
-        // 2. Jika tidak ada yang aktif, cari exact match tanpa mempedulikan tanggal_berhenti
-        if (! $karyawan) {
-            $karyawan = \App\Models\Karyawan::where('nama_lengkap', $kenekNama)
-                ->orWhere('nama_panggilan', $kenekNama)
-                ->first();
-        }
-
-        // 3. Jika masih tidak ketemu, cari loose match yang aktif
+        // 2. Jika masih tidak ketemu, cari loose match yang aktif
         if (! $karyawan) {
             $karyawan = \App\Models\Karyawan::whereNull('tanggal_berhenti')
                 ->where('nama_lengkap', 'LIKE', '%'.$kenekNama.'%')
+                ->first();
+        }
+
+        // 3. Jika tidak ada yang aktif, cari exact match tanpa mempedulikan tanggal_berhenti
+        if (! $karyawan) {
+            $karyawan = \App\Models\Karyawan::where('nama_lengkap', $kenekNama)
+                ->orWhere('nama_panggilan', $kenekNama)
                 ->first();
         }
 

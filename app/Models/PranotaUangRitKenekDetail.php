@@ -74,20 +74,20 @@ class PranotaUangRitKenekDetail extends Model
             return $exactActive;
         }
 
-        // Fallback 2: exact match on any employee (including stopped/inactive ones)
-        $exact = Karyawan::where('nama_panggilan', $this->kenek_nama)
-            ->orWhere('nama_lengkap', $this->kenek_nama)
-            ->first();
-        if ($exact) {
-            return $exact;
-        }
-
-        // Fallback 3: loose match on active employee
+        // Fallback 2: loose match on active employee
         $looseActive = Karyawan::whereNull('tanggal_berhenti')
             ->where('nama_lengkap', 'LIKE', '%'.$this->kenek_nama.'%')
             ->first();
         if ($looseActive) {
             return $looseActive;
+        }
+
+        // Fallback 3: exact match on any employee (including stopped/inactive ones)
+        $exact = Karyawan::where('nama_panggilan', $this->kenek_nama)
+            ->orWhere('nama_lengkap', $this->kenek_nama)
+            ->first();
+        if ($exact) {
+            return $exact;
         }
 
         // Fallback 4: loose search on any employee

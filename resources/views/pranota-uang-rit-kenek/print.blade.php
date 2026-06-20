@@ -166,11 +166,30 @@
                 @endphp
                 @foreach($uniqueKenek as $index => $kenek)
                 @php
-                    // Try nama_lengkap first, then nama_panggilan
-                    $kenekKaryawan = \App\Models\Karyawan::where('nama_lengkap', trim($kenek))
-                        ->orWhere('nama_panggilan', trim($kenek))
-                        ->orWhere('nama_lengkap', 'LIKE', '%' . trim($kenek) . '%')
-                        ->first();
+                    $trimmedKenek = trim($kenek);
+                    // 1. Exact active
+                    $kenekKaryawan = \App\Models\Karyawan::whereNull('tanggal_berhenti')
+                        ->where(function($q) use ($trimmedKenek) {
+                            $q->where('nama_lengkap', $trimmedKenek)
+                              ->orWhere('nama_panggilan', $trimmedKenek);
+                        })->first();
+                    // 2. Loose active
+                    if (!$kenekKaryawan) {
+                        $kenekKaryawan = \App\Models\Karyawan::whereNull('tanggal_berhenti')
+                            ->where('nama_lengkap', 'LIKE', '%' . $trimmedKenek . '%')
+                            ->first();
+                    }
+                    // 3. Exact any
+                    if (!$kenekKaryawan) {
+                        $kenekKaryawan = \App\Models\Karyawan::where(function($q) use ($trimmedKenek) {
+                            $q->where('nama_lengkap', $trimmedKenek)
+                              ->orWhere('nama_panggilan', $trimmedKenek);
+                        })->first();
+                    }
+                    // 4. Loose any
+                    if (!$kenekKaryawan) {
+                        $kenekKaryawan = \App\Models\Karyawan::where('nama_lengkap', 'LIKE', '%' . $trimmedKenek . '%')->first();
+                    }
                 @endphp
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
