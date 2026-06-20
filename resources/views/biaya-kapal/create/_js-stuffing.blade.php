@@ -289,11 +289,12 @@
             selectedChipsContainer.appendChild(chip);
             
             // Add hidden inputs
+            const ttIndex = hiddenInputsContainer.children.length;
             const hiddenGroup = document.createElement('div');
             hiddenGroup.className = `tt-input-group-${tt.id}`;
             hiddenGroup.innerHTML = `
-                <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][][id]" value="${tt.id}">
-                <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][][type]" value="${tt.type || 'tanda_terima'}">
+                <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][id]" value="${tt.id}">
+                <input type="hidden" name="stuffing_sections[${sectionIndex}][tanda_terima][${ttIndex}][type]" value="${tt.type || 'tanda_terima'}">
             `;
             hiddenInputsContainer.appendChild(hiddenGroup);
         }
