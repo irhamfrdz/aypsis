@@ -641,6 +641,7 @@ class BiayaKapalController extends Controller
             'air.*.lokasi' => 'nullable|string|max:255',
             'air.*.sub_total' => 'nullable|numeric|min:0',
             'air.*.pph' => 'nullable|numeric|min:0',
+            'air.*.pph_active' => 'nullable',
             'air.*.grand_total' => 'nullable|numeric|min:0',
             'air.*.penerima' => 'nullable|string|max:255',
             'air.*.nomor_rekening' => 'nullable|string|max:100',
@@ -1960,10 +1961,11 @@ class BiayaKapalController extends Controller
                                 }
                             }
 
+                            $pphActive = isset($section['pph_active']);
                             // If type is taxable, tax the whole subtotal.
                             // Otherwise, if it's the first record, tax only the jasaAir part (Jasa Air Jakarta)
                             $pphBase = $isTypeTaxable ? $currentSubTotal : $currentJasaAir;
-                            $currentPph = round($pphBase * 0.02);
+                            $currentPph = $pphActive ? round($pphBase * 0.02) : 0;
 
                             $currentGrandTotal = $currentSubTotal - $currentPph;
 
@@ -1982,6 +1984,7 @@ class BiayaKapalController extends Controller
                                 'jasa_air' => $currentJasaAir,
                                 'sub_total' => $currentSubTotal,
                                 'pph' => $currentPph,
+                                'pph_active' => $pphActive,
                                 'grand_total' => $currentGrandTotal,
                                 'penerima' => $section['penerima'] ?? $request->penerima,
                                 'nomor_rekening' => $section['nomor_rekening'] ?? $request->nomor_rekening,
@@ -3272,6 +3275,7 @@ class BiayaKapalController extends Controller
             'air.*.lokasi' => 'nullable|string|max:255',
             'air.*.sub_total' => 'nullable|numeric|min:0',
             'air.*.pph' => 'nullable|numeric|min:0',
+            'air.*.pph_active' => 'nullable',
             'air.*.grand_total' => 'nullable|numeric|min:0',
             'air.*.penerima' => 'nullable|string|max:255',
             'air.*.nomor_rekening' => 'nullable|string|max:100',
@@ -3579,10 +3583,11 @@ class BiayaKapalController extends Controller
                                     }
                                 }
 
+                                $pphActive = isset($section['pph_active']);
                                 // If type is taxable, tax the whole subtotal.
                                 // Otherwise, if it's the first record, tax only the jasaAir part (Jasa Air Jakarta)
                                 $pphBase = $isTypeTaxable ? $currentSubTotal : $currentJasaAir;
-                                $currentPph = round($pphBase * 0.02);
+                                $currentPph = $pphActive ? round($pphBase * 0.02) : 0;
 
                                 $currentGrandTotal = $currentSubTotal - $currentPph;
 
@@ -3601,6 +3606,7 @@ class BiayaKapalController extends Controller
                                     'jasa_air' => $currentJasaAir,
                                     'sub_total' => $currentSubTotal,
                                     'pph' => $currentPph,
+                                    'pph_active' => $pphActive,
                                     'grand_total' => $currentGrandTotal,
                                     'penerima' => $section['penerima'] ?? $request->penerima,
                                     'nomor_rekening' => $section['nomor_rekening'] ?? $request->nomor_rekening,

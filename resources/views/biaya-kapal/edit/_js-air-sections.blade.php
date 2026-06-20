@@ -224,7 +224,7 @@
                     <div class="flex items-center justify-between mb-1">
                         <label class="block text-sm font-medium text-gray-700">PPH (2%)</label>
                         <div class="flex items-center gap-1">
-                            <input type="checkbox" class="pph-active-air w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 cursor-pointer" checked onchange="calculateAirSectionTotal(${sectionIndex})">
+                            <input type="checkbox" name="air[${sectionIndex}][pph_active]" class="pph-active-air w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 cursor-pointer" checked onchange="calculateAirSectionTotal(${sectionIndex})">
                             <span class="text-[10px] text-gray-600 font-medium cursor-pointer" onclick="this.previousElementSibling.click()">Aktifkan</span>
                         </div>
                     </div>
