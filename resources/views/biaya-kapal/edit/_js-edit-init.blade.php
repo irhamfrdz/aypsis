@@ -58,6 +58,7 @@
                          'nomor_referensi' => $parts[7],
                          'tanggal_invoice_vendor' => $parts[8],
                          'bank_id' => $firstItem->bank_id,
+                         'pph_active' => ($items->sum('sub_total') > 0 && $items->sum('pph') == 0) ? false : true,
                          'types' => $items->map(function($i){
                              return [
                                  'type_id' => $i->type_id,
@@ -511,6 +512,11 @@
                     data.types.forEach((t) => {
                         addTypeToAirSectionWithValue(sectionIndex, t.type_id, t.type_keterangan, t.is_lumpsum, t.kuantitas, t.harga);
                     });
+                    
+                    const pphActiveCheckbox = sec.querySelector('.pph-active-air');
+                    if (pphActiveCheckbox) {
+                        pphActiveCheckbox.checked = data.pph_active !== false;
+                    }
                     
                     calculateAirSectionTotal(sectionIndex);
                 })();

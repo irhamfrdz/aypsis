@@ -2271,6 +2271,7 @@ class BiayaKapalController extends Controller
 
                 $biayaKapal->update(['nominal' => $perijinanTotal]);
             }
+            $this->syncKapalVoyage($biayaKapal, $request);
 
             DB::commit();
 
@@ -2940,7 +2941,7 @@ class BiayaKapalController extends Controller
      */
     public function update(Request $request, BiayaKapal $biayaKapal)
     {
-        // Clean up all currency and numeric fields before validation
+        \Illuminate\Support\Facades\Log::info('Update Temas Request:', $request->input('temas', []));
         $data = $request->all();
 
         // Root fields
@@ -4486,6 +4487,7 @@ class BiayaKapalController extends Controller
                     }
                 }
             }
+            $this->syncKapalVoyage($biayaKapal, $request);
 
             DB::commit();
 
@@ -5203,5 +5205,47 @@ class BiayaKapalController extends Controller
         $filename = 'biaya-buruh-'.\Illuminate\Support\Str::slug($biayaKapal->nomor_invoice).'.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\BiayaBuruhExport($biayaKapal), $filename);
+    }
+
+    private function syncKapalVoyage($biayaKapal, $request)
+    {
+        $kapalList = is_array($biayaKapal->nama_kapal) ? $biayaKapal->nama_kapal : [];
+        $voyageList = is_array($biayaKapal->no_voyage) ? $biayaKapal->no_voyage : [];
+
+        $sectionKeys = [
+            'kapal_sections', 'air', 'tkbm_sections', 'operasional_sections', 
+            'trucking_sections', 'stuffing_sections', 'thc_sections', 'freight_sections', 
+            'lolo_sections', 'storage_sections', 'demurrage_sections', 'labuh_tambat', 
+            'meratus', 'temas', 'tanto'
+        ];
+
+        foreach ($sectionKeys as $key) {
+            if ($request->has($key) && is_array($request->$key)) {
+                foreach ($request->$key as $item) {
+                    if (!empty($item['kapal'])) $kapalList[] = $item['kapal'];
+                    if (!empty($item['voyage'])) $voyageList[] = $item['voyage'];
+                }
+            }
+        }
+
+        $specialKeys = ['perlengkapan_sections', 'perijinan_sections'];
+        foreach ($specialKeys as $key) {
+            if ($request->has($key) && is_array($request->$key)) {
+                foreach ($request->$key as $item) {
+                    if (!empty($item['nama_kapal'])) $kapalList[] = $item['nama_kapal'];
+                    if (!empty($item['no_voyage'])) $voyageList[] = $item['no_voyage'];
+                }
+            }
+        }
+
+        $kapalList = array_values(array_unique(array_filter($kapalList)));
+        $voyageList = array_values(array_unique(array_filter($voyageList)));
+
+        if (!empty($kapalList) || !empty($voyageList)) {
+            $biayaKapal->update([
+                'nama_kapal' => !empty($kapalList) ? $kapalList : null,
+                'no_voyage' => !empty($voyageList) ? $voyageList : null,
+            ]);
+        }
     }
 }

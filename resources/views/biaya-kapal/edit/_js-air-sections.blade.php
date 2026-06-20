@@ -221,7 +221,13 @@
                     <input type="hidden" name="air[${sectionIndex}][harga]" class="harga-hidden" value="0">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">PPH (2%)</label>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-sm font-medium text-gray-700">PPH (2%)</label>
+                        <div class="flex items-center gap-1">
+                            <input type="checkbox" class="pph-active-air w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 cursor-pointer" checked onchange="calculateAirSectionTotal(${sectionIndex})">
+                            <span class="text-[10px] text-gray-600 font-medium cursor-pointer" onclick="this.previousElementSibling.click()">Aktifkan</span>
+                        </div>
+                    </div>
                     <input type="text" class="pph-display w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed" value="Rp 0" readonly>
                     <input type="hidden" name="air[${sectionIndex}][pph]" class="pph-value" value="0">
                 </div>
@@ -617,8 +623,10 @@
         
         // PPH calculation adjusted for Abqori
         // jasaAir (the hidden input) is always taxable if Abqori is chosen (it's Jasa Air Jakarta)
+        const pphActiveCheckbox = section.querySelector('.pph-active-air');
+        const pphActive = pphActiveCheckbox ? pphActiveCheckbox.checked : true;
         let finalTaxableBase = isAbqori ? (taxableCost + jasaAir) : subTotal;
-        const pph = Math.round(finalTaxableBase * 0.02);
+        const pph = pphActive ? Math.round(finalTaxableBase * 0.02) : 0;
         const grandTotal = subTotal - pph;
         
         subTotalDisplay.value = subTotal > 0 ? `Rp ${subTotal.toLocaleString('id-ID')}` : 'Rp 0';
