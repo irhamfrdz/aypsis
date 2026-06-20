@@ -89,6 +89,28 @@ body.mode-sewa-in {
 .sk-modal-overlay.active { display:flex; }
 .sk-modal { background:white; border-radius:1.2rem; padding:1.5rem; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; position:relative; box-shadow:0 20px 60px rgba(0,0,0,.2); }
 .sk-modal-lg { max-width:780px; }
+/* ── Searchable Select ── */
+.sk-searchable { position:relative; }
+.sk-searchable-input { width:100%; border:1px solid #e2e8f0; border-radius:.6rem; padding:.45rem .75rem; font-size:.8rem; outline:none; transition:border-color .15s; background:white; cursor:pointer; }
+.sk-searchable-input:focus { border-color:var(--sewa-primary); box-shadow:0 0 0 3px var(--sewa-primary-ring); }
+.sk-searchable-dropdown { position:absolute; top:100%; left:0; right:0; z-index:200; background:white; border:1px solid #e2e8f0; border-radius:.6rem; box-shadow:0 4px 20px rgba(0,0,0,.12); max-height:220px; overflow-y:auto; display:none; }
+.sk-searchable-dropdown.open { display:block; }
+.sk-searchable-option { padding:.4rem .75rem; font-size:.78rem; cursor:pointer; }
+.sk-searchable-option:hover { background:#f1f5f9; }
+.sk-searchable-option.disabled { opacity:.4; cursor:not-allowed; color:#9ca3af; }
+.sk-searchable-option.selected { background:var(--sewa-primary-light); color:var(--sewa-primary); font-weight:600; }
+/* ── Sort indicators ── */
+th .sort-icon { font-size:.65rem; margin-left:.2rem; color:#cbd5e1; }
+th.sort-asc .sort-icon { color:var(--sewa-primary); }
+th.sort-desc .sort-icon { color:var(--sewa-primary); }
+/* ── Sewa billing badge ── */
+.sewa-billing-badge { display:inline-flex; align-items:center; gap:.2rem; padding:.15rem .5rem; border-radius:9999px; font-size:.65rem; font-weight:700; }
+/* ── Import bulk log ── */
+.import-log-ok { color:#059669; background:#d1fae5; padding:.15rem .4rem; border-radius:.3rem; font-size:.72rem; }
+.import-log-err { color:#b91c1c; background:#fee2e2; padding:.15rem .4rem; border-radius:.3rem; font-size:.72rem; }
+/* ── Print ── */
+@media print { .sk-modal-overlay,.no-print { display:none!important; } .print-area { display:block!important; } }
+.print-area { display:none; }
 </style>
 
 <div id="sk-notification" role="alert"></div>
@@ -182,7 +204,7 @@ body.mode-sewa-in {
     {{-- ─── Sheet View ─── --}}
     <div id="billing-sheet" class="billing-sub">
         {{-- Filters --}}
-        <div class="bg-white border border-gray-200 rounded-xl p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="bg-white border border-gray-200 rounded-xl p-4 mb-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
             <div>
                 <label class="sk-label" id="lbl-filter-customer">Customer / Vendor</label>
                 <select id="filter-customer" class="sk-input text-sm" onchange="applyFilters()">
@@ -206,6 +228,17 @@ body.mode-sewa-in {
                 <label class="sk-label">Cari No Kontainer</label>
                 <input id="filter-kontainer" type="text" class="sk-input text-sm" placeholder="AMFU..." oninput="applyFilters()">
             </div>
+            <div>
+                <label class="sk-label">Rentang Sewa</label>
+                <select id="filter-rentang-sewa" class="sk-input text-sm" onchange="applyFilters()">
+                    <option value="">Semua Sewa</option>
+                    @foreach($sewas as $sw)
+                    <option value="{{ $sw->id_sewa }}">
+                        {{ $sw->no_kontainer }}: {{ date('d/m/y', strtotime($sw->tanggal_sewa)) }} – {{ $sw->tanggal_kembali ? date('d/m/y', strtotime($sw->tanggal_kembali)) : 'Skrg' }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
             <div class="flex items-end gap-2">
                 <button onclick="selectAllVisible()" class="sk-btn-sm sk-btn-ghost flex-1"><i class="fas fa-check-square mr-1"></i>Pilih Semua</button>
                 <button onclick="clearFilters()" class="sk-btn-sm sk-btn-ghost"><i class="fas fa-undo"></i></button>
@@ -225,20 +258,20 @@ body.mode-sewa-in {
                     <thead>
                         <tr>
                             <th class="w-8"><input type="checkbox" id="chk-all" onchange="toggleAllCheckboxes(this)" class="rounded"></th>
-                            <th onclick="sortTable('id_tagihan')" class="cursor-pointer hover:bg-gray-100">Tagihan ID <i class="fas fa-sort text-gray-300 ml-1"></i></th>
-                            <th onclick="sortTable('customer')" class="cursor-pointer hover:bg-gray-100" id="th-customer">Customer <i class="fas fa-sort text-gray-300 ml-1"></i></th>
+                            <th id="th-sort-id" onclick="sortTable('id_tagihan')" class="cursor-pointer hover:bg-gray-100">Tagihan ID <span class="sort-icon">↕</span></th>
+                            <th id="th-sort-customer" onclick="sortTable('customer')" class="cursor-pointer hover:bg-gray-100" id="th-customer">Customer <span class="sort-icon">↕</span></th>
                             <th>No Kontainer</th>
-                            <th onclick="sortTable('bulan_ke')" class="cursor-pointer hover:bg-gray-100">Bln</th>
+                            <th id="th-sort-bulan" onclick="sortTable('bulan_ke')" class="cursor-pointer hover:bg-gray-100">Bln <span class="sort-icon">↕</span></th>
                             <th>Rentang Periode</th>
                             <th>Tarif</th>
-                            <th onclick="sortTable('jumlah_tagihan')" class="cursor-pointer hover:bg-gray-100">Estimasi Tagihan</th>
+                            <th id="th-sort-jumlah" onclick="sortTable('jumlah_tagihan')" class="cursor-pointer hover:bg-gray-100">Estimasi Tagihan <span class="sort-icon">↕</span></th>
                             <th>Override</th>
                             <th>PPN (11%)</th>
                             <th>PPh (2%)</th>
                             <th>Tgl Tagihan</th>
                             <th>Tgl Bayar</th>
                             <th>No Bayar</th>
-                            <th onclick="sortTable('status_bayar')" class="cursor-pointer hover:bg-gray-100">Status</th>
+                            <th id="th-sort-status" onclick="sortTable('status_bayar')" class="cursor-pointer hover:bg-gray-100">Status <span class="sort-icon">↕</span></th>
                             <th>No Invoice</th>
                             <th>Aksi</th>
                         </tr>
@@ -265,6 +298,7 @@ body.mode-sewa-in {
                             data-status="{{ $t->status_bayar }}"
                             data-customer="{{ $t->transaksi->id_customer ?? '' }}"
                             data-kontainer="{{ $t->transaksi->no_kontainer ?? '' }}"
+                            data-id-sewa="{{ $t->id_sewa }}"
                             data-bulan-ke="{{ $t->bulan_ke }}"
                             data-jumlah="{{ $t->jumlah_tagihan }}">
                             <td><input type="checkbox" class="row-chk rounded" value="{{ $t->id_tagihan }}" onchange="onRowCheck()"></td>
@@ -338,6 +372,7 @@ body.mode-sewa-in {
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="badge {{ $inv->status_pembayaran === 'Lunas' ? 'badge-lunas' : 'badge-belum-bayar' }}">{{ $inv->status_pembayaran }}</span>
+                    <button onclick="openPrintInvoiceModal({{ json_encode(['nomor'=>$inv->nomor_invoice,'customer'=>$inv->customer->nama_customer??'-','tanggal'=>date('d/m/Y',strtotime($inv->tanggal_invoice)),'status'=>$inv->status_pembayaran,'grand_total'=>$totalBayar,'adjustment'=>$inv->adjustment_biaya,'tagihans'=>$invTagihans->map(fn($it)=>['id_tagihan'=>$it->id_tagihan,'no_kontainer'=>$it->transaksi->no_kontainer??'-','bulan_ke'=>$it->bulan_ke,'tanggal_awal'=>date('d/m/y',strtotime($it->tanggal_awal)),'tanggal_akhir'=>date('d/m/y',strtotime($it->tanggal_akhir)),'jumlah_tagihan'=>$it->jumlah_tagihan,'jumlah_tagihan_override'=>$it->jumlah_tagihan_override,'tipe_tarif'=>$it->tipe_tarif,'status_bayar'=>$it->status_bayar])->values()->toArray()]) }})" class="sk-btn-sm" style="background:#e0f2fe;color:#0369a1" title="Cetak Invoice"><i class="fas fa-print"></i></button>
                     <button onclick="openEditInvoiceModal('{{ $inv->nomor_invoice }}', '{{ addslashes($inv->deskripsi) }}', {{ $inv->adjustment_biaya }}, '{{ addslashes($inv->adjustment_keterangan) }}')" class="sk-btn-sm sk-btn-ghost"><i class="fas fa-edit"></i></button>
                     <button onclick="deleteInvoice('{{ $inv->nomor_invoice }}')" class="sk-btn-sm sk-btn-red"><i class="fas fa-trash"></i></button>
                 </div>
@@ -458,15 +493,31 @@ body.mode-sewa-in {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div class="lg:col-span-1">
                     <label class="sk-label">No Kontainer</label>
-                    <select id="sewa-no-kontainer" class="sk-input text-sm" onchange="onKontainerSelect(this.value)">
-                        <option value="">— Pilih Kontainer —</option>
-                        @foreach($kontainers as $k)
-                        <option value="{{ $k->no_kontainer }}" data-customer="{{ $k->id_customer }}" data-tipe="{{ $k->id_tipe }}" data-ukuran="{{ $k->id_ukuran }}">
-                            {{ $k->no_kontainer }} ({{ $k->customer->nama_customer ?? '-' }})
-                        </option>
-                        @endforeach
-                    </select>
-                    <div id="sewa-tarif-info" class="mt-2 text-xs text-gray-400 hidden bg-blue-50 rounded-lg p-2 border border-blue-100"></div>
+                    {{-- SearchableSelect --}}
+                    <div class="sk-searchable" id="searchable-kontainer">
+                        <input type="hidden" id="sewa-no-kontainer" name="sewa-no-kontainer">
+                        <input type="text" id="sewa-no-kontainer-search" class="sk-searchable-input" placeholder="Ketik untuk cari kontainer..." autocomplete="off"
+                               oninput="filterSearchableKontainer(this.value)"
+                               onblur="closeSearchableKontainerDelayed()"
+                               onfocus="openSearchableKontainer()">
+                        <div id="sewa-no-kontainer-dropdown" class="sk-searchable-dropdown">
+                            @php
+                                $activeSewaKontainers = $sewas->where('status_sewa','Aktif')->pluck('no_kontainer')->toArray();
+                            @endphp
+                            @foreach($kontainers as $k)
+                            @php $isActive = in_array($k->no_kontainer, $activeSewaKontainers); @endphp
+                            <div class="sk-searchable-option {{ $isActive ? 'disabled' : '' }}"
+                                 data-value="{{ $k->no_kontainer }}"
+                                 data-label="{{ $k->no_kontainer }} [{{ $k->customer->nama_customer ?? '-' }}]{{ $isActive ? ' (SEDANG DISEWA)' : '' }}"
+                                 data-customer="{{ $k->id_customer }}"
+                                 onclick="{{ $isActive ? '' : 'selectSearchableKontainer(this)' }}">
+                                {{ $k->no_kontainer }}
+                                <span class="text-gray-400 text-xs ml-1">[{{ $k->customer->nama_customer ?? '-' }}]{{ $isActive ? ' <span style="color:#dc2626">(SEDANG DISEWA)</span>' : '' }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+                        <div id="sewa-tarif-info" class="hidden text-xs mt-1 text-blue-600 bg-blue-50 rounded-lg p-2 border border-blue-100"></div>
+                    </div>
                 </div>
                 <div>
                     <label class="sk-label" id="lbl-sewa-customer">Customer</label>
@@ -518,6 +569,12 @@ body.mode-sewa-in {
         </select>
     </div>
 
+    {{-- Pagination state --}}
+    <div id="sewa-pagination-controls" class="hidden bg-white border border-slate-100 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600 mb-3">
+        <span>Menampilkan <strong id="sewa-page-start">1</strong>–<strong id="sewa-page-end">20</strong> dari <strong id="sewa-page-total">0</strong> kontrak sewa</span>
+        <div class="flex items-center gap-1 font-mono" id="sewa-pagination-btns"></div>
+    </div>
+
     {{-- Cards --}}
     <div class="space-y-4" id="contracts-container">
     @forelse($sewas as $sewa)
@@ -536,6 +593,13 @@ body.mode-sewa-in {
         $lunas = $sewaTagihans->where('status_bayar', 'Lunas')->count();
         $total = $sewaTagihans->count();
         $outstanding = $sewaTagihans->whereIn('status_bayar', ['Belum Bayar', 'Pranota'])->sum('jumlah_tagihan');
+
+        // Billing badge
+        $allLunas = $total > 0 && $lunas === $total;
+        $hasUnpaid = $sewaTagihans->whereIn('status_bayar', ['Belum Bayar','Pranota'])->count() > 0;
+        $hasPartial = $lunas > 0 && !$allLunas && !$hasUnpaid;
+        $billingBadgeClass = $allLunas ? 'background:#d1fae5;color:#065f46' : ($hasUnpaid ? 'background:#dbeafe;color:#1e40af' : ($hasPartial ? 'background:#fef3c7;color:#92400e' : 'background:#f1f5f9;color:#6b7280'));
+        $billingBadgeText = $allLunas ? '✓ Lunas' : ($hasUnpaid ? '● Sudah Ditagih' : ($hasPartial ? '● Bayar Parsial' : 'Belum Ditagih'));
     @endphp
     <div class="sewa-card"
          data-search="{{ strtolower($sewa->no_kontainer . ' ' . ($sewa->customer->nama_customer ?? '')) }}"
@@ -551,6 +615,7 @@ body.mode-sewa-in {
                     @else
                     <span class="badge badge-harian">Harian</span>
                     @endif
+                    <span class="sewa-billing-badge" style="{{ $billingBadgeClass }};font-size:.65rem;border-radius:9999px;padding:.15rem .5rem">{{ $billingBadgeText }}</span>
                 </div>
                 <div class="text-sm font-semibold text-gray-700">{{ $sewa->customer->nama_customer ?? '-' }}</div>
                 <div class="text-xs text-gray-400 mt-0.5">
@@ -589,7 +654,14 @@ body.mode-sewa-in {
                     <td>{{ date('d/m/y', strtotime($p->tanggal_awal)) }} – {{ date('d/m/y', strtotime($p->tanggal_akhir)) }}</td>
                     <td class="text-center">{{ $p->jumlah_hari }}</td>
                     <td><span class="badge badge-{{ strtolower($p->tipe_tarif) }}">{{ $p->tipe_tarif }}</span></td>
-                    <td class="font-bold">Rp {{ number_format($p->jumlah_tagihan, 0, ',', '.') }}</td>
+                    <td class="font-bold">
+                        @if($p->jumlah_tagihan_override !== null)
+                            <span class="line-through text-gray-400 text-xs">Rp {{ number_format($p->jumlah_tagihan, 0, ',', '.') }}</span><br>
+                            <span class="text-emerald-700">Rp {{ number_format($p->jumlah_tagihan_override, 0, ',', '.') }}</span>
+                        @else
+                            Rp {{ number_format($p->jumlah_tagihan, 0, ',', '.') }}
+                        @endif
+                    </td>
                     <td><span class="badge {{ match($p->status_bayar){ 'Lunas'=>'badge-lunas','Belum Bayar'=>'badge-belum-bayar','Pranota'=>'badge-pranota',default=>'badge-belum-ditagih'} }}">{{ $p->status_bayar }}</span></td>
                     <td class="font-mono text-blue-600 text-xs">{{ $p->nomor_invoice_grup ?: '—' }}</td>
                 </tr>
@@ -851,19 +923,70 @@ body.mode-sewa-in {
      TAB 4: IMPORT / BACKUP
 ══════════════════════════════════════════════════ --}}
 <div id="tab-import" class="sk-tab-content pt-5">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {{-- Import Pembayaran --}}
-        <div class="sk-card">
-            <div class="sk-card-header"><h4 class="font-bold text-gray-800"><i class="fas fa-paste mr-2 text-blue-500"></i>Import Pembayaran Bulk</h4></div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {{-- ─── BULK IMPORT PANEL ─── --}}
+        <div class="lg:col-span-2 sk-card">
+            <div class="sk-card-header">
+                <h4 class="font-bold text-gray-800"><i class="fas fa-file-import mr-2 text-indigo-500"></i>Bulk Import (Copy-Paste dari Excel)</h4>
+            </div>
             <div class="p-5 space-y-4">
-                <p class="text-xs text-gray-500">Format per baris: <code class="bg-gray-100 px-1 rounded font-mono">no_bukti; tanggal_bayar; nomor_nota</code></p>
-                <p class="text-xs text-gray-400">Contoh: <code class="font-mono text-xs">TRF-001; 15/06/2025; INV-202506-01</code></p>
-                <textarea id="import-payment-text" rows="8" class="sk-input resize-none font-mono text-xs" placeholder="# Tempel data pembayaran di sini...&#10;TRF-001; 15/06/2025; INV-202506-01&#10;TRF-002; 15/06/2025; INV-202506-02"></textarea>
-                <button onclick="submitImportPayment()" class="sk-btn-primary w-full justify-center"><i class="fas fa-upload mr-1.5"></i>Proses Import Pembayaran</button>
-                <div id="import-payment-result" class="hidden text-xs space-y-1 max-h-48 overflow-y-auto"></div>
+                {{-- Tipe Selector --}}
+                <div>
+                    <label class="sk-label">Tipe Data yang Di-Import</label>
+                    <select id="bulk-import-type" class="sk-input text-sm" onchange="onBulkTypeChange()">
+                        <option value="customer">1. Master Customer / Vendor</option>
+                        <option value="tipe">2. Master Tipe Kontainer</option>
+                        <option value="ukuran">3. Master Ukuran</option>
+                        <option value="kontainer">4. Master Kontainer</option>
+                        <option value="tarif">5. Master Tarif Sewa</option>
+                        <option value="sewa">6. Transaksi Sewa &amp; Kembali</option>
+                        <option value="pembayaran">7. Import Pranota/Tagihan</option>
+                        <option value="pelunasan">8. Import Pelunasan Massal</option>
+                    </select>
+                </div>
+
+                {{-- Template info --}}
+                <div id="bulk-import-template-info" class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs font-mono text-slate-600 space-y-1">
+                    <div class="font-bold text-slate-700 mb-1"><i class="fas fa-info-circle mr-1 text-blue-400"></i><span id="bulk-tpl-title">Format:</span></div>
+                    <div id="bulk-tpl-body">Satu nama per baris.</div>
+                </div>
+
+                {{-- Actions row --}}
+                <div class="flex gap-2">
+                    <button onclick="loadBulkTemplate()" class="sk-btn-sm sk-btn-ghost"><i class="fas fa-clipboard-list mr-1"></i>Muat Contoh</button>
+                    <button onclick="copyBulkTemplate()" class="sk-btn-sm sk-btn-ghost"><i class="fas fa-copy mr-1"></i>Salin Format</button>
+                    <button onclick="clearBulkTextarea()" class="sk-btn-sm sk-btn-ghost ml-auto"><i class="fas fa-eraser mr-1"></i>Bersihkan</button>
+                </div>
+
+                <textarea id="bulk-import-textarea" rows="10" class="sk-input resize-none font-mono text-xs" placeholder="# Paste data dari Excel di sini..."></textarea>
+
+                {{-- Preview area (for pelunasan 2-stage) --}}
+                <div id="bulk-preview-area" class="hidden">
+                    <div class="font-semibold text-sm text-slate-700 mb-2"><i class="fas fa-eye mr-1 text-blue-500"></i>Preview Pelunasan</div>
+                    <div class="overflow-x-auto">
+                        <table class="sk-table text-xs" id="bulk-preview-table">
+                            <thead><tr><th>#</th><th>Nomor Nota</th><th>Customer</th><th>No Bukti Bayar</th><th>Tgl Bayar</th><th>Jml Tagihan</th><th>Grand Total</th><th>Valid?</th></tr></thead>
+                            <tbody id="bulk-preview-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="applyBulkImport()" id="btn-apply-import" class="sk-btn-primary"><i class="fas fa-check mr-1"></i>Terapkan Semua yang Valid</button>
+                        <button onclick="hideBulkPreview()" class="sk-btn-sm sk-btn-ghost">Batal</button>
+                    </div>
+                </div>
+
+                {{-- Process button (for non-pelunasan) --}}
+                <button id="btn-bulk-process" onclick="processBulkImport()" class="sk-btn-primary w-full justify-center">
+                    <i class="fas fa-upload mr-1.5"></i>Proses Import
+                </button>
+
+                {{-- Log result --}}
+                <div id="bulk-import-log" class="hidden space-y-1 max-h-60 overflow-y-auto text-xs"></div>
             </div>
         </div>
-        {{-- Backup / Restore --}}
+
+        {{-- ─── Backup / Restore ─── --}}
         <div class="space-y-5">
             <div class="sk-card">
                 <div class="sk-card-header"><h4 class="font-bold text-gray-800"><i class="fas fa-download mr-2 text-green-500"></i>Export Backup JSON</h4></div>
@@ -879,7 +1002,7 @@ body.mode-sewa-in {
                 <div class="p-5 space-y-3">
                     <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
                         <i class="fas fa-exclamation-triangle mr-1"></i>
-                        <strong>Peringatan:</strong> Restore akan menghapus & mengganti SEMUA data yang ada sekarang dengan data dari file backup.
+                        <strong>Peringatan:</strong> Restore akan menghapus &amp; mengganti SEMUA data yang ada sekarang.
                     </div>
                     <input type="file" id="backup-file-input" accept=".json" class="sk-input text-xs">
                     <button onclick="submitRestoreJson()" class="w-full py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-bold transition-all">
@@ -1110,6 +1233,22 @@ body.mode-sewa-in {
     </div>
 </div>
 
+{{-- Modal: Print Invoice --}}
+<div id="modal-print-invoice" class="sk-modal-overlay">
+    <div class="sk-modal sk-modal-lg no-print">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-gray-800" id="print-inv-nomor">Invoice</h3>
+            <div class="flex gap-2">
+                <button onclick="doPrintInvoice()" class="sk-btn-sm" style="background:#0369a1;color:white"><i class="fas fa-print mr-1"></i>Cetak</button>
+                <button onclick="closeModal('modal-print-invoice')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+            </div>
+        </div>
+        <div id="print-invoice-body" class="print-area">
+            <!-- filled by JS -->
+        </div>
+    </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════════
 // CONSTANTS & STATE
@@ -1124,6 +1263,8 @@ const ROUTES = {
     tagihan:    { base: '{{ url("master/sewa-kontainer/tagihan") }}/' },
     invoice:    { store: '{{ route("sewa-kontainer.invoice.store") }}',   base: '{{ url("master/sewa-kontainer/invoice") }}/' },
     importPayment: '{{ route("sewa-kontainer.import.payment") }}',
+    bulkImport:    '{{ route("sewa-kontainer.bulk.import") }}',
+    importPreview: '{{ route("sewa-kontainer.import.preview") }}',
     importJson:    '{{ route("sewa-kontainer.import.json") }}',
     kontainerInfo: '{{ url("master/sewa-kontainer/kontainer-info") }}/',
 };
@@ -1135,6 +1276,12 @@ const BILLING_PAGE_SIZE = 20;
 let billingSort = { col: 'bulan_ke', dir: 'asc' };
 let allBillingRows = [];
 let filteredBillingRows = [];
+
+// Sewa pagination state
+let sewaPage = 1;
+const SEWA_PAGE_SIZE = 20;
+let allSewaCards = [];
+let filteredSewaCards = [];
 
 // ══════════════════════════════════════════════════
 // UTILITIES
@@ -1240,11 +1387,13 @@ function applyFilters() {
     const custFilter    = document.getElementById('filter-customer').value;
     const statusFilter  = document.getElementById('filter-status').value;
     const kontFilter    = document.getElementById('filter-kontainer').value.toLowerCase();
+    const sewaFilter    = document.getElementById('filter-rentang-sewa') ? document.getElementById('filter-rentang-sewa').value : '';
 
     filteredBillingRows = allBillingRows.filter(row => {
         if (custFilter   && row.dataset.customer !== custFilter) return false;
         if (statusFilter && row.dataset.status   !== statusFilter) return false;
         if (kontFilter   && !row.dataset.kontainer.toLowerCase().includes(kontFilter)) return false;
+        if (sewaFilter   && row.dataset.idSewa   !== sewaFilter) return false;
         return true;
     });
 
@@ -1256,6 +1405,19 @@ function applyFilters() {
 function sortTable(col) {
     if (billingSort.col === col) billingSort.dir = billingSort.dir === 'asc' ? 'desc' : 'asc';
     else { billingSort.col = col; billingSort.dir = 'asc'; }
+    
+    // Update DOM sort indicators
+    document.querySelectorAll('th[id^="th-sort-"]').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+        th.querySelector('.sort-icon').textContent = '↕';
+    });
+    
+    const th = document.getElementById('th-sort-' + (col === 'id_tagihan' ? 'id' : (col === 'bulan_ke' ? 'bulan' : (col === 'jumlah_tagihan' ? 'jumlah' : col))));
+    if (th) {
+        th.classList.add('sort-' + billingSort.dir);
+        th.querySelector('.sort-icon').textContent = billingSort.dir === 'asc' ? '▲' : '▼';
+    }
+    
     sortFilteredRows();
     renderBillingPage();
 }

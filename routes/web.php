@@ -6355,8 +6355,14 @@ Route::middleware(['auth',
         // Tagihan inline update
         Route::post('/tagihan/{id}/update', [\App\Http\Controllers\SewaKontainerController::class, 'updateTagihan'])->name('tagihan.update');
 
-        // Bulk payment import
+        // Bulk payment import (legacy)
         Route::post('/import-payment', [\App\Http\Controllers\SewaKontainerController::class, 'importPayment'])->name('import.payment');
+
+        // Bulk import (8 types: customer, tipe, ukuran, kontainer, tarif, sewa, pembayaran, pelunasan)
+        Route::post('/bulk-import', [\App\Http\Controllers\SewaKontainerController::class, 'bulkImport'])->name('bulk.import');
+
+        // Preview import (2-stage: parse → preview → apply; currently for pelunasan)
+        Route::post('/import-preview', [\App\Http\Controllers\SewaKontainerController::class, 'previewImport'])->name('import.preview');
 
         // Backup / Restore JSON
         Route::get('/export-json', [\App\Http\Controllers\SewaKontainerController::class, 'exportJson'])->name('export.json');

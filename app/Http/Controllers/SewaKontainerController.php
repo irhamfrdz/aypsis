@@ -608,14 +608,463 @@ class SewaKontainerController extends Controller
     private function parseFlexDate($str)
     {
         $str = trim($str);
+        if (!$str) return null;
+
+        // dd/mm/yyyy or dd-mm-yyyy
         if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', $str, $m)) {
             return sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
         }
+        // yyyy/mm/dd or yyyy-mm-dd
         if (preg_match('/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/', $str, $m)) {
             return sprintf('%04d-%02d-%02d', $m[1], $m[2], $m[3]);
         }
+        // Excel serial number (pure integer > 1000)
+        if (preg_match('/^\d+(\.\d+)?$/', $str) && floatval($str) > 1000) {
+            $serial = floatval($str);
+            $base = \Carbon\Carbon::create(1899, 12, 30, 0, 0, 0, 'UTC');
+            $d = $base->copy()->addDays((int)$serial);
+            return $d->format('Y-m-d');
+        }
+        // Indonesian text: "21 Mei 25" or "21 Mei 2025" or "21 Apr 2024"
+        $indoMonths = [
+            'jan'=>1,'januari'=>1,'january'=>1,
+            'feb'=>2,'februari'=>2,'february'=>2,
+            'mar'=>3,'maret'=>3,'march'=>3,
+            'apr'=>4,'april'=>4,
+            'mei'=>5,'may'=>5,
+            'jun'=>6,'juni'=>6,'june'=>6,
+            'jul'=>7,'juli'=>7,'july'=>7,
+            'agt'=>8,'agustus'=>8,'aug'=>8,'august'=>8,
+            'sep'=>9,'september'=>9,
+            'okt'=>10,'oktober'=>10,'oct'=>10,'october'=>10,
+            'nov'=>11,'november'=>11,
+            'des'=>12,'desember'=>12,'dec'=>12,'december'=>12,
+        ];
+        if (preg_match('/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{2,4})$/', $str, $m)) {
+            $day   = (int)$m[1];
+            $month = strtolower($m[2]);
+            $year  = (int)$m[3];
+            if ($year < 100) $year += 2000;
+            $mIdx = $indoMonths[substr($month, 0, 3)] ?? ($indoMonths[$month] ?? null);
+            if ($mIdx && $day >= 1 && $day <= 31) {
+                return sprintf('%04d-%02d-%02d', $year, $mIdx, $day);
+            }
+        }
 
         return null;
+    }
+
+    // -----------------------------------------------------------------------
+    // BULK IMPORT (8 tipe)
+    // -----------------------------------------------------------------------
+
+    public function bulkImport(Request $request)
+    {
+        $request->validate([
+            'type'    => 'required|in:customer,tipe,ukuran,kontainer,tarif,sewa,pembayaran,pelunasan',
+            'payload' => 'required|string',
+        ]);
+
+        $type  = $request->type;
+        $lines = explode("\n", $request->payload);
+        $logs  = [];
+        $successCount = 0;
+        $failedLines  = [];
+
+        // ---- Strict lookup helpers ----
+        $getCustomer = function ($name) {
+            $c = SewaCustomer::whereRaw('LOWER(nama_customer) = ?', [strtolower(trim($name))])->first();
+            if (!$c) throw new \Exception("Customer/Vendor \"" . trim($name) . "\" tidak ditemukan di Master.");
+            return $c;
+        };
+        $getTipe = function ($name) {
+            $t = SewaTipe::whereRaw('LOWER(nama_tipe) = ?', [strtolower(trim($name))])->first();
+            if (!$t) throw new \Exception("Tipe \"" . trim($name) . "\" tidak ditemukan di Master Tipe.");
+            return $t;
+        };
+        $getUkuran = function ($desc) {
+            $clean = trim($desc);
+            if (is_numeric($clean)) $clean = $clean . "'";
+            $u = SewaUkuran::where('deskripsi_ukuran', $clean)->first();
+            if (!$u) throw new \Exception("Ukuran \"$clean\" tidak ditemukan di Master Ukuran.");
+            return $u;
+        };
+
+        foreach ($lines as $idx => $line) {
+            $lineNum = $idx + 1;
+            $trimmed = trim($line);
+            if (!$trimmed || str_starts_with($trimmed, '#')) continue;
+
+            try {
+                switch ($type) {
+                    // 1. Customer
+                    case 'customer':
+                        $name = $trimmed;
+                        if (SewaCustomer::whereRaw('LOWER(nama_customer) = ?', [strtolower($name)])->exists()) {
+                            throw new \Exception("Customer \"$name\" sudah terdaftar.");
+                        }
+                        SewaCustomer::create(['id_customer' => 'cust_'.Str::random(8), 'nama_customer' => $name]);
+                        $successCount++;
+                        break;
+
+                    // 2. Tipe
+                    case 'tipe':
+                        if (SewaTipe::whereRaw('LOWER(nama_tipe) = ?', [strtolower($trimmed)])->exists()) {
+                            throw new \Exception("Tipe \"$trimmed\" sudah terdaftar.");
+                        }
+                        SewaTipe::create(['id_tipe' => 'tipe_'.Str::random(8), 'nama_tipe' => $trimmed]);
+                        $successCount++;
+                        break;
+
+                    // 3. Ukuran
+                    case 'ukuran':
+                        $raw = $trimmed;
+                        if (is_numeric($raw)) $raw = $raw . "'";
+                        if (SewaUkuran::where('deskripsi_ukuran', $raw)->exists()) {
+                            throw new \Exception("Ukuran \"$raw\" sudah terdaftar.");
+                        }
+                        SewaUkuran::create(['id_ukuran' => 'sz_'.Str::random(8), 'deskripsi_ukuran' => $raw]);
+                        $successCount++;
+                        break;
+
+                    // 4. Kontainer
+                    case 'kontainer': {
+                        $parts = array_map('trim', explode(';', $trimmed));
+                        if (count($parts) < 4) throw new \Exception('Format salah. Wajib: NO_KONTAINER ; CUSTOMER ; TIPE ; UKURAN');
+                        $kontNo = strtoupper(preg_replace('/\s+/', '', $parts[0]));
+                        if (!$kontNo) throw new \Exception('No Kontainer kosong');
+                        if (SewaKontainer::where('no_kontainer', $kontNo)->exists()) {
+                            throw new \Exception("Kontainer \"$kontNo\" sudah terdaftar.");
+                        }
+                        $cust  = $getCustomer($parts[1]);
+                        $tipe  = $getTipe($parts[2]);
+                        $ukuran = $getUkuran($parts[3]);
+                        SewaKontainer::create([
+                            'no_kontainer' => $kontNo,
+                            'id_customer'  => $cust->id_customer,
+                            'id_tipe'      => $tipe->id_tipe,
+                            'id_ukuran'    => $ukuran->id_ukuran,
+                            'status_aktif' => true,
+                        ]);
+                        $successCount++;
+                        break;
+                    }
+
+                    // 5. Tarif
+                    case 'tarif': {
+                        $parts = array_map('trim', explode(';', $trimmed));
+                        if (count($parts) < 5) throw new \Exception('Format: CUSTOMER ; TIPE ; UKURAN ; TARIF_BULANAN ; TARIF_HARIAN ; [TGL_MULAI]');
+                        $cust   = $getCustomer($parts[0]);
+                        $tipe   = $getTipe($parts[1]);
+                        $ukuran = $getUkuran($parts[2]);
+                        $tarifBulan = floatval(preg_replace('/[^0-9.]/', '', $parts[3]));
+                        $tarifHari  = floatval(preg_replace('/[^0-9.]/', '', $parts[4]));
+                        if ($tarifBulan <= 0 && $tarifHari <= 0) throw new \Exception('Tarif Bulanan atau Harian harus > 0');
+                        $tglMulai = isset($parts[5]) && $parts[5]
+                            ? $this->parseFlexDate($parts[5])
+                            : now()->format('Y-m-d');
+                        if (!$tglMulai) throw new \Exception("Format tanggal tidak valid: {$parts[5]}");
+                        // Close previous active tarif
+                        $prev = SewaTarif::where('id_customer', $cust->id_customer)
+                            ->where('id_tipe', $tipe->id_tipe)
+                            ->where('id_ukuran', $ukuran->id_ukuran)
+                            ->whereNull('tanggal_akhir_berlaku')
+                            ->first();
+                        if ($prev) $prev->update(['tanggal_akhir_berlaku' => Carbon::parse($tglMulai)->subDay()->format('Y-m-d')]);
+                        SewaTarif::create([
+                            'id_tarif'            => 'trf_'.Str::random(8),
+                            'id_customer'         => $cust->id_customer,
+                            'id_tipe'             => $tipe->id_tipe,
+                            'id_ukuran'           => $ukuran->id_ukuran,
+                            'tarif_bulanan'       => $tarifBulan,
+                            'tarif_harian'        => $tarifHari,
+                            'tanggal_mulai_berlaku' => $tglMulai,
+                            'tanggal_akhir_berlaku' => null,
+                        ]);
+                        $successCount++;
+                        break;
+                    }
+
+                    // 6. Sewa
+                    case 'sewa': {
+                        $parts = array_map('trim', explode(';', $trimmed));
+                        $kontNo       = strtoupper(preg_replace('/\s+/', '', $parts[0] ?? ''));
+                        $custNameRaw  = $parts[1] ?? '';
+                        $tglSewaRaw   = $parts[2] ?? '';
+                        $tglKembaliRaw = $parts[3] ?? '';
+                        $jenisTarif   = strtolower($parts[4] ?? 'bulanan') === 'harian' ? 'Harian' : 'Bulanan';
+
+                        if (!$kontNo) throw new \Exception('No Kontainer kosong');
+                        $kontObj = SewaKontainer::find($kontNo);
+                        if (!$kontObj) throw new \Exception("Kontainer \"$kontNo\" tidak terdaftar di Master.");
+
+                        // Blank tanggal_sewa = update tanggal_kembali sewa aktif
+                        if (!$tglSewaRaw) {
+                            if (!$tglKembaliRaw) throw new \Exception('Kedua tanggal kosong');
+                            $activeSewa = SewaTransaksi::where('no_kontainer', $kontNo)->where('status_sewa', 'Aktif')->first();
+                            if (!$activeSewa) throw new \Exception("Kontainer \"$kontNo\" tidak punya sewa aktif untuk diperbarui.");
+                            $endIso = $this->parseFlexDate($tglKembaliRaw);
+                            if (!$endIso) throw new \Exception("Format tanggal kembali tidak valid: $tglKembaliRaw");
+                            if ($endIso < $activeSewa->tanggal_sewa) throw new \Exception('Tanggal kembali tidak boleh sebelum tanggal sewa');
+                            $activeSewa->update(['tanggal_kembali' => $endIso, 'status_sewa' => 'Selesai']);
+                            $this->generatePeriodsForSewa($activeSewa->fresh(), Carbon::now('Asia/Jakarta'));
+                            $successCount++;
+                            break;
+                        }
+
+                        $cust    = $getCustomer($custNameRaw);
+                        $startIso = $this->parseFlexDate($tglSewaRaw);
+                        if (!$startIso) throw new \Exception("Format tanggal sewa tidak valid: $tglSewaRaw");
+
+                        // Check duplicate
+                        if (SewaTransaksi::where('no_kontainer', $kontNo)->where('tanggal_sewa', $startIso)->exists()) {
+                            throw new \Exception("Duplikat: Sewa \"$kontNo\" dengan tanggal \"$tglSewaRaw\" sudah ada.");
+                        }
+                        if (SewaTransaksi::where('no_kontainer', $kontNo)->where('status_sewa', 'Aktif')->exists()) {
+                            throw new \Exception("Kontainer \"$kontNo\" masih aktif disewa. Kembalikan dahulu.");
+                        }
+
+                        $endIso = null;
+                        if ($tglKembaliRaw) {
+                            $endIso = $this->parseFlexDate($tglKembaliRaw);
+                            if (!$endIso) throw new \Exception("Format tanggal kembali tidak valid: $tglKembaliRaw");
+                            if ($endIso < $startIso) throw new \Exception('Tanggal kembali tidak boleh sebelum tanggal sewa');
+                        }
+
+                        // Find matching tarif
+                        $tarif = SewaTarif::where('id_customer', $cust->id_customer)
+                            ->where('id_tipe', $kontObj->id_tipe)
+                            ->where('id_ukuran', $kontObj->id_ukuran)
+                            ->whereNull('tanggal_akhir_berlaku')
+                            ->first();
+
+                        $serial  = $this->dateToExcelSerial(Carbon::parse($startIso));
+                        $cycle   = SewaTransaksi::where('no_kontainer', $kontNo)->count() + 1;
+                        $idSewa  = "$kontNo$serial" . str_pad($cycle, 2, '0', STR_PAD_LEFT);
+
+                        $sewa = SewaTransaksi::create([
+                            'id_sewa'        => $idSewa,
+                            'no_kontainer'   => $kontNo,
+                            'id_customer'    => $cust->id_customer,
+                            'tanggal_sewa'   => $startIso,
+                            'tanggal_kembali' => $endIso,
+                            'tarif_bulanan'  => $tarif ? $tarif->tarif_bulanan : 0,
+                            'tarif_harian'   => $tarif ? $tarif->tarif_harian  : 0,
+                            'jenis_tarif'    => $jenisTarif,
+                            'status_sewa'    => $endIso ? 'Selesai' : 'Aktif',
+                        ]);
+                        $this->generatePeriodsForSewa($sewa, Carbon::now('Asia/Jakarta'));
+                        $successCount++;
+                        break;
+                    }
+
+                    // 7. Pembayaran / Pranota (Import tagihan dari Excel vendor)
+                    case 'pembayaran': {
+                        $parts = array_map('trim', explode(';', $trimmed));
+                        if (count($parts) < 3) throw new \Exception('Format: KONTAINER ; PERIODE ; TAGIHAN ; [No.Tagihan] ; [Tgl.Tagihan] ; [Siklus_Ke]');
+
+                        $kontNo      = strtoupper(preg_replace('/\s+/', '', $parts[0]));
+                        $periodeNum  = (int)($parts[1] ?? 0);
+                        $tagihanRaw  = preg_replace('/[Rp$\s\.]/i', '', $parts[2] ?? '0');
+                        $tagihanRaw  = str_replace(',', '', $tagihanRaw);
+                        $tagihanAmt  = floatval($tagihanRaw);
+                        $noTagihan   = $parts[3] ?? '';
+                        $tglTagihanRaw = $parts[4] ?? '';
+                        $siklusKeRaw = $parts[5] ?? '';
+
+                        if (!$kontNo) throw new \Exception('No Kontainer kosong');
+                        if ($periodeNum < 1) throw new \Exception('Periode harus angka >= 1');
+
+                        $tglTagihan = $tglTagihanRaw ? ($this->parseFlexDate($tglTagihanRaw) ?? now()->format('Y-m-d')) : now()->format('Y-m-d');
+
+                        // Find matching sewa
+                        $sewaList = SewaTransaksi::where('no_kontainer', $kontNo)->orderBy('tanggal_sewa')->get();
+                        if ($sewaList->isEmpty()) throw new \Exception("Kontainer \"$kontNo\" tidak punya transaksi sewa.");
+
+                        $selectedSewa = null;
+                        if ($siklusKeRaw !== '') {
+                            $cycleIdx = (int)$siklusKeRaw - 1;
+                            if ($cycleIdx < 0 || $cycleIdx >= $sewaList->count()) {
+                                throw new \Exception("Siklus ke-{$siklusKeRaw} tidak valid. Kontainer punya {$sewaList->count()} siklus.");
+                            }
+                            $selectedSewa = $sewaList[$cycleIdx];
+                        } else {
+                            // Auto-match: sewa yang punya periode ke-N
+                            $candidates = $sewaList->filter(function ($sw) use ($periodeNum, $tglTagihan) {
+                                $tagihan = SewaTagihan::where('id_sewa', $sw->id_sewa)->where('bulan_ke', $periodeNum)->first();
+                                return $tagihan !== null;
+                            });
+                            if ($candidates->count() === 1) {
+                                $selectedSewa = $candidates->first();
+                            } elseif ($candidates->count() > 1) {
+                                $info = $candidates->map(fn($s, $i) => '• Siklus '.($sewaList->search(fn($x) => $x->id_sewa === $s->id_sewa)+1).': '.$s->tanggal_sewa)->join(', ');
+                                throw new \Exception("KONFLIK SIKLUS: {$info}. Tambahkan \"; [no_siklus]\" di akhir baris.");
+                            } else {
+                                $selectedSewa = $sewaList->last();
+                            }
+                        }
+
+                        $tagihan = SewaTagihan::where('id_sewa', $selectedSewa->id_sewa)->where('bulan_ke', $periodeNum)->first();
+                        if (!$tagihan) throw new \Exception("Periode ke-$periodeNum tidak ditemukan pada sewa terpilih (mulai {$selectedSewa->tanggal_sewa}).");
+
+                        // Duplicate check
+                        if ($noTagihan && $tagihan->nomor_invoice_grup && strtolower($tagihan->nomor_invoice_grup) === strtolower($noTagihan)) {
+                            throw new \Exception("Duplikat: Tagihan periode $periodeNum sudah ada no. tagihan \"$noTagihan\".");
+                        }
+                        if ($tagihan->status_bayar !== 'Belum Ditagih') {
+                            throw new \Exception("Tagihan periode $periodeNum sudah tercatat (status: {$tagihan->status_bayar}). Gunakan edit manual.");
+                        }
+
+                        $ppn = round($tagihanAmt * 0.11);
+                        $pph = round($tagihanAmt * 0.02);
+                        $tagihan->update([
+                            'status_bayar'            => 'Pranota',
+                            'jumlah_tagihan_override'  => $tagihanAmt,
+                            'selisih_pembayaran'       => $tagihanAmt - $tagihan->jumlah_tagihan,
+                            'ppn'                     => $ppn,
+                            'pph'                     => $pph,
+                            'nomor_invoice_grup'       => $noTagihan ?: null,
+                            'tanggal_tagihan'          => $tglTagihan,
+                            'keterangan_selisih'       => ($tagihanAmt - $tagihan->jumlah_tagihan) != 0 ? 'Selisih dari import' : null,
+                        ]);
+                        $successCount++;
+                        break;
+                    }
+
+                    // 8. Pelunasan (set draft bayar, status Belum Bayar)
+                    case 'pelunasan': {
+                        $parts = array_map('trim', preg_split('/[;\t]+/', $trimmed));
+
+                        // Detect header row silently
+                        $isHeader = preg_match('/^(no|nomor|bukti|tanggal|tgl|nota|invoice|status)/i', $parts[0] ?? '');
+                        if ($isHeader) break;
+
+                        // Handle optional row number prefix
+                        $nomorBayar = '';
+                        $tglBayarRaw = '';
+                        $nomorNota   = '';
+
+                        if (count($parts) >= 4) {
+                            // Check if col[2] is a date (then col[0] is row number)
+                            $d2 = $this->parseFlexDate($parts[2]);
+                            $d1 = $this->parseFlexDate($parts[1]);
+                            if ($d2) {
+                                $nomorBayar = $parts[1]; $tglBayarRaw = $parts[2]; $nomorNota = $parts[3];
+                            } elseif ($d1) {
+                                $nomorBayar = $parts[0]; $tglBayarRaw = $parts[1]; $nomorNota = $parts[2];
+                            } else {
+                                $nomorBayar = $parts[1]; $tglBayarRaw = $parts[2]; $nomorNota = $parts[3];
+                            }
+                        } elseif (count($parts) >= 3) {
+                            $nomorBayar = $parts[0]; $tglBayarRaw = $parts[1]; $nomorNota = $parts[2];
+                        } else {
+                            throw new \Exception('Format: No Bukti Bayar ; Tanggal Bayar ; Nomor Nota');
+                        }
+
+                        if (!$nomorBayar) throw new \Exception('Nomor Bukti Bayar kosong');
+                        if (!$nomorNota)  throw new \Exception('Nomor Nota kosong');
+
+                        $tglBayar = $tglBayarRaw ? ($this->parseFlexDate($tglBayarRaw) ?? now()->format('Y-m-d')) : now()->format('Y-m-d');
+
+                        // Find invoice or tagihans by nomor nota
+                        $invoice = SewaInvoice::where('nomor_invoice', $nomorNota)->first();
+                        $tagihansQ = SewaTagihan::where('nomor_invoice_grup', $nomorNota);
+                        if ($invoice) {
+                            $tagihansQ->orWhereIn('id_tagihan', $invoice->tagihans->pluck('id_tagihan'));
+                        }
+                        $tagihans = $tagihansQ->get();
+
+                        if ($tagihans->isEmpty() && !$invoice) {
+                            throw new \Exception("Nomor Nota \"$nomorNota\" tidak ditemukan.");
+                        }
+
+                        $tagihans->each(fn($t) => $t->update([
+                            'status_bayar'   => 'Belum Bayar',
+                            'tanggal_bayar'  => $tglBayar,
+                            'nomor_bayar'    => $nomorBayar,
+                        ]));
+
+                        if ($invoice) {
+                            $invoice->update(['status_pembayaran' => 'Belum Bayar']);
+                        }
+
+                        $successCount++;
+                        break;
+                    }
+                }
+                $logs[] = ['line' => $lineNum, 'raw' => $trimmed, 'status' => 'ok', 'error' => ''];
+            } catch (\Exception $e) {
+                $logs[] = ['line' => $lineNum, 'raw' => $trimmed, 'status' => 'error', 'error' => $e->getMessage()];
+                $failedLines[] = $line;
+            }
+        }
+
+        return response()->json([
+            'success'       => true,
+            'success_count' => $successCount,
+            'logs'          => $logs,
+            'failed_lines'  => implode("\n", $failedLines),
+        ]);
+    }
+
+    public function previewImport(Request $request)
+    {
+        $request->validate(['type' => 'required|string', 'payload' => 'required|string']);
+        // For pelunasan preview: parse without saving
+        $lines = explode("\n", $request->payload);
+        $preview = [];
+
+        foreach ($lines as $idx => $line) {
+            $trimmed = trim($line);
+            if (!$trimmed || str_starts_with($trimmed, '#')) continue;
+
+            $parts = array_map('trim', preg_split('/[;\t]+/', $trimmed));
+            $isHeader = preg_match('/^(no|nomor|bukti|tanggal|tgl|nota|invoice|status)/i', $parts[0] ?? '');
+            if ($isHeader) continue;
+
+            $nomorBayar = ''; $tglBayarRaw = ''; $nomorNota = '';
+            if (count($parts) >= 4) {
+                $d2 = $this->parseFlexDate($parts[2]);
+                $d1 = $this->parseFlexDate($parts[1]);
+                if ($d2) { $nomorBayar = $parts[1]; $tglBayarRaw = $parts[2]; $nomorNota = $parts[3]; }
+                elseif ($d1) { $nomorBayar = $parts[0]; $tglBayarRaw = $parts[1]; $nomorNota = $parts[2]; }
+                else { $nomorBayar = $parts[1]; $tglBayarRaw = $parts[2]; $nomorNota = $parts[3]; }
+            } elseif (count($parts) >= 3) {
+                $nomorBayar = $parts[0]; $tglBayarRaw = $parts[1]; $nomorNota = $parts[2];
+            } else {
+                $preview[] = ['line' => $idx+1, 'raw' => $trimmed, 'is_valid' => false, 'error' => 'Format kolom tidak lengkap', 'nomor_nota' => '', 'customer' => '', 'grand_total' => 0, 'tanggal_bayar' => ''];
+                continue;
+            }
+
+            $tglBayar = $tglBayarRaw ? ($this->parseFlexDate($tglBayarRaw) ?? now()->format('Y-m-d')) : now()->format('Y-m-d');
+            $invoice  = SewaInvoice::with('tagihans')->where('nomor_invoice', $nomorNota)->first();
+            $tagihans = SewaTagihan::where('nomor_invoice_grup', $nomorNota)->get();
+            $allTagihans = $invoice ? $tagihans->merge($invoice->tagihans)->unique('id_tagihan') : $tagihans;
+
+            if ($allTagihans->isEmpty() && !$invoice) {
+                $preview[] = ['line' => $idx+1, 'raw' => $trimmed, 'is_valid' => false, 'error' => "Nota \"$nomorNota\" tidak ditemukan", 'nomor_nota' => $nomorNota, 'customer' => '', 'grand_total' => 0, 'tanggal_bayar' => $tglBayar];
+                continue;
+            }
+
+            $customerId = $invoice ? $invoice->id_customer : (SewaTransaksi::find($allTagihans->first()->id_sewa)?->id_customer ?? '');
+            $customerName = SewaCustomer::find($customerId)?->nama_customer ?? '-';
+            $grandTotal = $allTagihans->sum(fn($t) => $t->jumlah_tagihan_override ?? $t->jumlah_tagihan);
+
+            $preview[] = [
+                'line'         => $idx+1,
+                'raw'          => $trimmed,
+                'is_valid'     => true,
+                'error'        => '',
+                'nomor_nota'   => $nomorNota,
+                'nomor_bayar'  => $nomorBayar,
+                'customer'     => $customerName,
+                'grand_total'  => $grandTotal,
+                'tanggal_bayar' => $tglBayar,
+                'jml_tagihan'  => $allTagihans->count(),
+            ];
+        }
+
+        return response()->json(['success' => true, 'preview' => $preview]);
     }
 
     // -----------------------------------------------------------------------
