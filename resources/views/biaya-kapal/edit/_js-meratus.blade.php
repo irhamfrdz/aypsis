@@ -253,7 +253,7 @@
         if (data && data.kapal) {
             loadVoyagesForMeratusSection(sectionIndex, data.kapal, data.voyage);
             if (data.voyage) {
-                loadContainerInfoForSection(sectionIndex, data.kapal, data.voyage);
+                loadContainerInfoForMeratusSection(sectionIndex, data.kapal, data.voyage);
             }
         }
 
@@ -501,7 +501,7 @@
     }
 
     //     // Load container info panel only (no clearing list)
-    function loadContainerInfoForSection(sectionIndex, kapalNama, voyage) {
+    function loadContainerInfoForMeratusSection(sectionIndex, kapalNama, voyage) {
         const section = document.querySelector(`.meratus-section[data-section-index="${sectionIndex}"]`);
         if (!section) return;
         

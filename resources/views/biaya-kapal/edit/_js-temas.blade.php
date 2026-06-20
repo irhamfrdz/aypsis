@@ -253,7 +253,7 @@
         if (data && data.kapal) {
             loadVoyagesForTemasSection(sectionIndex, data.kapal, data.voyage);
             if (data.voyage) {
-                loadContainerInfoForSection(sectionIndex, data.kapal, data.voyage);
+                loadContainerInfoForTemasSection(sectionIndex, data.kapal, data.voyage);
             }
         }
 
@@ -500,7 +500,7 @@
     }
 
     // Load container info panel only (no clearing list)
-    function loadContainerInfoForSection(sectionIndex, kapalNama, voyage) {
+    function loadContainerInfoForTemasSection(sectionIndex, kapalNama, voyage) {
         const section = document.querySelector(`.temas-section[data-section-index="${sectionIndex}"]`);
         if (!section) return;
         

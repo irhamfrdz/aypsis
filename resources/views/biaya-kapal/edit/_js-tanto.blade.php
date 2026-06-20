@@ -254,7 +254,7 @@
         if (data && data.kapal) {
             loadVoyagesForTantoSection(sectionIndex, data.kapal, data.voyage);
             if (data.voyage) {
-                loadContainerInfoForSection(sectionIndex, data.kapal, data.voyage);
+                loadContainerInfoForTantoSection(sectionIndex, data.kapal, data.voyage);
             }
         }
  
@@ -501,7 +501,7 @@
     }
 
     // Load container info panel only (no clearing list)
-    function loadContainerInfoForSection(sectionIndex, kapalNama, voyage) {
+    function loadContainerInfoForTantoSection(sectionIndex, kapalNama, voyage) {
         const section = document.querySelector(`.tanto-section[data-section-index="${sectionIndex}"]`);
         if (!section) return;
         
