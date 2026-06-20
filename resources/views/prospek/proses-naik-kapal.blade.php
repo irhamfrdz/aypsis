@@ -728,8 +728,6 @@
                 if (!confirm(`Proses muat ${selectedProspeks.length} kontainer ke kapal ini?`)) e.preventDefault();
             });
         }
-
-        }
     });
     </script>
 @endpush
