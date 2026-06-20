@@ -5017,7 +5017,7 @@ class BiayaKapalController extends Controller
                     'id' => $item->id,
                     'type' => 'tanda_terima_lcl',
                     'no_surat_jalan' => $item->nomor_tanda_terima.' (LCL)',
-                    'no_kontainer' => '-',
+                    'no_kontainer' => $item->nomor_kontainer ?: '-',
                     'pengirim' => $item->nama_pengirim,
                     'penerima' => $item->nama_penerima,
                     'tanggal' => $item->tanggal_tanda_terima,
