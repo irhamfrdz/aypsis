@@ -755,7 +755,6 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
     }
 
     public function styles(Worksheet $sheet)
-    public function styles(Worksheet $sheet)
     {
         $sheet->setShowGridlines(true);
 
