@@ -604,14 +604,14 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
     public function map($row): array
     {
         if ($row['type'] === 'signature') {
-            $arr = array_fill(0, 33, '');
+            $arr = array_fill(0, 34, '');
             $arr[22] = $row['value']; // Column W
 
             return $arr;
         }
 
         if ($row['type'] === 'total') {
-            $arr = array_fill(0, 33, '');
+            $arr = array_fill(0, 34, '');
             $arr[3] = 'Grand Total….'; // Column D
             $arr[5] = $row['qty_formula']; // Column F
             $arr[6] = 'Unit'; // Column G
@@ -644,6 +644,7 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
         $notifyAddress = '';
         $notifyNpwp = '';
         $deliveryAddress = '';
+        $contactPerson = '';
         $groupCount = '';
         $groupUnit = '';
         $groupDesc = '';
@@ -660,6 +661,7 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
             $notifyAddress = '';
             $notifyNpwp = '-';
             $deliveryAddress = '';
+            $contactPerson = '-';
             $groupCount = 1;
             $groupUnit = 'Unit';
             $groupDesc = "Container {$size} feet / LCL  (Kantor)";
@@ -681,9 +683,7 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
             $notifyNpwp = $consigneeNpwp;
 
             $deliveryAddress = trim($consigneeName).'    '.trim($consigneeAddress);
-            if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {
-                $deliveryAddress .= ' Telp.'.$row['p_cp'];
-            }
+            $contactPerson = (! empty($row['p_cp']) && $row['p_cp'] !== '-') ? $row['p_cp'] : '-';
         } else {
             $shipperName = $row['pengirim'];
             $shipperAddress = $row['s_address'];
@@ -700,9 +700,7 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
             $notifyNpwp = $consigneeNpwp;
 
             $deliveryAddress = trim($consigneeName).'    '.trim($consigneeAddress);
-            if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {
-                $deliveryAddress .= ' Telp.'.$row['p_cp'];
-            }
+            $contactPerson = (! empty($row['p_cp']) && $row['p_cp'] !== '-') ? $row['p_cp'] : '-';
 
             if (! empty($row['show_group_fields'])) {
                 $blNo = $row['bl_no'];
@@ -744,17 +742,19 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
             $notifyName, // W: NOTIFY PARTY
             $notifyAddress, // X: ADDRESS (Notify Party Address)
             $notifyNpwp, // Y: NPWP NOTIFY PARTY
-            $deliveryAddress, // Z: DELIVERY ADDRESS & CONTACT PERSON
-            $row['ppftz'] === '-' ? 'AYP' : $row['ppftz'], // AA: DOCUMENT PPFTZ-03
-            $row['term'] ?: '-', // AB: CONDITION (Term)
-            $row['no_tt'] ?: '-', // AC: RECEIPT SIGNS (NUMBER)
-            $formattedDate ?: '-', // AD: RECEIPT SIGNS (DATE)
-            $groupCount, // AE: Qty Perhitungan
-            $groupUnit, // AF: Unit Perhitungan
-            $groupDesc, // AG: Container breakdown description
+            $deliveryAddress, // Z: DELIVERY ADDRESS
+            $contactPerson, // AA: CONTACT PERSON
+            $row['ppftz'] === '-' ? 'AYP' : $row['ppftz'], // AB: DOCUMENT PPFTZ-03
+            $row['term'] ?: '-', // AC: CONDITION (Term)
+            $row['no_tt'] ?: '-', // AD: RECEIPT SIGNS (NUMBER)
+            $formattedDate ?: '-', // AE: RECEIPT SIGNS (DATE)
+            $groupCount, // AF: Qty Perhitungan
+            $groupUnit, // AG: Unit Perhitungan
+            $groupDesc, // AH: Container breakdown description
         ];
     }
 
+    public function styles(Worksheet $sheet)
     public function styles(Worksheet $sheet)
     {
         $sheet->setShowGridlines(true);
@@ -766,8 +766,8 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
             'K' => 80.71, 'L' => 9.71, 'M' => 8.71, 'N' => 80.71, 'O' => 16.14,
             'P' => 14.71, 'Q' => 26.71, 'R' => 26.71, 'S' => 20.57, 'T' => 26.71,
             'U' => 26.71, 'V' => 20.57, 'W' => 26.71, 'X' => 26.71, 'Y' => 20.57,
-            'Z' => 26.71, 'AA' => 15.29, 'AB' => 15.14, 'AC' => 13.57, 'AD' => 18.71,
-            'AE' => 14.71, 'AF' => 5.14, 'AG' => 33.14,
+            'Z' => 26.71, 'AA' => 20.57, 'AB' => 15.29, 'AC' => 15.14, 'AD' => 13.57, 
+            'AE' => 18.71, 'AF' => 14.71, 'AG' => 5.14, 'AH' => 33.14,
         ];
         foreach ($widths as $col => $width) {
             $sheet->getColumnDimension($col)->setWidth($width);
@@ -791,7 +791,7 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
 
         // Row 3: Merged Title
         $sheet->setCellValue('B3', 'M A N I F E S T    O F    C A R G O');
-        $sheet->mergeCells('B3:AG3');
+        $sheet->mergeCells('B3:AH3');
         $sheet->getStyle('B3')->getFont()->setName('Arial')->setSize(14)->setBold(true);
         $sheet->getStyle('B3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
             ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
@@ -846,37 +846,38 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
             'W8' => "NOTIFY PARTY\n(CONSIGNEE)",
             'X8' => 'ADDRESS',
             'Y8' => "NO. IDENTITAS \n(NPWP  NOTIFY PARTY CONSIGNEE)",
-            'Z8' => 'DELIVERY ADDRESS & CONTACT PERSON',
-            'AA8' => 'DOCUMENT PPFTZ-03',
-            'AB8' => 'CONDITION',
-            'AC8' => 'RECEIPT SIGNS & ROAD LETTERS',
-            'AE8' => "K E T E R A N G A N\nPERHITUNGAN M3 / KGS",
+            'Z8' => 'DELIVERY ADDRESS',
+            'AA8' => 'CONTACT PERSON',
+            'AB8' => 'DOCUMENT PPFTZ-03',
+            'AC8' => 'CONDITION',
+            'AD8' => 'RECEIPT SIGNS & ROAD LETTERS',
+            'AF8' => "K E T E R A N G A N\nPERHITUNGAN M3 / KGS",
         ];
 
         foreach ($headers as $cell => $text) {
             $sheet->setCellValue($cell, $text);
         }
 
-        $sheet->setCellValue('AC9', 'NUMBER');
-        $sheet->setCellValue('AD9', 'DATE');
+        $sheet->setCellValue('AD9', 'NUMBER');
+        $sheet->setCellValue('AE9', 'DATE');
 
         $merges = [
             'B8:B9', 'C8:C9', 'D8:D9', 'E8:E9',
             'F8:K9', 'L8:N9', 'O8:O9', 'P8:P9',
             'Q8:Q9', 'R8:R9', 'S8:S9', 'T8:T9', 'U8:U9', 'V8:V9',
             'W8:W9', 'X8:X9', 'Y8:Y9', 'Z8:Z9',
-            'AA8:AA9', 'AB8:AB9', 'AC8:AD8', 'AE8:AG9',
+            'AA8:AA9', 'AB8:AB9', 'AC8:AC9', 'AD8:AE8', 'AF8:AH9',
         ];
         foreach ($merges as $m) {
             $sheet->mergeCells($m);
         }
 
-        $sheet->getStyle('B8:AG9')->getFont()->setName('Arial')->setSize(11)->setBold(true);
-        $sheet->getStyle('B8:AG9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+        $sheet->getStyle('B8:AH9')->getFont()->setName('Arial')->setSize(11)->setBold(true);
+        $sheet->getStyle('B8:AH9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
             ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
             ->setWrapText(true);
 
-        foreach (['E8', 'AA8', 'AC8', 'AD8', 'AC9', 'AD9'] as $c) {
+        foreach (['E8', 'AB8', 'AD8', 'AE8', 'AD9', 'AE9'] as $c) {
             $sheet->getStyle($c)->getFont()->setSize(10);
         }
 
@@ -893,7 +894,7 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
         }
 
         // Borders for headers
-        $sheet->getStyle('B7:AG9')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle('B7:AH9')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
 
         // Find ranges dynamically
         $highestRow = $sheet->getHighestRow();
@@ -907,37 +908,37 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
         $lastDataRow = $totalRowIndex - 1;
 
         // Style data cells
-        $sheet->getStyle("B10:AG{$lastDataRow}")->getFont()->setName('Arial')->setSize(10)->setBold(false);
-        $sheet->getStyle("B10:AG{$lastDataRow}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-        $sheet->getStyle("B10:AG{$lastDataRow}")->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
+        $sheet->getStyle("B10:AH{$lastDataRow}")->getFont()->setName('Arial')->setSize(10)->setBold(false);
+        $sheet->getStyle("B10:AH{$lastDataRow}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle("B10:AH{$lastDataRow}")->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
             ->setWrapText(true);
 
-        $centerCols = ['C', 'S', 'V', 'Y', 'AA', 'AB'];
+        $centerCols = ['C', 'S', 'V', 'Y', 'AA', 'AB', 'AC'];
         foreach ($centerCols as $col) {
             $sheet->getStyle("{$col}10:{$col}{$lastDataRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         }
-        $sheet->getStyle("AA10:AA{$lastDataRow}")->getFont()->setBold(true);
+        $sheet->getStyle("AB10:AB{$lastDataRow}")->getFont()->setBold(true);
 
         // Style Total Row
-        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getBorders()->getRight()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
+        $sheet->getStyle("B{$totalRowIndex}:AH{$totalRowIndex}")->getBorders()->getLeft()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle("B{$totalRowIndex}:AH{$totalRowIndex}")->getBorders()->getRight()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle("B{$totalRowIndex}:AH{$totalRowIndex}")->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle("B{$totalRowIndex}:AH{$totalRowIndex}")->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
 
         foreach (['O', 'P'] as $col) {
             $sheet->getStyle("{$col}{$totalRowIndex}")->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
             $sheet->getStyle("{$col}{$totalRowIndex}")->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK);
         }
 
-        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getFont()->setName('Arial')->setSize(10);
-        $sheet->getStyle("B{$totalRowIndex}:AG{$totalRowIndex}")->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        $sheet->getStyle("B{$totalRowIndex}:AH{$totalRowIndex}")->getFont()->setName('Arial')->setSize(10);
+        $sheet->getStyle("B{$totalRowIndex}:AH{$totalRowIndex}")->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
         $sheet->getStyle("D{$totalRowIndex}")->getFont()->setBold(true);
         $sheet->getStyle("O{$totalRowIndex}")->getFont()->setBold(true);
         $sheet->getStyle("P{$totalRowIndex}")->getFont()->setBold(true);
 
         // Style Signature Rows
         $sigStart = $totalRowIndex + 1;
-        $sheet->getStyle("B{$sigStart}:AG{$highestRow}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
+        $sheet->getStyle("B{$sigStart}:AH{$highestRow}")->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_NONE);
 
         for ($r = $sigStart; $r <= $highestRow; $r++) {
             $sheet->getStyle("W{$r}")->getFont()->setName('Arial')->setSize(10)->setBold(true);

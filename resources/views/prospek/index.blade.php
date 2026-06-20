@@ -135,6 +135,10 @@
                         <i class="fas fa-file-excel mr-2"></i>
                         Export Excel
                     </a>
+                    <a href="{{ route('prospek.export-excel', array_merge(request()->query(), ['template' => 'manifest'])) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                        <i class="fas fa-file-invoice mr-2"></i>
+                        Export Manifest
+                    </a>
                     <a href="{{ route('prospek.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                         <i class="fas fa-times mr-2"></i>
                         Reset
