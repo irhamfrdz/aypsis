@@ -1312,7 +1312,7 @@ class BiayaKapalController extends Controller
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
                                 'bank_id' => $section['bank_id'] ?? null,
                                 'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                             ]);
                         }
                     }
@@ -1426,7 +1426,7 @@ class BiayaKapalController extends Controller
                                 'penerima' => $section['penerima'] ?? null,
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
                                 'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                                 'keterangan' => $section['keterangan'] ?? null,
                             ]);
                         }
@@ -1528,7 +1528,7 @@ class BiayaKapalController extends Controller
                                 'penerima' => $section['penerima'] ?? null,
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
                                 'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                                 'keterangan' => $section['keterangan'] ?? null,
                             ]);
                         }
@@ -1630,7 +1630,7 @@ class BiayaKapalController extends Controller
                                 'penerima' => $section['penerima'] ?? null,
                                 'nomor_rekening' => $section['nomor_rekening'] ?? null,
                                 'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                                 'keterangan' => $section['keterangan'] ?? null,
                             ]);
                         }
@@ -1987,7 +1987,7 @@ class BiayaKapalController extends Controller
                                 'nomor_rekening' => $section['nomor_rekening'] ?? $request->nomor_rekening,
                                 'bank_id' => $section['bank_id'] ?? $request->bank_id,
                                 'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                             ]);
 
                             // Build keterangan string
@@ -2053,7 +2053,7 @@ class BiayaKapalController extends Controller
                             'nomor_rekening' => $section['nomor_rekening'] ?? $request->nomor_rekening,
                             'bank_id' => $section['bank_id'] ?? $request->bank_id,
                             'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                            'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                            'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                         ]);
 
                         // Build keterangan string
@@ -2141,7 +2141,7 @@ class BiayaKapalController extends Controller
                                 'pph' => $sectionPph,
                                 'adjustment' => $sectionAdjustment,
                                 'grand_total' => $sectionGrandTotal,
-                                'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                             ]);
 
                             // Build keterangan string
@@ -2247,7 +2247,7 @@ class BiayaKapalController extends Controller
                         'penerima' => $section['penerima'] ?? null,
                         'nomor_rekening' => $section['nomor_rekening'] ?? null,
                         'bank_id' => $section['bank_id'] ?? null,
-                        'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                        'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                         'keterangan' => $section['keterangan'] ?? null,
                     ]);
 
@@ -3605,7 +3605,7 @@ class BiayaKapalController extends Controller
                                     'nomor_rekening' => $section['nomor_rekening'] ?? $request->nomor_rekening,
                                     'bank_id' => $section['bank_id'] ?? $request->bank_id,
                                     'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                    'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                    'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                                 ]);
                             }
                         }
@@ -3645,7 +3645,7 @@ class BiayaKapalController extends Controller
                                     'kapal' => $section['kapal'] ?? null,
                                     'voyage' => $section['voyage'] ?? null,
                                     'no_referensi' => $section['no_referensi'] ?? null,
-                                    'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                    'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                                     'jumlah' => $jumlah,
                                     'tarif' => $barang->tarif,
                                     'subtotal' => $barang->tarif * $jumlah,
@@ -4018,7 +4018,7 @@ class BiayaKapalController extends Controller
                                     'nomor_rekening' => $section['nomor_rekening'] ?? null,
                                     'bank_id' => $section['bank_id'] ?? null,
                                     'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                    'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                    'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                                 ]);
                             }
                         }
@@ -4133,7 +4133,7 @@ class BiayaKapalController extends Controller
                                     'penerima' => $section['penerima'] ?? null,
                                     'nomor_rekening' => $section['nomor_rekening'] ?? null,
                                     'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                    'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                    'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                                     'keterangan' => $section['keterangan'] ?? null,
                                 ]);
                             }
@@ -4237,7 +4237,7 @@ class BiayaKapalController extends Controller
                                     'penerima' => $section['penerima'] ?? null,
                                     'nomor_rekening' => $section['nomor_rekening'] ?? null,
                                     'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                    'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                    'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                                     'keterangan' => $section['keterangan'] ?? null,
                                 ]);
                             }
@@ -4341,7 +4341,7 @@ class BiayaKapalController extends Controller
                                     'penerima' => $section['penerima'] ?? null,
                                     'nomor_rekening' => $section['nomor_rekening'] ?? null,
                                     'nomor_referensi' => $section['nomor_referensi'] ?? null,
-                                    'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                                    'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                                     'keterangan' => $section['keterangan'] ?? null,
                                 ]);
                             }
@@ -4380,7 +4380,7 @@ class BiayaKapalController extends Controller
                         'penerima' => $section['penerima'] ?? null,
                         'nomor_rekening' => $section['nomor_rekening'] ?? null,
                         'bank_id' => $section['bank_id'] ?? null,
-                        'tanggal_invoice_vendor' => $section['tanggal_invoice_vendor'] ?? null,
+                        'tanggal_invoice_vendor' => !empty($section['tanggal_invoice_vendor']) ? $section['tanggal_invoice_vendor'] : null,
                         'keterangan' => $section['keterangan'] ?? null,
                     ]);
 
