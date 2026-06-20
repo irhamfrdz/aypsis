@@ -1224,12 +1224,28 @@ class PranotaUangRitKenekController extends Controller
      */
     private function normalizeKenekName($kenekNama)
     {
-        // Cari karyawan berdasarkan nama_lengkap atau nama_panggilan (exact match first)
-        $karyawan = \App\Models\Karyawan::where('nama_lengkap', $kenekNama)
-            ->orWhere('nama_panggilan', $kenekNama)
-            ->first();
+        // 1. Cari karyawan berdasarkan nama_lengkap atau nama_panggilan yang aktif (tidak memiliki tanggal_berhenti)
+        $karyawan = \App\Models\Karyawan::whereNull('tanggal_berhenti')
+            ->where(function ($q) use ($kenekNama) {
+                $q->where('nama_lengkap', $kenekNama)
+                    ->orWhere('nama_panggilan', $kenekNama);
+            })->first();
 
-        // Fallback ke pencarian loose LIKE jika exact match tidak ditemukan
+        // 2. Jika tidak ada yang aktif, cari exact match tanpa mempedulikan tanggal_berhenti
+        if (! $karyawan) {
+            $karyawan = \App\Models\Karyawan::where('nama_lengkap', $kenekNama)
+                ->orWhere('nama_panggilan', $kenekNama)
+                ->first();
+        }
+
+        // 3. Jika masih tidak ketemu, cari loose match yang aktif
+        if (! $karyawan) {
+            $karyawan = \App\Models\Karyawan::whereNull('tanggal_berhenti')
+                ->where('nama_lengkap', 'LIKE', '%'.$kenekNama.'%')
+                ->first();
+        }
+
+        // 4. Fallback ke loose match tanpa mempedulikan tanggal_berhenti
         if (! $karyawan) {
             $karyawan = \App\Models\Karyawan::where('nama_lengkap', 'LIKE', '%'.$kenekNama.'%')->first();
         }
