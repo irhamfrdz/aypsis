@@ -403,6 +403,13 @@
                                 class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition duration-200 inline-flex items-center">
                             Submit
                         </button>
+                        <button type="button" 
+                                id="exportExcelBtn"
+                                class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition duration-200 inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled>
+                            <i class="fas fa-file-excel mr-2"></i>
+                            Export Excel
+                        </button>
                         <a href="{{ route('prospek.pilih-tujuan') }}" 
                            class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition duration-200 inline-flex items-center">
                             Cancel
@@ -506,6 +513,7 @@
         const hiddenInputs = document.getElementById('hidden_inputs');
         const selectedProspeksTable = document.getElementById('selectedProspeksTable');
         const selectedProspeksTableBody = document.getElementById('selectedProspeksTableBody');
+        const exportExcelBtn = document.getElementById('exportExcelBtn');
         
         let selectedProspeks = [];
 
@@ -655,8 +663,10 @@
 
             if(selectedProspeks.length > 0) {
                 selectedProspeksTable.classList.remove('hidden');
+                exportExcelBtn.disabled = false;
             } else {
                 selectedProspeksTable.classList.add('hidden');
+                exportExcelBtn.disabled = true;
             }
 
             selectedProspeksTableBody.innerHTML = '';
@@ -726,6 +736,29 @@
                 if (selectedProspeks.length === 0) { e.preventDefault(); alert('Pilih kontainer!'); return; }
                 if (!kapalSelect.value || !voyageSelect.value) { e.preventDefault(); alert('Kapal/Voyage belum diisi!'); return; }
                 if (!confirm(`Proses muat ${selectedProspeks.length} kontainer ke kapal ini?`)) e.preventDefault();
+            });
+        }
+
+        if(exportExcelBtn) {
+            exportExcelBtn.addEventListener('click', function() {
+                if (selectedProspeks.length === 0) return;
+                const exportForm = document.createElement('form');
+                exportForm.method = 'GET';
+                exportForm.action = '{{ route("prospek.export-excel") }}';
+                exportForm.target = '_blank';
+                selectedProspeks.forEach(p => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'prospek_ids[]';
+                    input.value = p.id;
+                    exportForm.appendChild(input);
+                });
+                const tInput = document.createElement('input');
+                tInput.type = 'hidden'; tInput.name = 'tujuan_id'; tInput.value = '{{ $tujuanId }}';
+                exportForm.appendChild(tInput);
+                document.body.appendChild(exportForm);
+                exportForm.submit();
+                document.body.removeChild(exportForm);
             });
         }
     });
