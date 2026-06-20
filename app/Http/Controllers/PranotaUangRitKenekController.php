@@ -1224,11 +1224,15 @@ class PranotaUangRitKenekController extends Controller
      */
     private function normalizeKenekName($kenekNama)
     {
-        // Cari karyawan berdasarkan nama_lengkap atau nama_panggilan
+        // Cari karyawan berdasarkan nama_lengkap atau nama_panggilan (exact match first)
         $karyawan = \App\Models\Karyawan::where('nama_lengkap', $kenekNama)
             ->orWhere('nama_panggilan', $kenekNama)
-            ->orWhere('nama_lengkap', 'LIKE', '%'.$kenekNama.'%')
             ->first();
+
+        // Fallback ke pencarian loose LIKE jika exact match tidak ditemukan
+        if (! $karyawan) {
+            $karyawan = \App\Models\Karyawan::where('nama_lengkap', 'LIKE', '%'.$kenekNama.'%')->first();
+        }
 
         // Return nama_lengkap jika ketemu, atau nama original jika tidak
         return $karyawan ? $karyawan->nama_lengkap : $kenekNama;

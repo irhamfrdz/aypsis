@@ -64,9 +64,15 @@ class PranotaUangRitKenekDetail extends Model
             return $this->kenekKaryawan;
         }
 
-        // Fallback: search by nama_panggilan if nama_lengkap doesn't match
-        return Karyawan::where('nama_panggilan', $this->kenek_nama)
-            ->orWhere('nama_lengkap', 'LIKE', '%'.$this->kenek_nama.'%')
+        // Fallback 1: exact match on nama_panggilan or nama_lengkap
+        $exact = Karyawan::where('nama_panggilan', $this->kenek_nama)
+            ->orWhere('nama_lengkap', $this->kenek_nama)
             ->first();
+        if ($exact) {
+            return $exact;
+        }
+
+        // Fallback 2: loose search by nama_lengkap
+        return Karyawan::where('nama_lengkap', 'LIKE', '%'.$this->kenek_nama.'%')->first();
     }
 }
