@@ -1263,4 +1263,20 @@ class SewaKontainerController extends Controller
 
         return response()->json(['kontainer' => $k, 'activeTarif' => $activeTarif]);
     }
+
+    public function wipeData()
+    {
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        SewaTagihan::truncate();
+        SewaInvoice::truncate();
+        SewaTransaksi::truncate();
+        SewaTarif::truncate();
+        SewaKontainer::truncate();
+        SewaUkuran::truncate();
+        SewaTipe::truncate();
+        SewaCustomer::truncate();
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
+
+        return response()->json(['success' => true, 'message' => 'Semua data sewa kontainer berhasil dibersihkan!']);
+    }
 }

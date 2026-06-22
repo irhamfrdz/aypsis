@@ -1089,6 +1089,18 @@ th.sort-desc .sort-icon { color:var(--sewa-primary); }
                     </button>
                 </div>
             </div>
+            <div class="sk-card">
+                <div class="sk-card-header"><h4 class="font-bold text-gray-800"><i class="fas fa-trash-can mr-2 text-red-500"></i>Bersihkan Semua Data</h4></div>
+                <div class="p-5 space-y-3">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
+                        <i class="fas fa-exclamation-circle mr-1"></i>
+                        <strong>Peringatan:</strong> Tindakan ini akan menghapus permanen SEMUA data (Customer, Tipe, Ukuran, Kontainer, Tarif, Sewa, Tagihan, Invoice).
+                    </div>
+                    <button onclick="wipeAllData()" class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-all">
+                        <i class="fas fa-trash-alt mr-1.5"></i>Bersihkan Semua Data
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1345,6 +1357,7 @@ const ROUTES = {
     bulkImport:    '{{ route("sewa-kontainer.bulk.import") }}',
     importPreview: '{{ route("sewa-kontainer.import.preview") }}',
     importJson:    '{{ route("sewa-kontainer.import.json") }}',
+    wipeData:      '{{ route("sewa-kontainer.wipe.data") }}',
     kontainerInfo: '{{ url("master/sewa-kontainer/kontainer-info") }}/',
 };
 const CSRF = '{{ csrf_token() }}';
@@ -1978,6 +1991,20 @@ async function submitRestoreJson() {
     } else {
         showNotif(json.message || 'Gagal memulihkan data', 'error');
     }
+}
+
+// ══════════════════════════════════════════════════
+// WIPE ALL DATA
+// ══════════════════════════════════════════════════
+async function wipeAllData() {
+    if (!confirm('PERINGATAN KERAS: Tindakan ini akan menghapus permanen seluruh data Sewa Kontainer (Customer, Tipe, Ukuran, Kontainer, Tarif, Transaksi Sewa, Tagihan, Invoice). Apakah Anda yakin?')) return;
+    if (!confirm('Apakah Anda benar-benar yakin ingin membersihkan data? Tindakan ini tidak dapat dibatalkan.')) return;
+
+    try {
+        const json = await apiPost(ROUTES.wipeData);
+        showNotif(json.message || 'Semua data berhasil dibersihkan!');
+        setTimeout(() => location.reload(), 1000);
+    } catch(e) {}
 }
 
 // ══════════════════════════════════════════════════

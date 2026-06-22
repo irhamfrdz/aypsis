@@ -6370,6 +6370,7 @@ Route::middleware(['auth',
         // Backup / Restore JSON
         Route::get('/export-json', [\App\Http\Controllers\SewaKontainerController::class, 'exportJson'])->name('export.json');
         Route::post('/import-json', [\App\Http\Controllers\SewaKontainerController::class, 'importJson'])->name('import.json');
+        Route::post('/wipe-data', [\App\Http\Controllers\SewaKontainerController::class, 'wipeData'])->name('wipe.data');
 
         // Kontainer info AJAX helper
         Route::get('/kontainer-info/{noKontainer}', [\App\Http\Controllers\SewaKontainerController::class, 'getKontainerInfo'])->name('kontainer.info');
