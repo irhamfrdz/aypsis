@@ -192,8 +192,12 @@ th.sort-desc .sort-icon { color:var(--sewa-primary); }
     @php
         $totalKontainer  = $kontainers->count();
         $sewaAktif       = $sewas->where('status_sewa', 'Aktif')->count();
-        $belumLunas      = $tagihans->whereIn('status_bayar', ['Belum Bayar', 'Pranota'])->sum('jumlah_tagihan');
-        $totalRealisasi  = $tagihans->where('status_bayar', 'Lunas')->sum('jumlah_tagihan');
+        $belumLunas      = $tagihans->whereIn('status_bayar', ['Belum Ditagih', 'Belum Bayar', 'Pranota'])->sum(function($t) {
+            return $t->jumlah_tagihan_override !== null ? $t->jumlah_tagihan_override : $t->jumlah_tagihan;
+        });
+        $totalRealisasi  = $tagihans->where('status_bayar', 'Lunas')->sum(function($t) {
+            return $t->jumlah_tagihan_override !== null ? $t->jumlah_tagihan_override : $t->jumlah_tagihan;
+        });
     @endphp
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
