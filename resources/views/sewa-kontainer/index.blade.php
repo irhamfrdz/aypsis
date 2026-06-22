@@ -2186,18 +2186,38 @@ async function processBulkImport() {
         const res = await apiPost(ROUTES.bulkImport || `/sewa-kontainer/bulk-import`, { type, payload });
         logDiv.classList.remove('hidden');
 
-        if (res.results && res.results.length) {
-            logDiv.innerHTML = res.results.map(r =>
-                `<div class="${r.status === 'ok' ? 'text-emerald-600' : 'text-red-600'}">
+        const logs = res.logs || [];
+        const errorCount = logs.filter(r => r.status === 'error').length;
+        const okCount = logs.filter(r => r.status === 'ok').length;
+
+        if (logs.length > 0) {
+            logDiv.innerHTML = logs.map(r => {
+                const msgText = r.status === 'ok' ? 'Ok' : r.error;
+                return `<div class="${r.status === 'ok' ? 'text-emerald-600' : 'text-red-600'}">
                     <i class="fas fa-${r.status === 'ok' ? 'check' : 'times'}-circle mr-1"></i>
-                    Baris ${r.line}: ${r.msg}
-                 </div>`
-            ).join('');
+                    Baris ${r.line}: ${msgText}
+                 </div>`;
+            }).join('');
+
+            if (errorCount === 0) {
+                showNotif(`Import berhasil! ${okCount} data ditambahkan.`);
+                document.getElementById('bulk-import-textarea').value = '';
+            } else if (okCount > 0) {
+                showNotif(`Import selesai dengan ${errorCount} baris error dan ${okCount} sukses.`, 'warning');
+                if (res.failed_lines) {
+                    document.getElementById('bulk-import-textarea').value = res.failed_lines;
+                }
+            } else {
+                showNotif(`Import gagal! Semua ${errorCount} baris bermasalah.`, 'error');
+                if (res.failed_lines) {
+                    document.getElementById('bulk-import-textarea').value = res.failed_lines;
+                }
+            }
         } else {
-            logDiv.innerHTML = `<div class="text-emerald-600"><i class="fas fa-check-circle mr-1"></i>${res.message || 'Import berhasil!'}</div>`;
+            logDiv.innerHTML = `<div class="text-emerald-600"><i class="fas fa-check-circle mr-1"></i>${res.message || 'Import selesai!'}</div>`;
+            showNotif(res.message || 'Import selesai!');
+            document.getElementById('bulk-import-textarea').value = '';
         }
-        showNotif(res.message || 'Import berhasil!');
-        document.getElementById('bulk-import-textarea').value = ''; // kosongkan textarea, tetap di section ini
     } catch(e) {
         logDiv.classList.remove('hidden');
         logDiv.innerHTML = `<div class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error: ${e.message || 'Gagal melakukan import'}</div>`;
