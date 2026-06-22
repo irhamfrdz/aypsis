@@ -2128,11 +2128,11 @@ const BULK_TEMPLATES = {
     customer:   { title: 'Format: NAMA_CUSTOMER', body: 'Satu nama customer/vendor per baris.\nContoh:\nPT. Maju Bersama\nCV. Sejahtera' },
     tipe:       { title: 'Format: NAMA_TIPE', body: 'Satu nama tipe kontainer per baris.\nContoh:\nDry\nReefer\nOpen Top' },
     ukuran:     { title: 'Format: DESKRIPSI_UKURAN', body: 'Satu ukuran per baris.\nContoh:\n20 Feet\n40 Feet\n45 Feet HC' },
-    kontainer:  { title: 'Format: NO_KONTAINER\tID_CUSTOMER\tID_TIPE\tID_UKURAN', body: 'Kolom dipisah TAB. Baris pertama boleh diisi header atau langsung data.\nContoh:\nABCU1234567\t1\t1\t1\nXYZU9876543\t2\t1\t2' },
-    tarif:      { title: 'Format: ID_CUSTOMER\tID_TIPE\tID_UKURAN\tTARIF_BULANAN\tTARIF_HARIAN\tTGL_MULAI', body: 'Kolom dipisah TAB.\nContoh:\n1\t1\t1\t2500000\t85000\t2024-01-01' },
-    sewa:       { title: 'Format: NO_KONTAINER\tID_CUSTOMER\tTGL_KELUAR\tTGL_KEMBALI\tKET', body: 'Kolom dipisah TAB. TGL_KEMBALI boleh kosong (kontainer masih keluar).\nContoh:\nABCU1234567\t1\t2024-01-10\t2024-02-10\tSewa reguler' },
-    pembayaran: { title: 'Format: NO_NOTA\tID_CUSTOMER\tTOTAL\tTGL_JATUH_TEMPO', body: 'Kolom dipisah TAB.\nContoh:\nINV-2024-001\t1\t5000000\t2024-03-01' },
-    pelunasan:  { title: 'Format: NO_NOTA\tNO_BUKTI_BAYAR\tTGL_BAYAR\tJML_BAYAR', body: 'Kolom dipisah TAB.\nContoh:\nINV-2024-001\tBKT-001\t2024-03-05\t5000000' },
+    kontainer:  { title: 'Format: NO_KONTAINER;CUSTOMER;TIPE;UKURAN', body: 'Kolom dipisah TITIK KOMA (;). Baris pertama boleh diisi header atau langsung data.\nContoh:\nABCU1234567;PT. Maju Bersama;Dry;20\nXYZU9876543;CV. Sejahtera;Dry;40' },
+    tarif:      { title: 'Format: CUSTOMER;TIPE;UKURAN;TARIF_BULANAN;TARIF_HARIAN;[TGL_MULAI]', body: 'Kolom dipisah TITIK KOMA (;).\nContoh:\nPT. Maju Bersama;Dry;20;2500000;85000;2024-01-01' },
+    sewa:       { title: 'Format: NO_KONTAINER;CUSTOMER;TGL_KELUAR;TGL_KEMBALI;KET', body: 'Kolom dipisah TITIK KOMA (;). TGL_KEMBALI boleh kosong (kontainer masih keluar).\nContoh:\nABCU1234567;PT. Maju Bersama;2024-01-10;2024-02-10;Sewa reguler' },
+    pembayaran: { title: 'Format: NO_KONTAINER;PERIODE;TAGIHAN;[No.Tagihan];[Tgl.Tagihan];[Siklus_Ke]', body: 'Kolom dipisah TITIK KOMA (;).\nContoh:\nABCU1234567;1;5000000;INV-2024-001;2024-03-01;1' },
+    pelunasan:  { title: 'Format: NO_BUKTI_BAYAR;TGL_BAYAR;NO_NOTA', body: 'Kolom dipisah TITIK KOMA (;).\nContoh:\nBKT-001;2024-03-05;INV-2024-001' },
 };
 
 function onBulkTypeChange() {
