@@ -169,7 +169,25 @@
                         @forelse($suratJalans as $sj)
                             <tr class="hover:bg-gray-50 transition-colors {{ $sj->tandaTerima ? 'bg-green-50/50' : '' }}">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    @if($sj->tandaTerima)
+                                    @if(isset($sj->is_manifest_only) && $sj->is_manifest_only)
+                                        @if($sj->lokasi == 'batam')
+                                            <a href="{{ route('surat-jalan-bongkaran-batam.create', ['bl_id' => $sj->id, 'nama_kapal' => $sj->nama_kapal, 'no_voyage' => $sj->no_voyage]) }}" 
+                                               class="inline-flex items-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md transition-colors duration-200 shadow-sm">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                                </svg>
+                                                Buat SJ
+                                            </a>
+                                        @else
+                                            <a href="{{ route('surat-jalan-bongkaran.create', ['bl_id' => $sj->id, 'nama_kapal' => $sj->nama_kapal, 'no_voyage' => $sj->no_voyage]) }}" 
+                                               class="inline-flex items-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md transition-colors duration-200 shadow-sm">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                                </svg>
+                                                Buat SJ
+                                            </a>
+                                        @endif
+                                    @elseif($sj->tandaTerima)
                                         <a href="{{ route('tanda-terima-bongkaran.index', ['search' => $sj->nomor_surat_jalan]) }}" 
                                            target="_blank" 
                                            class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors duration-200 shadow-sm">
@@ -191,7 +209,14 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    @if($sj->tandaTerima)
+                                    @if(isset($sj->is_manifest_only) && $sj->is_manifest_only)
+                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                            <svg class="w-3 h-3 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                            </svg>
+                                            Belum SJ
+                                        </span>
+                                    @elseif($sj->tandaTerima)
                                         <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                             <svg class="w-3 h-3 inline mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>

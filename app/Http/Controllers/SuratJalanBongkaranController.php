@@ -1341,7 +1341,103 @@ class SuratJalanBongkaranController extends Controller
             $query->whereDate('tanggal_surat_jalan', '<=', $request->end_date);
         }
 
-        $suratJalans = $query->orderBy('tanggal_surat_jalan', 'desc')->paginate(25);
+        $suratJalansList = $query->orderBy('tanggal_surat_jalan', 'desc')->get();
+
+        // 2. Query manifests that have NO SuratJalanBongkaran (Jakarta or Batam)
+        $manifestsList = collect();
+        if ($statusFilter !== 'sudah') {
+            $manifestsQuery = Manifest::whereDoesntHave('suratJalanBongkaran')
+                ->whereDoesntHave('suratJalanBongkaranBatam');
+
+            // Apply selected ship and voyage
+            if (! $request->boolean('view_all')) {
+                $manifestsQuery->where('nama_kapal', $request->nama_kapal)
+                    ->where('no_voyage', $request->no_voyage);
+            }
+
+            // Apply search
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $manifestsQuery->where(function ($q) use ($search) {
+                    $q->where('nomor_bl', 'like', "%{$search}%")
+                        ->orWhere('nomor_kontainer', 'like', "%{$search}%")
+                        ->orWhere('no_seal', 'like', "%{$search}%")
+                        ->orWhere('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('pengirim', 'like', "%{$search}%")
+                        ->orWhere('penerima', 'like', "%{$search}%")
+                        ->orWhere('nama_kapal', 'like', "%{$search}%");
+                });
+            }
+
+            // Apply Lokasi (Jakarta / Batam)
+            if ($request->filled('lokasi')) {
+                $lokasi = strtolower($request->lokasi);
+                if ($lokasi === 'batam') {
+                    $manifestsQuery->where(function ($q) {
+                        $q->where('pelabuhan_tujuan', 'like', '%batam%')
+                            ->orWhere('pelabuhan_bongkar', 'like', '%batam%')
+                            ->orWhere('ke', 'like', '%batam%');
+                    });
+                } else {
+                    $manifestsQuery->where(function ($q) {
+                        $q->where('pelabuhan_tujuan', 'not like', '%batam%')
+                            ->where('pelabuhan_bongkar', 'not like', '%batam%')
+                            ->where('ke', 'not like', '%batam%')
+                            ->orWhereNull('pelabuhan_tujuan');
+                    });
+                }
+            }
+
+            // Apply Date
+            if ($request->filled('start_date')) {
+                $manifestsQuery->whereDate('tanggal_berangkat', '>=', $request->start_date);
+            }
+            if ($request->filled('end_date')) {
+                $manifestsQuery->whereDate('tanggal_berangkat', '<=', $request->end_date);
+            }
+
+            $manifestsRaw = $manifestsQuery->orderBy('tanggal_berangkat', 'desc')->get();
+
+            // Transform manifest records to mimic SuratJalanBongkaran
+            foreach ($manifestsRaw as $m) {
+                $m->is_manifest_only = true;
+                $m->nomor_surat_jalan = '-';
+                $m->tanggal_surat_jalan = $m->tanggal_berangkat;
+                $m->no_kontainer = $m->nomor_kontainer;
+                $m->size = $m->size_kontainer;
+                $m->jenis_barang = $m->nama_barang;
+                $m->supir = '-';
+                $m->no_plat = '-';
+                $m->no_bl = $m->nomor_bl;
+                $m->lokasi = (stripos($m->pelabuhan_tujuan . $m->pelabuhan_bongkar . $m->ke, 'batam') !== false) ? 'batam' : 'jakarta';
+                
+                $manifestsList->push($m);
+            }
+        }
+
+        // Merge lists
+        $mergedCollection = collect();
+        $mergedCollection = $mergedCollection->merge($suratJalansList);
+        $mergedCollection = $mergedCollection->merge($manifestsList);
+
+        // Sort by date
+        $sortedCollection = $mergedCollection->sortByDesc(function ($item) {
+            $date = $item->tanggal_surat_jalan ?: $item->tanggal_berangkat;
+            return $date ? $date->format('Y-m-d H:i:s') : '0000-00-00 00:00:00';
+        });
+
+        // Paginate manually
+        $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 25;
+        $currentItems = $sortedCollection->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $suratJalans = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentItems,
+            $sortedCollection->count(),
+            $perPage,
+            $currentPage,
+            ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+        );
+        $suratJalans->appends($request->query());
 
         return view('surat-jalan-bongkaran.outstanding', compact('suratJalans'));
     }
