@@ -1473,6 +1473,7 @@ function switchMainTab(name, btn) {
     document.querySelectorAll('.sk-main-tab').forEach(el => el.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
     btn.classList.add('active');
+    localStorage.setItem('active_main_tab', name);
 }
 
 function switchBillingTab(name, btn) {
@@ -1481,6 +1482,7 @@ function switchBillingTab(name, btn) {
     document.getElementById('billing-' + name).classList.remove('hidden');
     btn.classList.add('active');
     if (name === 'sheet') initBillingTable();
+    localStorage.setItem('active_billing_tab', name);
 }
 
 function switchMasterTab(name, btn) {
@@ -1488,6 +1490,7 @@ function switchMasterTab(name, btn) {
     document.querySelectorAll('#tab-master .sk-sub-tab').forEach(el => el.classList.remove('active'));
     document.getElementById('master-' + name).classList.remove('hidden');
     btn.classList.add('active');
+    localStorage.setItem('active_master_tab', name);
 }
 
 // ══════════════════════════════════════════════════
@@ -2254,6 +2257,42 @@ function hideBulkPreview() {
 document.addEventListener('DOMContentLoaded', () => {
     initBillingTable();
     onBulkTypeChange(); // init template info & button state
+
+    // Restore last active main tab
+    const lastMainTab = localStorage.getItem('active_main_tab');
+    if (lastMainTab) {
+        const btn = Array.from(document.querySelectorAll('.sk-main-tab')).find(el => {
+            const attr = el.getAttribute('onclick') || '';
+            return attr.includes(`'${lastMainTab}'`) || attr.includes(`"${lastMainTab}"`);
+        });
+        if (btn) {
+            switchMainTab(lastMainTab, btn);
+        }
+    }
+
+    // Restore last active billing tab
+    const lastBillingTab = localStorage.getItem('active_billing_tab');
+    if (lastBillingTab) {
+        const btn = Array.from(document.querySelectorAll('.sk-sub-tab')).find(el => {
+            const attr = el.getAttribute('onclick') || '';
+            return attr.includes(`'${lastBillingTab}'`) || attr.includes(`"${lastBillingTab}"`);
+        });
+        if (btn) {
+            switchBillingTab(lastBillingTab, btn);
+        }
+    }
+
+    // Restore last active master tab
+    const lastMasterTab = localStorage.getItem('active_master_tab');
+    if (lastMasterTab) {
+        const btn = Array.from(document.querySelectorAll('#tab-master .sk-sub-tab')).find(el => {
+            const attr = el.getAttribute('onclick') || '';
+            return attr.includes(`'${lastMasterTab}'`) || attr.includes(`"${lastMasterTab}"`);
+        });
+        if (btn) {
+            switchMasterTab(lastMasterTab, btn);
+        }
+    }
 });
 </script>
 
