@@ -767,11 +767,11 @@ th.sort-desc .sort-icon { color:var(--sewa-primary); }
 <div id="tab-master" class="sk-tab-content pt-5">
     {{-- Sub-tab nav --}}
     <div class="flex bg-slate-50 border border-slate-200 rounded-xl p-1 gap-1 mb-5 overflow-x-auto">
-        <button class="sk-sub-tab active" onclick="switchMasterTab('customer', this)"><span id="lbl-master-customer">1. Customer</span></button>
-        <button class="sk-sub-tab" onclick="switchMasterTab('tipe', this)">2. Tipe Kontainer</button>
-        <button class="sk-sub-tab" onclick="switchMasterTab('ukuran', this)">3. Ukuran</button>
-        <button class="sk-sub-tab" onclick="switchMasterTab('kontainer', this)">4. Kontainer</button>
-        <button class="sk-sub-tab" onclick="switchMasterTab('tarif', this)">5. Tarif Sewa</button>
+        <button class="sk-sub-tab active" onclick="switchMasterTab('customer', this)"><span id="lbl-master-customer">1. Master Customer</span></button>
+        <button class="sk-sub-tab" onclick="switchMasterTab('tipe', this)">2. Master Tipe Kontainer</button>
+        <button class="sk-sub-tab" onclick="switchMasterTab('ukuran', this)">3. Master Ukuran</button>
+        <button class="sk-sub-tab" onclick="switchMasterTab('kontainer', this)">4. Master Kontainer</button>
+        <button class="sk-sub-tab" onclick="switchMasterTab('tarif', this)">5. Master Tarif Sewa</button>
     </div>
 
     {{-- ─── Master Customer ─── --}}
@@ -934,7 +934,7 @@ th.sort-desc .sort-icon { color:var(--sewa-primary); }
                 <div class="sk-form-group">
                     <label class="sk-label" id="lbl-tarif-customer">Customer</label>
                     <select id="input-tarif-customer" class="sk-input text-sm">
-                        <option value="">— Pilih Customer —</option>
+                        <option value="">-- Pilih Customer --</option>
                         @foreach($customers as $c)<option value="{{ $c->id_customer }}">{{ $c->nama_customer }}</option>@endforeach
                     </select>
                 </div>
@@ -942,51 +942,61 @@ th.sort-desc .sort-icon { color:var(--sewa-primary); }
                     <div class="sk-form-group">
                         <label class="sk-label">Tipe</label>
                         <select id="input-tarif-tipe" class="sk-input text-sm">
-                            <option value="">— Tipe —</option>
+                            <option value="">-- Pilih Tipe --</option>
                             @foreach($tipes as $t)<option value="{{ $t->id_tipe }}">{{ $t->nama_tipe }}</option>@endforeach
                         </select>
                     </div>
                     <div class="sk-form-group">
                         <label class="sk-label">Ukuran</label>
                         <select id="input-tarif-ukuran" class="sk-input text-sm">
-                            <option value="">— Ukuran —</option>
+                            <option value="">-- Pilih Ukuran --</option>
                             @foreach($ukurans as $u)<option value="{{ $u->id_ukuran }}">{{ $u->deskripsi_ukuran }}</option>@endforeach
                         </select>
                     </div>
                 </div>
-                <div class="sk-form-group">
-                    <label class="sk-label">Tarif Bulanan (Rp)</label>
-                    <input id="input-tarif-bulanan" type="number" class="sk-input" placeholder="0">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="sk-form-group">
+                        <label class="sk-label">Tarif Bulanan (Rp)</label>
+                        <input id="input-tarif-bulanan" type="number" class="sk-input" placeholder="Contoh: 3000000">
+                    </div>
+                    <div class="sk-form-group">
+                        <label class="sk-label">Tarif Harian (Rp)</label>
+                        <input id="input-tarif-harian" type="number" class="sk-input" placeholder="Contoh: 150000">
+                    </div>
                 </div>
                 <div class="sk-form-group">
-                    <label class="sk-label">Tarif Harian (Rp)</label>
-                    <input id="input-tarif-harian" type="number" class="sk-input" placeholder="0">
-                </div>
-                <div class="sk-form-group">
-                    <label class="sk-label">Berlaku Mulai</label>
-                    <input id="input-tarif-mulai" type="date" class="sk-input" value="{{ date('Y-m-d') }}">
+                    <label class="sk-label">Tanggal Mulai Berlaku</label>
+                    <input id="input-tarif-mulai" type="text" class="sk-input" placeholder="dd/mm/yyyy (cth: 01/01/2026)">
+                    <p class="text-[10px] text-gray-400 mt-1">Biarkan kosong untuk menggunakan tanggal hari ini.</p>
                 </div>
                 <p class="text-xs text-amber-600 mb-3"><i class="fas fa-info-circle mr-1"></i>Tarif aktif sebelumnya akan otomatis ditutup</p>
-                <button onclick="submitTarif()" class="sk-btn-primary w-full justify-center"><i class="fas fa-save mr-1.5"></i>Simpan Tarif</button>
+                <button onclick="submitTarif()" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-1.5">
+                    <i class="far fa-save mr-1.5"></i>Simpan Tarif
+                </button>
             </div>
             <div class="lg:col-span-2">
+                <div class="relative mb-3">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="fas fa-search text-gray-400 text-sm"></i>
+                    </span>
+                    <input type="text" id="search-tarif" class="sk-input pl-10" placeholder="Cari tarif customer..." oninput="filterMasterTable('tarif', this.value)">
+                </div>
                 <div class="sk-card overflow-x-auto">
-                    <table class="sk-table">
-                        <thead><tr><th id="th-tarif-customer">Customer</th><th>Tipe</th><th>Ukuran</th><th>Tarif Bulanan</th><th>Tarif Harian</th><th>Mulai</th><th>Akhir</th><th class="text-right w-16">Aksi</th></tr></thead>
+                    <table class="sk-table" id="table-tarif">
+                        <thead><tr><th id="th-tarif-customer">Customer</th><th>Tipe &amp; Ukuran</th><th>Tarif Bulanan</th><th>Tarif Harian</th><th>Berlaku Mulai</th><th>Berlaku Selesai</th><th class="text-right w-16">Aksi</th></tr></thead>
                         <tbody>
                         @foreach($tarifs as $trf)
-                        <tr class="{{ is_null($trf->tanggal_akhir_berlaku) ? '' : 'opacity-60' }}">
+                        <tr class="{{ is_null($trf->tanggal_akhir_berlaku) ? '' : 'opacity-60' }}" data-search="{{ strtolower(($trf->customer->nama_customer ?? '') . ' ' . ($trf->tipe->nama_tipe ?? '') . ' ' . ($trf->ukuran->deskripsi_ukuran ?? '')) }}">
                             <td class="font-semibold">{{ $trf->customer->nama_customer ?? '-' }}</td>
-                            <td>{{ $trf->tipe->nama_tipe ?? '-' }}</td>
-                            <td class="font-mono text-emerald-700 font-semibold">{{ $trf->ukuran->deskripsi_ukuran ?? '-' }}</td>
-                            <td class="font-bold">Rp {{ number_format($trf->tarif_bulanan, 0, ',', '.') }}</td>
+                            <td>{{ $trf->tipe->nama_tipe ?? '-' }} / {{ $trf->ukuran->deskripsi_ukuran ?? '-' }}</td>
+                            <td>Rp {{ number_format($trf->tarif_bulanan, 0, ',', '.') }}</td>
                             <td>Rp {{ number_format($trf->tarif_harian, 0, ',', '.') }}</td>
-                            <td class="text-xs">{{ date('d/M/Y', strtotime($trf->tanggal_mulai_berlaku)) }}</td>
-                            <td class="text-xs">{!! $trf->tanggal_akhir_berlaku ? date('d/M/Y', strtotime($trf->tanggal_akhir_berlaku)) : '<span class="badge badge-aktif">Aktif</span>' !!}</td>
+                            <td class="text-xs font-serif italic text-gray-600">{{ date('d M y', strtotime($trf->tanggal_mulai_berlaku)) }}</td>
+                            <td class="text-xs">{!! $trf->tanggal_akhir_berlaku ? '<span class="text-xs font-serif italic text-gray-600">'.date('d M y', strtotime($trf->tanggal_akhir_berlaku)).'</span>' : '<span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-100 text-emerald-800">Saat Ini</span>' !!}</td>
                             <td class="text-right"><button onclick="deleteMaster('tarif','{{ $trf->id_tarif }}','tarif ini')" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>
                         </tr>
                         @endforeach
-                        @if($tarifs->isEmpty())<tr><td colspan="8" class="py-6 text-center text-gray-400">Tidak ada data</td></tr>@endif
+                        @if($tarifs->isEmpty())<tr><td colspan="7" class="py-6 text-center text-gray-400">Tidak ada data</td></tr>@endif
                         </tbody>
                     </table>
                 </div>
@@ -1972,13 +1982,26 @@ async function submitTarif() {
     const inpBulan  = document.getElementById('input-tarif-bulanan');
     const inpHarian = document.getElementById('input-tarif-harian');
     const inpMulai  = document.getElementById('input-tarif-mulai');
+
+    let tglMulai = inpMulai.value.trim();
+    if (tglMulai) {
+        // Parse dd/mm/yyyy to yyyy-mm-dd
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(tglMulai)) {
+            const parts = tglMulai.split('/');
+            tglMulai = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+    } else {
+        const today = new Date();
+        tglMulai = today.toISOString().split('T')[0];
+    }
+
     const data = {
         id_customer:           selCust.value,
         id_tipe:               selTipe.value,
         id_ukuran:             selUkuran.value,
         tarif_bulanan:         parseFloat(inpBulan.value) || 0,
         tarif_harian:          parseFloat(inpHarian.value) || 0,
-        tanggal_mulai_berlaku: inpMulai.value,
+        tanggal_mulai_berlaku: tglMulai,
     };
     if (!data.id_customer || !data.id_tipe || !data.id_ukuran) {
         showNotif('Customer, Tipe, dan Ukuran wajib dipilih', 'error'); return;
@@ -1990,7 +2013,7 @@ async function submitTarif() {
     const ukuranName = selUkuran.options[selUkuran.selectedIndex]?.text ?? '-';
     const tarifId    = res?.id ?? res?.id_tarif ?? '';
     selCust.value = ''; selTipe.value = ''; selUkuran.value = '';
-    inpBulan.value = ''; inpHarian.value = '';
+    inpBulan.value = ''; inpHarian.value = ''; inpMulai.value = '';
     const fmtNum = n => 'Rp ' + Number(n).toLocaleString('id-ID');
     const formatMmmDate = (dateStr) => {
         if (!dateStr) return '-';
@@ -1998,7 +2021,9 @@ async function submitTarif() {
         if (isNaN(date.getTime())) return dateStr;
         const day = String(date.getDate()).padStart(2, '0');
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        return `${day}/${months[date.getMonth()]}/${date.getFullYear()}`;
+        const monthName = months[date.getMonth()];
+        const yearTwoDigit = String(date.getFullYear()).slice(-2);
+        return `${day} ${monthName} ${yearTwoDigit}`;
     };
     const mulai = formatMmmDate(data.tanggal_mulai_berlaku);
     // Cari tbody tabel tarif — tidak ada id, ambil berdasarkan proximity
@@ -2007,13 +2032,13 @@ async function submitTarif() {
     if (tbody) {
         removePlaceholderRow(tbody);
         const tr = document.createElement('tr');
+        tr.dataset.search = (custName + ' ' + tipeName + ' ' + ukuranName).toLowerCase();
         tr.innerHTML = `<td class="font-semibold">${custName}</td>
-            <td>${tipeName}</td>
-            <td class="font-mono text-emerald-700 font-semibold">${ukuranName}</td>
-            <td class="font-bold">${fmtNum(data.tarif_bulanan)}</td>
+            <td>${tipeName} / ${ukuranName}</td>
+            <td>${fmtNum(data.tarif_bulanan)}</td>
             <td>${fmtNum(data.tarif_harian)}</td>
-            <td class="text-xs">${mulai}</td>
-            <td class="text-xs"><span class="badge badge-aktif">Aktif</span></td>
+            <td class="text-xs font-serif italic text-gray-600">${mulai}</td>
+            <td class="text-xs"><span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-100 text-emerald-800">Saat Ini</span></td>
             <td class="text-right"><button onclick="deleteMaster('tarif','${tarifId}','tarif ini');this.closest('tr').remove()" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>`;
         tbody.prepend(tr);
     }
