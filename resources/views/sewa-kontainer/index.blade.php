@@ -1,13 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.app', ['hideSidebar' => true])
 
-@section('title', 'Penyewaan Kontainer')
+@section('title', 'Portal Sewa Kontainer')
 
 @section('content')
-{{-- ============================================================
-     SEWA KONTAINER — Full Feature (Feature Parity with Prototype)
-     Mode: Sewa Out (Lessor) | Sewa In (Lessee)
-     ============================================================ --}}
-
 <style>
 /* ── Variables ── */
 :root {
@@ -20,19 +15,50 @@ body.mode-sewa-in {
     --sewa-primary-light: #e0e7ff;
     --sewa-primary-ring: rgba(79,70,229,.15);
 }
-/* ── Tabs ── */
-.sk-main-tab   { padding:.7rem 1.1rem; font-size:.8rem; font-weight:600; border-bottom:2px solid transparent; color:#6b7280; transition:all .2s; white-space:nowrap; cursor:pointer; }
-.sk-main-tab.active  { border-color:var(--sewa-primary); color:var(--sewa-primary); }
-.sk-main-tab:hover:not(.active) { color:#374151; border-color:#d1d5db; }
-.sk-tab-content { display:none; }
-.sk-tab-content.active { display:block; }
+
+/* ── App Shell & Header Dynamic Colors ── */
+.sk-app-shell { background-color: #f8fafc; } /* slate-50 */
+body.mode-sewa-in .sk-app-shell { background-color: rgba(238,242,255,0.2); } /* indigo-50/20 */
+
+.sk-header { background-color: #022c22; border-color: rgba(6,78,59,.4); } /* emerald-950 */
+body.mode-sewa-in .sk-header { background-color: #1e1b4b; border-color: rgba(49,46,129,.4); } /* indigo-950 */
+
+.sk-header-icon-box { background-color: #065f46; border-color: rgba(4,120,87,.55); color: #6ee7b7; } /* emerald-800, text-emerald-300 */
+body.mode-sewa-in .sk-header-icon-box { background-color: rgba(49,46,129,0.85); border-color: rgba(67,56,202,.55); color: #a5b4fc; }
+
+.sk-header-badge { background-color: rgba(6,78,59,.9); border-color: #065f46; color: #6ee7b7; }
+body.mode-sewa-in .sk-header-badge { background-color: rgba(49,46,129,.9); border-color: #3730a3; color: #a5b4fc; }
+
+.sk-header-desc { color: #a7f3d0; }
+body.mode-sewa-in .sk-header-desc { color: #c7d2fe; }
+
+.sk-mode-toggle-box { background-color: rgba(6,78,59,.5); border-color: rgba(2,44,34,.6); }
+body.mode-sewa-in .sk-mode-toggle-box { background-color: rgba(49,46,129,.7); border-color: rgba(30,27,75,.6); }
+
+.sk-clock-box { background-color: rgba(6,78,59,.4); border-color: rgba(6,78,59,.4); }
+body.mode-sewa-in .sk-clock-box { background-color: rgba(49,46,129,.4); border-color: rgba(49,46,129,.4); }
+.sk-clock-dot { background-color: #34d399; }
+body.mode-sewa-in .sk-clock-dot { background-color: #818cf8; }
+
+/* ── Tabs (React Style) ── */
+.sk-main-tab { padding: .75rem 1.5rem; font-size: .75rem; font-weight: 700; border-bottom: 2px solid transparent; color: #64748b; transition: all .2s; display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; white-space: nowrap; }
+.sk-main-tab.active { border-color: var(--sewa-primary); color: var(--sewa-primary); font-weight: 800; }
+.sk-main-tab:hover:not(.active) { color: #1e293b; border-color: #cbd5e1; }
+.sk-tab-content { display: none; }
+.sk-tab-content.active { display: block; }
+
 /* ── Sub-tabs ── */
 .sk-sub-tab { padding:.45rem .9rem; font-size:.75rem; font-weight:500; border-radius:.6rem; cursor:pointer; color:#64748b; transition:all .15s; }
 .sk-sub-tab.active { background:white; color:var(--sewa-primary); box-shadow:0 1px 3px rgba(0,0,0,.1); }
 .sk-sub-tab:hover:not(.active) { background:#f1f5f9; }
-/* ── KPI ── */
-.sk-kpi { background:white; border:1px solid #e5e7eb; border-radius:1rem; padding:1.1rem 1.3rem; }
-.sk-kpi-val { font-size:1.4rem; font-weight:800; line-height:1.1; }
+
+/* ── Bento Box KPI ── */
+.bento-kpi { background: white; padding: 1.25rem; border-radius: 1rem; border: 1px solid #f1f5f9; box-shadow: 0 1px 2px rgba(0,0,0,.05); display: flex; align-items: center; justify-content: space-between; }
+.bento-kpi-icon { padding: .75rem; border-radius: .75rem; border: 1px solid transparent; }
+.bento-icon-layers { background: #fffbeb; color: #b45309; border-color: #fef3c7; } /* amber */
+.bento-icon-activity { background: #eef2ff; color: #4338ca; border-color: #e0e7ff; } /* indigo */
+body.mode-sewa-in .bento-icon-layers { background: #eef2ff; color: #4338ca; border-color: #e0e7ff; }
+
 /* ── Table ── */
 .sk-table { width:100%; border-collapse:collapse; font-size:.8rem; }
 .sk-table thead th { background:#f8fafc; padding:.7rem .9rem; text-align:left; font-weight:700; font-size:.68rem; text-transform:uppercase; letter-spacing:.04em; color:#64748b; white-space:nowrap; border-bottom:1px solid #e2e8f0; }
@@ -115,83 +141,136 @@ th.sort-desc .sort-icon { color:var(--sewa-primary); }
 
 <div id="sk-notification" role="alert"></div>
 
-<div class="space-y-5">
-{{-- ══════════════════════════════════════════════════
-     HEADER
-══════════════════════════════════════════════════ --}}
-<div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
-        <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:var(--sewa-primary)">
-                <i class="fas fa-shipping-fast text-white text-sm"></i>
-            </div>
+<div class="sk-app-shell transition-colors duration-300 font-sans antialiased min-h-screen -mt-6 -mx-6">
+  
+  {{-- ══════════════════════════════════════════════════
+       PROFESSIONAL HIGH-CONTRAST HEADER
+  ══════════════════════════════════════════════════ --}}
+  <header class="sk-header transition-colors duration-350 text-white border-b sticky top-0 z-40 shadow-sm" id="navbar-top">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="sk-header-icon-box p-2 rounded-xl border shadow-inner transition-colors duration-350">
+          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"></circle><line x1="12" y1="22" x2="12" y2="8"></line><path d="M5 12H2a10 10 0 0 0 20 0h-3"></path></svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-base tracking-tight text-white uppercase flex flex-wrap items-center gap-2">
+            <span>PORTAL SEWA KONTAINER</span>
+            <span class="sk-header-badge text-[9px] px-2.5 py-0.5 rounded-full font-bold uppercase transition-all duration-350 border" id="header-badge-text">
+              Pihak Pemilik (Sewa Out)
+            </span>
+            <span class="bg-slate-900/60 text-slate-300 border border-slate-800 text-[9px] px-2 py-0.5 rounded-full font-semibold">
+              Live Database
+            </span>
+          </h1>
+          <p class="sk-header-desc text-[10px] italic transition-colors duration-350" id="header-desc-text">
+            Sistem kalkulasi proris maret ke januari (30 hari) & tahun kabisat februari (28/29 hari)
+          </p>
+        </div>
+      </div>
+
+      {{-- DUAL PERSONA MODE TOGGLE --}}
+      <div class="sk-mode-toggle-box flex p-1 rounded-xl border self-start md:self-center transition-colors duration-350">
+        <button id="btn-mode-out" onclick="setMode('out')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer select-none bg-emerald-600 text-white shadow-sm font-extrabold">
+          <span>Sewa Out (Lessor)</span>
+        </button>
+        <button id="btn-mode-in" onclick="setMode('in')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer select-none text-emerald-300 hover:text-white">
+          <span>Sewa In (Lessee)</span>
+        </button>
+      </div>
+
+      {{-- CLOCK ACCENT --}}
+      <div class="sk-clock-box flex items-center gap-2.5 px-3 py-1.5 rounded-xl border text-xs self-start md:self-center transition-colors duration-350">
+        <span class="sk-clock-dot w-2 h-2 rounded-full animate-pulse"></span>
+        <span class="text-slate-300 uppercase font-bold text-[9px] tracking-wider font-mono">WAKTU AKTIF WIB:</span>
+        <span class="font-mono font-medium text-slate-100" id="sk-clock"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    {{-- ══════════════════════════════════════════════════
+         KPI METRIC CARDS GRID (BENTO BOX)
+    ══════════════════════════════════════════════════ --}}
+    @php
+        $totalKontainer  = $kontainers->count();
+        $sewaAktif       = $sewas->where('status_sewa', 'Aktif')->count();
+        $belumLunas      = $tagihans->whereIn('status_bayar', ['Belum Bayar', 'Pranota'])->sum('jumlah_tagihan');
+        $totalRealisasi  = $tagihans->where('status_bayar', 'Lunas')->sum('jumlah_tagihan');
+    @endphp
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="bento-kpi">
             <div>
-                <h2 class="text-xl font-bold text-gray-800" id="sk-page-title">Penyewaan Kontainer — Sewa Out</h2>
-                <p class="text-xs text-gray-400" id="sk-page-subtitle">Manajemen Rental Kontainer sebagai Lessor</p>
+                <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Kontainer Terdaftar</p>
+                <h3 class="text-xl font-bold text-slate-800 mt-1 font-mono">{{ $totalKontainer }} Unit</h3>
+                <p class="text-[10px] text-slate-500 mt-0.5">Semua tipe & ukuran</p>
+            </div>
+            <div class="bento-kpi-icon bento-icon-layers">
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>
             </div>
         </div>
-    </div>
-    <div class="flex items-center gap-3">
-        {{-- Clock --}}
-        <div class="text-xs text-gray-400 font-mono hidden md:block" id="sk-clock"></div>
-        {{-- Mode toggle --}}
-        <div class="flex bg-gray-100 rounded-xl p-1 gap-1 text-xs font-bold">
-            <button id="btn-mode-out" onclick="setMode('out')" class="px-3 py-1.5 rounded-lg bg-white shadow-sm text-emerald-700 transition-all">
-                <i class="fas fa-arrow-up-from-bracket mr-1"></i>Sewa Out
-            </button>
-            <button id="btn-mode-in" onclick="setMode('in')" class="px-3 py-1.5 rounded-lg text-gray-500 transition-all">
-                <i class="fas fa-arrow-down-to-bracket mr-1"></i>Sewa In
-            </button>
+
+        <div class="bento-kpi">
+            <div>
+                <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider" id="kpi-aktif-label">Sewa Berjalan Aktif</p>
+                <h3 class="text-xl font-bold mt-1 font-mono" style="color:var(--sewa-primary)">{{ $sewaAktif }} Siklus</h3>
+                <p class="text-[10px] text-slate-500 mt-0.5">Paralel sewa diperbolehkan</p>
+            </div>
+            <div class="bento-kpi-icon bento-icon-activity">
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.48 12H2"/></svg>
+            </div>
         </div>
-    </div>
-</div>
 
-{{-- ══════════════════════════════════════════════════
-     KPI CARDS
-══════════════════════════════════════════════════ --}}
-@php
-    $totalKontainer  = $kontainers->count();
-    $sewaAktif       = $sewas->where('status_sewa', 'Aktif')->count();
-    $belumLunas      = $tagihans->whereIn('status_bayar', ['Belum Bayar', 'Pranota'])->sum('jumlah_tagihan');
-    $totalRealisasi  = $tagihans->where('status_bayar', 'Lunas')->sum('jumlah_tagihan');
-@endphp
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="sk-kpi">
-        <div class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Total Unit Kontainer</div>
-        <div class="sk-kpi-val text-gray-800">{{ $totalKontainer }}</div>
-        <div class="text-xs text-gray-400 mt-0.5">unit terdaftar</div>
-    </div>
-    <div class="sk-kpi">
-        <div class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Rental Aktif</div>
-        <div class="sk-kpi-val" style="color:var(--sewa-primary)">{{ $sewaAktif }}</div>
-        <div class="text-xs text-gray-400 mt-0.5">kontrak berjalan</div>
-    </div>
-    <div class="sk-kpi">
-        <div class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Belum Lunas</div>
-        <div class="sk-kpi-val text-red-600">Rp {{ number_format($belumLunas, 0, ',', '.') }}</div>
-        <div class="text-xs text-gray-400 mt-0.5">outstanding tagihan</div>
-    </div>
-    <div class="sk-kpi">
-        <div class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Total Realisasi</div>
-        <div class="sk-kpi-val text-emerald-600">Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</div>
-        <div class="text-xs text-gray-400 mt-0.5">pembayaran diterima</div>
-    </div>
-</div>
+        <div class="bento-kpi">
+            <div>
+                <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider" id="kpi-belum-label">Total Belum Tertagih/Bayar</p>
+                <h3 class="text-xl font-bold text-rose-700 mt-1 font-mono">Rp {{ number_format($belumLunas, 0, ',', '.') }}</h3>
+                <p class="text-[10px] text-rose-500 mt-0.5">Siklus outstanding bulanan</p>
+            </div>
+            <div class="bento-kpi-icon" style="background: #fff1f2; color: #be123c; border-color: #ffe4e6;">
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+            </div>
+        </div>
 
-{{-- ══════════════════════════════════════════════════
-     MAIN TABS
-══════════════════════════════════════════════════ --}}
-<div>
-<div class="border-b border-gray-200 flex overflow-x-auto">
-    <button class="sk-main-tab active" onclick="switchMainTab('billing', this)"><i class="fas fa-file-invoice-dollar mr-1.5"></i>Billing & Pembayaran</button>
-    <button class="sk-main-tab" onclick="switchMainTab('contracts', this)"><i class="fas fa-handshake mr-1.5"></i>Transaksi Sewa</button>
-    <button class="sk-main-tab" onclick="switchMainTab('master', this)"><i class="fas fa-database mr-1.5"></i>Master Database</button>
-    <button class="sk-main-tab" onclick="switchMainTab('import', this)"><i class="fas fa-file-excel mr-1.5"></i>Import / Backup</button>
-</div>
+        <div class="bento-kpi">
+            <div>
+                <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider" id="kpi-lunas-label">Pendapatan Diterima (Lunas)</p>
+                <h3 class="text-xl font-bold mt-1 font-mono" style="color:var(--sewa-primary)">Rp {{ number_format($totalRealisasi, 0, ',', '.') }}</h3>
+                <p class="text-[10px] text-slate-500 mt-0.5">Tanpa sistem cicilan/parsial</p>
+            </div>
+            <div class="bento-kpi-icon" style="background: var(--sewa-primary-light); color: var(--sewa-primary); border-color: rgba(5,150,105,.2);" id="kpi-lunas-icon">
+                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+            </div>
+        </div>
 
-{{-- ══════════════════════════════════════════════════
-     TAB 1: BILLING & PEMBAYARAN
-══════════════════════════════════════════════════ --}}
+    </div>
+
+    {{-- ══════════════════════════════════════════════════
+         WORKSPACE NAVIGATION TABS IN INDONESIAN
+    ══════════════════════════════════════════════════ --}}
+    <div class="flex border-b border-slate-200 overflow-x-auto">
+        <button class="sk-main-tab active" onclick="switchMainTab('billing', this)">
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+            <span id="tab-label-billing">1. Dasbor Tagihan & Pembayaran</span>
+        </button>
+        <button class="sk-main-tab" onclick="switchMainTab('contracts', this)">
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M21 12a9 9 0 1 0-9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
+            <span id="tab-label-contracts">2. Siklus Sewa & Pengembalian</span>
+        </button>
+        <button class="sk-main-tab" onclick="switchMainTab('master', this)">
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+            <span id="tab-label-master">3. Kelola Database Master</span>
+        </button>
+        <button class="sk-main-tab" onclick="switchMainTab('import', this)">
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 13h2"/><path d="M14 13h2"/><path d="M8 17h2"/><path d="M14 17h2"/></svg>
+            <span id="tab-label-import">4. Peluncur Impor Excel Cepat</span>
+        </button>
+    </div>
+
+    {{-- ══════════════════════════════════════════════════
+         TAB 1: BILLING & PEMBAYARAN
+    ══════════════════════════════════════════════════ --}}
 <div id="tab-billing" class="sk-tab-content active pt-5">
     {{-- Sub-tabs --}}
     <div class="flex bg-slate-50 border border-slate-200 rounded-xl p-1 gap-1 mb-5 overflow-x-auto">
@@ -1339,15 +1418,31 @@ function setMode(mode) {
     appMode = mode;
     const isIn = mode === 'in';
     document.body.classList.toggle('mode-sewa-in', isIn);
-    document.getElementById('btn-mode-out').className = 'px-3 py-1.5 rounded-lg transition-all text-xs font-bold ' + (!isIn ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500');
-    document.getElementById('btn-mode-in').className  = 'px-3 py-1.5 rounded-lg transition-all text-xs font-bold ' + (isIn  ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-500');
-    document.getElementById('sk-page-title').textContent    = isIn ? 'Penyewaan Kontainer — Sewa In'  : 'Penyewaan Kontainer — Sewa Out';
-    document.getElementById('sk-page-subtitle').textContent = isIn ? 'Manajemen Rental sebagai Lessee (Penyewa)' : 'Manajemen Rental sebagai Lessor (Pemilik)';
+    
+    const btnOut = document.getElementById('btn-mode-out');
+    const btnIn  = document.getElementById('btn-mode-in');
+    if (isIn) {
+        btnOut.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer select-none text-emerald-300 hover:text-white';
+        btnIn.className  = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer select-none bg-indigo-600 text-white shadow-sm font-extrabold';
+        document.getElementById('header-badge-text').textContent = 'Pihak Penyewa (Sewa In)';
+        document.getElementById('kpi-aktif-label').textContent = 'Sewa Disewa Aktif';
+        document.getElementById('kpi-belum-label').textContent = 'Total Tagihan Diterima';
+        document.getElementById('kpi-lunas-label').textContent = 'Total Pembayaran Keluar';
+    } else {
+        btnOut.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer select-none bg-emerald-600 text-white shadow-sm font-extrabold';
+        btnIn.className  = 'px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer select-none text-emerald-300 hover:text-white';
+        document.getElementById('header-badge-text').textContent = 'Pihak Pemilik (Sewa Out)';
+        document.getElementById('kpi-aktif-label').textContent = 'Sewa Berjalan Aktif';
+        document.getElementById('kpi-belum-label').textContent = 'Total Belum Tertagih/Bayar';
+        document.getElementById('kpi-lunas-label').textContent = 'Pendapatan Diterima (Lunas)';
+    }
 
     const custLabel = isIn ? 'Vendor / Owner' : 'Customer';
     const custLabels = ['lbl-filter-customer','th-customer','th-customer-coll','lbl-sewa-customer','lbl-master-customer','lbl-form-customer','lbl-input-customer','lbl-kontainer-customer','lbl-tarif-customer','th-cust','th-kont-customer','th-tarif-customer'];
     custLabels.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = custLabel; });
-    document.getElementById('lbl-master-customer').textContent = `1. ${custLabel}`;
+    
+    const masterLabel = document.getElementById('lbl-master-customer');
+    if (masterLabel) masterLabel.textContent = `1. ${custLabel}`;
 }
 
 // ══════════════════════════════════════════════════
@@ -1892,4 +1987,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initBillingTable();
 });
 </script>
+
+  </main>
+</div>
 @endsection
