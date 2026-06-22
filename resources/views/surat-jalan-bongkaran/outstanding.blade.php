@@ -157,6 +157,7 @@
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kapal / Voyage</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">No. BL</th>
+                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Term</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Seal</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Supir</th>
@@ -244,6 +245,13 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                     {{ $sj->no_bl ?: '-' }}
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    @if($sj->term)
+                                        <span class="px-2 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-800">{{ $sj->term }}</span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                                     {{ $sj->no_kontainer ?: '-' }}
                                 </td>
@@ -269,7 +277,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="12" class="px-6 py-10 text-center">
+                                <td colspan="13" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
