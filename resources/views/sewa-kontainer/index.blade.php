@@ -981,8 +981,8 @@ th.sort-desc .sort-icon { color:var(--sewa-primary); }
                             <td class="font-mono text-emerald-700 font-semibold">{{ $trf->ukuran->deskripsi_ukuran ?? '-' }}</td>
                             <td class="font-bold">Rp {{ number_format($trf->tarif_bulanan, 0, ',', '.') }}</td>
                             <td>Rp {{ number_format($trf->tarif_harian, 0, ',', '.') }}</td>
-                            <td class="text-xs">{{ date('d/m/y', strtotime($trf->tanggal_mulai_berlaku)) }}</td>
-                            <td class="text-xs">{{ $trf->tanggal_akhir_berlaku ? date('d/m/y', strtotime($trf->tanggal_akhir_berlaku)) : '<span class="badge badge-aktif">Aktif</span>' }}</td>
+                            <td class="text-xs">{{ date('d/M/Y', strtotime($trf->tanggal_mulai_berlaku)) }}</td>
+                            <td class="text-xs">{!! $trf->tanggal_akhir_berlaku ? date('d/M/Y', strtotime($trf->tanggal_akhir_berlaku)) : '<span class="badge badge-aktif">Aktif</span>' !!}</td>
                             <td class="text-right"><button onclick="deleteMaster('tarif','{{ $trf->id_tarif }}','tarif ini')" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>
                         </tr>
                         @endforeach
@@ -1992,9 +1992,15 @@ async function submitTarif() {
     selCust.value = ''; selTipe.value = ''; selUkuran.value = '';
     inpBulan.value = ''; inpHarian.value = '';
     const fmtNum = n => 'Rp ' + Number(n).toLocaleString('id-ID');
-    const mulai  = data.tanggal_mulai_berlaku
-        ? new Date(data.tanggal_mulai_berlaku).toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit', year:'2-digit'})
-        : '-';
+    const formatMmmDate = (dateStr) => {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+        const day = String(date.getDate()).padStart(2, '0');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${day}/${months[date.getMonth()]}/${date.getFullYear()}`;
+    };
+    const mulai = formatMmmDate(data.tanggal_mulai_berlaku);
     // Cari tbody tabel tarif — tidak ada id, ambil berdasarkan proximity
     const tarifSection = document.getElementById('master-tarif');
     const tbody = tarifSection ? tarifSection.querySelector('tbody') : null;
