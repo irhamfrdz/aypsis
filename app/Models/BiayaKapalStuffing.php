@@ -71,6 +71,7 @@ class BiayaKapalStuffing extends Model
                     $tt->no_surat_jalan = $tt->nomor_tanda_terima;
                     $tt->pengirim = $tt->nama_pengirim;
                     $tt->penerima = $tt->nama_penerima;
+
                     return $tt;
                 });
                 $results = $results->merge($records);
@@ -78,6 +79,7 @@ class BiayaKapalStuffing extends Model
                 $records = TandaTerimaTanpaSuratJalan::whereIn('id', $ids)->get()->map(function ($tt) {
                     // Normalize attributes
                     $tt->no_surat_jalan = $tt->no_tanda_terima ?: $tt->nomor_tanda_terima;
+
                     return $tt;
                 });
                 $results = $results->merge($records);

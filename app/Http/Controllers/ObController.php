@@ -3815,7 +3815,7 @@ class ObController extends Controller
     private function createManifestForNaikKapal(NaikKapal $naikKapal, $user)
     {
         // PENGECUALIAN: Hanya buat manifest jika naik_kapal terisi
-        if (!$naikKapal) {
+        if (! $naikKapal) {
             return;
         }
 

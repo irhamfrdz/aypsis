@@ -765,7 +765,7 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
             'K' => 80.71, 'L' => 9.71, 'M' => 8.71, 'N' => 80.71, 'O' => 16.14,
             'P' => 14.71, 'Q' => 26.71, 'R' => 26.71, 'S' => 20.57, 'T' => 26.71,
             'U' => 26.71, 'V' => 20.57, 'W' => 26.71, 'X' => 26.71, 'Y' => 20.57,
-            'Z' => 26.71, 'AA' => 20.57, 'AB' => 15.29, 'AC' => 15.14, 'AD' => 13.57, 
+            'Z' => 26.71, 'AA' => 20.57, 'AB' => 15.29, 'AC' => 15.14, 'AD' => 13.57,
             'AE' => 18.71, 'AF' => 14.71, 'AG' => 5.14, 'AH' => 33.14,
         ];
         foreach ($widths as $col => $width) {

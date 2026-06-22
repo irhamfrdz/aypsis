@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Coa;
 use App\Models\PembayaranPranotaCat;
 use App\Models\PembayaranPranotaCatItem;
-use App\Models\PranotaTagihanCat;
 use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -114,7 +113,7 @@ class PembayaranPranotaCatController extends Controller
         if (empty($nomorPembayaran)) {
             $nomorPembayaran = PembayaranPranotaCat::generateNomorPembayaran();
         }
-        $totalPembayaran = $pranotaList->sum(function($pranota) {
+        $totalPembayaran = $pranotaList->sum(function ($pranota) {
             return $pranota->calculateTotalCatAmount();
         });
 
@@ -171,7 +170,7 @@ class PembayaranPranotaCatController extends Controller
                 }
             }
 
-            $totalPembayaran = $pranotas->sum(function($pranota) {
+            $totalPembayaran = $pranotas->sum(function ($pranota) {
                 return $pranota->calculateTotalCatAmount();
             });
             Log::info('Calculated total pembayaran', ['total' => $totalPembayaran]);

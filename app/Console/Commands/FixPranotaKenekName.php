@@ -69,7 +69,8 @@ class FixPranotaKenekName extends Command
             }
         }
 
-        $this->info("Fix execution finished.");
+        $this->info('Fix execution finished.');
+
         return 0;
     }
 }

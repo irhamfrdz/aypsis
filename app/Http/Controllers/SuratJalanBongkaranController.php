@@ -1421,8 +1421,8 @@ class SuratJalanBongkaranController extends Controller
                 $m->supir = '-';
                 $m->no_plat = '-';
                 $m->no_bl = $m->nomor_bl;
-                $m->lokasi = (stripos($m->pelabuhan_tujuan . $m->pelabuhan_bongkar . $m->ke, 'batam') !== false) ? 'batam' : 'jakarta';
-                
+                $m->lokasi = (stripos($m->pelabuhan_tujuan.$m->pelabuhan_bongkar.$m->ke, 'batam') !== false) ? 'batam' : 'jakarta';
+
                 $manifestsList->push($m);
             }
         }
@@ -1435,6 +1435,7 @@ class SuratJalanBongkaranController extends Controller
         // Sort by date
         $sortedCollection = $mergedCollection->sortByDesc(function ($item) {
             $date = $item->tanggal_surat_jalan ?: $item->tanggal_berangkat;
+
             return $date ? $date->format('Y-m-d H:i:s') : '0000-00-00 00:00:00';
         });
 
