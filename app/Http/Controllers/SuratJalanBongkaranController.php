@@ -1300,6 +1300,12 @@ class SuratJalanBongkaranController extends Controller
 
         $query = SuratJalanBongkaran::with(['manifest', 'kapal', 'tandaTerima']);
 
+        // Exclude 'port to port' term as they are not outstanding
+        $query->where(function ($q) {
+            $q->whereNull('term')
+                ->orWhereRaw('LOWER(term) != ?', ['port to port']);
+        });
+
         // Filter by Tanda Terima status
         if ($statusFilter === 'belum') {
             $query->whereDoesntHave('tandaTerima');
@@ -1348,6 +1354,12 @@ class SuratJalanBongkaranController extends Controller
         if ($statusFilter !== 'sudah') {
             $manifestsQuery = Manifest::whereDoesntHave('suratJalanBongkaran')
                 ->whereDoesntHave('suratJalanBongkaranBatam');
+
+            // Exclude 'port to port' term as they are not outstanding
+            $manifestsQuery->where(function ($q) {
+                $q->whereNull('term')
+                    ->orWhereRaw('LOWER(term) != ?', ['port to port']);
+            });
 
             // Apply selected ship and voyage
             if (! $request->boolean('view_all')) {
