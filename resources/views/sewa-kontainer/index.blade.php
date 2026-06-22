@@ -1874,67 +1874,150 @@ function filterContracts() {
 // ══════════════════════════════════════════════════
 // MASTER CRUD
 // ══════════════════════════════════════════════════
+// Helper: hapus baris "Tidak ada data" jika ada
+function removePlaceholderRow(tbody) {
+    const placeholder = tbody.querySelector('td[colspan]');
+    if (placeholder) placeholder.closest('tr').remove();
+}
+
 async function submitCustomer() {
-    const name = document.getElementById('input-customer-name').value.trim();
+    const input = document.getElementById('input-customer-name');
+    const name  = input.value.trim();
     if (!name) { showNotif('Nama customer wajib diisi', 'error'); return; }
-    await apiPost(ROUTES.customer.store, { nama_customer: name });
+    const res = await apiPost(ROUTES.customer.store, { nama_customer: name });
     showNotif('Customer berhasil ditambahkan!');
-    setTimeout(() => location.reload(), 800);
+    input.value = '';
+    const tbody = document.querySelector('#table-customer tbody');
+    removePlaceholderRow(tbody);
+    const id = res?.id ?? res?.id_customer ?? '';
+    const tr = document.createElement('tr');
+    tr.dataset.search = name.toLowerCase();
+    tr.innerHTML = `<td class="font-semibold">${name}</td>
+        <td class="text-right"><button onclick="deleteMaster('customer','${id}','${name.replace(/'/g,"\\'")}');this.closest('tr').remove()" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>`;
+    tbody.prepend(tr);
 }
 
 async function submitTipe() {
-    const name = document.getElementById('input-tipe-name').value.trim();
+    const input = document.getElementById('input-tipe-name');
+    const name  = input.value.trim();
     if (!name) { showNotif('Nama tipe wajib diisi', 'error'); return; }
-    await apiPost(ROUTES.tipe.store, { nama_tipe: name });
+    const res = await apiPost(ROUTES.tipe.store, { nama_tipe: name });
     showNotif('Tipe berhasil ditambahkan!');
-    setTimeout(() => location.reload(), 800);
+    input.value = '';
+    const tbody = document.querySelector('#table-tipe tbody');
+    removePlaceholderRow(tbody);
+    const id = res?.id ?? res?.id_tipe ?? '';
+    const tr = document.createElement('tr');
+    tr.dataset.search = name.toLowerCase();
+    tr.innerHTML = `<td class="font-semibold">${name}</td>
+        <td class="text-right"><button onclick="deleteMaster('tipe','${id}','${name.replace(/'/g,"\\'")}');this.closest('tr').remove()" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>`;
+    tbody.prepend(tr);
 }
 
 async function submitUkuran() {
-    const desc = document.getElementById('input-ukuran-desc').value.trim();
+    const input = document.getElementById('input-ukuran-desc');
+    let desc    = input.value.trim();
     if (!desc) { showNotif('Ukuran wajib diisi', 'error'); return; }
-    await apiPost(ROUTES.ukuran.store, { deskripsi_ukuran: desc });
+    if (/^\d+$/.test(desc)) desc = desc + "'";
+    const res = await apiPost(ROUTES.ukuran.store, { deskripsi_ukuran: desc });
     showNotif('Ukuran berhasil ditambahkan!');
-    setTimeout(() => location.reload(), 800);
+    input.value = '';
+    const tbody = document.querySelector('#table-ukuran tbody');
+    removePlaceholderRow(tbody);
+    const id = res?.id ?? res?.id_ukuran ?? '';
+    const tr = document.createElement('tr');
+    tr.dataset.search = desc.toLowerCase();
+    tr.innerHTML = `<td class="font-mono font-bold text-emerald-800">${desc}</td>
+        <td class="text-right"><button onclick="deleteMaster('ukuran','${id}','${desc.replace(/'/g,"\\'")}');this.closest('tr').remove()" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>`;
+    tbody.prepend(tr);
 }
 
 async function submitKontainer() {
+    const noKont    = document.getElementById('input-kontainer-no');
+    const selCust   = document.getElementById('input-kontainer-customer');
+    const selTipe   = document.getElementById('input-kontainer-tipe');
+    const selUkuran = document.getElementById('input-kontainer-ukuran');
     const data = {
-        no_kontainer: document.getElementById('input-kontainer-no').value.trim().toUpperCase(),
-        id_customer:  document.getElementById('input-kontainer-customer').value,
-        id_tipe:      document.getElementById('input-kontainer-tipe').value,
-        id_ukuran:    document.getElementById('input-kontainer-ukuran').value,
+        no_kontainer: noKont.value.trim().toUpperCase(),
+        id_customer:  selCust.value,
+        id_tipe:      selTipe.value,
+        id_ukuran:    selUkuran.value,
     };
     if (!data.no_kontainer || !data.id_customer || !data.id_tipe || !data.id_ukuran) {
         showNotif('Semua field wajib diisi', 'error'); return;
     }
     await apiPost(ROUTES.kontainer.store, data);
     showNotif('Kontainer berhasil didaftarkan!');
-    setTimeout(() => location.reload(), 800);
+    const custName   = selCust.options[selCust.selectedIndex]?.text ?? '-';
+    const tipeName   = selTipe.options[selTipe.selectedIndex]?.text ?? '-';
+    const ukuranName = selUkuran.options[selUkuran.selectedIndex]?.text ?? '-';
+    noKont.value = ''; selCust.value = ''; selTipe.value = ''; selUkuran.value = '';
+    const tbody = document.querySelector('#table-kontainer tbody');
+    removePlaceholderRow(tbody);
+    const tr = document.createElement('tr');
+    tr.dataset.search = (data.no_kontainer + ' ' + custName).toLowerCase();
+    tr.innerHTML = `<td class="font-mono font-black text-gray-900">${data.no_kontainer}</td>
+        <td>${custName}</td>
+        <td class="font-medium">${tipeName}</td>
+        <td class="font-mono font-semibold text-emerald-700">${ukuranName}</td>
+        <td><span class="badge badge-aktif">Aktif</span></td>
+        <td class="text-right"><button onclick="deleteMaster('kontainer','${data.no_kontainer}','${data.no_kontainer}');this.closest('tr').remove()" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>`;
+    tbody.prepend(tr);
 }
 
 async function submitTarif() {
+    const selCust   = document.getElementById('input-tarif-customer');
+    const selTipe   = document.getElementById('input-tarif-tipe');
+    const selUkuran = document.getElementById('input-tarif-ukuran');
+    const inpBulan  = document.getElementById('input-tarif-bulanan');
+    const inpHarian = document.getElementById('input-tarif-harian');
+    const inpMulai  = document.getElementById('input-tarif-mulai');
     const data = {
-        id_customer:           document.getElementById('input-tarif-customer').value,
-        id_tipe:               document.getElementById('input-tarif-tipe').value,
-        id_ukuran:             document.getElementById('input-tarif-ukuran').value,
-        tarif_bulanan:         parseFloat(document.getElementById('input-tarif-bulanan').value) || 0,
-        tarif_harian:          parseFloat(document.getElementById('input-tarif-harian').value) || 0,
-        tanggal_mulai_berlaku: document.getElementById('input-tarif-mulai').value,
+        id_customer:           selCust.value,
+        id_tipe:               selTipe.value,
+        id_ukuran:             selUkuran.value,
+        tarif_bulanan:         parseFloat(inpBulan.value) || 0,
+        tarif_harian:          parseFloat(inpHarian.value) || 0,
+        tanggal_mulai_berlaku: inpMulai.value,
     };
     if (!data.id_customer || !data.id_tipe || !data.id_ukuran) {
         showNotif('Customer, Tipe, dan Ukuran wajib dipilih', 'error'); return;
     }
-    await apiPost(ROUTES.tarif.store, data);
+    const res = await apiPost(ROUTES.tarif.store, data);
     showNotif('Tarif berhasil disimpan!');
-    setTimeout(() => location.reload(), 800);
+    const custName   = selCust.options[selCust.selectedIndex]?.text ?? '-';
+    const tipeName   = selTipe.options[selTipe.selectedIndex]?.text ?? '-';
+    const ukuranName = selUkuran.options[selUkuran.selectedIndex]?.text ?? '-';
+    const tarifId    = res?.id ?? res?.id_tarif ?? '';
+    selCust.value = ''; selTipe.value = ''; selUkuran.value = '';
+    inpBulan.value = ''; inpHarian.value = '';
+    const fmtNum = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+    const mulai  = data.tanggal_mulai_berlaku
+        ? new Date(data.tanggal_mulai_berlaku).toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit', year:'2-digit'})
+        : '-';
+    // Cari tbody tabel tarif — tidak ada id, ambil berdasarkan proximity
+    const tarifSection = document.getElementById('master-tarif');
+    const tbody = tarifSection ? tarifSection.querySelector('tbody') : null;
+    if (tbody) {
+        removePlaceholderRow(tbody);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="font-semibold">${custName}</td>
+            <td>${tipeName}</td>
+            <td class="font-mono text-emerald-700 font-semibold">${ukuranName}</td>
+            <td class="font-bold">${fmtNum(data.tarif_bulanan)}</td>
+            <td>${fmtNum(data.tarif_harian)}</td>
+            <td class="text-xs">${mulai}</td>
+            <td class="text-xs"><span class="badge badge-aktif">Aktif</span></td>
+            <td class="text-right"><button onclick="deleteMaster('tarif','${tarifId}','tarif ini');this.closest('tr').remove()" class="text-red-400 hover:text-red-600 transition-colors p-1"><i class="fas fa-trash-alt"></i></button></td>`;
+        tbody.prepend(tr);
+    }
 }
 
 async function deleteMaster(type, id, name) {
     if (!confirm(`Hapus "${name}"? Tindakan ini tidak bisa dibatalkan.`)) return;
     await apiDelete(ROUTES[type].del + id);
     showNotif(`"${name}" berhasil dihapus!`);
-    setTimeout(() => location.reload(), 800);
+    // Row dihapus via inline onclick di tombol
 }
 
 // ══════════════════════════════════════════════════
