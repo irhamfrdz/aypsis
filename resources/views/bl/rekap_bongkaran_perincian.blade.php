@@ -38,7 +38,7 @@
             </div>
             <div class="space-y-2">
                 <div class="flex">
-                    <span class="font-bold text-gray-700 w-32 uppercase">Est Tiba</span>
+                    <span class="font-bold text-gray-700 w-32 uppercase">Tanggal Berangkat</span>
                     <span class="text-gray-900">: {{ $estTiba }}</span>
                 </div>
             </div>
