@@ -275,9 +275,9 @@
                         </div>
 
                         <!-- Kalkulasi Biaya Terpakai (Dynamic) -->
-                        <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-indigo-905 flex justify-between items-center">
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-indigo-900 flex justify-between items-center">
                             <div>
-                                <span class="block text-xs font-semibold uppercase tracking-wider text-indigo-705">Kalkulasi Biaya Terpakai</span>
+                                <span class="block text-xs font-semibold uppercase tracking-wider text-indigo-700">Kalkulasi Biaya Terpakai</span>
                                 <span class="text-xs text-indigo-600">(Estimasi/Riil + Cat)</span>
                             </div>
                             <div class="text-right">
@@ -289,7 +289,8 @@
                 
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200">
                     <button type="submit" id="btnSubmitBiaya"
-                            class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-indigo-650 text-base font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                            class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
+                            style="background-color: #4f46e5; color: #ffffff;">
                         Simpan Perubahan
                     </button>
                     <button type="button" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm close-modal transition-colors">
