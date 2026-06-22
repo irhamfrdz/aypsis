@@ -1093,216 +1093,7 @@ class ObController extends Controller
 
             \Log::info('===== END markAsOB - transaction committed, now creating manifest =====');
 
-            // === BUAT MANIFEST SETELAH COMMIT ===
-            // Manifest dibuat di luar transaksi utama agar tidak ikut di-rollback
-            // jika ada error di bagian lain (BL, stock_kontainer, dsb)
-            try {
-                \Log::info('🚢 Creating manifest records for MUAT operation (after commit)...');
-
-                if (strtoupper(trim($manifestDataForLater['tipe_kontainer'])) === 'LCL') {
-                    \Log::info('LCL container detected, finding tanda terima...');
-
-                    $tandaTerimaRecords = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $manifestDataForLater['nomor_kontainer'])
-                        ->when($manifestDataForLater['no_seal'], function ($q) use ($manifestDataForLater) {
-                            return $q->where('nomor_seal', $manifestDataForLater['no_seal']);
-                        })
-                        ->with('tandaTerima.items')
-                        ->get();
-
-                    if ($tandaTerimaRecords->count() > 0) {
-                        \Log::info('Found '.$tandaTerimaRecords->count().' tanda terima for LCL container');
-
-                        foreach ($tandaTerimaRecords as $pivot) {
-                            $tandaTerima = $pivot->tandaTerima;
-                            if (! $tandaTerima) {
-                                continue;
-                            }
-
-                            $manifest = new \App\Models\Manifest;
-                            $manifest->nomor_kontainer = $manifestDataForLater['nomor_kontainer'];
-                            $manifest->no_seal = $pivot->nomor_seal ?? $manifestDataForLater['no_seal'];
-                            $manifest->tipe_kontainer = $manifestDataForLater['tipe_kontainer'];
-                            $manifest->size_kontainer = $manifestDataForLater['size_kontainer'];
-                            $manifest->nama_kapal = $manifestDataForLater['nama_kapal'];
-                            $manifest->no_voyage = $manifestDataForLater['no_voyage'];
-                            $manifest->nomor_tanda_terima = $tandaTerima->nomor_tanda_terima;
-                            $manifest->pengirim = $tandaTerima->nama_pengirim;
-                            $manifest->penerima = $tandaTerima->nama_penerima;
-                            $manifest->alamat_pengirim = $tandaTerima->alamat_pengirim;
-                            $manifest->alamat_penerima = $tandaTerima->alamat_penerima;
-                            $manifest->alamat_pengiriman = $tandaTerima->alamat_penerima;
-                            $manifest->contact_person = $tandaTerima->contact_person;
-                            $namaBarang = $tandaTerima->items->pluck('nama_barang')->filter()->implode(', ');
-                            $manifest->nama_barang = $namaBarang ?: $manifestDataForLater['jenis_barang'];
-                            $manifest->volume = $tandaTerima->items->sum('meter_kubik');
-                            $manifest->tonnage = $tandaTerima->items->sum('tonase');
-                            $manifest->kuantitas = $tandaTerima->total_koli;
-
-                            // Determin satuan from items
-                            $units = $tandaTerima->items->pluck('satuan')->unique()->filter();
-                            if ($units->count() === 1) {
-                                $manifest->satuan = $units->first();
-                            } elseif ($units->count() > 1) {
-                                $manifest->satuan = 'PKGS';
-                            }
-                            $manifest->pelabuhan_muat = $manifestDataForLater['asal_kontainer'];
-                            $manifest->pelabuhan_bongkar = $manifestDataForLater['ke'];
-                            $manifest->tanggal_berangkat = now();
-                            $manifest->penerimaan = $tandaTerima->tanggal_tanda_terima;
-                            $manifest->term = $tandaTerima->term ? ($tandaTerima->term instanceof \App\Models\Term ? $tandaTerima->term->kode : $tandaTerima->term) : $manifestDataForLater['term'];
-                            if ($manifestDataForLater['prospek_id']) {
-                                $manifest->prospek_id = $manifestDataForLater['prospek_id'];
-                            }
-
-                            // Generate nomor BL
-                            $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
-                            if ($lastManifest && $lastManifest->nomor_bl) {
-                                preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
-                                $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
-                                $manifest->nomor_bl = 'MNF-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
-                            } else {
-                                $manifest->nomor_bl = 'MNF-000001';
-                            }
-
-                            $manifest->created_by = $user->id;
-                            $manifest->updated_by = $user->id;
-                            $manifest->save();
-
-                            \Log::info('✅ Created manifest for tanda terima: '.$tandaTerima->nomor_tanda_terima, [
-                                'manifest_id' => $manifest->id, 'nomor_bl' => $manifest->nomor_bl,
-                            ]);
-                        }
-                    } else {
-                        \Log::warning('No tanda terima found for LCL container, creating fallback manifest');
-
-                        // Fallback: buat 1 manifest
-                        $manifest = new \App\Models\Manifest;
-                        $manifest->nomor_kontainer = $manifestDataForLater['nomor_kontainer'];
-                        $manifest->no_seal = $manifestDataForLater['no_seal'];
-                        $manifest->tipe_kontainer = $manifestDataForLater['tipe_kontainer'];
-                        $manifest->size_kontainer = $manifestDataForLater['size_kontainer'];
-                        $manifest->nama_kapal = $manifestDataForLater['nama_kapal'];
-                        $manifest->no_voyage = $manifestDataForLater['no_voyage'];
-                        $manifest->nama_barang = $manifestDataForLater['jenis_barang'];
-                        $manifest->volume = $manifestDataForLater['total_volume'];
-                        $manifest->tonnage = $manifestDataForLater['total_tonase'];
-                        $manifest->kuantitas = $manifestDataForLater['prospek_jumlah'] ?? null;
-                        $manifest->satuan = $manifestDataForLater['prospek_satuan'] ?? null;
-                        $manifest->pelabuhan_muat = $manifestDataForLater['asal_kontainer'];
-                        $manifest->pelabuhan_bongkar = $manifestDataForLater['ke'];
-                        $manifest->term = $manifestDataForLater['term'];
-                        $manifest->tanggal_berangkat = now();
-                        if ($manifestDataForLater['prospek_id']) {
-                            $manifest->prospek_id = $manifestDataForLater['prospek_id'];
-                            $manifest->pengirim = $manifestDataForLater['prospek_pt_pengirim'];
-                            $manifest->penerima = $manifestDataForLater['prospek_tujuan_pengiriman'];
-                            $manifest->alamat_pengirim = $manifestDataForLater['prospek_alamat_pengirim'];
-                            $manifest->alamat_penerima = $manifestDataForLater['prospek_alamat_penerima'];
-                            $manifest->alamat_pengiriman = $manifestDataForLater['prospek_alamat_pengiriman'];
-                            $manifest->contact_person = $manifestDataForLater['prospek_contact_person'];
-                        }
-
-                        $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
-                        if ($lastManifest && $lastManifest->nomor_bl) {
-                            preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
-                            $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
-                            $manifest->nomor_bl = 'MNF-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
-                        } else {
-                            $manifest->nomor_bl = 'MNF-000001';
-                        }
-
-                        $manifest->created_by = $user->id;
-                        $manifest->updated_by = $user->id;
-                        $manifest->save();
-
-                        \Log::info('✅ Created fallback manifest (no tanda terima found)');
-                    }
-                } else {
-                    // FCL atau CARGO
-                    \Log::info('FCL/CARGO manifest processing...');
-
-                    // Cek apakah CARGO (tipe atau nomor kontainer)
-                    $isCargo = (
-                        strtoupper(trim($manifestDataForLater['tipe_kontainer'] ?? '')) === 'CARGO' ||
-                        stripos($manifestDataForLater['nomor_kontainer'] ?? '', 'CARGO') !== false
-                    );
-
-                    // Cek apakah manifest sudah ada
-                    $existingManifest = null;
-
-                    // Hanya cek duplikasi jika BUKAN cargo (FCL harus unik per voyage)
-                    if (! $isCargo) {
-                        $existingManifest = \App\Models\Manifest::where('nomor_kontainer', $manifestDataForLater['nomor_kontainer'])
-                            ->where('no_voyage', $manifestDataForLater['no_voyage'])
-                            ->where('nama_kapal', $manifestDataForLater['nama_kapal'])
-                            ->first();
-                    }
-
-                    if ($isCargo || ! $existingManifest) {
-                        \Log::info(($isCargo ? 'CARGO' : 'FCL').' container, creating manifest...', [
-                            'is_cargo' => $isCargo,
-                            'nomor_kontainer' => $manifestDataForLater['nomor_kontainer'],
-                        ]);
-
-                        $manifest = new \App\Models\Manifest;
-                        $manifest->nomor_kontainer = $manifestDataForLater['nomor_kontainer'];
-                        $manifest->no_seal = $manifestDataForLater['no_seal'];
-                        $manifest->tipe_kontainer = $manifestDataForLater['tipe_kontainer'];
-                        $manifest->size_kontainer = $manifestDataForLater['size_kontainer'];
-                        $manifest->nama_kapal = $manifestDataForLater['nama_kapal'];
-                        $manifest->no_voyage = $manifestDataForLater['no_voyage'];
-                        $manifest->nama_barang = $manifestDataForLater['jenis_barang'];
-                        $manifest->volume = $manifestDataForLater['total_volume'];
-                        $manifest->tonnage = $manifestDataForLater['total_tonase'];
-                        $manifest->pelabuhan_muat = $manifestDataForLater['asal_kontainer'];
-                        $manifest->pelabuhan_bongkar = $manifestDataForLater['ke'];
-                        $manifest->term = $manifestDataForLater['term'];
-                        $manifest->tanggal_berangkat = now();
-
-                        if ($manifestDataForLater['prospek_id']) {
-                            $manifest->prospek_id = $manifestDataForLater['prospek_id'];
-                            $manifest->pengirim = $manifestDataForLater['prospek_pt_pengirim'];
-                            $manifest->penerima = $manifestDataForLater['prospek_tujuan_pengiriman'];
-                            $manifest->alamat_pengirim = $manifestDataForLater['prospek_alamat_pengirim'];
-                            $manifest->alamat_penerima = $manifestDataForLater['prospek_alamat_penerima'];
-                            $manifest->alamat_pengiriman = $manifestDataForLater['prospek_alamat_pengiriman'];
-                            $manifest->contact_person = $manifestDataForLater['prospek_contact_person'];
-                        }
-
-                        $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
-                        if ($lastManifest && $lastManifest->nomor_bl) {
-                            preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
-                            $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
-                            $manifest->nomor_bl = 'MNF-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
-                        } else {
-                            $manifest->nomor_bl = 'MNF-000001';
-                        }
-
-                        $manifest->created_by = $user->id;
-                        $manifest->updated_by = $user->id;
-                        $manifest->save();
-
-                        \Log::info('✅ Created manifest for '.($isCargo ? 'CARGO' : 'FCL'), [
-                            'manifest_id' => $manifest->id,
-                            'nomor_bl' => $manifest->nomor_bl,
-                            'nomor_kontainer' => $manifest->nomor_kontainer,
-                            'tipe_kontainer' => $manifest->tipe_kontainer,
-                            'nama_kapal' => $manifest->nama_kapal,
-                            'no_voyage' => $manifest->no_voyage,
-                        ]);
-                    } else {
-                        \Log::info('ℹ️ Skipping manifest creation for FCL: Manifest already exists.', [
-                            'nomor_kontainer' => $manifestDataForLater['nomor_kontainer'],
-                            'existing_id' => $existingManifest->id,
-                        ]);
-                    }
-                }
-            } catch (\Exception $manifestException) {
-                // Log error manifest tapi jangan gagalkan seluruh proses OB
-                \Log::error('❌ ERROR saat membuat manifest (OB status sudah tersimpan): '.$manifestException->getMessage());
-                \Log::error('Manifest stack trace: '.$manifestException->getTraceAsString());
-            }
-            // === END MANIFEST CREATION ===
+            $this->createManifestForNaikKapal($naikKapal, $user);
 
             \Log::info('===== END markAsOB SUCCESS =====');
 
@@ -3804,6 +3595,8 @@ class ObController extends Controller
 
                             DB::commit();
 
+                            $this->createManifestForNaikKapal($naikKapal, $user);
+
                             $result['status'] = 'success';
                             $result['message'] = 'Berhasil update data OB (naik kapal)';
                             $successCount++;
@@ -3891,6 +3684,8 @@ class ObController extends Controller
                             }
 
                             DB::commit();
+
+                            $this->createManifestForNaikKapal($naikKapal, $user);
 
                             $result['status'] = 'success';
                             $result['message'] = 'Berhasil OB (naik kapal)';
@@ -4015,5 +3810,249 @@ class ObController extends Controller
             'not_found' => $notFoundCount,
             'total' => $totalProcessed,
         ]);
+    }
+
+    private function createManifestForNaikKapal(NaikKapal $naikKapal, $user)
+    {
+        // PENGECUALIAN: Hanya buat manifest jika naik_kapal terisi
+        if (!$naikKapal) {
+            return;
+        }
+
+        // Simpan data yang dibutuhkan untuk manifest
+        $manifestDataForLater = [
+            'tipe_kontainer' => $naikKapal->prospek->tipe ?? $naikKapal->tipe_kontainer,
+            'nomor_kontainer' => $naikKapal->nomor_kontainer,
+            'no_seal' => $naikKapal->no_seal,
+            'size_kontainer' => $naikKapal->size_kontainer,
+            'nama_kapal' => $naikKapal->nama_kapal,
+            'no_voyage' => $naikKapal->no_voyage,
+            'jenis_barang' => $naikKapal->jenis_barang,
+            'total_volume' => $naikKapal->total_volume,
+            'total_tonase' => $naikKapal->total_tonase,
+            'asal_kontainer' => $naikKapal->asal_kontainer,
+            'ke' => $naikKapal->ke,
+            'prospek_id' => $naikKapal->prospek_id,
+            'prospek_pt_pengirim' => $naikKapal->prospek ? $naikKapal->prospek->pt_pengirim : null,
+            'prospek_tujuan_pengiriman' => $naikKapal->prospek ? $naikKapal->prospek->tujuan_pengiriman : null,
+            // Tambahkan field alamat untuk prospek (FCL)
+            'prospek_alamat_pengirim' => $naikKapal->prospek ? $naikKapal->prospek->alamat_pengirim : null,
+            'prospek_alamat_penerima' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->alamat_penerima : ($naikKapal->prospek->alamat_penerima ?? null),
+            'prospek_alamat_pengiriman' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->alamat_penerima : ($naikKapal->prospek->alamat_pengiriman ?? null),
+            'prospek_contact_person' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->contact_person : ($naikKapal->prospek->contact_person ?? null),
+            'prospek_jumlah' => $naikKapal->prospek ? $naikKapal->prospek->kuantitas : ($naikKapal->kuantitas ?? null),
+            'prospek_satuan' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->satuan : null,
+            'term' => $naikKapal->prospek ? ($naikKapal->prospek->tandaTerima ? $naikKapal->prospek->tandaTerima->term : (
+                preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $naikKapal->prospek->keterangan, $matches) ?
+                (\App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', trim($matches[1]))->first()?->term?->kode) : null
+            )) : null,
+        ];
+
+        try {
+            \Log::info('🚢 Creating manifest records for MUAT operation (after commit)...');
+
+            if (strtoupper(trim($manifestDataForLater['tipe_kontainer'] ?? '')) === 'LCL') {
+                \Log::info('LCL container detected, finding tanda terima...');
+
+                $tandaTerimaRecords = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $manifestDataForLater['nomor_kontainer'])
+                    ->when($manifestDataForLater['no_seal'], function ($q) use ($manifestDataForLater) {
+                        return $q->where('nomor_seal', $manifestDataForLater['no_seal']);
+                    })
+                    ->with('tandaTerima.items')
+                    ->get();
+
+                if ($tandaTerimaRecords->count() > 0) {
+                    \Log::info('Found '.$tandaTerimaRecords->count().' tanda terima for LCL container');
+
+                    foreach ($tandaTerimaRecords as $pivot) {
+                        $tandaTerima = $pivot->tandaTerima;
+                        if (! $tandaTerima) {
+                            continue;
+                        }
+
+                        $manifest = new \App\Models\Manifest;
+                        $manifest->nomor_kontainer = $manifestDataForLater['nomor_kontainer'];
+                        $manifest->no_seal = $pivot->nomor_seal ?? $manifestDataForLater['no_seal'];
+                        $manifest->tipe_kontainer = $manifestDataForLater['tipe_kontainer'];
+                        $manifest->size_kontainer = $manifestDataForLater['size_kontainer'];
+                        $manifest->nama_kapal = $manifestDataForLater['nama_kapal'];
+                        $manifest->no_voyage = $manifestDataForLater['no_voyage'];
+                        $manifest->nomor_tanda_terima = $tandaTerima->nomor_tanda_terima;
+                        $manifest->pengirim = $tandaTerima->nama_pengirim;
+                        $manifest->penerima = $tandaTerima->nama_penerima;
+                        $manifest->alamat_pengirim = $tandaTerima->alamat_pengirim;
+                        $manifest->alamat_penerima = $tandaTerima->alamat_penerima;
+                        $manifest->alamat_pengiriman = $tandaTerima->alamat_penerima;
+                        $manifest->contact_person = $tandaTerima->contact_person;
+                        $namaBarang = $tandaTerima->items->pluck('nama_barang')->filter()->implode(', ');
+                        $manifest->nama_barang = $namaBarang ?: $manifestDataForLater['jenis_barang'];
+                        $manifest->volume = $tandaTerima->items->sum('meter_kubik');
+                        $manifest->tonnage = $tandaTerima->items->sum('tonase');
+                        $manifest->kuantitas = $tandaTerima->total_koli;
+
+                        // Determin satuan from items
+                        $units = $tandaTerima->items->pluck('satuan')->unique()->filter();
+                        if ($units->count() === 1) {
+                            $manifest->satuan = $units->first();
+                        } elseif ($units->count() > 1) {
+                            $manifest->satuan = 'PKGS';
+                        }
+                        $manifest->pelabuhan_muat = $manifestDataForLater['asal_kontainer'];
+                        $manifest->pelabuhan_bongkar = $manifestDataForLater['ke'];
+                        $manifest->tanggal_berangkat = now();
+                        $manifest->penerimaan = $tandaTerima->tanggal_tanda_terima;
+                        $manifest->term = $tandaTerima->term ? ($tandaTerima->term instanceof \App\Models\Term ? $tandaTerima->term->kode : $tandaTerima->term) : $manifestDataForLater['term'];
+                        if ($manifestDataForLater['prospek_id']) {
+                            $manifest->prospek_id = $manifestDataForLater['prospek_id'];
+                        }
+
+                        // Generate nomor BL
+                        $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
+                        if ($lastManifest && $lastManifest->nomor_bl) {
+                            preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
+                            $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
+                            $manifest->nomor_bl = 'MNF-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                        } else {
+                            $manifest->nomor_bl = 'MNF-000001';
+                        }
+
+                        $manifest->created_by = $user->id;
+                        $manifest->updated_by = $user->id;
+                        $manifest->save();
+
+                        \Log::info('✅ Created manifest for tanda terima: '.$tandaTerima->nomor_tanda_terima, [
+                            'manifest_id' => $manifest->id, 'nomor_bl' => $manifest->nomor_bl,
+                        ]);
+                    }
+                } else {
+                    \Log::warning('No tanda terima found for LCL container, creating fallback manifest');
+
+                    // Fallback: buat 1 manifest
+                    $manifest = new \App\Models\Manifest;
+                    $manifest->nomor_kontainer = $manifestDataForLater['nomor_kontainer'];
+                    $manifest->no_seal = $manifestDataForLater['no_seal'];
+                    $manifest->tipe_kontainer = $manifestDataForLater['tipe_kontainer'];
+                    $manifest->size_kontainer = $manifestDataForLater['size_kontainer'];
+                    $manifest->nama_kapal = $manifestDataForLater['nama_kapal'];
+                    $manifest->no_voyage = $manifestDataForLater['no_voyage'];
+                    $manifest->nama_barang = $manifestDataForLater['jenis_barang'];
+                    $manifest->volume = $manifestDataForLater['total_volume'];
+                    $manifest->tonnage = $manifestDataForLater['total_tonase'];
+                    $manifest->kuantitas = $manifestDataForLater['prospek_jumlah'] ?? null;
+                    $manifest->satuan = $manifestDataForLater['prospek_satuan'] ?? null;
+                    $manifest->pelabuhan_muat = $manifestDataForLater['asal_kontainer'];
+                    $manifest->pelabuhan_bongkar = $manifestDataForLater['ke'];
+                    $manifest->term = $manifestDataForLater['term'];
+                    $manifest->tanggal_berangkat = now();
+                    if ($manifestDataForLater['prospek_id']) {
+                        $manifest->prospek_id = $manifestDataForLater['prospek_id'];
+                        $manifest->pengirim = $manifestDataForLater['prospek_pt_pengirim'];
+                        $manifest->penerima = $manifestDataForLater['prospek_tujuan_pengiriman'];
+                        $manifest->alamat_pengirim = $manifestDataForLater['prospek_alamat_pengirim'];
+                        $manifest->alamat_penerima = $manifestDataForLater['prospek_alamat_penerima'];
+                        $manifest->alamat_pengiriman = $manifestDataForLater['prospek_alamat_pengiriman'];
+                        $manifest->contact_person = $manifestDataForLater['prospek_contact_person'];
+                    }
+
+                    $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
+                    if ($lastManifest && $lastManifest->nomor_bl) {
+                        preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
+                        $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
+                        $manifest->nomor_bl = 'MNF-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                    } else {
+                        $manifest->nomor_bl = 'MNF-000001';
+                    }
+
+                    $manifest->created_by = $user->id;
+                    $manifest->updated_by = $user->id;
+                    $manifest->save();
+
+                    \Log::info('✅ Created fallback manifest (no tanda terima found)');
+                }
+            } else {
+                // FCL atau CARGO
+                \Log::info('FCL/CARGO manifest processing...');
+
+                // Cek apakah CARGO (tipe atau nomor kontainer)
+                $isCargo = (
+                    strtoupper(trim($manifestDataForLater['tipe_kontainer'] ?? '')) === 'CARGO' ||
+                    stripos($manifestDataForLater['nomor_kontainer'] ?? '', 'CARGO') !== false
+                );
+
+                // Cek apakah manifest sudah ada
+                $existingManifest = null;
+
+                // Hanya cek duplikasi jika BUKAN cargo (FCL harus unik per voyage)
+                if (! $isCargo) {
+                    $existingManifest = \App\Models\Manifest::where('nomor_kontainer', $manifestDataForLater['nomor_kontainer'])
+                        ->where('no_voyage', $manifestDataForLater['no_voyage'])
+                        ->where('nama_kapal', $manifestDataForLater['nama_kapal'])
+                        ->first();
+                }
+
+                if ($isCargo || ! $existingManifest) {
+                    \Log::info(($isCargo ? 'CARGO' : 'FCL').' container, creating manifest...', [
+                        'is_cargo' => $isCargo,
+                        'nomor_kontainer' => $manifestDataForLater['nomor_kontainer'],
+                    ]);
+
+                    $manifest = new \App\Models\Manifest;
+                    $manifest->nomor_kontainer = $manifestDataForLater['nomor_kontainer'];
+                    $manifest->no_seal = $manifestDataForLater['no_seal'];
+                    $manifest->tipe_kontainer = $manifestDataForLater['tipe_kontainer'];
+                    $manifest->size_kontainer = $manifestDataForLater['size_kontainer'];
+                    $manifest->nama_kapal = $manifestDataForLater['nama_kapal'];
+                    $manifest->no_voyage = $manifestDataForLater['no_voyage'];
+                    $manifest->nama_barang = $manifestDataForLater['jenis_barang'];
+                    $manifest->volume = $manifestDataForLater['total_volume'];
+                    $manifest->tonnage = $manifestDataForLater['total_tonase'];
+                    $manifest->pelabuhan_muat = $manifestDataForLater['asal_kontainer'];
+                    $manifest->pelabuhan_bongkar = $manifestDataForLater['ke'];
+                    $manifest->term = $manifestDataForLater['term'];
+                    $manifest->tanggal_berangkat = now();
+
+                    if ($manifestDataForLater['prospek_id']) {
+                        $manifest->prospek_id = $manifestDataForLater['prospek_id'];
+                        $manifest->pengirim = $manifestDataForLater['prospek_pt_pengirim'];
+                        $manifest->penerima = $manifestDataForLater['prospek_tujuan_pengiriman'];
+                        $manifest->alamat_pengirim = $manifestDataForLater['prospek_alamat_pengirim'];
+                        $manifest->alamat_penerima = $manifestDataForLater['prospek_alamat_penerima'];
+                        $manifest->alamat_pengiriman = $manifestDataForLater['prospek_alamat_pengiriman'];
+                        $manifest->contact_person = $manifestDataForLater['prospek_contact_person'];
+                    }
+
+                    $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
+                    if ($lastManifest && $lastManifest->nomor_bl) {
+                        preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
+                        $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
+                        $manifest->nomor_bl = 'MNF-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                    } else {
+                        $manifest->nomor_bl = 'MNF-000001';
+                    }
+
+                    $manifest->created_by = $user->id;
+                    $manifest->updated_by = $user->id;
+                    $manifest->save();
+
+                    \Log::info('✅ Created manifest for '.($isCargo ? 'CARGO' : 'FCL'), [
+                        'manifest_id' => $manifest->id,
+                        'nomor_bl' => $manifest->nomor_bl,
+                        'nomor_kontainer' => $manifest->nomor_kontainer,
+                        'tipe_kontainer' => $manifest->tipe_kontainer,
+                        'nama_kapal' => $manifest->nama_kapal,
+                        'no_voyage' => $manifest->no_voyage,
+                    ]);
+                } else {
+                    \Log::info('ℹ️ Skipping manifest creation for FCL: Manifest already exists.', [
+                        'nomor_kontainer' => $manifestDataForLater['nomor_kontainer'],
+                        'existing_id' => $existingManifest->id,
+                    ]);
+                }
+            }
+        } catch (\Exception $manifestException) {
+            // Log error manifest tapi jangan gagalkan seluruh proses OB
+            \Log::error('❌ ERROR saat membuat manifest (OB status sudah tersimpan): '.$manifestException->getMessage());
+            \Log::error('Manifest stack trace: '.$manifestException->getTraceAsString());
+        }
     }
 }
