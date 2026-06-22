@@ -168,12 +168,9 @@ th.sort-desc .sort-icon { color:var(--sewa-primary); }
         </div>
       </div>
 
-      {{-- DUAL PERSONA MODE TOGGLE --}}
+      {{-- MODE TOGGLE --}}
       <div class="sk-mode-toggle-box flex p-1 rounded-xl border self-start md:self-center transition-colors duration-350">
-        <button id="btn-mode-out" onclick="setMode('out')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer select-none bg-emerald-600 text-white shadow-sm font-extrabold">
-          <span>Sewa Out (Lessor)</span>
-        </button>
-        <button id="btn-mode-in" onclick="setMode('in')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer select-none text-emerald-300 hover:text-white">
+        <button id="btn-mode-in" onclick="setMode('in')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 flex items-center gap-1.5 cursor-pointer select-none bg-indigo-600 text-white shadow-sm font-extrabold">
           <span>Sewa In (Lessee)</span>
         </button>
       </div>
@@ -2008,10 +2005,140 @@ async function wipeAllData() {
 }
 
 // ══════════════════════════════════════════════════
+// BULK IMPORT
+// ══════════════════════════════════════════════════
+const BULK_TEMPLATES = {
+    customer:   { title: 'Format: NAMA_CUSTOMER', body: 'Satu nama customer/vendor per baris.\nContoh:\nPT. Maju Bersama\nCV. Sejahtera' },
+    tipe:       { title: 'Format: NAMA_TIPE', body: 'Satu nama tipe kontainer per baris.\nContoh:\nDry\nReefer\nOpen Top' },
+    ukuran:     { title: 'Format: DESKRIPSI_UKURAN', body: 'Satu ukuran per baris.\nContoh:\n20 Feet\n40 Feet\n45 Feet HC' },
+    kontainer:  { title: 'Format: NO_KONTAINER\tID_CUSTOMER\tID_TIPE\tID_UKURAN', body: 'Kolom dipisah TAB. Baris pertama boleh diisi header atau langsung data.\nContoh:\nABCU1234567\t1\t1\t1\nXYZU9876543\t2\t1\t2' },
+    tarif:      { title: 'Format: ID_CUSTOMER\tID_TIPE\tID_UKURAN\tTARIF_BULANAN\tTARIF_HARIAN\tTGL_MULAI', body: 'Kolom dipisah TAB.\nContoh:\n1\t1\t1\t2500000\t85000\t2024-01-01' },
+    sewa:       { title: 'Format: NO_KONTAINER\tID_CUSTOMER\tTGL_KELUAR\tTGL_KEMBALI\tKET', body: 'Kolom dipisah TAB. TGL_KEMBALI boleh kosong (kontainer masih keluar).\nContoh:\nABCU1234567\t1\t2024-01-10\t2024-02-10\tSewa reguler' },
+    pembayaran: { title: 'Format: NO_NOTA\tID_CUSTOMER\tTOTAL\tTGL_JATUH_TEMPO', body: 'Kolom dipisah TAB.\nContoh:\nINV-2024-001\t1\t5000000\t2024-03-01' },
+    pelunasan:  { title: 'Format: NO_NOTA\tNO_BUKTI_BAYAR\tTGL_BAYAR\tJML_BAYAR', body: 'Kolom dipisah TAB.\nContoh:\nINV-2024-001\tBKT-001\t2024-03-05\t5000000' },
+};
+
+function onBulkTypeChange() {
+    const type = document.getElementById('bulk-import-type').value;
+    const tpl  = BULK_TEMPLATES[type] || {};
+    document.getElementById('bulk-tpl-title').textContent = tpl.title || 'Format:';
+    document.getElementById('bulk-tpl-body').textContent  = tpl.body  || '-';
+
+    // toggle preview vs process button
+    const isPelunasan = type === 'pelunasan';
+    document.getElementById('btn-bulk-process').classList.toggle('hidden', isPelunasan);
+    document.getElementById('bulk-preview-area').classList.add('hidden');
+}
+
+function loadBulkTemplate() {
+    const type = document.getElementById('bulk-import-type').value;
+    const tpl  = BULK_TEMPLATES[type] || {};
+    document.getElementById('bulk-import-textarea').value = tpl.body || '';
+}
+
+function copyBulkTemplate() {
+    const type = document.getElementById('bulk-import-type').value;
+    const tpl  = BULK_TEMPLATES[type] || {};
+    navigator.clipboard.writeText(tpl.body || '').then(() => showNotif('Format disalin ke clipboard!'));
+}
+
+function clearBulkTextarea() {
+    document.getElementById('bulk-import-textarea').value = '';
+    document.getElementById('bulk-import-log').classList.add('hidden');
+    document.getElementById('bulk-import-log').innerHTML = '';
+    document.getElementById('bulk-preview-area').classList.add('hidden');
+}
+
+async function processBulkImport() {
+    const type    = document.getElementById('bulk-import-type').value;
+    const payload = document.getElementById('bulk-import-textarea').value.trim();
+    const logDiv  = document.getElementById('bulk-import-log');
+
+    if (!payload) { showNotif('Data masih kosong', 'error'); return; }
+
+    if (type === 'pelunasan') {
+        // 2-stage: preview first
+        await previewBulkPelunasan(payload);
+        return;
+    }
+
+    logDiv.classList.add('hidden');
+    logDiv.innerHTML = '';
+
+    try {
+        const res = await apiPost(ROUTES.bulkImport || `/sewa-kontainer/bulk-import`, { type, payload });
+        logDiv.classList.remove('hidden');
+
+        if (res.results && res.results.length) {
+            logDiv.innerHTML = res.results.map(r =>
+                `<div class="${r.status === 'ok' ? 'text-emerald-600' : 'text-red-600'}">
+                    <i class="fas fa-${r.status === 'ok' ? 'check' : 'times'}-circle mr-1"></i>
+                    Baris ${r.line}: ${r.msg}
+                 </div>`
+            ).join('');
+        } else {
+            logDiv.innerHTML = `<div class="text-emerald-600"><i class="fas fa-check-circle mr-1"></i>${res.message || 'Import berhasil!'}</div>`;
+        }
+        showNotif(res.message || 'Import berhasil!');
+        setTimeout(() => location.reload(), 1500);
+    } catch(e) {
+        logDiv.classList.remove('hidden');
+        logDiv.innerHTML = `<div class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error: ${e.message || 'Gagal melakukan import'}</div>`;
+    }
+}
+
+async function previewBulkPelunasan(payload) {
+    try {
+        const res = await apiPost(ROUTES.bulkPreview || `/sewa-kontainer/bulk-preview`, { payload });
+        const tbody = document.getElementById('bulk-preview-tbody');
+        tbody.innerHTML = '';
+
+        (res.rows || []).forEach((r, i) => {
+            const valid = r.valid ? 'text-emerald-600' : 'text-red-500';
+            tbody.innerHTML += `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${r.no_nota || '-'}</td>
+                    <td>${r.customer || '-'}</td>
+                    <td>${r.no_bukti || '-'}</td>
+                    <td>${r.tgl_bayar || '-'}</td>
+                    <td>${r.jml_tagihan || '-'}</td>
+                    <td>${r.grand_total || '-'}</td>
+                    <td class="${valid} font-bold">${r.valid ? '✓ Valid' : '✗ ' + r.error}</td>
+                </tr>`;
+        });
+
+        document.getElementById('bulk-preview-area').classList.remove('hidden');
+        document.getElementById('btn-bulk-process').classList.add('hidden');
+    } catch(e) {
+        showNotif('Gagal memuat preview: ' + (e.message || ''), 'error');
+    }
+}
+
+async function applyBulkImport() {
+    const payload = document.getElementById('bulk-import-textarea').value.trim();
+    if (!payload) { showNotif('Data kosong', 'error'); return; }
+
+    try {
+        const res = await apiPost(ROUTES.bulkImport || `/sewa-kontainer/bulk-import`, { type: 'pelunasan', payload, apply: true });
+        showNotif(res.message || `${res.applied || 0} pelunasan berhasil diproses!`);
+        setTimeout(() => location.reload(), 1200);
+    } catch(e) {
+        showNotif('Gagal: ' + (e.message || ''), 'error');
+    }
+}
+
+function hideBulkPreview() {
+    document.getElementById('bulk-preview-area').classList.add('hidden');
+    document.getElementById('btn-bulk-process').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
     initBillingTable();
+    onBulkTypeChange(); // init template info & button state
 });
 </script>
 
