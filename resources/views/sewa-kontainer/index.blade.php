@@ -2080,7 +2080,7 @@ async function processBulkImport() {
             logDiv.innerHTML = `<div class="text-emerald-600"><i class="fas fa-check-circle mr-1"></i>${res.message || 'Import berhasil!'}</div>`;
         }
         showNotif(res.message || 'Import berhasil!');
-        setTimeout(() => location.reload(), 1500);
+        document.getElementById('bulk-import-textarea').value = ''; // kosongkan textarea, tetap di section ini
     } catch(e) {
         logDiv.classList.remove('hidden');
         logDiv.innerHTML = `<div class="text-red-600"><i class="fas fa-times-circle mr-1"></i>Error: ${e.message || 'Gagal melakukan import'}</div>`;
@@ -2122,7 +2122,8 @@ async function applyBulkImport() {
     try {
         const res = await apiPost(ROUTES.bulkImport || `/sewa-kontainer/bulk-import`, { type: 'pelunasan', payload, apply: true });
         showNotif(res.message || `${res.applied || 0} pelunasan berhasil diproses!`);
-        setTimeout(() => location.reload(), 1200);
+        hideBulkPreview();
+        document.getElementById('bulk-import-textarea').value = ''; // kosongkan textarea, tetap di section ini
     } catch(e) {
         showNotif('Gagal: ' + (e.message || ''), 'error');
     }
