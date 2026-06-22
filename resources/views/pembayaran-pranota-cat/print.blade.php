@@ -224,25 +224,25 @@
             <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
                 <tr>
                     <td style="width: 20%; padding: 3px; font-weight: bold;">Nomor Pranota:</td>
-                    <td style="width: 30%; padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaTagihanCats->first()?->no_invoice ?? '-' }}</td>
+                    <td style="width: 30%; padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaTagihanCats->first()?->no_invoice ?? $pembayaran->pranotaPerbaikanKontainers->first()?->nomor_pranota ?? '-' }}</td>
                     <td style="width: 20%; padding: 3px; font-weight: bold;">Nomor Pembayaran:</td>
                     <td style="width: 30%; padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->nomor_pembayaran }}</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px; font-weight: bold;">Tanggal Pranota:</td>
-                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaTagihanCats->first()?->tanggal_pranota ? \Carbon\Carbon::parse($pembayaran->pranotaTagihanCats->first()?->tanggal_pranota)->format('d/m/Y') : '-' }}</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaTagihanCats->first()?->tanggal_pranota ? \Carbon\Carbon::parse($pembayaran->pranotaTagihanCats->first()?->tanggal_pranota)->format('d/m/Y') : ($pembayaran->pranotaPerbaikanKontainers->first()?->tanggal_pranota ? \Carbon\Carbon::parse($pembayaran->pranotaPerbaikanKontainers->first()?->tanggal_pranota)->format('d/m/Y') : '-') }}</td>
                     <td style="padding: 3px; font-weight: bold;">Tanggal Pembayaran:</td>
                     <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->tanggal_kas ? \Carbon\Carbon::parse($pembayaran->tanggal_kas)->format('d/m/Y') : '-' }}</td>
                 </tr>
                 <tr>
-                    <td style="padding: 3px; font-weight: bold;">Supplier:</td>
-                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaTagihanCats->first()?->supplier ?? '-' }}</td>
+                    <td style="padding: 3px; font-weight: bold;">Supplier/Vendor:</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaTagihanCats->first()?->supplier ?? $pembayaran->pranotaPerbaikanKontainers->first()?->vendor ?? '-' }}</td>
                     <td style="padding: 3px; font-weight: bold;">Bank:</td>
                     <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->bank ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px; font-weight: bold;">Total Tagihan:</td>
-                    <td style="padding: 3px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->pranotaTagihanCats->first()?->total_amount ?? 0, 0, ',', '.') }}</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->pranotaTagihanCats->first()?->total_amount ?? $pembayaran->pranotaPerbaikanKontainers->sum(function($p) { return $p->calculateTotalCatAmount(); }), 0, ',', '.') }}</td>
                     <td style="padding: 3px; font-weight: bold;">Nominal Bayar:</td>
                     <td style="padding: 3px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->total_pembayaran, 0, ',', '.') }}</td>
                 </tr>
@@ -258,27 +258,27 @@
                 </tr>
             </table>
         </div>
-
+ 
         <!-- Keterangan Pranota -->
-        @if($pembayaran->pranotaTagihanCats->first()?->keterangan)
+        @if(($pembayaran->pranotaTagihanCats->first()?->keterangan) || ($pembayaran->pranotaPerbaikanKontainers->first()?->keterangan))
         <div class="content-section">
             <div class="section-title">Keterangan Pranota</div>
             <div style="border: 1px solid #ddd; padding: 5px; min-height: 25px; background: #f9f9f9; font-size: 8px;">
-                {{ Str::limit($pembayaran->pranotaTagihanCats->first()?->keterangan, 200) }}
+                {{ Str::limit($pembayaran->pranotaTagihanCats->first()?->keterangan ?? $pembayaran->pranotaPerbaikanKontainers->first()?->keterangan, 200) }}
             </div>
         </div>
         @endif
-
+ 
         <!-- Daftar Tagihan CAT Kontainer -->
         <div class="content-section">
             <div class="section-title">Daftar Tagihan CAT Kontainer</div>
-
-            @if($pembayaran->pranotaTagihanCats->count() > 0)
+ 
+            @if($pembayaran->pranotaTagihanCats->count() > 0 || $pembayaran->pranotaPerbaikanKontainers->count() > 0)
                 <table class="cat-table compact-table">
                     <thead>
                         <tr>
                             <th style="width: 5%;">No</th>
-                            <th style="width: 15%;">No.Tagihan</th>
+                            <th style="width: 15%;">No.Tagihan / Perbaikan</th>
                             <th style="width: 15%;">Kontainer</th>
                             <th style="width: 10%;">Tanggal</th>
                             <th style="width: 15%;">Vendor</th>
@@ -306,14 +306,35 @@
                                 </tr>
                             @endforeach
                         @endforeach
+
+                        @foreach($pembayaran->pranotaPerbaikanKontainers as $pranota)
+                            @foreach($pranota->items ?? [] as $item)
+                                @if(floatval($item['biaya_cat'] ?? 0) > 0)
+                                    @php $totalIndex++; @endphp
+                                    <tr>
+                                        <td>{{ $totalIndex }}</td>
+                                        <td>{{ $item['no_perbaikan'] ?? '-' }}</td>
+                                        <td>{{ $item['no_kontainer'] ?? '-' }}</td>
+                                        <td>{{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d/m') : '-' }}</td>
+                                        <td>{{ $item['vendor_cat'] ?? $pranota->vendor ?? '-' }}</td>
+                                        <td style="text-align: right; font-weight: bold;">
+                                            Rp {{ number_format(floatval($item['biaya_cat'] ?? 0), 0, ',', '.') }}
+                                        </td>
+                                        <td style="text-align: right; font-weight: bold;">
+                                            Rp {{ number_format(floatval($item['biaya_cat'] ?? 0), 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        @endforeach
                     </tbody>
                 </table>
-
+ 
                 <!-- Total Biaya -->
                 <div class="total-section">
                     <div class="total-row">
                         <span>Total Tagihan:</span>
-                        <span>Rp {{ number_format($pembayaran->pranotaTagihanCats->first()?->total_amount ?? 0, 0, ',', '.') }}</span>
+                        <span>Rp {{ number_format($pembayaran->pranotaTagihanCats->first()?->total_amount ?? $pembayaran->pranotaPerbaikanKontainers->sum(function($p) { return $p->calculateTotalCatAmount(); }), 0, ',', '.') }}</span>
                     </div>
                     @if($pembayaran->penyesuaian != 0)
                     <div class="total-row">
@@ -332,7 +353,7 @@
                 </div>
             @endif
         </div>
-
+ 
         <!-- Keterangan Pembayaran -->
         @if($pembayaran->keterangan || $pembayaran->alasan_penyesuaian)
         <div class="content-section">
@@ -348,7 +369,7 @@
             </div>
         </div>
         @endif
-
+ 
         <!-- Signatures -->
         <div class="signatures">
             <div class="signature-box">
@@ -364,7 +385,7 @@
             <div class="signature-box">
                 <div class="signature-line"></div>
                 <div style="font-size: 9px;"><strong>Penerima</strong></div>
-                <div style="font-size: 8px;">{{ $pembayaran->pranotaTagihanCats->first()?->supplier ?? 'Supplier' }}</div>
+                <div style="font-size: 8px;">{{ $pembayaran->pranotaTagihanCats->first()?->supplier ?? $pembayaran->pranotaPerbaikanKontainers->first()?->vendor ?? 'Supplier' }}</div>
             </div>
         </div>
 

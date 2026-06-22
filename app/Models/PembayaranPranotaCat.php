@@ -49,6 +49,19 @@ class PembayaranPranotaCat extends Model
     }
 
     /**
+     * Relationship to pranota perbaikan items through pivot table
+     */
+    public function pranotaPerbaikanKontainers()
+    {
+        return $this->belongsToMany(
+            PranotaPerbaikanKontainer::class,
+            'pembayaran_pranota_cat_items',
+            'pembayaran_pranota_cat_id',
+            'pranota_perbaikan_kontainer_id'
+        )->withPivot('amount')->withTimestamps();
+    }
+
+    /**
      * Get all payment items
      */
     public function paymentItems()

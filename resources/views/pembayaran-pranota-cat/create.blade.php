@@ -149,14 +149,14 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         <input type="checkbox" name="pranota_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded" checked>
                                     </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->no_invoice }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->nomor_pranota }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        {{ $pranota->supplier ?? '-' }}
+                                        {{ $pranota->vendor ?? '-' }}
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         {{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d/M/Y') : '-' }}
                                     </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->calculateTotalAmount(), 0, ',', '.') }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->calculateTotalCatAmount(), 0, ',', '.') }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         @if ($pranota->status == 'paid')
                                             <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-green-100 text-green-800">Lunas</span>

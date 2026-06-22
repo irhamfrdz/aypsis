@@ -44,4 +44,16 @@ class PranotaPerbaikanKontainer extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function calculateTotalCatAmount()
+    {
+        if (!is_array($this->items)) {
+            return 0;
+        }
+        $total = 0;
+        foreach ($this->items as $item) {
+            $total += floatval($item['biaya_cat'] ?? 0);
+        }
+        return $total;
+    }
 }

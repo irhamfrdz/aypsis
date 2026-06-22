@@ -14,6 +14,7 @@ class PembayaranPranotaCatItem extends Model
     protected $fillable = [
         'pembayaran_pranota_cat_id',
         'pranota_tagihan_cat_id',
+        'pranota_perbaikan_kontainer_id',
         'amount',
     ];
 
@@ -35,5 +36,13 @@ class PembayaranPranotaCatItem extends Model
     public function pranotaTagihanCat()
     {
         return $this->belongsTo(PranotaTagihanCat::class, 'pranota_tagihan_cat_id');
+    }
+
+    /**
+     * Relationship to PranotaPerbaikanKontainer
+     */
+    public function pranotaPerbaikanKontainer()
+    {
+        return $this->belongsTo(PranotaPerbaikanKontainer::class, 'pranota_perbaikan_kontainer_id');
     }
 }

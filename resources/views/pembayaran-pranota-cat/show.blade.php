@@ -148,6 +148,35 @@
                             </tr>
                             @endforeach
                         @endforeach
+
+                        @foreach($pembayaran->pranotaPerbaikanKontainers as $pranota)
+                            @foreach($pranota->items ?? [] as $item)
+                                @if(floatval($item['biaya_cat'] ?? 0) > 0)
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ $pranota->nomor_pranota }}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $item['no_kontainer'] ?? '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $item['vendor_cat'] ?? $pranota->vendor ?? '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d/m/Y') : '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        Rp {{ number_format(floatval($item['biaya_cat'] ?? 0), 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        Rp {{ number_format(floatval($item['biaya_cat'] ?? 0), 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                                @endif
+                            @endforeach
+                        @endforeach
                     </tbody>
                 </table>
             </div>

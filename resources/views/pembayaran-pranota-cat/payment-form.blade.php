@@ -146,28 +146,34 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach ($pranotaList as $pranota)
+                             @foreach ($pranotaList as $pranota)
                                 <tr class="hover:bg-gray-50 transition-colors">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">
-                                        {{ $pranota->no_invoice }}
+                                        {{ $pranota->nomor_pranota }}
                                         <input type="hidden" name="pranota_ids[]" value="{{ $pranota->id }}">
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCatItems() as $tagihan)
-                                            <div>{{ $tagihan->nomor_kontainer }}</div>
+                                        @foreach($pranota->items ?? [] as $item)
+                                            @if(floatval($item['biaya_cat'] ?? 0) > 0)
+                                                <div>{{ $item['no_kontainer'] ?? '-' }}</div>
+                                            @endif
                                         @endforeach
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCatItems() as $tagihan)
-                                            <div>{{ $tagihan->vendor }}</div>
+                                        @foreach($pranota->items ?? [] as $item)
+                                            @if(floatval($item['biaya_cat'] ?? 0) > 0)
+                                                <div>{{ $item['vendor_cat'] ?? $pranota->vendor ?? '-' }}</div>
+                                            @endif
                                         @endforeach
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCatItems() as $tagihan)
-                                            <div>{{ \Carbon\Carbon::parse($tagihan->tanggal_cat)->format('d/M/Y') }}</div>
+                                        @foreach($pranota->items ?? [] as $item)
+                                            @if(floatval($item['biaya_cat'] ?? 0) > 0)
+                                                <div>{{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d/M/Y') : '-' }}</div>
+                                            @endif
                                         @endforeach
                                     </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->total_amount, 0, ',', '.') }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->calculateTotalCatAmount(), 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
