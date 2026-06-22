@@ -6313,6 +6313,9 @@ Route::middleware(['auth',
     Route::put('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'update'])
         ->name('pranota-perbaikan-kontainer.update')
         ->middleware('can:pranota-perbaikan-kontainer-update');
+    Route::put('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/update-item', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'updateItem'])
+        ->name('pranota-perbaikan-kontainer.update-item')
+        ->middleware('can:pranota-perbaikan-kontainer-update');
     Route::delete('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'destroy'])
         ->name('pranota-perbaikan-kontainer.destroy')
         ->middleware('can:pranota-perbaikan-kontainer-delete');
