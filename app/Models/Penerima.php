@@ -11,6 +11,7 @@ class Penerima extends Model
 
     protected $fillable = [
         'nama_penerima',
+        'nickname',
         'contact_person',
         'alamat',
         'npwp',
