@@ -503,8 +503,9 @@
         </div>
     </div>
 
-    <div class="mt-6 text-sm text-gray-500">
-    <p>Dibuat: {{ $formatDate($karyawan->created_at, 'd/M/Y H:i') }} | Terakhir diubah: {{ $formatDate($karyawan->updated_at, 'd/M/Y H:i') }}</p>
+    <div class="mt-6 text-sm text-gray-500 flex flex-col sm:flex-row sm:justify-between sm:items-center border-t pt-4">
+        <p>Input Oleh: <span class="font-semibold text-gray-700">{{ $karyawan->creator_name }}</span></p>
+        <p>Dibuat: {{ $formatDate($karyawan->created_at, 'd/M/Y H:i') }} | Terakhir diubah: {{ $formatDate($karyawan->updated_at, 'd/M/Y H:i') }}</p>
     </div>
 </div>
 @endsection
