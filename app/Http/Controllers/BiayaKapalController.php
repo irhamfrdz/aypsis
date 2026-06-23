@@ -3174,8 +3174,8 @@ class BiayaKapalController extends Controller
             foreach ($data['meratus'] as &$section) {
                 $numericMeratus = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'biaya_admin', 'grand_total'];
                 foreach ($numericMeratus as $f) {
-                    if (isset($section[$f]) && is_string($section[$f])) {
-                        $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                    if (isset($section[$f])) {
+                        $section[$f] = $this->cleanDecimal($section[$f]);
                     }
                 }
                 // custom_prices and quantities come from type="number" inputs - no formatting needed
@@ -3188,8 +3188,8 @@ class BiayaKapalController extends Controller
             foreach ($data['temas'] as &$section) {
                 $numericTemas = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'biaya_admin', 'grand_total'];
                 foreach ($numericTemas as $f) {
-                    if (isset($section[$f]) && is_string($section[$f])) {
-                        $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                    if (isset($section[$f])) {
+                        $section[$f] = $this->cleanDecimal($section[$f]);
                     }
                 }
                 // quantities come from type="number" inputs - no formatting needed
@@ -3202,8 +3202,8 @@ class BiayaKapalController extends Controller
             foreach ($data['tanto'] as &$section) {
                 $numericTanto = ['sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'biaya_admin', 'grand_total'];
                 foreach ($numericTanto as $f) {
-                    if (isset($section[$f]) && is_string($section[$f])) {
-                        $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                    if (isset($section[$f])) {
+                        $section[$f] = $this->cleanDecimal($section[$f]);
                     }
                 }
                 // quantities come from type="number" inputs - no formatting needed
