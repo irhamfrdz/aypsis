@@ -234,6 +234,7 @@
     const meratusWrapper = document.getElementById('meratus_wrapper');
     const temasWrapper = document.getElementById('temas_wrapper');
     const tantoWrapper = document.getElementById('tanto_wrapper');
+    const notaReturWrapper = document.getElementById('nota_retur_wrapper');
 
     // Pricelist Perijinan data
     var pricelistPerijinansData = {!! json_encode($pricelistPerijinans) !!};
