@@ -213,6 +213,12 @@ class BiayaKapalController extends Controller
         // Get all active buruh workers
         $allBuruhs = \App\Models\Buruh::where('status', 'aktif')->orderBy('nama')->get();
         $banks = \App\Models\Bank::orderBy('name')->get();
+        $allInvoices = BiayaKapal::whereNotNull('nomor_invoice')
+            ->where('nomor_invoice', '!=', '')
+            ->orderBy('nomor_invoice')
+            ->pluck('nomor_invoice')
+            ->unique()
+            ->values();
 
         return view('biaya-kapal.create', compact(
             'kapals',
@@ -238,7 +244,8 @@ class BiayaKapalController extends Controller
             'pricelistTemas',
             'pricelistTanto',
             'allBuruhs',
-            'banks'
+            'banks',
+            'allInvoices'
         ));
     }
 
@@ -782,6 +789,7 @@ class BiayaKapalController extends Controller
 
             // NOTA RETUR sections validation
             'nota_retur_sections' => 'nullable|array',
+            'nota_retur_sections.*.no_invoice' => 'nullable|string|max:255',
             'nota_retur_sections.*.kapal' => 'nullable|string|max:255',
             'nota_retur_sections.*.voyage' => 'nullable|string|max:255',
             'nota_retur_sections.*.lokasi' => 'nullable|string|max:255',
@@ -1306,11 +1314,11 @@ class BiayaKapalController extends Controller
             if ($request->has('nota_retur_sections') && ! empty($request->nota_retur_sections)) {
                 foreach ($request->nota_retur_sections as $sectionIndex => $section) {
                     // Skip empty sections
-                    if (empty($section['kapal']) && empty($section['voyage'])) {
+                    if (empty($section['no_invoice'])) {
                         continue;
                     }
 
-                    // Kumpulkan kontainer yang dipilih
+                    // Kumpulkan kontainer yang dipilih (if any)
                     $kontainerIds = [];
                     if (isset($section['kontainer']) && is_array($section['kontainer'])) {
                         foreach ($section['kontainer'] as $k) {
@@ -1332,6 +1340,7 @@ class BiayaKapalController extends Controller
 
                     \App\Models\BiayaKapalNotaRetur::create([
                         'biaya_kapal_id' => $biayaKapal->id,
+                        'no_invoice' => $section['no_invoice'] ?? null,
                         'kapal' => $section['kapal'] ?? null,
                         'voyage' => $section['voyage'] ?? null,
                         'lokasi' => ! empty($section['lokasi_manual']) ? $section['lokasi_manual'] : ($section['lokasi'] ?? null),
@@ -3002,9 +3011,12 @@ class BiayaKapalController extends Controller
         // Get pricelist tanto
         $pricelistTanto = \App\Models\PricelistTanto::where('status', 'Aktif')->orderBy('jenis_biaya')->get();
 
-        // Get all active buruh workers
-        $allBuruhs = \App\Models\Buruh::where('status', 'aktif')->orderBy('nama')->get();
-        $banks = \App\Models\Bank::orderBy('name')->get();
+        $allInvoices = BiayaKapal::whereNotNull('nomor_invoice')
+            ->where('nomor_invoice', '!=', '')
+            ->orderBy('nomor_invoice')
+            ->pluck('nomor_invoice')
+            ->unique()
+            ->values();
 
         return view('biaya-kapal.edit', compact(
             'biayaKapal',
@@ -3031,7 +3043,8 @@ class BiayaKapalController extends Controller
             'pricelistTemas',
             'pricelistTanto',
             'allBuruhs',
-            'banks'
+            'banks',
+            'allInvoices'
         ));
     }
 
@@ -3472,6 +3485,7 @@ class BiayaKapalController extends Controller
 
             // NOTA RETUR sections validation
             'nota_retur_sections' => 'nullable|array',
+            'nota_retur_sections.*.no_invoice' => 'nullable|string|max:255',
             'nota_retur_sections.*.kapal' => 'nullable|string|max:255',
             'nota_retur_sections.*.voyage' => 'nullable|string|max:255',
             'nota_retur_sections.*.lokasi' => 'nullable|string|max:255',
@@ -4105,15 +4119,13 @@ class BiayaKapalController extends Controller
                 if ($totalStorage > 0) {
                     $biayaKapal->update(['nominal' => $totalStorage]);
                 }
-            }
-
-            // NOTA RETUR UPDATE
+            }            // NOTA RETUR UPDATE
             if ($request->has('nota_retur_sections')) {
                 \App\Models\BiayaKapalNotaRetur::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 $totalNotaRetur = 0;
                 if (! empty($request->nota_retur_sections)) {
                     foreach ($request->nota_retur_sections as $section) {
-                        if (empty($section['kapal']) && empty($section['voyage'])) {
+                        if (empty($section['no_invoice'])) {
                             continue;
                         }
 
@@ -4140,6 +4152,7 @@ class BiayaKapalController extends Controller
 
                         \App\Models\BiayaKapalNotaRetur::create([
                             'biaya_kapal_id' => $biayaKapal->id,
+                            'no_invoice' => $section['no_invoice'] ?? null,
                             'kapal' => $section['kapal'] ?? null,
                             'voyage' => $section['voyage'] ?? null,
                             'lokasi' => ! empty($section['lokasi_manual']) ? $section['lokasi_manual'] : ($section['lokasi'] ?? null),

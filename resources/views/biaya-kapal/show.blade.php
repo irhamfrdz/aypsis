@@ -1243,14 +1243,10 @@
         <div class="space-y-6">
             @foreach($biayaKapal->notaReturDetails as $detail)
                 <div class="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-5">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
-                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Kapal</span>
-                            <p class="text-lg font-bold text-gray-900">{{ $detail->kapal }}</p>
-                        </div>
-                        <div>
-                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Voyage</span>
-                            <p class="text-lg font-bold text-gray-900">{{ $detail->voyage }}</p>
+                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Nomor Invoice</span>
+                            <p class="text-lg font-bold text-gray-900">{{ $detail->no_invoice ?: ($detail->voyage ?: $detail->kapal) }}</p>
                         </div>
                         <div>
                             <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Vendor</span>
@@ -1261,38 +1257,6 @@
                             <p class="text-lg font-bold text-gray-900">{{ $detail->lokasi }}</p>
                         </div>
                     </div>
-                    
-                    @if(!empty($detail->kontainer_ids) && is_array($detail->kontainer_ids))
-                    <div class="mt-4">
-                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block font-bold">Rincian Kontainer</span>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">No. Kontainer</th>
-                                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Size</th>
-                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Hari (Qty)</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach($detail->kontainer_ids as $k)
-                                        <tr>
-                                            <td class="px-4 py-2 text-sm text-gray-900 font-medium">{{ $k['nomor_kontainer'] ?? '-' }}</td>
-                                            <td class="px-4 py-2 text-sm text-gray-600 text-center">
-                                                @if(!empty($k['size']))
-                                                    <span class="bg-gray-100 px-2 py-0.5 rounded text-xs">{{ $k['size'] }}ft</span>
-                                                @else
-                                                    -
-                                                @endif
-                                            </td>
-                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">{{ number_format($k['hari'] ?? 1, 2, ',', '.') }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    @endif
 
                     <div class="mt-6 grid grid-cols-1 md:grid-cols-5 gap-4 border-t border-indigo-200 pt-4">
                         <div class="bg-white p-3 rounded-lg border border-indigo-100 shadow-sm">
@@ -1329,23 +1293,6 @@
                             <p class="text-lg font-black text-white">Rp {{ number_format($detail->total_biaya, 0, ',', '.') }}</p>
                         </div>
                     </div>
-
-                    @if($detail->penerima || $detail->rekening)
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm border-t border-indigo-100 pt-3">
-                        @if($detail->penerima)
-                        <div>
-                            <span class="text-gray-500">Penerima:</span>
-                            <span class="font-semibold text-gray-800">{{ $detail->penerima }}</span>
-                        </div>
-                        @endif
-                        @if($detail->rekening)
-                        <div>
-                            <span class="text-gray-500">No. Rekening:</span>
-                            <span class="font-semibold text-gray-800">{{ $detail->rekening }}</span>
-                        </div>
-                        @endif
-                    </div>
-                    @endif
                 </div>
             @endforeach
         </div>

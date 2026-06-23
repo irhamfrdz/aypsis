@@ -15,6 +15,7 @@ return new class extends Migration
         Schema::create('biaya_kapal_nota_returs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('biaya_kapal_id')->constrained('biaya_kapals')->onDelete('cascade');
+            $table->string('no_invoice')->nullable();
             $table->string('kapal')->nullable();
             $table->string('voyage')->nullable();
             $table->string('lokasi')->nullable();

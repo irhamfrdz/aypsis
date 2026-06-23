@@ -13,6 +13,7 @@ class BiayaKapalNotaRetur extends Model
 
     protected $fillable = [
         'biaya_kapal_id',
+        'no_invoice',
         'kapal',
         'voyage',
         'lokasi',
