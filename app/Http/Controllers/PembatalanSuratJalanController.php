@@ -56,15 +56,15 @@ class PembatalanSuratJalanController extends Controller
         $search = $request->search_sj;
 
         // 1. Reguler SJ Query
-        $queryReguler = \App\Models\SuratJalan::with(['supirKaryawan', 'uangJalan'])
+        $queryReg = \App\Models\SuratJalan::select('id', DB::raw("'reguler' as tipe_sj"), 'created_at')
             ->where('status', '!=', 'cancelled');
 
         // 2. Bongkaran SJ Query
-        $queryBongkaran = \App\Models\SuratJalanBongkaran::with(['uangJalan'])
+        $queryBong = \App\Models\SuratJalanBongkaran::select('id', DB::raw("'bongkaran' as tipe_sj"), 'created_at')
             ->where('status', '!=', 'cancelled');
 
         if ($request->filled('search_sj')) {
-            $queryReguler->where(function ($q) use ($search) {
+            $queryReg->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
                     ->orWhere('pengirim', 'like', "%{$search}%")
                     ->orWhere('supir', 'like', "%{$search}%")
@@ -74,7 +74,7 @@ class PembatalanSuratJalanController extends Controller
                     });
             });
 
-            $queryBongkaran->where(function ($q) use ($search) {
+            $queryBong->where(function ($q) use ($search) {
                 $q->where('nomor_surat_jalan', 'like', "%{$search}%")
                     ->orWhere('pengirim', 'like', "%{$search}%")
                     ->orWhere('supir', 'like', "%{$search}%")
@@ -82,34 +82,66 @@ class PembatalanSuratJalanController extends Controller
             });
         }
 
-        // Get both and tag them
-        $reguler = $queryReguler->get()->map(function ($sj) {
-            $sj->tipe_sj = 'reguler';
+        $unionQuery = $queryReg->unionAll($queryBong);
 
-            return $sj;
-        });
-
-        $bongkaran = $queryBongkaran->get()->map(function ($sj) {
-            $sj->tipe_sj = 'bongkaran';
-            // Alias for consistency with Regulr
-            $sj->no_surat_jalan = $sj->nomor_surat_jalan;
-
-            return $sj;
-        });
-
-        // Merge and Sort
-        $combined = $reguler->merge($bongkaran)->sortByDesc('created_at');
-
-        // Manual Pagination
-        $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
         $perPage = 10;
-        $currentItems = $combined->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $paginatedIds = DB::table(DB::raw("({$unionQuery->toSql()}) as combined"))
+            ->mergeBindings($unionQuery->getQuery())
+            ->orderByDesc('created_at')
+            ->paginate($perPage);
+
+        $items = $paginatedIds->items();
+
+        // Group by tipe_sj to load Eloquent models in bulk
+        $regulerIds = [];
+        $bongkaranIds = [];
+        foreach ($items as $item) {
+            if ($item->tipe_sj === 'reguler') {
+                $regulerIds[] = $item->id;
+            } else {
+                $bongkaranIds[] = $item->id;
+            }
+        }
+
+        $regulerModels = [];
+        if (!empty($regulerIds)) {
+            $regulerModels = \App\Models\SuratJalan::with(['supirKaryawan', 'uangJalan'])
+                ->whereIn('id', $regulerIds)
+                ->get()
+                ->keyBy('id');
+        }
+
+        $bongkaranModels = [];
+        if (!empty($bongkaranIds)) {
+            $bongkaranModels = \App\Models\SuratJalanBongkaran::with(['uangJalan'])
+                ->whereIn('id', $bongkaranIds)
+                ->get()
+                ->keyBy('id');
+        }
+
+        $orderedItems = collect();
+        foreach ($items as $item) {
+            if ($item->tipe_sj === 'reguler') {
+                if (isset($regulerModels[$item->id])) {
+                    $model = $regulerModels[$item->id];
+                    $model->tipe_sj = 'reguler';
+                    $orderedItems->push($model);
+                }
+            } else {
+                if (isset($bongkaranModels[$item->id])) {
+                    $model = $bongkaranModels[$item->id];
+                    $model->tipe_sj = 'bongkaran';
+                    $model->no_surat_jalan = $model->nomor_surat_jalan;
+                    $orderedItems->push($model);
+                }
+            }
+        }
 
         $suratJalans = new \Illuminate\Pagination\LengthAwarePaginator(
-            $currentItems,
-            $combined->count(),
-            $perPage,
-            $currentPage,
+            $orderedItems,
+            $paginatedIds->total(),
+            $paginatedIds->perPage(),
+            $paginatedIds->currentPage(),
             ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
         );
 
