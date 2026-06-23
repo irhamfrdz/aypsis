@@ -207,9 +207,6 @@
     
     // Nota Retur multi-section
     const notaReturWrapper = document.getElementById('nota_retur_wrapper');
-    const notaReturSectionsContainer = document.getElementById('nota_retur_sections_container');
-    const addNotaReturSectionBtn = document.getElementById('add_nota_retur_section_btn');
-    const addNotaReturSectionBottomBtn = document.getElementById('add_nota_retur_section_bottom_btn');
     
     // Standard field wrappers
     const nominalWrapper = document.getElementById('nominal_wrapper');
