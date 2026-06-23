@@ -356,6 +356,38 @@
                          'grand_total' => $firstItem->grand_total ?? 0,
                      ];
                  }
+        // Map Nota Retur
+        $editNotaReturSections = [];
+        if($biayaKapal->notaReturDetails->count() > 0) {
+            foreach($biayaKapal->notaReturDetails as $nr) {
+                // Map kontainer_ids to be structurally compatible with frontend {bl_id, nomor_kontainer, size, hari}
+                $kontainers = [];
+                if (is_array($nr->kontainer_ids)) {
+                    foreach ($nr->kontainer_ids as $k) {
+                        $kontainers[] = [
+                            'bl_id' => $k['bl_id'] ?? null,
+                            'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                            'size' => $k['size'] ?? null,
+                            'hari' => $k['hari'] ?? 1
+                        ];
+                    }
+                }
+                $editNotaReturSections[] = [
+                    'kapal' => $nr->kapal,
+                    'voyage' => $nr->voyage,
+                    'lokasi' => $nr->lokasi,
+                    'vendor' => $nr->vendor,
+                    'penerima' => $nr->penerima,
+                    'rekening' => $nr->rekening,
+                    'kontainer' => $kontainers,
+                    'subtotal' => $nr->subtotal,
+                    'biaya_materai' => $nr->biaya_materai,
+                    'ppn' => $nr->ppn,
+                    'pph' => $nr->pph,
+                    'adjustment' => $nr->adjustment,
+                    'notes_adjustment' => $nr->notes_adjustment,
+                    'total_biaya' => $nr->total_biaya,
+                ];
             }
         }
     @endphp
@@ -371,6 +403,7 @@
     var existingMeratusSections = @json($editMeratusSections);
     var existingTemasSections = @json($editTemasSections);
     var existingTantoSections = @json($editTantoSections);
+    var existingNotaReturSections = @json($editNotaReturSections);
 
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(initializeEditMode, 500);
@@ -837,6 +870,14 @@
             if (typeof clearAllTantoSections === 'function') clearAllTantoSections();
             existingTantoSections.forEach(myData => {
                 if (typeof addTantoSection === 'function') addTantoSection(myData);
+            });
+        }
+        
+        // 13. NOTA RETUR SECTIONS
+        if (existingNotaReturSections.length > 0) {
+            if (typeof clearAllNotaReturSections === 'function') clearAllNotaReturSections();
+            existingNotaReturSections.forEach(myData => {
+                if (typeof addNotaReturSection === 'function') addNotaReturSection(myData);
             });
         }
     }

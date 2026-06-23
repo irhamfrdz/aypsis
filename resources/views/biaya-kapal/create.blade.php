@@ -56,6 +56,9 @@
 {{-- Biaya Demurrage --}}
 @include('biaya-kapal.create._section-demurrage')
 
+{{-- Biaya Nota Retur --}}
+@include('biaya-kapal.create._section-nota-retur')
+
 {{-- Biaya Perlengkapan --}}
 @include('biaya-kapal.create._section-perlengkapan')
 @include('biaya-kapal.create._section-perijinan')
@@ -96,6 +99,7 @@
 @include('biaya-kapal.create._js-stuffing')
 @include('biaya-kapal.create._js-storage')
 @include('biaya-kapal.create._js-demurrage')
+@include('biaya-kapal.create._js-nota-retur')
 @include('biaya-kapal.create._js-thc')
 @include('biaya-kapal.create._js-perijinan')
 @include('biaya-kapal.create._js-freight')

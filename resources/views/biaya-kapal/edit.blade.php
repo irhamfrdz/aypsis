@@ -54,6 +54,10 @@
 @include('biaya-kapal.edit._section-temas')
 @include('biaya-kapal.edit._section-tanto')
 
+{{-- Biaya Nota Retur --}}
+@include('biaya-kapal.create._section-nota-retur')
+
+
 {{-- ===== FORM FIELDS EXTRA ===== --}}
 @include('biaya-kapal.edit._form-fields-extra')
 
@@ -86,6 +90,7 @@
 @include('biaya-kapal.edit._js-meratus')
 @include('biaya-kapal.edit._js-temas')
 @include('biaya-kapal.edit._js-tanto')
+@include('biaya-kapal.create._js-nota-retur')
 
 {{-- Init must be last after all functions are defined --}}
 @include('biaya-kapal.edit._js-edit-init')

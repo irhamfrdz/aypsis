@@ -573,6 +573,26 @@ class BiayaKapalController extends Controller
             }
             unset($section);
         }
+        // Nota Retur Sections Cleaning
+        if (isset($data['nota_retur_sections']) && is_array($data['nota_retur_sections'])) {
+            foreach ($data['nota_retur_sections'] as &$section) {
+                $numericFields = ['subtotal', 'biaya_materai', 'ppn', 'pph', 'adjustment', 'total_biaya'];
+                foreach ($numericFields as $f) {
+                    if (isset($section[$f])) {
+                        $section[$f] = $this->cleanDecimal($section[$f]);
+                    }
+                }
+                if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                    foreach ($section['kontainer'] as &$k) {
+                        if (isset($k['hari'])) {
+                            $k['hari'] = $this->cleanDecimal($k['hari']);
+                        }
+                    }
+                    unset($k);
+                }
+            }
+            unset($section);
+        }
 
         $request->replace($data);
 
@@ -759,6 +779,26 @@ class BiayaKapalController extends Controller
             'demurrage_sections.*.adjustment' => 'nullable|numeric',
             'demurrage_sections.*.notes_adjustment' => 'nullable|string',
             'demurrage_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // NOTA RETUR sections validation
+            'nota_retur_sections' => 'nullable|array',
+            'nota_retur_sections.*.kapal' => 'nullable|string|max:255',
+            'nota_retur_sections.*.voyage' => 'nullable|string|max:255',
+            'nota_retur_sections.*.lokasi' => 'nullable|string|max:255',
+            'nota_retur_sections.*.lokasi_manual' => 'nullable|string|max:255',
+            'nota_retur_sections.*.vendor' => 'nullable|string|max:255',
+            'nota_retur_sections.*.penerima' => 'nullable|string|max:255',
+            'nota_retur_sections.*.rekening' => 'nullable|string|max:255',
+            'nota_retur_sections.*.kontainer' => 'nullable|array',
+            'nota_retur_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'nota_retur_sections.*.kontainer.*.hari' => 'nullable|numeric|min:0.01',
+            'nota_retur_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'nota_retur_sections.*.biaya_materai' => 'nullable|numeric|min:0',
+            'nota_retur_sections.*.ppn' => 'nullable|numeric|min:0',
+            'nota_retur_sections.*.pph' => 'nullable|numeric|min:0',
+            'nota_retur_sections.*.adjustment' => 'nullable|numeric',
+            'nota_retur_sections.*.notes_adjustment' => 'nullable|string',
+            'nota_retur_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // Perlengkapan sections
             'perlengkapan_sections' => 'nullable|array',
@@ -1260,6 +1300,58 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for DEMURRAGE from section totals
                 $totalDemurrage = \App\Models\BiayaKapalDemurrage::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
                 $biayaKapal->update(['nominal' => $totalDemurrage]);
+            }
+
+            // BIAYA NOTA RETUR SECTIONS: Store Nota Retur details
+            if ($request->has('nota_retur_sections') && ! empty($request->nota_retur_sections)) {
+                foreach ($request->nota_retur_sections as $sectionIndex => $section) {
+                    // Skip empty sections
+                    if (empty($section['kapal']) && empty($section['voyage'])) {
+                        continue;
+                    }
+
+                    // Kumpulkan kontainer yang dipilih
+                    $kontainerIds = [];
+                    if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                        foreach ($section['kontainer'] as $k) {
+                            if (! empty($k['bl_id'])) {
+                                $kontainerIds[] = [
+                                    'bl_id' => $k['bl_id'],
+                                    'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                    'size' => $k['size'] ?? null,
+                                    'hari' => isset($k['hari']) ? (float) $k['hari'] : 1.0,
+                                ];
+                            }
+                        }
+                    }
+
+                    // Clean numeric fields
+                    $cleanNum = function ($val) {
+                        return (float) str_replace(['.', ','], ['', '.'], $val ?? 0);
+                    };
+
+                    \App\Models\BiayaKapalNotaRetur::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal' => $section['kapal'] ?? null,
+                        'voyage' => $section['voyage'] ?? null,
+                        'lokasi' => ! empty($section['lokasi_manual']) ? $section['lokasi_manual'] : ($section['lokasi'] ?? null),
+                        'vendor' => $section['vendor'] ?? null,
+                        'penerima' => $section['penerima'] ?? null,
+                        'rekening' => $section['rekening'] ?? null,
+                        'kontainer_ids' => $kontainerIds,
+                        'subtotal' => $cleanNum($section['subtotal'] ?? 0),
+                        'biaya_materai' => $cleanNum($section['biaya_materai'] ?? 0),
+                        'ppn' => $cleanNum($section['ppn'] ?? 0),
+                        'pph' => $cleanNum($section['pph'] ?? 0),
+                        'adjustment' => $cleanNum($section['adjustment'] ?? 0),
+                        'notes_adjustment' => $section['notes_adjustment'] ?? null,
+                        'total_biaya' => $cleanNum($section['total_biaya'] ?? 0),
+                    ]);
+                }
+
+                // Auto-calculate nominal for NOTA RETUR from section totals
+                $totalNotaRetur = \App\Models\BiayaKapalNotaRetur::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
+                $biayaKapal->update(['nominal' => $totalNotaRetur]);
             }
 
             // BIAYA LABUH TAMBAT SECTIONS: Store labuh tambat details
@@ -2317,6 +2409,7 @@ class BiayaKapalController extends Controller
             'perijinanDetails',
             'meratusDetails',
             'demurrageDetails',
+            'notaReturDetails',
             'tenagaKerjaDetails.buruh',
         ]);
 
@@ -3210,6 +3303,26 @@ class BiayaKapalController extends Controller
             }
             unset($section);
         }
+        // Nota Retur Sections Cleaning
+        if (isset($data['nota_retur_sections']) && is_array($data['nota_retur_sections'])) {
+            foreach ($data['nota_retur_sections'] as &$section) {
+                $numericFields = ['subtotal', 'biaya_materai', 'ppn', 'pph', 'adjustment', 'total_biaya'];
+                foreach ($numericFields as $f) {
+                    if (isset($section[$f])) {
+                        $section[$f] = $this->cleanDecimal($section[$f]);
+                    }
+                }
+                if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                    foreach ($section['kontainer'] as &$k) {
+                        if (isset($k['hari'])) {
+                            $k['hari'] = $this->cleanDecimal($k['hari']);
+                        }
+                    }
+                    unset($k);
+                }
+            }
+            unset($section);
+        }
 
         $request->replace($data);
 
@@ -3356,6 +3469,26 @@ class BiayaKapalController extends Controller
             'storage_sections.*.adjustment' => 'nullable|numeric',
             'storage_sections.*.notes_adjustment' => 'nullable|string',
             'storage_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // NOTA RETUR sections validation
+            'nota_retur_sections' => 'nullable|array',
+            'nota_retur_sections.*.kapal' => 'nullable|string|max:255',
+            'nota_retur_sections.*.voyage' => 'nullable|string|max:255',
+            'nota_retur_sections.*.lokasi' => 'nullable|string|max:255',
+            'nota_retur_sections.*.lokasi_manual' => 'nullable|string|max:255',
+            'nota_retur_sections.*.vendor' => 'nullable|string|max:255',
+            'nota_retur_sections.*.penerima' => 'nullable|string|max:255',
+            'nota_retur_sections.*.rekening' => 'nullable|string|max:255',
+            'nota_retur_sections.*.kontainer' => 'nullable|array',
+            'nota_retur_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'nota_retur_sections.*.kontainer.*.hari' => 'nullable|numeric|min:0.01',
+            'nota_retur_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'nota_retur_sections.*.biaya_materai' => 'nullable|numeric|min:0',
+            'nota_retur_sections.*.ppn' => 'nullable|numeric|min:0',
+            'nota_retur_sections.*.pph' => 'nullable|numeric|min:0',
+            'nota_retur_sections.*.adjustment' => 'nullable|numeric',
+            'nota_retur_sections.*.notes_adjustment' => 'nullable|string',
+            'nota_retur_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // Labuh tambat sections validation
             'labuh_tambat' => 'nullable|array',
@@ -3971,6 +4104,63 @@ class BiayaKapalController extends Controller
 
                 if ($totalStorage > 0) {
                     $biayaKapal->update(['nominal' => $totalStorage]);
+                }
+            }
+
+            // NOTA RETUR UPDATE
+            if ($request->has('nota_retur_sections')) {
+                \App\Models\BiayaKapalNotaRetur::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                $totalNotaRetur = 0;
+                if (! empty($request->nota_retur_sections)) {
+                    foreach ($request->nota_retur_sections as $section) {
+                        if (empty($section['kapal']) && empty($section['voyage'])) {
+                            continue;
+                        }
+
+                        $kontainerIds = [];
+                        if (isset($section['kontainer']) && is_array($section['kontainer'])) {
+                            foreach ($section['kontainer'] as $k) {
+                                if (! empty($k['bl_id'])) {
+                                    $kontainerIds[] = [
+                                        'bl_id' => $k['bl_id'],
+                                        'nomor_kontainer' => $k['nomor_kontainer'] ?? null,
+                                        'size' => $k['size'] ?? null,
+                                        'hari' => isset($k['hari']) ? $this->cleanDecimal($k['hari']) : 1.0,
+                                    ];
+                                }
+                            }
+                        }
+
+                        $cleanSubtotal = $this->cleanDecimal($section['subtotal'] ?? '0');
+                        $cleanMaterai = $this->cleanDecimal($section['biaya_materai'] ?? '0');
+                        $cleanPpn = $this->cleanDecimal($section['ppn'] ?? '0');
+                        $cleanPph = $this->cleanDecimal($section['pph'] ?? '0');
+                        $cleanAdj = $this->cleanDecimal($section['adjustment'] ?? '0');
+                        $cleanTotal = $this->cleanDecimal($section['total_biaya'] ?? '0');
+
+                        \App\Models\BiayaKapalNotaRetur::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal' => $section['kapal'] ?? null,
+                            'voyage' => $section['voyage'] ?? null,
+                            'lokasi' => ! empty($section['lokasi_manual']) ? $section['lokasi_manual'] : ($section['lokasi'] ?? null),
+                            'vendor' => $section['vendor'] ?? null,
+                            'penerima' => $section['penerima'] ?? null,
+                            'rekening' => $section['rekening'] ?? null,
+                            'kontainer_ids' => $kontainerIds,
+                            'subtotal' => $cleanSubtotal,
+                            'biaya_materai' => $cleanMaterai,
+                            'ppn' => $cleanPpn,
+                            'pph' => $cleanPph,
+                            'adjustment' => $cleanAdj,
+                            'notes_adjustment' => $section['notes_adjustment'] ?? null,
+                            'total_biaya' => $cleanTotal,
+                        ]);
+                        $totalNotaRetur += floatval($cleanTotal);
+                    }
+                }
+
+                if ($totalNotaRetur > 0) {
+                    $biayaKapal->update(['nominal' => $totalNotaRetur]);
                 }
             }
 
@@ -5228,7 +5418,7 @@ class BiayaKapalController extends Controller
             'kapal_sections', 'air', 'tkbm_sections', 'operasional_sections',
             'trucking_sections', 'stuffing_sections', 'thc_sections', 'freight_sections',
             'lolo_sections', 'storage_sections', 'demurrage_sections', 'labuh_tambat',
-            'meratus', 'temas', 'tanto',
+            'meratus', 'temas', 'tanto', 'nota_retur_sections',
         ];
 
         foreach ($sectionKeys as $key) {
