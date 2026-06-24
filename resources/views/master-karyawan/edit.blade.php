@@ -149,8 +149,12 @@
 
                 <div>
                     <label for="ktp" class="{{ $labelClasses }}">Nomor KTP</label>
-                    <input type="text" name="ktp" id="ktp" class="{{ $readonlyInputClasses }}" readonly placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" value="{{ old('ktp', $karyawan->ktp) }}">
-                    <p class="text-xs text-gray-500 mt-1">Nomor KTP tidak dapat diubah setelah data dibuat</p>
+                    <input type="text" name="ktp" id="ktp" class="{{ $isKiky ? $inputClasses : $readonlyInputClasses }}" {{ $isKiky ? '' : 'readonly' }} placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" value="{{ old('ktp', $karyawan->ktp) }}">
+                    @if($isKiky)
+                        <p class="text-xs text-gray-500 mt-1">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf (Login sebagai Kiky)</p>
+                    @else
+                        <p class="text-xs text-gray-500 mt-1">Nomor KTP tidak dapat diubah setelah data dibuat</p>
+                    @endif
                     <div id="ktpError" class="text-xs text-red-600 mt-1 hidden">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf</div>
                     <div id="ktpWarning" class="text-xs mt-1 hidden"></div>
                 </div>
