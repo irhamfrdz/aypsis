@@ -178,42 +178,6 @@
                 calculatePphDokumen();
             }
         }
-        // Show PPH fields if "Biaya Trucking" is selected
-        else if (selectedText.toLowerCase().includes('trucking')) {
-            // Show PPH Dokumen and Grand Total fields for Biaya Trucking
-            pphDokumenWrapper.classList.remove('hidden');
-            grandTotalDokumenWrapper.classList.remove('hidden');
-            
-            // Hide other type-specific fields
-            vendorWrapper.classList.add('hidden');
-            if (vendorSelect) vendorSelect.value = '';
-            barangWrapper.classList.add('hidden');
-            clearAllKapalSections();
-            airWrapper.classList.add('hidden');
-            clearAllAirSections();
-            ppnWrapper.classList.add('hidden');
-            pphWrapper.classList.add('hidden');
-            totalBiayaWrapper.classList.add('hidden');
-            dpWrapper.classList.add('hidden');
-            sisaPembayaranWrapper.classList.add('hidden');
-            
-            // Show standard fields
-            kapalWrapper.classList.remove('hidden');
-            voyageWrapper.classList.remove('hidden');
-            blWrapper.classList.remove('hidden');
-            
-            // Reset values
-            ppnInput.value = '0';
-            pphInput.value = '0';
-            totalBiayaInput.value = '';
-            dpInput.value = '0';
-            sisaPembayaranInput.value = '0';
-            
-            // Calculate PPH if nominal already filled
-            if (nominalInput.value) {
-                calculatePphDokumen();
-            }
-        }
         // Show THC wrapper if "Biaya THC" is selected
         else if (selectedText.toLowerCase().includes('thc')) {
             if (thcWrapper) thcWrapper.classList.remove('hidden');
