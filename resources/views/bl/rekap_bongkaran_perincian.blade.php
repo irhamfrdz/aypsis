@@ -46,35 +46,35 @@
 
         <!-- Items Table -->
         <div class="overflow-x-auto">
-            <table class="w-full border-collapse border border-gray-400 text-xs md:text-sm">
+            <table class="w-full border-collapse border border-gray-400 text-[11px] leading-tight">
                 <thead>
                     <tr class="bg-gray-100 print:bg-gray-100">
-                        <th colspan="2" class="border border-gray-400 px-2 py-1 text-center font-bold text-gray-900 uppercase w-1/3">Jumlah Barang</th>
-                        <th class="border border-gray-400 px-2 py-1 text-left font-bold text-gray-900 uppercase w-1/2">Nama Barang</th>
-                        <th colspan="2" class="border border-gray-400 px-2 py-1 text-center font-bold text-gray-900 uppercase w-1/4">Ton / M3</th>
+                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-1/3">Jumlah Barang</th>
+                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-1/2">Nama Barang</th>
+                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-1/4">Ton / M3</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($items as $item)
                         <tr class="hover:bg-gray-50/50 transition duration-150">
                             <!-- Qty -->
-                            <td class="border border-gray-400 px-2 py-1 text-right font-medium w-16 text-gray-900">
+                            <td class="border border-gray-400 px-2 py-0.5 text-right font-medium w-16 text-gray-900">
                                 {{ number_format($item['kuantitas'], 0, ',', '.') }}
                             </td>
                             <!-- Qty Unit -->
-                            <td class="border border-gray-400 px-2 py-1 text-left text-gray-700 w-28 border-l-0">
+                            <td class="border border-gray-400 px-2 py-0.5 text-left text-gray-700 w-28 border-l-0">
                                 {{ $item['satuan'] }}
                             </td>
                             <!-- Nama Barang -->
-                            <td class="border border-gray-400 px-2 py-1 text-left font-semibold text-gray-900">
+                            <td class="border border-gray-400 px-2 py-0.5 text-left font-semibold text-gray-900">
                                 {{ $item['nama_barang'] }}
                             </td>
                             <!-- Ton/M3 Amount -->
-                            <td class="border border-gray-400 px-2 py-1 text-right font-medium w-24 text-gray-900">
+                            <td class="border border-gray-400 px-2 py-0.5 text-right font-medium w-24 text-gray-900">
                                 {{ $item['amount'] !== null ? number_format($item['amount'], 3, ',', '.') : '' }}
                             </td>
                             <!-- Ton/M3 Unit -->
-                            <td class="border border-gray-400 px-2 py-1 text-center text-gray-700 w-16 border-l-0">
+                            <td class="border border-gray-400 px-2 py-0.5 text-center text-gray-700 w-16 border-l-0">
                                 {{ $item['unit'] }}
                             </td>
                         </tr>
@@ -89,13 +89,13 @@
                     <!-- Total Row -->
                     @if($items->count() > 0)
                         <tr class="bg-gray-50/80 font-bold print:bg-white">
-                            <td colspan="3" class="border border-gray-400 px-2 py-1 text-left text-gray-900 uppercase tracking-wider">
+                            <td colspan="3" class="border border-gray-400 px-2 py-0.5 text-left text-gray-900 uppercase tracking-wider">
                                 Jumlah
                             </td>
-                            <td class="border border-gray-400 px-2 py-1 text-right text-gray-900">
+                            <td class="border border-gray-400 px-2 py-0.5 text-right text-gray-900">
                                 {{ number_format($totalAmount, 3, ',', '.') }}
                             </td>
-                            <td class="border border-gray-400 px-2 py-1 text-center text-gray-700">
+                            <td class="border border-gray-400 px-2 py-0.5 text-center text-gray-700">
                                 Kgs/m3
                             </td>
                         </tr>
