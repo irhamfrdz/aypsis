@@ -236,9 +236,10 @@
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th style="width: 8%;">No</th>
-                    <th style="width: 25%;" colspan="2">Jumlah Barang</th>
-                    <th style="width: 47%;">Nama Barang</th>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 20%;" colspan="2">Jumlah Barang</th>
+                    <th style="width: 20%;">Nomor BL</th>
+                    <th style="width: 35%;">Nama Barang</th>
                     <th style="width: 20%;" colspan="2">Ton / M3</th>
                 </tr>
             </thead>
@@ -252,6 +253,9 @@
                     <td class="text-left" style="border-left: none;">
                         {{ $item['satuan'] }}
                     </td>
+                    <td>
+                        {{ $item['nomor_bl'] ?? '-' }}
+                    </td>
                     <td style="font-weight: bold;">
                         {{ $item['nama_barang'] }}
                     </td>
@@ -264,12 +268,12 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="text-center">Tidak ada data detail.</td>
+                    <td colspan="7" class="text-center">Tidak ada data detail.</td>
                 </tr>
                 @endforelse
                 @if($items->count() > 0)
                 <tr class="total-row">
-                    <td colspan="4" class="text-right">TOTAL</td>
+                    <td colspan="5" class="text-right">TOTAL</td>
                     <td class="text-right" style="border-right: none;">
                         {{ number_format($totalAmount, 3, ',', '.') }}
                     </td>

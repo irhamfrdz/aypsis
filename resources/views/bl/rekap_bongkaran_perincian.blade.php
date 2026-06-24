@@ -49,9 +49,10 @@
             <table class="w-full border-collapse border border-gray-400 text-[11px] leading-tight">
                 <thead>
                     <tr class="bg-gray-100 print:bg-gray-100">
-                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-1/3">Jumlah Barang</th>
-                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-1/2">Nama Barang</th>
-                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-1/4">Ton / M3</th>
+                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-1/4">Jumlah Barang</th>
+                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-1/4">Nomor BL</th>
+                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-1/3">Nama Barang</th>
+                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-1/5">Ton / M3</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,6 +65,10 @@
                             <!-- Qty Unit -->
                             <td class="border border-gray-400 px-2 py-0.5 text-left text-gray-700 w-28 border-l-0">
                                 {{ $item['satuan'] }}
+                            </td>
+                            <!-- Nomor BL -->
+                            <td class="border border-gray-400 px-2 py-0.5 text-left text-gray-900">
+                                {{ $item['nomor_bl'] ?? '-' }}
                             </td>
                             <!-- Nama Barang -->
                             <td class="border border-gray-400 px-2 py-0.5 text-left font-semibold text-gray-900">
@@ -80,7 +85,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="border border-gray-400 px-2 py-4 text-center text-gray-500 italic">
+                            <td colspan="6" class="border border-gray-400 px-2 py-4 text-center text-gray-500 italic">
                                 Tidak ada data bongkar/muat perincian untuk kapal dan voyage ini.
                             </td>
                         </tr>
@@ -89,7 +94,7 @@
                     <!-- Total Row -->
                     @if($items->count() > 0)
                         <tr class="bg-gray-50/80 font-bold print:bg-white">
-                            <td colspan="3" class="border border-gray-400 px-2 py-0.5 text-left text-gray-900 uppercase tracking-wider">
+                            <td colspan="4" class="border border-gray-400 px-2 py-0.5 text-left text-gray-900 uppercase tracking-wider">
                                 Jumlah
                             </td>
                             <td class="border border-gray-400 px-2 py-0.5 text-right text-gray-900">

@@ -2857,7 +2857,7 @@ class BlController extends Controller
         $items = $bls->groupBy(function ($item) {
             $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
             if ($isCargo) {
-                return 'cargo|'.($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package');
+                return 'cargo|'.($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package').'|'.($item->nomor_bl ?? '');
             } else {
                 $barangUpper = strtoupper($item->nama_barang ?? '');
                 $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
@@ -2878,6 +2878,7 @@ class BlController extends Controller
             if ($type === 'cargo') {
                 $namaBarang = $parts[1];
                 $satuan = $parts[2];
+                $nomorBl = $parts[3] ?? '';
                 $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
 
                 $totalVolume = $group->sum('volume_perincian');
@@ -2898,6 +2899,7 @@ class BlController extends Controller
                     'kuantitas' => $totalKuantitas,
                     'satuan' => $satuan,
                     'nama_barang' => $namaBarang,
+                    'nomor_bl' => $nomorBl,
                     'amount' => $amount,
                     'unit' => $unit,
                 ];
@@ -2923,6 +2925,7 @@ class BlController extends Controller
                     'kuantitas' => $totalKuantitas,
                     'satuan' => $satuan,
                     'nama_barang' => $namaBarang,
+                    'nomor_bl' => '-',
                     'amount' => null,
                     'unit' => '',
                 ];
@@ -3002,7 +3005,7 @@ class BlController extends Controller
         $items = $bls->groupBy(function ($item) {
             $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
             if ($isCargo) {
-                return 'cargo|'.($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package');
+                return 'cargo|'.($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package').'|'.($item->nomor_bl ?? '');
             } else {
                 $barangUpper = strtoupper($item->nama_barang ?? '');
                 $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
@@ -3023,6 +3026,7 @@ class BlController extends Controller
             if ($type === 'cargo') {
                 $namaBarang = $parts[1];
                 $satuan = $parts[2];
+                $nomorBl = $parts[3] ?? '';
                 $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
 
                 $totalVolume = $group->sum('volume_perincian');
@@ -3043,6 +3047,7 @@ class BlController extends Controller
                     'kuantitas' => $totalKuantitas,
                     'satuan' => $satuan,
                     'nama_barang' => $namaBarang,
+                    'nomor_bl' => $nomorBl,
                     'amount' => $amount,
                     'unit' => $unit,
                 ];
@@ -3068,6 +3073,7 @@ class BlController extends Controller
                     'kuantitas' => $totalKuantitas,
                     'satuan' => $satuan,
                     'nama_barang' => $namaBarang,
+                    'nomor_bl' => '-',
                     'amount' => null,
                     'unit' => '',
                 ];
