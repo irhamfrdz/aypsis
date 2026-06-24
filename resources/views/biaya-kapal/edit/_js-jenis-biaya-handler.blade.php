@@ -664,6 +664,16 @@
             // Hide normal nominal
             if(nominalWrapper) nominalWrapper.classList.add('hidden');
             if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaWrapper) {
+                penerimaWrapper.classList.add('hidden');
+                if(penerimaInput) penerimaInput.removeAttribute('required');
+            }
+            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+            if(bankIdWrapper) {
+                bankIdWrapper.classList.add('hidden');
+                if(bankIdSelect) bankIdSelect.value = '';
+            }
             
             // Hide other type-specific fields
             barangWrapper.classList.add('hidden');
