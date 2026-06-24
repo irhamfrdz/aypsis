@@ -86,13 +86,14 @@
                                value="{{ request('search') }}">
                     </div>
 
-                    <!-- Status Tanda Terima Filter -->
+                    <!-- Status Filter -->
                     <div>
-                        <label for="status_tanda_terima" class="block text-sm font-medium text-gray-700 mb-1">Status Tanda Terima</label>
+                        <label for="status_tanda_terima" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                         <select name="status_tanda_terima" id="status_tanda_terima" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 onchange="this.form.submit()">
                             <option value="belum" {{ request('status_tanda_terima', 'belum') == 'belum' ? 'selected' : '' }}>Belum Tanda Terima</option>
+                            <option value="belum_sj" {{ request('status_tanda_terima') == 'belum_sj' ? 'selected' : '' }}>Belum Surat Jalan</option>
                             <option value="sudah" {{ request('status_tanda_terima') == 'sudah' ? 'selected' : '' }}>Sudah Tanda Terima</option>
                             <option value="semua" {{ request('status_tanda_terima') == 'semua' ? 'selected' : '' }}>Semua</option>
                         </select>
@@ -163,6 +164,7 @@
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Supir</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">No Plat</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Lokasi</th>
+                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Barang</th>
                             <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Jenis Barang</th>
                         </tr>
                     </thead>
@@ -271,13 +273,16 @@
                                         <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Jakarta</span>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title="{{ $sj->manifest->nama_barang ?? ($sj->nama_barang ?? '') }}">
+                                    {{ $sj->manifest->nama_barang ?? ($sj->nama_barang ?? '-') }}
+                                </td>
                                 <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title="{{ $sj->jenis_barang }}">
                                     {{ $sj->jenis_barang ?: '-' }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="13" class="px-6 py-10 text-center">
+                                <td colspan="14" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>

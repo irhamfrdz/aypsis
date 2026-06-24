@@ -1298,60 +1298,64 @@ class SuratJalanBongkaranController extends Controller
 
         $statusFilter = $request->get('status_tanda_terima', 'belum');
 
-        $query = SuratJalanBongkaran::with(['manifest', 'kapal', 'tandaTerima']);
+        $suratJalansList = collect();
+        // 1. Query SuratJalanBongkaran
+        if ($statusFilter !== 'belum_sj') {
+            $query = SuratJalanBongkaran::with(['manifest', 'kapal', 'tandaTerima']);
 
-        // Exclude 'port to port' term as they are not outstanding
-        $query->where(function ($q) {
-            $q->whereNull('term')
-                ->orWhereRaw('LOWER(term) != ?', ['port to port']);
-        });
-
-        // Filter by Tanda Terima status
-        if ($statusFilter === 'belum') {
-            $query->whereDoesntHave('tandaTerima');
-        } elseif ($statusFilter === 'sudah') {
-            $query->whereHas('tandaTerima');
-        }
-
-        // Filter by selected ship and voyage if not view_all
-        if (! $request->boolean('view_all')) {
-            $query->where('nama_kapal', $request->nama_kapal)
-                ->where('no_voyage', $request->no_voyage);
-        }
-
-        // Filter by search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                    ->orWhere('no_kontainer', 'like', "%{$search}%")
-                    ->orWhere('no_seal', 'like', "%{$search}%")
-                    ->orWhere('supir', 'like', "%{$search}%")
-                    ->orWhere('pengirim', 'like', "%{$search}%")
-                    ->orWhere('penerima', 'like', "%{$search}%")
-                    ->orWhere('no_bl', 'like', "%{$search}%")
-                    ->orWhere('nama_kapal', 'like', "%{$search}%");
+            // Exclude 'port to port' term as they are not outstanding
+            $query->where(function ($q) {
+                $q->whereNull('term')
+                    ->orWhereRaw('LOWER(term) != ?', ['port to port']);
             });
-        }
 
-        // Filter by Lokasi
-        if ($request->filled('lokasi')) {
-            $query->where('lokasi', $request->lokasi);
-        }
+            // Filter by Tanda Terima status
+            if ($statusFilter === 'belum') {
+                $query->whereDoesntHave('tandaTerima');
+            } elseif ($statusFilter === 'sudah') {
+                $query->whereHas('tandaTerima');
+            }
 
-        // Filter by Date
-        if ($request->filled('start_date')) {
-            $query->whereDate('tanggal_surat_jalan', '>=', $request->start_date);
-        }
-        if ($request->filled('end_date')) {
-            $query->whereDate('tanggal_surat_jalan', '<=', $request->end_date);
-        }
+            // Filter by selected ship and voyage if not view_all
+            if (! $request->boolean('view_all')) {
+                $query->where('nama_kapal', $request->nama_kapal)
+                    ->where('no_voyage', $request->no_voyage);
+            }
 
-        $suratJalansList = $query->orderBy('tanggal_surat_jalan', 'desc')->get();
+            // Filter by search
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%")
+                        ->orWhere('no_seal', 'like', "%{$search}%")
+                        ->orWhere('supir', 'like', "%{$search}%")
+                        ->orWhere('pengirim', 'like', "%{$search}%")
+                        ->orWhere('penerima', 'like', "%{$search}%")
+                        ->orWhere('no_bl', 'like', "%{$search}%")
+                        ->orWhere('nama_kapal', 'like', "%{$search}%");
+                });
+            }
+
+            // Filter by Lokasi
+            if ($request->filled('lokasi')) {
+                $query->where('lokasi', $request->lokasi);
+            }
+
+            // Filter by Date
+            if ($request->filled('start_date')) {
+                $query->whereDate('tanggal_surat_jalan', '>=', $request->start_date);
+            }
+            if ($request->filled('end_date')) {
+                $query->whereDate('tanggal_surat_jalan', '<=', $request->end_date);
+            }
+
+            $suratJalansList = $query->orderBy('tanggal_surat_jalan', 'desc')->get();
+        }
 
         // 2. Query manifests that have NO SuratJalanBongkaran (Jakarta or Batam)
         $manifestsList = collect();
-        if ($statusFilter !== 'sudah') {
+        if (in_array($statusFilter, ['belum_sj', 'belum', 'semua'])) {
             $manifestsQuery = Manifest::whereDoesntHave('suratJalanBongkaran')
                 ->whereDoesntHave('suratJalanBongkaranBatam');
 
