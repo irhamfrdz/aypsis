@@ -1075,6 +1075,15 @@ class KaryawanController extends Controller
      */
     public function update(Request $request, Karyawan $karyawan)
     {
+        // Hanya user Kiky yang bisa mengubah NIK dan KK
+        $isKiky = auth()->check() && (strtolower((string) auth()->user()->username) === 'kiky' || strtolower((string) auth()->user()->name) === 'kiky');
+        if (!$isKiky) {
+            $request->merge([
+                'nik' => $karyawan->nik,
+                'kk' => $karyawan->kk,
+            ]);
+        }
+
         // Anda perlu menambahkan logika validasi di sini, mirip dengan metode store()
         $validated = $request->validate([
             'nik' => ['required', 'string', 'regex:/^[0-9]+$/', Rule::unique('karyawans')->ignore($karyawan->id)],
