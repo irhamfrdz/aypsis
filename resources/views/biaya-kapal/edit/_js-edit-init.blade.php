@@ -356,6 +356,8 @@
                          'grand_total' => $firstItem->grand_total ?? 0,
                      ];
                  }
+            }
+        }
         // Map Nota Retur
         $editNotaReturSections = [];
         if($biayaKapal->notaReturDetails->count() > 0) {
