@@ -218,10 +218,34 @@ class KelolaBbmController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        $kelolaBbm->update($validated);
+        DB::beginTransaction();
 
-        return redirect()->route('kelola-bbm.index')
-            ->with('success', 'Data BBM berhasil diupdate!');
+        try {
+            $kelolaBbm->update($validated);
+
+            // Selalu update pricelist berdasarkan data BBM terbaru setelah perubahan
+            $latestBbm = KelolaBbm::orderBy('tahun', 'desc')
+                ->orderBy('bulan', 'desc')
+                ->first();
+
+            if ($latestBbm) {
+                $this->updatePricelistTarif($latestBbm->persentase, $latestBbm->id);
+            } else {
+                $this->updatePricelistTarif(0, null);
+            }
+
+            DB::commit();
+
+            return redirect()->route('kelola-bbm.index')
+                ->with('success', 'Data BBM berhasil diupdate!');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal mengupdate data BBM: '.$e->getMessage());
+        }
     }
 
     /**
@@ -229,9 +253,33 @@ class KelolaBbmController extends Controller
      */
     public function destroy(KelolaBbm $kelolaBbm)
     {
-        $kelolaBbm->delete();
+        DB::beginTransaction();
 
-        return redirect()->route('kelola-bbm.index')
-            ->with('success', 'Data BBM berhasil dihapus!');
+        try {
+            $kelolaBbm->delete();
+
+            // Ambil data BBM terbaru yang tersisa
+            $latestBbm = KelolaBbm::orderBy('tahun', 'desc')
+                ->orderBy('bulan', 'desc')
+                ->first();
+
+            if ($latestBbm) {
+                $this->updatePricelistTarif($latestBbm->persentase, $latestBbm->id);
+            } else {
+                // Jika sudah tidak ada data BBM, kembalikan ke tarif base
+                $this->updatePricelistTarif(0, null);
+            }
+
+            DB::commit();
+
+            return redirect()->route('kelola-bbm.index')
+                ->with('success', 'Data BBM berhasil dihapus!');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus data BBM: '.$e->getMessage());
+        }
     }
 }

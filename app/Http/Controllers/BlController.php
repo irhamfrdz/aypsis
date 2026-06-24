@@ -2927,6 +2927,8 @@ class BlController extends Controller
                     'unit' => '',
                 ];
             }
+        })->sortBy(function ($item) {
+            return stripos($item['nama_barang'], 'container') !== false ? 0 : 1;
         })->values();
 
         $totalAmount = $items->sum('amount');
@@ -3070,6 +3072,8 @@ class BlController extends Controller
                     'unit' => '',
                 ];
             }
+        })->sortBy(function ($item) {
+            return stripos($item['nama_barang'], 'container') !== false ? 0 : 1;
         })->values();
 
         $totalAmount = $items->sum('amount');
