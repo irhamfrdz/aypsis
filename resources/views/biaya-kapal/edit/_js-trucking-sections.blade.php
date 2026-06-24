@@ -386,10 +386,9 @@
                     subtotal += parseFloat(priceItem.biaya) || 0;
                 }
             });
-        } else if (selectedOptions.length === 0) {
-            // If nothing selected, maybe keep the manual value if edited?
-            // For now, let's reset only if it's auto-mode
-            // subtotal = 0;
+        } else {
+            // Fallback: use current subtotal input value (e.g. from DB load or manual input)
+            subtotal = parseFloat(subtotalInput.value.replace(/\D/g, '')) || 0;
         }
 
         const pph = Math.round(subtotal * 0.02);
@@ -397,11 +396,9 @@
         
         const formatRupiah = (val) => new Intl.NumberFormat('id-ID').format(Math.round(val));
 
-        if (subtotal > 0) {
-            subtotalInput.value = formatRupiah(subtotal);
-            pphInput.value = formatRupiah(pph);
-            totalInput.value = formatRupiah(total);
-        }
+        subtotalInput.value = subtotal > 0 ? formatRupiah(subtotal) : '0';
+        pphInput.value = formatRupiah(pph);
+        totalInput.value = formatRupiah(total);
 
         calculateTotalFromAllTruckingSections();
     }
