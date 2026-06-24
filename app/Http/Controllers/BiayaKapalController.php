@@ -3011,6 +3011,9 @@ class BiayaKapalController extends Controller
         // Get pricelist tanto
         $pricelistTanto = \App\Models\PricelistTanto::where('status', 'Aktif')->orderBy('jenis_biaya')->get();
 
+        $allBuruhs = \App\Models\Buruh::where('status', 'aktif')->orderBy('nama')->get();
+        $banks = \App\Models\Bank::orderBy('name')->get();
+
         $allInvoices = BiayaKapal::whereNotNull('nomor_invoice')
             ->where('nomor_invoice', '!=', '')
             ->orderBy('nomor_invoice')
