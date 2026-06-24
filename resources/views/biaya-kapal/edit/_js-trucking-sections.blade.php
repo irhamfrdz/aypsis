@@ -374,7 +374,7 @@
             totalSubtotal += sub;
         });
 
-        const currentJenis = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].getAttribute('data-kode');
+        const currentJenis = selectedJenisBiaya.kode || '';
         if (selectedJenisBiaya.nama.toLowerCase().includes('trucking')) {
             if (nominalInput) {
                 nominalInput.value = totalSubtotal > 0 ? Math.round(totalSubtotal).toLocaleString('id-ID') : '';
