@@ -20,6 +20,7 @@ class GajiSupirBatam extends Model
         'tanggal_mulai',
         'tanggal_selesai',
         'gaji_pokok',
+        'biaya_bensin',
         'total_gaji',
         'status_pembayaran',
         'tanggal_dibayar',
@@ -31,6 +32,7 @@ class GajiSupirBatam extends Model
         'tanggal_mulai' => 'date',
         'tanggal_selesai' => 'date',
         'gaji_pokok' => 'decimal:2',
+        'biaya_bensin' => 'decimal:2',
         'total_gaji' => 'decimal:2',
         'tanggal_dibayar' => 'date',
     ];

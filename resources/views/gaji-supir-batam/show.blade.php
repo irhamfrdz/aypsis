@@ -96,6 +96,10 @@
                 <td class="py-2.5 text-gray-700">Total Gaji Pokok (Berdasarkan Uang Jalan Surat Jalan)</td>
                 <td class="py-2.5 text-right font-semibold text-gray-900">Rp {{ number_format($gaji->gaji_pokok, 0, ',', '.') }}</td>
             </tr>
+            <tr class="hover:bg-gray-50 text-red-600">
+                <td class="py-2.5">Potongan Biaya Bensin</td>
+                <td class="py-2.5 text-right font-semibold">Rp {{ number_format($gaji->biaya_bensin ?? 0, 0, ',', '.') }}</td>
+            </tr>
             <tr class="border-t border-gray-200 font-semibold bg-green-50/30">
                 <td class="py-3 text-green-800">Total Gaji Bersih</td>
                 <td class="py-3 text-right text-green-800 font-bold text-lg">

@@ -78,13 +78,24 @@
                 <i class="fas fa-wallet mr-2"></i> Detail Gaji Supir
             </h4>
             
-            <div class="max-w-md">
-                <label for="gaji_pokok" class="block text-xs font-semibold text-gray-700 mb-1">Gaji Pokok (Total Uang Jalan Terpilih) <span class="text-red-500">*</span></label>
-                <div class="relative rounded-md shadow-sm">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span class="text-gray-500 text-sm">Rp</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="gaji_pokok" class="block text-xs font-semibold text-gray-700 mb-1">Gaji Pokok (Total Uang Jalan Terpilih) <span class="text-red-500">*</span></label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 text-sm">Rp</span>
+                        </div>
+                        <input type="number" name="gaji_pokok" id="gaji_pokok" value="{{ old('gaji_pokok', (int)$gaji->gaji_pokok) }}" min="0" class="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-gray-50 font-semibold" required readonly>
                     </div>
-                    <input type="number" name="gaji_pokok" id="gaji_pokok" value="{{ old('gaji_pokok', (int)$gaji->gaji_pokok) }}" min="0" class="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-gray-50 font-semibold" required readonly>
+                </div>
+                <div>
+                    <label for="biaya_bensin" class="block text-xs font-semibold text-gray-700 mb-1">Potongan Biaya Bensin</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 text-sm">Rp</span>
+                        </div>
+                        <input type="number" name="biaya_bensin" id="biaya_bensin" value="{{ old('biaya_bensin', (int)$gaji->biaya_bensin) }}" min="0" class="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white font-semibold" placeholder="0">
+                    </div>
                 </div>
             </div>
         </div>
@@ -190,8 +201,12 @@
         // Salary calculator function
         function calculateSalary() {
             const gajiPokok = parseFloat(document.getElementById('gaji_pokok').value) || 0;
-            totalDisplay.textContent = 'Rp ' + gajiPokok.toLocaleString('id-ID');
+            const biayaBensin = parseFloat(document.getElementById('biaya_bensin').value) || 0;
+            const totalGaji = Math.max(0, gajiPokok - biayaBensin);
+            totalDisplay.textContent = 'Rp ' + totalGaji.toLocaleString('id-ID');
         }
+
+        document.getElementById('biaya_bensin').addEventListener('input', calculateSalary);
 
         function updateGajiPokok() {
             let sum = 0;

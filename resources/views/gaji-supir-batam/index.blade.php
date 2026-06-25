@@ -153,6 +153,9 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-indigo-600">
                             Rp {{ number_format($gaji->total_gaji, 0, ',', '.') }}
+                            @if($gaji->biaya_bensin > 0)
+                                <div class="text-[10px] text-red-500 font-semibold mt-0.5">- Bensin: Rp {{ number_format($gaji->biaya_bensin, 0, ',', '.') }}</div>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if ($gaji->status_pembayaran === 'PAID')
