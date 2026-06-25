@@ -156,7 +156,7 @@
                                     </label>
                                     <div class="relative">
                                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold text-xs">Rp</span>
-                                        <input type="number" id="harga_per_liter" value="{{ $lastHargaPerLiter }}" placeholder="0"
+                                        <input type="number" step="any" id="harga_per_liter" value="{{ $lastHargaPerLiter }}" placeholder="0"
                                                class="block w-full pl-9 pr-4 py-3 bg-white border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-bold text-slate-900 text-sm">
                                     </div>
                                 </div>
@@ -169,7 +169,7 @@
                                 </label>
                                 <div class="relative">
                                     <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-amber-700 font-extrabold text-base">Rp</span>
-                                    <input type="number" name="biaya" id="biaya" value="{{ old('biaya') }}" required placeholder="0"
+                                    <input type="number" step="any" name="biaya" id="biaya" value="{{ old('biaya') }}" required placeholder="0"
                                            class="block w-full pl-11 pr-4 py-3.5 bg-amber-500/10 border-2 border-amber-500/30 rounded-xl focus:bg-white focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-black text-slate-900 text-lg">
                                 </div>
                             </div>
