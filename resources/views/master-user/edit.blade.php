@@ -662,6 +662,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Gaji Supir Batam --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="inline-block w-3 h-3 bg-purple-100 rounded-full mr-3"></span>
+                                        <div class="text-sm font-medium">Gaji Supir Batam</div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[gaji-supir-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['view']) && $userMatrixPermissions['gaji-supir-batam']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gaji-supir-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['create']) && $userMatrixPermissions['gaji-supir-batam']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gaji-supir-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['update']) && $userMatrixPermissions['gaji-supir-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gaji-supir-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['delete']) && $userMatrixPermissions['gaji-supir-batam']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[gaji-supir-batam][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['export']) && $userMatrixPermissions['gaji-supir-batam']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Data Term --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

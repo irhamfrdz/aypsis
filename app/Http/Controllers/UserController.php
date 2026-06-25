@@ -722,6 +722,7 @@ class UserController extends Controller
                 'master-buruh' => 'master-buruh',
                 'biaya-bensin' => 'biaya-bensin',
                 'pembelian-bbm-batam' => 'pembelian-bbm-batam',
+                'gaji-supir-batam' => 'gaji-supir-batam',
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
@@ -3153,6 +3154,26 @@ class UserController extends Controller
                             'create' => 'pembelian-bbm-batam-create',
                             'update' => 'pembelian-bbm-batam-edit',
                             'delete' => 'pembelian-bbm-batam-delete',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle gaji-supir-batam permissions explicitly
+                    if ($module === 'gaji-supir-batam' && in_array($action, ['view', 'create', 'update', 'delete', 'export'])) {
+                        $actionMap = [
+                            'view' => 'gaji-supir-batam-view',
+                            'create' => 'gaji-supir-batam-create',
+                            'update' => 'gaji-supir-batam-edit',
+                            'delete' => 'gaji-supir-batam-delete',
+                            'export' => 'gaji-supir-batam-export',
                         ];
 
                         if (isset($actionMap[$action])) {
