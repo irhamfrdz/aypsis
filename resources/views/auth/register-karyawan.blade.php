@@ -52,7 +52,7 @@
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('register.karyawan.store') }}" class="space-y-4">
+                        <form method="POST" action="{{ route('karyawan.store') }}" class="space-y-4">
                             @csrf
 
                             <!-- Tipe Karyawan -->
