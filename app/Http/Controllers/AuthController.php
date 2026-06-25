@@ -94,7 +94,10 @@ class AuthController extends Controller
      */
     public function showKaryawanRegisterForm()
     {
-        return view('auth.register-karyawan');
+        $pekerjaans = \App\Models\Pekerjaan::all();
+        $pajaks = \App\Models\Pajak::all();
+
+        return view('auth.register-karyawan', compact('pekerjaans', 'pajaks'));
     }
 
     /**
@@ -107,10 +110,23 @@ class AuthController extends Controller
         if ($tipeKaryawan === 'tidak_tetap') {
             $validated = $request->validate([
                 'nama_lengkap' => 'required|string|max:255',
-                'nama_panggilan' => 'required|string|max:255',
-                'alamat' => 'required|string|max:255',
-                'no_telepon' => 'required|string|max:255',
-                'pekerjaan' => 'nullable|string|max:255',
+                'nama_panggilan' => 'nullable|string|max:100',
+                'divisi' => 'nullable|string|max:100',
+                'pekerjaan' => 'nullable|string|max:100',
+                'cabang' => 'nullable|string|max:100',
+                'nik_ktp' => 'nullable|string|max:50',
+                'jenis_kelamin' => 'nullable|string|max:20',
+                'agama' => 'nullable|string|max:50',
+                'rt_rw' => 'nullable|string|max:20',
+                'alamat' => 'required|string',
+                'kelurahan' => 'nullable|string|max:100',
+                'kecamatan' => 'nullable|string|max:100',
+                'kabupaten' => 'nullable|string|max:100',
+                'provinsi' => 'nullable|string|max:100',
+                'kode_pos' => 'nullable|string|max:10',
+                'email' => 'nullable|email|max:255',
+                'tanggal_masuk' => 'nullable|date',
+                'status_pajak' => 'nullable|string|max:50',
             ]);
         } else {
             $validated = $request->validate([
@@ -171,11 +187,23 @@ class AuthController extends Controller
                 $karyawanTidakTetap = KaryawanTidakTetap::create([
                     'nik' => $nik,
                     'nama_lengkap' => $validated['nama_lengkap'],
-                    'nama_panggilan' => $validated['nama_panggilan'],
-                    'alamat_lengkap' => $validated['alamat'],
+                    'nama_panggilan' => $validated['nama_panggilan'] ?? null,
+                    'divisi' => $validated['divisi'] ?? 'NON KARYAWAN',
                     'pekerjaan' => $validated['pekerjaan'] ?? null,
-                    'divisi' => 'NON KARYAWAN',
-                    'tanggal_masuk' => now()->toDateString(),
+                    'cabang' => $validated['cabang'] ?? null,
+                    'nik_ktp' => $validated['nik_ktp'] ?? null,
+                    'jenis_kelamin' => $validated['jenis_kelamin'] ?? null,
+                    'agama' => $validated['agama'] ?? null,
+                    'rt_rw' => $validated['rt_rw'] ?? null,
+                    'alamat_lengkap' => $validated['alamat'],
+                    'kelurahan' => $validated['kelurahan'] ?? null,
+                    'kecamatan' => $validated['kecamatan'] ?? null,
+                    'kabupaten' => $validated['kabupaten'] ?? null,
+                    'provinsi' => $validated['provinsi'] ?? null,
+                    'kode_pos' => $validated['kode_pos'] ?? null,
+                    'email' => $validated['email'] ?? null,
+                    'tanggal_masuk' => $validated['tanggal_masuk'] ?? now()->toDateString(),
+                    'status_pajak' => $validated['status_pajak'] ?? null,
                 ]);
 
                 if ($user) {
