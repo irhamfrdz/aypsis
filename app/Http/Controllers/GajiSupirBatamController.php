@@ -376,9 +376,31 @@ class GajiSupirBatamController extends Controller
             ];
         }
 
+        // Query biaya bensin for this driver in the period
+        $bensinList = \App\Models\BiayaBensin::where('karyawan_id', $karyawan->id)
+            ->whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])
+            ->orderBy('tanggal')
+            ->get();
+
+        $totalBiayaBensin = 0;
+        $bensinItems = [];
+        foreach ($bensinList as $b) {
+            $biaya = is_numeric($b->biaya) ? (float) $b->biaya : 0;
+            $totalBiayaBensin += $biaya;
+            $bensinItems[] = [
+                'id'       => $b->id,
+                'tanggal'  => \Carbon\Carbon::parse($b->tanggal)->format('d/m/Y'),
+                'liter'    => (float) $b->liter,
+                'biaya'    => $biaya,
+                'keterangan' => $b->keterangan ?? '-',
+            ];
+        }
+
         return response()->json([
-            'gaji_pokok' => $totalRit,
-            'waybills' => $waybills,
+            'gaji_pokok'         => $totalRit,
+            'waybills'           => $waybills,
+            'total_biaya_bensin' => $totalBiayaBensin,
+            'bensin_items'       => $bensinItems,
         ]);
     }
 }

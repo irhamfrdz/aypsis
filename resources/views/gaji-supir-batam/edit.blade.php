@@ -89,14 +89,41 @@
                     </div>
                 </div>
                 <div>
-                    <label for="biaya_bensin" class="block text-xs font-semibold text-gray-700 mb-1">Potongan Biaya Bensin</label>
+                    <label for="biaya_bensin" class="block text-xs font-semibold text-gray-700 mb-1">Potongan Biaya Bensin <span class="text-xs font-normal text-indigo-500">(otomatis dari catatan pembelian)</span></label>
                     <div class="relative rounded-md shadow-sm">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span class="text-gray-500 text-sm">Rp</span>
                         </div>
-                        <input type="number" name="biaya_bensin" id="biaya_bensin" value="{{ old('biaya_bensin', (int)$gaji->biaya_bensin) }}" min="0" class="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-white font-semibold" placeholder="0">
+                        <input type="number" name="biaya_bensin" id="biaya_bensin" value="{{ old('biaya_bensin', (int)$gaji->biaya_bensin) }}" min="0" class="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 font-semibold" placeholder="0" readonly>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Bensin Breakdown -->
+        <div id="bensin_breakdown_section" class="bg-amber-50 rounded-lg p-5 border border-amber-200 mb-6" style="display:none">
+            <h4 class="text-sm font-bold text-amber-800 uppercase tracking-wider mb-3 flex items-center">
+                <i class="fas fa-gas-pump mr-2"></i> Rincian Pembelian Bensin pada Periode Ini
+            </h4>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-amber-200 text-sm">
+                    <thead class="bg-amber-100">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-semibold text-amber-700">Tanggal</th>
+                            <th class="px-4 py-2 text-right font-semibold text-amber-700">Liter</th>
+                            <th class="px-4 py-2 text-left font-semibold text-amber-700">Keterangan</th>
+                            <th class="px-4 py-2 text-right font-semibold text-amber-700">Biaya (Rp)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bensin_breakdown_rows" class="divide-y divide-amber-100 bg-white">
+                    </tbody>
+                    <tfoot class="bg-amber-50 font-bold border-t border-amber-200">
+                        <tr>
+                            <td colspan="3" class="px-4 py-2 text-right text-amber-800">Total Biaya Bensin:</td>
+                            <td class="px-4 py-2 text-right text-amber-700" id="bensin_total_display">Rp 0</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
 
@@ -208,6 +235,31 @@
 
         document.getElementById('biaya_bensin').addEventListener('input', calculateSalary);
 
+        function renderBensinTable(bensinItems, totalBiayaBensin) {
+            const section = document.getElementById('bensin_breakdown_section');
+            const tbody = document.getElementById('bensin_breakdown_rows');
+            const totalEl = document.getElementById('bensin_total_display');
+
+            tbody.innerHTML = '';
+            if (bensinItems.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            bensinItems.forEach(b => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-2 text-gray-600">${b.tanggal}</td>
+                    <td class="px-4 py-2 text-right text-gray-600">${b.liter.toLocaleString('id-ID')} L</td>
+                    <td class="px-4 py-2 text-gray-500">${b.keterangan}</td>
+                    <td class="px-4 py-2 text-right font-semibold text-amber-800">Rp ${b.biaya.toLocaleString('id-ID')}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            totalEl.textContent = 'Rp ' + totalBiayaBensin.toLocaleString('id-ID');
+        }
+
         function updateGajiPokok() {
             let sum = 0;
             document.querySelectorAll('.waybill-checkbox:checked').forEach(cb => {
@@ -261,6 +313,11 @@
                             cb.addEventListener('change', updateGajiPokok);
                         });
                     }
+
+                    // Auto-fill biaya bensin from bensin_items
+                    const totalBensin = data.total_biaya_bensin || 0;
+                    document.getElementById('biaya_bensin').value = totalBensin;
+                    renderBensinTable(data.bensin_items || [], totalBensin);
 
                     checkAll.checked = true;
                     updateGajiPokok();
