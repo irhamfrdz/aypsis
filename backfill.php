@@ -2,6 +2,9 @@
 
 require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
+if ($app === true) {
+    $app = \Illuminate\Support\Facades\App::getInstance();
+}
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
