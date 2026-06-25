@@ -21,6 +21,7 @@ class User extends Authenticatable
         'username',
         'password',
         'karyawan_id',
+        'karyawan_tidak_tetap_id',
         'status',
         'registration_reason',
         'approved_by',
@@ -55,6 +56,14 @@ class User extends Authenticatable
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
+    }
+
+    /**
+     * The relationship with the KaryawanTidakTetap model.
+     */
+    public function karyawanTidakTetap()
+    {
+        return $this->belongsTo(\App\Models\KaryawanTidakTetap::class, 'karyawan_tidak_tetap_id');
     }
 
     /**

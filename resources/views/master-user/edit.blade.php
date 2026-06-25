@@ -291,13 +291,44 @@
             </div>
 
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Hubungkan dengan Karyawan (Opsional)</label>
-                <select name="karyawan_id" id="karyawan_id">
-                    <option value="">-- Tidak dihubungkan --</option>
-                    @foreach ($karyawans as $karyawan)
-                        <option value="{{ $karyawan->id }}" data-nama="{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }}" @if(old('karyawan_id', $user->karyawan_id) == $karyawan->id) selected @endif>{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }} @if($karyawan->nik) ({{ $karyawan->nik }}) @endif</option>
-                    @endforeach
-                </select>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Hubungkan dengan Karyawan (Opsional)</label>
+
+                {{-- Tab Toggle --}}
+                @php
+                    $activeTab = $user->karyawan_tidak_tetap_id ? 'tidak-tetap' : 'tetap';
+                @endphp
+                <div class="flex rounded-lg border border-gray-300 overflow-hidden mb-3 w-fit">
+                    <button type="button" id="tab-tetap"
+                        class="px-4 py-1.5 text-sm font-medium tab-karyawan-btn {{ $activeTab === 'tetap' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600' }} transition-colors"
+                        onclick="switchKaryawanTab('tetap')">
+                        Karyawan Tetap
+                    </button>
+                    <button type="button" id="tab-tidak-tetap"
+                        class="px-4 py-1.5 text-sm font-medium tab-karyawan-btn {{ $activeTab === 'tidak-tetap' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600' }} transition-colors"
+                        onclick="switchKaryawanTab('tidak-tetap')">
+                        Karyawan Tidak Tetap
+                    </button>
+                </div>
+
+                {{-- Karyawan Tetap Select --}}
+                <div id="panel-tetap" style="{{ $activeTab === 'tetap' ? '' : 'display:none' }}">
+                    <select name="karyawan_id" id="karyawan_id" {{ $activeTab !== 'tetap' ? 'disabled' : '' }}>
+                        <option value="">-- Tidak dihubungkan --</option>
+                        @foreach ($karyawans as $karyawan)
+                            <option value="{{ $karyawan->id }}" data-nama="{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }}" @if(old('karyawan_id', $user->karyawan_id) == $karyawan->id) selected @endif>{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }} @if($karyawan->nik) ({{ $karyawan->nik }}) @endif</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Karyawan Tidak Tetap Select --}}
+                <div id="panel-tidak-tetap" style="{{ $activeTab === 'tidak-tetap' ? '' : 'display:none' }}">
+                    <select name="karyawan_tidak_tetap_id" id="karyawan_tidak_tetap_id" {{ $activeTab !== 'tidak-tetap' ? 'disabled' : '' }}>
+                        <option value="">-- Tidak dihubungkan --</option>
+                        @foreach ($karyawanTidakTetaps as $ktt)
+                            <option value="{{ $ktt->id }}" data-nama="{{ $ktt->nama_panggilan ?: $ktt->nama_lengkap }}" @if(old('karyawan_tidak_tetap_id', $user->karyawan_tidak_tetap_id) == $ktt->id) selected @endif>{{ $ktt->nama_panggilan ?: $ktt->nama_lengkap }} @if($ktt->nik) ({{ $ktt->nik }}) @endif</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -4179,13 +4210,46 @@
             // ==========================================
 
             function initializeKaryawanSelect() {
+                // ---- Tab Switcher ----
+                window.switchKaryawanTab = function(tab) {
+                    const panelTetap      = document.getElementById('panel-tetap');
+                    const panelTidakTetap = document.getElementById('panel-tidak-tetap');
+                    const btnTetap        = document.getElementById('tab-tetap');
+                    const btnTidakTetap   = document.getElementById('tab-tidak-tetap');
+                    const selTetap        = document.getElementById('karyawan_id');
+                    const selTidakTetap   = document.getElementById('karyawan_tidak_tetap_id');
+
+                    if (tab === 'tetap') {
+                        panelTetap.style.display     = 'block';
+                        panelTidakTetap.style.display = 'none';
+                        btnTetap.classList.add('bg-indigo-600','text-white');
+                        btnTetap.classList.remove('bg-white','text-gray-600');
+                        btnTidakTetap.classList.add('bg-white','text-gray-600');
+                        btnTidakTetap.classList.remove('bg-indigo-600','text-white');
+                        selTetap.disabled      = false;
+                        selTidakTetap.disabled = true;
+                        selTidakTetap.value    = '';
+                    } else {
+                        panelTetap.style.display     = 'none';
+                        panelTidakTetap.style.display = 'block';
+                        btnTidakTetap.classList.add('bg-indigo-600','text-white');
+                        btnTidakTetap.classList.remove('bg-white','text-gray-600');
+                        btnTetap.classList.add('bg-white','text-gray-600');
+                        btnTetap.classList.remove('bg-indigo-600','text-white');
+                        selTidakTetap.disabled = false;
+                        selTetap.disabled      = true;
+                        selTetap.value         = '';
+                    }
+                };
+
+                // ---- Choices for karyawan tetap ----
                 const karyawanElement = document.getElementById('karyawan_id');
                 if (karyawanElement) {
                     const karyawanChoices = new Choices(karyawanElement, {
                         searchEnabled: true,
                         shouldSort: false,
                         placeholder: true,
-                        placeholderValue: 'Cari atau pilih karyawan...'
+                        placeholderValue: 'Cari atau pilih karyawan tetap...'
                     });
 
                     karyawanElement.addEventListener('click', function(e) {
@@ -4193,20 +4257,26 @@
                         try { karyawanChoices.showDropdown(); } catch (err) { console.debug('showDropdown error', err); }
                     });
 
-                    // Mousedown handler on wrapper to ensure dropdown shows even when other handlers exist
                     const karyawanWrapper = karyawanElement.parentElement;
                     karyawanWrapper.addEventListener('mousedown', function(e) {
                         if (e.target.closest && e.target.closest('.choices')) {
                             e.preventDefault(); e.stopPropagation();
-                            console.debug('karyawanWrapper mousedown inside choices');
                             try { karyawanChoices.showDropdown(); } catch (err) { console.debug('showDropdown error', err); }
                             setTimeout(() => { try { karyawanChoices.showDropdown(); } catch (err) {} }, 50);
                         }
                     });
                 }
-                // Also apply Choices to the copy-user select for consistent dropdown behavior
-                // (Now handled inside initializeCopyPermissions for better encapsulation)
-                // initializeCopyPermissions handles the copy_user_select initialization
+
+                // ---- Choices for karyawan tidak tetap ----
+                const karyawanTtElement = document.getElementById('karyawan_tidak_tetap_id');
+                if (karyawanTtElement) {
+                    new Choices(karyawanTtElement, {
+                        searchEnabled: true,
+                        shouldSort: false,
+                        placeholder: true,
+                        placeholderValue: 'Cari atau pilih karyawan tidak tetap...'
+                    });
+                }
             }
 
             // ==========================================

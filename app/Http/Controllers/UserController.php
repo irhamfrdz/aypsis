@@ -54,11 +54,12 @@ class UserController extends Controller
         // Mengambil semua izin yang tersedia dari tabel permission
         $permissions = Permission::select('id', 'name', 'description')->get();
         $karyawans = Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik')->get();
+        $karyawanTidakTetaps = \App\Models\KaryawanTidakTetap::select('id', 'nama_lengkap', 'nama_panggilan', 'nik')->get();
 
         // Mengambil semua users dengan permissions untuk fitur copy
         $users = User::with('permissions:id,name')->select('id', 'username')->get();
 
-        return view('master-user.create', compact('permissions', 'karyawans', 'users'));
+        return view('master-user.create', compact('permissions', 'karyawans', 'karyawanTidakTetaps', 'users'));
     }
 
     /**
@@ -69,17 +70,26 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'username' => 'required|string|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'karyawan_id' => 'nullable|exists:karyawans,id',
-            'simple_permissions' => 'nullable|array', // Legacy support
-            'permissions' => 'nullable|array', // New matrix permissions
+            'username'                 => 'required|string|max:255|unique:users',
+            'password'                 => 'required|string|min:8|confirmed',
+            'karyawan_id'              => 'nullable|exists:karyawans,id',
+            'karyawan_tidak_tetap_id'  => 'nullable|exists:karyawan_tidak_tetaps,id',
+            'simple_permissions'       => 'nullable|array',
+            'permissions'              => 'nullable|array',
         ]);
 
+        // Pastikan hanya satu yang terisi; jika keduanya ada, prioritaskan karyawan tetap
+        $karyawanId         = $request->karyawan_id ?: null;
+        $karyawanTtId       = $request->karyawan_tidak_tetap_id ?: null;
+        if ($karyawanId) {
+            $karyawanTtId = null; // clear karyawan tidak tetap jika karyawan tetap dipilih
+        }
+
         $user = User::create([
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'karyawan_id' => $request->karyawan_id,
+            'username'                => $request->username,
+            'password'                => Hash::make($request->password),
+            'karyawan_id'             => $karyawanId,
+            'karyawan_tidak_tetap_id' => $karyawanTtId,
         ]);
 
         // Handle permissions - prioritize new matrix format
@@ -103,6 +113,7 @@ class UserController extends Controller
         $permissions = Permission::select('id', 'name', 'description')->get();
         $userPermissions = $user->permissions->pluck('id')->toArray();
         $karyawans = Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik')->get();
+        $karyawanTidakTetaps = \App\Models\KaryawanTidakTetap::select('id', 'nama_lengkap', 'nama_panggilan', 'nik')->get();
 
         // Mengambil semua users dengan permissions untuk fitur copy (kecuali user yang sedang diedit)
         $users = User::with('permissions:id,name')->select('id', 'username')->where('id', '!=', $user->id)->get();
@@ -113,7 +124,7 @@ class UserController extends Controller
         // Convert user permissions to matrix format for the new permission matrix system
         $userMatrixPermissions = $this->convertPermissionsToMatrix($userSimplePermissions);
 
-        return view('master-user.edit', compact('user', 'permissions', 'userPermissions', 'userSimplePermissions', 'userMatrixPermissions', 'karyawans', 'users'));
+        return view('master-user.edit', compact('user', 'permissions', 'userPermissions', 'userSimplePermissions', 'userMatrixPermissions', 'karyawans', 'karyawanTidakTetaps', 'users'));
     }
 
     /**
@@ -124,15 +135,23 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'username' => 'required|string|max:255|unique:users,username,'.$user->id,
-            'password' => 'nullable|string|min:8|confirmed',
-            'karyawan_id' => 'nullable|exists:karyawans,id',
-            'simple_permissions' => 'nullable|array', // Legacy support
-            'permissions' => 'nullable|array', // New matrix permissions
+            'username'                => 'required|string|max:255|unique:users,username,'.$user->id,
+            'password'                => 'nullable|string|min:8|confirmed',
+            'karyawan_id'             => 'nullable|exists:karyawans,id',
+            'karyawan_tidak_tetap_id' => 'nullable|exists:karyawan_tidak_tetaps,id',
+            'simple_permissions'      => 'nullable|array',
+            'permissions'             => 'nullable|array',
         ]);
 
-        $user->username = $request->username;
-        $user->karyawan_id = $request->karyawan_id;
+        $karyawanId   = $request->karyawan_id ?: null;
+        $karyawanTtId = $request->karyawan_tidak_tetap_id ?: null;
+        if ($karyawanId) {
+            $karyawanTtId = null;
+        }
+
+        $user->username                = $request->username;
+        $user->karyawan_id             = $karyawanId;
+        $user->karyawan_tidak_tetap_id = $karyawanTtId;
 
         if ($request->password) {
             $user->password = Hash::make($request->password);
