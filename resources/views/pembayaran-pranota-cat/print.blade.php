@@ -242,7 +242,7 @@
                 </tr>
                 <tr>
                     <td style="padding: 3px; font-weight: bold;">Total Tagihan:</td>
-                    <td style="padding: 3px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->pranotaTagihanCats->first()?->total_amount ?? $pembayaran->pranotaPerbaikanKontainers->sum(function($p) { return $p->calculateTotalCatAmount(); }), 0, ',', '.') }}</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->pranotaTagihanCats->sum('total_amount') + $pembayaran->pranotaPerbaikanKontainers->sum(function($p) { return $p->calculateTotalCatAmount(); }), 0, ',', '.') }}</td>
                     <td style="padding: 3px; font-weight: bold;">Nominal Bayar:</td>
                     <td style="padding: 3px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->total_pembayaran, 0, ',', '.') }}</td>
                 </tr>
@@ -334,7 +334,7 @@
                 <div class="total-section">
                     <div class="total-row">
                         <span>Total Tagihan:</span>
-                        <span>Rp {{ number_format($pembayaran->pranotaTagihanCats->first()?->total_amount ?? $pembayaran->pranotaPerbaikanKontainers->sum(function($p) { return $p->calculateTotalCatAmount(); }), 0, ',', '.') }}</span>
+                        <span>Rp {{ number_format($pembayaran->pranotaTagihanCats->sum('total_amount') + $pembayaran->pranotaPerbaikanKontainers->sum(function($p) { return $p->calculateTotalCatAmount(); }), 0, ',', '.') }}</span>
                     </div>
                     @if($pembayaran->penyesuaian != 0)
                     <div class="total-row">
