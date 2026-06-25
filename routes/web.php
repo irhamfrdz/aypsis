@@ -3049,6 +3049,9 @@ Route::middleware([
         Route::resource('pranota-uang-rit-batam', \App\Http\Controllers\PranotaUangRitBatamController::class);
 
         // Gaji Supir Batam
+        Route::get('gaji-supir-batam/calculate', [\App\Http\Controllers\GajiSupirBatamController::class, 'calculate'])
+            ->name('gaji-supir-batam.calculate')
+            ->middleware('can:gaji-supir-batam-view');
         Route::post('gaji-supir-batam/{id}/bayar', [\App\Http\Controllers\GajiSupirBatamController::class, 'bayar'])
             ->name('gaji-supir-batam.bayar')
             ->middleware('can:gaji-supir-batam-edit');

@@ -44,8 +44,8 @@
         <p class="text-xs text-gray-500">Shipping and Logistics Management Services</p>
         <div class="border-b-2 border-gray-800 my-3"></div>
         <h3 class="text-lg font-bold text-gray-900">SLIP GAJI SUPIR - BATAM</h3>
-        <p class="text-sm text-gray-600 font-medium uppercase mt-1">
-            Periode: {{ \Carbon\Carbon::create()->month($gaji->periode_bulan)->translatedFormat('F') }} {{ $gaji->periode_tahun }}
+        <p class="text-sm text-indigo-600 font-bold uppercase mt-1">
+            Periode: {{ $gaji->periode_text }}
         </p>
     </div>
 
@@ -87,74 +87,65 @@
     </div>
 
     <!-- Rincian Slip -->
-    <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Allowances -->
-        <div>
-            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 pb-1 border-b border-gray-200">
-                A. PENERIMAAN / TUNJANGAN
-            </h4>
-            <table class="w-full text-sm">
-                <tr class="hover:bg-gray-50">
-                    <td class="py-2 text-gray-700">Gaji Pokok</td>
-                    <td class="py-2 text-right font-medium text-gray-900">Rp {{ number_format($gaji->gaji_pokok, 0, ',', '.') }}</td>
-                </tr>
-                <tr class="hover:bg-gray-50">
-                    <td class="py-2 text-gray-700">Tunjangan Kehadiran</td>
-                    <td class="py-2 text-right font-medium text-gray-900">Rp {{ number_format($gaji->tunjangan_kehadiran, 0, ',', '.') }}</td>
-                </tr>
-                <tr class="hover:bg-gray-50">
-                    <td class="py-2 text-gray-700">Tunjangan Makan</td>
-                    <td class="py-2 text-right font-medium text-gray-900">Rp {{ number_format($gaji->tunjangan_makan, 0, ',', '.') }}</td>
-                </tr>
-                <tr class="hover:bg-gray-50">
-                    <td class="py-2 text-gray-700">Tunjangan Lain-lain</td>
-                    <td class="py-2 text-right font-medium text-gray-900">Rp {{ number_format($gaji->tunjangan_lainnya, 0, ',', '.') }}</td>
-                </tr>
-                <tr class="border-t border-gray-200 font-semibold bg-green-50/30">
-                    <td class="py-2.5 text-green-800">Total Penerimaan (A)</td>
-                    <td class="py-2.5 text-right text-green-800">
-                        Rp {{ number_format($gaji->gaji_pokok + $gaji->tunjangan_kehadiran + $gaji->tunjangan_makan + $gaji->tunjangan_lainnya, 0, ',', '.') }}
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-        <!-- Deductions -->
-        <div>
-            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 pb-1 border-b border-gray-200">
-                B. POTONGAN
-            </h4>
-            <table class="w-full text-sm">
-                <tr class="hover:bg-gray-50">
-                    <td class="py-2 text-gray-700">Potongan BPJS</td>
-                    <td class="py-2 text-right font-medium text-gray-900">Rp {{ number_format($gaji->potongan_bpjs, 0, ',', '.') }}</td>
-                </tr>
-                <tr class="hover:bg-gray-50">
-                    <td class="py-2 text-gray-700">Potongan Pinjaman</td>
-                    <td class="py-2 text-right font-medium text-gray-900">Rp {{ number_format($gaji->potongan_pinjaman, 0, ',', '.') }}</td>
-                </tr>
-                <tr class="hover:bg-gray-50">
-                    <td class="py-2 text-gray-700">Potongan Lain-lain</td>
-                    <td class="py-2 text-right font-medium text-gray-900">Rp {{ number_format($gaji->potongan_lainnya, 0, ',', '.') }}</td>
-                </tr>
-                <tr class="border-t border-gray-200 font-semibold bg-red-50/30">
-                    <td class="py-2.5 text-red-800">Total Potongan (B)</td>
-                    <td class="py-2.5 text-right text-red-800">
-                        Rp {{ number_format($gaji->potongan_bpjs + $gaji->potongan_pinjaman + $gaji->potongan_lainnya, 0, ',', '.') }}
-                    </td>
-                </tr>
-            </table>
-        </div>
+    <div class="p-8">
+        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 pb-1 border-b border-gray-200">
+            RINCIAN GAJI
+        </h4>
+        <table class="w-full text-sm">
+            <tr class="hover:bg-gray-50">
+                <td class="py-2.5 text-gray-700">Total Gaji Pokok (Berdasarkan Uang Rit Surat Jalan)</td>
+                <td class="py-2.5 text-right font-semibold text-gray-900">Rp {{ number_format($gaji->gaji_pokok, 0, ',', '.') }}</td>
+            </tr>
+            <tr class="border-t border-gray-200 font-semibold bg-green-50/30">
+                <td class="py-3 text-green-800">Total Gaji Bersih</td>
+                <td class="py-3 text-right text-green-800 font-bold text-lg">
+                    Rp {{ number_format($gaji->total_gaji, 0, ',', '.') }}
+                </td>
+            </tr>
+        </table>
     </div>
 
     <!-- Total Salary -->
     <div class="mx-8 p-5 bg-gray-800 text-white rounded-lg flex justify-between items-center border border-gray-700 mb-6">
         <div>
-            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">GAJI BERSIH (A - B)</h4>
+            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">GAJI BERSIH</h4>
             <p class="text-[10px] text-gray-500">Diterima oleh supir yang bersangkutan</p>
         </div>
         <div class="text-right">
             <span class="text-2xl font-extrabold text-green-400">Rp {{ number_format($gaji->total_gaji, 0, ',', '.') }}</span>
+        </div>
+    </div>
+
+    <!-- Waybills List / Breakdown -->
+    <div class="mx-8 mb-6">
+        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 pb-1 border-b border-gray-200">
+            RINCIAN SURAT JALAN YANG DIMASUKKAN
+        </h4>
+        <div class="overflow-hidden border border-gray-200 rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200 text-xs">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-2.5 text-left font-semibold text-gray-600">Tipe</th>
+                        <th class="px-4 py-2.5 text-left font-semibold text-gray-600">No. Surat Jalan</th>
+                        <th class="px-4 py-2.5 text-left font-semibold text-gray-600">Tanggal</th>
+                        <th class="px-4 py-2.5 text-right font-semibold text-gray-600">Uang Rit</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                    @forelse($waybills as $wb)
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-2 text-gray-800 font-medium">{{ $wb['type'] }}</td>
+                            <td class="px-4 py-2 text-gray-600 font-mono">{{ $wb['no_surat_jalan'] }}</td>
+                            <td class="px-4 py-2 text-gray-600">{{ $wb['tanggal'] }}</td>
+                            <td class="px-4 py-2 text-right font-semibold text-gray-800">Rp {{ number_format($wb['rit'], 0, ',', '.') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-4 py-4 text-center text-gray-500">Tidak ada surat jalan yang ditemukan pada periode ini.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 

@@ -16,13 +16,10 @@ class GajiSupirBatam extends Model
         'karyawan_id',
         'periode_bulan',
         'periode_tahun',
+        'periode_minggu',
+        'tanggal_mulai',
+        'tanggal_selesai',
         'gaji_pokok',
-        'tunjangan_kehadiran',
-        'tunjangan_makan',
-        'tunjangan_lainnya',
-        'potongan_bpjs',
-        'potongan_pinjaman',
-        'potongan_lainnya',
         'total_gaji',
         'status_pembayaran',
         'tanggal_dibayar',
@@ -30,16 +27,21 @@ class GajiSupirBatam extends Model
     ];
 
     protected $casts = [
+        'periode_minggu' => 'integer',
+        'tanggal_mulai' => 'date',
+        'tanggal_selesai' => 'date',
         'gaji_pokok' => 'decimal:2',
-        'tunjangan_kehadiran' => 'decimal:2',
-        'tunjangan_makan' => 'decimal:2',
-        'tunjangan_lainnya' => 'decimal:2',
-        'potongan_bpjs' => 'decimal:2',
-        'potongan_pinjaman' => 'decimal:2',
-        'potongan_lainnya' => 'decimal:2',
         'total_gaji' => 'decimal:2',
         'tanggal_dibayar' => 'date',
     ];
+
+    public function getPeriodeTextAttribute()
+    {
+        if ($this->tanggal_mulai && $this->tanggal_selesai) {
+            return $this->tanggal_mulai->format('d/m/Y') . ' - ' . $this->tanggal_selesai->format('d/m/Y');
+        }
+        return $this->periode_minggu == 2 ? 'Tanggal 16 - Akhir Bulan' : 'Tanggal 1 - 15';
+    }
 
     /**
      * Relationship to the driver (karyawan)

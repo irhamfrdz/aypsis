@@ -18,6 +18,8 @@ class GajiSupirBatamController extends Controller
         $tahun = $request->get('tahun', '');
         $karyawanId = $request->get('karyawan_id', '');
         $statusPembayaran = $request->get('status_pembayaran', '');
+        $startDate = $request->get('start_date', '');
+        $endDate = $request->get('end_date', '');
 
         $query = GajiSupirBatam::with('karyawan');
 
@@ -45,8 +47,15 @@ class GajiSupirBatamController extends Controller
             $query->where('status_pembayaran', $statusPembayaran);
         }
 
-        $gajiList = $query->orderBy('periode_tahun', 'desc')
-            ->orderBy('periode_bulan', 'desc')
+        if ($startDate !== '') {
+            $query->whereDate('tanggal_mulai', '>=', $startDate);
+        }
+
+        if ($endDate !== '') {
+            $query->whereDate('tanggal_selesai', '<=', $endDate);
+        }
+
+        $gajiList = $query->orderBy('tanggal_mulai', 'desc')
             ->orderBy('id', 'desc')
             ->paginate($request->get('per_page', 15));
 
@@ -59,7 +68,7 @@ class GajiSupirBatamController extends Controller
             ->orderBy('nama_lengkap')
             ->get();
 
-        return view('gaji-supir-batam.index', compact('gajiList', 'supirList', 'search', 'bulan', 'tahun', 'karyawanId', 'statusPembayaran'));
+        return view('gaji-supir-batam.index', compact('gajiList', 'supirList', 'search', 'bulan', 'tahun', 'karyawanId', 'statusPembayaran', 'startDate', 'endDate'));
     }
 
     /**
@@ -85,45 +94,36 @@ class GajiSupirBatamController extends Controller
     {
         $validated = $request->validate([
             'karyawan_id' => 'required|exists:karyawans,id',
-            'periode_bulan' => 'required|integer|min:1|max:12',
-            'periode_tahun' => 'required|integer|min:2000|max:2100',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'gaji_pokok' => 'required|numeric|min:0',
-            'tunjangan_kehadiran' => 'nullable|numeric|min:0',
-            'tunjangan_makan' => 'nullable|numeric|min:0',
-            'tunjangan_lainnya' => 'nullable|numeric|min:0',
-            'potongan_bpjs' => 'nullable|numeric|min:0',
-            'potongan_pinjaman' => 'nullable|numeric|min:0',
-            'potongan_lainnya' => 'nullable|numeric|min:0',
             'status_pembayaran' => 'required|in:PENDING,PAID,CANCELLED',
             'tanggal_dibayar' => 'nullable|date',
             'keterangan' => 'nullable|string',
         ]);
 
-        // Unique validation
-        $exists = GajiSupirBatam::where('karyawan_id', $validated['karyawan_id'])
-            ->where('periode_bulan', $validated['periode_bulan'])
-            ->where('periode_tahun', $validated['periode_tahun'])
+        // Overlap validation
+        $overlap = GajiSupirBatam::where('karyawan_id', $validated['karyawan_id'])
+            ->where(function ($q) use ($validated) {
+                $q->where(function ($q1) use ($validated) {
+                    $q1->whereDate('tanggal_mulai', '<=', $validated['tanggal_selesai'])
+                       ->whereDate('tanggal_selesai', '>=', $validated['tanggal_mulai']);
+                });
+            })
             ->exists();
 
-        if ($exists) {
-            return back()->withInput()->with('error', 'Gaji supir untuk periode tersebut sudah ada!');
+        if ($overlap) {
+            return back()->withInput()->with('error', 'Gaji supir untuk tanggal periode tersebut sudah tumpang tindih dengan data yang ada!');
         }
 
         $data = $validated;
-        $data['tunjangan_kehadiran'] = $data['tunjangan_kehadiran'] ?? 0;
-        $data['tunjangan_makan'] = $data['tunjangan_makan'] ?? 0;
-        $data['tunjangan_lainnya'] = $data['tunjangan_lainnya'] ?? 0;
-        $data['potongan_bpjs'] = $data['potongan_bpjs'] ?? 0;
-        $data['potongan_pinjaman'] = $data['potongan_pinjaman'] ?? 0;
-        $data['potongan_lainnya'] = $data['potongan_lainnya'] ?? 0;
-
-        $data['total_gaji'] = $data['gaji_pokok'] +
-                              $data['tunjangan_kehadiran'] +
-                              $data['tunjangan_makan'] +
-                              $data['tunjangan_lainnya'] -
-                              $data['potongan_bpjs'] -
-                              $data['potongan_pinjaman'] -
-                              $data['potongan_lainnya'];
+        
+        // Derive month and year from tanggal_mulai for fallback fields
+        $startDateObj = \Carbon\Carbon::parse($validated['tanggal_mulai']);
+        $data['periode_bulan'] = (int)$startDateObj->format('n');
+        $data['periode_tahun'] = (int)$startDateObj->format('Y');
+        $data['periode_minggu'] = 1;
+        $data['total_gaji'] = $data['gaji_pokok'];
 
         if ($data['status_pembayaran'] === 'PAID' && empty($data['tanggal_dibayar'])) {
             $data['tanggal_dibayar'] = now()->format('Y-m-d');
@@ -142,7 +142,71 @@ class GajiSupirBatamController extends Controller
     {
         $gaji = GajiSupirBatam::with('karyawan')->findOrFail($id);
 
-        return view('gaji-supir-batam.show', compact('gaji'));
+        $karyawan = $gaji->karyawan;
+        $namaPanggilan = $karyawan->nama_panggilan;
+
+        $startDate = $gaji->tanggal_mulai;
+        $endDate = $gaji->tanggal_selesai;
+
+        if (!$startDate || !$endDate) {
+            $bulan = (int)$gaji->periode_bulan;
+            $tahun = (int)$gaji->periode_tahun;
+            $periodeMinggu = (int)($gaji->periode_minggu ?? 1);
+
+            if ($periodeMinggu == 1) {
+                $startDate = \Carbon\Carbon::create($tahun, $bulan, 1)->startOfDay();
+                $endDate = \Carbon\Carbon::create($tahun, $bulan, 15)->endOfDay();
+            } else {
+                $startDate = \Carbon\Carbon::create($tahun, $bulan, 16)->startOfDay();
+                $endDate = \Carbon\Carbon::create($tahun, $bulan, 1)->endOfMonth()->endOfDay();
+            }
+        } else {
+            $startDate = \Carbon\Carbon::parse($startDate)->startOfDay();
+            $endDate = \Carbon\Carbon::parse($endDate)->endOfDay();
+        }
+
+        $regularSJs = \App\Models\SuratJalanBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
+            ->get();
+
+        $bongkaranSJs = \App\Models\SuratJalanBongkaranBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
+            ->get();
+
+        $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->whereIn('status', ['active', 'completed'])
+            ->get();
+
+        $waybills = [];
+        foreach ($regularSJs as $sj) {
+            $waybills[] = [
+                'type' => 'Regular',
+                'no_surat_jalan' => $sj->no_surat_jalan,
+                'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
+                'rit' => is_numeric($sj->rit) ? (float)$sj->rit : 0,
+            ];
+        }
+        foreach ($bongkaranSJs as $sj) {
+            $waybills[] = [
+                'type' => 'Bongkaran',
+                'no_surat_jalan' => $sj->nomor_surat_jalan,
+                'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
+                'rit' => is_numeric($sj->rit) ? (float)$sj->rit : 0,
+            ];
+        }
+        foreach ($tarikKosongSJs as $sj) {
+            $waybills[] = [
+                'type' => 'Tarik Kosong',
+                'no_surat_jalan' => $sj->no_surat_jalan,
+                'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
+                'rit' => is_numeric($sj->rit) ? (float)$sj->rit : 0,
+            ];
+        }
+
+        return view('gaji-supir-batam.show', compact('gaji', 'waybills'));
     }
 
     /**
@@ -171,46 +235,35 @@ class GajiSupirBatamController extends Controller
 
         $validated = $request->validate([
             'karyawan_id' => 'required|exists:karyawans,id',
-            'periode_bulan' => 'required|integer|min:1|max:12',
-            'periode_tahun' => 'required|integer|min:2000|max:2100',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'gaji_pokok' => 'required|numeric|min:0',
-            'tunjangan_kehadiran' => 'nullable|numeric|min:0',
-            'tunjangan_makan' => 'nullable|numeric|min:0',
-            'tunjangan_lainnya' => 'nullable|numeric|min:0',
-            'potongan_bpjs' => 'nullable|numeric|min:0',
-            'potongan_pinjaman' => 'nullable|numeric|min:0',
-            'potongan_lainnya' => 'nullable|numeric|min:0',
             'status_pembayaran' => 'required|in:PENDING,PAID,CANCELLED',
             'tanggal_dibayar' => 'nullable|date',
             'keterangan' => 'nullable|string',
         ]);
 
-        // Unique validation excluding self
-        $exists = GajiSupirBatam::where('karyawan_id', $validated['karyawan_id'])
-            ->where('periode_bulan', $validated['periode_bulan'])
-            ->where('periode_tahun', $validated['periode_tahun'])
+        // Overlap validation excluding self
+        $overlap = GajiSupirBatam::where('karyawan_id', $validated['karyawan_id'])
             ->where('id', '!=', $id)
+            ->where(function ($q) use ($validated) {
+                $q->where(function ($q1) use ($validated) {
+                    $q1->whereDate('tanggal_mulai', '<=', $validated['tanggal_selesai'])
+                       ->whereDate('tanggal_selesai', '>=', $validated['tanggal_mulai']);
+                });
+            })
             ->exists();
 
-        if ($exists) {
-            return back()->withInput()->with('error', 'Gaji supir untuk periode tersebut sudah ada!');
+        if ($overlap) {
+            return back()->withInput()->with('error', 'Gaji supir untuk tanggal periode tersebut sudah tumpang tindih dengan data yang ada!');
         }
 
         $data = $validated;
-        $data['tunjangan_kehadiran'] = $data['tunjangan_kehadiran'] ?? 0;
-        $data['tunjangan_makan'] = $data['tunjangan_makan'] ?? 0;
-        $data['tunjangan_lainnya'] = $data['tunjangan_lainnya'] ?? 0;
-        $data['potongan_bpjs'] = $data['potongan_bpjs'] ?? 0;
-        $data['potongan_pinjaman'] = $data['potongan_pinjaman'] ?? 0;
-        $data['potongan_lainnya'] = $data['potongan_lainnya'] ?? 0;
-
-        $data['total_gaji'] = $data['gaji_pokok'] +
-                              $data['tunjangan_kehadiran'] +
-                              $data['tunjangan_makan'] +
-                              $data['tunjangan_lainnya'] -
-                              $data['potongan_bpjs'] -
-                              $data['potongan_pinjaman'] -
-                              $data['potongan_lainnya'];
+        
+        $startDateObj = \Carbon\Carbon::parse($validated['tanggal_mulai']);
+        $data['periode_bulan'] = (int)$startDateObj->format('n');
+        $data['periode_tahun'] = (int)$startDateObj->format('Y');
+        $data['total_gaji'] = $data['gaji_pokok'];
 
         if ($data['status_pembayaran'] === 'PAID' && empty($data['tanggal_dibayar'])) {
             $data['tanggal_dibayar'] = now()->format('Y-m-d');
@@ -251,5 +304,83 @@ class GajiSupirBatamController extends Controller
 
         return redirect()->route('gaji-supir-batam.index')
             ->with('success', 'Gaji supir berhasil dibayar!');
+    }
+
+    /**
+     * AJAX endpoint to calculate waybill earnings using custom date range.
+     */
+    public function calculate(Request $request)
+    {
+        $validated = $request->validate([
+            'karyawan_id' => 'required|exists:karyawans,id',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+        ]);
+
+        $karyawan = Karyawan::findOrFail($validated['karyawan_id']);
+        $namaPanggilan = $karyawan->nama_panggilan;
+
+        $startDate = \Carbon\Carbon::parse($validated['tanggal_mulai'])->startOfDay();
+        $endDate = \Carbon\Carbon::parse($validated['tanggal_selesai'])->endOfDay();
+
+        // Search in SuratJalanBatam, SuratJalanBongkaranBatam, and SuratJalanTarikKosongBatam
+        $regularSJs = \App\Models\SuratJalanBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
+            ->get();
+
+        $bongkaranSJs = \App\Models\SuratJalanBongkaranBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
+            ->get();
+
+        $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->whereIn('status', ['active', 'completed'])
+            ->get();
+
+        $totalRit = 0;
+        $waybills = [];
+
+        foreach ($regularSJs as $sj) {
+            $ritVal = is_numeric($sj->rit) ? (float)$sj->rit : 0;
+            $totalRit += $ritVal;
+            $waybills[] = [
+                'id' => $sj->id,
+                'type' => 'Regular',
+                'no_surat_jalan' => $sj->no_surat_jalan,
+                'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
+                'rit' => $ritVal,
+            ];
+        }
+
+        foreach ($bongkaranSJs as $sj) {
+            $ritVal = is_numeric($sj->rit) ? (float)$sj->rit : 0;
+            $totalRit += $ritVal;
+            $waybills[] = [
+                'id' => $sj->id,
+                'type' => 'Bongkaran',
+                'no_surat_jalan' => $sj->nomor_surat_jalan,
+                'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
+                'rit' => $ritVal,
+            ];
+        }
+
+        foreach ($tarikKosongSJs as $sj) {
+            $ritVal = is_numeric($sj->rit) ? (float)$sj->rit : 0;
+            $totalRit += $ritVal;
+            $waybills[] = [
+                'id' => $sj->id,
+                'type' => 'Tarik Kosong',
+                'no_surat_jalan' => $sj->no_surat_jalan,
+                'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
+                'rit' => $ritVal,
+            ];
+        }
+
+        return response()->json([
+            'gaji_pokok' => $totalRit,
+            'waybills' => $waybills,
+        ]);
     }
 }

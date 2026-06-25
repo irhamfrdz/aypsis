@@ -7,7 +7,7 @@
 <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
     <div>
         <h2 class="text-2xl font-bold text-gray-900">Gaji Supir Batam</h2>
-        <p class="mt-1 text-sm text-gray-600">Kelola data gaji dan tunjangan supir di wilayah Batam</p>
+        <p class="mt-1 text-sm text-gray-600">Kelola data gaji supir di wilayah Batam</p>
     </div>
     <div class="flex flex-col sm:flex-row gap-2">
         @can('gaji-supir-batam-create')
@@ -53,6 +53,7 @@
 <!-- Search & Filter Form -->
 <form method="GET" action="{{ route('gaji-supir-batam.index') }}" class="bg-white rounded-lg shadow-sm p-6 mb-6 border border-gray-100">
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <!-- Search -->
         <div>
             <label for="search" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Cari Supir</label>
             <div class="relative">
@@ -68,6 +69,7 @@
             </div>
         </div>
 
+        <!-- Supir Select -->
         <div>
             <label for="karyawan_id" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Nama Supir</label>
             <select name="karyawan_id" id="karyawan_id" class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
@@ -80,30 +82,19 @@
             </select>
         </div>
 
+        <!-- Start Date -->
         <div>
-            <label for="bulan" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Bulan</label>
-            <select name="bulan" id="bulan" class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                <option value="">Semua Bulan</option>
-                @for($m = 1; $m <= 12; $m++)
-                    <option value="{{ $m }}" {{ $bulan == $m ? 'selected' : '' }}>
-                        {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
-                    </option>
-                @endfor
-            </select>
+            <label for="start_date" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tanggal Mulai</label>
+            <input type="date" name="start_date" id="start_date" value="{{ $startDate }}" class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
         </div>
 
+        <!-- End Date -->
         <div>
-            <label for="tahun" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tahun</label>
-            <select name="tahun" id="tahun" class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                <option value="">Semua Tahun</option>
-                @for($y = date('Y') + 1; $y >= 2020; $y--)
-                    <option value="{{ $y }}" {{ $tahun == $y ? 'selected' : '' }}>
-                        {{ $y }}
-                    </option>
-                @endfor
-            </select>
+            <label for="end_date" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tanggal Selesai</label>
+            <input type="date" name="end_date" id="end_date" value="{{ $endDate }}" class="block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
         </div>
 
+        <!-- Status -->
         <div>
             <label for="status_pembayaran" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Status Bayar</label>
             <select name="status_pembayaran" id="status_pembayaran" class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
@@ -121,7 +112,7 @@
             <i class="fas fa-search mr-2"></i>
             Cari
         </button>
-        @if($search || $bulan || $tahun || $karyawanId || $statusPembayaran)
+        @if($search || $startDate || $endDate || $karyawanId || $statusPembayaran)
             <a href="{{ route('gaji-supir-batam.index') }}" 
                class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
                 <i class="fas fa-times mr-2"></i>
@@ -138,10 +129,8 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Supir</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Periode</th>
-                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Gaji Pokok</th>
-                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Tunjangan</th>
-                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Potongan</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Periode Tanggal</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Rit / Gaji Pokok</th>
                     <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Gaji Bersih</th>
                     <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -149,30 +138,20 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse ($gajiList as $gaji)
-                    @php
-                        $totalTunjangan = $gaji->tunjangan_kehadiran + $gaji->tunjangan_makan + $gaji->tunjangan_lainnya;
-                        $totalPotongan = $gaji->potongan_bpjs + $gaji->potongan_pinjaman + $gaji->potongan_lainnya;
-                    @endphp
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4">
                             <div class="text-sm font-medium text-gray-900">{{ $gaji->karyawan->nama_lengkap }}</div>
                             <div class="text-xs text-gray-500">NIK: {{ $gaji->karyawan->nik ?? '-' }} | Plat: {{ $gaji->karyawan->plat ?? '-' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">
-                                {{ \Carbon\Carbon::create()->month($gaji->periode_bulan)->translatedFormat('F') }} {{ $gaji->periode_tahun }}
+                            <div class="text-sm font-semibold text-gray-800">
+                                {{ $gaji->periode_text }}
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 font-medium">
                             Rp {{ number_format($gaji->gaji_pokok, 0, ',', '.') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-green-600 font-medium">
-                            +Rp {{ number_format($totalTunjangan, 0, ',', '.') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-red-600 font-medium">
-                            -Rp {{ number_format($totalPotongan, 0, ',', '.') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-indigo-600">
                             Rp {{ number_format($gaji->total_gaji, 0, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
@@ -237,7 +216,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-10 text-center text-sm text-gray-500">
+                        <td colspan="6" class="px-6 py-10 text-center text-sm text-gray-500">
                             <i class="fas fa-info-circle text-2xl text-gray-350 mb-3 block"></i>
                             Tidak ada data gaji supir ditemukan.
                         </td>
