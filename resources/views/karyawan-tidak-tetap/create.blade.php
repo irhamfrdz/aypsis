@@ -55,7 +55,14 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="nik" class="{{ $labelClasses }}">NIK <span class="text-red-500">*</span></label>
-                        <input type="text" name="nik" id="nik" class="{{ $inputClasses }} bg-white" required value="{{ old('nik') }}" placeholder="Masukkan NIK">
+                        <div class="relative">
+                            <input type="text" name="nik" id="nik" class="{{ $readonlyInputClasses }} pr-20" required
+                                value="{{ old('nik', $nextNik) }}" readonly>
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <span class="text-[9px] font-semibold text-indigo-500 bg-indigo-50 border border-indigo-200 rounded px-1.5 py-0.5">AUTO</span>
+                            </span>
+                        </div>
+                        <p class="text-[9px] text-gray-400 mt-0.5">Nomor urut otomatis — tidak perlu diisi manual</p>
                     </div>
 
                     <div>
