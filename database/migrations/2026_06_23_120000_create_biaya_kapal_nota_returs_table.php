@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -38,7 +38,7 @@ return new class extends Migration
             'kode' => 'KB052',
             'nama' => 'Nota Retur',
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
     }
 
@@ -48,7 +48,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('biaya_kapal_nota_returs');
-        
+
         DB::table('klasifikasi_biayas')->where('kode', 'KB052')->delete();
     }
 };

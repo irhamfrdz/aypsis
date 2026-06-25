@@ -68,7 +68,7 @@ class OrderBatamController extends Controller
 
         $rutes = [];
 
-        $pricelistUangJalanBatams = PricelistUangJalanBatam::orderBy('ring')->orderBy('expedisi')->get();
+        $pricelistUangJalanBatams = PricelistUangJalanBatam::activeBbm()->orderBy('ring')->orderBy('expedisi')->get();
 
         // Generate next order number
         $nextOrderNumber = $this->generateNextOrderNumber();
@@ -300,7 +300,7 @@ class OrderBatamController extends Controller
 
         $rutes = [];
 
-        $pricelistUangJalanBatams = PricelistUangJalanBatam::orderBy('ring')->orderBy('expedisi')->get();
+        $pricelistUangJalanBatams = PricelistUangJalanBatam::activeBbm()->orderBy('ring')->orderBy('expedisi')->get();
 
         return view('orders-batam.edit', compact('orderBatam', 'terms', 'pengirims', 'penerimas', 'jenisBarangs', 'tujuanKirims', 'tujuanKegiatanUtamas', 'ukuranKontainers', 'rutes', 'pricelistUangJalanBatams'));
     }

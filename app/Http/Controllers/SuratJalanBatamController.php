@@ -168,7 +168,7 @@ class SuratJalanBatamController extends Controller
         $prevBbm = \App\Models\KelolaBbm::orderBy('tahun', 'desc')->orderBy('bulan', 'desc')->skip(1)->first();
         $prevPersentase = $prevBbm ? $prevBbm->persentase : 0;
 
-        $pricelistRings = PricelistUangJalanBatam::select(
+        $pricelistRings = PricelistUangJalanBatam::activeBbm()->select(
             'ring', 'expedisi', 'status',
             'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty',
             'tarif_20ft_full_base', 'tarif_20ft_empty_base', 'tarif_40ft_full_base', 'tarif_40ft_empty_base'
@@ -343,7 +343,7 @@ class SuratJalanBatamController extends Controller
         $prevBbm = \App\Models\KelolaBbm::orderBy('tahun', 'desc')->orderBy('bulan', 'desc')->skip(1)->first();
         $prevPersentase = $prevBbm ? $prevBbm->persentase : 0;
 
-        $pricelistRings = PricelistUangJalanBatam::select(
+        $pricelistRings = PricelistUangJalanBatam::activeBbm()->select(
             'ring', 'expedisi', 'status',
             'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty',
             'tarif_20ft_full_base', 'tarif_20ft_empty_base', 'tarif_40ft_full_base', 'tarif_40ft_empty_base'

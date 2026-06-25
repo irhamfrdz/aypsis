@@ -72,7 +72,7 @@ class SuratJalanTarikKosongBatamController extends Controller
         }
         $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
 
-        $pricelistRings = \App\Models\PricelistUangJalanBatam::orderBy('ring')
+        $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
             ->get(['ring', 'expedisi', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
             ->map(function ($item) {
                 return [
@@ -172,7 +172,7 @@ class SuratJalanTarikKosongBatamController extends Controller
         }
         $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
 
-        $pricelistRings = \App\Models\PricelistUangJalanBatam::orderBy('ring')
+        $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
             ->get(['ring', 'expedisi', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
             ->map(function ($item) {
                 return [

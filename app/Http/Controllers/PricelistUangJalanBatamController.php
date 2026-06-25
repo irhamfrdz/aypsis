@@ -18,8 +18,31 @@ class PricelistUangJalanBatamController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search', '');
+        $selectedBbmId = $request->get('kelola_bbm_id', '');
+
+        $bbmPeriods = \App\Models\KelolaBbm::orderBy('tahun', 'desc')
+            ->orderBy('bulan', 'desc')
+            ->get();
 
         $query = PricelistUangJalanBatam::query();
+
+        if ($selectedBbmId === 'base') {
+            $query->whereNull('kelola_bbm_id');
+        } elseif ($selectedBbmId !== '') {
+            $query->where('kelola_bbm_id', $selectedBbmId);
+        } else {
+            // Default: if there's an active/latest BBM, show that, otherwise show base
+            $latestBbm = \App\Models\KelolaBbm::orderBy('tahun', 'desc')
+                ->orderBy('bulan', 'desc')
+                ->first();
+            if ($latestBbm) {
+                $query->where('kelola_bbm_id', $latestBbm->id);
+                $selectedBbmId = (string) $latestBbm->id;
+            } else {
+                $query->whereNull('kelola_bbm_id');
+                $selectedBbmId = 'base';
+            }
+        }
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -33,7 +56,7 @@ class PricelistUangJalanBatamController extends Controller
             ->orderBy('ring')
             ->paginate($request->get('per_page', 15));
 
-        return view('pricelist-uang-jalan-batam.index', compact('pricelists', 'search'));
+        return view('pricelist-uang-jalan-batam.index', compact('pricelists', 'search', 'bbmPeriods', 'selectedBbmId'));
     }
 
     /**
@@ -194,9 +217,10 @@ class PricelistUangJalanBatamController extends Controller
     public function export(Request $request)
     {
         $search = $request->get('search', '');
+        $selectedBbmId = $request->get('kelola_bbm_id', '');
 
         return Excel::download(
-            new PricelistUangJalanBatamExport($search),
+            new PricelistUangJalanBatamExport($search, $selectedBbmId),
             'pricelist_uang_jalan_batam_'.date('YmdHis').'.xlsx'
         );
     }

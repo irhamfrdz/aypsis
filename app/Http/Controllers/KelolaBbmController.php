@@ -90,12 +90,8 @@ class KelolaBbmController extends Controller
         }
     }
 
-    /**
-     * Update tarif pricelist berdasarkan persentase BBM
-     */
     private function updatePricelistTarif($persentaseBbm, $kelolaBbmId = null)
     {
-        $pricelists = PricelistUangJalanBatam::all();
         $fields = [
             'tarif_20ft_full' => 'tarif_20ft_full_base',
             'tarif_20ft_empty' => 'tarif_20ft_empty_base',
@@ -104,6 +100,24 @@ class KelolaBbmController extends Controller
             'tarif_antarlokasi_20ft' => 'tarif_antarlokasi_20ft_base',
             'tarif_antarlokasi_40ft' => 'tarif_antarlokasi_40ft_base',
         ];
+
+        if ($kelolaBbmId) {
+            // Get versioned pricelist or copy from base if not exists
+            $pricelists = PricelistUangJalanBatam::where('kelola_bbm_id', $kelolaBbmId)->get();
+            if ($pricelists->isEmpty()) {
+                $basePricelists = PricelistUangJalanBatam::whereNull('kelola_bbm_id')->get();
+                foreach ($basePricelists as $base) {
+                    $newRecordData = $base->toArray();
+                    unset($newRecordData['id']);
+                    $newRecordData['kelola_bbm_id'] = $kelolaBbmId;
+                    PricelistUangJalanBatam::create($newRecordData);
+                }
+                $pricelists = PricelistUangJalanBatam::where('kelola_bbm_id', $kelolaBbmId)->get();
+            }
+        } else {
+            // Fallback to base
+            $pricelists = PricelistUangJalanBatam::whereNull('kelola_bbm_id')->get();
+        }
 
         // Jika persentase di bawah 5%, kembalikan tarif ke nilai base
         if ($persentaseBbm < 5) {
@@ -146,6 +160,41 @@ class KelolaBbmController extends Controller
         }
 
         if ($persentaseBbm == 5) {
+            foreach ($pricelists as $pricelist) {
+                $updateData = [];
+                $historyLogs = [];
+
+                foreach ($fields as $tarifField => $baseField) {
+                    $tarifLama = $pricelist->$tarifField;
+                    $tarifBase = $pricelist->$baseField ?? $tarifLama;
+
+                    if ($tarifLama != $tarifBase) {
+                        $updateData[$tarifField] = $tarifBase;
+                        $historyLogs[] = [
+                            'field' => $tarifField,
+                            'old' => $tarifLama,
+                            'new' => $tarifBase,
+                        ];
+                    }
+                }
+
+                if (! empty($updateData)) {
+                    $pricelist->update($updateData);
+
+                    foreach ($historyLogs as $log) {
+                        PricelistTarifHistory::create([
+                            'pricelist_uang_jalan_batam_id' => $pricelist->id,
+                            'kelola_bbm_id' => $kelolaBbmId,
+                            'tarif_lama' => $log['old'],
+                            'tarif_baru' => $log['new'],
+                            'persentase_perubahan' => 0,
+                            'persentase_bbm' => $persentaseBbm,
+                            'keterangan' => "Tarif {$log['field']} dikembalikan ke nilai awal karena persentase BBM {$persentaseBbm}%",
+                        ]);
+                    }
+                }
+            }
+
             return;
         }
 
@@ -223,16 +272,8 @@ class KelolaBbmController extends Controller
         try {
             $kelolaBbm->update($validated);
 
-            // Selalu update pricelist berdasarkan data BBM terbaru setelah perubahan
-            $latestBbm = KelolaBbm::orderBy('tahun', 'desc')
-                ->orderBy('bulan', 'desc')
-                ->first();
-
-            if ($latestBbm) {
-                $this->updatePricelistTarif($latestBbm->persentase, $latestBbm->id);
-            } else {
-                $this->updatePricelistTarif(0, null);
-            }
+            // Update pricelist untuk data BBM yang diedit
+            $this->updatePricelistTarif($validated['persentase'], $kelolaBbm->id);
 
             DB::commit();
 
@@ -257,18 +298,6 @@ class KelolaBbmController extends Controller
 
         try {
             $kelolaBbm->delete();
-
-            // Ambil data BBM terbaru yang tersisa
-            $latestBbm = KelolaBbm::orderBy('tahun', 'desc')
-                ->orderBy('bulan', 'desc')
-                ->first();
-
-            if ($latestBbm) {
-                $this->updatePricelistTarif($latestBbm->persentase, $latestBbm->id);
-            } else {
-                // Jika sudah tidak ada data BBM, kembalikan ke tarif base
-                $this->updatePricelistTarif(0, null);
-            }
 
             DB::commit();
 

@@ -17,9 +17,12 @@ class PricelistUangJalanBatamExport implements FromCollection, WithColumnWidths,
 {
     protected $search;
 
-    public function __construct($search = '')
+    protected $kelolaBbmId;
+
+    public function __construct($search = '', $kelolaBbmId = '')
     {
         $this->search = $search;
+        $this->kelolaBbmId = $kelolaBbmId;
     }
 
     /**
@@ -28,6 +31,12 @@ class PricelistUangJalanBatamExport implements FromCollection, WithColumnWidths,
     public function collection()
     {
         $query = PricelistUangJalanBatam::query();
+
+        if ($this->kelolaBbmId === 'base') {
+            $query->whereNull('kelola_bbm_id');
+        } elseif ($this->kelolaBbmId !== '') {
+            $query->where('kelola_bbm_id', $this->kelolaBbmId);
+        }
 
         if ($this->search) {
             $query->where(function ($q) {

@@ -16,7 +16,7 @@
                 <i class="fas fa-download mr-2"></i>
                 Download Template
             </a>
-            <a href="{{ route('pricelist-uang-jalan-batam.export', ['search' => $search]) }}" 
+            <a href="{{ route('pricelist-uang-jalan-batam.export', ['search' => $search, 'kelola_bbm_id' => $selectedBbmId]) }}" 
                class="inline-flex items-center px-4 py-2 border border-green-600 text-sm font-medium rounded-md shadow-sm text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
                 <i class="fas fa-file-excel mr-2"></i>
                 Export Data
@@ -120,6 +120,27 @@
                            placeholder="Cari berdasarkan expedisi, ring, atau status..." 
                            class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                 </div>
+            </div>
+            <div class="w-full md:w-64">
+                <label for="kelola_bbm_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Periode BBM
+                </label>
+                <select name="kelola_bbm_id" id="kelola_bbm_id" onchange="this.form.submit()"
+                        class="block w-full py-2.5 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    <option value="base" {{ $selectedBbmId == 'base' ? 'selected' : '' }}>Tarif Dasar (Base)</option>
+                    @foreach($bbmPeriods as $period)
+                        @php
+                            $monthNames = [
+                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                                7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                            ];
+                            $monthName = $monthNames[$period->bulan] ?? '';
+                        @endphp
+                        <option value="{{ $period->id }}" {{ $selectedBbmId == $period->id ? 'selected' : '' }}>
+                            {{ $monthName }} {{ $period->tahun }} ({{ $period->persentase }}%)
+                        </option>
+                    @endforeach
+                </select>
             </div>
             <div class="flex items-end space-x-3">
                 <button type="submit" 

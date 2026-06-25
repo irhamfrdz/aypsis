@@ -1077,7 +1077,7 @@ class KaryawanController extends Controller
     {
         // Hanya user Kiky yang bisa mengubah NIK, KK, dan KTP
         $isKiky = auth()->check() && (strtolower((string) auth()->user()->username) === 'kiky' || strtolower((string) auth()->user()->name) === 'kiky');
-        if (!$isKiky) {
+        if (! $isKiky) {
             $request->merge([
                 'nik' => $karyawan->nik,
                 'kk' => $karyawan->kk,
