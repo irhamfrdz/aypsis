@@ -143,26 +143,24 @@ use Illuminate\Support\Str;
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Order</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Surat Jalan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nickname Pengirim</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nickname Penerima</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Order</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Surat Jalan</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($orders as $order)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $order->nomor_order }}</div>
+                        <tr class="hover:bg-gray-50 text-xs">
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="font-medium text-gray-900">{{ $order->nomor_order }}</div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">
+                            <td class="px-3 py-3">
+                                <div class="text-gray-900">
                                     @forelse($order->suratJalans as $sj)
                                         <div class="mb-1">{{ $sj->no_surat_jalan }}</div>
                                     @empty
@@ -170,42 +168,40 @@ use Illuminate\Support\Str;
                                     @endforelse
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($order->tanggal_order)->format('d M Y') }}</div>
+                            <td class="px-3 py-3 whitespace-nowrap">
+                                <div class="text-gray-900">{{ \Carbon\Carbon::parse($order->tanggal_order)->format('d M Y') }}</div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $order->pengirim->nama_pengirim ?? '-' }}</div>
+                            <td class="px-3 py-3">
+                                <div class="font-medium text-gray-900">{{ $order->pengirim->nama_pengirim ?? '-' }}</div>
+                                @if(!empty($order->pengirim->nickname1))
+                                    <div class="text-[10px] text-gray-500">({{ $order->pengirim->nickname1 }})</div>
+                                @endif
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $order->pengirim->nickname1 ?? '-' }}</div>
+                            <td class="px-3 py-3">
+                                <div class="font-medium text-gray-900">{{ $order->recipient?->nama_penerima ?? $order->penerima ?? '-' }}</div>
+                                @if(!empty($order->recipient?->nickname))
+                                    <div class="text-[10px] text-gray-500">({{ $order->recipient->nickname }})</div>
+                                @endif
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">
-                                {{ $order->recipient?->nama_penerima ?? $order->penerima ?? '-' }}
-                            </div>
+                            <td class="px-3 py-3">
+                                <div class="text-gray-900">{{ $order->tujuan_kirim ?? '-' }}</div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $order->recipient?->nickname ?? '-' }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $order->tujuan_kirim ?? '-' }}</div>
-                            </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 py-3 whitespace-nowrap">
                                 @if($order->term)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-800">
                                         {{ $order->term->kode }} - {{ $order->term->nama_status }}
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-800">
                                         Belum ada term
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <div class="flex items-center justify-center space-x-2">
+                            <td class="px-3 py-3 whitespace-nowrap text-center font-medium">
+                                <div class="flex items-center justify-center space-x-1">
                                     @can('approval-order-view')
                                     <a href="{{ route('approval-order.show', $order->id) }}" class="text-blue-600 hover:text-blue-900" title="Detail">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                         </svg>
@@ -214,7 +210,7 @@ use Illuminate\Support\Str;
                                     
                                     @can('approval-order-update')
                                     <a href="{{ route('approval-order.edit', ['id' => $order->id, 'return_url' => request()->fullUrl()]) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit Term">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </a>
@@ -226,7 +222,7 @@ use Illuminate\Support\Str;
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus Term">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
                                         </button>
@@ -238,7 +234,7 @@ use Illuminate\Support\Str;
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="px-6 py-8 text-center text-sm text-gray-500">
+                            <td colspan="8" class="px-6 py-8 text-center text-sm text-gray-500">
                                 <div class="flex flex-col items-center justify-center py-8">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
