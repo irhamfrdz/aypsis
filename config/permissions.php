@@ -150,6 +150,18 @@ return [
                 'master-kartu-bensin-batam-delete' => 'Hapus Kartu Bensin Batam',
             ],
         ],
+        'gaji-supir-batam' => [
+            'name' => 'Gaji Supir Batam',
+            'description' => 'Menu Gaji Supir Batam',
+            'required' => true,
+            'sub_modules' => [
+                'gaji-supir-batam-view' => 'View Gaji Supir Batam',
+                'gaji-supir-batam-create' => 'Buat Gaji Supir Batam',
+                'gaji-supir-batam-edit' => 'Edit Gaji Supir Batam',
+                'gaji-supir-batam-delete' => 'Hapus Gaji Supir Batam',
+                'gaji-supir-batam-export' => 'Export Gaji Supir Batam',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
@@ -194,5 +206,8 @@ return [
 
         // Master Kartu Bensin Batam - butuh master-kartu-bensin-batam-view
         'master-kartu-bensin-batam' => ['master-kartu-bensin-batam-view'],
+
+        // Gaji Supir Batam - butuh gaji-supir-batam-view
+        'gaji-supir-batam' => ['gaji-supir-batam-view'],
     ],
 ];

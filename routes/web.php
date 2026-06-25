@@ -3048,6 +3048,21 @@ Route::middleware([
 
         Route::resource('pranota-uang-rit-batam', \App\Http\Controllers\PranotaUangRitBatamController::class);
 
+        // Gaji Supir Batam
+        Route::post('gaji-supir-batam/{id}/bayar', [\App\Http\Controllers\GajiSupirBatamController::class, 'bayar'])
+            ->name('gaji-supir-batam.bayar')
+            ->middleware('can:gaji-supir-batam-edit');
+        Route::resource('gaji-supir-batam', \App\Http\Controllers\GajiSupirBatamController::class)
+            ->middleware([
+                'index' => 'can:gaji-supir-batam-view',
+                'create' => 'can:gaji-supir-batam-create',
+                'store' => 'can:gaji-supir-batam-create',
+                'show' => 'can:gaji-supir-batam-view',
+                'edit' => 'can:gaji-supir-batam-edit',
+                'update' => 'can:gaji-supir-batam-edit',
+                'destroy' => 'can:gaji-supir-batam-delete',
+            ]);
+
         // Pranota Uang Jalan Bongkaran - list & basic management
         Route::get('pranota-uang-jalan-bongkaran', [\App\Http\Controllers\PranotaUangJalanBongkaranController::class, 'index'])
             ->name('pranota-uang-jalan-bongkaran.index')
