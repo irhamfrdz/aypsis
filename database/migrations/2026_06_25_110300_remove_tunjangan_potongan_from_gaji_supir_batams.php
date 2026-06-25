@@ -18,7 +18,7 @@ return new class extends Migration
                 'tunjangan_lainnya',
                 'potongan_bpjs',
                 'potongan_pinjaman',
-                'potongan_lainnya'
+                'potongan_lainnya',
             ]);
         });
     }

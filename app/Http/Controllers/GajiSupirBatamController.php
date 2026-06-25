@@ -107,7 +107,7 @@ class GajiSupirBatamController extends Controller
             ->where(function ($q) use ($validated) {
                 $q->where(function ($q1) use ($validated) {
                     $q1->whereDate('tanggal_mulai', '<=', $validated['tanggal_selesai'])
-                       ->whereDate('tanggal_selesai', '>=', $validated['tanggal_mulai']);
+                        ->whereDate('tanggal_selesai', '>=', $validated['tanggal_mulai']);
                 });
             })
             ->exists();
@@ -117,11 +117,11 @@ class GajiSupirBatamController extends Controller
         }
 
         $data = $validated;
-        
+
         // Derive month and year from tanggal_mulai for fallback fields
         $startDateObj = \Carbon\Carbon::parse($validated['tanggal_mulai']);
-        $data['periode_bulan'] = (int)$startDateObj->format('n');
-        $data['periode_tahun'] = (int)$startDateObj->format('Y');
+        $data['periode_bulan'] = (int) $startDateObj->format('n');
+        $data['periode_tahun'] = (int) $startDateObj->format('Y');
         $data['periode_minggu'] = 1;
         $data['total_gaji'] = $data['gaji_pokok'];
 
@@ -148,10 +148,10 @@ class GajiSupirBatamController extends Controller
         $startDate = $gaji->tanggal_mulai;
         $endDate = $gaji->tanggal_selesai;
 
-        if (!$startDate || !$endDate) {
-            $bulan = (int)$gaji->periode_bulan;
-            $tahun = (int)$gaji->periode_tahun;
-            $periodeMinggu = (int)($gaji->periode_minggu ?? 1);
+        if (! $startDate || ! $endDate) {
+            $bulan = (int) $gaji->periode_bulan;
+            $tahun = (int) $gaji->periode_tahun;
+            $periodeMinggu = (int) ($gaji->periode_minggu ?? 1);
 
             if ($periodeMinggu == 1) {
                 $startDate = \Carbon\Carbon::create($tahun, $bulan, 1)->startOfDay();
@@ -167,17 +167,14 @@ class GajiSupirBatamController extends Controller
 
         $regularSJs = \App\Models\SuratJalanBatam::where('supir', $namaPanggilan)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-            ->whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
             ->get();
 
         $bongkaranSJs = \App\Models\SuratJalanBongkaranBatam::where('supir', $namaPanggilan)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-            ->whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
             ->get();
 
         $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::where('supir', $namaPanggilan)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-            ->whereIn('status', ['active', 'completed'])
             ->get();
 
         $waybills = [];
@@ -186,7 +183,7 @@ class GajiSupirBatamController extends Controller
                 'type' => 'Regular',
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
-                'rit' => is_numeric($sj->rit) ? (float)$sj->rit : 0,
+                'rit' => is_numeric($sj->rit) ? (float) $sj->rit : 0,
             ];
         }
         foreach ($bongkaranSJs as $sj) {
@@ -194,7 +191,7 @@ class GajiSupirBatamController extends Controller
                 'type' => 'Bongkaran',
                 'no_surat_jalan' => $sj->nomor_surat_jalan,
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
-                'rit' => is_numeric($sj->rit) ? (float)$sj->rit : 0,
+                'rit' => is_numeric($sj->rit) ? (float) $sj->rit : 0,
             ];
         }
         foreach ($tarikKosongSJs as $sj) {
@@ -202,7 +199,7 @@ class GajiSupirBatamController extends Controller
                 'type' => 'Tarik Kosong',
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
-                'rit' => is_numeric($sj->rit) ? (float)$sj->rit : 0,
+                'rit' => is_numeric($sj->rit) ? (float) $sj->rit : 0,
             ];
         }
 
@@ -249,7 +246,7 @@ class GajiSupirBatamController extends Controller
             ->where(function ($q) use ($validated) {
                 $q->where(function ($q1) use ($validated) {
                     $q1->whereDate('tanggal_mulai', '<=', $validated['tanggal_selesai'])
-                       ->whereDate('tanggal_selesai', '>=', $validated['tanggal_mulai']);
+                        ->whereDate('tanggal_selesai', '>=', $validated['tanggal_mulai']);
                 });
             })
             ->exists();
@@ -259,10 +256,10 @@ class GajiSupirBatamController extends Controller
         }
 
         $data = $validated;
-        
+
         $startDateObj = \Carbon\Carbon::parse($validated['tanggal_mulai']);
-        $data['periode_bulan'] = (int)$startDateObj->format('n');
-        $data['periode_tahun'] = (int)$startDateObj->format('Y');
+        $data['periode_bulan'] = (int) $startDateObj->format('n');
+        $data['periode_tahun'] = (int) $startDateObj->format('Y');
         $data['total_gaji'] = $data['gaji_pokok'];
 
         if ($data['status_pembayaran'] === 'PAID' && empty($data['tanggal_dibayar'])) {
@@ -326,24 +323,21 @@ class GajiSupirBatamController extends Controller
         // Search in SuratJalanBatam, SuratJalanBongkaranBatam, and SuratJalanTarikKosongBatam
         $regularSJs = \App\Models\SuratJalanBatam::where('supir', $namaPanggilan)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-            ->whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
             ->get();
 
         $bongkaranSJs = \App\Models\SuratJalanBongkaranBatam::where('supir', $namaPanggilan)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-            ->whereIn('status', ['active', 'completed', 'sudah_checkpoint'])
             ->get();
 
         $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::where('supir', $namaPanggilan)
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
-            ->whereIn('status', ['active', 'completed'])
             ->get();
 
         $totalRit = 0;
         $waybills = [];
 
         foreach ($regularSJs as $sj) {
-            $ritVal = is_numeric($sj->rit) ? (float)$sj->rit : 0;
+            $ritVal = is_numeric($sj->rit) ? (float) $sj->rit : 0;
             $totalRit += $ritVal;
             $waybills[] = [
                 'id' => $sj->id,
@@ -355,7 +349,7 @@ class GajiSupirBatamController extends Controller
         }
 
         foreach ($bongkaranSJs as $sj) {
-            $ritVal = is_numeric($sj->rit) ? (float)$sj->rit : 0;
+            $ritVal = is_numeric($sj->rit) ? (float) $sj->rit : 0;
             $totalRit += $ritVal;
             $waybills[] = [
                 'id' => $sj->id,
@@ -367,7 +361,7 @@ class GajiSupirBatamController extends Controller
         }
 
         foreach ($tarikKosongSJs as $sj) {
-            $ritVal = is_numeric($sj->rit) ? (float)$sj->rit : 0;
+            $ritVal = is_numeric($sj->rit) ? (float) $sj->rit : 0;
             $totalRit += $ritVal;
             $waybills[] = [
                 'id' => $sj->id,

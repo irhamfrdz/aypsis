@@ -38,8 +38,9 @@ class GajiSupirBatam extends Model
     public function getPeriodeTextAttribute()
     {
         if ($this->tanggal_mulai && $this->tanggal_selesai) {
-            return $this->tanggal_mulai->format('d/m/Y') . ' - ' . $this->tanggal_selesai->format('d/m/Y');
+            return $this->tanggal_mulai->format('d/m/Y').' - '.$this->tanggal_selesai->format('d/m/Y');
         }
+
         return $this->periode_minggu == 2 ? 'Tanggal 16 - Akhir Bulan' : 'Tanggal 1 - 15';
     }
 
