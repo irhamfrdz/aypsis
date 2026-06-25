@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Divisi;
 use App\Models\Karyawan;
 use App\Models\KaryawanTidakTetap;
 use App\Models\Pekerjaan;
@@ -46,28 +45,11 @@ class AuthController extends Controller
                 return back()->withErrors(['username' => 'Akun Anda telah ditolak oleh administrator. Silakan hubungi admin untuk informasi lebih lanjut.']);
             }
 
-            // Jika user belum punya karyawan, arahkan ke onboarding form lengkap
-            if (empty($user->karyawan)) {
+            // Jika user belum punya karyawan, redirect ke halaman pendaftaran/onboarding (GET)
+            if (empty($user->karyawan_id) && empty($user->karyawan_tidak_tetap_id)) {
                 $request->session()->regenerate();
 
-                // Ambil data divisis dan pekerjaans untuk dropdown
-                $divisis = Divisi::active()->orderBy('nama_divisi')->get();
-                $pekerjaans = Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
-                $cabangs = \App\Models\Cabang::orderBy('nama_cabang')->get();
-                $pajaks = \App\Models\Pajak::orderBy('nama_status')->get();
-                $banks = \App\Models\Bank::orderBy('name')->get();
-
-                // Group pekerjaan by divisi for JavaScript
-                $pekerjaanByDivisi = [];
-                foreach ($pekerjaans as $pekerjaan) {
-                    $divisi = $pekerjaan->divisi ?? '';
-                    if (! isset($pekerjaanByDivisi[$divisi])) {
-                        $pekerjaanByDivisi[$divisi] = [];
-                    }
-                    $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
-                }
-
-                return view('karyawan.onboarding-full', compact('divisis', 'pekerjaans', 'cabangs', 'pajaks', 'banks', 'pekerjaanByDivisi'));
+                return redirect()->route('karyawan.create');
             }
 
             // Any other non-approved status should be blocked.
