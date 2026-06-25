@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Divisi;
 use App\Models\Karyawan;
+use App\Models\KaryawanTidakTetap;
 use App\Models\Pekerjaan;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -119,57 +120,95 @@ class AuthController extends Controller
      */
     public function registerKaryawan(Request $request)
     {
-        $validated = $request->validate([
-            'nik' => 'required|string|regex:/^[0-9]+$/|unique:karyawans',
-            'nama_panggilan' => 'required|string|max:255|unique:karyawans',
-            'nama_lengkap' => 'required|string|max:255',
-            'plat' => 'nullable|string|max:255',
-            'email' => 'nullable|string|email|max:255|unique:karyawans',
-            'ktp' => 'nullable|string|regex:/^[0-9]{16}$/|unique:karyawans',
-            'kk' => 'nullable|string|regex:/^[0-9]{16}$/|unique:karyawans',
-            'alamat' => 'nullable|string|max:255',
-            'rt_rw' => 'nullable|string|max:255',
-            'kelurahan' => 'nullable|string|max:255',
-            'kecamatan' => 'nullable|string|max:255',
-            'kabupaten' => 'nullable|string|max:255',
-            'provinsi' => 'nullable|string|max:255',
-            'kode_pos' => 'nullable|string|max:255',
-            'alamat_lengkap' => 'nullable|string|max:255',
-            'tempat_lahir' => 'nullable|string|max:255',
-            'tanggal_lahir' => 'nullable|date',
-            'no_hp' => 'nullable|string|max:255',
-            'jenis_kelamin' => ['nullable', \Illuminate\Validation\Rule::in(['L', 'P'])],
-            'status_perkawinan' => 'nullable|string|max:255',
-            'agama' => 'nullable|string|max:255',
-            'divisi' => 'nullable|string|max:255',
-            'pekerjaan' => 'nullable|string|max:255',
-            'tanggal_masuk' => 'nullable|date',
-            'tanggal_berhenti' => 'nullable|date',
-            'tanggal_masuk_sebelumnya' => 'nullable|date',
-            'tanggal_berhenti_sebelumnya' => 'nullable|date',
-            'catatan' => 'nullable|string|max:1000',
-            'status_pajak' => 'nullable|string|max:255',
-            'nama_bank' => 'nullable|string|max:255',
-            'bank_cabang' => 'nullable|string|max:255',
-            'akun_bank' => 'nullable|string|max:255',
-            'atas_nama' => 'nullable|string|max:255',
-            'jkn' => 'nullable|string|max:255',
-            'no_ketenagakerjaan' => 'nullable|string|max:255',
-            'cabang' => 'nullable|string|max:255',
-            'nik_supervisor' => 'nullable|string|max:255',
-            'supervisor' => 'nullable|string|max:255',
-        ], [
-            'nik.regex' => 'NIK harus berupa angka saja, tidak boleh ada huruf.',
-            'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka saja, tidak boleh ada huruf.',
-            'kk.regex' => 'Nomor KK harus berupa 16 digit angka saja, tidak boleh ada huruf.',
-            'nik.unique' => 'NIK sudah terdaftar dalam sistem.',
-            'email.unique' => 'Email sudah terdaftar dalam sistem.',
-            'ktp.unique' => 'Nomor KTP sudah terdaftar dalam sistem.',
-            'kk.unique' => 'Nomor KK sudah terdaftar dalam sistem.',
-        ]);
+        $tipeKaryawan = $request->input('tipe_karyawan', 'tetap');
+
+        if ($tipeKaryawan === 'tidak_tetap') {
+            $validated = $request->validate([
+                'nama_lengkap' => 'required|string|max:255',
+                'nama_panggilan' => 'required|string|max:255',
+                'alamat' => 'required|string|max:255',
+                'no_telepon' => 'required|string|max:255',
+                'pekerjaan' => 'nullable|string|max:255',
+            ]);
+        } else {
+            $validated = $request->validate([
+                'nik' => 'required|string|regex:/^[0-9]+$/|unique:karyawans',
+                'nama_panggilan' => 'required|string|max:255|unique:karyawans',
+                'nama_lengkap' => 'required|string|max:255',
+                'plat' => 'nullable|string|max:255',
+                'email' => 'nullable|string|email|max:255|unique:karyawans',
+                'ktp' => 'nullable|string|regex:/^[0-9]{16}$/|unique:karyawans',
+                'kk' => 'nullable|string|regex:/^[0-9]{16}$/|unique:karyawans',
+                'alamat' => 'nullable|string|max:255',
+                'rt_rw' => 'nullable|string|max:255',
+                'kelurahan' => 'nullable|string|max:255',
+                'kecamatan' => 'nullable|string|max:255',
+                'kabupaten' => 'nullable|string|max:255',
+                'provinsi' => 'nullable|string|max:255',
+                'kode_pos' => 'nullable|string|max:255',
+                'alamat_lengkap' => 'nullable|string|max:255',
+                'tempat_lahir' => 'nullable|string|max:255',
+                'tanggal_lahir' => 'nullable|date',
+                'no_hp' => 'nullable|string|max:255',
+                'jenis_kelamin' => ['nullable', \Illuminate\Validation\Rule::in(['L', 'P'])],
+                'status_perkawinan' => 'nullable|string|max:255',
+                'agama' => 'nullable|string|max:255',
+                'divisi' => 'nullable|string|max:255',
+                'pekerjaan' => 'nullable|string|max:255',
+                'tanggal_masuk' => 'nullable|date',
+                'tanggal_berhenti' => 'nullable|date',
+                'tanggal_masuk_sebelumnya' => 'nullable|date',
+                'tanggal_berhenti_sebelumnya' => 'nullable|date',
+                'catatan' => 'nullable|string|max:1000',
+                'status_pajak' => 'nullable|string|max:255',
+                'nama_bank' => 'nullable|string|max:255',
+                'bank_cabang' => 'nullable|string|max:255',
+                'akun_bank' => 'nullable|string|max:255',
+                'atas_nama' => 'nullable|string|max:255',
+                'jkn' => 'nullable|string|max:255',
+                'no_ketenagakerjaan' => 'nullable|string|max:255',
+                'cabang' => 'nullable|string|max:255',
+                'nik_supervisor' => 'nullable|string|max:255',
+                'supervisor' => 'nullable|string|max:255',
+            ], [
+                'nik.regex' => 'NIK harus berupa angka saja, tidak boleh ada huruf.',
+                'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka saja, tidak boleh ada huruf.',
+                'kk.regex' => 'Nomor KK harus berupa 16 digit angka saja, tidak boleh ada huruf.',
+                'nik.unique' => 'NIK sudah terdaftar dalam sistem.',
+                'email.unique' => 'Email sudah terdaftar dalam sistem.',
+                'ktp.unique' => 'Nomor KTP sudah terdaftar dalam sistem.',
+                'kk.unique' => 'Nomor KK sudah terdaftar dalam sistem.',
+            ]);
+        }
 
         try {
             $user = \App\Models\User::find(Auth::id());
+
+            if ($tipeKaryawan === 'tidak_tetap') {
+                $nik = $this->generateNextKaryawanTidakTetapNik();
+                $karyawanTidakTetap = KaryawanTidakTetap::create([
+                    'nik' => $nik,
+                    'nama_lengkap' => $validated['nama_lengkap'],
+                    'nama_panggilan' => $validated['nama_panggilan'],
+                    'alamat_lengkap' => $validated['alamat'],
+                    'pekerjaan' => $validated['pekerjaan'] ?? null,
+                    'divisi' => 'NON KARYAWAN',
+                    'tanggal_masuk' => now()->toDateString(),
+                ]);
+
+                if ($user) {
+                    $user->karyawan_tidak_tetap_id = $karyawanTidakTetap->id;
+                    if ($request->filled('username') && $request->username !== $user->username) {
+                        $user->username = $request->username;
+                    }
+                    $user->save();
+                }
+
+                Auth::logout();
+
+                return redirect()->route('login')->with('success', 'Data karyawan tidak tetap berhasil disimpan. Akun Anda menunggu persetujuan administrator untuk dapat digunakan.');
+            }
+
             $validated['user_id'] = $user ? $user->id : null;
             // Tambahkan status default dan catatan onboarding jika belum ada
             if (empty($validated['status'])) {
@@ -195,9 +234,6 @@ class AuthController extends Controller
                     ->with('success', 'Data karyawan berhasil ditambahkan. Silakan lengkapi checklist kelengkapan crew.');
             }
 
-            // User status tetap pending, menunggu approval admin
-            // (Dihapus: otomatis approve setelah onboarding)
-
             // Logout and redirect to login for non-ABK
             Auth::logout();
 
@@ -207,6 +243,24 @@ class AuthController extends Controller
 
             return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi atau hubungi administrator.');
         }
+    }
+
+    /**
+     * Generate next NIK for Karyawan Tidak Tetap
+     */
+    private function generateNextKaryawanTidakTetapNik(): string
+    {
+        $last = KaryawanTidakTetap::where('nik', 'LIKE', 'P%')
+            ->orderByRaw('CAST(SUBSTRING(nik, 2) AS UNSIGNED) DESC')
+            ->value('nik');
+
+        if ($last && preg_match('/^P(\d+)$/', $last, $m)) {
+            $next = (int) $m[1] + 1;
+        } else {
+            $next = 1;
+        }
+
+        return 'P'.str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 
     /**

@@ -55,6 +55,16 @@
                         <form method="POST" action="{{ route('register.karyawan.store') }}" class="space-y-4">
                             @csrf
 
+                            <!-- Tipe Karyawan -->
+                            <div>
+                                <label for="tipe_karyawan" class="block text-sm font-medium text-gray-700">Tipe Karyawan *</label>
+                                <select name="tipe_karyawan" id="tipe_karyawan" required
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                                    <option value="tetap" {{ old('tipe_karyawan', 'tetap') === 'tetap' ? 'selected' : '' }}>Karyawan Tetap</option>
+                                    <option value="tidak_tetap" {{ old('tipe_karyawan') === 'tidak_tetap' ? 'selected' : '' }}>Karyawan Tidak Tetap</option>
+                                </select>
+                            </div>
+
                             <!-- Nama Lengkap -->
                             <div>
                                 <label for="nama_lengkap" class="block text-sm font-medium text-gray-700">Nama Lengkap *</label>
@@ -69,16 +79,16 @@
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
                             </div>
 
-                            <!-- NIK -->
-                            <div>
+                            <!-- NIK Container -->
+                            <div id="nik_container">
                                 <label for="nik" class="block text-sm font-medium text-gray-700">NIK *</label>
                                 <input type="text" name="nik" id="nik" value="{{ old('nik') }}" required maxlength="25" pattern="[0-9]+"
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500" placeholder="Masukkan NIK (angka saja, tanpa huruf)">
                                 <p class="text-xs text-gray-500 mt-1">harus berupa angka saja, tidak boleh ada huruf</p>
                             </div>
 
-                            <!-- No Ketenagakerjaan -->
-                            <div>
+                            <!-- No Ketenagakerjaan Container -->
+                            <div id="no_ketenagakerjaan_container">
                                 <label for="no_ketenagakerjaan" class="block text-sm font-medium text-gray-700">No. Ketenagakerjaan</label>
                                 <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" value="{{ old('no_ketenagakerjaan') }}"
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
@@ -94,7 +104,7 @@
 
                             <!-- No Telepon -->
                             <div>
-                                <label for="no_telepon" class="block text-sm font-medium text-gray-700">No. Telepon *</label>
+                                <label for="no_telepon" class="block text-sm font-medium text-gray-700">No. Telepon / HP *</label>
                                 <input type="tel" name="no_telepon" id="no_telepon" value="{{ old('no_telepon') }}" required
                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
                             </div>
@@ -125,7 +135,7 @@
 
                             <!-- Submit Button -->
                             <div class="pt-4">
-                                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <button type="submit" id="submit_button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                                     👥 Daftar Sebagai Karyawan
                                 </button>
                             </div>
@@ -141,5 +151,32 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tipeKaryawan = document.getElementById('tipe_karyawan');
+            const nikContainer = document.getElementById('nik_container');
+            const nikInput = document.getElementById('nik');
+            const noKetenagakerjaanContainer = document.getElementById('no_ketenagakerjaan_container');
+            const submitButton = document.getElementById('submit_button');
+
+            function toggleFields() {
+                if (tipeKaryawan.value === 'tidak_tetap') {
+                    nikContainer.style.display = 'none';
+                    nikInput.removeAttribute('required');
+                    noKetenagakerjaanContainer.style.display = 'none';
+                    submitButton.innerHTML = '👥 Daftar Sebagai Karyawan Tidak Tetap';
+                } else {
+                    nikContainer.style.display = 'block';
+                    nikInput.setAttribute('required', 'required');
+                    noKetenagakerjaanContainer.style.display = 'block';
+                    submitButton.innerHTML = '👥 Daftar Sebagai Karyawan';
+                }
+            }
+
+            tipeKaryawan.addEventListener('change', toggleFields);
+            toggleFields(); // Run on initial load to handle old input state
+        });
+    </script>
 </body>
 </html>
