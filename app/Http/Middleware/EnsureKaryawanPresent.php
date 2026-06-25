@@ -20,7 +20,7 @@ class EnsureKaryawanPresent
             return $next($request);
         }
 
-        if ($user && empty($user->karyawan_id)) {
+        if ($user && empty($user->karyawan_id) && empty($user->karyawan_tidak_tetap_id)) {
             // Allow access to logout and karyawan creation routes.
             // Use Route::has() to avoid calling route() for non-existent names which throws.
             $allowed = [];

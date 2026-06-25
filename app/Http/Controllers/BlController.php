@@ -2930,6 +2930,7 @@ class BlController extends Controller
 
         return view('bl.rekap_bongkaran_perincian_print', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'items', 'totalAmount'));
     }
+
     /**
      * Build the items collection for Rekap Bongkaran Perincian.
      * Non-container cargo with the same BL prefix (e.g. 02, 02-1, 02-2) is merged
@@ -2941,7 +2942,7 @@ class BlController extends Controller
         // 1. Separate containers from cargo
         // -----------------------------------------------------------------------
         $containerItems = collect();
-        $cargoItems     = collect();
+        $cargoItems = collect();
 
         foreach ($bls as $item) {
             $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
@@ -2966,7 +2967,8 @@ class BlController extends Controller
                 $size = '20';
             }
             $status = $isEmpty ? 'empty' : 'full';
-            return $size . '|' . $status;
+
+            return $size.'|'.$status;
         })->map(function ($group, $key) {
             [$size, $status] = explode('|', $key);
 
@@ -2977,18 +2979,18 @@ class BlController extends Controller
                     ->where('nomor_kontainer', '!=', '')
                     ->pluck('nomor_kontainer')->unique()->count();
                 $emptyContainers = $group->filter(fn ($i) => empty($i->nomor_kontainer) || $i->nomor_kontainer === '-')->count();
-                $totalKuantitas  = $uniqueContainers + $emptyContainers;
+                $totalKuantitas = $uniqueContainers + $emptyContainers;
             }
 
             $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container {$size} feet";
 
             return [
-                'kuantitas'   => $totalKuantitas,
-                'satuan'      => 'Unit',
+                'kuantitas' => $totalKuantitas,
+                'satuan' => 'Unit',
                 'nama_barang' => $namaBarang,
-                'nomor_bl'    => '-',
-                'amount'      => null,
-                'unit'        => '',
+                'nomor_bl' => '-',
+                'amount' => null,
+                'unit' => '',
             ];
         })->values();
 
@@ -3001,11 +3003,12 @@ class BlController extends Controller
             $nomor = trim($item->nomor_bl ?? '');
             if ($nomor === '' || $nomor === '-') {
                 // No BL: use a unique key so it is never merged with others
-                return 'no_bl|' . $item->id;
+                return 'no_bl|'.$item->id;
             }
             // Extract the prefix: everything before the first "-"
             $prefix = preg_match('/^([^\-]+)/', $nomor, $m) ? trim($m[1]) : $nomor;
-            return 'bl|' . strtoupper($prefix);
+
+            return 'bl|'.strtoupper($prefix);
         })->map(function ($group, $key) {
             // Sum kuantitas across all sub-BL rows
             $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
@@ -3023,12 +3026,17 @@ class BlController extends Controller
                 $keywords = $distinctNames->map(function ($name) {
                     // Take leading words (stop at numeric-heavy tokens)
                     $words = preg_split('/[\s,]+/', $name);
-                    $kept  = [];
+                    $kept = [];
                     foreach ($words as $w) {
-                        if (is_numeric($w) || strlen($w) <= 1) break;
+                        if (is_numeric($w) || strlen($w) <= 1) {
+                            break;
+                        }
                         $kept[] = $w;
-                        if (count($kept) >= 3) break;
+                        if (count($kept) >= 3) {
+                            break;
+                        }
                     }
+
                     return implode(' ', $kept);
                 })->unique()->filter()->values();
 
@@ -3045,25 +3053,25 @@ class BlController extends Controller
             }
 
             // Sum tonnage / volume
-            $totalVolume   = $group->sum('volume_perincian');
-            $totalTonnage  = $group->sum('tonnage_perincian');
+            $totalVolume = $group->sum('volume_perincian');
+            $totalTonnage = $group->sum('tonnage_perincian');
             $amount = null;
-            $unit   = '';
+            $unit = '';
             if ($totalVolume > 0) {
                 $amount = $totalVolume;
-                $unit   = 'm3';
+                $unit = 'm3';
             } elseif ($totalTonnage > 0) {
                 $amount = $totalTonnage;
-                $unit   = 'ton';
+                $unit = 'ton';
             }
 
             return [
-                'kuantitas'   => $totalKuantitas,
-                'satuan'      => 'Colly',
+                'kuantitas' => $totalKuantitas,
+                'satuan' => 'Colly',
                 'nama_barang' => $namaBarang,
-                'nomor_bl'    => $nomorBl,
-                'amount'      => $amount,
-                'unit'        => $unit,
+                'nomor_bl' => $nomorBl,
+                'amount' => $amount,
+                'unit' => $unit,
             ];
         })->values();
 

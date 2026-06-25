@@ -94,7 +94,7 @@ class KaryawanTidakTetapController extends Controller
             $next = 1;
         }
 
-        return 'P' . str_pad($next, 4, '0', STR_PAD_LEFT);
+        return 'P'.str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -110,7 +110,10 @@ class KaryawanTidakTetapController extends Controller
      */
     public function edit(KaryawanTidakTetap $karyawanTidakTetap)
     {
-        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap'));
+        $pekerjaans = \App\Models\Pekerjaan::all();
+        $pajaks = \App\Models\Pajak::all();
+
+        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks'));
     }
 
     /**

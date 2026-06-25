@@ -388,19 +388,19 @@ class GajiSupirBatamController extends Controller
             $biaya = is_numeric($b->biaya) ? (float) $b->biaya : 0;
             $totalBiayaBensin += $biaya;
             $bensinItems[] = [
-                'id'       => $b->id,
-                'tanggal'  => \Carbon\Carbon::parse($b->tanggal)->format('d/m/Y'),
-                'liter'    => (float) $b->liter,
-                'biaya'    => $biaya,
+                'id' => $b->id,
+                'tanggal' => \Carbon\Carbon::parse($b->tanggal)->format('d/m/Y'),
+                'liter' => (float) $b->liter,
+                'biaya' => $biaya,
                 'keterangan' => $b->keterangan ?? '-',
             ];
         }
 
         return response()->json([
-            'gaji_pokok'         => $totalRit,
-            'waybills'           => $waybills,
+            'gaji_pokok' => $totalRit,
+            'waybills' => $waybills,
             'total_biaya_bensin' => $totalBiayaBensin,
-            'bensin_items'       => $bensinItems,
+            'bensin_items' => $bensinItems,
         ]);
     }
 }

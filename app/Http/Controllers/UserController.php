@@ -70,25 +70,25 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'username'                 => 'required|string|max:255|unique:users',
-            'password'                 => 'required|string|min:8|confirmed',
-            'karyawan_id'              => 'nullable|exists:karyawans,id',
-            'karyawan_tidak_tetap_id'  => 'nullable|exists:karyawan_tidak_tetaps,id',
-            'simple_permissions'       => 'nullable|array',
-            'permissions'              => 'nullable|array',
+            'username' => 'required|string|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'karyawan_id' => 'nullable|exists:karyawans,id',
+            'karyawan_tidak_tetap_id' => 'nullable|exists:karyawan_tidak_tetaps,id',
+            'simple_permissions' => 'nullable|array',
+            'permissions' => 'nullable|array',
         ]);
 
         // Pastikan hanya satu yang terisi; jika keduanya ada, prioritaskan karyawan tetap
-        $karyawanId         = $request->karyawan_id ?: null;
-        $karyawanTtId       = $request->karyawan_tidak_tetap_id ?: null;
+        $karyawanId = $request->karyawan_id ?: null;
+        $karyawanTtId = $request->karyawan_tidak_tetap_id ?: null;
         if ($karyawanId) {
             $karyawanTtId = null; // clear karyawan tidak tetap jika karyawan tetap dipilih
         }
 
         $user = User::create([
-            'username'                => $request->username,
-            'password'                => Hash::make($request->password),
-            'karyawan_id'             => $karyawanId,
+            'username' => $request->username,
+            'password' => Hash::make($request->password),
+            'karyawan_id' => $karyawanId,
             'karyawan_tidak_tetap_id' => $karyawanTtId,
         ]);
 
@@ -135,22 +135,22 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'username'                => 'required|string|max:255|unique:users,username,'.$user->id,
-            'password'                => 'nullable|string|min:8|confirmed',
-            'karyawan_id'             => 'nullable|exists:karyawans,id',
+            'username' => 'required|string|max:255|unique:users,username,'.$user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+            'karyawan_id' => 'nullable|exists:karyawans,id',
             'karyawan_tidak_tetap_id' => 'nullable|exists:karyawan_tidak_tetaps,id',
-            'simple_permissions'      => 'nullable|array',
-            'permissions'             => 'nullable|array',
+            'simple_permissions' => 'nullable|array',
+            'permissions' => 'nullable|array',
         ]);
 
-        $karyawanId   = $request->karyawan_id ?: null;
+        $karyawanId = $request->karyawan_id ?: null;
         $karyawanTtId = $request->karyawan_tidak_tetap_id ?: null;
         if ($karyawanId) {
             $karyawanTtId = null;
         }
 
-        $user->username                = $request->username;
-        $user->karyawan_id             = $karyawanId;
+        $user->username = $request->username;
+        $user->karyawan_id = $karyawanId;
         $user->karyawan_tidak_tetap_id = $karyawanTtId;
 
         if ($request->password) {
