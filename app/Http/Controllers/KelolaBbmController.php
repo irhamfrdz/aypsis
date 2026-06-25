@@ -208,7 +208,7 @@ class KelolaBbmController extends Controller
             foreach ($fields as $tarifField => $baseField) {
                 $tarifBase = $pricelist->$baseField ?? $pricelist->$tarifField;
                 $tarifLama = $pricelist->$tarifField;
-                $tarifBaru = round($tarifBase * $faktorPengali, -3);
+                $tarifBaru = floor(($tarifBase * $faktorPengali) / 1000) * 1000;
 
                 if ($tarifLama != $tarifBaru) {
                     $updateData[$tarifField] = $tarifBaru;

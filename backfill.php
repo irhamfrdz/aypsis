@@ -52,7 +52,7 @@ foreach ($bbms as $bbm) {
                 $faktor = 1 + ($perubahanTarif / 100);
                 foreach ($fields as $tarifField => $baseField) {
                     $tarifBase = $data[$baseField] ?? $data[$tarifField];
-                    $data[$tarifField] = round($tarifBase * $faktor, -3);
+                    $data[$tarifField] = floor(($tarifBase * $faktor) / 1000) * 1000;
                 }
             } else {
                 foreach ($fields as $tarifField => $baseField) {
