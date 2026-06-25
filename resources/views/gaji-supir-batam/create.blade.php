@@ -78,7 +78,7 @@
             </h4>
             
             <div class="max-w-md">
-                <label for="gaji_pokok" class="block text-xs font-semibold text-gray-700 mb-1">Gaji Pokok (Total Rit SJ Terpilih) <span class="text-red-500">*</span></label>
+                <label for="gaji_pokok" class="block text-xs font-semibold text-gray-700 mb-1">Gaji Pokok (Total Uang Jalan Terpilih) <span class="text-red-500">*</span></label>
                 <div class="relative rounded-md shadow-sm">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <span class="text-gray-500 text-sm">Rp</span>
@@ -92,7 +92,7 @@
         <div class="bg-gray-800 text-white rounded-lg p-6 mb-6 flex flex-col md:flex-row justify-between items-center border border-gray-700 shadow-inner">
             <div class="mb-4 md:mb-0">
                 <h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider">Estimasi Gaji Bersih</h4>
-                <p class="text-xs text-gray-500">Hasil: Total Uang Rit dari Surat Jalan Terpilih</p>
+                <p class="text-xs text-gray-500">Hasil: Total Uang Jalan dari Surat Jalan Terpilih</p>
             </div>
             <div class="text-right">
                 <span class="text-2xl md:text-3xl font-extrabold text-green-400" id="total_salary_display">Rp 0</span>
@@ -116,7 +116,7 @@
                             <th class="px-4 py-2 text-left font-semibold text-gray-600">Tipe</th>
                             <th class="px-4 py-2 text-left font-semibold text-gray-600">No. Surat Jalan</th>
                             <th class="px-4 py-2 text-left font-semibold text-gray-600">Tanggal</th>
-                            <th class="px-4 py-2 text-right font-semibold text-gray-600">Uang Rit (Rp)</th>
+                            <th class="px-4 py-2 text-right font-semibold text-gray-600">Uang Jalan (Rp)</th>
                         </tr>
                     </thead>
                     <tbody id="waybill_breakdown_rows" class="divide-y divide-gray-200 bg-white">
@@ -128,7 +128,7 @@
                     </tbody>
                     <tfoot class="bg-gray-50 font-bold border-t border-gray-200">
                         <tr>
-                            <td colspan="4" class="px-4 py-2 text-right text-gray-700">Total Uang Rit (Gaji Pokok):</td>
+                            <td colspan="4" class="px-4 py-2 text-right text-gray-700">Total Uang Jalan (Gaji Pokok):</td>
                             <td class="px-4 py-2 text-right text-indigo-600" id="waybill_total_display">Rp 0</td>
                         </tr>
                     </tfoot>

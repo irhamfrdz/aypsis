@@ -130,7 +130,7 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Supir</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Periode Tanggal</th>
-                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Rit / Gaji Pokok</th>
+                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Uang Jalan (Gaji Pokok)</th>
                     <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Gaji Bersih</th>
                     <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
