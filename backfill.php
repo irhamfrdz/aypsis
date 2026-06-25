@@ -17,14 +17,25 @@ $fields = [
     'tarif_antarlokasi_40ft' => 'tarif_antarlokasi_40ft_base',
 ];
 
+$basePricelists = PricelistUangJalanBatam::whereNull('kelola_bbm_id')->get();
+foreach ($basePricelists as $base) {
+    $updateData = [];
+    foreach ($fields as $tarifField => $baseField) {
+        $updateData[$tarifField] = $base->$baseField ?? $base->$tarifField;
+    }
+    $base->update($updateData);
+}
+echo "Tarif Dasar (Base) active rates reset to base values.\n";
+
 $bbms = KelolaBbm::all();
 
 foreach ($bbms as $bbm) {
     $exists = PricelistUangJalanBatam::where('kelola_bbm_id', $bbm->id)->exists();
-    if (!$exists) {
+    if (! $exists) {
         $basePricelists = PricelistUangJalanBatam::whereNull('kelola_bbm_id')->get();
         if ($basePricelists->isEmpty()) {
             echo "BBM ID {$bbm->id}: Skip (Base tarif kosong).\n";
+
             continue;
         }
 
