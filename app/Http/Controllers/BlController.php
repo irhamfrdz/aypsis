@@ -2853,86 +2853,8 @@ class BlController extends Controller
             $dari = $bls->first()->pelabuhan_asal ?: '-';
         }
 
-        // Grouping the items
-        $items = $bls->groupBy(function ($item) {
-            $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
-            if ($isCargo) {
-                return 'cargo|'.($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package').'|'.($item->nomor_bl ?? '');
-            } else {
-                $barangUpper = strtoupper($item->nama_barang ?? '');
-                $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
-
-                $size = trim(str_ireplace(['ft', 'feet', ' '], '', $item->size_kontainer ?? ''));
-                if (empty($size)) {
-                    $size = '20';
-                }
-
-                $status = $isEmpty ? 'empty' : 'full';
-
-                return 'container|'.$size.'|'.$status;
-            }
-        })->map(function ($group, $key) {
-            $parts = explode('|', $key);
-            $type = $parts[0];
-
-            if ($type === 'cargo') {
-                $namaBarang = $parts[1];
-                $satuan = $parts[2];
-                $nomorBl = $parts[3] ?? '';
-                $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
-
-                $totalVolume = $group->sum('volume_perincian');
-                $totalTonnage = $group->sum('tonnage_perincian');
-
-                $amount = null;
-                $unit = '';
-
-                if ($totalVolume > 0) {
-                    $amount = $totalVolume;
-                    $unit = 'm3';
-                } elseif ($totalTonnage > 0) {
-                    $amount = $totalTonnage;
-                    $unit = 'ton';
-                }
-
-                return [
-                    'kuantitas' => $totalKuantitas,
-                    'satuan' => $satuan,
-                    'nama_barang' => $namaBarang,
-                    'nomor_bl' => $nomorBl,
-                    'amount' => $amount,
-                    'unit' => $unit,
-                ];
-            } else {
-                $size = $parts[1];
-                $status = $parts[2];
-
-                if ($status === 'empty') {
-                    $totalKuantitas = $group->count();
-                } else {
-                    // For containers, count unique container numbers (LCL is counted as 1 container)
-                    $uniqueContainers = $group->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')->pluck('nomor_kontainer')->unique()->count();
-                    $emptyContainers = $group->filter(function ($item) {
-                        return empty($item->nomor_kontainer) || $item->nomor_kontainer === '-';
-                    })->count();
-                    $totalKuantitas = $uniqueContainers + $emptyContainers;
-                }
-
-                $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container {$size} feet";
-                $satuan = 'Unit';
-
-                return [
-                    'kuantitas' => $totalKuantitas,
-                    'satuan' => $satuan,
-                    'nama_barang' => $namaBarang,
-                    'nomor_bl' => '-',
-                    'amount' => null,
-                    'unit' => '',
-                ];
-            }
-        })->sortBy(function ($item) {
-            return stripos($item['nama_barang'], 'container') !== false ? 0 : 1;
-        })->values();
+        // Grouping the items (cargo grouped by BL prefix, containers grouped by size/status)
+        $items = $this->buildRekapBongkaranPerincianItems($bls);
 
         $totalAmount = $items->sum('amount');
 
@@ -3001,89 +2923,153 @@ class BlController extends Controller
             $dari = $bls->first()->pelabuhan_asal ?: '-';
         }
 
-        // Grouping the items
-        $items = $bls->groupBy(function ($item) {
-            $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
-            if ($isCargo) {
-                return 'cargo|'.($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package').'|'.($item->nomor_bl ?? '');
-            } else {
-                $barangUpper = strtoupper($item->nama_barang ?? '');
-                $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
-
-                $size = trim(str_ireplace(['ft', 'feet', ' '], '', $item->size_kontainer ?? ''));
-                if (empty($size)) {
-                    $size = '20';
-                }
-
-                $status = $isEmpty ? 'empty' : 'full';
-
-                return 'container|'.$size.'|'.$status;
-            }
-        })->map(function ($group, $key) {
-            $parts = explode('|', $key);
-            $type = $parts[0];
-
-            if ($type === 'cargo') {
-                $namaBarang = $parts[1];
-                $satuan = $parts[2];
-                $nomorBl = $parts[3] ?? '';
-                $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
-
-                $totalVolume = $group->sum('volume_perincian');
-                $totalTonnage = $group->sum('tonnage_perincian');
-
-                $amount = null;
-                $unit = '';
-
-                if ($totalVolume > 0) {
-                    $amount = $totalVolume;
-                    $unit = 'm3';
-                } elseif ($totalTonnage > 0) {
-                    $amount = $totalTonnage;
-                    $unit = 'ton';
-                }
-
-                return [
-                    'kuantitas' => $totalKuantitas,
-                    'satuan' => $satuan,
-                    'nama_barang' => $namaBarang,
-                    'nomor_bl' => $nomorBl,
-                    'amount' => $amount,
-                    'unit' => $unit,
-                ];
-            } else {
-                $size = $parts[1];
-                $status = $parts[2];
-
-                if ($status === 'empty') {
-                    $totalKuantitas = $group->count();
-                } else {
-                    // For containers, count unique container numbers (LCL is counted as 1 container)
-                    $uniqueContainers = $group->whereNotNull('nomor_kontainer')->where('nomor_kontainer', '!=', '')->pluck('nomor_kontainer')->unique()->count();
-                    $emptyContainers = $group->filter(function ($item) {
-                        return empty($item->nomor_kontainer) || $item->nomor_kontainer === '-';
-                    })->count();
-                    $totalKuantitas = $uniqueContainers + $emptyContainers;
-                }
-
-                $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container {$size} feet";
-                $satuan = 'Unit';
-
-                return [
-                    'kuantitas' => $totalKuantitas,
-                    'satuan' => $satuan,
-                    'nama_barang' => $namaBarang,
-                    'nomor_bl' => '-',
-                    'amount' => null,
-                    'unit' => '',
-                ];
-            }
-        })->sortBy(function ($item) {
-            return stripos($item['nama_barang'], 'container') !== false ? 0 : 1;
-        })->values();
+        // Grouping the items (cargo grouped by BL prefix, containers grouped by size/status)
+        $items = $this->buildRekapBongkaranPerincianItems($bls);
 
         $totalAmount = $items->sum('amount');
 
         return view('bl.rekap_bongkaran_perincian_print', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'items', 'totalAmount'));
+    }
+    /**
+     * Build the items collection for Rekap Bongkaran Perincian.
+     * Non-container cargo with the same BL prefix (e.g. 02, 02-1, 02-2) is merged
+     * into a single row with satuan = 'Colly' and a summarised nama_barang.
+     */
+    private function buildRekapBongkaranPerincianItems($bls): \Illuminate\Support\Collection
+    {
+        // -----------------------------------------------------------------------
+        // 1. Separate containers from cargo
+        // -----------------------------------------------------------------------
+        $containerItems = collect();
+        $cargoItems     = collect();
+
+        foreach ($bls as $item) {
+            $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
+            if ($isCargo) {
+                $cargoItems->push($item);
+            } else {
+                $containerItems->push($item);
+            }
+        }
+
+        // -----------------------------------------------------------------------
+        // 2. Process containers (unchanged logic)
+        // -----------------------------------------------------------------------
+        $containerRows = $containerItems->groupBy(function ($item) {
+            $barangUpper = strtoupper($item->nama_barang ?? '');
+            $isEmpty = str_contains($barangUpper, 'EMPTY')
+                || ($item->tipe_kontainer == 'FCL'
+                    && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
+
+            $size = trim(str_ireplace(['ft', 'feet', ' '], '', $item->size_kontainer ?? ''));
+            if (empty($size)) {
+                $size = '20';
+            }
+            $status = $isEmpty ? 'empty' : 'full';
+            return $size . '|' . $status;
+        })->map(function ($group, $key) {
+            [$size, $status] = explode('|', $key);
+
+            if ($status === 'empty') {
+                $totalKuantitas = $group->count();
+            } else {
+                $uniqueContainers = $group->whereNotNull('nomor_kontainer')
+                    ->where('nomor_kontainer', '!=', '')
+                    ->pluck('nomor_kontainer')->unique()->count();
+                $emptyContainers = $group->filter(fn ($i) => empty($i->nomor_kontainer) || $i->nomor_kontainer === '-')->count();
+                $totalKuantitas  = $uniqueContainers + $emptyContainers;
+            }
+
+            $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container {$size} feet";
+
+            return [
+                'kuantitas'   => $totalKuantitas,
+                'satuan'      => 'Unit',
+                'nama_barang' => $namaBarang,
+                'nomor_bl'    => '-',
+                'amount'      => null,
+                'unit'        => '',
+            ];
+        })->values();
+
+        // -----------------------------------------------------------------------
+        // 3. Process cargo: group by BL prefix (part before the first "-")
+        //    e.g.  02, 02-1, 02-2, 02-3  → prefix "02"
+        //    Items with no BL number are kept as individual rows.
+        // -----------------------------------------------------------------------
+        $cargoRows = $cargoItems->groupBy(function ($item) {
+            $nomor = trim($item->nomor_bl ?? '');
+            if ($nomor === '' || $nomor === '-') {
+                // No BL: use a unique key so it is never merged with others
+                return 'no_bl|' . $item->id;
+            }
+            // Extract the prefix: everything before the first "-"
+            $prefix = preg_match('/^([^\-]+)/', $nomor, $m) ? trim($m[1]) : $nomor;
+            return 'bl|' . strtoupper($prefix);
+        })->map(function ($group, $key) {
+            // Sum kuantitas across all sub-BL rows
+            $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
+
+            // Collect distinct nama_barang values and build a short summary
+            $distinctNames = $group->pluck('nama_barang')
+                ->filter()
+                ->map(fn ($n) => trim($n))
+                ->unique()
+                ->values();
+
+            if ($distinctNames->count() > 1) {
+                // Extract first 3-4 meaningful words from each distinct name,
+                // collect the unique words, and join them.
+                $keywords = $distinctNames->map(function ($name) {
+                    // Take leading words (stop at numeric-heavy tokens)
+                    $words = preg_split('/[\s,]+/', $name);
+                    $kept  = [];
+                    foreach ($words as $w) {
+                        if (is_numeric($w) || strlen($w) <= 1) break;
+                        $kept[] = $w;
+                        if (count($kept) >= 3) break;
+                    }
+                    return implode(' ', $kept);
+                })->unique()->filter()->values();
+
+                $namaBarang = $keywords->implode(', ');
+            } else {
+                $namaBarang = $distinctNames->first() ?? 'Cargo';
+            }
+
+            // Determine nomor BL to display (the prefix)
+            if (str_starts_with($key, 'bl|')) {
+                $nomorBl = substr($key, 3); // remove "bl|"
+            } else {
+                $nomorBl = trim($group->first()->nomor_bl ?? '-');
+            }
+
+            // Sum tonnage / volume
+            $totalVolume   = $group->sum('volume_perincian');
+            $totalTonnage  = $group->sum('tonnage_perincian');
+            $amount = null;
+            $unit   = '';
+            if ($totalVolume > 0) {
+                $amount = $totalVolume;
+                $unit   = 'm3';
+            } elseif ($totalTonnage > 0) {
+                $amount = $totalTonnage;
+                $unit   = 'ton';
+            }
+
+            return [
+                'kuantitas'   => $totalKuantitas,
+                'satuan'      => 'Colly',
+                'nama_barang' => $namaBarang,
+                'nomor_bl'    => $nomorBl,
+                'amount'      => $amount,
+                'unit'        => $unit,
+            ];
+        })->values();
+
+        // -----------------------------------------------------------------------
+        // 4. Containers first, then cargo
+        // -----------------------------------------------------------------------
+        return $containerRows->concat($cargoRows);
     }
 }
