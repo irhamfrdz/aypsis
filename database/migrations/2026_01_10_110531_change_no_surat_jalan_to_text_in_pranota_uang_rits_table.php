@@ -12,16 +12,29 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Check and drop indexes if they exist
-        $indexes = DB::select("SHOW INDEX FROM pranota_uang_rits WHERE Column_name IN ('no_surat_jalan', 'supir_nama')");
+        if (DB::getDriverName() !== 'sqlite') {
+            // Check and drop indexes if they exist
+            $indexes = DB::select("SHOW INDEX FROM pranota_uang_rits WHERE Column_name IN ('no_surat_jalan', 'supir_nama')");
 
-        foreach ($indexes as $index) {
-            if ($index->Column_name === 'no_surat_jalan' && $index->Key_name !== 'PRIMARY') {
-                DB::statement("ALTER TABLE pranota_uang_rits DROP INDEX `{$index->Key_name}`");
+            foreach ($indexes as $index) {
+                if ($index->Column_name === 'no_surat_jalan' && $index->Key_name !== 'PRIMARY') {
+                    DB::statement("ALTER TABLE pranota_uang_rits DROP INDEX `{$index->Key_name}`");
+                }
+                if ($index->Column_name === 'supir_nama' && $index->Key_name !== 'PRIMARY') {
+                    DB::statement("ALTER TABLE pranota_uang_rits DROP INDEX `{$index->Key_name}`");
+                }
             }
-            if ($index->Column_name === 'supir_nama' && $index->Key_name !== 'PRIMARY') {
-                DB::statement("ALTER TABLE pranota_uang_rits DROP INDEX `{$index->Key_name}`");
-            }
+        } else {
+            Schema::table('pranota_uang_rits', function (Blueprint $table) {
+                $existsNoSj = DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='pranota_uang_rits' AND name LIKE '%no_surat_jalan%'");
+                if (!empty($existsNoSj)) {
+                    $table->dropIndex($existsNoSj[0]->name);
+                }
+                $existsSupir = DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='pranota_uang_rits' AND name LIKE '%supir_nama%'");
+                if (!empty($existsSupir)) {
+                    $table->dropIndex($existsSupir[0]->name);
+                }
+            });
         }
 
         Schema::table('pranota_uang_rits', function (Blueprint $table) {

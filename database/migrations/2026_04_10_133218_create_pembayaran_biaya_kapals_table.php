@@ -28,9 +28,9 @@ return new class extends Migration
             $table->softDeletes();
 
             // Indexes
-            $table->index(['status_pembayaran', 'tanggal_pembayaran'], 'idx_status_tanggal');
-            $table->index(['jenis_transaksi'], 'idx_jenis_transaksi');
-            $table->index(['created_at'], 'idx_created_at');
+            $table->index(['status_pembayaran', 'tanggal_pembayaran'], 'idx_pbk_status_tanggal');
+            $table->index(['jenis_transaksi'], 'idx_pbk_jenis_transaksi');
+            $table->index(['created_at'], 'idx_pbk_created_at');
         });
     }
 

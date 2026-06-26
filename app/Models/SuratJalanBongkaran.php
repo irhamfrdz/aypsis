@@ -57,6 +57,8 @@ class SuratJalanBongkaran extends Model
         'gambar',
         'gambar_checkpoint',
         'bukti_muat',
+        'bukti_timbangan',
+        'bukti_timbangan_muat',
         'input_by',
         'input_date',
         'status',

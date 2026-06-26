@@ -6,12 +6,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('penerimas', function (Blueprint $table) {
+            if (\Illuminate\Support\Facades\DB::getDriverName() === 'sqlite') {
+                $table->dropIndex('penerimas_kode_unique');
+            }
             $table->dropColumn('kode');
         });
     }

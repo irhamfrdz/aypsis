@@ -19,17 +19,8 @@ class KontainerFactory extends Factory
             'ukuran' => $this->faker->randomElement(['20', '40']),
             'tipe_kontainer' => $this->faker->word,
             'status' => 'Tersedia',
-            'pemilik_kontainer' => $this->faker->company,
-            'tahun_pembuatan' => $this->faker->year,
-            'kontainer_asal' => $this->faker->city,
-            'tanggal_beli' => $this->faker->date(),
-            'tanggal_jual' => null,
-            'kondisi_kontainer' => 'Baik',
-            'tanggal_masuk_sewa' => null,
             'tanggal_selesai_sewa' => null,
             'keterangan' => $this->faker->sentence,
-            'keterangan1' => $this->faker->sentence,
-            'keterangan2' => $this->faker->sentence,
         ];
     }
 }

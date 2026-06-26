@@ -15,6 +15,9 @@ return new class extends Migration
             // Drop foreign key first if it exists
             $table->dropForeign(['terminal_id']);
 
+            // Drop index on status_gate_in before dropping the column
+            $table->dropIndex(['status_gate_in']);
+
             // Then drop the columns
             $table->dropColumn(['status_gate_in', 'tanggal_gate_in', 'terminal_id']);
         });

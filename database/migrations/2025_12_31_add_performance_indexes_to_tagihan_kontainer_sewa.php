@@ -29,7 +29,17 @@ return new class extends Migration
                 'idx_group_periode' => ['group', 'periode'],
             ];
 
+            $isSqlite = DB::getDriverName() === 'sqlite';
             foreach ($indexes as $indexName => $columns) {
+                if ($isSqlite) {
+                    $exists = DB::select("
+                        SELECT name FROM sqlite_master WHERE type='index' AND name=?
+                    ", [$indexName]);
+                    if (empty($exists)) {
+                        $table->index($columns, $indexName);
+                    }
+                    continue;
+                }
                 // Check if index already exists
                 $exists = DB::select("
                     SELECT COUNT(*) as count
@@ -40,11 +50,7 @@ return new class extends Migration
                 ", [$indexName]);
 
                 if ($exists[0]->count == 0) {
-                    if (is_array($columns)) {
-                        $table->index($columns, $indexName);
-                    } else {
-                        $table->index($columns, $indexName);
-                    }
+                    $table->index($columns, $indexName);
                 }
             }
         });
@@ -72,7 +78,17 @@ return new class extends Migration
                 'idx_group_periode',
             ];
 
+            $isSqlite = DB::getDriverName() === 'sqlite';
             foreach ($indexNames as $indexName) {
+                if ($isSqlite) {
+                    $exists = DB::select("
+                        SELECT name FROM sqlite_master WHERE type='index' AND name=?
+                    ", [$indexName]);
+                    if (!empty($exists)) {
+                        $table->dropIndex($indexName);
+                    }
+                    continue;
+                }
                 // Check if index exists before dropping
                 $exists = DB::select("
                     SELECT COUNT(*) as count

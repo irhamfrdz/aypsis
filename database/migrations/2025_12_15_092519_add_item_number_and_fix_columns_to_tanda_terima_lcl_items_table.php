@@ -12,14 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tanda_terima_lcl_items', function (Blueprint $table) {
-            // Add item_number column after tanda_terima_lcl_id
-            $table->integer('item_number')->default(1)->after('tanda_terima_lcl_id');
+            // Add item_number column after tanda_terima_lcl_id if it doesn't exist
+            if (!Schema::hasColumn('tanda_terima_lcl_items', 'item_number')) {
+                $table->integer('item_number')->default(1)->after('tanda_terima_lcl_id');
+            }
 
             // Rename jumlah_koli to jumlah untuk match dengan form
-            $table->renameColumn('jumlah_koli', 'jumlah');
+            if (Schema::hasColumn('tanda_terima_lcl_items', 'jumlah_koli') && !Schema::hasColumn('tanda_terima_lcl_items', 'jumlah')) {
+                $table->renameColumn('jumlah_koli', 'jumlah');
+            }
 
             // Add satuan column that's missing
-            $table->string('satuan', 50)->nullable()->after('jumlah');
+            if (!Schema::hasColumn('tanda_terima_lcl_items', 'satuan')) {
+                $table->string('satuan', 50)->nullable()->after('jumlah');
+            }
         });
     }
 
