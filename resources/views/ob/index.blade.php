@@ -3111,19 +3111,18 @@ function submitBulkOB() {
         const supirId = row.querySelector('.bulk-row-supir-select').value;
         if (!supirId) {
             missing.push(nomor);
-        } else {
-            items.push({ nomor_kontainer: nomor, supir_id: supirId });
         }
+        items.push({ nomor_kontainer: nomor, supir_id: supirId || null });
     });
 
-    if (missing.length > 0) {
-        const proceed = confirm(`${missing.length} kontainer belum dipilih supirnya:\n${missing.slice(0, 5).join(', ')}${missing.length > 5 ? ' ...' : ''}\n\nLanjutkan hanya untuk kontainer yang sudah dipilih supirnya?`);
-        if (!proceed) return;
+    if (items.length === 0) {
+        alert('Tidak ada kontainer untuk diproses.');
+        return;
     }
 
-    if (items.length === 0) {
-        alert('Tidak ada kontainer dengan supir yang dipilih. Silakan isi supir terlebih dahulu.');
-        return;
+    if (missing.length > 0) {
+        const proceed = confirm(`${missing.length} kontainer belum dipilih supirnya.\nKontainer tanpa supir akan diproses sebagai TL (Tanda Langsung).\n\nLanjutkan proses?`);
+        if (!proceed) return;
     }
 
     const btn = document.getElementById('btnBulkOBSubmit');
