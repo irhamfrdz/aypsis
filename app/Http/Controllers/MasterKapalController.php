@@ -592,6 +592,22 @@ class MasterKapalController extends Controller
             'tujuan' => 'required|string|max:255',
         ]);
 
+        // Simpan atau update data SPKBM ke database
+        \App\Models\KapalSpkbm::updateOrCreate(
+            ['nomor_surat' => $validated['nomor_surat']],
+            [
+                'kapal_id' => $masterKapal->id,
+                'hal' => $validated['hal'],
+                'ditujukan_kepada' => $validated['ditujukan_kepada'],
+                'voyage' => $validated['voyage'],
+                'rencana_tiba' => $validated['rencana_tiba'],
+                'rencana_sandar' => $validated['rencana_sandar'],
+                'rencana_bongkar' => $validated['rencana_bongkar'],
+                'rencana_muat' => $validated['rencana_muat'],
+                'tujuan' => $validated['tujuan'],
+            ]
+        );
+
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('master-kapal.print-spkbm', compact('masterKapal', 'validated'));
 
         $filename = 'SPKBM_'.str_replace('/', '_', $validated['nomor_surat']).'.pdf';

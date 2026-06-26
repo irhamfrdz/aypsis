@@ -179,6 +179,20 @@ class GajiSupirBatamController extends Controller
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
 
+        $obList = \App\Models\TagihanOb::where('nama_supir', $namaPanggilan)
+            ->where('kegiatan', '!=', 'ANTAR GUDANG')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+
+        $obAntarGudangList = \App\Models\TagihanOb::where('nama_supir', $namaPanggilan)
+            ->where('kegiatan', 'ANTAR GUDANG')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+
+        $langsirBatamList = \App\Models\LangsirBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])
+            ->get();
+
         $waybills = [];
         foreach ($regularSJs as $sj) {
             $waybills[] = [
@@ -202,6 +216,30 @@ class GajiSupirBatamController extends Controller
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => is_numeric($sj->uang_jalan) ? (float) $sj->uang_jalan : 0,
+            ];
+        }
+        foreach ($obList as $ob) {
+            $waybills[] = [
+                'type' => 'OB',
+                'no_surat_jalan' => $ob->nomor_kontainer . ($ob->kapal ? ' (' . $ob->kapal . ')' : ''),
+                'tanggal' => $ob->created_at->format('d/m/Y'),
+                'rit' => is_numeric($ob->biaya) ? (float) $ob->biaya : 0,
+            ];
+        }
+        foreach ($obAntarGudangList as $ob) {
+            $waybills[] = [
+                'type' => 'OB Antar Gudang',
+                'no_surat_jalan' => $ob->nomor_kontainer,
+                'tanggal' => $ob->created_at->format('d/m/Y'),
+                'rit' => is_numeric($ob->biaya) ? (float) $ob->biaya : 0,
+            ];
+        }
+        foreach ($langsirBatamList as $langsir) {
+            $waybills[] = [
+                'type' => 'Langsir Batam',
+                'no_surat_jalan' => $langsir->no_transaksi . ($langsir->no_kontainer ? ' (' . $langsir->no_kontainer . ')' : ''),
+                'tanggal' => $langsir->tanggal->format('d/m/Y'),
+                'rit' => is_numeric($langsir->biaya) ? (float) $langsir->biaya : 0,
             ];
         }
 
@@ -337,6 +375,20 @@ class GajiSupirBatamController extends Controller
             ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
             ->get();
 
+        $obList = \App\Models\TagihanOb::where('nama_supir', $namaPanggilan)
+            ->where('kegiatan', '!=', 'ANTAR GUDANG')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+
+        $obAntarGudangList = \App\Models\TagihanOb::where('nama_supir', $namaPanggilan)
+            ->where('kegiatan', 'ANTAR GUDANG')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+
+        $langsirBatamList = \App\Models\LangsirBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])
+            ->get();
+
         $totalRit = 0;
         $waybills = [];
 
@@ -372,6 +424,42 @@ class GajiSupirBatamController extends Controller
                 'type' => 'Tarik Kosong',
                 'no_surat_jalan' => $sj->no_surat_jalan,
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
+                'rit' => $ritVal,
+            ];
+        }
+
+        foreach ($obList as $ob) {
+            $ritVal = is_numeric($ob->biaya) ? (float) $ob->biaya : 0;
+            $totalRit += $ritVal;
+            $waybills[] = [
+                'id' => $ob->id,
+                'type' => 'OB',
+                'no_surat_jalan' => $ob->nomor_kontainer . ($ob->kapal ? ' (' . $ob->kapal . ')' : ''),
+                'tanggal' => $ob->created_at->format('d/m/Y'),
+                'rit' => $ritVal,
+            ];
+        }
+
+        foreach ($obAntarGudangList as $ob) {
+            $ritVal = is_numeric($ob->biaya) ? (float) $ob->biaya : 0;
+            $totalRit += $ritVal;
+            $waybills[] = [
+                'id' => $ob->id,
+                'type' => 'OB Antar Gudang',
+                'no_surat_jalan' => $ob->nomor_kontainer,
+                'tanggal' => $ob->created_at->format('d/m/Y'),
+                'rit' => $ritVal,
+            ];
+        }
+
+        foreach ($langsirBatamList as $langsir) {
+            $ritVal = is_numeric($langsir->biaya) ? (float) $langsir->biaya : 0;
+            $totalRit += $ritVal;
+            $waybills[] = [
+                'id' => $langsir->id,
+                'type' => 'Langsir Batam',
+                'no_surat_jalan' => $langsir->no_transaksi . ($langsir->no_kontainer ? ' (' . $langsir->no_kontainer . ')' : ''),
+                'tanggal' => $langsir->tanggal->format('d/m/Y'),
                 'rit' => $ritVal,
             ];
         }

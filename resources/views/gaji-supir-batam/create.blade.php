@@ -152,7 +152,7 @@
                                 <input type="checkbox" id="check_all_waybills" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" checked>
                             </th>
                             <th class="px-4 py-2 text-left font-semibold text-gray-600">Tipe</th>
-                            <th class="px-4 py-2 text-left font-semibold text-gray-600">No. Surat Jalan</th>
+                            <th class="px-4 py-2 text-left font-semibold text-gray-600">No. Surat Jalan / No. Kontainer / No. Transaksi</th>
                             <th class="px-4 py-2 text-left font-semibold text-gray-600">Tanggal</th>
                             <th class="px-4 py-2 text-right font-semibold text-gray-600">Uang Jalan (Rp)</th>
                         </tr>

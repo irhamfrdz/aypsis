@@ -93,7 +93,7 @@
         </h4>
         <table class="w-full text-sm">
             <tr class="hover:bg-gray-50">
-                <td class="py-2.5 text-gray-700">Total Gaji Pokok (Berdasarkan Uang Jalan Surat Jalan)</td>
+                <td class="py-2.5 text-gray-700">Total Gaji Pokok (Berdasarkan Pekerjaan Terpilih)</td>
                 <td class="py-2.5 text-right font-semibold text-gray-900">Rp {{ number_format($gaji->gaji_pokok, 0, ',', '.') }}</td>
             </tr>
             <tr class="hover:bg-gray-50 text-red-600">
@@ -130,7 +130,7 @@
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="px-4 py-2.5 text-left font-semibold text-gray-600">Tipe</th>
-                        <th class="px-4 py-2.5 text-left font-semibold text-gray-600">No. Surat Jalan</th>
+                        <th class="px-4 py-2.5 text-left font-semibold text-gray-600">No. Surat Jalan / No. Kontainer / No. Transaksi</th>
                         <th class="px-4 py-2.5 text-left font-semibold text-gray-600">Tanggal</th>
                         <th class="px-4 py-2.5 text-right font-semibold text-gray-600">Uang Jalan</th>
                     </tr>

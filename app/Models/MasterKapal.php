@@ -85,4 +85,9 @@ class MasterKapal extends Model
     {
         return $this->hasMany(MasterDokumenKapalAlexindo::class, 'kapal_id');
     }
+
+    public function spkbms()
+    {
+        return $this->hasMany(KapalSpkbm::class, 'kapal_id');
+    }
 }
