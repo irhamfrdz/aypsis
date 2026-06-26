@@ -583,6 +583,99 @@
                                     @endif
                                 </div>
                                 @endif
+                                
+                                @if($suratJalan->bukti_muat)
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-medium text-gray-500 mb-2">
+                                        Gambar Bukti Muat Saat Ini
+                                    </label>
+                                    @php
+                                        // Check if it's a JSON array (multiple images) or single image path
+                                        $buktiMuat = $suratJalan->bukti_muat;
+                                        $buktiMuatPaths = [];
+                                        
+                                        try {
+                                            if (empty($buktiMuat)) {
+                                                $buktiMuatPaths = [];
+                                            } elseif (is_array($buktiMuat)) {
+                                                $buktiMuatPaths = array_filter($buktiMuat);
+                                            } elseif (is_string($buktiMuat)) {
+                                                // Try to decode as JSON
+                                                $decoded = json_decode($buktiMuat, true);
+                                                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                                                    $buktiMuatPaths = array_filter($decoded);
+                                                } else {
+                                                    // Single path
+                                                    $buktiMuatPaths = [$buktiMuat];
+                                                }
+                                            }
+                                        } catch (\Exception $e) {
+                                            \Log::error('Error parsing bukti_muat: ' . $e->getMessage());
+                                            $buktiMuatPaths = [];
+                                        }
+                                    @endphp
+                                    @if(count($buktiMuatPaths) > 0)
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                        @foreach($buktiMuatPaths as $index => $imagePath)
+                                        @if(!empty($imagePath) && is_string($imagePath))
+                                        <div class="flex items-start gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                            <a href="{{ asset('storage/' . $imagePath) }}" 
+                                               target="_blank" 
+                                               class="group relative block overflow-hidden rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-all flex-shrink-0">
+                                                @php
+                                                    $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
+                                                    $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                                @endphp
+                                                @if($isImage)
+                                                    <img src="{{ asset('storage/' . $imagePath) }}" 
+                                                         alt="Gambar Bukti Muat {{ $index + 1 }}" 
+                                                         class="w-24 h-24 object-cover group-hover:scale-105 transition-transform">
+                                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
+                                                        <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                                                        </svg>
+                                                    </div>
+                                                @else
+                                                    <div class="w-24 h-24 flex items-center justify-center bg-gray-100">
+                                                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                        </svg>
+                                                    </div>
+                                                @endif
+                                            </a>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-xs font-medium text-gray-700 mb-1">Bukti Muat {{ $index + 1 }}</p>
+                                                <div class="flex flex-col gap-1">
+                                                    <a href="{{ asset('storage/' . $imagePath) }}" 
+                                                       target="_blank" 
+                                                       class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded transition">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                        </svg>
+                                                        Lihat
+                                                    </a>
+                                                    <a href="{{ asset('storage/' . $imagePath) }}" 
+                                                       download 
+                                                       class="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded transition">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                        </svg>
+                                                        Download
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endif
+                                        @endforeach
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">
+                                        <i class="fas fa-camera mr-1"></i>
+                                        {{ count($buktiMuatPaths) }} foto bukti muat diupload saat checkpoint
+                                    </p>
+                                    @endif
+                                </div>
+                                @endif
 
                                 <!-- Upload Gambar Checkpoint Baru -->
                                 <div class="md:col-span-2">

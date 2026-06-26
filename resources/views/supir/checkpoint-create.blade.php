@@ -242,6 +242,41 @@
                                 @enderror
                             </div>
 
+                            {{-- Upload Bukti Muat untuk Permohonan --}}
+                            <div>
+                                <label for="bukti_muat_permohonan" class="block text-sm font-medium text-gray-700">Upload Bukti Muat (Bisa Lebih Dari 1)</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        <div class="flex text-sm text-gray-600">
+                                            <label for="bukti_muat_permohonan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                <span>Upload file</span>
+                                                <input id="bukti_muat_permohonan" name="bukti_muat[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewBuktiMuatPermohonan(this)">
+                                            </label>
+                                            <p class="pl-1">atau drag and drop</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">PNG, JPG, GIF, PDF hingga 5MB per file</p>
+                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih beberapa file sekaligus</p>
+                                    </div>
+                                </div>
+
+                                {{-- Preview Area untuk Bukti Muat Permohonan --}}
+                                <div id="file-preview-bukti-muat-permohonan" class="mt-3 hidden">
+                                    <div class="space-y-2" id="preview-list-bukti-muat-permohonan">
+                                        <!-- Preview items will be added here -->
+                                    </div>
+                                </div>
+
+                                @error('bukti_muat')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                @error('bukti_muat.*')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                             <div class="flex justify-end gap-2">
                                 <a href="{{ route('supir.dashboard') }}" class="w-full sm:w-auto inline-flex justify-center py-2 px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                                     Kembali
@@ -406,6 +441,41 @@
                                 @enderror
                             </div>
 
+                            {{-- Upload Bukti Muat untuk Surat Jalan --}}
+                            <div>
+                                <label for="bukti_muat_surat_jalan" class="block text-sm font-medium text-gray-700">Upload Bukti Muat (Bisa Lebih Dari 1)</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
+                                    <div class="space-y-1 text-center">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        <div class="flex text-sm text-gray-600">
+                                            <label for="bukti_muat_surat_jalan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                                <span>Upload file</span>
+                                                <input id="bukti_muat_surat_jalan" name="bukti_muat[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewBuktiMuatSuratJalan(this)">
+                                            </label>
+                                            <p class="pl-1">atau drag and drop</p>
+                                        </div>
+                                        <p class="text-xs text-gray-500">PNG, JPG, GIF, PDF hingga 5MB per file</p>
+                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih beberapa file sekaligus</p>
+                                    </div>
+                                </div>
+
+                                {{-- Preview Area untuk Bukti Muat Surat Jalan --}}
+                                <div id="file-preview-bukti-muat-surat-jalan" class="mt-3 hidden">
+                                    <div class="space-y-2" id="preview-list-bukti-muat-surat-jalan">
+                                        <!-- Preview items will be added here -->
+                                    </div>
+                                </div>
+
+                                @error('bukti_muat')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                @error('bukti_muat.*')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                             <div class="flex justify-end gap-2">
                                 <a href="{{ route('supir.dashboard') }}" class="w-full sm:w-auto inline-flex justify-center py-2 px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                                     Kembali
@@ -430,12 +500,44 @@
                                 <p class="text-xs text-gray-500 mt-1">{{ $checkpoint->created_at->format('d M Y, H:i') }} - {{ $checkpoint->lokasi ?? 'Lokasi tidak diketahui' }}</p>
                                 @if($checkpoint->gambar)
                                     <div class="mt-2">
-                                        <a href="{{ asset('storage/' . $checkpoint->gambar) }}" target="_blank" class="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-800">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                            Lihat Gambar
-                                        </a>
+                                        @php
+                                            $gambarCheckpoint = $checkpoint->gambar;
+                                            $isJson = is_string($gambarCheckpoint) && (str_starts_with($gambarCheckpoint, '[') || str_starts_with($gambarCheckpoint, '{'));
+                                            $imagePaths = $isJson ? json_decode($gambarCheckpoint, true) : [$gambarCheckpoint];
+                                            $imagePaths = is_array($imagePaths) ? array_filter($imagePaths) : [$gambarCheckpoint];
+                                        @endphp
+                                        <div class="flex flex-wrap gap-2">
+                                            @foreach($imagePaths as $index => $imagePath)
+                                                <a href="{{ asset('storage/' . $imagePath) }}" target="_blank" class="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-800 animate-pulse">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    Gambar {{ $index + 1 }}
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($checkpoint->bukti_muat)
+                                    <div class="mt-2">
+                                        @php
+                                            $buktiMuat = $checkpoint->bukti_muat;
+                                            $isJson = is_string($buktiMuat) && (str_starts_with($buktiMuat, '[') || str_starts_with($buktiMuat, '{'));
+                                            $buktiPaths = $isJson ? json_decode($buktiMuat, true) : [$buktiMuat];
+                                            $buktiPaths = is_array($buktiPaths) ? array_filter($buktiPaths) : [$buktiMuat];
+                                        @endphp
+                                        <div class="flex flex-wrap gap-2 mt-1">
+                                            <span class="text-xs font-semibold text-gray-500 mr-1">Bukti Muat:</span>
+                                            @foreach($buktiPaths as $index => $path)
+                                                <a href="{{ asset('storage/' . $path) }}" target="_blank" class="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-800">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    Bukti {{ $index + 1 }}
+                                                </a>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 @endif
                             </div>
@@ -465,6 +567,28 @@
                                                 Gambar {{ $index + 1 }}
                                             </a>
                                         @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($suratJalan->bukti_muat)
+                                    <div class="mt-2">
+                                        @php
+                                            $buktiMuat = $suratJalan->bukti_muat;
+                                            $isJson = is_string($buktiMuat) && (str_starts_with($buktiMuat, '[') || str_starts_with($buktiMuat, '{'));
+                                            $buktiPaths = $isJson ? json_decode($buktiMuat, true) : [$buktiMuat];
+                                            $buktiPaths = is_array($buktiPaths) ? array_filter($buktiPaths) : [$buktiMuat];
+                                        @endphp
+                                        <div class="flex flex-wrap gap-2 mt-1">
+                                            <span class="text-xs font-semibold text-gray-500 mr-1">Bukti Muat:</span>
+                                            @foreach($buktiPaths as $index => $path)
+                                                <a href="{{ asset('storage/' . $path) }}" target="_blank" class="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-800">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                    </svg>
+                                                    Bukti {{ $index + 1 }}
+                                                </a>
+                                            @endforeach
                                         </div>
                                     </div>
                                 @endif
@@ -878,6 +1002,196 @@
             input.files = dataTransfer.files;
         }
 
+        // Store selected bukti muat files
+        let selectedFilesBuktiMuatPermohonan = [];
+        let selectedFilesBuktiMuatSuratJalan = [];
+
+        // Preview Bukti Muat Permohonan
+        function previewBuktiMuatPermohonan(input) {
+            const files = Array.from(input.files);
+            const previewContainer = document.getElementById('preview-list-bukti-muat-permohonan');
+            const previewSection = document.getElementById('file-preview-bukti-muat-permohonan');
+            
+            if (files.length > 0) {
+                selectedFilesBuktiMuatPermohonan = selectedFilesBuktiMuatPermohonan.concat(files);
+                previewContainer.innerHTML = '';
+                
+                selectedFilesBuktiMuatPermohonan.forEach((file, index) => {
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                    const isImage = file.type.startsWith('image/');
+                    
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'flex items-center p-3 bg-gray-50 rounded-md border border-gray-200';
+                    previewItem.innerHTML = `
+                        ${isImage ? 
+                            `<img src="${URL.createObjectURL(file)}" class="h-12 w-12 object-cover rounded mr-3" alt="${fileName}">` :
+                            `<svg class="h-12 w-12 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>`
+                        }
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">${fileName}</p>
+                            <p class="text-xs text-gray-500">${fileSize}</p>
+                        </div>
+                        <button type="button" onclick="removeBuktiMuatPermohonanByIndex(${index})" class="ml-3 text-red-400 hover:text-red-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    previewContainer.appendChild(previewItem);
+                });
+                
+                previewSection.classList.remove('hidden');
+                updateFileInputBuktiMuatPermohonan();
+            }
+        }
+
+        // Remove Bukti Muat Permohonan
+        function removeBuktiMuatPermohonanByIndex(index) {
+            selectedFilesBuktiMuatPermohonan.splice(index, 1);
+            
+            if (selectedFilesBuktiMuatPermohonan.length === 0) {
+                document.getElementById('file-preview-bukti-muat-permohonan').classList.add('hidden');
+                document.getElementById('bukti_muat_permohonan').value = '';
+            } else {
+                const previewContainer = document.getElementById('preview-list-bukti-muat-permohonan');
+                previewContainer.innerHTML = '';
+                
+                selectedFilesBuktiMuatPermohonan.forEach((file, idx) => {
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                    const isImage = file.type.startsWith('image/');
+                    
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'flex items-center p-3 bg-gray-50 rounded-md border border-gray-200';
+                    previewItem.innerHTML = `
+                        ${isImage ? 
+                            `<img src="${URL.createObjectURL(file)}" class="h-12 w-12 object-cover rounded mr-3" alt="${fileName}">` :
+                            `<svg class="h-12 w-12 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>`
+                        }
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">${fileName}</p>
+                            <p class="text-xs text-gray-500">${fileSize}</p>
+                        </div>
+                        <button type="button" onclick="removeBuktiMuatPermohonanByIndex(${idx})" class="ml-3 text-red-400 hover:text-red-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    previewContainer.appendChild(previewItem);
+                });
+            }
+            updateFileInputBuktiMuatPermohonan();
+        }
+
+        // Update file input with selected files
+        function updateFileInputBuktiMuatPermohonan() {
+            const input = document.getElementById('bukti_muat_permohonan');
+            const dataTransfer = new DataTransfer();
+            selectedFilesBuktiMuatPermohonan.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            input.files = dataTransfer.files;
+        }
+
+        // Preview Bukti Muat Surat Jalan
+        function previewBuktiMuatSuratJalan(input) {
+            const files = Array.from(input.files);
+            const previewContainer = document.getElementById('preview-list-bukti-muat-surat-jalan');
+            const previewSection = document.getElementById('file-preview-bukti-muat-surat-jalan');
+            
+            if (files.length > 0) {
+                selectedFilesBuktiMuatSuratJalan = selectedFilesBuktiMuatSuratJalan.concat(files);
+                previewContainer.innerHTML = '';
+                
+                selectedFilesBuktiMuatSuratJalan.forEach((file, index) => {
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                    const isImage = file.type.startsWith('image/');
+                    
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'flex items-center p-3 bg-gray-50 rounded-md border border-gray-200';
+                    previewItem.innerHTML = `
+                        ${isImage ? 
+                            `<img src="${URL.createObjectURL(file)}" class="h-12 w-12 object-cover rounded mr-3" alt="${fileName}">` :
+                            `<svg class="h-12 w-12 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>`
+                        }
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">${fileName}</p>
+                            <p class="text-xs text-gray-500">${fileSize}</p>
+                        </div>
+                        <button type="button" onclick="removeBuktiMuatSuratJalanByIndex(${index})" class="ml-3 text-red-400 hover:text-red-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    previewContainer.appendChild(previewItem);
+                });
+                
+                previewSection.classList.remove('hidden');
+                updateFileInputBuktiMuatSuratJalan();
+            }
+        }
+
+        // Remove Bukti Muat Surat Jalan
+        function removeBuktiMuatSuratJalanByIndex(index) {
+            selectedFilesBuktiMuatSuratJalan.splice(index, 1);
+            
+            if (selectedFilesBuktiMuatSuratJalan.length === 0) {
+                document.getElementById('file-preview-bukti-muat-surat-jalan').classList.add('hidden');
+                document.getElementById('bukti_muat_surat_jalan').value = '';
+            } else {
+                const previewContainer = document.getElementById('preview-list-bukti-muat-surat-jalan');
+                previewContainer.innerHTML = '';
+                
+                selectedFilesBuktiMuatSuratJalan.forEach((file, idx) => {
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                    const isImage = file.type.startsWith('image/');
+                    
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'flex items-center p-3 bg-gray-50 rounded-md border border-gray-200';
+                    previewItem.innerHTML = `
+                        ${isImage ? 
+                            `<img src="${URL.createObjectURL(file)}" class="h-12 w-12 object-cover rounded mr-3" alt="${fileName}">` :
+                            `<svg class="h-12 w-12 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>`
+                        }
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">${fileName}</p>
+                            <p class="text-xs text-gray-500">${fileSize}</p>
+                        </div>
+                        <button type="button" onclick="removeBuktiMuatSuratJalanByIndex(${idx})" class="ml-3 text-red-400 hover:text-red-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    previewContainer.appendChild(previewItem);
+                });
+            }
+            updateFileInputBuktiMuatSuratJalan();
+        }
+
+        // Update file input with selected files
+        function updateFileInputBuktiMuatSuratJalan() {
+            const input = document.getElementById('bukti_muat_surat_jalan');
+            const dataTransfer = new DataTransfer();
+            selectedFilesBuktiMuatSuratJalan.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            input.files = dataTransfer.files;
+        }
+
         // Drag and drop functionality
         document.addEventListener('DOMContentLoaded', function() {
             const dropZones = document.querySelectorAll('[class*="border-dashed"]');
@@ -916,6 +1230,10 @@
                             previewFilePermohonan(fileInput);
                         } else if (fileInput.id === 'gambar_surat_jalan') {
                             previewFileSuratJalan(fileInput);
+                        } else if (fileInput.id === 'bukti_muat_permohonan') {
+                            previewBuktiMuatPermohonan(fileInput);
+                        } else if (fileInput.id === 'bukti_muat_surat_jalan') {
+                            previewBuktiMuatSuratJalan(fileInput);
                         }
                     }
                 });

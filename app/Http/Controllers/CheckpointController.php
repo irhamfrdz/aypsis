@@ -126,6 +126,8 @@ class CheckpointController extends Controller
             'catatan' => 'nullable|string',
             'gambar' => 'nullable|array',
             'gambar.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
+            'bukti_muat' => 'nullable|array',
+            'bukti_muat.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
         ];
 
@@ -313,6 +315,17 @@ class CheckpointController extends Controller
             // Store as JSON array if multiple files, or null if none
             $imagePath = ! empty($imagePaths) ? json_encode($imagePaths) : null;
 
+            // Handle multiple bukti muat uploads
+            $buktiMuatPaths = [];
+            if ($request->hasFile('bukti_muat')) {
+                foreach ($request->file('bukti_muat') as $index => $image) {
+                    $filename = time().'_'.$index.'_bukti_muat_'.$image->getClientOriginalName();
+                    $filePath = $image->storeAs('file_surat_jalan', $filename, 'public');
+                    $buktiMuatPaths[] = $filePath;
+                }
+            }
+            $buktiMuatPath = ! empty($buktiMuatPaths) ? json_encode($buktiMuatPaths) : null;
+
             // Handle multiple seals for checkpoint
             $noSealData = null;
             if (! empty($validated['no_seal']) && is_array($validated['no_seal'])) {
@@ -329,6 +342,7 @@ class CheckpointController extends Controller
                 'surat_jalan_vendor' => $validated['surat_jalan_vendor'] ?? null,
                 'tanggal_checkpoint' => $request->input('tanggal_checkpoint') ?? now()->format('Y-m-d'),
                 'gambar' => $imagePath,
+                'bukti_muat' => $buktiMuatPath,
             ];
 
             // Add no_seal to catatan if provided
@@ -445,6 +459,8 @@ class CheckpointController extends Controller
             'tanggal_checkpoint' => 'required|date',
             'gambar' => 'nullable|array',
             'gambar.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
+            'bukti_muat' => 'nullable|array',
+            'bukti_muat.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
         ];
 
@@ -479,10 +495,22 @@ class CheckpointController extends Controller
             // Store as JSON array if multiple files, or null if none
             $imagePath = ! empty($imagePaths) ? json_encode($imagePaths) : null;
 
+            // Handle multiple bukti muat uploads
+            $buktiMuatPaths = [];
+            if ($request->hasFile('bukti_muat')) {
+                foreach ($request->file('bukti_muat') as $index => $image) {
+                    $filename = time().'_'.$index.'_surat_jalan_bukti_muat_'.$image->getClientOriginalName();
+                    $filePath = $image->storeAs('file_surat_jalan', $filename, 'public');
+                    $buktiMuatPaths[] = $filePath;
+                }
+            }
+            $buktiMuatPath = ! empty($buktiMuatPaths) ? json_encode($buktiMuatPaths) : null;
+
             // Update surat jalan dengan nomor kontainer dan status
             $updateData = [
                 'status' => 'sudah_checkpoint', // Status berubah menjadi "sudah checkpoint"
                 'gambar_checkpoint' => $imagePath,
+                'bukti_muat' => $buktiMuatPath,
             ];
 
             // Handle cargo vs non-cargo types
@@ -869,6 +897,8 @@ class CheckpointController extends Controller
             'tanggal_checkpoint' => 'required|date',
             'gambar' => 'nullable|array',
             'gambar.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
+            'bukti_muat' => 'nullable|array',
+            'bukti_muat.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
         ];
 
@@ -903,10 +933,22 @@ class CheckpointController extends Controller
             // Store as JSON array if multiple files, or null if none
             $imagePath = ! empty($imagePaths) ? json_encode($imagePaths) : null;
 
+            // Handle multiple bukti muat uploads
+            $buktiMuatPaths = [];
+            if ($request->hasFile('bukti_muat')) {
+                foreach ($request->file('bukti_muat') as $index => $image) {
+                    $filename = time().'_'.$index.'_surat_jalan_bongkaran_bukti_muat_'.$image->getClientOriginalName();
+                    $filePath = $image->storeAs('file_surat_jalan', $filename, 'public');
+                    $buktiMuatPaths[] = $filePath;
+                }
+            }
+            $buktiMuatPath = ! empty($buktiMuatPaths) ? json_encode($buktiMuatPaths) : null;
+
             // Update surat jalan bongkaran dengan nomor kontainer dan tanggal checkpoint
             $updateData = [
                 'tanggal_checkpoint' => $request->tanggal_checkpoint,
                 'gambar_checkpoint' => $imagePath,
+                'bukti_muat' => $buktiMuatPath,
             ];
 
             // Handle cargo vs non-cargo types
