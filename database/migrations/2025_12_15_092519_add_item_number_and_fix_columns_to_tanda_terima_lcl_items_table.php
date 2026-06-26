@@ -13,17 +13,17 @@ return new class extends Migration
     {
         Schema::table('tanda_terima_lcl_items', function (Blueprint $table) {
             // Add item_number column after tanda_terima_lcl_id if it doesn't exist
-            if (!Schema::hasColumn('tanda_terima_lcl_items', 'item_number')) {
+            if (! Schema::hasColumn('tanda_terima_lcl_items', 'item_number')) {
                 $table->integer('item_number')->default(1)->after('tanda_terima_lcl_id');
             }
 
             // Rename jumlah_koli to jumlah untuk match dengan form
-            if (Schema::hasColumn('tanda_terima_lcl_items', 'jumlah_koli') && !Schema::hasColumn('tanda_terima_lcl_items', 'jumlah')) {
+            if (Schema::hasColumn('tanda_terima_lcl_items', 'jumlah_koli') && ! Schema::hasColumn('tanda_terima_lcl_items', 'jumlah')) {
                 $table->renameColumn('jumlah_koli', 'jumlah');
             }
 
             // Add satuan column that's missing
-            if (!Schema::hasColumn('tanda_terima_lcl_items', 'satuan')) {
+            if (! Schema::hasColumn('tanda_terima_lcl_items', 'satuan')) {
                 $table->string('satuan', 50)->nullable()->after('jumlah');
             }
         });

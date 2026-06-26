@@ -38,6 +38,7 @@ return new class extends Migration
                     if (empty($exists)) {
                         $table->index($columns, $indexName);
                     }
+
                     continue;
                 }
                 // Check if index already exists
@@ -84,9 +85,10 @@ return new class extends Migration
                     $exists = DB::select("
                         SELECT name FROM sqlite_master WHERE type='index' AND name=?
                     ", [$indexName]);
-                    if (!empty($exists)) {
+                    if (! empty($exists)) {
                         $table->dropIndex($indexName);
                     }
+
                     continue;
                 }
                 // Check if index exists before dropping

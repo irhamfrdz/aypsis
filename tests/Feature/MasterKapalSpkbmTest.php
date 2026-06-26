@@ -2,9 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\MasterKapal;
-use App\Models\KapalSpkbm;
 use App\Http\Controllers\MasterKapalController;
+use App\Models\MasterKapal;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Tests\TestCase;
@@ -36,12 +35,12 @@ class MasterKapalSpkbmTest extends TestCase
             'tujuan' => 'Jakarta',
         ];
 
-        $request = Request::create('/master-kapal/' . $kapal->id . '/print-spkbm', 'POST', $requestData);
+        $request = Request::create('/master-kapal/'.$kapal->id.'/print-spkbm', 'POST', $requestData);
 
         // Bind the request to container so validation works
         $this->app->instance('request', $request);
 
-        $controller = new MasterKapalController();
+        $controller = new MasterKapalController;
         $response = $controller->printSpkbm($request, $kapal);
 
         // 3. Assert response is PDF stream

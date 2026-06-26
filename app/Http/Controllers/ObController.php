@@ -3533,7 +3533,8 @@ class ObController extends Controller
             if (! $processed && $kegiatan !== 'bongkar') {
                 $query = NaikKapal::where('nomor_kontainer', $nomorKontainer);
                 if ($namaKapal) {
-                    $query->where('nama_kapal', $namaKapal);
+                    $normalized = $this->normalizeShipName($namaKapal);
+                    $query->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalized]);
                 }
                 if ($noVoyage) {
                     $query->where('no_voyage', $noVoyage);
@@ -3706,7 +3707,8 @@ class ObController extends Controller
             if (! $processed && $kegiatan !== 'muat') {
                 $query = Bl::where('nomor_kontainer', $nomorKontainer);
                 if ($namaKapal) {
-                    $query->where('nama_kapal', $namaKapal);
+                    $normalized = $this->normalizeShipName($namaKapal);
+                    $query->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalized]);
                 }
                 if ($noVoyage) {
                     $query->where('no_voyage', $noVoyage);

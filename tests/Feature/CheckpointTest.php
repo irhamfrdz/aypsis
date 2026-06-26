@@ -16,7 +16,7 @@ class CheckpointTest extends TestCase
     {
         $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
         $this->withSession(['_token' => csrf_token()]);
-        
+
         $karyawan = \App\Models\Karyawan::factory()->create([
             'divisi' => 'SUPIR',
         ]);

@@ -27,11 +27,11 @@ return new class extends Migration
         } else {
             Schema::table('pranota_uang_rits', function (Blueprint $table) {
                 $existsNoSj = DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='pranota_uang_rits' AND name LIKE '%no_surat_jalan%'");
-                if (!empty($existsNoSj)) {
+                if (! empty($existsNoSj)) {
                     $table->dropIndex($existsNoSj[0]->name);
                 }
                 $existsSupir = DB::select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='pranota_uang_rits' AND name LIKE '%supir_nama%'");
-                if (!empty($existsSupir)) {
+                if (! empty($existsSupir)) {
                     $table->dropIndex($existsSupir[0]->name);
                 }
             });

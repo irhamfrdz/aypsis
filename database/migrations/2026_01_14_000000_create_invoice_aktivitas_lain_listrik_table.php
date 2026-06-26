@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('invoice_aktivitas_lain_listrik')) {
+        if (! Schema::hasTable('invoice_aktivitas_lain_listrik')) {
             Schema::create('invoice_aktivitas_lain_listrik', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('invoice_aktivitas_lain_id')->constrained('invoice_aktivitas_lain')->onDelete('cascade');

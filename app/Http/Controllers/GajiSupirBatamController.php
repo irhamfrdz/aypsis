@@ -221,7 +221,7 @@ class GajiSupirBatamController extends Controller
         foreach ($obList as $ob) {
             $waybills[] = [
                 'type' => 'OB',
-                'no_surat_jalan' => $ob->nomor_kontainer . ($ob->kapal ? ' (' . $ob->kapal . ')' : ''),
+                'no_surat_jalan' => $ob->nomor_kontainer.($ob->kapal ? ' ('.$ob->kapal.')' : ''),
                 'tanggal' => $ob->created_at->format('d/m/Y'),
                 'rit' => is_numeric($ob->biaya) ? (float) $ob->biaya : 0,
             ];
@@ -237,7 +237,7 @@ class GajiSupirBatamController extends Controller
         foreach ($langsirBatamList as $langsir) {
             $waybills[] = [
                 'type' => 'Langsir Batam',
-                'no_surat_jalan' => $langsir->no_transaksi . ($langsir->no_kontainer ? ' (' . $langsir->no_kontainer . ')' : ''),
+                'no_surat_jalan' => $langsir->no_transaksi.($langsir->no_kontainer ? ' ('.$langsir->no_kontainer.')' : ''),
                 'tanggal' => $langsir->tanggal->format('d/m/Y'),
                 'rit' => is_numeric($langsir->biaya) ? (float) $langsir->biaya : 0,
             ];
@@ -434,7 +434,7 @@ class GajiSupirBatamController extends Controller
             $waybills[] = [
                 'id' => $ob->id,
                 'type' => 'OB',
-                'no_surat_jalan' => $ob->nomor_kontainer . ($ob->kapal ? ' (' . $ob->kapal . ')' : ''),
+                'no_surat_jalan' => $ob->nomor_kontainer.($ob->kapal ? ' ('.$ob->kapal.')' : ''),
                 'tanggal' => $ob->created_at->format('d/m/Y'),
                 'rit' => $ritVal,
             ];
@@ -458,7 +458,7 @@ class GajiSupirBatamController extends Controller
             $waybills[] = [
                 'id' => $langsir->id,
                 'type' => 'Langsir Batam',
-                'no_surat_jalan' => $langsir->no_transaksi . ($langsir->no_kontainer ? ' (' . $langsir->no_kontainer . ')' : ''),
+                'no_surat_jalan' => $langsir->no_transaksi.($langsir->no_kontainer ? ' ('.$langsir->no_kontainer.')' : ''),
                 'tanggal' => $langsir->tanggal->format('d/m/Y'),
                 'rit' => $ritVal,
             ];

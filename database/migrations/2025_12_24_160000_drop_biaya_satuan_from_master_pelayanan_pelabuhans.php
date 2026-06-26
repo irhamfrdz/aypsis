@@ -19,7 +19,7 @@ return new class extends Migration
             if (Schema::hasColumn('master_pelayanan_pelabuhans', 'satuan')) {
                 $columnsToDrop[] = 'satuan';
             }
-            if (!empty($columnsToDrop)) {
+            if (! empty($columnsToDrop)) {
                 $table->dropColumn($columnsToDrop);
             }
         });
