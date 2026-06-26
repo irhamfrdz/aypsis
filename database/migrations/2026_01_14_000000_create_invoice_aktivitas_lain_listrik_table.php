@@ -11,24 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('invoice_aktivitas_lain_listrik', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('invoice_aktivitas_lain_id')->constrained('invoice_aktivitas_lain')->onDelete('cascade');
-            $table->decimal('lwbp_baru', 15, 2)->nullable();
-            $table->decimal('lwbp_lama', 15, 2)->nullable();
-            $table->decimal('lwbp', 15, 2)->nullable();
-            $table->decimal('wbp', 15, 2)->nullable();
-            $table->decimal('lwbp_tarif', 15, 2)->nullable();
-            $table->decimal('wbp_tarif', 15, 2)->nullable();
-            $table->decimal('tarif_1', 15, 2)->nullable();
-            $table->decimal('tarif_2', 15, 2)->nullable();
-            $table->decimal('biaya_beban', 15, 2)->nullable();
-            $table->decimal('ppju', 15, 2)->nullable();
-            $table->decimal('dpp', 15, 2)->nullable();
-            $table->decimal('pph', 15, 2)->nullable();
-            $table->decimal('grand_total', 15, 2)->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('invoice_aktivitas_lain_listrik')) {
+            Schema::create('invoice_aktivitas_lain_listrik', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('invoice_aktivitas_lain_id')->constrained('invoice_aktivitas_lain')->onDelete('cascade');
+                $table->decimal('lwbp_baru', 15, 2)->nullable();
+                $table->decimal('lwbp_lama', 15, 2)->nullable();
+                $table->decimal('lwbp', 15, 2)->nullable();
+                $table->decimal('wbp', 15, 2)->nullable();
+                $table->decimal('lwbp_tarif', 15, 2)->nullable();
+                $table->decimal('wbp_tarif', 15, 2)->nullable();
+                $table->decimal('tarif_1', 15, 2)->nullable();
+                $table->decimal('tarif_2', 15, 2)->nullable();
+                $table->decimal('biaya_beban', 15, 2)->nullable();
+                $table->decimal('ppju', 15, 2)->nullable();
+                $table->decimal('dpp', 15, 2)->nullable();
+                $table->decimal('pph', 15, 2)->nullable();
+                $table->decimal('grand_total', 15, 2)->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**
