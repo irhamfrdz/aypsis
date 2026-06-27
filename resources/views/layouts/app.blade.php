@@ -1455,7 +1455,8 @@
                                  Request::routeIs('pembayaran-pranota-rit.*') || 
                                  Request::routeIs('pranota-uang-rit-kenek.*') || 
                                  Request::routeIs('pembayaran-pranota-rit-kenek.*') ||
-                                 Request::routeIs('pranota-uang-rit-batam.*');
+                                 Request::routeIs('pranota-uang-rit-batam.*') ||
+                                 Request::routeIs('saldo-utang-supir.*');
                     
                     $hasRitPermissions = $user && (
                         $user->can('pranota-rit-view') || 
@@ -1463,7 +1464,9 @@
                         $user->can('pembayaran-pranota-rit-view') || 
                         $user->can('pranota-uang-rit-kenek-view') || 
                         $user->can('pembayaran-pranota-rit-kenek-view') ||
-                        $user->can('pranota-uang-rit-batam-view')
+                        $user->can('pranota-uang-rit-batam-view') ||
+                        $user->can('saldo-utang-supir-view') ||
+                        $isAdmin
                     );
 
                 @endphp
@@ -1487,6 +1490,12 @@
                         @if($user && $user->can('pranota-uang-rit-view'))
                             <a href="{{ route('pranota-uang-rit.index', ['start_date' => \Carbon\Carbon::now()->subDays(30)->format('Y-m-d'), 'end_date' => \Carbon\Carbon::now()->format('Y-m-d')]) }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-rit.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Pranota Uang Rit</span>
+                            </a>
+                        @endif
+
+                        @if($user && ($user->can('saldo-utang-supir-view') || $isAdmin))
+                            <a href="{{ route('saldo-utang-supir.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('saldo-utang-supir.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Saldo Utang Supir</span>
                             </a>
                         @endif
 

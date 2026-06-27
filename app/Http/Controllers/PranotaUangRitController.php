@@ -821,6 +821,31 @@ class PranotaUangRitController extends Controller
                     'adjustment' => floatval($totals['adjustment']),
                     // grand_total akan dihitung otomatis di model
                 ]);
+
+                // Update Saldo Utang Supir if there is debt deduction
+                if (floatval($totals['hutang']) > 0) {
+                    $karyawan = \App\Models\Karyawan::where('nik', $supirKey)
+                        ->orWhere('nama_panggilan', $totals['supir_nama'])
+                        ->orWhere('nama_lengkap', $totals['supir_nama'])
+                        ->first();
+
+                    if ($karyawan) {
+                        $saldoUtang = \App\Models\SaldoUtangSupir::firstOrCreate(
+                            ['karyawan_id' => $karyawan->id],
+                            ['saldo' => 0.00]
+                        );
+                        $saldoUtang->decrement('saldo', floatval($totals['hutang']));
+
+                        \App\Models\RiwayatUtangSupir::create([
+                            'karyawan_id' => $karyawan->id,
+                            'tanggal' => $request->tanggal,
+                            'tipe' => 'pengurangan',
+                            'nominal' => floatval($totals['hutang']),
+                            'referensi' => 'Potongan Pranota #' . $nomorPranota,
+                            'keterangan' => 'Potongan otomatis saat pembuatan Pranota Uang Rit.',
+                        ]);
+                    }
+                }
             }
 
             // Simpan detail per surat jalan (untuk tracking)

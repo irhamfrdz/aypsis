@@ -3474,6 +3474,10 @@ Route::middleware([
             ->name('pranota-uang-rit.print')
             ->middleware('can:pranota-uang-rit-view');
 
+        // Saldo Utang Supir Management routes
+        Route::resource('saldo-utang-supir', \App\Http\Controllers\SaldoUtangSupirController::class)
+            ->only(['index', 'create', 'store', 'show']);
+
         // Pembayaran Pranota Rit Management with permissions
         Route::prefix('pembayaran-pranota-rit')
             ->name('pembayaran-pranota-rit.')

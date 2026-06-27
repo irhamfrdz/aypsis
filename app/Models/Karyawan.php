@@ -122,4 +122,14 @@ class Karyawan extends Model
 
         return (string) $nextNikNumber;
     }
+
+    public function saldoUtang()
+    {
+        return $this->hasOne(SaldoUtangSupir::class, 'karyawan_id');
+    }
+
+    public function riwayatUtang()
+    {
+        return $this->hasMany(RiwayatUtangSupir::class, 'karyawan_id');
+    }
 }
