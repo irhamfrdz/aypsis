@@ -297,7 +297,12 @@ class InvoiceAktivitasLainController extends Controller
         }
 
         // Conditional validation rules
-        $totalValidation = ($isBiayaListrik || $isUtilities || $isPBM) ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
+        $totalValidation = 'required|numeric|min:0';
+        if ($isBiayaListrik || $isUtilities) {
+            $totalValidation = 'nullable|numeric|min:0';
+        } elseif ($isPBM) {
+            $totalValidation = 'nullable|numeric'; // Allow negative values for PBM
+        }
 
         $isLabuhTambat = false;
         if ($request->has('klasifikasi_biaya_id')) {
@@ -907,7 +912,12 @@ class InvoiceAktivitasLainController extends Controller
         }
 
         // Conditional validation rules
-        $totalValidation = ($isBiayaListrik || $isUtilities || $isPBM) ? 'nullable|numeric|min:0' : 'required|numeric|min:0';
+        $totalValidation = 'required|numeric|min:0';
+        if ($isBiayaListrik || $isUtilities) {
+            $totalValidation = 'nullable|numeric|min:0';
+        } elseif ($isPBM) {
+            $totalValidation = 'nullable|numeric'; // Allow negative values for PBM
+        }
 
         $isLabuhTambat = false;
         if ($request->has('klasifikasi_biaya_id')) {

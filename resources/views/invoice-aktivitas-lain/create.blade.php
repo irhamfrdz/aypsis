@@ -3922,11 +3922,13 @@ console.log('Akun COAs data:', akunCoasData);
             }
 
             function formatCurrency(input) {
+                let isNegative = input.value.trim().startsWith('-');
                 let val = input.value.replace(/[^0-9]/g, '');
                 if (val) {
-                    input.value = parseInt(val).toLocaleString('id-ID');
+                    let formatted = parseInt(val).toLocaleString('id-ID');
+                    input.value = (isNegative ? '-' : '') + formatted;
                 } else {
-                    input.value = '';
+                    input.value = isNegative ? '-' : '';
                 }
             }
 
@@ -3937,20 +3939,28 @@ console.log('Akun COAs data:', akunCoasData);
                     const adminInput = row.querySelector('input[name*="[biaya_admin]"]');
                     const rowTotalInput = row.querySelector('.pbm-row-total');
                     
-                    const nominal = parseInt(nominalInput.value.replace(/[^0-9]/g, '')) || 0;
-                    const admin = parseInt(adminInput.value.replace(/[^0-9]/g, '')) || 0;
+                    const isNominalNegative = nominalInput.value.trim().startsWith('-');
+                    const nominalVal = nominalInput.value.replace(/[^0-9]/g, '');
+                    const nominal = (parseInt(nominalVal) || 0) * (isNominalNegative ? -1 : 1);
+                    
+                    const isAdminNegative = adminInput.value.trim().startsWith('-');
+                    const adminVal = adminInput.value.replace(/[^0-9]/g, '');
+                    const admin = (parseInt(adminVal) || 0) * (isAdminNegative ? -1 : 1);
+                    
                     const rowTotal = nominal + admin;
                     
-                    rowTotalInput.value = rowTotal.toLocaleString('id-ID');
+                    let formattedRowTotal = Math.abs(rowTotal).toLocaleString('id-ID');
+                    rowTotalInput.value = (rowTotal < 0 ? '-' : '') + formattedRowTotal;
                     totalSum += rowTotal;
                 });
                 
-                totalSumDisplay.textContent = 'Rp ' + totalSum.toLocaleString('id-ID');
+                let formattedTotalSum = Math.abs(totalSum).toLocaleString('id-ID');
+                totalSumDisplay.textContent = 'Rp ' + (totalSum < 0 ? '-' : '') + formattedTotalSum;
                 
                 // Sync with main total field
                 const pbmWrapper = document.getElementById('biaya_pbm_wrapper');
                 if (mainTotalInput && pbmWrapper && !pbmWrapper.classList.contains('hidden')) {
-                    mainTotalInput.value = totalSum > 0 ? totalSum.toLocaleString('id-ID') : '';
+                    mainTotalInput.value = totalSum !== 0 ? (totalSum < 0 ? '-' : '') + Math.abs(totalSum).toLocaleString('id-ID') : '';
                 }
             }
 
