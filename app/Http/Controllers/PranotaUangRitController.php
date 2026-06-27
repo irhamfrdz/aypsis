@@ -344,7 +344,47 @@ class PranotaUangRitController extends Controller
             }
         }
 
-        return view('pranota-uang-rit.create', compact('suratJalans', 'suratJalanBongkarans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples', 'viewStartDate', 'viewEndDate'));
+        // Count unique check dates per supir within the range for attendance from cek_kendaraans table
+        $driverAttendance = [];
+        if ($startDateObj && $endDateObj) {
+            $cekDates = DB::table('cek_kendaraans')
+                ->join('karyawans', 'cek_kendaraans.karyawan_id', '=', 'karyawans.id')
+                ->select('karyawans.nik', 'karyawans.nama_panggilan', 'karyawans.nama_lengkap', 'cek_kendaraans.tanggal')
+                ->whereBetween('cek_kendaraans.tanggal', [$startDateObj->toDateString(), $endDateObj->toDateString()])
+                ->get();
+
+            $supirDates = [];
+            foreach ($cekDates as $row) {
+                $dateStr = $row->tanggal;
+                
+                // Map NIK
+                if ($row->nik) {
+                    $datesList = $supirDates[strtoupper(trim($row->nik))] ?? [];
+                    $datesList[$dateStr] = true;
+                    $supirDates[strtoupper(trim($row->nik))] = $datesList;
+                }
+
+                // Map Nama Panggilan
+                if ($row->nama_panggilan) {
+                    $datesList = $supirDates[strtoupper(trim($row->nama_panggilan))] ?? [];
+                    $datesList[$dateStr] = true;
+                    $supirDates[strtoupper(trim($row->nama_panggilan))] = $datesList;
+                }
+
+                // Map Nama Lengkap
+                if ($row->nama_lengkap) {
+                    $datesList = $supirDates[strtoupper(trim($row->nama_lengkap))] ?? [];
+                    $datesList[$dateStr] = true;
+                    $supirDates[strtoupper(trim($row->nama_lengkap))] = $datesList;
+                }
+            }
+
+            foreach ($supirDates as $key => $dates) {
+                $driverAttendance[$key] = count($dates);
+            }
+        }
+
+        return view('pranota-uang-rit.create', compact('suratJalans', 'suratJalanBongkarans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples', 'viewStartDate', 'viewEndDate', 'driverAttendance'));
     }
 
     /**
@@ -586,6 +626,7 @@ class PranotaUangRitController extends Controller
                         'supir_nama' => $supirDisplayName,
                         'total_uang_supir' => 0.0,
                         'jumlah_rit' => 0,
+                        'absen' => 0,
                         'hutang' => 0.0,
                         'tabungan' => 0.0,
                         'bpjs' => 0.0,
@@ -624,6 +665,7 @@ class PranotaUangRitController extends Controller
                         'supir_nama' => $supirDisplayName,
                         'total_uang_supir' => 0.0,
                         'jumlah_rit' => 0,
+                        'absen' => 0,
                         'hutang' => 0.0,
                         'tabungan' => 0.0,
                         'bpjs' => 0.0,
@@ -666,6 +708,7 @@ class PranotaUangRitController extends Controller
                     $supirTotals[$targetKey]['tabungan'] = floatval($details['tabungan'] ?? 0);
                     $supirTotals[$targetKey]['bpjs'] = floatval($details['bpjs'] ?? 0);
                     $supirTotals[$targetKey]['adjustment'] = floatval($details['adjustment'] ?? 0);
+                    $supirTotals[$targetKey]['absen'] = intval($details['absen'] ?? 0);
 
                     $totalHutangKeseluruhan += $supirTotals[$targetKey]['hutang'];
                     $totalTabunganKeseluruhan += $supirTotals[$targetKey]['tabungan'];
@@ -770,6 +813,7 @@ class PranotaUangRitController extends Controller
                     'no_pranota' => $nomorPranota,
                     'supir_nama' => $totals['supir_nama'],
                     'jumlah_rit' => intval($totals['jumlah_rit']),
+                    'absen' => intval($totals['absen'] ?? 0),
                     'total_uang_supir' => floatval($totals['total_uang_supir']),
                     'hutang' => floatval($totals['hutang']),
                     'tabungan' => floatval($totals['tabungan']),
@@ -1253,6 +1297,7 @@ class PranotaUangRitController extends Controller
                     'supir_nama' => $karyawan ? $karyawan->nama_lengkap : $detail->supir_nama,
                     'nik' => $karyawan ? $karyawan->nik : null,
                     'jumlah_rit' => 0,
+                    'absen' => 0,
                     'total_uang_supir' => 0,
                     'hutang' => 0,
                     'tabungan' => 0,
@@ -1263,6 +1308,7 @@ class PranotaUangRitController extends Controller
             }
 
             $consolidatedDetails[$key]['jumlah_rit'] += $detail->jumlah_rit;
+            $consolidatedDetails[$key]['absen'] += $detail->absen;
             $consolidatedDetails[$key]['total_uang_supir'] += $detail->total_uang_supir;
             $consolidatedDetails[$key]['hutang'] += $detail->hutang;
             $consolidatedDetails[$key]['tabungan'] += $detail->tabungan;
@@ -1308,6 +1354,7 @@ class PranotaUangRitController extends Controller
                     'supir_nama' => $karyawan ? $karyawan->nama_lengkap : $detail->supir_nama,
                     'nik' => $karyawan ? $karyawan->nik : '-',
                     'jumlah_rit' => 0,
+                    'absen' => 0,
                     'total_uang_supir' => 0,
                     'hutang' => 0,
                     'tabungan' => 0,
@@ -1318,6 +1365,7 @@ class PranotaUangRitController extends Controller
             }
 
             $consolidatedDetails[$key]->jumlah_rit += $detail->jumlah_rit;
+            $consolidatedDetails[$key]->absen += $detail->absen;
             $consolidatedDetails[$key]->total_uang_supir += $detail->total_uang_supir;
             $consolidatedDetails[$key]->hutang += $detail->hutang;
             $consolidatedDetails[$key]->tabungan += $detail->tabungan;
@@ -1334,14 +1382,14 @@ class PranotaUangRitController extends Controller
 
         // Set title
         $sheet->setCellValue('A1', 'RITASI SUPIR');
-        $sheet->mergeCells('A1:J1');
+        $sheet->mergeCells('A1:K1');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         // Pranota info
         $sheet->setCellValue('A3', 'GAJI SUPIR TGL: '.$pranotaUangRit->tanggal->format('d M Y'));
-        $sheet->setCellValue('J3', $pranotaUangRit->no_pranota);
-        $sheet->getStyle('J3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $sheet->setCellValue('K3', $pranotaUangRit->no_pranota);
+        $sheet->getStyle('K3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
         // Detail supir headers
         $row = 5;
@@ -1349,12 +1397,13 @@ class PranotaUangRitController extends Controller
         $sheet->setCellValue('B'.$row, 'NIK');
         $sheet->setCellValue('C'.$row, 'Supir');
         $sheet->setCellValue('D'.$row, 'Rit');
-        $sheet->setCellValue('E'.$row, 'Total Uang');
-        $sheet->setCellValue('F'.$row, 'Hutang');
-        $sheet->setCellValue('G'.$row, 'Tabungan');
-        $sheet->setCellValue('H'.$row, 'BPJS');
-        $sheet->setCellValue('I'.$row, 'Adjusment');
-        $sheet->setCellValue('J'.$row, 'Grand Total');
+        $sheet->setCellValue('E'.$row, 'Absen');
+        $sheet->setCellValue('F'.$row, 'Total Uang');
+        $sheet->setCellValue('G'.$row, 'Hutang');
+        $sheet->setCellValue('H'.$row, 'Tabungan');
+        $sheet->setCellValue('I'.$row, 'BPJS');
+        $sheet->setCellValue('J'.$row, 'Adjusment');
+        $sheet->setCellValue('K'.$row, 'Grand Total');
 
         // Style headers
         $headerStyle = [
@@ -1368,24 +1417,26 @@ class PranotaUangRitController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A'.$row.':J'.$row)->applyFromArray($headerStyle);
+        $sheet->getStyle('A'.$row.':K'.$row)->applyFromArray($headerStyle);
 
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(5);   // No
         $sheet->getColumnDimension('B')->setWidth(8);   // NIK
         $sheet->getColumnDimension('C')->setWidth(28);  // Supir
         $sheet->getColumnDimension('D')->setWidth(6);   // Rit
-        $sheet->getColumnDimension('E')->setWidth(15);  // Total Uang
-        $sheet->getColumnDimension('F')->setWidth(12);  // Hutang
-        $sheet->getColumnDimension('G')->setWidth(12);  // Tabungan
-        $sheet->getColumnDimension('H')->setWidth(10);  // BPJS
-        $sheet->getColumnDimension('I')->setWidth(12);  // Adjustment
-        $sheet->getColumnDimension('J')->setWidth(15);  // Grand Total
+        $sheet->getColumnDimension('E')->setWidth(10);  // Absen
+        $sheet->getColumnDimension('F')->setWidth(15);  // Total Uang
+        $sheet->getColumnDimension('G')->setWidth(12);  // Hutang
+        $sheet->getColumnDimension('H')->setWidth(12);  // Tabungan
+        $sheet->getColumnDimension('I')->setWidth(10);  // BPJS
+        $sheet->getColumnDimension('J')->setWidth(12);  // Adjustment
+        $sheet->getColumnDimension('K')->setWidth(15);  // Grand Total
 
         // Fill data
         $row++;
         $no = 1;
         $totalRit = 0;
+        $totalAbsen = 0;
         $totalUang = 0;
         $totalHutang = 0;
         $totalTabungan = 0;
@@ -1395,36 +1446,39 @@ class PranotaUangRitController extends Controller
 
         foreach ($supirDetails as $detail) {
             $rit = $detail->total_uang_supir > 0 ? round($detail->total_uang_supir / 85000) : 0;
+            $absen = $detail->absen ?? 0;
 
             $sheet->setCellValue('A'.$row, $no);
             $sheet->setCellValue('B'.$row, $detail->nik ?? '-');
             $sheet->setCellValue('C'.$row, strtoupper($detail->supir_nama));
             $sheet->setCellValue('D'.$row, $rit);
-            $sheet->setCellValue('E'.$row, $detail->total_uang_supir);
-            $sheet->setCellValue('F'.$row, $detail->hutang);
-            $sheet->setCellValue('G'.$row, $detail->tabungan);
-            $sheet->setCellValue('H'.$row, $detail->bpjs);
-            $sheet->setCellValue('I'.$row, $detail->adjustment);
-            $sheet->setCellValue('J'.$row, $detail->grand_total);
+            $sheet->setCellValue('E'.$row, $absen);
+            $sheet->setCellValue('F'.$row, $detail->total_uang_supir);
+            $sheet->setCellValue('G'.$row, $detail->hutang);
+            $sheet->setCellValue('H'.$row, $detail->tabungan);
+            $sheet->setCellValue('I'.$row, $detail->bpjs);
+            $sheet->setCellValue('J'.$row, $detail->adjustment);
+            $sheet->setCellValue('K'.$row, $detail->grand_total);
 
             // Format currency
-            $sheet->getStyle('E'.$row)->getNumberFormat()->setFormatCode('#,##0');
             $sheet->getStyle('F'.$row)->getNumberFormat()->setFormatCode('#,##0');
             $sheet->getStyle('G'.$row)->getNumberFormat()->setFormatCode('#,##0');
             $sheet->getStyle('H'.$row)->getNumberFormat()->setFormatCode('#,##0');
             $sheet->getStyle('I'.$row)->getNumberFormat()->setFormatCode('#,##0');
             $sheet->getStyle('J'.$row)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('K'.$row)->getNumberFormat()->setFormatCode('#,##0');
 
-            // Center align for No, NIK, Rit
+            // Center align for No, NIK, Rit, Absen
             $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle('B'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle('D'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('E'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
             // Right align for currency columns
-            $sheet->getStyle('E'.$row.':J'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle('F'.$row.':K'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
             // Add border to data rows
-            $sheet->getStyle('A'.$row.':J'.$row)->applyFromArray([
+            $sheet->getStyle('A'.$row.':K'.$row)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -1434,6 +1488,7 @@ class PranotaUangRitController extends Controller
             ]);
 
             $totalRit += $rit;
+            $totalAbsen += $absen;
             $totalUang += $detail->total_uang_supir;
             $totalHutang += $detail->hutang;
             $totalTabungan += $detail->tabungan;
@@ -1449,29 +1504,31 @@ class PranotaUangRitController extends Controller
         $sheet->setCellValue('A'.$row, 'TOTAL');
         $sheet->mergeCells('A'.$row.':C'.$row);
         $sheet->setCellValue('D'.$row, $totalRit);
-        $sheet->setCellValue('E'.$row, $totalUang);
-        $sheet->setCellValue('F'.$row, $totalHutang);
-        $sheet->setCellValue('G'.$row, $totalTabungan);
-        $sheet->setCellValue('H'.$row, $totalBpjs);
-        $sheet->setCellValue('I'.$row, $totalAdjustment);
-        $sheet->setCellValue('J'.$row, $totalGrand);
+        $sheet->setCellValue('E'.$row, $totalAbsen);
+        $sheet->setCellValue('F'.$row, $totalUang);
+        $sheet->setCellValue('G'.$row, $totalHutang);
+        $sheet->setCellValue('H'.$row, $totalTabungan);
+        $sheet->setCellValue('I'.$row, $totalBpjs);
+        $sheet->setCellValue('J'.$row, $totalAdjustment);
+        $sheet->setCellValue('K'.$row, $totalGrand);
 
         // Format total row
-        $sheet->getStyle('E'.$row)->getNumberFormat()->setFormatCode('#,##0');
         $sheet->getStyle('F'.$row)->getNumberFormat()->setFormatCode('#,##0');
         $sheet->getStyle('G'.$row)->getNumberFormat()->setFormatCode('#,##0');
         $sheet->getStyle('H'.$row)->getNumberFormat()->setFormatCode('#,##0');
         $sheet->getStyle('I'.$row)->getNumberFormat()->setFormatCode('#,##0');
         $sheet->getStyle('J'.$row)->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle('K'.$row)->getNumberFormat()->setFormatCode('#,##0');
 
-        $sheet->getStyle('A'.$row.':J'.$row)->getFont()->setBold(true);
-        $sheet->getStyle('A'.$row.':J'.$row)->getFill()
+        $sheet->getStyle('A'.$row.':K'.$row)->getFont()->setBold(true);
+        $sheet->getStyle('A'.$row.':K'.$row)->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setRGB('F5F5F5');
         $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('D'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('E'.$row.':J'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('A'.$row.':J'.$row)->applyFromArray([
+        $sheet->getStyle('E'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('F'.$row.':K'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('A'.$row.':K'.$row)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
