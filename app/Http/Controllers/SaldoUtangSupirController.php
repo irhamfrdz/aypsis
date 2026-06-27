@@ -119,4 +119,131 @@ class SaldoUtangSupirController extends Controller
 
         return view('saldo-utang-supir.show', compact('supir', 'riwayat'));
     }
+
+    /**
+     * Show import CSV form.
+     */
+    public function showImportForm()
+    {
+        return view('saldo-utang-supir.import');
+    }
+
+    /**
+     * Process import CSV.
+     */
+    public function importProcess(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt',
+        ]);
+
+        $file = $request->file('csv_file');
+        $path = $file->getRealPath();
+
+        $successCount = 0;
+        $unmatchedRows = [];
+
+        DB::beginTransaction();
+        try {
+            $handle = fopen($path, 'r');
+            if ($handle !== false) {
+                // Read header row
+                $header = fgetcsv($handle, 1000, ';');
+
+                while (($row = fgetcsv($handle, 1000, ';')) !== false) {
+                    // Skip empty rows
+                    if (count($row) < 3 || empty($row[0]) && empty($row[1])) {
+                        continue;
+                    }
+
+                    $nikInput = trim($row[0]);
+                    $namaInput = trim($row[1]);
+                    $saldoInput = trim($row[2]);
+
+                    // Parse balance value
+                    // e.g. "650.000,00" -> 650000.00 or "-70.000,00" -> -70000.00
+                    $cleanSaldo = str_replace('.', '', $saldoInput); // Remove thousands dots
+                    $cleanSaldo = str_replace(',', '.', $cleanSaldo); // Replace decimal comma with dot
+                    $saldoFloat = floatval($cleanSaldo);
+
+                    // Find supir / karyawan
+                    $karyawan = null;
+
+                    // 1. Match by NIK
+                    if (!empty($nikInput)) {
+                        // Pad NIK if necessary to match DB representation (e.g. "0012" vs "12")
+                        $paddedNik = str_pad($nikInput, 4, '0', STR_PAD_LEFT);
+                        $karyawan = Karyawan::where('nik', $nikInput)
+                            ->orWhere('nik', $paddedNik)
+                            ->first();
+                    }
+
+                    // 2. Match by Name if NIK didn't yield a result
+                    if (!$karyawan && !empty($namaInput)) {
+                        $cleanedName = $this->cleanDriverName($namaInput);
+                        $karyawan = Karyawan::where('nama_lengkap', 'like', "%{$cleanedName}%")
+                            ->orWhere('nama_panggilan', 'like', "%{$cleanedName}%")
+                            ->first();
+                    }
+
+                    if ($karyawan) {
+                        // Update or create saldo
+                        $saldoUtang = SaldoUtangSupir::firstOrCreate(
+                            ['karyawan_id' => $karyawan->id],
+                            ['saldo' => 0.00]
+                        );
+
+                        // Overwrite with initial balance from CSV
+                        $saldoUtang->saldo = $saldoFloat;
+                        $saldoUtang->save();
+
+                        // Add transaction log
+                        RiwayatUtangSupir::create([
+                            'karyawan_id' => $karyawan->id,
+                            'tanggal' => now(),
+                            'tipe' => $saldoFloat >= 0 ? 'penambahan' : 'pengurangan',
+                            'nominal' => abs($saldoFloat),
+                            'referensi' => 'Saldo Awal CSV',
+                            'keterangan' => "Import saldo awal dari CSV. NIK Asal: {$nikInput}, Nama Asal: {$namaInput}",
+                        ]);
+
+                        $successCount++;
+                    } else {
+                        $unmatchedRows[] = [
+                            'nik' => $nikInput,
+                            'nama' => $namaInput,
+                            'saldo' => $saldoInput
+                        ];
+                    }
+                }
+                fclose($handle);
+            }
+
+            DB::commit();
+
+            if (count($unmatchedRows) > 0) {
+                return redirect()->route('saldo-utang-supir.index')
+                    ->with('success', "Sukses mengimpor {$successCount} saldo supir.")
+                    ->with('warning_data', $unmatchedRows);
+            }
+
+            return redirect()->route('saldo-utang-supir.index')
+                ->with('success', "Sukses mengimpor seluruh {$successCount} data saldo supir.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan saat memproses file: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Clean driver name from CSV trailing details
+     */
+    private function cleanDriverName(string $name): string
+    {
+        $name = preg_replace('/,\s*BP(\s*\(KENEK\))?/i', '', $name);
+        $name = preg_replace('/\s*BP\s*(\(KENEK\))?/i', '', $name);
+        $name = preg_replace('/\s*\(KENEK\)/i', '', $name);
+        $name = preg_replace('/\s*\/[A-Z]+/i', '', $name); // remove e.g. /DULOH
+        return trim($name);
+    }
 }

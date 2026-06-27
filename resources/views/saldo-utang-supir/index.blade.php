@@ -16,6 +16,9 @@
             </div>
         </div>
         <div class="flex flex-wrap gap-2">
+            <a href="{{ route('saldo-utang-supir.import') }}" class="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold rounded-xl transition-all duration-200 text-xs flex items-center gap-2 uppercase tracking-wider">
+                <i class="fas fa-file-import"></i> Import Saldo Awal
+            </a>
             <a href="{{ route('saldo-utang-supir.create') }}" class="px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 transition-all duration-200 text-xs flex items-center gap-2 uppercase tracking-wider">
                 <i class="fas fa-plus-circle"></i> Tambah Transaksi
             </a>
@@ -29,6 +32,38 @@
                 <i class="fas fa-check-circle"></i>
             </div>
             <span class="font-bold text-sm">{{ session('success') }}</span>
+        </div>
+    @endif
+
+    <!-- Alert Warning for Unmatched Rows -->
+    @if(session('warning_data'))
+        <div class="mb-6 p-6 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl shadow-sm">
+            <div class="flex items-center mb-3">
+                <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center mr-3 text-amber-700">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <span class="font-black text-sm">Ada data supir yang tidak cocok (tidak ditemukan di database):</span>
+            </div>
+            <div class="overflow-x-auto max-h-48 overflow-y-auto mt-2 rounded-lg border border-amber-100">
+                <table class="w-full text-left text-xs text-amber-800">
+                    <thead class="bg-amber-100/50">
+                        <tr>
+                            <th class="px-4 py-2 font-bold">NIK</th>
+                            <th class="px-4 py-2 font-bold">Nama CSV</th>
+                            <th class="px-4 py-2 font-bold">Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-amber-100/50">
+                        @foreach(session('warning_data') as $row)
+                            <tr>
+                                <td class="px-4 py-1.5 font-mono">{{ $row['nik'] ?: '-' }}</td>
+                                <td class="px-4 py-1.5 font-semibold">{{ $row['nama'] }}</td>
+                                <td class="px-4 py-1.5 font-mono">Rp {{ $row['saldo'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     @endif
 

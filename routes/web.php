@@ -3475,6 +3475,11 @@ Route::middleware([
             ->middleware('can:pranota-uang-rit-view');
 
         // Saldo Utang Supir Management routes
+        Route::get('saldo-utang-supir/import', [\App\Http\Controllers\SaldoUtangSupirController::class, 'showImportForm'])
+            ->name('saldo-utang-supir.import');
+        Route::post('saldo-utang-supir/import', [\App\Http\Controllers\SaldoUtangSupirController::class, 'importProcess'])
+            ->name('saldo-utang-supir.import-process');
+
         Route::resource('saldo-utang-supir', \App\Http\Controllers\SaldoUtangSupirController::class)
             ->only(['index', 'create', 'store', 'show']);
 
