@@ -887,7 +887,6 @@
                             <option value="jakarta">Jakarta</option>
                         </select>
                     </div>
-                </div>
 
                 <!-- Guide -->
                 <div class="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
@@ -895,14 +894,14 @@
                         <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        Panduan Format Data (Tab-separated / Copy-paste dari Excel)
+                        Panduan Format Data (Semicolon-separated / Dipisahkan Titik Koma)
                     </h4>
-                    <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Tab</strong> (copy dari Excel otomatis tab-separated).</p>
+                    <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
-                        No SJ &lt;tab&gt; Tanggal &lt;tab&gt; No Kontainer &lt;tab&gt; No Seal &lt;tab&gt; Size &lt;tab&gt; No BL &lt;tab&gt; Supir &lt;tab&gt; No Plat &lt;tab&gt; Kenek &lt;tab&gt; Krani &lt;tab&gt; Pengirim &lt;tab&gt; Penerima &lt;tab&gt; Jenis Barang &lt;tab&gt; Tujuan Alamat &lt;tab&gt; Term &lt;tab&gt; Aktifitas &lt;tab&gt; Jenis Pengiriman
+                        No SJ ; Tanggal ; No Kontainer ; No Seal ; Size ; No BL ; Supir ; No Plat ; Kenek ; Krani ; Pengirim ; Penerima ; Jenis Barang ; Tujuan Alamat ; Term ; Aktifitas ; Jenis Pengiriman
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJ-001&emsp;2026-06-27&emsp;CONT123&emsp;SEAL456&emsp;20ft&emsp;BL789&emsp;ANDI&emsp;B1234XX&emsp;BUDI&emsp;CICI&emsp;PT ABC&emsp;PT XYZ&emsp;Elektronik&emsp;Jl. Raya 1&emsp;FOB&emsp;Bongkar&emsp;FCL
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;SEAL456;20ft;BL789;ANDI;B1234XX;BUDI;CICI;PT ABC;PT XYZ;Elektronik;Jl. Raya 1;FOB;Bongkar;FCL
                     </p>
                 </div>
 
@@ -910,11 +909,11 @@
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Data Surat Jalan <span class="text-red-500">*</span>
-                        <span class="text-xs text-gray-400 ml-2 font-normal">(paste dari Excel atau ketik manual)</span>
+                        <span class="text-xs text-gray-400 ml-2 font-normal">(dipisahkan titik koma)</span>
                     </label>
                     <textarea id="bulkTextarea" rows="10"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                              placeholder="Paste data dari Excel di sini...&#10;SJ-001	2026-06-27	CONT123	SEAL456	20ft	BL789	ANDI	B1234XX	BUDI	CICI	PT ABC	PT XYZ	Elektronik	Jl Raya	FOB	Bongkar	FCL&#10;SJ-002	2026-06-27	CONT456	SEAL789	40ft	BL012	DEDI	B5678YY	EKO	FANI	PT DEF	PT GHI	Tekstil	Jl Merdeka	CIF	Stuffing	LCL"></textarea>
+                              placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;SEAL456;20ft;BL789;ANDI;B1234XX;BUDI;CICI;PT ABC;PT XYZ;Elektronik;Jl Raya;FOB;Bongkar;FCL&#10;SJ-002;2026-06-27;CONT456;SEAL789;40ft;BL012;DEDI;B5678YY;EKO;FANI;PT DEF;PT GHI;Tekstil;Jl Merdeka;CIF;Stuffing;LCL"></textarea>
                 </div>
 
                 <!-- Action Buttons -->
@@ -2611,7 +2610,7 @@ function parseBulkData() {
     let warnings = [];
 
     lines.forEach((line, index) => {
-        const cols = line.split('\t');
+        const cols = line.split(';');
         const row = {};
 
         columnKeys.forEach((key, colIndex) => {
