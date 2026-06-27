@@ -1234,15 +1234,14 @@ function closeManifestModal() {
                     <!-- Tanggal Mulai -->
                     <div>
                         <label class="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Tanggal Mulai</label>
-                        <input type="date" name="start_date" value="{{ request('start_date', date('Y-m-d')) }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                        <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari', date('Y-m-d')) }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
                     </div>
                     
                     <!-- Tanggal Akhir -->
                     <div>
                         <label class="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Tanggal Akhir</label>
-                        <input type="date" name="end_date" value="{{ request('end_date', date('Y-m-d')) }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                        <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai', date('Y-m-d')) }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
                     </div>
-                    
                     <!-- Tujuan -->
                     <div>
                         <label class="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Tujuan Pengiriman</label>
