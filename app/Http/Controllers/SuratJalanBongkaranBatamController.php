@@ -688,24 +688,66 @@ class SuratJalanBongkaranBatamController extends Controller
                 }
 
                 try {
+                    $noKontainer = trim($row['no_kontainer'] ?? '');
+                    $noBl = trim($row['no_bl'] ?? '');
+
+                    // Find matching manifest
+                    $manifest = null;
+                    if (! empty($noKontainer) || ! empty($noBl)) {
+                        $query = Manifest::query();
+                        if (! empty($namaKapal)) {
+                            // Normalize name search
+                            $kapalClean = strtolower(str_replace('.', '', $namaKapal));
+                            $query->where(function ($q) use ($namaKapal, $kapalClean) {
+                                $q->where('nama_kapal', $namaKapal)
+                                    ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                            });
+                        }
+                        if (! empty($noVoyage)) {
+                            $query->where('no_voyage', $noVoyage);
+                        }
+
+                        if (! empty($noKontainer)) {
+                            $query->where('nomor_kontainer', 'LIKE', '%' . $noKontainer . '%');
+                        } elseif (! empty($noBl)) {
+                            $query->where('nomor_bl', 'LIKE', '%' . $noBl . '%');
+                        }
+
+                        $manifest = $query->first();
+                    }
+
+                    // If manifest is found, autofill missing fields
+                    $finalNoKontainer = ! empty($noKontainer) ? $noKontainer : ($manifest ? $manifest->nomor_kontainer : null);
+                    $finalNoSeal = ! empty($row['no_seal']) ? $row['no_seal'] : ($manifest ? $manifest->no_seal : null);
+                    $finalSize = ! empty($row['size']) ? $row['size'] : ($manifest ? $manifest->size_kontainer : null);
+                    $finalNoBl = ! empty($noBl) ? $noBl : ($manifest ? $manifest->nomor_bl : null);
+                    $finalPengirim = ! empty($row['pengirim']) ? $row['pengirim'] : ($manifest ? $manifest->pengirim : null);
+                    $finalPenerima = ! empty($row['penerima']) ? $row['penerima'] : ($manifest ? $manifest->penerima : null);
+                    $finalJenisBarang = ! empty($row['jenis_barang']) ? $row['jenis_barang'] : ($manifest ? $manifest->nama_barang : null);
+                    $finalTujuanAlamat = ! empty($row['tujuan_alamat']) ? $row['tujuan_alamat'] : ($manifest ? $manifest->alamat_pengiriman : null);
+                    $finalTerm = ! empty($row['term']) ? $row['term'] : ($manifest ? $manifest->term : null);
+                    $finalJenisPengiriman = ! empty($row['jenis_pengiriman']) ? $row['jenis_pengiriman'] : ($manifest ? $manifest->tipe_kontainer : null);
+                    $manifestId = $manifest ? $manifest->id : null;
+
                     SuratJalanBongkaranBatam::create([
                         'nomor_surat_jalan' => $nomorSuratJalan,
                         'tanggal_surat_jalan' => ! empty($row['tanggal_surat_jalan']) ? $row['tanggal_surat_jalan'] : now()->toDateString(),
-                        'no_kontainer' => $row['no_kontainer'] ?? null,
-                        'no_seal' => $row['no_seal'] ?? null,
-                        'size' => $row['size'] ?? null,
-                        'no_bl' => $row['no_bl'] ?? null,
+                        'no_kontainer' => $finalNoKontainer,
+                        'no_seal' => $finalNoSeal,
+                        'size' => $finalSize,
+                        'no_bl' => $finalNoBl,
                         'supir' => $row['supir'] ?? null,
                         'no_plat' => $row['no_plat'] ?? null,
                         'kenek' => $row['kenek'] ?? null,
                         'krani' => $row['krani'] ?? null,
-                        'pengirim' => $row['pengirim'] ?? null,
-                        'penerima' => $row['penerima'] ?? null,
-                        'jenis_barang' => $row['jenis_barang'] ?? null,
-                        'tujuan_alamat' => $row['tujuan_alamat'] ?? null,
-                        'term' => $row['term'] ?? null,
+                        'pengirim' => $finalPengirim,
+                        'penerima' => $finalPenerima,
+                        'jenis_barang' => $finalJenisBarang,
+                        'tujuan_alamat' => $finalTujuanAlamat,
+                        'term' => $finalTerm,
                         'aktifitas' => $row['aktifitas'] ?? null,
-                        'jenis_pengiriman' => $row['jenis_pengiriman'] ?? null,
+                        'jenis_pengiriman' => $finalJenisPengiriman,
+                        'manifest_id' => $manifestId,
                         'nama_kapal' => $namaKapal,
                         'no_voyage' => $noVoyage,
                         'lokasi' => $lokasi,
