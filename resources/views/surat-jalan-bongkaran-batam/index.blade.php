@@ -898,10 +898,10 @@
                     </h4>
                     <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
-                        No SJ ; Tanggal ; No Kontainer ; No Seal ; Size ; No BL ; Supir ; No Plat ; Kenek ; Krani ; Pengirim ; Penerima ; Jenis Barang ; Tujuan Alamat ; Term ; Aktifitas ; Jenis Pengiriman
+                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Kenek ; Krani ; Aktifitas
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;SEAL456;20ft;BL789;ANDI;B1234XX;BUDI;CICI;PT ABC;PT XYZ;Elektronik;Jl. Raya 1;FOB;Bongkar;FCL
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar
                     </p>
                 </div>
 
@@ -913,7 +913,7 @@
                     </label>
                     <textarea id="bulkTextarea" rows="10"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                              placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;SEAL456;20ft;BL789;ANDI;B1234XX;BUDI;CICI;PT ABC;PT XYZ;Elektronik;Jl Raya;FOB;Bongkar;FCL&#10;SJ-002;2026-06-27;CONT456;SEAL789;40ft;BL012;DEDI;B5678YY;EKO;FANI;PT DEF;PT GHI;Tekstil;Jl Merdeka;CIF;Stuffing;LCL"></textarea>
+                              placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar&#10;SJ-002;2026-06-27;CONT456;DEDI;B5678YY;EKO;FANI;Bongkar"></textarea>
                 </div>
 
                 <!-- Action Buttons -->
@@ -939,21 +939,12 @@
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">#</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No SJ</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Kontainer</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Seal</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No BL</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Kontainer / BL</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Plat</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Kenek</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Krani</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Term</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Aktifitas</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Jenis Kirim</th>
                                 </tr>
                             </thead>
                             <tbody id="bulkPreviewBody" class="bg-white divide-y divide-gray-100">
@@ -2597,10 +2588,8 @@ function parseBulkData() {
 
     const lines = rawText.split('\n').filter(line => line.trim() !== '');
     const columnKeys = [
-        'nomor_surat_jalan', 'tanggal_surat_jalan', 'no_kontainer', 'no_seal',
-        'size', 'no_bl', 'supir', 'no_plat', 'kenek', 'krani',
-        'pengirim', 'penerima', 'jenis_barang', 'tujuan_alamat',
-        'term', 'aktifitas', 'jenis_pengiriman'
+        'nomor_surat_jalan', 'tanggal_surat_jalan', 'no_kontainer',
+        'supir', 'no_plat', 'kenek', 'krani', 'aktifitas'
     ];
 
     bulkParsedRows = [];
@@ -2633,20 +2622,11 @@ function parseBulkData() {
             row.nomor_surat_jalan,
             row.tanggal_surat_jalan || '<span class="text-gray-400 italic">hari ini</span>',
             row.no_kontainer || '-',
-            row.no_seal || '-',
-            row.size || '-',
-            row.no_bl || '-',
             row.supir || '-',
             row.no_plat || '-',
             row.kenek || '-',
             row.krani || '-',
-            row.pengirim || '-',
-            row.penerima || '-',
-            row.jenis_barang || '-',
-            row.tujuan_alamat || '-',
-            row.term || '-',
-            row.aktifitas || '-',
-            row.jenis_pengiriman || '-'
+            row.aktifitas || '-'
         ];
 
         cellValues.forEach((val, i) => {
