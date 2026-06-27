@@ -1386,10 +1386,25 @@
                 })->groupBy(function($item) {
                     return strtoupper($item->namaStockBan->nama);
                 })->map(function($group) {
-                    return [
-                        'qty' => $group->sum('qty'),
-                        'unit' => $group->first()->type ?? 'pail'
-                    ];
+                    $units = $group->groupBy('type');
+                    if ($units->count() > 1) {
+                        $parts = [];
+                        foreach ($units as $unitName => $subGroup) {
+                            $sum = $subGroup->sum('qty');
+                            $parts[] = $sum . ' ' . strtoupper($unitName ?: 'pail');
+                        }
+                        return [
+                            'qty' => implode(' + ', $parts),
+                            'unit' => '',
+                            'is_mixed' => true
+                        ];
+                    } else {
+                        return [
+                            'qty' => $group->sum('qty'),
+                            'unit' => $group->first()->type ?? 'pail',
+                            'is_mixed' => false
+                        ];
+                    }
                 });
 
                 $majunQty = $stockLainLains->filter(function($item) {
@@ -1428,10 +1443,14 @@
                         </div>
                         <div class="min-w-0">
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate" title="{{ $name }}">{{ $name }}</p>
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-xl font-black text-gray-800">{{ $data['qty'] }}</span>
-                                <span class="text-[10px] font-medium text-gray-400 uppercase">{{ $data['unit'] }}</span>
-                            </div>
+                            <div class="flex items-baseline gap-1 mt-1">
+                                 @if(isset($data['is_mixed']) && $data['is_mixed'])
+                                     <span class="text-[10px] font-black text-gray-800 leading-none">{{ $data['qty'] }}</span>
+                                 @else
+                                     <span class="text-xl font-black text-gray-800 leading-none">{{ $data['qty'] }}</span>
+                                     <span class="text-[10px] font-medium text-gray-400 uppercase">{{ $data['unit'] }}</span>
+                                 @endif
+                             </div>
                         </div>
                     </div>
                 </div>
