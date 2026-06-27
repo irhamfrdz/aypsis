@@ -17,17 +17,18 @@
         </div>
         
         <!-- Big Balance Display -->
+        @php
+            $saldo = $supir->saldoUtang ? $supir->saldoUtang->saldo : 0;
+            $isNegative = $saldo < 0;
+        @endphp
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-4 flex items-center space-x-4">
-            <div class="w-10 h-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+            <div class="w-10 h-10 rounded-full {{ $isNegative ? 'bg-rose-50 border border-rose-100 text-rose-600' : 'bg-emerald-50 border border-emerald-100 text-emerald-600' }} flex items-center justify-center">
                 <i class="fas fa-wallet text-sm"></i>
             </div>
             <div>
                 <div class="text-[8px] font-black text-gray-400 uppercase tracking-widest">Saldo Utang Saat Ini</div>
-                <div class="text-lg font-black text-rose-600 font-mono">
-                    @php
-                        $saldo = $supir->saldoUtang ? $supir->saldoUtang->saldo : 0;
-                    @endphp
-                    Rp {{ number_format($saldo, 0, ',', '.') }}
+                <div class="text-lg font-black {{ $isNegative ? 'text-rose-600' : 'text-emerald-600' }} font-mono">
+                    {{ $isNegative ? '-' : '' }}Rp {{ number_format(abs($saldo), 0, ',', '.') }}
                 </div>
             </div>
         </div>

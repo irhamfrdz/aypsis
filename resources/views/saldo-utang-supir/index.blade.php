@@ -143,9 +143,9 @@
                                     $saldo = $supir->saldoUtang ? $supir->saldoUtang->saldo : 0;
                                 @endphp
                                 @if($saldo > 0)
-                                    <span class="text-rose-600 font-black">Rp {{ number_format($saldo, 0, ',', '.') }}</span>
+                                    <span class="text-emerald-600 font-black">Rp {{ number_format($saldo, 0, ',', '.') }}</span>
                                 @elseif($saldo < 0)
-                                    <span class="text-emerald-600 font-black">Rp {{ number_format(abs($saldo), 0, ',', '.') }} (Lebih Bayar)</span>
+                                    <span class="text-rose-600 font-black">-Rp {{ number_format(abs($saldo), 0, ',', '.') }}</span>
                                 @else
                                     <span class="text-gray-400 font-medium">-</span>
                                 @endif
