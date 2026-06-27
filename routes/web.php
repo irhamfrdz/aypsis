@@ -3279,6 +3279,9 @@ Route::middleware([
         Route::post('/surat-jalan-bongkaran-batam', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'store'])
             ->name('surat-jalan-bongkaran-batam.store')
             ->middleware('can:surat-jalan-bongkaran-batam-create');
+        Route::post('/surat-jalan-bongkaran-batam/store-bulk', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'storeBulk'])
+            ->name('surat-jalan-bongkaran-batam.store-bulk')
+            ->middleware('can:surat-jalan-bongkaran-batam-create');
         Route::get('/surat-jalan-bongkaran-batam/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'show'])
             ->name('surat-jalan-bongkaran-batam.show')
             ->middleware('can:surat-jalan-bongkaran-batam-view');

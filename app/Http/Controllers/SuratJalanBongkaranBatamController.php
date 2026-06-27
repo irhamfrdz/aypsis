@@ -20,7 +20,7 @@ class SuratJalanBongkaranBatamController extends Controller
     {
         $this->middleware('auth');
         $this->middleware('permission:surat-jalan-bongkaran-batam-view', ['only' => ['index', 'show']]);
-        $this->middleware('permission:surat-jalan-bongkaran-batam-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:surat-jalan-bongkaran-batam-create', ['only' => ['create', 'store', 'storeBulk']]);
         $this->middleware('permission:surat-jalan-bongkaran-batam-update', ['only' => ['edit', 'update']]);
         $this->middleware('permission:surat-jalan-bongkaran-batam-delete', ['only' => ['destroy']]);
     }
@@ -646,6 +646,101 @@ class SuratJalanBongkaranBatamController extends Controller
             }
 
             return back()->withInput()->with('error', 'Terjadi kesalahan: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Store multiple surat jalan bongkaran batam at once (bulk create).
+     */
+    public function storeBulk(Request $request)
+    {
+        $rows = $request->input('rows', []);
+        $namaKapal = $request->input('nama_kapal', '');
+        $noVoyage = $request->input('no_voyage', '');
+        $lokasi = $request->input('lokasi', 'batam');
+
+        if (empty($rows)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada data yang dikirim.',
+            ], 422);
+        }
+
+        $successCount = 0;
+        $errors = [];
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($rows as $index => $row) {
+                $rowNumber = $index + 1;
+                $nomorSuratJalan = trim($row['nomor_surat_jalan'] ?? '');
+
+                if (empty($nomorSuratJalan)) {
+                    $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan wajib diisi.";
+                    continue;
+                }
+
+                // Check uniqueness
+                if (SuratJalanBongkaranBatam::where('nomor_surat_jalan', $nomorSuratJalan)->exists()) {
+                    $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan '{$nomorSuratJalan}' sudah ada di database.";
+                    continue;
+                }
+
+                try {
+                    SuratJalanBongkaranBatam::create([
+                        'nomor_surat_jalan' => $nomorSuratJalan,
+                        'tanggal_surat_jalan' => ! empty($row['tanggal_surat_jalan']) ? $row['tanggal_surat_jalan'] : now()->toDateString(),
+                        'no_kontainer' => $row['no_kontainer'] ?? null,
+                        'no_seal' => $row['no_seal'] ?? null,
+                        'size' => $row['size'] ?? null,
+                        'no_bl' => $row['no_bl'] ?? null,
+                        'supir' => $row['supir'] ?? null,
+                        'no_plat' => $row['no_plat'] ?? null,
+                        'kenek' => $row['kenek'] ?? null,
+                        'krani' => $row['krani'] ?? null,
+                        'pengirim' => $row['pengirim'] ?? null,
+                        'penerima' => $row['penerima'] ?? null,
+                        'jenis_barang' => $row['jenis_barang'] ?? null,
+                        'tujuan_alamat' => $row['tujuan_alamat'] ?? null,
+                        'term' => $row['term'] ?? null,
+                        'aktifitas' => $row['aktifitas'] ?? null,
+                        'jenis_pengiriman' => $row['jenis_pengiriman'] ?? null,
+                        'nama_kapal' => $namaKapal,
+                        'no_voyage' => $noVoyage,
+                        'lokasi' => $lokasi,
+                        'input_by' => Auth::id(),
+                    ]);
+                    $successCount++;
+                } catch (\Exception $e) {
+                    $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+                }
+            }
+
+            if ($successCount > 0) {
+                DB::commit();
+            } else {
+                DB::rollBack();
+            }
+
+            return response()->json([
+                'success' => $successCount > 0,
+                'message' => "{$successCount} surat jalan berhasil dibuat." . (! empty($errors) ? ' ' . count($errors) . ' baris gagal.' : ''),
+                'success_count' => $successCount,
+                'error_count' => count($errors),
+                'errors' => $errors,
+                'redirect' => route('surat-jalan-bongkaran-batam.list', [
+                    'nama_kapal' => $namaKapal,
+                    'no_voyage' => $noVoyage,
+                ]),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
