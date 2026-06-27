@@ -591,6 +591,7 @@
 @push('scripts')
 <script>
 const driverAttendance = @json($driverAttendance ?? []);
+const driverBalances = @json($driverBalances ?? []);
 document.addEventListener('DOMContentLoaded', function () {
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     const suratJalanCheckboxes = document.querySelectorAll('.surat-jalan-checkbox');
@@ -714,6 +715,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 const totals = personTotals[personId];
                 const personName = totals.name;
 
+                // Get active balance from driverBalances object
+                const activeBalance = parseFloat(driverBalances[personId.toUpperCase()]) || 0;
+
                 // Determine default values, applying the formula for utang (kelipatan 5 -> 100k)
                 let utangValue = 0;
                 let tabunganValue = 0;
@@ -726,17 +730,20 @@ document.addEventListener('DOMContentLoaded', function () {
                     bpjsValue = saved.bpjs;
                     adjustmentValue = saved.adjustment;
 
-                    // If count of surat jalan changed, recalculate utang (multiples of 5 -> 100k)
-                    if (parseInt(saved.lastCount) !== totals.count) {
+                    if (activeBalance <= 0) {
+                        utangValue = 0;
+                    } else if (parseInt(saved.lastCount) !== totals.count) {
                         utangValue = Math.floor(totals.count / 5) * 100000;
                     } else {
                         utangValue = saved.utang;
                     }
                 } else {
-                    // New driver/first load
-                    utangValue = Math.floor(totals.count / 5) * 100000;
+                    if (activeBalance <= 0) {
+                        utangValue = 0;
+                    } else {
+                        utangValue = Math.floor(totals.count / 5) * 100000;
+                    }
                 }
-                
                 const personRow = document.createElement('tr');
                 personRow.className = 'hover:bg-gray-50 transition-colors border-b border-gray-100';
                 

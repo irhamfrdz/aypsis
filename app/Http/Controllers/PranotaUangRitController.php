@@ -384,7 +384,25 @@ class PranotaUangRitController extends Controller
             }
         }
 
-        return view('pranota-uang-rit.create', compact('suratJalans', 'suratJalanBongkarans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples', 'viewStartDate', 'viewEndDate', 'driverAttendance'));
+        // Get driver active debt balances
+        $driverBalances = [];
+        $balances = \App\Models\SaldoUtangSupir::with('karyawan')->get();
+        foreach ($balances as $b) {
+            if ($b->karyawan) {
+                $saldo = (float) $b->saldo;
+                if ($b->karyawan->nik) {
+                    $driverBalances[strtoupper(trim($b->karyawan->nik))] = $saldo;
+                }
+                if ($b->karyawan->nama_panggilan) {
+                    $driverBalances[strtoupper(trim($b->karyawan->nama_panggilan))] = $saldo;
+                }
+                if ($b->karyawan->nama_lengkap) {
+                    $driverBalances[strtoupper(trim($b->karyawan->nama_lengkap))] = $saldo;
+                }
+            }
+        }
+
+        return view('pranota-uang-rit.create', compact('suratJalans', 'suratJalanBongkarans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples', 'viewStartDate', 'viewEndDate', 'driverAttendance', 'driverBalances'));
     }
 
     /**
