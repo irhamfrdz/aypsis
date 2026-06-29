@@ -1765,6 +1765,7 @@ function setupModalUangJalanCalculation(containerSize) {
         if (ringInput) {
             ringInput.value = selectedOption ? (selectedOption.getAttribute('data-ring') || '') : '';
         }
+        if (!selectedOption) return;
         if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
         const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
@@ -2340,6 +2341,7 @@ function setupEditModalUangJalanCalculation(containerSize) {
         if (ringInput) {
             ringInput.value = selectedOption ? (selectedOption.getAttribute('data-ring') || '') : '';
         }
+        if (!selectedOption) return;
         if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
         const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
