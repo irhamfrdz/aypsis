@@ -16,24 +16,28 @@ class ReactSewaKontainerSyncController extends Controller
             'customers' => DB::table('sk_customers')->get(),
             'tipes' => DB::table('sk_tipes')->get(),
             'ukurans' => DB::table('sk_ukurans')->get(),
-            'kontainers' => DB::table('sk_kontainers')->get()->map(function($k) {
+            'kontainers' => DB::table('sk_kontainers')->get()->map(function ($k) {
                 $k->status_aktif = (bool) $k->status_aktif;
+
                 return $k;
             })->toArray(),
-            'tarifs' => DB::table('sk_tarifs')->get()->map(function($t) {
+            'tarifs' => DB::table('sk_tarifs')->get()->map(function ($t) {
                 $t->tarif_bulanan = (float) $t->tarif_bulanan;
                 $t->tarif_harian = (float) $t->tarif_harian;
                 $t->status_aktif = (bool) $t->status_aktif;
+
                 return $t;
             })->toArray(),
-            'sewas' => DB::table('sk_sewas')->get()->map(function($s) {
+            'sewas' => DB::table('sk_sewas')->get()->map(function ($s) {
                 $s->tarif_bulanan = (float) $s->tarif_bulanan;
                 $s->tarif_harian = (float) $s->tarif_harian;
+
                 return $s;
             })->toArray(),
-            'invoices' => DB::table('sk_invoice_grups')->get()->map(function($invoice) {
+            'invoices' => DB::table('sk_invoice_grups')->get()->map(function ($invoice) {
                 $invoice->list_id_tagihan = json_decode($invoice->list_id_tagihan, true) ?? [];
                 $invoice->adjustment_biaya = $invoice->adjustment_biaya !== null ? (float) $invoice->adjustment_biaya : null;
+
                 return $invoice;
             })->toArray(),
         ];
@@ -59,7 +63,7 @@ class ReactSewaKontainerSyncController extends Controller
                     'keterangan_selisih' => $tagihan->keterangan_selisih,
                     'ppn' => $tagihan->ppn !== null ? (float) $tagihan->ppn : null,
                     'pph' => $tagihan->pph !== null ? (float) $tagihan->pph : null,
-                    'nomor_bayar' => $tagihan->nomor_bayar
+                    'nomor_bayar' => $tagihan->nomor_bayar,
                 ];
             } else {
                 // This is a manual tagihan
@@ -84,7 +88,7 @@ class ReactSewaKontainerSyncController extends Controller
                     'keterangan_selisih' => $tagihan->keterangan_selisih,
                     'ppn' => $tagihan->ppn !== null ? (float) $tagihan->ppn : null,
                     'pph' => $tagihan->pph !== null ? (float) $tagihan->pph : null,
-                    'nomor_bayar' => $tagihan->nomor_bayar
+                    'nomor_bayar' => $tagihan->nomor_bayar,
                 ];
             }
         }
@@ -112,24 +116,32 @@ class ReactSewaKontainerSyncController extends Controller
             DB::table('sk_tipes')->delete();
             DB::table('sk_customers')->delete();
 
-            if (!empty($state['customers'])) {
-                $customers = array_map(function($c) { return array_intersect_key($c, array_flip(['id_customer', 'nama_customer', 'status_aktif'])); }, $state['customers']);
+            if (! empty($state['customers'])) {
+                $customers = array_map(function ($c) {
+                    return array_intersect_key($c, array_flip(['id_customer', 'nama_customer', 'status_aktif']));
+                }, $state['customers']);
                 DB::table('sk_customers')->insert($customers);
             }
-            if (!empty($state['tipes'])) {
-                $tipes = array_map(function($t) { return array_intersect_key($t, array_flip(['id_tipe', 'nama_tipe', 'status_aktif'])); }, $state['tipes']);
+            if (! empty($state['tipes'])) {
+                $tipes = array_map(function ($t) {
+                    return array_intersect_key($t, array_flip(['id_tipe', 'nama_tipe', 'status_aktif']));
+                }, $state['tipes']);
                 DB::table('sk_tipes')->insert($tipes);
             }
-            if (!empty($state['ukurans'])) {
-                $ukurans = array_map(function($u) { return array_intersect_key($u, array_flip(['id_ukuran', 'deskripsi_ukuran', 'status_aktif'])); }, $state['ukurans']);
+            if (! empty($state['ukurans'])) {
+                $ukurans = array_map(function ($u) {
+                    return array_intersect_key($u, array_flip(['id_ukuran', 'deskripsi_ukuran', 'status_aktif']));
+                }, $state['ukurans']);
                 DB::table('sk_ukurans')->insert($ukurans);
             }
-            if (!empty($state['kontainers'])) {
-                $kontainers = array_map(function($k) { return array_intersect_key($k, array_flip(['no_kontainer', 'id_customer', 'id_tipe', 'id_ukuran', 'status_aktif'])); }, $state['kontainers']);
+            if (! empty($state['kontainers'])) {
+                $kontainers = array_map(function ($k) {
+                    return array_intersect_key($k, array_flip(['no_kontainer', 'id_customer', 'id_tipe', 'id_ukuran', 'status_aktif']));
+                }, $state['kontainers']);
                 DB::table('sk_kontainers')->insert($kontainers);
             }
-            if (!empty($state['tarifs'])) {
-                $tarifs = array_map(function($t) {
+            if (! empty($state['tarifs'])) {
+                $tarifs = array_map(function ($t) {
                     return [
                         'id_tarif' => $t['id_tarif'],
                         'id_customer' => $t['id_customer'],
@@ -144,8 +156,8 @@ class ReactSewaKontainerSyncController extends Controller
                 }, $state['tarifs']);
                 DB::table('sk_tarifs')->insert($tarifs);
             }
-            if (!empty($state['sewas'])) {
-                $sewas = array_map(function($s) {
+            if (! empty($state['sewas'])) {
+                $sewas = array_map(function ($s) {
                     return [
                         'id_sewa' => $s['id_sewa'],
                         'no_kontainer' => $s['no_kontainer'],
@@ -161,8 +173,8 @@ class ReactSewaKontainerSyncController extends Controller
                 }, $state['sewas']);
                 DB::table('sk_sewas')->insert($sewas);
             }
-            if (!empty($state['invoices'])) {
-                $invoices = array_map(function($i) {
+            if (! empty($state['invoices'])) {
+                $invoices = array_map(function ($i) {
                     return [
                         'nomor_invoice' => $i['nomor_invoice'],
                         'id_customer' => $i['id_customer'],
@@ -178,22 +190,22 @@ class ReactSewaKontainerSyncController extends Controller
             }
 
             $tagihanInserts = [];
-            
-            if (!empty($state['paymentOverrides'])) {
+
+            if (! empty($state['paymentOverrides'])) {
                 foreach ($state['paymentOverrides'] as $id => $override) {
                     $tagihanInserts[] = array_merge(['id_tagihan' => $id], $override);
                 }
             }
 
-            if (!empty($state['manualTagihans'])) {
+            if (! empty($state['manualTagihans'])) {
                 foreach ($state['manualTagihans'] as $manual) {
                     $tagihanInserts[] = $manual;
                 }
             }
 
-            if (!empty($tagihanInserts)) {
+            if (! empty($tagihanInserts)) {
                 $normalized = [];
-                $keys = ['id_tagihan','id_sewa','bulan_ke','tanggal_awal','tanggal_akhir','jumlah_hari','tipe_tarif','jumlah_tagihan','status_bayar','tanggal_tagihan','tanggal_bayar','nomor_invoice_grup','nomor_pranota','tanggal_pranota','jumlah_tagihan_override','jumlah_bayar','selisih_pembayaran','keterangan_selisih','ppn','pph','nomor_bayar'];
+                $keys = ['id_tagihan', 'id_sewa', 'bulan_ke', 'tanggal_awal', 'tanggal_akhir', 'jumlah_hari', 'tipe_tarif', 'jumlah_tagihan', 'status_bayar', 'tanggal_tagihan', 'tanggal_bayar', 'nomor_invoice_grup', 'nomor_pranota', 'tanggal_pranota', 'jumlah_tagihan_override', 'jumlah_bayar', 'selisih_pembayaran', 'keterangan_selisih', 'ppn', 'pph', 'nomor_bayar'];
                 foreach ($tagihanInserts as $tag) {
                     $row = [];
                     foreach ($keys as $k) {
@@ -201,7 +213,7 @@ class ReactSewaKontainerSyncController extends Controller
                     }
                     $normalized[] = $row;
                 }
-                
+
                 foreach (array_chunk($normalized, 500) as $chunk) {
                     DB::table('sk_tagihan_bulans')->insert($chunk);
                 }

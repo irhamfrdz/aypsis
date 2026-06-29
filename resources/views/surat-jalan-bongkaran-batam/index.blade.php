@@ -594,6 +594,14 @@
                                 </select>
                             </div>
                             
+                            <!-- Ring -->
+                            <div>
+                                <label for="modal_ring" class="block text-sm font-medium text-gray-700 mb-1">Ring</label>
+                                <input type="text" name="ring" id="modal_ring" readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Ring otomatis terisi">
+                            </div>
+                            
                             <!-- Full/Empty Radio (Visible for Batam) -->
                             <div id="modal_f_e_wrapper" class="hidden">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Status Muatan (F/E)</label>
@@ -1113,6 +1121,14 @@
                                     @endforeach
                                 </select>
                             </div>
+                            
+                            <!-- Ring -->
+                            <div>
+                                <label for="edit_modal_ring" class="block text-sm font-medium text-gray-700 mb-1">Ring</label>
+                                <input type="text" name="ring" id="edit_modal_ring" readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Ring otomatis terisi">
+                            </div>
 
                             <!-- Full/Empty Radio (Visible for Batam) -->
                             <div id="edit_modal_f_e_wrapper" class="hidden">
@@ -1417,6 +1433,7 @@ const destinations = {
         { 
             label: "{{ $tujuan->ke }}", 
             value: "{{ $tujuan->ke }}", 
+            ring: "",
             uj20: {{ $tujuan->uang_jalan_20ft ?? 0 }}, 
             uj40: {{ $tujuan->uang_jalan_40ft ?? 0 }} 
         },
@@ -1424,14 +1441,21 @@ const destinations = {
     ],
     batam: [
         @foreach($pricelistUangJalanBatams as $item)
-        { 
-            label: "{{ $item->expedisi }} - {{ $item->ring }} (Ring {{ $item->ring }})", 
-            value: "{{ $item->expedisi }} - {{ $item->ring }}", 
-            uj20_full: {{ $item->tarif_20ft_full ?? 0 }},
-            uj20_empty: {{ $item->tarif_20ft_empty ?? 0 }},
-            uj40_full: {{ $item->tarif_40ft_full ?? 0 }},
-            uj40_empty: {{ $item->tarif_40ft_empty ?? 0 }}
-        },
+            @if($item->wilayah)
+                @foreach(explode(',', $item->wilayah) as $subWilayah)
+                    @if(trim($subWilayah) !== '')
+                    { 
+                        label: "{{ trim($subWilayah) }} (Ring {{ $item->ring }} - {{ $item->expedisi }})", 
+                        value: "{{ trim($subWilayah) }}", 
+                        ring: "{{ $item->ring }}",
+                        uj20_full: {{ $item->tarif_20ft_full ?? 0 }},
+                        uj20_empty: {{ $item->tarif_20ft_empty ?? 0 }},
+                        uj40_full: {{ $item->tarif_40ft_full ?? 0 }},
+                        uj40_empty: {{ $item->tarif_40ft_empty ?? 0 }}
+                    },
+                    @endif
+                @endforeach
+            @endif
         @endforeach
     ]
 };
@@ -1474,9 +1498,11 @@ function updateDestinationOptions(modalType) {
             option.setAttribute('data-uj20-empty', dest.uj20_empty);
             option.setAttribute('data-uj40-full', dest.uj40_full);
             option.setAttribute('data-uj40-empty', dest.uj40_empty);
+            option.setAttribute('data-ring', dest.ring || '');
         } else {
             option.setAttribute('data-uang-jalan-20', dest.uj20);
             option.setAttribute('data-uang-jalan-40', dest.uj40);
+            option.setAttribute('data-ring', '');
         }
         
         if (dest.value === currentValue) {
@@ -1734,8 +1760,12 @@ function setupModalUangJalanCalculation(containerSize) {
     }
 
     function calculateModalUangJalan() {
-        if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const selectedOption = tujuanPengambilanSelect.options[tujuanPengambilanSelect.selectedIndex];
+        const ringInput = document.getElementById('modal_ring');
+        if (ringInput) {
+            ringInput.value = selectedOption ? (selectedOption.getAttribute('data-ring') || '') : '';
+        }
+        if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
         const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
         const uangJalanType = document.querySelector('input[name="uang_jalan_type"]:checked');
@@ -2126,6 +2156,7 @@ function openEditModal(suratJalanId) {
             document.getElementById('edit_modal_nomor_surat_jalan').value = data.nomor_surat_jalan || '';
             document.getElementById('edit_modal_lokasi').value = data.lokasi || '';
             document.getElementById('edit_modal_tanggal_surat_jalan').value = data.tanggal_surat_jalan || '';
+            document.getElementById('edit_modal_ring').value = data.ring || '';
             
             // Populate term with robust matching
             const editTermSelect = document.getElementById('edit_modal_term');
@@ -2304,8 +2335,12 @@ function setupEditModalUangJalanCalculation(containerSize) {
     }
     
     function calculateEditModalUangJalan() {
-        if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const selectedOption = tujuanPengambilanSelect.options[tujuanPengambilanSelect.selectedIndex];
+        const ringInput = document.getElementById('edit_modal_ring');
+        if (ringInput) {
+            ringInput.value = selectedOption ? (selectedOption.getAttribute('data-ring') || '') : '';
+        }
+        if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
         const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
         const uangJalanType = document.querySelector('#modalEditSuratJalan input[name="uang_jalan_type"]:checked');

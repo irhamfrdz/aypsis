@@ -563,6 +563,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'lanjut_muat' => 'nullable|string|in:ya,tidak',
                 'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
                 'term' => 'nullable|string|max:255',
+                'ring' => 'nullable|string|max:255',
                 'aktifitas' => 'nullable|string',
                 'pengirim' => 'nullable|string|max:255',
                 'penerima' => 'nullable|string|max:255',
@@ -678,12 +679,14 @@ class SuratJalanBongkaranBatamController extends Controller
 
                 if (empty($nomorSuratJalan)) {
                     $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan wajib diisi.";
+
                     continue;
                 }
 
                 // Check uniqueness
                 if (SuratJalanBongkaranBatam::where('nomor_surat_jalan', $nomorSuratJalan)->exists()) {
                     $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan '{$nomorSuratJalan}' sudah ada di database.";
+
                     continue;
                 }
 
@@ -707,8 +710,8 @@ class SuratJalanBongkaranBatamController extends Controller
                         }
 
                         $query->where(function ($q) use ($noKontainerOrBl) {
-                            $q->where('nomor_kontainer', 'LIKE', '%' . $noKontainerOrBl . '%')
-                              ->orWhere('nomor_bl', 'LIKE', '%' . $noKontainerOrBl . '%');
+                            $q->where('nomor_kontainer', 'LIKE', '%'.$noKontainerOrBl.'%')
+                                ->orWhere('nomor_bl', 'LIKE', '%'.$noKontainerOrBl.'%');
                         });
 
                         $manifest = $query->first();
@@ -753,7 +756,7 @@ class SuratJalanBongkaranBatamController extends Controller
                     ]);
                     $successCount++;
                 } catch (\Exception $e) {
-                    $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+                    $errors[] = "Baris {$rowNumber}: ".$e->getMessage();
                 }
             }
 
@@ -765,7 +768,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
             return response()->json([
                 'success' => $successCount > 0,
-                'message' => "{$successCount} surat jalan berhasil dibuat." . (! empty($errors) ? ' ' . count($errors) . ' baris gagal.' : ''),
+                'message' => "{$successCount} surat jalan berhasil dibuat.".(! empty($errors) ? ' '.count($errors).' baris gagal.' : ''),
                 'success_count' => $successCount,
                 'error_count' => count($errors),
                 'errors' => $errors,
@@ -779,7 +782,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -841,6 +844,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'lanjut_muat' => 'nullable|string|in:ya,tidak',
                 'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
                 'term' => 'nullable|string|max:255',
+                'ring' => 'nullable|string|max:255',
                 'aktifitas' => 'nullable|string',
                 'pengirim' => 'nullable|string|max:255',
                 'penerima' => 'nullable|string|max:255',
@@ -1062,6 +1066,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'nomor_surat_jalan' => $suratJalan->nomor_surat_jalan,
                 'tanggal_surat_jalan' => $suratJalan->tanggal_surat_jalan && is_object($suratJalan->tanggal_surat_jalan) ? $suratJalan->tanggal_surat_jalan->format('Y-m-d') : $suratJalan->tanggal_surat_jalan,
                 'term' => $suratJalan->term ?? '',
+                'ring' => $suratJalan->ring ?? '',
                 'aktifitas' => $suratJalan->aktifitas ?? '',
                 'pengirim' => $suratJalan->pengirim ?? '',
                 'penerima' => $suratJalan->penerima ?? '',

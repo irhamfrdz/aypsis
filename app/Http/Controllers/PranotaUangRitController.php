@@ -356,7 +356,7 @@ class PranotaUangRitController extends Controller
             $supirDates = [];
             foreach ($cekDates as $row) {
                 $dateStr = $row->tanggal;
-                
+
                 // Map NIK
                 if ($row->nik) {
                     $datesList = $supirDates[strtoupper(trim($row->nik))] ?? [];
@@ -859,7 +859,7 @@ class PranotaUangRitController extends Controller
                             'tanggal' => $request->tanggal,
                             'tipe' => 'pengurangan',
                             'nominal' => floatval($totals['hutang']),
-                            'referensi' => 'Potongan Pranota #' . $nomorPranota,
+                            'referensi' => 'Potongan Pranota #'.$nomorPranota,
                             'keterangan' => 'Potongan otomatis saat pembuatan Pranota Uang Rit.',
                         ]);
                     }

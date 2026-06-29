@@ -87,7 +87,7 @@ class PricelistUangJalanBatamImport implements SkipsEmptyRows, ToModel, WithHead
             // Check duplicate
             $exists = PricelistUangJalanBatam::where('expedisi', $expedisi)
                 ->where('ring', $ring)
-                ->where(function($q) use ($wilayah) {
+                ->where(function ($q) use ($wilayah) {
                     if ($wilayah === null) {
                         $q->whereNull('wilayah');
                     } else {

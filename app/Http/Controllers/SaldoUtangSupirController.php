@@ -32,8 +32,8 @@ class SaldoUtangSupirController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('nama_panggilan', 'like', "%{$search}%")
-                  ->orWhere('nik', 'like', "%{$search}%");
+                    ->orWhere('nama_panggilan', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%");
             });
         }
 
@@ -97,11 +97,13 @@ class SaldoUtangSupirController extends Controller
             ]);
 
             DB::commit();
+
             return redirect()->route('saldo-utang-supir.index')
                 ->with('success', 'Transaksi utang supir berhasil disimpan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage())->withInput();
         }
     }
 
@@ -111,7 +113,7 @@ class SaldoUtangSupirController extends Controller
     public function show($id)
     {
         $supir = Karyawan::with(['saldoUtang'])->findOrFail($id);
-        
+
         $riwayat = RiwayatUtangSupir::where('karyawan_id', $id)
             ->orderBy('tanggal', 'desc')
             ->orderBy('created_at', 'desc')
@@ -170,7 +172,7 @@ class SaldoUtangSupirController extends Controller
                     $karyawan = null;
 
                     // 1. Match by NIK
-                    if (!empty($nikInput)) {
+                    if (! empty($nikInput)) {
                         // Pad NIK if necessary to match DB representation (e.g. "0012" vs "12")
                         $paddedNik = str_pad($nikInput, 4, '0', STR_PAD_LEFT);
                         $karyawan = Karyawan::where('nik', $nikInput)
@@ -179,7 +181,7 @@ class SaldoUtangSupirController extends Controller
                     }
 
                     // 2. Match by Name if NIK didn't yield a result
-                    if (!$karyawan && !empty($namaInput)) {
+                    if (! $karyawan && ! empty($namaInput)) {
                         $cleanedName = $this->cleanDriverName($namaInput);
                         $karyawan = Karyawan::where('nama_lengkap', 'like', "%{$cleanedName}%")
                             ->orWhere('nama_panggilan', 'like', "%{$cleanedName}%")
@@ -212,7 +214,7 @@ class SaldoUtangSupirController extends Controller
                         $unmatchedRows[] = [
                             'nik' => $nikInput,
                             'nama' => $namaInput,
-                            'saldo' => $saldoInput
+                            'saldo' => $saldoInput,
                         ];
                     }
                 }
@@ -231,7 +233,8 @@ class SaldoUtangSupirController extends Controller
                 ->with('success', "Sukses mengimpor seluruh {$successCount} data saldo supir.");
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan saat memproses file: ' . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan saat memproses file: '.$e->getMessage());
         }
     }
 
@@ -244,6 +247,7 @@ class SaldoUtangSupirController extends Controller
         $name = preg_replace('/\s*BP\s*(\(KENEK\))?/i', '', $name);
         $name = preg_replace('/\s*\(KENEK\)/i', '', $name);
         $name = preg_replace('/\s*\/[A-Z]+/i', '', $name); // remove e.g. /DULOH
+
         return trim($name);
     }
 }

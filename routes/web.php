@@ -248,8 +248,6 @@ Route::middleware([
     // The old routes and resource controller were deleted to allow a full rewrite.
     // If you want them restored later, use your backup or reintroduce new routes/controllers.
 
-
-
     // Vendor Kontainer Sewa (Master Vendor - existing CRUD)
     Route::resource('vendor-kontainer-sewa', \App\Http\Controllers\VendorKontainerSewaController::class);
 

@@ -2,7 +2,6 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
-
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -11,4 +10,3 @@ Artisan::command('inspire', function () {
 
 Schedule::command('tanda-terima:update-penerima')->everyTenMinutes();
 Schedule::command('manifest:update-penerima')->everyTenMinutes();
-

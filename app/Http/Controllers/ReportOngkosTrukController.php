@@ -152,7 +152,7 @@ class ReportOngkosTrukController extends Controller
             $sjAdjs = collect();
             if (isset($adjInvoices[$sj->id])) {
                 $filteredInvoices = $adjInvoices[$sj->id]->filter(function ($adj) use ($sj) {
-                    return !$adj->suratJalan || $adj->suratJalan->no_surat_jalan === $sj->no_surat_jalan;
+                    return ! $adj->suratJalan || $adj->suratJalan->no_surat_jalan === $sj->no_surat_jalan;
                 });
                 $sjAdjs = $sjAdjs->merge($filteredInvoices);
             }
@@ -275,6 +275,7 @@ class ReportOngkosTrukController extends Controller
                     if ($adj->suratJalan && $adj->suratJalan->no_surat_jalan !== $sjb->nomor_surat_jalan) {
                         return false;
                     }
+
                     return true;
                 });
                 $sjbAdjs = $sjbAdjs->merge($filteredInvoices);
@@ -475,7 +476,7 @@ class ReportOngkosTrukController extends Controller
             $sjAdjs = collect();
             if (isset($adjInvoices[$sj->id])) {
                 $filteredInvoices = $adjInvoices[$sj->id]->filter(function ($adj) use ($sj) {
-                    return !$adj->suratJalan || $adj->suratJalan->no_surat_jalan === $sj->no_surat_jalan;
+                    return ! $adj->suratJalan || $adj->suratJalan->no_surat_jalan === $sj->no_surat_jalan;
                 });
                 $sjAdjs = $sjAdjs->merge($filteredInvoices);
             }
@@ -589,6 +590,7 @@ class ReportOngkosTrukController extends Controller
                     if ($adj->suratJalan && $adj->suratJalan->no_surat_jalan !== $sjb->nomor_surat_jalan) {
                         return false;
                     }
+
                     return true;
                 });
                 $sjbAdjs = $sjbAdjs->merge($filteredInvoices);
@@ -770,7 +772,7 @@ class ReportOngkosTrukController extends Controller
             $sjAdjs = collect();
             if (isset($adjInvoices[$sj->id])) {
                 $filteredInvoices = $adjInvoices[$sj->id]->filter(function ($adj) use ($sj) {
-                    return !$adj->suratJalan || $adj->suratJalan->no_surat_jalan === $sj->no_surat_jalan;
+                    return ! $adj->suratJalan || $adj->suratJalan->no_surat_jalan === $sj->no_surat_jalan;
                 });
                 $sjAdjs = $sjAdjs->merge($filteredInvoices);
             }
@@ -895,6 +897,7 @@ class ReportOngkosTrukController extends Controller
                     if ($adj->suratJalan && $adj->suratJalan->no_surat_jalan !== $sjb->nomor_surat_jalan) {
                         return false;
                     }
+
                     return true;
                 });
                 $sjbAdjs = $sjbAdjs->merge($filteredInvoices);
