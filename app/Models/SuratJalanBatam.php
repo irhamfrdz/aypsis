@@ -13,6 +13,7 @@ class SuratJalanBatam extends Model
     protected $table = 'surat_jalan_batams';
 
     protected $fillable = [
+        'ring',
         'order_batam_id',
         'penerima_id',
         'notify_party_id',

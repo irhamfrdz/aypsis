@@ -169,12 +169,12 @@ class SuratJalanBatamController extends Controller
         $prevPersentase = $prevBbm ? $prevBbm->persentase : 0;
 
         $pricelistRings = PricelistUangJalanBatam::activeBbm()->select(
-            'ring', 'expedisi', 'status',
+            'ring', 'expedisi', 'status', 'wilayah',
             'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty',
             'tarif_20ft_full_base', 'tarif_20ft_empty_base', 'tarif_40ft_full_base', 'tarif_40ft_empty_base'
         )
             ->get()
-            ->map(function ($item) use ($prevPersentase) {
+            ->flatMap(function ($item) use ($prevPersentase) {
                 if ($prevPersentase <= 5) {
                     $prev20Full = $item->tarif_20ft_full_base ?? $item->tarif_20ft_full;
                     $prev20Empty = $item->tarif_20ft_empty_base ?? $item->tarif_20ft_empty;
@@ -189,22 +189,34 @@ class SuratJalanBatamController extends Controller
                     $prev40Empty = round(($item->tarif_40ft_empty_base ?? $item->tarif_40ft_empty) * $faktorPengali);
                 }
 
-                return [
-                    'value' => 'Ring '.$item->ring.' '.$item->expedisi,
-                    'label' => 'Ring '.$item->ring.' '.$item->expedisi,
-                    'rates' => [
-                        '20_Full' => $item->tarif_20ft_full,
-                        '20_Empty' => $item->tarif_20ft_empty,
-                        '40_Full' => $item->tarif_40ft_full,
-                        '40_Empty' => $item->tarif_40ft_empty,
-                    ],
-                    'rates_prev' => [
-                        '20_Full' => $prev20Full,
-                        '20_Empty' => $prev20Empty,
-                        '40_Full' => $prev40Full,
-                        '40_Empty' => $prev40Empty,
-                    ],
-                ];
+                $mapped = [];
+                if ($item->wilayah) {
+                    $subWilayahs = explode(',', $item->wilayah);
+                    foreach ($subWilayahs as $sw) {
+                        $trimmed = trim($sw);
+                        if ($trimmed !== '') {
+                            $mapped[] = [
+                                'value' => $trimmed,
+                                'label' => $trimmed.' (Ring '.$item->ring.' - '.$item->expedisi.')',
+                                'ring' => $item->ring,
+                                'rates' => [
+                                    '20_Full' => $item->tarif_20ft_full,
+                                    '20_Empty' => $item->tarif_20ft_empty,
+                                    '40_Full' => $item->tarif_40ft_full,
+                                    '40_Empty' => $item->tarif_40ft_empty,
+                                ],
+                                'rates_prev' => [
+                                    '20_Full' => $prev20Full,
+                                    '20_Empty' => $prev20Empty,
+                                    '40_Full' => $prev40Full,
+                                    '40_Empty' => $prev40Empty,
+                                ],
+                            ];
+                        }
+                    }
+                }
+
+                return $mapped;
             })
             ->unique('value')
             ->values();
@@ -226,6 +238,7 @@ class SuratJalanBatamController extends Controller
             'no_surat_jalan' => 'required|unique:surat_jalan_batams,no_surat_jalan',
             'tanggal_surat_jalan' => 'required|date',
             'term' => 'nullable|string',
+            'ring' => 'nullable|string',
             'aktifitas' => 'nullable|string',
             'pengirim' => 'nullable|string',
             'penerima' => 'nullable|string',
@@ -344,12 +357,12 @@ class SuratJalanBatamController extends Controller
         $prevPersentase = $prevBbm ? $prevBbm->persentase : 0;
 
         $pricelistRings = PricelistUangJalanBatam::activeBbm()->select(
-            'ring', 'expedisi', 'status',
+            'ring', 'expedisi', 'status', 'wilayah',
             'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty',
             'tarif_20ft_full_base', 'tarif_20ft_empty_base', 'tarif_40ft_full_base', 'tarif_40ft_empty_base'
         )
             ->get()
-            ->map(function ($item) use ($prevPersentase) {
+            ->flatMap(function ($item) use ($prevPersentase) {
                 if ($prevPersentase <= 5) {
                     $prev20Full = $item->tarif_20ft_full_base ?? $item->tarif_20ft_full;
                     $prev20Empty = $item->tarif_20ft_empty_base ?? $item->tarif_20ft_empty;
@@ -364,22 +377,34 @@ class SuratJalanBatamController extends Controller
                     $prev40Empty = round(($item->tarif_40ft_empty_base ?? $item->tarif_40ft_empty) * $faktorPengali);
                 }
 
-                return [
-                    'value' => 'Ring '.$item->ring.' '.$item->expedisi,
-                    'label' => 'Ring '.$item->ring.' '.$item->expedisi,
-                    'rates' => [
-                        '20_Full' => $item->tarif_20ft_full,
-                        '20_Empty' => $item->tarif_20ft_empty,
-                        '40_Full' => $item->tarif_40ft_full,
-                        '40_Empty' => $item->tarif_40ft_empty,
-                    ],
-                    'rates_prev' => [
-                        '20_Full' => $prev20Full,
-                        '20_Empty' => $prev20Empty,
-                        '40_Full' => $prev40Full,
-                        '40_Empty' => $prev40Empty,
-                    ],
-                ];
+                $mapped = [];
+                if ($item->wilayah) {
+                    $subWilayahs = explode(',', $item->wilayah);
+                    foreach ($subWilayahs as $sw) {
+                        $trimmed = trim($sw);
+                        if ($trimmed !== '') {
+                            $mapped[] = [
+                                'value' => $trimmed,
+                                'label' => $trimmed.' (Ring '.$item->ring.' - '.$item->expedisi.')',
+                                'ring' => $item->ring,
+                                'rates' => [
+                                    '20_Full' => $item->tarif_20ft_full,
+                                    '20_Empty' => $item->tarif_20ft_empty,
+                                    '40_Full' => $item->tarif_40ft_full,
+                                    '40_Empty' => $item->tarif_40ft_empty,
+                                ],
+                                'rates_prev' => [
+                                    '20_Full' => $prev20Full,
+                                    '20_Empty' => $prev20Empty,
+                                    '40_Full' => $prev40Full,
+                                    '40_Empty' => $prev40Empty,
+                                ],
+                            ];
+                        }
+                    }
+                }
+
+                return $mapped;
             })
             ->unique('value')
             ->values();
@@ -402,6 +427,7 @@ class SuratJalanBatamController extends Controller
             'no_surat_jalan' => 'required|unique:surat_jalan_batams,no_surat_jalan,'.$id,
             'tanggal_surat_jalan' => 'required|date',
             'term' => 'nullable|string',
+            'ring' => 'nullable|string',
             'aktifitas' => 'nullable|string',
             'pengirim' => 'nullable|string',
             'penerima' => 'nullable|string',
