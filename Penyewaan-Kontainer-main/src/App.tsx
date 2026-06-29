@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { loadAppState, saveAppState, compileAllPeriods, AppState } from './dataStore';
+import { loadAppState, saveAppState, compileAllPeriods, AppState, fetchAppStateFromDB } from './dataStore';
 import { formatRupiah, formatIndoDate, formatToWIB } from './utils';
 import MasterPanel from './components/MasterPanel';
 import TransaksiSewa from './components/TransaksiSewa';
@@ -9,8 +9,18 @@ import { Anchor, Shield, Landmark, LayoutGrid, Server, ShieldCheck, Database, Fi
 
 export default function App() {
   const [state, setState] = useState<AppState>(() => loadAppState());
+  const [isSyncing, setIsSyncing] = useState(true);
   const [activeTab, setActiveTab] = useState<'billing' | 'rental' | 'master' | 'import'>('billing');
   const [currentTime, setCurrentTime] = useState('2026-06-12T07:06:12-07:00');
+
+  useEffect(() => {
+    fetchAppStateFromDB().then(dbState => {
+      if (dbState) {
+        setState(dbState);
+      }
+      setIsSyncing(false);
+    });
+  }, []);
 
   // Integration for custom notifications
   const [backupNoti, setBackupNoti] = useState<{ type: 'sukses' | 'error'; msg: string } | null>(null);

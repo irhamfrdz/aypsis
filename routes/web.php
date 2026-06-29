@@ -140,6 +140,10 @@ Route::get('master/user/{user}/permissions-for-copy', [UserController::class, 'g
 // Route untuk memperbaiki data nama kapal KM SUMBER ABADI - DELETED
 // Route::get('/fix-kapal-sumber-abadi', ...);
 
+// React Sewa Kontainer Sync API
+Route::get('api/sewa-kontainer/sync', [\App\Http\Controllers\ReactSewaKontainerSyncController::class, 'getState'])->name('react-sewa-kontainer.sync.get');
+Route::post('api/sewa-kontainer/sync', [\App\Http\Controllers\ReactSewaKontainerSyncController::class, 'saveState'])->name('react-sewa-kontainer.sync.post');
+
 // Rute yang dilindungi middleware auth (tambahkan pemeriksaan karyawan, persetujuan, dan checklist ABK)
 Route::middleware([
     'auth',
