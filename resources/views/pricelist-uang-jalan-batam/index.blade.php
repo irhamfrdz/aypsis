@@ -224,6 +224,17 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                             @endcan
+                            @can('master-pricelist-uang-jalan-batam-create')
+                                <form method="POST" action="{{ route('pricelist-uang-jalan-batam.copy', $pricelist->id) }}" class="inline"
+                                      onsubmit="return confirm('Apakah Anda yakin ingin menduplikat/copy pricelist ini?')">
+                                    @csrf
+                                    <button type="submit" 
+                                            class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                                            title="Copy Data">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </form>
+                            @endcan
                             @can('master-pricelist-uang-jalan-batam-delete')
                                 <form method="POST" action="{{ route('pricelist-uang-jalan-batam.destroy', $pricelist) }}" class="inline" 
                                       onsubmit="return confirm('Apakah Anda yakin ingin menghapus pricelist ini?\n\nExpedisi: {{ $pricelist->expedisi }}\nRing: {{ $pricelist->ring }}')">

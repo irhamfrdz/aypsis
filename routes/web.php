@@ -2074,6 +2074,10 @@ Route::middleware([
             ->name('pricelist-uang-jalan-batam.export')
             ->middleware('can:master-pricelist-uang-jalan-batam-view');
 
+        Route::post('pricelist-uang-jalan-batam/{id}/copy', [\App\Http\Controllers\PricelistUangJalanBatamController::class, 'copy'])
+            ->name('pricelist-uang-jalan-batam.copy')
+            ->middleware('can:master-pricelist-uang-jalan-batam-create');
+
         Route::resource('pricelist-uang-jalan-batam', \App\Http\Controllers\PricelistUangJalanBatamController::class)
             ->names('pricelist-uang-jalan-batam')
             ->middleware([

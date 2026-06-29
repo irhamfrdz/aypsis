@@ -227,4 +227,19 @@ class PricelistUangJalanBatamController extends Controller
             'pricelist_uang_jalan_batam_'.date('YmdHis').'.xlsx'
         );
     }
+
+    /**
+     * Copy / Duplicate a pricelist record
+     */
+    public function copy(string $id)
+    {
+        $original = PricelistUangJalanBatam::findOrFail($id);
+        
+        $copy = $original->replicate();
+        // Clear primary key and timestamp stuff if needed (replicate does this automatically for id/timestamps)
+        $copy->save();
+        
+        return redirect()->route('pricelist-uang-jalan-batam.index')
+            ->with('success', 'Pricelist berhasil diduplikat/dicopy!');
+    }
 }
