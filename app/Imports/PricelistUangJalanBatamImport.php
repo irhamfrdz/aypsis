@@ -37,7 +37,8 @@ class PricelistUangJalanBatamImport implements SkipsEmptyRows, ToModel, WithHead
 
             // More robust column matching
             $expedisi = $this->robustGet($row, ['expedisi', 'expe', 'vendor']);
-            $ring = $this->robustGet($row, ['ring', 'wilayah', 'area']);
+            $ring = $this->robustGet($row, ['ring', 'area']);
+            $wilayah = $this->robustGet($row, ['wilayah', 'region', 'zone']);
             $tarif_20ft_full = $this->robustGet($row, ['tarif_20ft_full', '20ft_full', '20ft full', '20_full']);
             $tarif_20ft_empty = $this->robustGet($row, ['tarif_20ft_empty', '20ft_empty', '20ft empty', '20_empty']);
             $tarif_40ft_full = $this->robustGet($row, ['tarif_40ft_full', '40ft_full', '40ft full', '40_full']);
@@ -49,6 +50,7 @@ class PricelistUangJalanBatamImport implements SkipsEmptyRows, ToModel, WithHead
             // Clean data
             $expedisi = ! empty($expedisi) ? trim($expedisi) : '';
             $ring = ! empty($ring) ? trim($ring) : '';
+            $wilayah = ! empty($wilayah) ? trim($wilayah) : null;
             $tarif_20ft_full = ! empty($tarif_20ft_full) ? $this->cleanTarif($tarif_20ft_full) : 0;
             $tarif_20ft_empty = ! empty($tarif_20ft_empty) ? $this->cleanTarif($tarif_20ft_empty) : 0;
             $tarif_40ft_full = ! empty($tarif_40ft_full) ? $this->cleanTarif($tarif_40ft_full) : 0;
@@ -85,10 +87,18 @@ class PricelistUangJalanBatamImport implements SkipsEmptyRows, ToModel, WithHead
             // Check duplicate
             $exists = PricelistUangJalanBatam::where('expedisi', $expedisi)
                 ->where('ring', $ring)
+                ->where(function($q) use ($wilayah) {
+                    if ($wilayah === null) {
+                        $q->whereNull('wilayah');
+                    } else {
+                        $q->where('wilayah', $wilayah);
+                    }
+                })
                 ->first();
 
             if ($exists) {
                 $exists->update([
+                    'wilayah' => $wilayah,
                     'tarif_20ft_full' => $tarif_20ft_full,
                     'tarif_20ft_full_base' => $tarif_20ft_full,
                     'tarif_20ft_empty' => $tarif_20ft_empty,
@@ -114,6 +124,7 @@ class PricelistUangJalanBatamImport implements SkipsEmptyRows, ToModel, WithHead
             return new PricelistUangJalanBatam([
                 'expedisi' => $expedisi,
                 'ring' => $ring,
+                'wilayah' => $wilayah,
                 'tarif_20ft_full' => $tarif_20ft_full,
                 'tarif_20ft_full_base' => $tarif_20ft_full,
                 'tarif_20ft_empty' => $tarif_20ft_empty,

@@ -48,6 +48,7 @@ class PricelistUangJalanBatamController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('expedisi', 'like', "%{$search}%")
                     ->orWhere('ring', 'like', "%{$search}%")
+                    ->orWhere('wilayah', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%");
             });
         }
@@ -75,6 +76,7 @@ class PricelistUangJalanBatamController extends Controller
         $validated = $request->validate([
             'expedisi' => 'required|string|max:255',
             'ring' => 'required|string|max:255',
+            'wilayah' => 'nullable|string|max:255',
             'tarif_20ft_full' => 'nullable|numeric|min:0',
             'tarif_20ft_empty' => 'nullable|numeric|min:0',
             'tarif_40ft_full' => 'nullable|numeric|min:0',
@@ -122,6 +124,7 @@ class PricelistUangJalanBatamController extends Controller
         $validated = $request->validate([
             'expedisi' => 'required|string|max:255',
             'ring' => 'required|string|max:255',
+            'wilayah' => 'nullable|string|max:255',
             'tarif_20ft_full' => 'nullable|numeric|min:0',
             'tarif_20ft_empty' => 'nullable|numeric|min:0',
             'tarif_40ft_full' => 'nullable|numeric|min:0',

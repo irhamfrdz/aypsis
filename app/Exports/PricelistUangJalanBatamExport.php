@@ -42,6 +42,7 @@ class PricelistUangJalanBatamExport implements FromCollection, WithColumnWidths,
             $query->where(function ($q) {
                 $q->where('expedisi', 'like', "%{$this->search}%")
                     ->orWhere('ring', 'like', "%{$this->search}%")
+                    ->orWhere('wilayah', 'like', "%{$this->search}%")
                     ->orWhere('status', 'like', "%{$this->search}%");
             });
         }
@@ -59,6 +60,7 @@ class PricelistUangJalanBatamExport implements FromCollection, WithColumnWidths,
         return [
             $pricelist->expedisi,
             $pricelist->ring,
+            $pricelist->wilayah,
             $pricelist->tarif_20ft_full,
             $pricelist->tarif_20ft_empty,
             $pricelist->tarif_40ft_full,
@@ -74,6 +76,7 @@ class PricelistUangJalanBatamExport implements FromCollection, WithColumnWidths,
         return [
             'Expedisi',
             'Ring',
+            'Wilayah',
             'Tarif 20FT Full',
             'Tarif 20FT Empty',
             'Tarif 40FT Full',
@@ -89,20 +92,21 @@ class PricelistUangJalanBatamExport implements FromCollection, WithColumnWidths,
         return [
             'A' => 15, // Expedisi
             'B' => 10, // Ring
-            'C' => 18, // Tarif 20FT Full
-            'D' => 18, // Tarif 20FT Empty
-            'E' => 18, // Tarif 40FT Full
-            'F' => 18, // Tarif 40FT Empty
-            'G' => 20, // Tarif Antarlokasi 20FT
-            'H' => 20, // Tarif Antarlokasi 40FT
-            'I' => 15, // Status
+            'C' => 15, // Wilayah
+            'D' => 18, // Tarif 20FT Full
+            'E' => 18, // Tarif 20FT Empty
+            'F' => 18, // Tarif 40FT Full
+            'G' => 18, // Tarif 40FT Empty
+            'H' => 20, // Tarif Antarlokasi 20FT
+            'I' => 20, // Tarif Antarlokasi 40FT
+            'J' => 15, // Status
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Style header row
-        $sheet->getStyle('A1:I1')->applyFromArray([
+        $sheet->getStyle('A1:J1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -125,7 +129,7 @@ class PricelistUangJalanBatamExport implements FromCollection, WithColumnWidths,
         ]);
 
         // Auto filter for headings
-        $sheet->setAutoFilter('A1:I1');
+        $sheet->setAutoFilter('A1:J1');
 
         return [];
     }
