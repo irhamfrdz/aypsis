@@ -787,4 +787,196 @@ class SewaKontainerController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Billing periods berhasil di-sync untuk semua sewa']);
     }
+
+    // ============================================================
+    //  BACKUP RESTORE (JSON)
+    // ============================================================
+    public function restoreBackup(Request $request): JsonResponse
+    {
+        $request->validate([
+            'backup_file' => 'required|file|mimetypes:application/json,text/plain'
+        ]);
+
+        $fileContent = file_get_contents($request->file('backup_file')->getRealPath());
+        $data = json_decode($fileContent, true);
+
+        if (!$data || !is_array($data)) {
+            return response()->json(['success' => false, 'message' => 'Format file JSON tidak valid.'], 400);
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $vendorMap = [];
+            $tipeMap = [];
+            $ukuranMap = [];
+            $tagihanMap = [];
+
+            // 1. Customers -> Vendors
+            if (isset($data['customers']) && is_array($data['customers'])) {
+                foreach ($data['customers'] as $cust) {
+                    $vendor = VendorKontainerSewa::updateOrCreate(
+                        ['name' => trim($cust['nama_customer'])],
+                        ['status_aktif' => $cust['status_aktif'] ?? true]
+                    );
+                    $vendorMap[$cust['id_customer']] = $vendor->id;
+                }
+            }
+
+            // 2. Tipe Kontainer
+            if (isset($data['tipes']) && is_array($data['tipes'])) {
+                foreach ($data['tipes'] as $tipe) {
+                    $t = SkTipeKontainer::updateOrCreate(
+                        ['nama_tipe' => trim($tipe['nama_tipe'])],
+                        ['status_aktif' => $tipe['status_aktif'] ?? true]
+                    );
+                    $tipeMap[$tipe['id_tipe']] = $t->id;
+                }
+            }
+
+            // 3. Ukuran Kontainer
+            if (isset($data['ukurans']) && is_array($data['ukurans'])) {
+                foreach ($data['ukurans'] as $uk) {
+                    $u = SkUkuranKontainer::updateOrCreate(
+                        ['deskripsi_ukuran' => trim($uk['deskripsi_ukuran'])],
+                        ['status_aktif' => $uk['status_aktif'] ?? true]
+                    );
+                    $ukuranMap[$uk['id_ukuran']] = $u->id;
+                }
+            }
+
+            // 4. Master Kontainer
+            if (isset($data['kontainers']) && is_array($data['kontainers'])) {
+                foreach ($data['kontainers'] as $kon) {
+                    if (!isset($vendorMap[$kon['id_customer']]) || !isset($tipeMap[$kon['id_tipe']]) || !isset($ukuranMap[$kon['id_ukuran']])) {
+                        continue;
+                    }
+                    SkKontainer::updateOrCreate(
+                        ['no_kontainer' => trim($kon['no_kontainer'])],
+                        [
+                            'vendor_id' => $vendorMap[$kon['id_customer']],
+                            'tipe_id' => $tipeMap[$kon['id_tipe']],
+                            'ukuran_id' => $ukuranMap[$kon['id_ukuran']],
+                            'status_aktif' => $kon['status_aktif'] ?? true
+                        ]
+                    );
+                }
+            }
+
+            // 5. Master Tarif
+            if (isset($data['tarifs']) && is_array($data['tarifs'])) {
+                foreach ($data['tarifs'] as $trf) {
+                    if (!isset($vendorMap[$trf['id_customer']]) || !isset($tipeMap[$trf['id_tipe']]) || !isset($ukuranMap[$trf['id_ukuran']])) {
+                        continue;
+                    }
+                    SkTarifSewa::updateOrCreate(
+                        [
+                            'vendor_id' => $vendorMap[$trf['id_customer']],
+                            'tipe_id' => $tipeMap[$trf['id_tipe']],
+                            'ukuran_id' => $ukuranMap[$trf['id_ukuran']],
+                            'tanggal_mulai_berlaku' => $trf['tanggal_mulai_berlaku'],
+                        ],
+                        [
+                            'tarif_bulanan' => $trf['tarif_bulanan'] ?? 0,
+                            'tarif_harian' => $trf['tarif_harian'] ?? 0,
+                            'tanggal_akhir_berlaku' => $trf['tanggal_akhir_berlaku'] ?? null,
+                            'status_aktif' => $trf['status_aktif'] ?? true
+                        ]
+                    );
+                }
+            }
+
+            // 6. Sewa
+            if (isset($data['sewas']) && is_array($data['sewas'])) {
+                foreach ($data['sewas'] as $sw) {
+                    if (!isset($vendorMap[$sw['id_customer']])) {
+                        continue;
+                    }
+                    $sewa = SkSewa::updateOrCreate(
+                        [
+                            'no_kontainer' => trim($sw['no_kontainer']),
+                            'tanggal_sewa' => $sw['tanggal_sewa'],
+                        ],
+                        [
+                            'vendor_id' => $vendorMap[$sw['id_customer']],
+                            'tanggal_kembali' => $sw['tanggal_kembali'] ?? null,
+                            'tarif_bulanan' => $sw['tarif_bulanan'] ?? 0,
+                            'tarif_harian' => $sw['tarif_harian'] ?? 0,
+                            'jenis_tarif' => $sw['jenis_tarif'] ?? 'Bulanan',
+                            'status_sewa' => ($sw['status_sewa'] ?? '') === 'Selesai' ? 'Selesai' : 'Aktif',
+                            'catatan' => $sw['catatan'] ?? null,
+                            'non_ppn' => $sw['non_ppn'] ?? false,
+                        ]
+                    );
+                    
+                    // Generate tagihan for this sewa using Billing Service
+                    // Wait, syncBillingPeriods deletes unpayed and regenerates. Since we restore, we want it fresh!
+                    $this->billingService->syncBillingPeriods($sewa);
+                }
+            }
+
+            // 7. Payment Overrides
+            if (isset($data['paymentOverrides']) && is_array($data['paymentOverrides'])) {
+                foreach ($data['paymentOverrides'] as $kodeTagihan => $override) {
+                    $tagihan = SkTagihanBulan::where('kode_tagihan', $kodeTagihan)->first();
+                    if ($tagihan) {
+                        $tagihan->update([
+                            'status_bayar' => $override['status_bayar'] ?? 'Belum Ditagih',
+                            'tanggal_tagihan' => $override['tanggal_tagihan'] ?? null,
+                            'tanggal_bayar' => $override['tanggal_bayar'] ?? null,
+                            'nomor_invoice' => $override['nomor_invoice_grup'] ?? null,
+                            'jumlah_tagihan_override' => $override['jumlah_tagihan_override'] ?? null,
+                            'nomor_pranota' => $override['nomor_pranota'] ?? null,
+                            'tanggal_pranota' => $override['tanggal_pranota'] ?? null,
+                            'jumlah_bayar' => $override['jumlah_bayar'] ?? null,
+                            'ppn' => $override['ppn'] ?? null,
+                            'pph' => $override['pph'] ?? null,
+                            'keterangan_selisih' => $override['keterangan_selisih'] ?? null,
+                        ]);
+                        $tagihanMap[$kodeTagihan] = $tagihan->id;
+                    }
+                }
+            }
+
+            // 8. Invoices
+            if (isset($data['invoices']) && is_array($data['invoices'])) {
+                foreach ($data['invoices'] as $inv) {
+                    if (!isset($vendorMap[$inv['id_customer']])) {
+                        continue;
+                    }
+                    $invoiceGrup = SkInvoiceGrup::updateOrCreate(
+                        ['nomor_invoice' => trim($inv['nomor_invoice'])],
+                        [
+                            'vendor_id' => $vendorMap[$inv['id_customer']],
+                            'tanggal_invoice' => $inv['tanggal_invoice'],
+                            'status_pembayaran' => $inv['status_pembayaran'] ?? 'Belum Bayar',
+                            'deskripsi' => $inv['deskripsi'] ?? null,
+                        ]
+                    );
+
+                    if (isset($inv['list_id_tagihan']) && is_array($inv['list_id_tagihan'])) {
+                        $tagihanIds = [];
+                        foreach ($inv['list_id_tagihan'] as $kode) {
+                            if (isset($tagihanMap[$kode])) {
+                                $tagihanIds[] = $tagihanMap[$kode];
+                            } else {
+                                $tb = SkTagihanBulan::where('kode_tagihan', $kode)->first();
+                                if ($tb) $tagihanIds[] = $tb->id;
+                            }
+                        }
+                        if (count($tagihanIds) > 0) {
+                            $invoiceGrup->tagihans()->syncWithoutDetaching($tagihanIds);
+                        }
+                    }
+                }
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+            return response()->json(['success' => true, 'message' => 'Backup JSON berhasil dipulihkan secara permanen ke Database!']);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Gagal memulihkan backup: ' . $e->getMessage()], 500);
+        }
+    }
 }

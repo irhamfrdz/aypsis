@@ -284,6 +284,7 @@ Route::middleware([
 
         // Bulk Import
         Route::post('/api/bulk-import', [\App\Http\Controllers\SewaKontainerController::class, 'bulkImport'])->name('sewa-kontainer.api.bulk-import');
+        Route::post('/api/restore-backup', [\App\Http\Controllers\SewaKontainerController::class, 'restoreBackup'])->name('sewa-kontainer.api.restore-backup');
     });
 
     // Vendor Kontainer Sewa (Master Vendor - existing CRUD)
