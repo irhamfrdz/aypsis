@@ -242,6 +242,55 @@ Route::middleware([
 
     /*
     |===========================================================================
+    | 📦 PORTAL SEWA KONTAINER (Sewa In / Lessee)
+    |===========================================================================
+    */
+    Route::prefix('sewa-kontainer')->group(function () {
+        Route::get('/', [\App\Http\Controllers\SewaKontainerController::class, 'index'])->name('sewa-kontainer.index');
+        Route::get('/stats', [\App\Http\Controllers\SewaKontainerController::class, 'getStats'])->name('sewa-kontainer.stats');
+        Route::post('/sync-billing', [\App\Http\Controllers\SewaKontainerController::class, 'syncAllBilling'])->name('sewa-kontainer.sync-billing');
+
+        // Master Data APIs
+        Route::get('/api/vendors', [\App\Http\Controllers\SewaKontainerController::class, 'getVendors'])->name('sewa-kontainer.api.vendors');
+        Route::post('/api/vendors', [\App\Http\Controllers\SewaKontainerController::class, 'storeVendor'])->name('sewa-kontainer.api.vendors.store');
+        Route::post('/api/vendors/{vendor}/toggle', [\App\Http\Controllers\SewaKontainerController::class, 'toggleVendorStatus'])->name('sewa-kontainer.api.vendors.toggle');
+
+        Route::get('/api/tipes', [\App\Http\Controllers\SewaKontainerController::class, 'getTipes'])->name('sewa-kontainer.api.tipes');
+        Route::post('/api/tipes', [\App\Http\Controllers\SewaKontainerController::class, 'storeTipe'])->name('sewa-kontainer.api.tipes.store');
+        Route::post('/api/tipes/{tipe}/toggle', [\App\Http\Controllers\SewaKontainerController::class, 'toggleTipeStatus'])->name('sewa-kontainer.api.tipes.toggle');
+
+        Route::get('/api/ukurans', [\App\Http\Controllers\SewaKontainerController::class, 'getUkurans'])->name('sewa-kontainer.api.ukurans');
+        Route::post('/api/ukurans', [\App\Http\Controllers\SewaKontainerController::class, 'storeUkuran'])->name('sewa-kontainer.api.ukurans.store');
+        Route::post('/api/ukurans/{ukuran}/toggle', [\App\Http\Controllers\SewaKontainerController::class, 'toggleUkuranStatus'])->name('sewa-kontainer.api.ukurans.toggle');
+
+        Route::get('/api/kontainers', [\App\Http\Controllers\SewaKontainerController::class, 'getKontainers'])->name('sewa-kontainer.api.kontainers');
+        Route::post('/api/kontainers', [\App\Http\Controllers\SewaKontainerController::class, 'storeKontainer'])->name('sewa-kontainer.api.kontainers.store');
+        Route::post('/api/kontainers/{kontainer}/toggle', [\App\Http\Controllers\SewaKontainerController::class, 'toggleKontainerStatus'])->name('sewa-kontainer.api.kontainers.toggle');
+
+        Route::get('/api/tarifs', [\App\Http\Controllers\SewaKontainerController::class, 'getTarifs'])->name('sewa-kontainer.api.tarifs');
+        Route::post('/api/tarifs', [\App\Http\Controllers\SewaKontainerController::class, 'storeTarif'])->name('sewa-kontainer.api.tarifs.store');
+        Route::post('/api/tarifs/{tarif}/toggle', [\App\Http\Controllers\SewaKontainerController::class, 'toggleTarifStatus'])->name('sewa-kontainer.api.tarifs.toggle');
+
+        // Transaksi Sewa APIs
+        Route::get('/api/sewas', [\App\Http\Controllers\SewaKontainerController::class, 'getSewas'])->name('sewa-kontainer.api.sewas');
+        Route::post('/api/sewas', [\App\Http\Controllers\SewaKontainerController::class, 'storeSewa'])->name('sewa-kontainer.api.sewas.store');
+        Route::put('/api/sewas/{sewa}', [\App\Http\Controllers\SewaKontainerController::class, 'updateSewa'])->name('sewa-kontainer.api.sewas.update');
+        Route::put('/api/sewas/{sewa}/return', [\App\Http\Controllers\SewaKontainerController::class, 'returnSewa'])->name('sewa-kontainer.api.sewas.return');
+        Route::delete('/api/sewas/{sewa}', [\App\Http\Controllers\SewaKontainerController::class, 'destroySewa'])->name('sewa-kontainer.api.sewas.destroy');
+
+        // Tagihan / Billing APIs
+        Route::get('/api/tagihans', [\App\Http\Controllers\SewaKontainerController::class, 'getTagihans'])->name('sewa-kontainer.api.tagihans');
+        Route::put('/api/tagihans/{tagihan}', [\App\Http\Controllers\SewaKontainerController::class, 'updateTagihan'])->name('sewa-kontainer.api.tagihans.update');
+
+        // Bulk Import
+        Route::post('/api/bulk-import', [\App\Http\Controllers\SewaKontainerController::class, 'bulkImport'])->name('sewa-kontainer.api.bulk-import');
+    });
+
+    // Vendor Kontainer Sewa (Master Vendor - existing CRUD)
+    Route::resource('vendor-kontainer-sewa', \App\Http\Controllers\VendorKontainerSewaController::class);
+
+    /*
+    |===========================================================================
     | 🏠 DASHBOARD & CORE SYSTEM ROUTES
     |===========================================================================
     */
