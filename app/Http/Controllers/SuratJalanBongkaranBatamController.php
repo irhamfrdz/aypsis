@@ -1066,7 +1066,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'pengirim' => $suratJalan->pengirim ?? '',
                 'penerima' => $suratJalan->penerima ?? '',
                 'jenis_barang' => $suratJalan->jenis_barang ?? '',
-                'nama_barang_manifest' => $suratJalan->manifest->nama_barang ?? '',
+                'nama_barang_manifest' => ($suratJalan->manifest ? $suratJalan->manifest->nama_barang : ''),
                 'tujuan_alamat' => $suratJalan->tujuan_alamat ?? '',
                 'tujuan_pengambilan' => $suratJalan->tujuan_pengambilan ?? '',
                 'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? '',
