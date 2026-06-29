@@ -151,25 +151,8 @@ Route::middleware([
     \App\Http\Middleware\EnsureUserApproved::class,
     \App\Http\Middleware\EnsureCrewChecklistComplete::class,
 ])->group(function () {
-    // Rute untuk menjalankan dev server dan membuka halaman Penyewaan Kontainer
     Route::get('/open-penyewaan-kontainer', function () {
-        $port = 3000;
-        $connection = @fsockopen('127.0.0.1', $port);
-        
-        if (!$connection) {
-            if (config('app.env') === 'local' || request()->ip() === '127.0.0.1' || true) { // Allow starting dev server even remotely
-                $path = base_path('Penyewaan-Kontainer-main');
-                // Jalankan npm run dev di folder secara background
-                pclose(popen("start /B cmd /c \"cd /d {$path} && npm run dev\"", "r"));
-                // Beri jeda 3 detik agar server mulai berjalan
-                sleep(3);
-            }
-        } else {
-            fclose($connection);
-        }
-
-        $host = request()->getHost();
-        return redirect("http://{$host}:3000");
+        return redirect('/penyewaan-app/index.html');
     })->name('open-penyewaan-kontainer');
 
     // Onboarding routes for authenticated users who need to create their Karyawan record.
