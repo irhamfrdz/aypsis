@@ -167,7 +167,7 @@
 </div>
 
 <!-- Table -->
-<div class="bg-white shadow-md rounded-lg overflow-hidden">
+<div class="bg-white shadow-md rounded-lg overflow-hidden overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>
@@ -252,7 +252,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="px-6 py-12 text-center">
+                    <td colspan="11" class="px-6 py-12 text-center">
                         <div class="flex flex-col items-center justify-center">
                             <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
                             <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data ditemukan</h3>
