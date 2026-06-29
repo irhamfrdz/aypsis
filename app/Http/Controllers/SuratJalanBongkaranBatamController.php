@@ -585,7 +585,10 @@ class SuratJalanBongkaranBatamController extends Controller
                 'plastik' => 'nullable|string|in:ya,tidak',
                 'terpal' => 'nullable|string|in:ya,tidak',
                 'rit' => 'nullable|string|in:menggunakan_rit,tidak_menggunakan_rit',
-                'uang_jalan_type' => 'nullable|string|in:full,setengah',
+                'uang_jalan_type' => 'nullable|string|in:full,setengah,titip_bon,tidak_ada',
+                'uang_jalan_extra' => 'nullable|numeric|min:0',
+                'keterangan_uang_jalan' => 'nullable|string',
+                'uang_jalan_keterangan' => 'nullable|string',
                 'tagihan_ayp' => 'nullable|boolean',
                 'tagihan_atb' => 'nullable|boolean',
                 'tagihan_pb' => 'nullable|boolean',
@@ -817,6 +820,8 @@ class SuratJalanBongkaranBatamController extends Controller
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_panggilan', 'nama_lengkap']);
 
+        $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('expedisi')->orderBy('ring')->get();
+
         return view('surat-jalan-bongkaran-batam.edit', compact(
             'suratJalanBongkaran',
             'kapals',
@@ -824,7 +829,8 @@ class SuratJalanBongkaranBatamController extends Controller
             'masterKegiatans',
             'tujuanKegiatanUtamas',
             'karyawanSupirs',
-            'karyawanKranis'
+            'karyawanKranis',
+            'pricelistUangJalanBatams'
         ));
     }
 
@@ -865,7 +871,10 @@ class SuratJalanBongkaranBatamController extends Controller
                 'plastik' => 'nullable|string|in:ya,tidak',
                 'terpal' => 'nullable|string|in:ya,tidak',
                 'rit' => 'nullable|string|in:menggunakan_rit,tidak_menggunakan_rit',
-                'uang_jalan_type' => 'nullable|string|in:full,setengah',
+                'uang_jalan_type' => 'nullable|string|in:full,setengah,titip_bon,tidak_ada',
+                'uang_jalan_extra' => 'nullable|numeric|min:0',
+                'keterangan_uang_jalan' => 'nullable|string',
+                'uang_jalan_keterangan' => 'nullable|string',
                 'tagihan_ayp' => 'nullable|boolean',
                 'tagihan_atb' => 'nullable|boolean',
                 'tagihan_pb' => 'nullable|boolean',

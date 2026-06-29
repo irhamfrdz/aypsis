@@ -38,7 +38,9 @@ class ProspekController extends Controller
                 ->where(function ($q) {
                     $q->has('manifests')
                         ->orWhereHas('bls')
-                        ->orWhereHas('naikKapal');
+                        ->orWhereHas('naikKapal', function ($q2) {
+                            $q2->where('sudah_ob', true);
+                        });
                 })
                 ->update(['status' => Prospek::STATUS_SUDAH_MUAT]);
 
