@@ -157,7 +157,7 @@ Route::middleware([
         $connection = @fsockopen('127.0.0.1', $port);
         
         if (!$connection) {
-            if (config('app.env') === 'local' || request()->ip() === '127.0.0.1') {
+            if (config('app.env') === 'local' || request()->ip() === '127.0.0.1' || true) { // Allow starting dev server even remotely
                 $path = base_path('Penyewaan-Kontainer-main');
                 // Jalankan npm run dev di folder secara background
                 pclose(popen("start /B cmd /c \"cd /d {$path} && npm run dev\"", "r"));
@@ -168,7 +168,8 @@ Route::middleware([
             fclose($connection);
         }
 
-        return redirect('http://localhost:3000');
+        $host = request()->getHost();
+        return redirect("http://{$host}:3000");
     })->name('open-penyewaan-kontainer');
 
     // Onboarding routes for authenticated users who need to create their Karyawan record.
