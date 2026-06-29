@@ -2109,24 +2109,38 @@ function printBA(blId) {
 
 // Functions for Surat Jalan Bongkaran mode
 function editSuratJalan(suratJalanId) {
+    console.log('editSuratJalan called with ID:', suratJalanId);
     // Open edit modal and populate with Surat Jalan data
     openEditModal(suratJalanId);
 }
 
 // Edit Surat Jalan from BL (when BL already has Surat Jalan)
 function editSuratJalanFromBL(suratJalanId) {
+    console.log('editSuratJalanFromBL called with ID:', suratJalanId);
     // Open edit modal and populate with Surat Jalan data
     openEditModal(suratJalanId);
 }
 
 // Open edit modal and fetch surat jalan data
 function openEditModal(suratJalanId) {
+    console.log('openEditModal called with ID:', suratJalanId);
     // Show modal
-    document.getElementById('modalEditSuratJalan').classList.remove('hidden');
+    const modal = document.getElementById('modalEditSuratJalan');
+    if (!modal) {
+        console.error('ERROR: modalEditSuratJalan element not found in DOM!');
+        alert('Error: Modal element not found in page.');
+        return;
+    }
+    modal.classList.remove('hidden');
+    console.log('Modal element hidden class removed. Style display status:', modal.style.display);
     
+    const fetchUrl = `{{ route('api.surat-jalan-bongkaran-batam.show', ['id' => ':id'], false) }}`.replace(':id', suratJalanId);
+    console.log('Starting fetch request to URL:', fetchUrl);
+
     // Fetch Surat Jalan data
-    fetch(`{{ route('api.surat-jalan-bongkaran-batam.show', ['id' => ':id'], false) }}`.replace(':id', suratJalanId))
+    fetch(fetchUrl)
         .then(response => {
+            console.log('Received response from server. Status:', response.status, 'OK:', response.ok);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -2275,6 +2289,7 @@ function openEditModal(suratJalanId) {
         })
         .catch(error => {
             console.error('Error fetching Surat Jalan data:', error);
+            alert('Error saat memuat data: ' + error.message);
             closeEditModal();
             
             // Show more detailed error message
