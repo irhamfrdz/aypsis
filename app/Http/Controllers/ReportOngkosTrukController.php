@@ -100,7 +100,7 @@ class ReportOngkosTrukController extends Controller
         $sjbIds = $suratJalanBongkarans->pluck('id');
         $allNoSjs = $suratJalans->pluck('no_surat_jalan')->merge($suratJalanBongkarans->pluck('nomor_surat_jalan'))->unique();
 
-        $adjInvoices = InvoiceAktivitasLain::with('pembayarans')->whereIn('surat_jalan_id', $sjIds->merge($sjbIds))
+        $adjInvoices = InvoiceAktivitasLain::with(['pembayarans', 'suratJalan'])->whereIn('surat_jalan_id', $sjIds->merge($sjbIds))
             ->where(function ($q) {
                 $q->where('jenis_aktivitas', 'like', '%Adjusment%')
                     ->orWhere('jenis_aktivitas', 'like', '%Adjustment%');
@@ -151,7 +151,10 @@ class ReportOngkosTrukController extends Controller
             // Collect adjustments for this SJ
             $sjAdjs = collect();
             if (isset($adjInvoices[$sj->id])) {
-                $sjAdjs = $sjAdjs->merge($adjInvoices[$sj->id]);
+                $filteredInvoices = $adjInvoices[$sj->id]->filter(function ($adj) use ($sj) {
+                    return !$adj->suratJalan || $adj->suratJalan->no_surat_jalan === $sj->no_surat_jalan;
+                });
+                $sjAdjs = $sjAdjs->merge($filteredInvoices);
             }
             if (isset($adjPembayaransGrouped[$sj->no_surat_jalan])) {
                 $sjAdjs = $sjAdjs->merge($adjPembayaransGrouped[$sj->no_surat_jalan]);
@@ -268,7 +271,13 @@ class ReportOngkosTrukController extends Controller
             // Collect adjustments for this SJB
             $sjbAdjs = collect();
             if (isset($adjInvoices[$sjb->id])) {
-                $sjbAdjs = $sjbAdjs->merge($adjInvoices[$sjb->id]);
+                $filteredInvoices = $adjInvoices[$sjb->id]->filter(function ($adj) use ($sjb) {
+                    if ($adj->suratJalan && $adj->suratJalan->no_surat_jalan !== $sjb->nomor_surat_jalan) {
+                        return false;
+                    }
+                    return true;
+                });
+                $sjbAdjs = $sjbAdjs->merge($filteredInvoices);
             }
             if (isset($adjPembayaransGrouped[$sjb->nomor_surat_jalan])) {
                 $sjbAdjs = $sjbAdjs->merge($adjPembayaransGrouped[$sjb->nomor_surat_jalan]);
@@ -414,7 +423,7 @@ class ReportOngkosTrukController extends Controller
         $sjbIds = $suratJalanBongkarans->pluck('id');
         $allNoSjs = $suratJalans->pluck('no_surat_jalan')->merge($suratJalanBongkarans->pluck('nomor_surat_jalan'))->unique();
 
-        $adjInvoices = InvoiceAktivitasLain::with('pembayarans')->whereIn('surat_jalan_id', $sjIds->merge($sjbIds))
+        $adjInvoices = InvoiceAktivitasLain::with(['pembayarans', 'suratJalan'])->whereIn('surat_jalan_id', $sjIds->merge($sjbIds))
             ->where(function ($q) {
                 $q->where('jenis_aktivitas', 'like', '%Adjusment%')
                     ->orWhere('jenis_aktivitas', 'like', '%Adjustment%');
@@ -465,7 +474,10 @@ class ReportOngkosTrukController extends Controller
             // Collect adjustments for this SJ
             $sjAdjs = collect();
             if (isset($adjInvoices[$sj->id])) {
-                $sjAdjs = $sjAdjs->merge($adjInvoices[$sj->id]);
+                $filteredInvoices = $adjInvoices[$sj->id]->filter(function ($adj) use ($sj) {
+                    return !$adj->suratJalan || $adj->suratJalan->no_surat_jalan === $sj->no_surat_jalan;
+                });
+                $sjAdjs = $sjAdjs->merge($filteredInvoices);
             }
             if (isset($adjPembayaransGrouped[$sj->no_surat_jalan])) {
                 $sjAdjs = $sjAdjs->merge($adjPembayaransGrouped[$sj->no_surat_jalan]);
@@ -573,7 +585,13 @@ class ReportOngkosTrukController extends Controller
             // Collect adjustments for this SJB
             $sjbAdjs = collect();
             if (isset($adjInvoices[$sjb->id])) {
-                $sjbAdjs = $sjbAdjs->merge($adjInvoices[$sjb->id]);
+                $filteredInvoices = $adjInvoices[$sjb->id]->filter(function ($adj) use ($sjb) {
+                    if ($adj->suratJalan && $adj->suratJalan->no_surat_jalan !== $sjb->nomor_surat_jalan) {
+                        return false;
+                    }
+                    return true;
+                });
+                $sjbAdjs = $sjbAdjs->merge($filteredInvoices);
             }
             if (isset($adjPembayaransGrouped[$sjb->nomor_surat_jalan])) {
                 $sjbAdjs = $sjbAdjs->merge($adjPembayaransGrouped[$sjb->nomor_surat_jalan]);
@@ -700,7 +718,7 @@ class ReportOngkosTrukController extends Controller
         $sjbIds = $suratJalanBongkarans->pluck('id');
         $allNoSjs = $suratJalans->pluck('no_surat_jalan')->merge($suratJalanBongkarans->pluck('nomor_surat_jalan'))->unique();
 
-        $adjInvoices = InvoiceAktivitasLain::with('pembayarans')->whereIn('surat_jalan_id', $sjIds->merge($sjbIds))
+        $adjInvoices = InvoiceAktivitasLain::with(['pembayarans', 'suratJalan'])->whereIn('surat_jalan_id', $sjIds->merge($sjbIds))
             ->where(function ($q) {
                 $q->where('jenis_aktivitas', 'like', '%Adjusment%')
                     ->orWhere('jenis_aktivitas', 'like', '%Adjustment%');
@@ -751,7 +769,10 @@ class ReportOngkosTrukController extends Controller
             // Collect adjustments for this SJ
             $sjAdjs = collect();
             if (isset($adjInvoices[$sj->id])) {
-                $sjAdjs = $sjAdjs->merge($adjInvoices[$sj->id]);
+                $filteredInvoices = $adjInvoices[$sj->id]->filter(function ($adj) use ($sj) {
+                    return !$adj->suratJalan || $adj->suratJalan->no_surat_jalan === $sj->no_surat_jalan;
+                });
+                $sjAdjs = $sjAdjs->merge($filteredInvoices);
             }
             if (isset($adjPembayaransGrouped[$sj->no_surat_jalan])) {
                 $sjAdjs = $sjAdjs->merge($adjPembayaransGrouped[$sj->no_surat_jalan]);
@@ -870,7 +891,13 @@ class ReportOngkosTrukController extends Controller
             // Collect adjustments for this SJB
             $sjbAdjs = collect();
             if (isset($adjInvoices[$sjb->id])) {
-                $sjbAdjs = $sjbAdjs->merge($adjInvoices[$sjb->id]);
+                $filteredInvoices = $adjInvoices[$sjb->id]->filter(function ($adj) use ($sjb) {
+                    if ($adj->suratJalan && $adj->suratJalan->no_surat_jalan !== $sjb->nomor_surat_jalan) {
+                        return false;
+                    }
+                    return true;
+                });
+                $sjbAdjs = $sjbAdjs->merge($filteredInvoices);
             }
             if (isset($adjPembayaransGrouped[$sjb->nomor_surat_jalan])) {
                 $sjbAdjs = $sjbAdjs->merge($adjPembayaransGrouped[$sjb->nomor_surat_jalan]);
