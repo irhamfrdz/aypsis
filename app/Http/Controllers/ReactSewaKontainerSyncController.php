@@ -16,11 +16,24 @@ class ReactSewaKontainerSyncController extends Controller
             'customers' => DB::table('sk_customers')->get(),
             'tipes' => DB::table('sk_tipes')->get(),
             'ukurans' => DB::table('sk_ukurans')->get(),
-            'kontainers' => DB::table('sk_kontainers')->get(),
-            'tarifs' => DB::table('sk_tarifs')->get(),
-            'sewas' => DB::table('sk_sewas')->get(),
+            'kontainers' => DB::table('sk_kontainers')->get()->map(function($k) {
+                $k->status_aktif = (bool) $k->status_aktif;
+                return $k;
+            })->toArray(),
+            'tarifs' => DB::table('sk_tarifs')->get()->map(function($t) {
+                $t->tarif_bulanan = (float) $t->tarif_bulanan;
+                $t->tarif_harian = (float) $t->tarif_harian;
+                $t->status_aktif = (bool) $t->status_aktif;
+                return $t;
+            })->toArray(),
+            'sewas' => DB::table('sk_sewas')->get()->map(function($s) {
+                $s->tarif_bulanan = (float) $s->tarif_bulanan;
+                $s->tarif_harian = (float) $s->tarif_harian;
+                return $s;
+            })->toArray(),
             'invoices' => DB::table('sk_invoice_grups')->get()->map(function($invoice) {
                 $invoice->list_id_tagihan = json_decode($invoice->list_id_tagihan, true) ?? [];
+                $invoice->adjustment_biaya = $invoice->adjustment_biaya !== null ? (float) $invoice->adjustment_biaya : null;
                 return $invoice;
             })->toArray(),
         ];
@@ -40,12 +53,12 @@ class ReactSewaKontainerSyncController extends Controller
                     'nomor_invoice_grup' => $tagihan->nomor_invoice_grup,
                     'nomor_pranota' => $tagihan->nomor_pranota,
                     'tanggal_pranota' => $tagihan->tanggal_pranota,
-                    'jumlah_tagihan_override' => $tagihan->jumlah_tagihan_override,
-                    'jumlah_bayar' => $tagihan->jumlah_bayar,
-                    'selisih_pembayaran' => $tagihan->selisih_pembayaran,
+                    'jumlah_tagihan_override' => $tagihan->jumlah_tagihan_override !== null ? (float) $tagihan->jumlah_tagihan_override : null,
+                    'jumlah_bayar' => $tagihan->jumlah_bayar !== null ? (float) $tagihan->jumlah_bayar : null,
+                    'selisih_pembayaran' => $tagihan->selisih_pembayaran !== null ? (float) $tagihan->selisih_pembayaran : null,
                     'keterangan_selisih' => $tagihan->keterangan_selisih,
-                    'ppn' => $tagihan->ppn,
-                    'pph' => $tagihan->pph,
+                    'ppn' => $tagihan->ppn !== null ? (float) $tagihan->ppn : null,
+                    'pph' => $tagihan->pph !== null ? (float) $tagihan->pph : null,
                     'nomor_bayar' => $tagihan->nomor_bayar
                 ];
             } else {
@@ -56,21 +69,21 @@ class ReactSewaKontainerSyncController extends Controller
                     'bulan_ke' => $tagihan->bulan_ke,
                     'tanggal_awal' => $tagihan->tanggal_awal,
                     'tanggal_akhir' => $tagihan->tanggal_akhir,
-                    'jumlah_hari' => $tagihan->jumlah_hari,
+                    'jumlah_hari' => (int) $tagihan->jumlah_hari,
                     'tipe_tarif' => $tagihan->tipe_tarif,
-                    'jumlah_tagihan' => $tagihan->jumlah_tagihan,
+                    'jumlah_tagihan' => (float) $tagihan->jumlah_tagihan,
                     'status_bayar' => $tagihan->status_bayar,
                     'tanggal_tagihan' => $tagihan->tanggal_tagihan,
                     'tanggal_bayar' => $tagihan->tanggal_bayar,
                     'nomor_invoice_grup' => $tagihan->nomor_invoice_grup,
                     'nomor_pranota' => $tagihan->nomor_pranota,
                     'tanggal_pranota' => $tagihan->tanggal_pranota,
-                    'jumlah_tagihan_override' => $tagihan->jumlah_tagihan_override,
-                    'jumlah_bayar' => $tagihan->jumlah_bayar,
-                    'selisih_pembayaran' => $tagihan->selisih_pembayaran,
+                    'jumlah_tagihan_override' => $tagihan->jumlah_tagihan_override !== null ? (float) $tagihan->jumlah_tagihan_override : null,
+                    'jumlah_bayar' => $tagihan->jumlah_bayar !== null ? (float) $tagihan->jumlah_bayar : null,
+                    'selisih_pembayaran' => $tagihan->selisih_pembayaran !== null ? (float) $tagihan->selisih_pembayaran : null,
                     'keterangan_selisih' => $tagihan->keterangan_selisih,
-                    'ppn' => $tagihan->ppn,
-                    'pph' => $tagihan->pph,
+                    'ppn' => $tagihan->ppn !== null ? (float) $tagihan->ppn : null,
+                    'pph' => $tagihan->pph !== null ? (float) $tagihan->pph : null,
                     'nomor_bayar' => $tagihan->nomor_bayar
                 ];
             }
