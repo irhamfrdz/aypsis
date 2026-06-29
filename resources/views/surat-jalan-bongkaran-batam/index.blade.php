@@ -2175,20 +2175,27 @@ function openEditModal(suratJalanId) {
             }
             
             // Set radio buttons
+            // Set radio buttons safely
             if (data.karton) {
-                document.querySelector(`#modalEditSuratJalan input[name="karton"][value="${data.karton}"]`).checked = true;
+                const el = document.querySelector(`#modalEditSuratJalan input[name="karton"][value="${data.karton}"]`);
+                if (el) el.checked = true;
             }
             if (data.plastik) {
-                document.querySelector(`#modalEditSuratJalan input[name="plastik"][value="${data.plastik}"]`).checked = true;
+                const el = document.querySelector(`#modalEditSuratJalan input[name="plastik"][value="${data.plastik}"]`);
+                if (el) el.checked = true;
             }
             if (data.terpal) {
-                document.querySelector(`#modalEditSuratJalan input[name="terpal"][value="${data.terpal}"]`).checked = true;
+                const el = document.querySelector(`#modalEditSuratJalan input[name="terpal"][value="${data.terpal}"]`);
+                if (el) el.checked = true;
             }
             if (data.rit) {
-                document.querySelector(`#modalEditSuratJalan input[name="rit"][value="${data.rit}"]`).checked = true;
+                const el = document.querySelector(`#modalEditSuratJalan input[name="rit"][value="${data.rit}"]`);
+                if (el) el.checked = true;
             }
             if (data.uang_jalan_type) {
-                document.querySelector(`#modalEditSuratJalan input[name="uang_jalan_type"][value="${data.uang_jalan_type}"]`).checked = true;
+                const el = document.querySelector(`#modalEditSuratJalan input[name="uang_jalan_type"][value="${data.uang_jalan_type.toLowerCase()}"]`) ||
+                           document.querySelector(`#modalEditSuratJalan input[name="uang_jalan_type"][value="${data.uang_jalan_type}"]`);
+                if (el) el.checked = true;
             }
             if (data.f_e) {
                 const feRadio = document.querySelector(`#modalEditSuratJalan input[name="f_e"][value="${data.f_e}"]`);
