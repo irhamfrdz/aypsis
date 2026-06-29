@@ -168,7 +168,7 @@ class SewaKontainerController extends Controller
             });
         }
 
-        return response()->json($q->orderBy('no_kontainer')->get());
+        return response()->json($q->orderBy('no_kontainer')->limit(150)->get());
     }
 
     public function storeKontainer(Request $request): JsonResponse
@@ -218,7 +218,7 @@ class SewaKontainerController extends Controller
             $q->whereHas('vendor', fn ($v) => $v->where('name', 'like', "%{$search}%"));
         }
 
-        return response()->json($q->orderByDesc('tanggal_mulai_berlaku')->get());
+        return response()->json($q->orderByDesc('tanggal_mulai_berlaku')->limit(150)->get());
     }
 
     public function storeTarif(Request $request): JsonResponse
@@ -298,7 +298,7 @@ class SewaKontainerController extends Controller
             });
         }
 
-        $sewas = $q->orderByDesc('tanggal_sewa')->get();
+        $sewas = $q->orderByDesc('tanggal_sewa')->limit(150)->get();
 
         // Enrich with billing data
         $result = $sewas->map(function ($sewa) {
@@ -525,7 +525,7 @@ class SewaKontainerController extends Controller
             });
         }
 
-        return response()->json($q->orderBy('tanggal_awal')->get());
+        return response()->json($q->orderByDesc('tanggal_awal')->limit(150)->get());
     }
 
     public function updateTagihan(Request $request, SkTagihanBulan $tagihan): JsonResponse
@@ -797,6 +797,10 @@ class SewaKontainerController extends Controller
             'backup_file' => 'required|file|mimetypes:application/json,text/plain'
         ]);
 
+        // Tingkatkan batas waktu eksekusi agar tidak timeout saat parsing JSON besar
+        set_time_limit(600);
+        ini_set('memory_limit', '512M');
+
         $fileContent = file_get_contents($request->file('backup_file')->getRealPath());
         $data = json_decode($fileContent, true);
 
@@ -910,30 +914,39 @@ class SewaKontainerController extends Controller
                     );
                     
                     // Generate tagihan for this sewa using Billing Service
-                    // Wait, syncBillingPeriods deletes unpayed and regenerates. Since we restore, we want it fresh!
                     $this->billingService->syncBillingPeriods($sewa);
                 }
             }
 
             // 7. Payment Overrides
             if (isset($data['paymentOverrides']) && is_array($data['paymentOverrides'])) {
-                foreach ($data['paymentOverrides'] as $kodeTagihan => $override) {
-                    $tagihan = SkTagihanBulan::where('kode_tagihan', $kodeTagihan)->first();
-                    if ($tagihan) {
-                        $tagihan->update([
-                            'status_bayar' => $override['status_bayar'] ?? 'Belum Ditagih',
-                            'tanggal_tagihan' => $override['tanggal_tagihan'] ?? null,
-                            'tanggal_bayar' => $override['tanggal_bayar'] ?? null,
-                            'nomor_invoice' => $override['nomor_invoice_grup'] ?? null,
-                            'jumlah_tagihan_override' => $override['jumlah_tagihan_override'] ?? null,
-                            'nomor_pranota' => $override['nomor_pranota'] ?? null,
-                            'tanggal_pranota' => $override['tanggal_pranota'] ?? null,
-                            'jumlah_bayar' => $override['jumlah_bayar'] ?? null,
-                            'ppn' => $override['ppn'] ?? null,
-                            'pph' => $override['pph'] ?? null,
-                            'keterangan_selisih' => $override['keterangan_selisih'] ?? null,
-                        ]);
-                        $tagihanMap[$kodeTagihan] = $tagihan->id;
+                $overrideKeys = array_keys($data['paymentOverrides']);
+                $chunks = array_chunk($overrideKeys, 1000); // Batasi per chunk agar query tidak macet
+
+                foreach ($chunks as $chunk) {
+                    $tagihans = SkTagihanBulan::whereIn('kode_tagihan', $chunk)->get();
+                    foreach ($tagihans as $tagihan) {
+                        $override = $data['paymentOverrides'][$tagihan->kode_tagihan];
+                        // Skip if nothing changed
+                        if (
+                            $tagihan->status_bayar !== ($override['status_bayar'] ?? 'Belum Ditagih') ||
+                            $tagihan->jumlah_tagihan_override != ($override['jumlah_tagihan_override'] ?? null)
+                        ) {
+                            $tagihan->update([
+                                'status_bayar' => $override['status_bayar'] ?? 'Belum Ditagih',
+                                'tanggal_tagihan' => $override['tanggal_tagihan'] ?? null,
+                                'tanggal_bayar' => $override['tanggal_bayar'] ?? null,
+                                'nomor_invoice' => $override['nomor_invoice_grup'] ?? null,
+                                'jumlah_tagihan_override' => $override['jumlah_tagihan_override'] ?? null,
+                                'nomor_pranota' => $override['nomor_pranota'] ?? null,
+                                'tanggal_pranota' => $override['tanggal_pranota'] ?? null,
+                                'jumlah_bayar' => $override['jumlah_bayar'] ?? null,
+                                'ppn' => $override['ppn'] ?? null,
+                                'pph' => $override['pph'] ?? null,
+                                'keterangan_selisih' => $override['keterangan_selisih'] ?? null,
+                            ]);
+                        }
+                        $tagihanMap[$tagihan->kode_tagihan] = $tagihan->id;
                     }
                 }
             }
