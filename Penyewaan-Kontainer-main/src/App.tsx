@@ -86,6 +86,8 @@ export default function App() {
     saveAppState(updatedState).then(synced => {
       if (synced) {
         triggerBackupNoti('sukses', '✅ Data berhasil disinkronkan ke database server.');
+      } else {
+        triggerBackupNoti('error', '❌ GAGAL menyimpan ke database server! Data hanya tersimpan di browser lokal (localStorage). Pastikan server Laravel aktif dan tabel database sudah di-migrate.');
       }
     });
   };
