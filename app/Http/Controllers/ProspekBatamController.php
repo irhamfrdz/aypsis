@@ -29,6 +29,13 @@ class ProspekBatamController extends Controller
                 abort(403, 'Tidak memiliki akses ke halaman prospek batam');
             }
 
+            // Auto sync active prospeks that have BLs
+            ProspekBatam::where('status', 'aktif')
+                ->where(function ($q) {
+                    $q->has('bls');
+                })
+                ->update(['status' => 'sudah_muat']);
+
             $query = ProspekBatam::with(['creator', 'updater', 'bls', 'suratJalan'])->orderBy('created_at', 'desc');
 
             // Filter berdasarkan status

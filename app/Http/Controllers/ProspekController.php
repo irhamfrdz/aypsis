@@ -33,6 +33,15 @@ class ProspekController extends Controller
                 abort(403, 'Tidak memiliki akses ke halaman prospek');
             }
 
+            // Auto sync active prospeks that have manifests, BLs, or NaikKapal records
+            Prospek::where('status', Prospek::STATUS_AKTIF)
+                ->where(function ($q) {
+                    $q->has('manifests')
+                        ->orWhereHas('bls')
+                        ->orWhereHas('naikKapal');
+                })
+                ->update(['status' => Prospek::STATUS_SUDAH_MUAT]);
+
             // Default to 'aktif' status if status parameter is not present in URL/request at all
             if (! $request->has('status')) {
                 $request->merge(['status' => 'aktif']);
