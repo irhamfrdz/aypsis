@@ -1598,7 +1598,7 @@ function buatSuratJalan(manifestId) {
     document.getElementById('modalBuatSuratJalan').classList.remove('hidden');
     
     // Fetch Manifest data
-    fetch(`{{ route('api.manifest-batam.show', ['id' => ':id']) }}`.replace(':id', manifestId))
+    fetch(`{{ route('api.manifest-batam.show', ['id' => ':id'], false) }}`.replace(':id', manifestId))
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -2125,7 +2125,7 @@ function openEditModal(suratJalanId) {
     document.getElementById('modalEditSuratJalan').classList.remove('hidden');
     
     // Fetch Surat Jalan data
-    fetch(`{{ route('api.surat-jalan-bongkaran-batam.show', ['id' => ':id']) }}`.replace(':id', suratJalanId))
+    fetch(`{{ route('api.surat-jalan-bongkaran-batam.show', ['id' => ':id'], false) }}`.replace(':id', suratJalanId))
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -2733,7 +2733,7 @@ function submitBulkSuratJalan() {
         _token: '{{ csrf_token() }}'
     };
 
-    fetch('{{ route("surat-jalan-bongkaran-batam.store-bulk") }}', {
+    fetch('{{ route("surat-jalan-bongkaran-batam.store-bulk", [], false) }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
