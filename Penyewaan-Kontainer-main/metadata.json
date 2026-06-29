@@ -1,6 +1,0 @@
-{
-  "name": "SewaKontainer",
-  "description": "Aplikasi manajemen sewa kontainer offline-first dengan perhitungan tarif bulanan, harian, prorate fleksibel, tagihan massal, impor data, dan pelacakan status pembayaran yang tidak berurutan.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
