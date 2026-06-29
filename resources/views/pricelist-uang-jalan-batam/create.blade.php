@@ -84,8 +84,9 @@
                        name="wilayah" 
                        id="wilayah" 
                        value="{{ old('wilayah') }}"
-                       placeholder="Contoh: Batam Center, Batu Ampar"
+                       placeholder="Contoh: Nagoya, Baloi, Jodoh"
                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('wilayah') border-red-300 @enderror">
+                <p class="mt-1 text-xs text-gray-500">Bisa input lebih dari 1 wilayah dipisah dengan tanda koma (,). Contoh: Nagoya, Baloi, Jodoh</p>
                 @error('wilayah')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
