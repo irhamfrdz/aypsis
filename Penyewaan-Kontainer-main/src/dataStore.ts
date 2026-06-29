@@ -214,7 +214,7 @@ export async function fetchAppStateFromDB(): Promise<AppState | null> {
   return null;
 }
 
-export function saveAppState(state: AppState): void {
+export async function saveAppState(state: AppState): Promise<boolean> {
   // Simpan ke local storage sebagai backup sementara
   saveData(STORE_KEYS.CUSTOMERS, state.customers);
   saveData(STORE_KEYS.TIPES, state.tipes);
@@ -227,16 +227,26 @@ export function saveAppState(state: AppState): void {
   saveData('sewa_kontainer_manual_tagihans', state.manualTagihans || []);
 
   // Sync ke database backend secara asinkron
-  fetch('/api/sewa-kontainer/sync', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify(state)
-  }).catch(err => {
-    console.error("Gagal melakukan sinkronisasi ke database MySQL:", err);
-  });
+  try {
+    const response = await fetch('/api/sewa-kontainer/sync', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(state)
+    });
+    if (response.ok) {
+      console.log("✅ Sinkronisasi ke database MySQL berhasil.");
+      return true;
+    } else {
+      console.error("❌ Gagal sinkronisasi ke database. Status:", response.status);
+      return false;
+    }
+  } catch (err) {
+    console.error("❌ Gagal melakukan sinkronisasi ke database MySQL:", err);
+    return false;
+  }
 }
 
 export function getEmptyAppState(): AppState {

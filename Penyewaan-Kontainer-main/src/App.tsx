@@ -57,7 +57,7 @@ export default function App() {
           const parsed = JSON.parse(event.target?.result as string);
           if (parsed && typeof parsed === 'object') {
             // Check essential keys to minimize corruption
-            const validatedState = {
+            const validatedState: AppState = {
               customers: parsed.customers || [],
               tipes: parsed.tipes || [],
               ukurans: parsed.ukurans || [],
@@ -66,6 +66,7 @@ export default function App() {
               sewas: parsed.sewas || [],
               invoices: parsed.invoices || [],
               paymentOverrides: parsed.paymentOverrides || {},
+              manualTagihans: parsed.manualTagihans || [],
             };
             handleStateChange(validatedState);
             triggerBackupNoti('sukses', 'Sistem berhasil memulihkan semua data dari file backup JSON Anda!');
@@ -79,10 +80,14 @@ export default function App() {
     }
   };
 
-  // Sync state changes to LocalStorage
+  // Sync state changes to LocalStorage + Database
   const handleStateChange = (updatedState: AppState) => {
     setState(updatedState);
-    saveAppState(updatedState);
+    saveAppState(updatedState).then(synced => {
+      if (synced) {
+        triggerBackupNoti('sukses', '✅ Data berhasil disinkronkan ke database server.');
+      }
+    });
   };
 
   // Compile calculations for KPIs
