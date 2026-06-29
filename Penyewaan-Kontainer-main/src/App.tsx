@@ -166,10 +166,10 @@ export default function App() {
             </span>
             <div>
               <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <span>Penyimpanan Otomatis Aktif di Browser (Local Storage)</span>
+                <span>Sinkronisasi Otomatis ke Database Server Aktif</span>
               </p>
               <p className="text-[10px] text-slate-500 mt-0.5">
-                Semua data Anda otomatis tersimpan saat di-input. Untuk berjaga-jaga hilangnya cache browser, unduh Backup berkas JSON Anda secara periodik!
+                Semua data Anda otomatis tersimpan ke server database MySQL. Anda juga dapat mengunduh Backup berkas JSON sebagai arsip periodik.
               </p>
             </div>
           </div>

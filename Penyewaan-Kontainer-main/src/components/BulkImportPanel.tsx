@@ -1010,10 +1010,10 @@ export default function BulkImportPanel({ state, onStateChange, utcTime }: BulkI
             <div>
               <h4 className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                 <Trash2 className="w-4 h-4 text-red-600 animate-pulse" />
-                <span>MEMELIHARA &amp; MENGELOLA MEMORI DATABASE (Offline-first)</span>
+                <span>MEMELIHARA &amp; MENGELOLA DATABASE</span>
               </h4>
               <p className="text-[10px] text-slate-500 mt-0.5">
-                Aplikasi ini berjalan 100% di browser Anda (LocalStorage). Anda dapat mengosongkan semua data dummy untuk mulai mengimpor data asli milik Anda dengan bersih, atau memulihkan data demo kapan saja.
+                Semua data Anda tersimpan di database MySQL server. Anda dapat mengosongkan semua data untuk mulai mengimpor data bersih, atau memulihkan data backup kapan saja.
               </p>
             </div>
           </div>
