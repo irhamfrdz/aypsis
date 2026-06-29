@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AppState, compileAllPeriods, getEmptyAppState, getDemoAppState } from '../dataStore';
 import { Customer, TipeKontainer, UkuranKontainer, Kontainer, TarifSewa, Sewa } from '../types';
 import { parseInputDate, isLeapYear, formatIndoDate } from '../utils';
-import { Upload, AlertTriangle, Check, BookOpen, CircleAlert, CheckCircle, Info, Trash2, RotateCcw, Copy } from 'lucide-react';
+import { Upload, AlertTriangle, Check, BookOpen, CircleAlert, CheckCircle, Info, Trash2, RotateCcw, Copy, Truck, FileText, Edit3, DollarSign, Archive } from 'lucide-react';
 
 function CopyButton({ textValue, label }: { textValue: string; label: string }) {
   const [copied, setCopied] = useState(false);
@@ -1064,6 +1064,108 @@ export default function BulkImportPanel({ state, onStateChange, utcTime }: BulkI
             )}
 
             {/* BUTTON EXPORT BACKUP */}
+
+          </div>
+
+          {/* PENGHAPUSAN DATA MODULAR */}
+          <div className="mt-4 p-3 bg-white border border-slate-200 rounded-xl">
+            <h5 className="font-bold text-slate-800 text-[11px] flex items-center gap-1.5 mb-1 uppercase">
+              <Trash2 className="w-3.5 h-3.5 text-pink-600" />
+              PENGHAPUSAN DATA MODULAR (RESET MANDIRI)
+            </h5>
+            <p className="text-[10px] text-slate-500 mb-3">
+              Hapus data per modul spesifik untuk mempermudah perbaikan data impor tanpa harus mengulang seluruh konfigurasi database dari awal.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => {
+                  if(confirm('Yakin ingin menghapus semua data MASTER (Pelanggan, Tipe, Ukuran, Kontainer, Tarif)?')) {
+                    onStateChange({ ...state, customers: [], tipes: [], ukurans: [], kontainers: [], tarifs: [] });
+                    setNoticeMsg('Data Master berhasil dikosongkan!');
+                    setTimeout(() => setNoticeMsg(null), 5000);
+                  }
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-100 text-[11px] font-bold py-1.5 px-3 rounded-lg transition-colors cursor-pointer"
+              >
+                <Archive className="w-3.5 h-3.5" />
+                Master
+              </button>
+
+              <button
+                onClick={() => {
+                  if(confirm('Yakin ingin menghapus semua data TRANSAKSI SEWA?')) {
+                    onStateChange({ ...state, sewas: [] });
+                    setNoticeMsg('Data Transaksi Sewa berhasil dikosongkan!');
+                    setTimeout(() => setNoticeMsg(null), 5000);
+                  }
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-100 text-[11px] font-bold py-1.5 px-3 rounded-lg transition-colors cursor-pointer"
+              >
+                <Truck className="w-3.5 h-3.5" />
+                Transaksi
+              </button>
+
+              <button
+                onClick={() => {
+                  if(confirm('Yakin ingin menghapus semua INVOICE dan TAGIHAN MANUAL?')) {
+                    onStateChange({ ...state, invoices: [], manualTagihans: [] });
+                    setNoticeMsg('Data Tagihan berhasil dikosongkan!');
+                    setTimeout(() => setNoticeMsg(null), 5000);
+                  }
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-100 text-[11px] font-bold py-1.5 px-3 rounded-lg transition-colors cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                Tagihan
+              </button>
+
+              <button
+                onClick={() => {
+                  if(confirm('Yakin ingin mereset/menghapus semua informasi PRANOTA?')) {
+                    const newOverrides = { ...state.paymentOverrides };
+                    for (const key in newOverrides) {
+                      newOverrides[key] = { ...newOverrides[key], nomor_pranota: undefined, tanggal_pranota: undefined };
+                    }
+                    onStateChange({ ...state, paymentOverrides: newOverrides });
+                    setNoticeMsg('Data Pranota berhasil dikosongkan!');
+                    setTimeout(() => setNoticeMsg(null), 5000);
+                  }
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-100 text-[11px] font-bold py-1.5 px-3 rounded-lg transition-colors cursor-pointer"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                Pranota
+              </button>
+
+              <button
+                onClick={() => {
+                  if(confirm('Yakin ingin mereset/menghapus semua informasi PEMBAYARAN?')) {
+                    const newOverrides = { ...state.paymentOverrides };
+                    for (const key in newOverrides) {
+                      newOverrides[key] = {
+                        ...newOverrides[key],
+                        status_bayar: undefined,
+                        tanggal_bayar: undefined,
+                        jumlah_bayar: undefined,
+                        selisih_pembayaran: undefined,
+                        keterangan_selisih: undefined,
+                        nomor_bayar: undefined
+                      };
+                    }
+                    onStateChange({ ...state, paymentOverrides: newOverrides });
+                    setNoticeMsg('Data Pembayaran berhasil dikosongkan!');
+                    setTimeout(() => setNoticeMsg(null), 5000);
+                  }
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-100 text-[11px] font-bold py-1.5 px-3 rounded-lg transition-colors cursor-pointer"
+              >
+                <DollarSign className="w-3.5 h-3.5" />
+                Pembayaran
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-200 mt-4">
             <button
               onClick={() => {
                 try {
