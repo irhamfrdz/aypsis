@@ -381,7 +381,7 @@
 @push('styles')
 @endpush
 
-@section('scripts')
+@push('scripts')
 <script>
 $(document).ready(function() {
     const csrfToken = $('meta[name="csrf-token"]').attr('content');
@@ -872,4 +872,4 @@ $(document).ready(function() {
     loadBillingData();
 });
 </script>
-@endsection
+@endpush
