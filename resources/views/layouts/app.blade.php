@@ -379,16 +379,7 @@
                 </a>
                 @endcan
 
-                <!-- Portal Sewa Kontainer -->
-                @php
-                    $isSewaKontainer = Request::routeIs('sewa-kontainer.*');
-                @endphp
-                <a href="{{ route('sewa-kontainer.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isSewaKontainer ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
-                    <svg class="w-4 h-4 mr-2 {{ $isSewaKontainer ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                    <span class="text-xs font-medium menu-text">Portal Sewa Kontainer</span>
-                </a>
+
 
 
                 {{-- Monitoring Section --}}
