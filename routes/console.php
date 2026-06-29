@@ -10,4 +10,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::command('tanda-terima:update-penerima')->everyTenMinutes();
+Schedule::command('manifest:update-penerima')->everyTenMinutes();
 
