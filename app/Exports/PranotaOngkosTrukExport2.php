@@ -32,10 +32,17 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                 $no_surat_jalan = $sj->no_surat_jalan;
                 
                 // Kegiatan, Muat, Tujuan, PT
-                $kegiatan = 'Uang Jalan';
+                $kegiatan = 'Uang Jalan Muat';
                 $muatan = $sj->jenis_barang ?? '-';
                 $tujuan = $sj->tujuan_pengambilan ?? '-';
                 $pt = $sj->pengirim ?? $sj->tujuan_pengiriman ?? '-';
+                
+                // Cari NIK
+                $nik_supir = '-';
+                if ($sj->supir) {
+                    $k = \App\Models\Karyawan::where('nama_panggilan', $sj->supir)->orWhere('nama_lengkap', $sj->supir)->first();
+                    if ($k) $nik_supir = $k->nik;
+                }
                 
                 // Ongkos Truk
                 $ongkos_truk = 0;
@@ -70,10 +77,17 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                 $no_surat_jalan = $sjb->nomor_surat_jalan;
 
                 // Kegiatan, Muat, Tujuan, PT
-                $kegiatan = 'Uang Jalan';
+                $kegiatan = 'Uang Jalan Bongkar';
                 $muatan = $sjb->jenis_barang ?? '-';
                 $tujuan = $sjb->tujuan_pengambilan ?? '-';
                 $pt = $sjb->pengirim ?? $sjb->tujuan_pengiriman ?? '-';
+
+                // Cari NIK
+                $nik_supir = '-';
+                if ($sjb->supir) {
+                    $k = \App\Models\Karyawan::where('nama_panggilan', $sjb->supir)->orWhere('nama_lengkap', $sjb->supir)->first();
+                    if ($k) $nik_supir = $k->nik;
+                }
 
                 // Ongkos Truk
                 $ongkos_truk = 0;
@@ -108,13 +122,14 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                 $muatan = '-';
                 $tujuan = '-';
                 $pt = '-';
+                $nik_supir = '-';
                 $ongkos_truk = 0;
                 $uang_jalan = 0;
                 $no_bukti = '-';
             }
 
             return [
-                $index + 1,
+                $nik_supir !== '-' ? "'".$nik_supir : '-',
                 $tgl_sj,
                 $nama_supir,
                 $no_plat,
@@ -133,7 +148,7 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
     public function headings(): array
     {
         return [
-            'No',
+            'NIK Supir',
             'Tgl.',
             'Nama',
             'Plat Mobil',

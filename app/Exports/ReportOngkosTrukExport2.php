@@ -29,7 +29,7 @@ class ReportOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCol
     {
         return $this->data->map(function ($item, $index) {
             return [
-                $index + 1,
+                $item['nik_supir'] ? "'".$item['nik_supir'] : '-',
                 $item['tanggal'],
                 $item['nama_lengkap_supir'],
                 $item['no_plat'],
@@ -48,7 +48,7 @@ class ReportOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCol
     public function headings(): array
     {
         return [
-            'No',
+            'NIK Supir',
             'Tgl.',
             'Nama',
             'Plat Mobil',
