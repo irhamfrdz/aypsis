@@ -985,13 +985,36 @@ export default function BulkImportPanel({ state, onStateChange, utcTime }: BulkI
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between text-xs font-semibold text-slate-655">
             <span>Tempel Baris Data Di Bawah Ini:</span>
-            <button
-              id="btn-load-template"
-              onClick={() => setImportText(getTemplatePlaceholder())}
-              className="text-[10px] text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
-            >
-              <Info className="w-3 h-3" /> Muat Contoh Template Baris
-            </button>
+            <div className="flex items-center gap-3">
+              <label className="text-[10px] text-indigo-650 hover:text-indigo-800 flex items-center gap-1 cursor-pointer font-bold border border-indigo-200 bg-indigo-50/20 hover:bg-indigo-50/50 px-2 py-0.5 rounded-lg shadow-3xs transition-all">
+                <Upload className="w-3 h-3 text-indigo-600" />
+                <span>Pilih Berkas CSV</span>
+                <input
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        const text = event.target?.result as string;
+                        setImportText(text);
+                      };
+                      reader.readAsText(file);
+                    }
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                id="btn-load-template"
+                onClick={() => setImportText(getTemplatePlaceholder())}
+                className="text-[10px] text-emerald-600 hover:text-emerald-850 flex items-center gap-1 font-bold cursor-pointer"
+              >
+                <Info className="w-3 h-3" /> Muat Contoh Template Baris
+              </button>
+            </div>
           </div>
 
           <textarea
