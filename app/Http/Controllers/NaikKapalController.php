@@ -140,7 +140,13 @@ class NaikKapalController extends Controller
             ->where('nama_kapal', '!=', '')
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '!=', '')
-            ->whereBetween('tanggal_muat', [$startDate, $endDate]);
+            ->whereBetween('tanggal_muat', [$startDate, $endDate])
+            ->whereNotExists(function ($q) {
+                $q->select(\Illuminate\Support\Facades\DB::raw(1))
+                  ->from('biaya_kapal_opp_opts')
+                  ->whereColumn('biaya_kapal_opp_opts.kapal', 'naik_kapal.nama_kapal')
+                  ->whereColumn('biaya_kapal_opp_opts.voyage', 'naik_kapal.no_voyage');
+            });
 
         // Get distinct kapal and voyage combinations
         $combinations = $query->select('nama_kapal', 'no_voyage')
