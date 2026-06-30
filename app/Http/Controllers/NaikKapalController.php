@@ -377,7 +377,10 @@ class NaikKapalController extends Controller
             // Update prospek status if naik kapal is completed
             if ($request->status == 'selesai') {
                 $isObMuat = $naikKapal->sudah_ob;
-                $isInManifest = \App\Models\Manifest::where('nomor_kontainer', $naikKapal->nomor_kontainer)->exists();
+                $isInManifest = false;
+                if (!empty($naikKapal->nomor_kontainer) && $naikKapal->nomor_kontainer !== '-') {
+                    $isInManifest = \App\Models\Manifest::where('nomor_kontainer', $naikKapal->nomor_kontainer)->exists();
+                }
                 
                 if ($isObMuat || $isInManifest) {
                     $prospek->update(['status' => 'sudah_muat']);
@@ -783,7 +786,10 @@ class NaikKapalController extends Controller
             // Update prospek status if needed
             if ($prospek) {
                 $isObMuat = $naikKapal->sudah_ob;
-                $isInManifest = \App\Models\Manifest::where('nomor_kontainer', $naikKapal->nomor_kontainer)->exists();
+                $isInManifest = false;
+                if (!empty($naikKapal->nomor_kontainer) && $naikKapal->nomor_kontainer !== '-') {
+                    $isInManifest = \App\Models\Manifest::where('nomor_kontainer', $naikKapal->nomor_kontainer)->exists();
+                }
                 
                 if ($isObMuat || $isInManifest) {
                     $prospek->update([
