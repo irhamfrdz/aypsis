@@ -144,6 +144,8 @@ class NaikKapalController extends Controller
             ->whereNotExists(function ($q) {
                 $q->select(\Illuminate\Support\Facades\DB::raw(1))
                   ->from('biaya_kapal_opp_opts')
+                  ->join('biaya_kapal', 'biaya_kapal.id', '=', 'biaya_kapal_opp_opts.biaya_kapal_id')
+                  ->whereNull('biaya_kapal.deleted_at')
                   ->whereColumn('biaya_kapal_opp_opts.kapal', 'naik_kapal.nama_kapal')
                   ->whereColumn('biaya_kapal_opp_opts.voyage', 'naik_kapal.no_voyage');
             });
