@@ -373,7 +373,10 @@ class PranotaOngkosTrukController extends Controller
             $pranota = PranotaOngkosTruk::findOrFail($id);
 
             $adjustments = $request->input('adjustments', []);
-            $sumAdjustment = 0;
+            if (is_string($adjustments)) {
+                $adjustments = json_decode($adjustments, true) ?? [];
+            }
+            $sumAdjustment = 0.0;
             if (empty($adjustments) && $request->filled('adjustment')) {
                 $sumAdjustment = (float) $request->adjustment;
                 $adjustments = [[
@@ -382,12 +385,16 @@ class PranotaOngkosTrukController extends Controller
                 ]];
             } else {
                 foreach ($adjustments as $adj) {
-                    $sumAdjustment += (float) ($adj['nominal'] ?? 0);
+                    if (is_array($adj)) {
+                        $sumAdjustment += (float) ($adj['nominal'] ?? 0);
+                    } elseif (is_numeric($adj)) {
+                        $sumAdjustment += (float) $adj;
+                    }
                 }
             }
 
-            $itemsTotal = collect($request->items)->sum('nominal');
-            $totalNominal = $itemsTotal + $sumAdjustment;
+            $itemsTotal = (float) collect($request->items)->sum('nominal');
+            $totalNominal = (float) $itemsTotal + (float) $sumAdjustment;
 
             $pranota->update([
                 'tanggal_pranota' => $request->tanggal_pranota,

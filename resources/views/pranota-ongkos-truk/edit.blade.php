@@ -164,7 +164,7 @@
 </div>
 
 <script>
-    let adjCount = {{ count($pranota->adjustments ?? []) }};
+    let adjCount = {{ is_array($pranota->adjustments) ? count($pranota->adjustments) : 0 }};
 
     window.addAdjustmentRow = function() {
         adjCount++;

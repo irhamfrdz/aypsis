@@ -83,7 +83,7 @@
                                 @foreach($pranota->adjustments as $index => $adj)
                                     @if(isset($adj['nominal']) && $adj['nominal'] != 0)
                                     <div class="flex justify-between items-center py-2 px-4 bg-orange-50 border border-orange-100 rounded-xl">
-                                        <span class="text-[11px] text-orange-700 font-bold uppercase tracking-wide">Adjustment {{ $index + 1 }}: {{ $adj['keterangan'] ?? 'Tanpa Keterangan' }}</span>
+                                        <span class="text-[11px] text-orange-700 font-bold uppercase tracking-wide">Adjustment {{ $loop->iteration }}: {{ $adj['keterangan'] ?? 'Tanpa Keterangan' }}</span>
                                         <span class="text-sm font-black {{ $adj['nominal'] < 0 ? 'text-red-600' : 'text-green-600' }}">
                                             Rp {{ number_format($adj['nominal'], 0, ',', '.') }}
                                         </span>
@@ -261,7 +261,7 @@
                                         @if(isset($adj['nominal']) && $adj['nominal'] != 0)
                                         <tr class="bg-white">
                                             <td colspan="10" class="px-6 py-2 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                                Adjustment {{ $index + 1 }}: {{ $adj['keterangan'] ?? 'Tanpa Keterangan' }}
+                                                Adjustment {{ $loop->iteration }}: {{ $adj['keterangan'] ?? 'Tanpa Keterangan' }}
                                             </td>
                                             <td class="px-6 py-2 text-right text-sm font-black {{ $adj['nominal'] < 0 ? 'text-red-500' : 'text-green-500' }}">
                                                 {{ $adj['nominal'] < 0 ? '-' : '+' }} Rp {{ number_format(abs($adj['nominal']), 0, ',', '.') }}
