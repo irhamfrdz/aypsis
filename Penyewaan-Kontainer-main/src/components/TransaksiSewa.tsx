@@ -766,6 +766,9 @@ export default function TransaksiSewa({ state, onStateChange, utcTime }: Transak
                                         {p.nomor_invoice_grup && (
                                           <span className="text-[10px] text-slate-600 font-mono font-bold mt-0.5">INV: {p.nomor_invoice_grup}</span>
                                         )}
+                                        {p.nomor_pranota && (
+                                          <span className="text-[10px] text-slate-600 font-mono font-bold">Pranota: {p.nomor_pranota}</span>
+                                        )}
                                       </div>
                                     )}
                                     {p.status_bayar === 'Belum Bayar' && (
@@ -773,9 +776,10 @@ export default function TransaksiSewa({ state, onStateChange, utcTime }: Transak
                                         <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-50 text-sky-700 border border-sky-200 uppercase animate-pulse">
                                           Sudah Ditagih
                                         </span>
-                                        {p.nomor_invoice_grup && (
-                                          <span className="text-[10px] text-sky-900 font-mono font-bold mt-0.5">INV: {p.nomor_invoice_grup}</span>
-                                        )}
+                                        <div className="text-[9.5px] text-slate-705 font-mono mt-0.5 space-y-0.5 leading-normal">
+                                          {p.nomor_invoice_grup && <div className="font-bold text-sky-900">INV: {p.nomor_invoice_grup}</div>}
+                                          {p.nomor_pranota && <div className="text-slate-655 font-semibold">Pranota: {p.nomor_pranota}</div>}
+                                        </div>
                                       </div>
                                     )}
                                     {p.status_bayar === 'Lunas' && (
@@ -785,6 +789,7 @@ export default function TransaksiSewa({ state, onStateChange, utcTime }: Transak
                                         </span>
                                         <div className="text-[9.5px] text-slate-705 font-mono mt-0.5 space-y-0.5 leading-normal">
                                           {p.nomor_invoice_grup && <div className="font-bold text-emerald-900">INV: {p.nomor_invoice_grup}</div>}
+                                          {p.nomor_pranota && <div className="text-slate-655 font-semibold">Pranota: {p.nomor_pranota}</div>}
                                           {p.nomor_bayar && <div className="text-slate-655 font-semibold">Bukti: {p.nomor_bayar}</div>}
                                           {p.tanggal_bayar && <div className="text-slate-500 text-[9px]">Bayar: {formatIndoDate(p.tanggal_bayar)}</div>}
                                         </div>
