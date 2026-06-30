@@ -153,8 +153,8 @@ class NaikKapalController extends Controller
                   ->whereColumn('biaya_kapal_opp_opts.voyage', 'naik_kapal.no_voyage');
             });
 
-        // Subquery for BLs
-        $queryBls = \Illuminate\Support\Facades\DB::table('bls')
+        // Subquery for Manifests
+        $queryBls = \Illuminate\Support\Facades\DB::table('manifests')
             ->select('nama_kapal', 'no_voyage')
             ->whereNotNull('nama_kapal')
             ->where('nama_kapal', '!=', '')
@@ -166,8 +166,8 @@ class NaikKapalController extends Controller
                   ->from('biaya_kapal_opp_opts')
                   ->join('biaya_kapals', 'biaya_kapals.id', '=', 'biaya_kapal_opp_opts.biaya_kapal_id')
                   ->whereNull('biaya_kapals.deleted_at')
-                  ->whereColumn('biaya_kapal_opp_opts.kapal', 'bls.nama_kapal')
-                  ->whereColumn('biaya_kapal_opp_opts.voyage', 'bls.no_voyage');
+                  ->whereColumn('biaya_kapal_opp_opts.kapal', 'manifests.nama_kapal')
+                  ->whereColumn('biaya_kapal_opp_opts.voyage', 'manifests.no_voyage');
             });
 
         $combinationsNaikKapal = $queryNaikKapal->get();
