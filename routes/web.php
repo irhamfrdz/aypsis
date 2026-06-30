@@ -4210,6 +4210,7 @@ Route::middleware([
         Route::put('/{id}', [PranotaOngkosTrukController::class, 'update'])->name('update');
         Route::get('/{id}/print', [PranotaOngkosTrukController::class, 'print'])->name('print');
         Route::get('/{id}/export', [PranotaOngkosTrukController::class, 'export'])->name('export');
+        Route::get('/{id}/export-2', [PranotaOngkosTrukController::class, 'export2'])->name('export-2');
         Route::delete('/{id}', [PranotaOngkosTrukController::class, 'destroy'])->name('destroy');
     });
 

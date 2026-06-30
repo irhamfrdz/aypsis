@@ -452,4 +452,12 @@ class PranotaOngkosTrukController extends Controller
 
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PranotaOngkosTrukExport($pranota), $fileName);
     }
+
+    public function export2($id)
+    {
+        $pranota = PranotaOngkosTruk::with(['items.suratJalan.tujuanPengambilanRelation', 'items.suratJalanBongkaran.tujuanPengambilanRelation'])->findOrFail($id);
+        $fileName = 'Pranota_Ongkos_Truk_Format2_'.$pranota->no_pranota.'.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PranotaOngkosTrukExport2($pranota), $fileName);
+    }
 }
