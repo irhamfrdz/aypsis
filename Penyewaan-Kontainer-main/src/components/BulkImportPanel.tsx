@@ -401,7 +401,26 @@ export default function BulkImportPanel({ state, onStateChange, utcTime }: BulkI
           }
 
           case 'pembayaran': {
-            const parts = trimmed.split(';');
+            const parseCsvLine = (lineStr: string): string[] => {
+              const result: string[] = [];
+              let current = '';
+              let inQuotes = false;
+              const sep = lineStr.includes('\t') ? '\t' : ';';
+              for (let i = 0; i < lineStr.length; i++) {
+                const char = lineStr[i];
+                if (char === '"') {
+                  inQuotes = !inQuotes;
+                } else if (char === sep && !inQuotes) {
+                  result.push(current);
+                  current = '';
+                } else {
+                  current += char;
+                }
+              }
+              result.push(current);
+              return result;
+            };
+            const parts = parseCsvLine(trimmed);
             if (parts.length < 3) {
               throw new Error('Format salah. Wajib berisi minimal: KONTAINER ; PERIODE ; TAGIHAN ; [No. Tagihan] ; [Tgl. Tagihan]');
             }
@@ -618,11 +637,62 @@ export default function BulkImportPanel({ state, onStateChange, utcTime }: BulkI
               throw new Error(`Double / Duplikat: Tagihan untuk Kontainer "${kontNo}" periode ke-${periodNum} (Siklus ${swIdx}: ${swStart} s.d ${swEnd}) sudah terisi/tercatat sebelumnya dengan No. Tagihan "${existingOverrideObj.nomor_invoice_grup || '-'}".`);
             }
 
+            let optStatusBayar: 'Belum Bayar' | 'Pranota' | 'Lunas' = 'Belum Bayar';
+            let optNoPranota: string | null = null;
+            let optTglPranota: string | null = null;
+            let optNoBayar: string | null = null;
+            let optTglBayar: string | null = null;
+            let optJumlahBayar: number | null = null;
+
+            // Extract Pranota if present in parts[14]
+            const pranotaRaw = parts[14] ? parts[14].trim().replace(/^"|"$/g, '') : '';
+            if (pranotaRaw) {
+              const pSub = pranotaRaw.split(';');
+              if (pSub.length >= 4) {
+                const noP = pSub[2].trim();
+                const tglP = pSub[3].trim();
+                if (noP) {
+                  optNoPranota = noP;
+                  optTglPranota = parseInputDate(tglP);
+                  optStatusBayar = 'Pranota';
+                }
+              }
+            }
+
+            // Extract Bayar if present in parts[15]
+            const bayarRaw = parts[15] ? parts[15].trim().replace(/^"|"$/g, '') : '';
+            if (bayarRaw) {
+              const bSub = bayarRaw.split(';');
+              if (bSub.length >= 4) {
+                const noB = bSub[2].trim();
+                const tglB = bSub[3].trim();
+                const valB = bSub[4] ? parseFloat(bSub[4].trim()) || 0 : 0;
+                if (noB) {
+                  optNoBayar = noB;
+                  optTglBayar = parseInputDate(tglB);
+                  optJumlahBayar = valB;
+                  optStatusBayar = 'Lunas';
+                }
+              }
+            }
+
+            // Fallback: Check if No. Bayar is present in column 7 (index 7) of main row
+            const mainNoBayar = parts[7] ? parts[7].trim() : '';
+            const mainTglBayarRaw = parts[8] ? parts[8].trim() : '';
+            if (mainNoBayar && !optNoBayar) {
+              optNoBayar = mainNoBayar;
+              optTglBayar = parseInputDate(mainTglBayarRaw);
+              optStatusBayar = 'Lunas';
+            }
+
             const existingOverride = existingOverrideObj || {
               status_bayar: 'Belum Ditagih',
               tanggal_tagihan: null,
               tanggal_bayar: null,
-              nomor_invoice_grup: null
+              nomor_invoice_grup: null,
+              nomor_pranota: null,
+              tanggal_pranota: null,
+              nomor_bayar: null
             };
 
             const calculatedPpn = Math.round(tagihanBilledPrice * 0.11);
@@ -630,14 +700,19 @@ export default function BulkImportPanel({ state, onStateChange, utcTime }: BulkI
 
             tempState.paymentOverrides[idTagihan] = {
               ...existingOverride,
-              status_bayar: 'Belum Bayar', // Change from 'Pranota' to 'Belum Bayar' (Tagihan) so it is correctly treated as "tagihan"
+              status_bayar: optStatusBayar,
               tanggal_tagihan: tglTagihanIso,
               nomor_invoice_grup: noTagihan || null,
               jumlah_tagihan_override: tagihanBilledPrice,
               selisih_pembayaran: selisih,
               ppn: calculatedPpn,
               pph: calculatedPph,
-              keterangan_selisih: selisih !== 0 ? 'Selisih harga dari impor' : null
+              keterangan_selisih: selisih !== 0 ? 'Selisih harga dari impor' : null,
+              nomor_pranota: optNoPranota || existingOverride.nomor_pranota || null,
+              tanggal_pranota: optTglPranota || existingOverride.tanggal_pranota || null,
+              nomor_bayar: optNoBayar || existingOverride.nomor_bayar || null,
+              tanggal_bayar: optTglBayar || existingOverride.tanggal_bayar || null,
+              jumlah_bayar: optJumlahBayar !== null ? optJumlahBayar : (existingOverride as any).jumlah_bayar || null
             };
 
             success++;
