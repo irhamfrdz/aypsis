@@ -194,6 +194,9 @@ class ReportOngkosTrukController extends Controller
                 'no_plat' => $sj->no_plat,
                 'supir' => $sj->supir ?: ($sj->supir2 ?: '-'),
                 'keterangan' => ($sj->pengirim ?? '-').' ke '.($sj->tujuan_pengiriman ?? '-'),
+                'kegiatan_str' => 'Uang Jalan',
+                'muatan_str' => $sj->jenis_barang ?? '-',
+                'pt_str' => $sj->pengirim ?? $sj->tujuan_pengiriman ?? '-',
                 'tujuan' => $sj->tujuan_pengambilan ?? '-',
                 'rit' => $sj->rit,
                 'ongkos_truck' => $ongkosTruk,
@@ -251,6 +254,9 @@ class ReportOngkosTrukController extends Controller
                     'no_plat' => $sj->no_plat,
                     'supir' => $sj->supir ?: ($sj->supir2 ?: '-'),
                     'keterangan' => $adj->jenis_aktivitas,
+                    'kegiatan_str' => $adj->jenis_aktivitas,
+                    'muatan_str' => $sj->jenis_barang ?? '-',
+                    'pt_str' => $sj->pengirim ?? $sj->tujuan_pengiriman ?? '-',
                     'tujuan' => '-',
                     'rit' => '-',
                     'ongkos_truck' => 0,
@@ -945,6 +951,9 @@ class ReportOngkosTrukController extends Controller
                 'rit_kenek' => ($sjb->kenek || $sjb->kenekKaryawan) ? 1 : 0,
                 'supir' => $sjb->supir ?: ($sjb->supir2 ?: '-'),
                 'keterangan' => ($sjb->pengirim ?? '-').' ke '.($sjb->tujuan_pengiriman ?? '-'),
+                'kegiatan_str' => 'Uang Jalan',
+                'muatan_str' => $sjb->jenis_barang ?? '-',
+                'pt_str' => $sjb->pengirim ?? $sjb->tujuan_pengiriman ?? '-',
                 'tujuan' => $sjb->tujuan_pengambilan ?? '-',
                 'rit' => $sjb->rit,
                 'ongkos_truck' => $ongkosTruk,
@@ -1003,6 +1012,9 @@ class ReportOngkosTrukController extends Controller
                     'rit_kenek' => 0,
                     'supir' => $sjb->supir ?: ($sjb->supir2 ?: '-'),
                     'keterangan' => $adj->jenis_aktivitas,
+                    'kegiatan_str' => $adj->jenis_aktivitas,
+                    'muatan_str' => $sjb->jenis_barang ?? '-',
+                    'pt_str' => $sjb->pengirim ?? $sjb->tujuan_pengiriman ?? '-',
                     'tujuan' => '-',
                     'rit' => '-',
                     'ongkos_truck' => 0,
@@ -1027,6 +1039,33 @@ class ReportOngkosTrukController extends Controller
 
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\ReportOngkosTrukExport($data, $startDate, $endDate),
+            $filename
+        );
+    }
+
+    public function export2(Request $request)
+    {
+        $startDate = \Carbon\Carbon::parse($request->start_date);
+        $endDate = \Carbon\Carbon::parse($request->end_date);
+
+        // Fetch data exactly like the index view
+        $data = $this->getReportData($startDate, $endDate);
+
+        // Sort data by tanggal
+        $data = $data->sortBy('tanggal');
+
+        // Format tanggal
+        $data = $data->map(function ($item) {
+            if ($item['tanggal'] instanceof \Carbon\Carbon) {
+                $item['tanggal'] = $item['tanggal']->format('d M Y');
+            }
+            return $item;
+        });
+
+        $filename = 'ongkos_truk_format2_'.date('Ymd_His').'.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ReportOngkosTrukExport2($data, $startDate, $endDate),
             $filename
         );
     }

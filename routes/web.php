@@ -5592,6 +5592,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/ongkos-truk/view', [App\Http\Controllers\ReportOngkosTrukController::class, 'view'])->name('ongkos-truk.view');
     Route::get('/ongkos-truk/print', [App\Http\Controllers\ReportOngkosTrukController::class, 'print'])->name('ongkos-truk.print');
     Route::get('/ongkos-truk/export', [App\Http\Controllers\ReportOngkosTrukController::class, 'export'])->name('ongkos-truk.export');
+    Route::get('/ongkos-truk/export-2', [App\Http\Controllers\ReportOngkosTrukController::class, 'export2'])->name('ongkos-truk.export-2');
 
     // Report Surat Jalan
     Route::get('/surat-jalan', [App\Http\Controllers\ReportSuratJalanController::class, 'index'])->name('surat_jalan.index');
