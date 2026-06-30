@@ -136,7 +136,10 @@ class NaikKapalController extends Controller
             ], 400);
         }
 
-        $query = \App\Models\NaikKapal::whereNotNull('nama_kapal')
+        // Subquery for NaikKapal
+        $queryNaikKapal = \Illuminate\Support\Facades\DB::table('naik_kapal')
+            ->select('nama_kapal', 'no_voyage')
+            ->whereNotNull('nama_kapal')
             ->where('nama_kapal', '!=', '')
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '!=', '')
@@ -150,12 +153,34 @@ class NaikKapalController extends Controller
                   ->whereColumn('biaya_kapal_opp_opts.voyage', 'naik_kapal.no_voyage');
             });
 
-        // Get distinct kapal and voyage combinations
-        $combinations = $query->select('nama_kapal', 'no_voyage')
-            ->distinct()
-            ->orderBy('nama_kapal')
-            ->orderBy('no_voyage')
-            ->get();
+        // Subquery for BLs
+        $queryBls = \Illuminate\Support\Facades\DB::table('bls')
+            ->select('nama_kapal', 'no_voyage')
+            ->whereNotNull('nama_kapal')
+            ->where('nama_kapal', '!=', '')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->whereBetween('tanggal_berangkat', [$startDate, $endDate])
+            ->whereNotExists(function ($q) {
+                $q->select(\Illuminate\Support\Facades\DB::raw(1))
+                  ->from('biaya_kapal_opp_opts')
+                  ->join('biaya_kapals', 'biaya_kapals.id', '=', 'biaya_kapal_opp_opts.biaya_kapal_id')
+                  ->whereNull('biaya_kapals.deleted_at')
+                  ->whereColumn('biaya_kapal_opp_opts.kapal', 'bls.nama_kapal')
+                  ->whereColumn('biaya_kapal_opp_opts.voyage', 'bls.no_voyage');
+            });
+
+        $combinationsNaikKapal = $queryNaikKapal->get();
+        $combinationsBls = $queryBls->get();
+
+        $combinations = $combinationsNaikKapal->merge($combinationsBls)
+            ->unique(function ($item) {
+                return $item->nama_kapal . '|' . $item->no_voyage;
+            })
+            ->sortBy(function ($item) {
+                return $item->nama_kapal . '|' . $item->no_voyage;
+            })
+            ->values();
 
         return response()->json([
             'success' => true,
