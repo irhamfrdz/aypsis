@@ -4206,6 +4206,8 @@ Route::middleware([
         Route::get('/get-preview-data', [PranotaOngkosTrukController::class, 'getPreviewData'])->name('get-preview-data');
         Route::post('/', [PranotaOngkosTrukController::class, 'store'])->name('store');
         Route::get('/{id}', [PranotaOngkosTrukController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [PranotaOngkosTrukController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [PranotaOngkosTrukController::class, 'update'])->name('update');
         Route::get('/{id}/print', [PranotaOngkosTrukController::class, 'print'])->name('print');
         Route::get('/{id}/export', [PranotaOngkosTrukController::class, 'export'])->name('export');
         Route::delete('/{id}', [PranotaOngkosTrukController::class, 'destroy'])->name('destroy');

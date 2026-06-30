@@ -346,6 +346,100 @@ class PranotaOngkosTrukController extends Controller
         return redirect()->route('pranota-ongkos-truk.index')->with('success', 'Pranota berhasil dihapus.');
     }
 
+    public function edit($id)
+    {
+        $pranota = PranotaOngkosTruk::with(['items'])->findOrFail($id);
+        $supirs = Karyawan::where('pekerjaan', 'like', '%Supir%')->get();
+        $vendors = VendorSupir::all();
+
+        return view('pranota-ongkos-truk.edit', compact('pranota', 'supirs', 'vendors'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'tanggal_pranota' => 'required|date',
+                'items' => 'required|array',
+                'items.*.id' => 'required|integer',
+                'items.*.nominal' => 'required|numeric',
+                'adjustments' => 'nullable|array',
+                'adjustments.*.nominal' => 'required|numeric',
+                'adjustments.*.keterangan' => 'nullable|string',
+            ]);
+
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $pranota = PranotaOngkosTruk::findOrFail($id);
+
+            $adjustments = $request->input('adjustments', []);
+            $sumAdjustment = 0;
+            if (empty($adjustments) && $request->filled('adjustment')) {
+                $sumAdjustment = (float) $request->adjustment;
+                $adjustments = [[
+                    'nominal' => $sumAdjustment,
+                    'keterangan' => $request->keterangan ?? 'Adjustment',
+                ]];
+            } else {
+                foreach ($adjustments as $adj) {
+                    $sumAdjustment += (float) ($adj['nominal'] ?? 0);
+                }
+            }
+
+            $itemsTotal = collect($request->items)->sum('nominal');
+            $totalNominal = $itemsTotal + $sumAdjustment;
+
+            $pranota->update([
+                'tanggal_pranota' => $request->tanggal_pranota,
+                'vendor_id' => $request->vendor_id ?: null,
+                'supir_id' => $request->supir_id ?: null,
+                'adjustment' => $sumAdjustment,
+                'adjustments' => $adjustments,
+                'total_nominal' => $totalNominal,
+                'keterangan' => $request->keterangan,
+            ]);
+
+            foreach ($request->items as $item) {
+                if (isset($item['id'])) {
+                    $pranotaItem = PranotaOngkosTrukItem::where('pranota_ongkos_truk_id', $pranota->id)
+                        ->where('id', $item['id'])
+                        ->first();
+                    if ($pranotaItem) {
+                        $pranotaItem->update([
+                            'nominal' => $item['nominal'] ?? 0,
+                        ]);
+                    }
+                }
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pranota Ongkos Truk berhasil diperbarui.',
+                    'redirect_url' => route('pranota-ongkos-truk.show', $pranota->id),
+                ]);
+            }
+
+            return redirect()->route('pranota-ongkos-truk.show', $pranota->id)->with('success', 'Pranota Ongkos Truk berhasil diperbarui.');
+        } catch (\Exception $e) {
+            if (\Illuminate\Support\Facades\DB::transactionLevel() > 0) {
+                \Illuminate\Support\Facades\DB::rollBack();
+            }
+            \Illuminate\Support\Facades\Log::error('PranotaOngkosTrukController@update error: '.$e->getMessage());
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memperbarui pranota: '.$e->getMessage(),
+                ], 500);
+            }
+
+            return back()->with('error', 'Gagal memperbarui pranota: '.$e->getMessage());
+        }
+    }
+
     public function export($id)
     {
         $pranota = PranotaOngkosTruk::with(['items.suratJalan.tujuanPengambilanRelation', 'items.suratJalanBongkaran.tujuanPengambilanRelation'])->findOrFail($id);

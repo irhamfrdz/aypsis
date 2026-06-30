@@ -71,6 +71,9 @@
                                     <a href="{{ route('pranota-ongkos-truk.show', $pranota->id) }}" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    <a href="{{ route('pranota-ongkos-truk.edit', $pranota->id) }}" class="p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
                                     <a href="{{ route('pranota-ongkos-truk.print', $pranota->id) }}" target="_blank" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Cetak">
                                         <i class="fas fa-print"></i>
                                     </a>

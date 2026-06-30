@@ -12,6 +12,9 @@
                 <i class="fas fa-arrow-left"></i> Kembali ke Daftar
             </a>
             <div class="flex gap-3">
+                <a href="{{ route('pranota-ongkos-truk.edit', $pranota->id) }}" class="px-5 py-2.5 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-all font-bold text-sm flex items-center gap-2">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
                 <a href="{{ route('pranota-ongkos-truk.print', $pranota->id) }}" target="_blank" class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-bold text-sm flex items-center gap-2">
                     <i class="fas fa-print"></i> Cetak
                 </a>
