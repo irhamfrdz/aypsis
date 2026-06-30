@@ -234,7 +234,7 @@
                                         <option value="">Select an option</option>
                                         @foreach($pengirims as $pengirim)
                                             <option value="{{ $pengirim->id }}" {{ old('pengirim_id') == $pengirim->id ? 'selected' : '' }}>
-                                                {{ $pengirim->nama_pengirim }}
+                                                {{ $pengirim->nickname1 ?: $pengirim->nama_pengirim }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -974,7 +974,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Add new option to select
                 const newOption = document.createElement('option');
                 newOption.value = event.data.data.id;
-                newOption.textContent = event.data.data.nama_pengirim;
+                const displayNamePengirim = event.data.data.nickname1 ? event.data.data.nickname1 : event.data.data.nama_pengirim;
+                newOption.textContent = displayNamePengirim;
                 pengirimSelect.appendChild(newOption);
 
                 // Select the new option
@@ -982,14 +983,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Update search input to show selected value
                 if (searchPengirimInput) {
-                    searchPengirimInput.value = event.data.data.nama_pengirim;
+                    searchPengirimInput.value = displayNamePengirim;
                 }
 
                 // Update the dropdown options in the searchable dropdown
                 if (dropdownOptionsPengirim) {
                     const newOptionDiv = document.createElement('div');
                     newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
-                    newOptionDiv.textContent = event.data.data.nama_pengirim;
+                    newOptionDiv.textContent = displayNamePengirim;
                     newOptionDiv.setAttribute('data-value', event.data.data.id);
 
                     newOptionDiv.addEventListener('click', function() {
@@ -1017,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 pengirimSelect.dispatchEvent(new Event('change'));
 
                 // Show success message
-                showNotification('Pengirim "' + event.data.data.nama_pengirim + '" berhasil ditambahkan dan dipilih!', 'success');
+                showNotification('Pengirim "' + displayNamePengirim + '" berhasil ditambahkan dan dipilih!', 'success');
             }
         } else if (event.data.type === 'penerima-added') {
             // Handle Penerima added
