@@ -44,6 +44,8 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                     if ($k) $nik_supir = $k->nik;
                 }
                 
+                $keterangan_lengkap = 'kegiatan muat barang '.$muatan.' ke '.$tujuan.' '.$pt;
+                
                 // Ongkos Truk
                 $ongkos_truk = 0;
                 if ($sj->tujuanPengambilanRelation) {
@@ -89,6 +91,8 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                     if ($k) $nik_supir = $k->nik;
                 }
 
+                $keterangan_lengkap = 'kegiatan bongkar barang '.$muatan.' ke '.$tujuan.' '.$pt;
+
                 // Ongkos Truk
                 $ongkos_truk = 0;
                 if ($sjb->tujuanPengambilanRelation) {
@@ -122,6 +126,7 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                 $muatan = '-';
                 $tujuan = '-';
                 $pt = '-';
+                $keterangan_lengkap = '-';
                 $nik_supir = '-';
                 $ongkos_truk = 0;
                 $uang_jalan = 0;
@@ -138,6 +143,7 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                 $muatan,
                 $tujuan,
                 $pt,
+                $keterangan_lengkap,
                 $no_bukti,
                 (float) $ongkos_truk,
                 (float) $uang_jalan,
@@ -157,6 +163,7 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
             'Muat',
             'Tujuan',
             'PT.',
+            'Keterangan',
             'No. Bukti',
             'Jumlah Ongkos Truck',
             'Cr',
@@ -166,8 +173,8 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
     public function columnFormats(): array
     {
         return [
-            'K' => '#,##0',
             'L' => '#,##0',
+            'M' => '#,##0',
         ];
     }
 
@@ -182,7 +189,7 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                 $sheet->setCellValue('A2', 'Nomor: ' . $this->pranota->no_pranota);
                 $sheet->setCellValue('A3', 'Tanggal: ' . $this->pranota->tanggal_pranota->format('d/m/Y'));
 
-                $lastCol = 'L';
+                $lastCol = 'M';
                 $headerRow = 5;
                 $dataStartRow = 6;
 
@@ -212,27 +219,27 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                 $currentRow = $lastDataRow + 1;
 
                 // Subtotal
-                $sheet->setCellValue("J{$currentRow}", 'Subtotal');
-                $sheet->setCellValue("K{$currentRow}", "=SUM(K{$dataStartRow}:K{$lastDataRow})");
+                $sheet->setCellValue("K{$currentRow}", 'Subtotal');
                 $sheet->setCellValue("L{$currentRow}", "=SUM(L{$dataStartRow}:L{$lastDataRow})");
-                $sheet->getStyle("J{$currentRow}:L{$currentRow}")->getFont()->setBold(true);
+                $sheet->setCellValue("M{$currentRow}", "=SUM(M{$dataStartRow}:M{$lastDataRow})");
+                $sheet->getStyle("K{$currentRow}:M{$currentRow}")->getFont()->setBold(true);
                 $currentRow++;
                 
                 // Adjustment
                 if ($this->pranota->adjustment != 0) {
-                    $sheet->setCellValue("J{$currentRow}", 'Adjustment');
-                    $sheet->setCellValue("K{$currentRow}", (float) $this->pranota->adjustment);
+                    $sheet->setCellValue("K{$currentRow}", 'Adjustment');
+                    $sheet->setCellValue("L{$currentRow}", (float) $this->pranota->adjustment);
                     if ($this->pranota->keterangan) {
-                        $sheet->setCellValue("L{$currentRow}", '('.$this->pranota->keterangan.')');
+                        $sheet->setCellValue("M{$currentRow}", '('.$this->pranota->keterangan.')');
                     }
-                    $sheet->getStyle("J{$currentRow}:K{$currentRow}")->getFont()->setBold(true);
+                    $sheet->getStyle("K{$currentRow}:L{$currentRow}")->getFont()->setBold(true);
                     $currentRow++;
                 }
 
                 // Total
-                $sheet->setCellValue("J{$currentRow}", 'TOTAL NOMINAL');
-                $sheet->setCellValue("K{$currentRow}", (float) $this->pranota->total_nominal);
-                $sheet->getStyle("J{$currentRow}:K{$currentRow}")->applyFromArray([
+                $sheet->setCellValue("K{$currentRow}", 'TOTAL NOMINAL');
+                $sheet->setCellValue("L{$currentRow}", (float) $this->pranota->total_nominal);
+                $sheet->getStyle("K{$currentRow}:L{$currentRow}")->applyFromArray([
                     'font' => ['bold' => true, 'size' => 12],
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
