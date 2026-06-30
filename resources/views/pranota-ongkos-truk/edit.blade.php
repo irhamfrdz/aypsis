@@ -105,33 +105,39 @@
                                 class="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Vendor (Opsional)</label>
-                            <select name="vendor_id" class="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">Pilih Vendor</option>
-                                @foreach($vendors as $vendor)
-                                <option value="{{ $vendor->id }}" {{ $pranota->vendor_id == $vendor->id ? 'selected' : '' }}>{{ $vendor->nama_vendor }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Supir (Opsional)</label>
-                            <select name="supir_id" class="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="">Pilih Supir</option>
-                                @foreach($supirs as $supir)
-                                <option value="{{ $supir->id }}" {{ $pranota->supir_id == $supir->id ? 'selected' : '' }}>{{ $supir->nama_karyawan }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Adjustment</label>
-                            <div class="flex items-center">
-                                <span class="text-gray-400 mr-2 text-sm">Rp</span>
-                                <input type="number" id="adjustment" name="adjustment" value="{{ $pranota->adjustment }}" 
-                                    class="w-full rounded-xl border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <!-- Dynamic Adjustments Section -->
+                        <div class="border-t pt-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="block text-sm font-bold text-gray-700">Adjustments (Opsional)</label>
+                                <button type="button" onclick="addAdjustmentRow()" class="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition-all duration-200">
+                                    <i class="fas fa-plus mr-1"></i> Tambah
+                                </button>
                             </div>
+                            
+                            <div id="adjustments_container" class="space-y-3">
+                                <!-- Existing adjustments rendered here -->
+                                @if($pranota->adjustments && is_array($pranota->adjustments))
+                                    @foreach($pranota->adjustments as $adjIndex => $adj)
+                                    <div id="adj_row_{{ $adjIndex }}" class="flex items-center gap-2 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100">
+                                        <div class="w-1/3">
+                                            <div class="relative">
+                                                <span class="absolute left-2.5 top-1.5 text-gray-400 text-xs">Rp</span>
+                                                <input type="number" name="adjustments[{{ $adjIndex }}][nominal]" class="adj-nominal w-full pl-7 pr-2 py-1 border border-gray-200 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-blue-500" 
+                                                    placeholder="0" value="{{ $adj['nominal'] ?? '' }}" oninput="updateTotals()">
+                                            </div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <input type="text" name="adjustments[{{ $adjIndex }}][keterangan]" class="adj-keterangan w-full px-2.5 py-1 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500" 
+                                                placeholder="Keterangan..." value="{{ $adj['keterangan'] ?? '' }}">
+                                        </div>
+                                        <button type="button" onclick="removeAdjustmentRow('adj_row_{{ $adjIndex }}')" class="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50">
+                                            <i class="fas fa-trash-alt text-xs"></i>
+                                        </button>
+                                    </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                            <p class="text-[9px] text-gray-400 mt-2">Gunakan minus (-) untuk pengurangan nominal</p>
                         </div>
 
                         <div>
@@ -158,30 +164,70 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    let adjCount = {{ count($pranota->adjustments ?? []) }};
+
+    window.addAdjustmentRow = function() {
+        adjCount++;
+        const container = document.getElementById('adjustments_container');
+        const rowId = `adj_row_new_${adjCount}`;
+        const rowHtml = `
+            <div id="${rowId}" class="flex items-center gap-2 bg-gray-50/50 p-2.5 rounded-xl border border-gray-100">
+                <div class="w-1/3">
+                    <div class="relative">
+                        <span class="absolute left-2.5 top-1.5 text-gray-400 text-xs">Rp</span>
+                        <input type="number" name="adjustments[new_${adjCount}][nominal]" class="adj-nominal w-full pl-7 pr-2 py-1 border border-gray-200 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-blue-500" 
+                            placeholder="0" oninput="updateTotals()">
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <input type="text" name="adjustments[new_${adjCount}][keterangan]" class="adj-keterangan w-full px-2.5 py-1 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500" 
+                        placeholder="Keterangan...">
+                </div>
+                <button type="button" onclick="removeAdjustmentRow('${rowId}')" class="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50">
+                    <i class="fas fa-trash-alt text-xs"></i>
+                </button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', rowHtml);
+        updateTotals();
+    };
+
+    window.removeAdjustmentRow = function(rowId) {
+        const row = document.getElementById(rowId);
+        if (row) {
+            row.remove();
+            updateTotals();
+        }
+    };
+
+    window.updateTotals = function() {
         const nominalInputs = document.querySelectorAll('.item-nominal');
         const itemsTotalDisplay = document.getElementById('items-total');
-        const adjustmentInput = document.getElementById('adjustment');
+        const adjNominalInputs = document.querySelectorAll('.adj-nominal');
         const grandTotalDisplay = document.getElementById('grand-total');
 
-        function updateTotals() {
-            let itemsTotal = 0;
-            nominalInputs.forEach(input => {
-                itemsTotal += parseFloat(input.value) || 0;
-            });
-            
-            const adjustment = parseFloat(adjustmentInput.value) || 0;
-            const grandTotal = itemsTotal + adjustment;
+        let itemsTotal = 0;
+        nominalInputs.forEach(input => {
+            itemsTotal += parseFloat(input.value) || 0;
+        });
 
-            itemsTotalDisplay.textContent = new Intl.NumberFormat('id-ID').format(itemsTotal);
-            grandTotalDisplay.textContent = new Intl.NumberFormat('id-ID').format(grandTotal);
-        }
+        let adjustmentsTotal = 0;
+        adjNominalInputs.forEach(input => {
+            adjustmentsTotal += parseFloat(input.value) || 0;
+        });
 
+        const grandTotal = itemsTotal + adjustmentsTotal;
+
+        itemsTotalDisplay.textContent = new Intl.NumberFormat('id-ID').format(itemsTotal);
+        grandTotalDisplay.textContent = new Intl.NumberFormat('id-ID').format(grandTotal);
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const nominalInputs = document.querySelectorAll('.item-nominal');
         nominalInputs.forEach(input => {
             input.addEventListener('input', updateTotals);
         });
-        
-        adjustmentInput.addEventListener('input', updateTotals);
+        updateTotals();
     });
 </script>
 @endsection

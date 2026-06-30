@@ -391,8 +391,6 @@ class PranotaOngkosTrukController extends Controller
 
             $pranota->update([
                 'tanggal_pranota' => $request->tanggal_pranota,
-                'vendor_id' => $request->vendor_id ?: null,
-                'supir_id' => $request->supir_id ?: null,
                 'adjustment' => $sumAdjustment,
                 'adjustments' => $adjustments,
                 'total_nominal' => $totalNominal,
