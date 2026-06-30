@@ -5805,6 +5805,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('naik-kapal/get-voyages', [NaikKapalController::class, 'getVoyagesByKapal'])
         ->name('naik-kapal.get-voyages')
         ->middleware('can:prospek-view');
+    Route::get('naik-kapal/get-kapal-voyage-by-date', [NaikKapalController::class, 'getKapalVoyageByDate'])
+        ->name('naik-kapal.get-kapal-voyage-by-date')
+        ->middleware('can:prospek-view');
 
     Route::get('naik-kapal/print', [NaikKapalController::class, 'print'])
         ->name('naik-kapal.print')

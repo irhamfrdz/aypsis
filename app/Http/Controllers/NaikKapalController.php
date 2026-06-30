@@ -121,6 +121,39 @@ class NaikKapalController extends Controller
 
         return view('naik-kapal.select', compact('kapals'));
     }
+    /**
+     * Get unique kapal and voyage combinations based on a date range in tanggal_muat.
+     */
+    public function getKapalVoyageByDate(Request $request)
+    {
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        if (!$startDate || !$endDate) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tanggal awal dan akhir harus diisi'
+            ], 400);
+        }
+
+        $query = \App\Models\NaikKapal::whereNotNull('nama_kapal')
+            ->where('nama_kapal', '!=', '')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->whereBetween('tanggal_muat', [$startDate, $endDate]);
+
+        // Get distinct kapal and voyage combinations
+        $combinations = $query->select('nama_kapal', 'no_voyage')
+            ->distinct()
+            ->orderBy('nama_kapal')
+            ->orderBy('no_voyage')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $combinations
+        ]);
+    }
 
     /**
      * Get voyages by kapal name from naik_kapal table.
