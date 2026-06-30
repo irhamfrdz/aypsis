@@ -143,7 +143,7 @@ class NaikKapalController extends Controller
             ->where('nama_kapal', '!=', '')
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '!=', '')
-            ->whereBetween('tanggal_muat', [$startDate, $endDate])
+            ->whereRaw('COALESCE(tanggal_muat, created_at) BETWEEN ? AND ?', [$startDate, $endDate])
             ->whereNotExists(function ($q) {
                 $q->select(\Illuminate\Support\Facades\DB::raw(1))
                   ->from('biaya_kapal_opp_opts')
@@ -160,7 +160,7 @@ class NaikKapalController extends Controller
             ->where('nama_kapal', '!=', '')
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '!=', '')
-            ->whereBetween('tanggal_berangkat', [$startDate, $endDate])
+            ->whereRaw('COALESCE(tanggal_berangkat, created_at) BETWEEN ? AND ?', [$startDate, $endDate])
             ->whereNotExists(function ($q) {
                 $q->select(\Illuminate\Support\Facades\DB::raw(1))
                   ->from('biaya_kapal_opp_opts')
