@@ -619,10 +619,12 @@ export default function BulkImportPanel({ state, onStateChange, utcTime }: BulkI
                 if (pFound) {
                   const ov = tempState.paymentOverrides[pFound.id_tagihan];
                   if (ov && ov.nomor_invoice_grup && ov.nomor_invoice_grup.toLowerCase() === noTagihan.toLowerCase()) {
-                    const swIdx = matchedSewaList.indexOf(sw) + 1;
-                    const swStart = formatIndoDate(sw.tanggal_sewa);
-                    const swEnd = sw.tanggal_kembali ? formatIndoDate(sw.tanggal_kembali) : 'Aktif / Berjalan';
-                    throw new Error(`Double / Duplikat: Tagihan dengan No. Tagihan "${noTagihan}" untuk Kontainer "${kontNo}" periode ke-${periodNum} (Siklus ${swIdx}: ${swStart} s.d ${swEnd}) sudah pernah diimpor/tercatat sebelumnya.`);
+                    if (pFound.id_tagihan !== idTagihan) {
+                      const swIdx = matchedSewaList.indexOf(sw) + 1;
+                      const swStart = formatIndoDate(sw.tanggal_sewa);
+                      const swEnd = sw.tanggal_kembali ? formatIndoDate(sw.tanggal_kembali) : 'Aktif / Berjalan';
+                      throw new Error(`Double / Duplikat: Tagihan dengan No. Tagihan "${noTagihan}" untuk Kontainer "${kontNo}" periode ke-${periodNum} (Siklus ${swIdx}: ${swStart} s.d ${swEnd}) sudah pernah diimpor/tercatat sebelumnya.`);
+                    }
                   }
                 }
               }
@@ -631,10 +633,12 @@ export default function BulkImportPanel({ state, onStateChange, utcTime }: BulkI
             // Specific duplicate check for the resolved period override status or invoice mapping
             const existingOverrideObj = tempState.paymentOverrides[idTagihan];
             if (existingOverrideObj && (existingOverrideObj.status_bayar !== 'Belum Ditagih' || existingOverrideObj.nomor_invoice_grup)) {
-              const swIdx = matchedSewaList.indexOf(selectedSewa || matchedSewaList[0]) + 1;
-              const swStart = formatIndoDate((selectedSewa || matchedSewaList[0]).tanggal_sewa);
-              const swEnd = (selectedSewa || matchedSewaList[0]).tanggal_kembali ? formatIndoDate((selectedSewa || matchedSewaList[0]).tanggal_kembali) : 'Aktif / Berjalan';
-              throw new Error(`Double / Duplikat: Tagihan untuk Kontainer "${kontNo}" periode ke-${periodNum} (Siklus ${swIdx}: ${swStart} s.d ${swEnd}) sudah terisi/tercatat sebelumnya dengan No. Tagihan "${existingOverrideObj.nomor_invoice_grup || '-'}".`);
+              if (existingOverrideObj.nomor_invoice_grup !== noTagihan) {
+                const swIdx = matchedSewaList.indexOf(selectedSewa || matchedSewaList[0]) + 1;
+                const swStart = formatIndoDate((selectedSewa || matchedSewaList[0]).tanggal_sewa);
+                const swEnd = (selectedSewa || matchedSewaList[0]).tanggal_kembali ? formatIndoDate((selectedSewa || matchedSewaList[0]).tanggal_kembali) : 'Aktif / Berjalan';
+                throw new Error(`Double / Duplikat: Tagihan untuk Kontainer "${kontNo}" periode ke-${periodNum} (Siklus ${swIdx}: ${swStart} s.d ${swEnd}) sudah terisi/tercatat sebelumnya dengan No. Tagihan "${existingOverrideObj.nomor_invoice_grup || '-'}".`);
+              }
             }
 
             let optStatusBayar: 'Belum Bayar' | 'Pranota' | 'Lunas' = 'Belum Bayar';
