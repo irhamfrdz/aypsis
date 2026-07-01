@@ -54,6 +54,18 @@
                         </select>
                     </div>
                 </div>
+
+                <!-- Estimasi Tiba (Opsional) -->
+                <div>
+                    <label for="estimasi_tiba" class="block text-sm font-semibold text-gray-700 mb-2">Estimasi Tiba (Opsional)</label>
+                    <p class="text-xs text-gray-500 mb-2">Isi kolom ini jika Anda ingin mengupdate atau memasukkan Estimasi Tiba secara manual. Jika dikosongkan akan menggunakan data yang sudah ada.</p>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <input type="date" id="estimasi_tiba" name="estimasi_tiba" class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 bg-gray-50/50 hover:bg-gray-50/100 transition duration-150">
+                    </div>
+                </div>
             </div>
 
             <!-- Action Buttons -->

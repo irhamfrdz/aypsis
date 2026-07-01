@@ -2500,6 +2500,7 @@ class BlController extends Controller
 
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
+        $estimasiTibaInput = $request->get('estimasi_tiba');
 
         if (! $namaKapal || ! $noVoyage) {
             return redirect()->route('bl.rekap-bongkaran.select')->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu');
@@ -2507,6 +2508,15 @@ class BlController extends Controller
 
         // Hapus "KM." atau "KM" dari awal nama kapal untuk pencarian yang lebih fleksibel
         $kapalClean = preg_replace('/^KM\.?\s*/i', '', $namaKapal);
+
+        if ($request->filled('estimasi_tiba')) {
+            \App\Models\Manifest::where(function ($query) use ($namaKapal, $kapalClean) {
+                $query->where('nama_kapal', $namaKapal)
+                    ->orWhere('nama_kapal', 'like', '%'.$kapalClean.'%');
+            })
+            ->where('no_voyage', $noVoyage)
+            ->update(['estimasi_tiba' => $estimasiTibaInput]);
+        }
 
         $bls = \App\Models\Manifest::where(function ($query) use ($namaKapal, $kapalClean) {
             $query->where('nama_kapal', $namaKapal)
@@ -2524,7 +2534,9 @@ class BlController extends Controller
             ->first();
 
         $estTiba = '-';
-        if ($pergerakan && $pergerakan->tanggal_sandar) {
+        if ($bls->count() > 0 && $bls->first()->estimasi_tiba) {
+            $estTiba = \Carbon\Carbon::parse($bls->first()->estimasi_tiba)->translatedFormat('d F Y');
+        } elseif ($pergerakan && $pergerakan->tanggal_sandar) {
             $estTiba = $pergerakan->tanggal_sandar->translatedFormat('d F Y');
         } elseif ($bls->count() > 0) {
             $firstBl = $bls->first();
@@ -2668,7 +2680,9 @@ class BlController extends Controller
             ->first();
 
         $estTiba = '-';
-        if ($pergerakan && $pergerakan->tanggal_sandar) {
+        if ($bls->count() > 0 && $bls->first()->estimasi_tiba) {
+            $estTiba = \Carbon\Carbon::parse($bls->first()->estimasi_tiba)->translatedFormat('d F Y');
+        } elseif ($pergerakan && $pergerakan->tanggal_sandar) {
             $estTiba = $pergerakan->tanggal_sandar->translatedFormat('d F Y');
         } elseif ($bls->count() > 0) {
             $firstBl = $bls->first();
@@ -2813,6 +2827,7 @@ class BlController extends Controller
 
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
+        $estimasiTibaInput = $request->get('estimasi_tiba');
 
         if (! $namaKapal || ! $noVoyage) {
             return redirect()->route('bl.rekap-bongkaran-perincian.select')->with('error', 'Silakan pilih kapal dan voyage terlebih dahulu');
@@ -2820,6 +2835,15 @@ class BlController extends Controller
 
         // Hapus "KM." atau "KM" dari awal nama kapal untuk pencarian yang lebih fleksibel
         $kapalClean = preg_replace('/^KM\.?\s*/i', '', $namaKapal);
+
+        if ($request->filled('estimasi_tiba')) {
+            \App\Models\Manifest::where(function ($query) use ($namaKapal, $kapalClean) {
+                $query->where('nama_kapal', $namaKapal)
+                    ->orWhere('nama_kapal', 'like', '%'.$kapalClean.'%');
+            })
+            ->where('no_voyage', $noVoyage)
+            ->update(['estimasi_tiba' => $estimasiTibaInput]);
+        }
 
         $bls = \App\Models\Manifest::where(function ($query) use ($namaKapal, $kapalClean) {
             $query->where('nama_kapal', $namaKapal)
@@ -2837,7 +2861,9 @@ class BlController extends Controller
             ->first();
 
         $estTiba = '-';
-        if ($pergerakan && $pergerakan->tanggal_sandar) {
+        if ($bls->count() > 0 && $bls->first()->estimasi_tiba) {
+            $estTiba = \Carbon\Carbon::parse($bls->first()->estimasi_tiba)->translatedFormat('d F Y');
+        } elseif ($pergerakan && $pergerakan->tanggal_sandar) {
             $estTiba = $pergerakan->tanggal_sandar->translatedFormat('d F Y');
         } elseif ($bls->count() > 0) {
             $firstBl = $bls->first();
@@ -2907,7 +2933,9 @@ class BlController extends Controller
             ->first();
 
         $estTiba = '-';
-        if ($pergerakan && $pergerakan->tanggal_sandar) {
+        if ($bls->count() > 0 && $bls->first()->estimasi_tiba) {
+            $estTiba = \Carbon\Carbon::parse($bls->first()->estimasi_tiba)->translatedFormat('d F Y');
+        } elseif ($pergerakan && $pergerakan->tanggal_sandar) {
             $estTiba = $pergerakan->tanggal_sandar->translatedFormat('d F Y');
         } elseif ($bls->count() > 0) {
             $firstBl = $bls->first();
