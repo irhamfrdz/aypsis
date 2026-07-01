@@ -59,6 +59,24 @@
                 @enderror
             </div>
 
+            <!-- PIC -->
+            <div>
+                <label for="pic" class="block text-sm font-medium text-gray-700 mb-2">
+                    PIC
+                </label>
+                <input type="text" 
+                       id="pic" 
+                       name="pic" 
+                       value="{{ old('pic') }}"
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('pic') border-red-500 @enderror"
+                       placeholder="Masukkan nama PIC">
+                @error('pic')
+                    <p class="mt-1 text-sm text-red-600">
+                        <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                    </p>
+                @enderror
+            </div>
+
             <!-- Alamat -->
             <div>
                 <label for="alamat" class="block text-sm font-medium text-gray-700 mb-2">

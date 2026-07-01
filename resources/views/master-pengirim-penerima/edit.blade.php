@@ -73,6 +73,18 @@
                 </div>
 
                 <div>
+                    <label for="pic" class="block text-sm font-medium text-gray-700 mb-1">PIC</label>
+                    <input type="text" 
+                           name="pic" 
+                           id="pic" 
+                           value="{{ old('pic', $masterPengirimPenerima->pic) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pic') border-red-500 @enderror">
+                    @error('pic')
+                        <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status <span class="text-red-500">*</span></label>
                     <select name="status" 
                             id="status" 

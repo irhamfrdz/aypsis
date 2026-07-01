@@ -67,6 +67,7 @@ class MasterPengirimPenerimaController extends Controller
         $validated = $request->validate([
             'kode' => 'required|string|max:50|unique:master_pengirim_penerima,kode',
             'nama' => 'required|string|max:255',
+            'pic' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
             'status' => 'required|in:active,inactive',
@@ -107,6 +108,7 @@ class MasterPengirimPenerimaController extends Controller
         $validated = $request->validate([
             'kode' => 'required|string|max:50|unique:master_pengirim_penerima,kode',
             'nama' => 'required|string|max:255',
+            'pic' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
             'status' => 'required|in:active,inactive',
@@ -157,6 +159,7 @@ class MasterPengirimPenerimaController extends Controller
         $validated = $request->validate([
             'kode' => 'required|string|max:50|unique:master_pengirim_penerima,kode,'.$masterPengirimPenerima->id,
             'nama' => 'required|string|max:255',
+            'pic' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
             'status' => 'required|in:active,inactive',

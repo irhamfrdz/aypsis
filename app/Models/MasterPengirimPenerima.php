@@ -15,6 +15,7 @@ class MasterPengirimPenerima extends Model
     protected $fillable = [
         'kode',
         'nama',
+        'pic',
         'alamat',
         'npwp',
         'status',
