@@ -58,10 +58,10 @@
             <table class="w-full border-collapse border border-gray-400 text-[11px] leading-tight">
                 <thead>
                     <tr class="bg-gray-100 print:bg-gray-100">
-                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-1/4">Jumlah Barang</th>
-                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-1/4">Nomor BL</th>
-                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-1/3">Nama Barang</th>
-                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-1/5">Ton / M3</th>
+                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-[15%]">Jumlah Barang</th>
+                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-[10%]">Nomor BL</th>
+                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-[55%]">Nama Barang</th>
+                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-[20%]">Ton / M3</th>
                     </tr>
                 </thead>
                 <tbody>
