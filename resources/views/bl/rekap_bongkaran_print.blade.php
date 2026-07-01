@@ -260,10 +260,10 @@
                     <td style="font-weight: bold;" title="{{ $item['nama_barang'] }}">
                         {{ Str::limit($item['nama_barang'], 80) }}
                     </td>
-                    <td class="text-right" style="border-right: none;">
+                    <td class="text-right" style="border-right: none; width: 75%;">
                         {{ $item['amount'] !== null ? number_format($item['amount'], 3, ',', '.') : '' }}
                     </td>
-                    <td class="text-center" style="border-left: none;">
+                    <td class="text-center" style="border-left: none; width: 25%;">
                         {{ $item['unit'] }}
                     </td>
                 </tr>
