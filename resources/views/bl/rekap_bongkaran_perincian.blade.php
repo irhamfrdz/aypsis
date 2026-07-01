@@ -72,7 +72,7 @@
                                 {{ number_format($item['kuantitas'], 0, ',', '.') }}
                             </td>
                             <!-- Qty Unit -->
-                            <td class="border border-gray-400 px-2 py-0.5 text-left text-gray-700 w-28 border-l-0">
+                            <td class="border border-gray-400 px-2 py-0.5 text-left text-gray-700 w-14 border-l-0">
                                 {{ $item['satuan'] }}
                             </td>
                             <!-- Nomor BL -->
