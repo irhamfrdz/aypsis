@@ -3076,8 +3076,8 @@ class BlController extends Controller
         })->values();
 
         // -----------------------------------------------------------------------
-        // 4. Containers first, then cargo
+        // 4. Cargo first, then containers
         // -----------------------------------------------------------------------
-        return $containerRows->concat($cargoRows);
+        return $cargoRows->concat($containerRows);
     }
 }
