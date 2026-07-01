@@ -71,8 +71,8 @@
                                 {{ $item['nomor_bl'] ?? '-' }}
                             </td>
                             <!-- Nama Barang -->
-                            <td class="border border-gray-400 px-2 py-0.5 text-left font-semibold text-gray-900">
-                                {{ $item['nama_barang'] }}
+                            <td class="border border-gray-400 px-2 py-0.5 text-left font-semibold text-gray-900" title="{{ $item['nama_barang'] }}">
+                                {{ Str::limit($item['nama_barang'], 80) }}
                             </td>
                             <!-- Ton/M3 Amount -->
                             <td class="border border-gray-400 px-2 py-0.5 text-right font-medium w-24 text-gray-900">

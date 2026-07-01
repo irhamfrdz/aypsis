@@ -252,8 +252,8 @@
                     <td class="text-left" style="border-left: none;">
                         {{ $item['satuan'] }}
                     </td>
-                    <td style="font-weight: bold;">
-                        {{ $item['nama_barang'] }}
+                    <td style="font-weight: bold;" title="{{ $item['nama_barang'] }}">
+                        {{ Str::limit($item['nama_barang'], 80) }}
                     </td>
                     <td class="text-right" style="border-right: none;">
                         {{ $item['amount'] !== null ? number_format($item['amount'], 3, ',', '.') : '' }}
