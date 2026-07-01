@@ -35,6 +35,15 @@
                     <span class="font-bold text-gray-700 w-32 uppercase">Voyage</span>
                     <span class="text-gray-900">: {{ $noVoyage }}</span>
                 </div>
+                <div class="flex">
+                    <span class="font-bold text-gray-700 w-32 uppercase">Dari</span>
+                    <span class="text-gray-900">: 
+                        @if(Str::contains($noVoyage, 'BJ')) Batam 
+                        @elseif(Str::contains($noVoyage, 'PJ')) Pinang
+                        @elseif(Str::contains($noVoyage, ['JB', 'JP'])) Jakarta
+                        @else - @endif
+                    </span>
+                </div>
             </div>
             <div class="space-y-2">
                 <div class="flex">

@@ -227,8 +227,13 @@
                 <tr>
                     <td>Voyage</td>
                     <td>: {{ $noVoyage }}</td>
-                    <td></td>
-                    <td></td>
+                    <td>Dari</td>
+                    <td>: 
+                        @if(Str::contains($noVoyage, 'BJ')) Batam 
+                        @elseif(Str::contains($noVoyage, 'PJ')) Pinang
+                        @elseif(Str::contains($noVoyage, ['JB', 'JP'])) Jakarta
+                        @else - @endif
+                    </td>
                 </tr>
             </table>
         </div>
