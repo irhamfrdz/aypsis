@@ -16,6 +16,7 @@ class MasterPengirimPenerima extends Model
         'kode',
         'nama',
         'pic',
+        'telepon',
         'alamat',
         'npwp',
         'status',

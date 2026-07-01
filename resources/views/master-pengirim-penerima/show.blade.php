@@ -63,6 +63,10 @@
                             <dd class="text-sm text-gray-900">{{ $masterPengirimPenerima->pic ?? '-' }}</dd>
                         </div>
                         <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">No. Telepon</dt>
+                            <dd class="text-sm text-gray-900">{{ $masterPengirimPenerima->telepon ?? '-' }}</dd>
+                        </div>
+                        <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Status</dt>
                             <dd class="text-sm text-gray-900">
                                 @if($masterPengirimPenerima->status == 'active')
