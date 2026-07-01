@@ -222,7 +222,7 @@
 
                                             <div id="dropdown-sj-{{ $sj->id }}" class="hidden absolute left-0 z-50 mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                                 <div class="py-1">
-                                                    <a href="{{ route('surat-jalan-bongkaran-batam.edit', $sj->id) }}" 
+                                                    <a href="#" onclick="editSuratJalan({{ $sj->id }}); return false;" 
                                                        class="group flex items-center px-3 py-2 text-xs text-indigo-700 hover:bg-indigo-50 hover:text-indigo-900">
                                                         <svg class="mr-2 h-4 w-4 text-indigo-400 group-hover:text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -330,7 +330,7 @@
                                                     
                                                     <!-- Opsi Edit - hanya tampil jika sudah ada surat jalan -->
                                                     @if($manifest->suratJalanBongkaranBatam)
-                                                        <a href="{{ route('surat-jalan-bongkaran-batam.edit', $manifest->suratJalanBongkaranBatam->id) }}" 
+                                                        <a href="#" onclick="editSuratJalan({{ $manifest->suratJalanBongkaranBatam->id }}); return false;" 
                                                            class="group flex items-center px-3 py-2 text-xs text-purple-700 hover:bg-purple-50 hover:text-purple-900">
                                                             <svg class="mr-2 h-4 w-4 text-purple-400 group-hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -983,7 +983,413 @@
         </div>
     </div>
 
-    
+    <!-- Modal Edit Surat Jalan -->
+    <div id="modalEditSuratJalan" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-lg bg-white">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b">
+                <h3 class="text-xl font-semibold text-gray-900">Edit Surat Jalan Bongkaran</h3>
+                <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <form id="formEditSuratJalan" method="POST" class="mt-4" onsubmit="return handleEditFormSubmit(event)">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="surat_jalan_id" id="edit_modal_surat_jalan_id">
+                <input type="hidden" name="manifest_id" id="edit_modal_manifest_id">
+                <input type="hidden" name="bl_id" id="edit_modal_bl_id">
+                <input type="hidden" name="nama_kapal" id="edit_modal_nama_kapal" value="{{ $selectedKapal }}">
+                <input type="hidden" name="no_voyage" id="edit_modal_no_voyage" value="{{ $selectedVoyage }}">
+                
+                <div class="max-h-[70vh] overflow-y-auto px-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Informasi Dasar -->
+                        <div class="md:col-span-2">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Dasar</h4>
+                        </div>
+
+                        <!-- Nomor Surat Jalan -->
+                        <div>
+                            <label for="edit_modal_nomor_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nomor Surat Jalan <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="nomor_surat_jalan" id="edit_modal_nomor_surat_jalan" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nomor surat jalan">
+                        </div>
+
+                        <!-- Lokasi -->
+                        <div>
+                            <label for="edit_modal_lokasi" class="block text-sm font-medium text-gray-700 mb-1">
+                                Lokasi <span class="text-red-500">*</span>
+                            </label>
+                            <select name="lokasi" id="edit_modal_lokasi" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih Lokasi</option>
+                                <option value="jakarta">Jakarta</option>
+                                <option value="batam">Batam</option>
+                            </select>
+                        </div>
+
+                        <!-- Tanggal Surat Jalan -->
+                        <div>
+                            <label for="edit_modal_tanggal_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
+                                Tanggal Surat Jalan <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="tanggal_surat_jalan" id="edit_modal_tanggal_surat_jalan" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Term -->
+                        <div>
+                            <label for="edit_modal_term" class="block text-sm font-medium text-gray-700 mb-1">Term</label>
+                            <select name="term" id="edit_modal_term"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih term</option>
+                                @foreach($terms as $term)
+                                    <option value="{{ $term->kode }}">{{ $term->kode }} - {{ $term->nama_status }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Aktifitas -->
+                        <div>
+                            <label for="edit_modal_aktifitas" class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
+                            <select name="aktifitas" id="edit_modal_aktifitas"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih aktifitas</option>
+                                @foreach($masterKegiatans as $kegiatan)
+                                    <option value="{{ $kegiatan->nama_kegiatan }}">{{ $kegiatan->nama_kegiatan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Informasi Pengiriman -->
+                        <div class="md:col-span-2 mt-3">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Pengiriman</h4>
+                        </div>
+
+                        <!-- Pengirim -->
+                        <div>
+                            <label for="edit_modal_pengirim" class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
+                            <input type="text" name="pengirim" id="edit_modal_pengirim"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nama pengirim">
+                        </div>
+
+                        <!-- Penerima -->
+                        <div>
+                            <label for="edit_modal_penerima" class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
+                            <input type="text" name="penerima" id="edit_modal_penerima"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nama penerima">
+                        </div>
+
+                        <!-- Jenis Barang -->
+                        <div>
+                            <label for="edit_modal_jenis_barang" class="block text-sm font-medium text-gray-700 mb-1">Jenis Barang</label>
+                            <input type="text" name="jenis_barang" id="edit_modal_jenis_barang"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Tujuan Alamat -->
+                        <div>
+                            <label for="edit_modal_tujuan_alamat" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Alamat</label>
+                            <input type="text" name="tujuan_alamat" id="edit_modal_tujuan_alamat"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan tujuan alamat">
+                        </div>
+
+                        <!-- Tujuan Pengambilan -->
+                        <div class="flex flex-col gap-4">
+                            <div>
+                                <label for="edit_modal_tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
+                                <select name="tujuan_pengambilan" id="edit_modal_tujuan_pengambilan"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Pilih tujuan pengiriman</option>
+                                    @foreach($tujuanKegiatanUtamas as $tujuan)
+                                        <option value="{{ $tujuan->ke }}" 
+                                                data-uang-jalan-20="{{ $tujuan->uang_jalan_20ft ?? 0 }}" 
+                                                data-uang-jalan-40="{{ $tujuan->uang_jalan_40ft ?? 0 }}">
+                                            {{ $tujuan->ke }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <!-- Ring -->
+                            <div>
+                                <label for="edit_modal_ring" class="block text-sm font-medium text-gray-700 mb-1">Ring</label>
+                                <input type="text" name="ring" id="edit_modal_ring" readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Ring otomatis terisi">
+                            </div>
+
+                            <!-- Full/Empty Radio (Visible for Batam) -->
+                            <div id="edit_modal_f_e_wrapper" class="hidden">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status Muatan (F/E)</label>
+                                <div class="flex space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="f_e" value="Full" class="form-radio text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Full</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="f_e" value="Empty" class="form-radio text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Empty</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Jenis Pengiriman -->
+                        <div>
+                            <label for="edit_modal_jenis_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Jenis Pengiriman</label>
+                            <select name="jenis_pengiriman" id="edit_modal_jenis_pengiriman"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih jenis pengiriman</option>
+                                <option value="FCL">FCL</option>
+                                <option value="LCL">LCL</option>
+                                <option value="Cargo">Cargo</option>
+                            </select>
+                        </div>
+
+                        <!-- Tanggal Ambil Barang -->
+                        <div>
+                            <label for="edit_modal_tanggal_ambil_barang" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Ambil Barang</label>
+                            <input type="date" name="tanggal_ambil_barang" id="edit_modal_tanggal_ambil_barang"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Informasi Personal -->
+                        <div class="md:col-span-2 mt-3">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Personal</h4>
+                        </div>
+
+                        <!-- Supir -->
+                        <div>
+                            <label for="edit_modal_supir" class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
+                            <select name="supir" id="edit_modal_supir"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih supir</option>
+                                @foreach($karyawanSupirs as $supir)
+                                    <option value="{{ $supir->nama_panggilan }}" data-plat="{{ $supir->plat }}">
+                                        {{ $supir->nama_panggilan }} ({{ $supir->nama_lengkap }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-blue-600">Nomor plat akan terisi otomatis saat memilih supir</p>
+                        </div>
+
+                        <!-- No Plat -->
+                        <div>
+                            <label for="edit_modal_no_plat" class="block text-sm font-medium text-gray-700 mb-1">No Plat</label>
+                            <input type="text" name="no_plat" id="edit_modal_no_plat"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nomor plat">
+                        </div>
+
+                        <!-- Kenek -->
+                        <div>
+                            <label for="edit_modal_kenek" class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
+                            <select name="kenek" id="edit_modal_kenek"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih kenek</option>
+                                @foreach($karyawanKranis as $krani)
+                                    <option value="{{ $krani->nama_panggilan }}">
+                                        {{ $krani->nama_panggilan }} ({{ $krani->nama_lengkap }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-blue-600">Pilih kenek dari daftar karyawan krani</p>
+                        </div>
+
+                        <!-- Krani -->
+                        <div>
+                            <label for="edit_modal_krani" class="block text-sm font-medium text-gray-700 mb-1">Krani</label>
+                            <select name="krani" id="edit_modal_krani"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih krani</option>
+                                @foreach($karyawanKranis as $krani)
+                                    <option value="{{ $krani->nama_panggilan }}">
+                                        {{ $krani->nama_panggilan }} ({{ $krani->nama_lengkap }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-xs text-blue-600">Pilih krani dari daftar karyawan</p>
+                        </div>
+
+                        <!-- Informasi Container -->
+                        <div class="md:col-span-2 mt-3">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Container</h4>
+                        </div>
+
+                        <!-- No Kontainer -->
+                        <div>
+                            <label for="edit_modal_no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">No Kontainer</label>
+                            <input type="text" name="no_kontainer" id="edit_modal_no_kontainer"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- No Seal -->
+                        <div>
+                            <label for="edit_modal_no_seal" class="block text-sm font-medium text-gray-700 mb-1">No Seal</label>
+                            <input type="text" name="no_seal" id="edit_modal_no_seal"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Nomor BL -->
+                        <div>
+                            <label for="edit_modal_no_bl" class="block text-sm font-medium text-gray-700 mb-1">Nomor BL</label>
+                            <input type="text" name="no_bl" id="edit_modal_no_bl"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Size Kontainer -->
+                        <div>
+                            <label for="edit_modal_size" class="block text-sm font-medium text-gray-700 mb-1">Size Kontainer</label>
+                            <select name="size" id="edit_modal_size"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Pilih size kontainer</option>
+                                <option value="20">20</option>
+                                <option value="20ft">20ft</option>
+                                <option value="40">40</option>
+                                <option value="40ft">40ft</option>
+                                <option value="40hc">40hc</option>
+                            </select>
+                        </div>
+
+                        <!-- Informasi Packaging -->
+                        <div class="md:col-span-2 mt-3">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Packaging</h4>
+                        </div>
+
+                        <!-- Karton -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Karton</label>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="karton" value="ya" class="form-radio text-blue-600">
+                                    <span class="ml-2 text-sm">Ya</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="karton" value="tidak" class="form-radio text-blue-600" checked>
+                                    <span class="ml-2 text-sm">Tidak</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Plastik -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Plastik</label>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="plastik" value="ya" class="form-radio text-blue-600">
+                                    <span class="ml-2 text-sm">Ya</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="plastik" value="tidak" class="form-radio text-blue-600" checked>
+                                    <span class="ml-2 text-sm">Tidak</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Terpal -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Terpal</label>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="terpal" value="ya" class="form-radio text-blue-600">
+                                    <span class="ml-2 text-sm">Ya</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="terpal" value="tidak" class="form-radio text-blue-600" checked>
+                                    <span class="ml-2 text-sm">Tidak</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Empty space for alignment -->
+                        <div></div>
+
+                        <!-- Informasi Keuangan -->
+                        <div class="md:col-span-2 mt-3">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">Informasi Keuangan</h4>
+                        </div>
+
+                        <!-- RIT -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">RIT</label>
+                            <div class="flex space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="rit" value="menggunakan_rit" class="form-radio text-blue-600" checked>
+                                    <span class="ml-2 text-sm">Menggunakan RIT</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="rit" value="tidak_menggunakan_rit" class="form-radio text-blue-600">
+                                    <span class="ml-2 text-sm">Tidak Menggunakan RIT</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Uang Jalan -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
+                            <div class="flex space-x-2">
+                                <div class="flex space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="uang_jalan_type" value="full" class="form-radio text-blue-600" checked>
+                                        <span class="ml-2 text-sm">Full</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="uang_jalan_type" value="setengah" class="form-radio text-blue-600">
+                                        <span class="ml-2 text-sm">Setengah</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Uang Jalan Nominal -->
+                        <div class="md:col-span-2">
+                            <div class="flex items-center justify-between mb-1">
+                                <label for="edit_modal_uang_jalan_nominal" class="block text-sm font-medium text-gray-700">Nominal Uang Jalan</label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="tanpa_uang_jalan" id="edit_modal_tanpa_uang_jalan" value="1" class="form-checkbox text-blue-600 rounded">
+                                    <span class="ml-2 text-sm font-medium text-gray-700">Tidak Menggunakan Uang Jalan</span>
+                                </label>
+                            </div>
+                            <input type="number" name="uang_jalan_nominal" id="edit_modal_uang_jalan_nominal"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Masukkan nominal uang jalan" min="0" step="1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex justify-end gap-3 mt-4 pt-3 border-t">
+                    <button type="button" onclick="closeEditModal()"
+                            class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                        Batal
+                    </button>
+                    <button type="submit" id="btnSubmitEditModal"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                        <span id="btnSubmitEditText">Update Surat Jalan</span>
+                        <span id="btnSubmitEditLoading" class="hidden">
+                            <svg class="animate-spin h-4 w-4 inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Menyimpan...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -1710,7 +2116,49 @@ function editSuratJalanFromBL(suratJalanId) {
 }
 
 // Open edit modal and fetch surat jalan data
-// Close Set form action URL
+function openEditModal(suratJalanId) {
+    console.log('openEditModal called with ID:', suratJalanId);
+    // Show modal
+    const modal = document.getElementById('modalEditSuratJalan');
+    if (!modal) {
+        console.error('ERROR: modalEditSuratJalan element not found in DOM!');
+        alert('Error: Modal element not found in page.');
+        return;
+    }
+    modal.classList.remove('hidden');
+    console.log('Modal element hidden class removed. Style display status:', modal.style.display);
+    
+    const fetchUrl = `{{ route('api.surat-jalan-bongkaran-batam.show', ['id' => ':id'], false) }}`.replace(':id', suratJalanId);
+    console.log('Starting fetch request to URL:', fetchUrl);
+
+    // Fetch Surat Jalan data
+    fetch(fetchUrl)
+        .then(response => {
+            console.log('Received response from server. Status:', response.status, 'OK:', response.ok);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Response was not JSON');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Populate hidden ID
+            document.getElementById('edit_modal_surat_jalan_id').value = suratJalanId;
+            document.getElementById('edit_modal_manifest_id').value = data.manifest_id || '';
+            document.getElementById('edit_modal_bl_id').value = data.bl_id || '';
+            
+            // Populate nama kapal and no voyage from surat jalan data
+            if (data.nama_kapal) {
+                document.getElementById('edit_modal_nama_kapal').value = data.nama_kapal;
+            }
+            if (data.no_voyage) {
+                document.getElementById('edit_modal_no_voyage').value = data.no_voyage;
+            }
+            
+            // Set form action URL
             document.getElementById('formEditSuratJalan').action = `/surat-jalan-bongkaran-batam/${suratJalanId}`;
             
             // Populate form fields
@@ -1835,17 +2283,68 @@ function editSuratJalanFromBL(suratJalanId) {
         })
         .catch(error => {
             console.error('Error fetching Surat Jalan data:', error);
-            alert('FETCH ERROR: ' + (error.message || error));
+            alert('Error saat memuat data: ' + error.message);
             closeEditModal();
+            
+            // Show more detailed error message
+            let errorMsg = 'Gagal mengambil data Surat Jalan. ';
+            if (error.message) {
+                errorMsg += error.message;
+            } else if (error.error) {
+                errorMsg += error.error;
+            } else {
+                errorMsg += 'Silakan coba lagi atau hubungi administrator.';
+            }
+            errorMsg += '\n\nID: ' + suratJalanId;
+            
+            alert(errorMsg);
         });
-    } catch(e) {
-        alert('EXCEPTION di openEditModal: ' + e.message);
-    }
 }
 
 // Setup auto-fill plat nomor when supir is selected in edit modal
-// Close Setup auto-calculate uang jalan in edit modal
-// Close    function calculateEditModalUangJalan() {
+function setupEditModalSupirAutoFill() {
+    const supirSelect = document.getElementById('edit_modal_supir');
+    const noPlatInput = document.getElementById('edit_modal_no_plat');
+    
+    if (supirSelect && noPlatInput) {
+        supirSelect.removeEventListener('change', handleEditModalSupirChange);
+        supirSelect.addEventListener('change', handleEditModalSupirChange);
+    }
+}
+
+function handleEditModalSupirChange(e) {
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    const platNumber = selectedOption.getAttribute('data-plat');
+    const noPlatInput = document.getElementById('edit_modal_no_plat');
+    
+    if (platNumber && platNumber.trim() !== '') {
+        noPlatInput.value = platNumber;
+    }
+}
+
+// Setup auto-calculate uang jalan in edit modal
+function setupEditModalUangJalanCalculation(containerSize) {
+    const tujuanPengambilanSelect = document.getElementById('edit_modal_tujuan_pengambilan');
+    const uangJalanNominalInput = document.getElementById('edit_modal_uang_jalan_nominal');
+    const uangJalanTypeRadios = document.querySelectorAll('#modalEditSuratJalan input[name="uang_jalan_type"]');
+    const sizeSelect = document.getElementById('edit_modal_size');
+    const tanpaUangJalanCheckbox = document.getElementById('edit_modal_tanpa_uang_jalan');
+    
+    if (tanpaUangJalanCheckbox && uangJalanNominalInput) {
+        tanpaUangJalanCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                uangJalanNominalInput.value = '0';
+                uangJalanNominalInput.readOnly = true;
+                uangJalanNominalInput.classList.add('bg-gray-100', 'text-gray-500');
+            } else {
+                uangJalanNominalInput.readOnly = false;
+                uangJalanNominalInput.classList.remove('bg-gray-100', 'text-gray-500');
+                calculateEditModalUangJalan();
+            }
+        });
+    }
+    
+    function calculateEditModalUangJalan() {
         const selectedOption = tujuanPengambilanSelect.options[tujuanPengambilanSelect.selectedIndex];
         const ringInput = document.getElementById('edit_modal_ring');
         if (ringInput) {
@@ -1919,9 +2418,163 @@ function editSuratJalanFromBL(suratJalanId) {
 }
 
 // Handle edit form submit
-// Close edit modal
-// Close edit modal when clicking outside (on the overlay)
+function handleEditFormSubmit(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('formEditSuratJalan');
+    const submitBtn = document.getElementById('btnSubmitEditModal');
+    const submitText = document.getElementById('btnSubmitEditText');
+    const submitLoading = document.getElementById('btnSubmitEditLoading');
+    
+    // Validate required fields
+    const nomorSuratJalan = document.getElementById('edit_modal_nomor_surat_jalan').value.trim();
+    const tanggalSuratJalan = document.getElementById('edit_modal_tanggal_surat_jalan').value.trim();
+    
+    if (!nomorSuratJalan) {
+        showEditModalAlert('Field Wajib Diisi!', 'Nomor Surat Jalan harus diisi sebelum menyimpan.', 'error');
+        document.getElementById('edit_modal_nomor_surat_jalan').focus();
+        return false;
+    }
+    
+    if (!tanggalSuratJalan) {
+        showEditModalAlert('Field Wajib Diisi!', 'Tanggal Surat Jalan harus diisi sebelum menyimpan.', 'error');
+        document.getElementById('edit_modal_tanggal_surat_jalan').focus();
+        return false;
+    }
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitText.classList.add('hidden');
+    submitLoading.classList.remove('hidden');
+    
+    // Submit form via AJAX
+    const formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(parseJsonResponse)
+    .then(data => {
+        // Success - redirect with success message
+        if (data.redirect) {
+            // Check if URL already has query parameters
+            const separator = data.redirect.includes('?') ? '&' : '?';
+            window.location.href = data.redirect + separator + 'success=1';
+        } else {
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        
+        // Reset button state
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitLoading.classList.add('hidden');
+        
+        // Show error message
+        let errorMessage = '';
+        let errorTitle = 'Validasi Gagal!';
+        
+        if (error.errors && Object.keys(error.errors).length > 0) {
+            errorTitle = 'Validasi Gagal! Silakan periksa kembali data yang diinput:';
+            const errorItems = [];
+            
+            for (const [field, messages] of Object.entries(error.errors)) {
+                const fieldLabel = getFieldLabel(field);
+                messages.forEach(msg => {
+                    errorItems.push(`<li class="ml-4"><strong>${fieldLabel}:</strong> ${msg}</li>`);
+                });
+            }
+            
+            errorMessage = `<ul class="list-disc mt-2 text-sm">${errorItems.join('')}</ul>`;
+        } else if (error.message) {
+            errorMessage = error.message;
+        } else {
+            errorTitle = 'Terjadi Kesalahan!';
+            errorMessage = 'Gagal mengupdate surat jalan. Silakan coba lagi atau hubungi administrator.';
+        }
+        
+        showEditModalAlert(errorTitle, errorMessage, 'error');
+    });
+    
+    return false;
+}
 
+// Show alert inside edit modal
+function showEditModalAlert(title, message, type = 'error') {
+    const existingAlert = document.querySelector('#modalEditSuratJalan .modal-alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `modal-alert mb-4 px-4 py-3 rounded-lg ${
+        type === 'error' 
+            ? 'bg-red-50 border border-red-200 text-red-800' 
+            : 'bg-green-50 border border-green-200 text-green-800'
+    }`;
+    
+    alertDiv.innerHTML = `
+        <div class="flex items-start w-full">
+            <svg class="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                ${type === 'error' 
+                    ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>'
+                    : '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>'
+                }
+            </svg>
+            <div class="flex-1">
+                <div class="font-semibold mb-1">${title}</div>
+                <div class="text-sm">${message}</div>
+            </div>
+            <button type="button" class="ml-3 flex-shrink-0 ${type === 'error' ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'}" onclick="this.parentElement.parentElement.remove()">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    const modalBody = document.querySelector('#formEditSuratJalan');
+    modalBody.insertBefore(alertDiv, modalBody.firstChild);
+    
+    const modalContent = document.querySelector('#modalEditSuratJalan .max-h-\\[70vh\\]');
+    if (modalContent) {
+        modalContent.scrollTop = 0;
+    }
+}
+
+// Close edit modal
+function closeEditModal() {
+    document.getElementById('modalEditSuratJalan').classList.add('hidden');
+    document.getElementById('formEditSuratJalan').reset();
+    
+    const submitBtn = document.getElementById('btnSubmitEditModal');
+    const submitText = document.getElementById('btnSubmitEditText');
+    const submitLoading = document.getElementById('btnSubmitEditLoading');
+    
+    submitBtn.disabled = false;
+    submitText.classList.remove('hidden');
+    submitLoading.classList.add('hidden');
+    
+    const existingAlert = document.querySelector('#modalEditSuratJalan .modal-alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+}
+
+// Close edit modal when clicking outside
+document.addEventListener('click', function(event) {
+    const editModal = document.getElementById('modalEditSuratJalan');
+    if (event.target === editModal) {
+        closeEditModal();
+    }
+});
 
 function printSJBongkaran(suratJalanId) {
     // Print existing surat jalan bongkaran
