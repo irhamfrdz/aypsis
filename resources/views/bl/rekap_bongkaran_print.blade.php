@@ -242,9 +242,9 @@
             <thead>
                 <tr>
                     <th style="width: 8%;">No</th>
-                    <th style="width: 25%;" colspan="2">Jumlah Barang</th>
-                    <th style="width: 47%;">Nama Barang</th>
-                    <th style="width: 20%;" colspan="2">Ton / M3</th>
+                    <th style="width: 20%;" colspan="2">Jumlah Barang</th>
+                    <th style="width: 57%;">Nama Barang</th>
+                    <th style="width: 15%;" colspan="2">Ton / M3</th>
                 </tr>
             </thead>
             <tbody>

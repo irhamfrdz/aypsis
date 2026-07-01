@@ -244,8 +244,8 @@
                     <th style="width: 5%;">No</th>
                     <th style="width: 15%;" colspan="2">Jumlah Barang</th>
                     <th style="width: 7%;">No. BL</th>
-                    <th style="width: 53%;">Nama Barang</th>
-                    <th style="width: 20%;" colspan="2">Ton / M3</th>
+                    <th style="width: 58%;">Nama Barang</th>
+                    <th style="width: 15%;" colspan="2">Ton / M3</th>
                 </tr>
             </thead>
             <tbody>

@@ -60,8 +60,8 @@
                     <tr class="bg-gray-100 print:bg-gray-100">
                         <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-[15%]">Jumlah Barang</th>
                         <th class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-[6%] whitespace-nowrap">No. BL</th>
-                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-[59%]">Nama Barang</th>
-                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-[20%]">Ton / M3</th>
+                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-[64%]">Nama Barang</th>
+                        <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-[15%]">Ton / M3</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,7 +84,7 @@
                                 {{ Str::limit($item['nama_barang'], 80) }}
                             </td>
                             <!-- Ton/M3 Amount -->
-                            <td class="border border-gray-400 px-2 py-0.5 text-right font-medium w-24 text-gray-900">
+                            <td class="border border-gray-400 px-2 py-0.5 text-right font-medium w-16 text-gray-900">
                                 {{ $item['amount'] !== null ? number_format($item['amount'], 3, ',', '.') : '' }}
                             </td>
                             <!-- Ton/M3 Unit -->
