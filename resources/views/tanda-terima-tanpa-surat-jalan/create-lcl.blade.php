@@ -299,6 +299,8 @@
                                                     @foreach($masterPengirimPenerima as $item)
                                                         <option value="{{ $item->nama }}" 
                                                                 data-alamat="{{ $item->alamat }}"
+                                                                data-pic="{{ $item->pic ?? '' }}"
+                                                                data-telepon="{{ $item->telepon ?? '' }}"
                                                                 data-id="{{ $item->id ?? '' }}"
                                                                 data-type="{{ $item->type ?? '' }}"
                                                                 {{ old('nama_penerima') == $item->nama ? 'selected' : '' }}>
@@ -379,7 +381,9 @@
                                             @if(isset($masterPengirimPenerima))
                                                 @foreach($masterPengirimPenerima as $item)
                                                     <option value="{{ $item->nama }}" 
-                                                            data-alamat="{{ $item->alamat }}">
+                                                            data-alamat="{{ $item->alamat }}"
+                                                            data-pic="{{ $item->pic ?? '' }}"
+                                                            data-telepon="{{ $item->telepon ?? '' }}">
                                                         {{ $item->nama }}
                                                     </option>
                                                 @endforeach
@@ -421,6 +425,8 @@
                                                     @foreach($masterPengirimPenerima as $item)
                                                         <option value="{{ $item->nama }}"
                                                                 data-alamat="{{ $item->alamat }}"
+                                                                data-pic="{{ $item->pic ?? '' }}"
+                                                                data-telepon="{{ $item->telepon ?? '' }}"
                                                                 data-id="{{ $item->id ?? '' }}"
                                                                 data-type="{{ $item->type ?? '' }}"
                                                                 {{ old('nama_pengirim') == $item->nama ? 'selected' : '' }}>
@@ -1107,10 +1113,19 @@
             $(this).off('select2:select').on('select2:select', function(e) {
                 var selectedOption = e.params.data.element;
                 var alamat = $(selectedOption).data('alamat');
+                var pic = $(selectedOption).data('pic');
+                var telepon = $(selectedOption).data('telepon');
                 var row = $(this).closest('.penerima-row');
                 
-                if (alamat && row.length) {
-                    row.find('.penerima-alamat').val(alamat);
+                if (row.length) {
+                    if (alamat) row.find('.penerima-alamat').val(alamat);
+                    if (pic) row.find('input[name="pic_penerima"], input[name="pic_penerima[]"]').val(pic);
+                    if (telepon) row.find('input[name="telepon_penerima"], input[name="telepon_penerima[]"]').val(telepon);
+                } else {
+                    // Fallback if not inside .penerima-row (e.g. static block)
+                    if (alamat) $('.penerima-alamat').val(alamat);
+                    if (pic) $('input[name="pic_penerima"]').val(pic);
+                    if (telepon) $('input[name="telepon_penerima"]').val(telepon);
                 }
             });
 
@@ -1119,6 +1134,12 @@
                 var row = $(this).closest('.penerima-row');
                 if (row.length) {
                     row.find('.penerima-alamat').val('');
+                    row.find('input[name="pic_penerima"], input[name="pic_penerima[]"]').val('');
+                    row.find('input[name="telepon_penerima"], input[name="telepon_penerima[]"]').val('');
+                } else {
+                    $('.penerima-alamat').val('');
+                    $('input[name="pic_penerima"]').val('');
+                    $('input[name="telepon_penerima"]').val('');
                 }
             });
         });
@@ -1188,10 +1209,18 @@
             $(this).off('select2:select').on('select2:select', function(e) {
                 var selectedOption = e.params.data.element;
                 var alamat = $(selectedOption).data('alamat');
+                var pic = $(selectedOption).data('pic');
+                var telepon = $(selectedOption).data('telepon');
                 var row = $(this).closest('.pengirim-row');
                 
-                if (alamat && row.length) {
-                    row.find('.pengirim-alamat').val(alamat);
+                if (row.length) {
+                    if (alamat) row.find('.pengirim-alamat').val(alamat);
+                    if (pic) row.find('input[name="pic_pengirim"], input[name="pic_pengirim[]"]').val(pic);
+                    if (telepon) row.find('input[name="telepon_pengirim"], input[name="telepon_pengirim[]"]').val(telepon);
+                } else {
+                    if (alamat) $('.pengirim-alamat').val(alamat);
+                    if (pic) $('input[name="pic_pengirim"]').val(pic);
+                    if (telepon) $('input[name="telepon_pengirim"]').val(telepon);
                 }
             });
 
@@ -1200,6 +1229,12 @@
                 var row = $(this).closest('.pengirim-row');
                 if (row.length) {
                     row.find('.pengirim-alamat').val('');
+                    row.find('input[name="pic_pengirim"], input[name="pic_pengirim[]"]').val('');
+                    row.find('input[name="telepon_pengirim"], input[name="telepon_pengirim[]"]').val('');
+                } else {
+                    $('.pengirim-alamat').val('');
+                    $('input[name="pic_pengirim"]').val('');
+                    $('input[name="telepon_pengirim"]').val('');
                 }
             });
         });
@@ -1295,10 +1330,14 @@
                 newSelect.on('select2:select', function(e) {
                     var selectedOption = e.params.data.element;
                     var alamat = $(selectedOption).data('alamat');
+                    var pic = $(selectedOption).data('pic');
+                    var telepon = $(selectedOption).data('telepon');
                     var row = $(this).closest('.penerima-row');
                     
-                    if (alamat && row.length) {
-                        row.find('.penerima-alamat').val(alamat);
+                    if (row.length) {
+                        if (alamat) row.find('.penerima-alamat').val(alamat);
+                        if (pic) row.find('input[name="pic_penerima"], input[name="pic_penerima[]"]').val(pic);
+                        if (telepon) row.find('input[name="telepon_penerima"], input[name="telepon_penerima[]"]').val(telepon);
                     }
                 });
 
@@ -1307,6 +1346,8 @@
                     var row = $(this).closest('.penerima-row');
                     if (row.length) {
                         row.find('.penerima-alamat').val('');
+                        row.find('input[name="pic_penerima"], input[name="pic_penerima[]"]').val('');
+                        row.find('input[name="telepon_penerima"], input[name="telepon_penerima[]"]').val('');
                     }
                 });
                 console.log('✓ Select2 diinisialisasi untuk baris penerima baru');
@@ -1416,10 +1457,14 @@
                 newSelect.on('select2:select', function(e) {
                     var selectedOption = e.params.data.element;
                     var alamat = $(selectedOption).data('alamat');
+                    var pic = $(selectedOption).data('pic');
+                    var telepon = $(selectedOption).data('telepon');
                     var row = $(this).closest('.pengirim-row');
                     
-                    if (alamat && row.length) {
-                        row.find('.pengirim-alamat').val(alamat);
+                    if (row.length) {
+                        if (alamat) row.find('.pengirim-alamat').val(alamat);
+                        if (pic) row.find('input[name="pic_pengirim"], input[name="pic_pengirim[]"]').val(pic);
+                        if (telepon) row.find('input[name="telepon_pengirim"], input[name="telepon_pengirim[]"]').val(telepon);
                     }
                 });
 
@@ -1428,6 +1473,8 @@
                     var row = $(this).closest('.pengirim-row');
                     if (row.length) {
                         row.find('.pengirim-alamat').val('');
+                        row.find('input[name="pic_pengirim"], input[name="pic_pengirim[]"]').val('');
+                        row.find('input[name="telepon_pengirim"], input[name="telepon_pengirim[]"]').val('');
                     }
                 });
                 console.log('✓ Select2 diinisialisasi untuk baris pengirim baru');
