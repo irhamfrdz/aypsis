@@ -1022,36 +1022,30 @@ function parseJsonResponse(response) {
 
 // Data for destinations based on location
 const destinations = {
-    jakarta: [
-        @foreach($tujuanKegiatanUtamas as $tujuan)
-        { 
-            label: "{{ $tujuan->ke }}", 
-            value: "{{ $tujuan->ke }}", 
-            ring: "",
-            uj20: {{ $tujuan->uang_jalan_20ft ?? 0 }}, 
-            uj40: {{ $tujuan->uang_jalan_40ft ?? 0 }} 
-        },
-        @endforeach
-    ],
-    batam: [
-        @foreach($pricelistUangJalanBatams as $item)
-            @if($item->wilayah)
-                @foreach(explode(',', $item->wilayah) as $subWilayah)
-                    @if(trim($subWilayah) !== '')
-                    { 
-                        label: "{{ trim($subWilayah) }} (Ring {{ $item->ring }} - {{ $item->expedisi }})", 
-                        value: "{{ trim($subWilayah) }}", 
-                        ring: "{{ $item->ring }}",
-                        uj20_full: {{ $item->tarif_20ft_full ?? 0 }},
-                        uj20_empty: {{ $item->tarif_20ft_empty ?? 0 }},
-                        uj40_full: {{ $item->tarif_40ft_full ?? 0 }},
-                        uj40_empty: {{ $item->tarif_40ft_empty ?? 0 }}
-                    },
-                    @endif
-                @endforeach
-            @endif
-        @endforeach
-    ]
+    jakarta: {!! json_encode(collect($tujuanKegiatanUtamas)->map(function($tujuan) {
+        return [
+            'label' => $tujuan->ke,
+            'value' => $tujuan->ke,
+            'ring' => '',
+            'uj20' => (float)($tujuan->uang_jalan_20ft ?? 0),
+            'uj40' => (float)($tujuan->uang_jalan_40ft ?? 0),
+        ];
+    })) !!},
+    batam: {!! json_encode(collect($pricelistUangJalanBatams)->flatMap(function($item) {
+        if (!$item->wilayah) return [];
+        return collect(explode(',', $item->wilayah))
+            ->map(fn($w) => trim($w))
+            ->filter()
+            ->map(fn($subWilayah) => [
+                'label' => $subWilayah . ' (Ring ' . $item->ring . ' - ' . $item->expedisi . ')',
+                'value' => $subWilayah,
+                'ring' => (string)$item->ring,
+                'uj20_full' => (float)($item->tarif_20ft_full ?? 0),
+                'uj20_empty' => (float)($item->tarif_20ft_empty ?? 0),
+                'uj40_full' => (float)($item->tarif_40ft_full ?? 0),
+                'uj40_empty' => (float)($item->tarif_40ft_empty ?? 0),
+            ]);
+    })->values()) !!}
 };
 
 // Function to update Tujuan Pengiriman options based on selected Lokasi
