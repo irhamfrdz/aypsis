@@ -243,8 +243,8 @@
                 <tr>
                     <th style="width: 5%;">No</th>
                     <th style="width: 15%;" colspan="2">Jumlah Barang</th>
-                    <th style="width: 10%;">Nomor BL</th>
-                    <th style="width: 50%;">Nama Barang</th>
+                    <th style="width: 7%;">No. BL</th>
+                    <th style="width: 53%;">Nama Barang</th>
                     <th style="width: 20%;" colspan="2">Ton / M3</th>
                 </tr>
             </thead>
@@ -258,7 +258,7 @@
                     <td class="text-left" style="border-left: none;">
                         {{ $item['satuan'] }}
                     </td>
-                    <td>
+                    <td class="text-center">
                         {{ $item['nomor_bl'] ?? '-' }}
                     </td>
                     <td style="font-weight: bold;" title="{{ $item['nama_barang'] }}">

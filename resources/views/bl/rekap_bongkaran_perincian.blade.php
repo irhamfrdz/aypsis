@@ -59,8 +59,8 @@
                 <thead>
                     <tr class="bg-gray-100 print:bg-gray-100">
                         <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-[15%]">Jumlah Barang</th>
-                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-[10%]">Nomor BL</th>
-                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-[55%]">Nama Barang</th>
+                        <th class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-[6%] whitespace-nowrap">No. BL</th>
+                        <th class="border border-gray-400 px-2 py-0.5 text-left font-bold text-gray-900 uppercase w-[59%]">Nama Barang</th>
                         <th colspan="2" class="border border-gray-400 px-2 py-0.5 text-center font-bold text-gray-900 uppercase w-[20%]">Ton / M3</th>
                     </tr>
                 </thead>
@@ -76,7 +76,7 @@
                                 {{ $item['satuan'] }}
                             </td>
                             <!-- Nomor BL -->
-                            <td class="border border-gray-400 px-2 py-0.5 text-left text-gray-900">
+                            <td class="border border-gray-400 px-2 py-0.5 text-center text-gray-900">
                                 {{ $item['nomor_bl'] ?? '-' }}
                             </td>
                             <!-- Nama Barang -->
