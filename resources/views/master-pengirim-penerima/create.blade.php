@@ -46,7 +46,7 @@
                     <input type="text" 
                            name="kode" 
                            id="kode" 
-                           value="{{ old('kode', $nextKode) }}"
+                           value="{{ old('kode', $kodeOtomatis) }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 @error('kode') border-red-500 @enderror"
                            readonly>
                     @error('kode')
