@@ -60,7 +60,7 @@
                         <div class="text-sm text-yellow-700">
                             <ul class="list-disc pl-5 space-y-1">
                                 <li>Pastikan file CSV menggunakan delimiter titik koma (;)</li>
-                                <li>Header kolom harus: kode;nama_pengirim;catatan;status</li>
+                                <li>Header kolom harus: kode;nama_pengirim;nickname1;pic;telepon;catatan;status</li>
                                 <li>Kolom status harus berisi: active (aktif) atau inactive (tidak aktif)</li>
                                 <li>Data yang sudah ada dengan kode sama akan diupdate</li>
                                 <li>Baris dengan kode kosong akan diabaikan</li>

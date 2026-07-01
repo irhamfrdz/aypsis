@@ -68,15 +68,28 @@
                     @enderror
                 </div>
 
-                <!-- Contact Person Field -->
+                <!-- PIC Field -->
                 <div>
-                    <label for="contact_person" class="block text-sm font-medium text-gray-700 mb-2">
-                        Contact Person
+                    <label for="pic" class="block text-sm font-medium text-gray-700 mb-2">
+                        PIC
                     </label>
-                    <input type="text" name="contact_person" id="contact_person" value="{{ old('contact_person', $pengirim->contact_person) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('contact_person') border-red-500 @enderror"
-                           placeholder="Masukkan contact person (opsional)">
-                    @error('contact_person')
+                    <input type="text" name="pic" id="pic" value="{{ old('pic', $pengirim->pic) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('pic') border-red-500 @enderror"
+                           placeholder="Masukkan PIC (opsional)">
+                    @error('pic')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Telepon Field -->
+                <div>
+                    <label for="telepon" class="block text-sm font-medium text-gray-700 mb-2">
+                        No. Telepon
+                    </label>
+                    <input type="text" name="telepon" id="telepon" value="{{ old('telepon', $pengirim->telepon) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('telepon') border-red-500 @enderror"
+                           placeholder="Masukkan nomor telepon (opsional)">
+                    @error('telepon')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
