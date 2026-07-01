@@ -420,6 +420,14 @@ class SupirDashboardController extends Controller
 
             \DB::commit();
 
+            try {
+                $obController = app(\App\Http\Controllers\ObController::class);
+                $obController->createManifestForNaikKapal($naikKapal, $user);
+                \Log::info('OB Muat Process - Manifest Created automatically', ['naik_kapal_id' => $naikKapal->id]);
+            } catch (\Exception $e) {
+                \Log::error('OB Muat Process - Error creating manifest', ['error' => $e->getMessage()]);
+            }
+
             // Verifikasi final setelah commit - query langsung dari database
             $verifikasi = \App\Models\NaikKapal::find($naikKapal->id);
 
