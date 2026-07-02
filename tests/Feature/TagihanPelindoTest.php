@@ -19,10 +19,10 @@ class TagihanPelindoTest extends TestCase
         parent::setUp();
 
         // Register default permissions in database
-        Permission::firstOrCreate(['name' => 'tagihan-pelindo-view', 'description' => 'View']);
-        Permission::firstOrCreate(['name' => 'tagihan-pelindo-create', 'description' => 'Create']);
-        Permission::firstOrCreate(['name' => 'tagihan-pelindo-edit', 'description' => 'Edit']);
-        Permission::firstOrCreate(['name' => 'tagihan-pelindo-delete', 'description' => 'Delete']);
+        Permission::firstOrCreate(['name' => 'tagihan-pelindo-view'], ['description' => 'View']);
+        Permission::firstOrCreate(['name' => 'tagihan-pelindo-create'], ['description' => 'Create']);
+        Permission::firstOrCreate(['name' => 'tagihan-pelindo-edit'], ['description' => 'Edit']);
+        Permission::firstOrCreate(['name' => 'tagihan-pelindo-delete'], ['description' => 'Delete']);
     }
 
     public function test_user_without_permission_cannot_view_index()
