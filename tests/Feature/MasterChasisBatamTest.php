@@ -63,17 +63,16 @@ class MasterChasisBatamTest extends TestCase
         // Seed some data
         MasterChasisBatam::create([
             'kode' => 'CH-0001',
-            'plat_nomor' => 'BP 1234 XX',
             'tipe' => '20ft',
-            'merek' => 'CIMC',
-            'tahun_pembuatan' => 2022,
-            'status' => 'aktif',
+            'kondisi' => 'baik',
+            'lokasi' => 'sm',
+            'tanggal_terakhir_pakai' => '2026-07-02',
         ]);
 
         $response = $this->get(route('master.chasis-batam.index'));
         $response->assertStatus(200);
         $response->assertSee('CH-0001');
-        $response->assertSee('BP 1234 XX');
+        $response->assertSee('SM');
     }
 
     public function test_user_with_permission_can_store_chasis()
@@ -83,11 +82,10 @@ class MasterChasisBatamTest extends TestCase
 
         $data = [
             'kode' => 'CH-9999',
-            'plat_nomor' => 'BP 9999 ZZZ',
             'tipe' => '40ft',
-            'merek' => 'TEST_BRAND',
-            'tahun_pembuatan' => 2025,
-            'status' => 'aktif',
+            'kondisi' => 'rusak',
+            'lokasi' => 'relasi',
+            'tanggal_terakhir_pakai' => '2026-07-01',
             'catatan' => 'Testing store',
         ];
 
@@ -96,8 +94,8 @@ class MasterChasisBatamTest extends TestCase
         $response->assertRedirect(route('master.chasis-batam.index'));
         $this->assertDatabaseHas('master_chasis_batams', [
             'kode' => 'CH-9999',
-            'plat_nomor' => 'BP 9999 ZZZ',
-            'merek' => 'TEST_BRAND',
+            'kondisi' => 'rusak',
+            'lokasi' => 'relasi',
         ]);
     }
 
@@ -108,20 +106,18 @@ class MasterChasisBatamTest extends TestCase
 
         $chasis = MasterChasisBatam::create([
             'kode' => 'CH-0001',
-            'plat_nomor' => 'BP 1234 XX',
             'tipe' => '20ft',
-            'merek' => 'CIMC',
-            'tahun_pembuatan' => 2022,
-            'status' => 'aktif',
+            'kondisi' => 'baik',
+            'lokasi' => 'sm',
+            'tanggal_terakhir_pakai' => '2026-07-02',
         ]);
 
         $data = [
             'kode' => 'CH-0001-REV',
-            'plat_nomor' => 'BP 1234 YY',
             'tipe' => '40ft',
-            'merek' => 'CIMC_MOD',
-            'tahun_pembuatan' => 2023,
-            'status' => 'nonaktif',
+            'kondisi' => 'rusak',
+            'lokasi' => 'relasi',
+            'tanggal_terakhir_pakai' => '2026-07-03',
             'catatan' => 'Updated notes',
         ];
 
@@ -131,8 +127,8 @@ class MasterChasisBatamTest extends TestCase
         $this->assertDatabaseHas('master_chasis_batams', [
             'id' => $chasis->id,
             'kode' => 'CH-0001-REV',
-            'plat_nomor' => 'BP 1234 YY',
-            'status' => 'nonaktif',
+            'kondisi' => 'rusak',
+            'lokasi' => 'relasi',
         ]);
     }
 
@@ -143,11 +139,10 @@ class MasterChasisBatamTest extends TestCase
 
         $chasis = MasterChasisBatam::create([
             'kode' => 'CH-0001',
-            'plat_nomor' => 'BP 1234 XX',
             'tipe' => '20ft',
-            'merek' => 'CIMC',
-            'tahun_pembuatan' => 2022,
-            'status' => 'aktif',
+            'kondisi' => 'baik',
+            'lokasi' => 'sm',
+            'tanggal_terakhir_pakai' => '2026-07-02',
         ]);
 
         $response = $this->delete(route('master.chasis-batam.destroy', $chasis->id));

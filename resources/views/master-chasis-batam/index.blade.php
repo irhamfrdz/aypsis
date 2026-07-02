@@ -26,12 +26,12 @@
 
         <!-- Search and Filters -->
         <form method="GET" action="{{ route('master.chasis-batam.index') }}" class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-100">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <!-- Search Input -->
                 <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Cari Data</label>
                     <div class="relative">
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode, plat nomor, tipe, merek..." class="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode, tipe, kondisi, lokasi..." class="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -51,19 +51,29 @@
                     </select>
                 </div>
 
-                <!-- Status Filter -->
+                <!-- Kondisi Filter -->
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Filter Status</label>
-                    <select name="status" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">Semua Status</option>
-                        <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                        <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Non-Aktif</option>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Filter Kondisi</label>
+                    <select name="kondisi" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Semua Kondisi</option>
+                        <option value="baik" {{ request('kondisi') == 'baik' ? 'selected' : '' }}>Baik</option>
+                        <option value="rusak" {{ request('kondisi') == 'rusak' ? 'selected' : '' }}>Rusak</option>
+                    </select>
+                </div>
+
+                <!-- Lokasi Filter -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Filter Lokasi</label>
+                    <select name="lokasi" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Semua Lokasi</option>
+                        <option value="sm" {{ request('lokasi') == 'sm' ? 'selected' : '' }}>SM</option>
+                        <option value="relasi" {{ request('lokasi') == 'relasi' ? 'selected' : '' }}>Relasi</option>
                     </select>
                 </div>
             </div>
 
             <div class="flex justify-end mt-4 gap-2">
-                @if(request()->anyFilled(['search', 'tipe', 'status']))
+                @if(request()->anyFilled(['search', 'tipe', 'kondisi', 'lokasi']))
                     <a href="{{ route('master.chasis-batam.index') }}" class="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-xs font-medium transition-colors duration-150">Reset</a>
                 @endif
                 <button type="submit" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-colors duration-150 shadow-sm">Cari</button>
@@ -90,11 +100,10 @@
                         <tr class="bg-gray-50 text-left text-gray-500 text-[10px] uppercase font-semibold border-b border-gray-200">
                             <th class="resizable-th py-3 px-4" style="position: relative; width: 60px;">No<div class="resize-handle"></div></th>
                             <th class="resizable-th py-3 px-4" style="position: relative;">Kode Chasis<div class="resize-handle"></div></th>
-                            <th class="resizable-th py-3 px-4" style="position: relative;">Plat Nomor<div class="resize-handle"></div></th>
                             <th class="resizable-th py-3 px-4" style="position: relative;">Tipe Chasis<div class="resize-handle"></div></th>
-                            <th class="resizable-th py-3 px-4" style="position: relative;">Merek<div class="resize-handle"></div></th>
-                            <th class="resizable-th py-3 px-4" style="position: relative;">Tahun<div class="resize-handle"></div></th>
-                            <th class="resizable-th py-3 px-4" style="position: relative;">Status<div class="resize-handle"></div></th>
+                            <th class="resizable-th py-3 px-4" style="position: relative;">Kondisi<div class="resize-handle"></div></th>
+                            <th class="resizable-th py-3 px-4" style="position: relative;">Lokasi<div class="resize-handle"></div></th>
+                            <th class="resizable-th py-3 px-4" style="position: relative;">Tgl Terakhir Pakai<div class="resize-handle"></div></th>
                             <th class="resizable-th py-3 px-4" style="position: relative;">Catatan<div class="resize-handle"></div></th>
                             <th class="py-3 px-4 text-right">Aksi</th>
                         </tr>
@@ -106,7 +115,6 @@
                                 <td class="py-3 px-4 font-semibold text-indigo-700">
                                     <a href="{{ route('master.chasis-batam.show', $chasis) }}" class="hover:underline">{{ $chasis->kode }}</a>
                                 </td>
-                                <td class="py-3 px-4">{{ $chasis->plat_nomor ?? '-' }}</td>
                                 <td class="py-3 px-4">
                                     @if($chasis->tipe)
                                         <span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-medium border border-blue-100">{{ $chasis->tipe }}</span>
@@ -114,19 +122,29 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="py-3 px-4">{{ $chasis->merek ?? '-' }}</td>
-                                <td class="py-3 px-4">{{ $chasis->tahun_pembuatan ?? '-' }}</td>
                                 <td class="py-3 px-4">
-                                    @if($chasis->status === 'aktif')
+                                    @if($chasis->kondisi === 'baik')
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            Aktif
+                                            Baik
                                         </span>
                                     @else
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                            Non-Aktif
+                                            Rusak
                                         </span>
                                     @endif
                                 </td>
+                                <td class="py-3 px-4">
+                                    @if($chasis->lokasi === 'sm')
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 uppercase">
+                                            SM
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 uppercase">
+                                            Relasi
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="py-3 px-4">{{ $chasis->tanggal_terakhir_pakai ? $chasis->tanggal_terakhir_pakai->format('d-m-Y') : '-' }}</td>
                                 <td class="py-3 px-4 max-w-xs truncate text-gray-500" title="{{ $chasis->catatan }}">{{ $chasis->catatan ?? '-' }}</td>
                                 <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
                                     <a href="{{ route('master.chasis-batam.show', $chasis) }}" class="text-gray-500 hover:text-indigo-600 hover:underline">Detail</a>
@@ -143,7 +161,7 @@
                                                 class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                                 data-model-type="{{ get_class($chasis) }}"
                                                 data-model-id="{{ $chasis->id }}"
-                                                data-item-name="{{ $chasis->kode }} ({{ $chasis->plat_nomor ?? 'No Plat' }})"
+                                                data-item-name="{{ $chasis->kode }} (Tipe: {{ $chasis->tipe ?? '-' }})"
                                                 title="Lihat Riwayat Perubahan">
                                             Riwayat
                                         </button>

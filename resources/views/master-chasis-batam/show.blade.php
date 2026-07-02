@@ -36,8 +36,18 @@
                     <span class="text-sm font-bold text-indigo-700">{{ $chasisBatam->kode }}</span>
                 </div>
                 <div>
-                    <span class="text-[10px] uppercase font-bold text-gray-400 block">Plat Nomor / No. Polisi</span>
-                    <span class="text-sm font-semibold text-gray-800">{{ $chasisBatam->plat_nomor ?? '-' }}</span>
+                    <span class="text-[10px] uppercase font-bold text-gray-400 block">Kondisi</span>
+                    <span>
+                        @if($chasisBatam->kondisi === 'baik')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                Baik
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                Rusak
+                            </span>
+                        @endif
+                    </span>
                 </div>
                 <div>
                     <span class="text-[10px] uppercase font-bold text-gray-400 block">Tipe / Ukuran Chasis</span>
@@ -50,26 +60,22 @@
                     </span>
                 </div>
                 <div>
-                    <span class="text-[10px] uppercase font-bold text-gray-400 block">Merek</span>
-                    <span class="text-sm text-gray-800 font-medium">{{ $chasisBatam->merek ?? '-' }}</span>
-                </div>
-                <div>
-                    <span class="text-[10px] uppercase font-bold text-gray-400 block">Tahun Pembuatan</span>
-                    <span class="text-sm text-gray-800">{{ $chasisBatam->tahun_pembuatan ?? '-' }}</span>
-                </div>
-                <div>
-                    <span class="text-[10px] uppercase font-bold text-gray-400 block">Status</span>
+                    <span class="text-[10px] uppercase font-bold text-gray-400 block">Lokasi</span>
                     <span>
-                        @if($chasisBatam->status === 'aktif')
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                Aktif
+                        @if($chasisBatam->lokasi === 'sm')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 uppercase">
+                                SM
                             </span>
                         @else
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                Non-Aktif
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 uppercase">
+                                Relasi
                             </span>
                         @endif
                     </span>
+                </div>
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-gray-400 block">Tanggal Terakhir Pakai</span>
+                    <span class="text-sm text-gray-800 font-semibold">{{ $chasisBatam->tanggal_terakhir_pakai ? $chasisBatam->tanggal_terakhir_pakai->format('d-m-Y') : '-' }}</span>
                 </div>
             </div>
 

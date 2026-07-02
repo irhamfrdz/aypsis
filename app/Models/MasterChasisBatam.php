@@ -25,12 +25,11 @@ class MasterChasisBatam extends Model
      */
     protected $fillable = [
         'kode',
-        'plat_nomor',
         'tipe',
-        'merek',
-        'tahun_pembuatan',
+        'kondisi',
+        'lokasi',
+        'tanggal_terakhir_pakai',
         'catatan',
-        'status',
         'created_by',
         'updated_by',
     ];
@@ -41,7 +40,7 @@ class MasterChasisBatam extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'tahun_pembuatan' => 'integer',
+        'tanggal_terakhir_pakai' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',

@@ -20,17 +20,21 @@ class MasterChasisBatamController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('kode', 'like', "%{$search}%")
-                    ->orWhere('plat_nomor', 'like', "%{$search}%")
                     ->orWhere('tipe', 'like', "%{$search}%")
-                    ->orWhere('merek', 'like', "%{$search}%")
-                    ->orWhere('catatan', 'like', "%{$search}%")
-                    ->orWhere('status', 'like', "%{$search}%");
+                    ->orWhere('kondisi', 'like', "%{$search}%")
+                    ->orWhere('lokasi', 'like', "%{$search}%")
+                    ->orWhere('catatan', 'like', "%{$search}%");
             });
         }
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        // Filter by kondisi
+        if ($request->filled('kondisi')) {
+            $query->where('kondisi', $request->kondisi);
+        }
+
+        // Filter by lokasi
+        if ($request->filled('lokasi')) {
+            $query->where('lokasi', $request->lokasi);
         }
 
         // Filter by tipe
@@ -68,12 +72,11 @@ class MasterChasisBatamController extends Controller
     {
         $validated = $request->validate([
             'kode' => 'required|string|max:50|unique:master_chasis_batams,kode',
-            'plat_nomor' => 'nullable|string|max:50',
             'tipe' => 'nullable|string|max:50',
-            'merek' => 'nullable|string|max:100',
-            'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
+            'kondisi' => 'required|string|in:baik,rusak',
+            'lokasi' => 'required|string|in:sm,relasi',
+            'tanggal_terakhir_pakai' => 'nullable|date',
             'catatan' => 'nullable|string',
-            'status' => 'required|string|in:aktif,nonaktif',
         ]);
 
         $validated['created_by'] = Auth::id();
@@ -107,12 +110,11 @@ class MasterChasisBatamController extends Controller
     {
         $validated = $request->validate([
             'kode' => 'required|string|max:50|unique:master_chasis_batams,kode,'.$chasisBatam->id,
-            'plat_nomor' => 'nullable|string|max:50',
             'tipe' => 'nullable|string|max:50',
-            'merek' => 'nullable|string|max:100',
-            'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
+            'kondisi' => 'required|string|in:baik,rusak',
+            'lokasi' => 'required|string|in:sm,relasi',
+            'tanggal_terakhir_pakai' => 'nullable|date',
             'catatan' => 'nullable|string',
-            'status' => 'required|string|in:aktif,nonaktif',
         ]);
 
         $validated['updated_by'] = Auth::id();

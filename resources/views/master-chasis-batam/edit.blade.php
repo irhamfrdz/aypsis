@@ -41,12 +41,6 @@
                 <input type="text" name="kode" id="kode" value="{{ old('kode', $chasisBatam->kode) }}" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
             </div>
 
-            <!-- Plat Nomor -->
-            <div>
-                <label for="plat_nomor" class="block text-xs font-semibold text-gray-700 mb-1">Plat Nomor / No. Polisi</label>
-                <input type="text" name="plat_nomor" id="plat_nomor" value="{{ old('plat_nomor', $chasisBatam->plat_nomor) }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Tipe Chasis -->
                 <div>
@@ -58,29 +52,34 @@
                     </select>
                 </div>
 
-                <!-- Merek Chasis -->
+                <!-- Kondisi -->
                 <div>
-                    <label for="merek" class="block text-xs font-semibold text-gray-700 mb-1">Merek</label>
-                    <input type="text" name="merek" id="merek" value="{{ old('merek', $chasisBatam->merek) }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <label for="kondisi" class="block text-xs font-semibold text-gray-700 mb-1">
+                        Kondisi <span class="text-red-500">*</span>
+                    </label>
+                    <select name="kondisi" id="kondisi" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="baik" {{ old('kondisi', $chasisBatam->kondisi) == 'baik' ? 'selected' : '' }}>Baik</option>
+                        <option value="rusak" {{ old('kondisi', $chasisBatam->kondisi) == 'rusak' ? 'selected' : '' }}>Rusak</option>
+                    </select>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Tahun Pembuatan -->
+                <!-- Lokasi -->
                 <div>
-                    <label for="tahun_pembuatan" class="block text-xs font-semibold text-gray-700 mb-1">Tahun Pembuatan</label>
-                    <input type="number" name="tahun_pembuatan" id="tahun_pembuatan" value="{{ old('tahun_pembuatan', $chasisBatam->tahun_pembuatan) }}" min="1900" max="{{ date('Y') + 1 }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <label for="lokasi" class="block text-xs font-semibold text-gray-700 mb-1">
+                        Lokasi <span class="text-red-500">*</span>
+                    </label>
+                    <select name="lokasi" id="lokasi" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="sm" {{ old('lokasi', $chasisBatam->lokasi) == 'sm' ? 'selected' : '' }}>SM</option>
+                        <option value="relasi" {{ old('lokasi', $chasisBatam->lokasi) == 'relasi' ? 'selected' : '' }}>Relasi</option>
+                    </select>
                 </div>
 
-                <!-- Status -->
+                <!-- Tanggal Terakhir Pakai -->
                 <div>
-                    <label for="status" class="block text-xs font-semibold text-gray-700 mb-1">
-                        Status <span class="text-red-500">*</span>
-                    </label>
-                    <select name="status" id="status" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="aktif" {{ old('status', $chasisBatam->status) == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                        <option value="nonaktif" {{ old('status', $chasisBatam->status) == 'nonaktif' ? 'selected' : '' }}>Non-Aktif</option>
-                    </select>
+                    <label for="tanggal_terakhir_pakai" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Terakhir Pakai</label>
+                    <input type="date" name="tanggal_terakhir_pakai" id="tanggal_terakhir_pakai" value="{{ old('tanggal_terakhir_pakai', $chasisBatam->tanggal_terakhir_pakai ? $chasisBatam->tanggal_terakhir_pakai->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
             </div>
 
