@@ -10,12 +10,13 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class ReportOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithEvents, WithHeadings
 {
     protected $data;
+
     protected $startDate;
+
     protected $endDate;
 
     public function __construct($data, $startDate, $endDate)
@@ -80,7 +81,7 @@ class ReportOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCol
                 $sheet = $event->sheet->getDelegate();
 
                 $sheet->insertNewRowBefore(1, 3);
-                $sheet->setCellValue('A1', 'Ongkos Truck per tgl ' . $this->startDate->format('d/m/Y') . ' - ' . $this->endDate->format('d/m/Y'));
+                $sheet->setCellValue('A1', 'Ongkos Truck per tgl '.$this->startDate->format('d/m/Y').' - '.$this->endDate->format('d/m/Y'));
 
                 $lastCol = 'L';
                 $headerRow = 4;
@@ -107,7 +108,7 @@ class ReportOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCol
                 ]);
 
                 $lastDataRow = $sheet->getHighestRow();
-                
+
                 // Style data borders
                 $sheet->getStyle("A{$headerRow}:{$lastCol}{$lastDataRow}")->applyFromArray([
                     'borders' => [

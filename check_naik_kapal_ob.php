@@ -1,4 +1,5 @@
 <?php
+
 require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -18,25 +19,25 @@ $noNaikKapal = 0;
 foreach ($updatedProspeks as $prospek) {
     // Cari data naik kapal terkait
     $naikKapals = \App\Models\NaikKapal::where('prospek_id', $prospek->id);
-    
-    if (!empty($prospek->nomor_kontainer) && !empty($prospek->no_voyage)) {
+
+    if (! empty($prospek->nomor_kontainer) && ! empty($prospek->no_voyage)) {
         $naikKapals = $naikKapals->orWhere(function ($q) use ($prospek) {
             $q->where('nomor_kontainer', $prospek->nomor_kontainer)
-              ->where('no_voyage', $prospek->no_voyage);
+                ->where('no_voyage', $prospek->no_voyage);
         });
     }
-    
+
     $naikKapals = $naikKapals->get();
-        
+
     if ($naikKapals->count() > 0) {
         $withNaikKapal++;
         $isAnyOb = false;
-        foreach($naikKapals as $nk) {
+        foreach ($naikKapals as $nk) {
             if ($nk->sudah_ob) {
                 $isAnyOb = true;
             }
         }
-        
+
         if ($isAnyOb) {
             $naikKapalSudahOb++;
         } else {

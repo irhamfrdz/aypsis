@@ -1,4 +1,5 @@
 <?php
+
 require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -13,19 +14,19 @@ $obController = app(\App\Http\Controllers\ObController::class);
 $naikKapals = \App\Models\NaikKapal::where('no_voyage', $noVoyage)->where('sudah_ob', true)->get();
 
 $createdCount = 0;
-foreach($naikKapals as $nk) {
+foreach ($naikKapals as $nk) {
     // Check if manifest already exists
     $manifestExists = \App\Models\Manifest::where('no_voyage', $noVoyage)
         ->where('nomor_kontainer', $nk->nomor_kontainer)
         ->exists();
-        
-    if(!$manifestExists) {
-        echo "Creating manifest for container: " . $nk->nomor_kontainer . "\n";
+
+    if (! $manifestExists) {
+        echo 'Creating manifest for container: '.$nk->nomor_kontainer."\n";
         try {
             $obController->createManifestForNaikKapal($nk, $user);
             $createdCount++;
         } catch (\Exception $e) {
-            echo "Error for " . $nk->nomor_kontainer . ": " . $e->getMessage() . "\n";
+            echo 'Error for '.$nk->nomor_kontainer.': '.$e->getMessage()."\n";
         }
     }
 }

@@ -2514,8 +2514,8 @@ class BlController extends Controller
                 $query->where('nama_kapal', $namaKapal)
                     ->orWhere('nama_kapal', 'like', '%'.$kapalClean.'%');
             })
-            ->where('no_voyage', $noVoyage)
-            ->update(['estimasi_tiba' => $estimasiTibaInput]);
+                ->where('no_voyage', $noVoyage)
+                ->update(['estimasi_tiba' => $estimasiTibaInput]);
         }
 
         $bls = \App\Models\Manifest::where(function ($query) use ($namaKapal, $kapalClean) {
@@ -2841,8 +2841,8 @@ class BlController extends Controller
                 $query->where('nama_kapal', $namaKapal)
                     ->orWhere('nama_kapal', 'like', '%'.$kapalClean.'%');
             })
-            ->where('no_voyage', $noVoyage)
-            ->update(['estimasi_tiba' => $estimasiTibaInput]);
+                ->where('no_voyage', $noVoyage)
+                ->update(['estimasi_tiba' => $estimasiTibaInput]);
         }
 
         $bls = \App\Models\Manifest::where(function ($query) use ($namaKapal, $kapalClean) {

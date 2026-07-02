@@ -1080,6 +1080,15 @@
         </div>
         @endif
 
+        {{-- Master Chasis Batam --}}
+        @if($user && $user->can('master-chasis-batam-view'))
+        <div class="mx-2 mb-3">
+            <a href="{{ route('master.chasis-batam.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.chasis-batam.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Master Chasis Batam</span>
+            </a>
+        </div>
+        @endif
+
 
         {{-- Master Alat Berat --}}
         @if($user && $user->can('master-alat-berat-view'))

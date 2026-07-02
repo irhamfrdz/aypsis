@@ -18,6 +18,7 @@ use App\Http\Controllers\KontainerController;
 use App\Http\Controllers\KontainerImportController;
 use App\Http\Controllers\Master\KlasifikasiBiayaController;
 use App\Http\Controllers\MasterBankController;
+use App\Http\Controllers\MasterChasisBatamController;
 use App\Http\Controllers\MasterGudangAmprahanController;
 use App\Http\Controllers\MasterItemKwitansiController;
 use App\Http\Controllers\MasterKegiatanController;
@@ -814,6 +815,20 @@ Route::middleware([
             ->only(['edit', 'update']);
         Route::resource('mobil', MobilController::class)
             ->middleware('can:master-mobil-delete')
+            ->only(['destroy']);
+
+        // Master chasis batam routes
+        Route::resource('chasis-batam', MasterChasisBatamController::class)
+            ->middleware('can:master-chasis-batam-create')
+            ->only(['create', 'store']);
+        Route::resource('chasis-batam', MasterChasisBatamController::class)
+            ->middleware('can:master-chasis-batam-view')
+            ->only(['index', 'show']);
+        Route::resource('chasis-batam', MasterChasisBatamController::class)
+            ->middleware('can:master-chasis-batam-update')
+            ->only(['edit', 'update']);
+        Route::resource('chasis-batam', MasterChasisBatamController::class)
+            ->middleware('can:master-chasis-batam-delete')
             ->only(['destroy']);
 
         // Ongkos Truck routes

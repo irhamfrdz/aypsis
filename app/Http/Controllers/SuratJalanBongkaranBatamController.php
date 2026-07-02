@@ -739,13 +739,15 @@ class SuratJalanBongkaranBatamController extends Controller
                     $uangJalanNominal = 0;
                     $finalRing = null;
 
-                    if (!empty($tujuanPengambilan)) {
+                    if (! empty($tujuanPengambilan)) {
                         if ($lokasi === 'batam') {
                             // Find Pricelist Uang Jalan Batam
                             $pricelistItems = \App\Models\PricelistUangJalanBatam::activeBbm()->get();
                             $matchedItem = null;
                             foreach ($pricelistItems as $item) {
-                                if (!$item->wilayah) continue;
+                                if (! $item->wilayah) {
+                                    continue;
+                                }
                                 $subWilayahs = array_map('trim', explode(',', $item->wilayah));
                                 if (in_array($tujuanPengambilan, $subWilayahs)) {
                                     $matchedItem = $item;
@@ -754,17 +756,17 @@ class SuratJalanBongkaranBatamController extends Controller
                             }
 
                             if ($matchedItem) {
-                                $finalRing = (string)$matchedItem->ring;
+                                $finalRing = (string) $matchedItem->ring;
                                 // Determine size (default to 20 if empty)
                                 $is20ft = true;
-                                if (!empty($finalSize)) {
+                                if (! empty($finalSize)) {
                                     $normSize = strtolower(str_replace(' ', '', $finalSize));
                                     if (strpos($normSize, '40') !== false) {
                                         $is20ft = false;
                                     }
                                 }
                                 $isFull = (strtolower($f_e) === 'full');
-                                
+
                                 if ($is20ft) {
                                     $uangJalanNominal = $isFull ? ($matchedItem->tarif_20ft_full ?? 0) : ($matchedItem->tarif_20ft_empty ?? 0);
                                 } else {
@@ -776,7 +778,7 @@ class SuratJalanBongkaranBatamController extends Controller
                             $tujuanUtama = \App\Models\TujuanKegiatanUtama::where('ke', $tujuanPengambilan)->first();
                             if ($tujuanUtama) {
                                 $is20ft = true;
-                                if (!empty($finalSize)) {
+                                if (! empty($finalSize)) {
                                     $normSize = strtolower(str_replace(' ', '', $finalSize));
                                     if (strpos($normSize, '40') !== false) {
                                         $is20ft = false;

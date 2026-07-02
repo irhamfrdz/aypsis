@@ -1061,6 +1061,7 @@ class ReportOngkosTrukController extends Controller
             if ($item['tanggal'] instanceof \Carbon\Carbon) {
                 $item['tanggal'] = $item['tanggal']->format('d M Y');
             }
+
             return $item;
         });
 

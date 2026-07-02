@@ -30,22 +30,24 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                 $nama_supir = $sj->supir ?: ($sj->supir2 ?: '-');
                 $no_plat = $sj->no_plat ?? '-';
                 $no_surat_jalan = $sj->no_surat_jalan;
-                
+
                 // Kegiatan, Muat, Tujuan, PT
                 $kegiatan = 'Uang Jalan Muat';
                 $muatan = $sj->jenis_barang ?? '-';
                 $tujuan = $sj->tujuan_pengambilan ?? '-';
                 $pt = $sj->pengirim ?? $sj->tujuan_pengiriman ?? '-';
-                
+
                 // Cari NIK
                 $nik_supir = '-';
                 if ($sj->supir) {
                     $k = \App\Models\Karyawan::where('nama_panggilan', $sj->supir)->orWhere('nama_lengkap', $sj->supir)->first();
-                    if ($k) $nik_supir = $k->nik;
+                    if ($k) {
+                        $nik_supir = $k->nik;
+                    }
                 }
-                
+
                 $keterangan_lengkap = 'kegiatan muat barang '.$muatan.' ke '.$tujuan.' '.$pt;
-                
+
                 // Ongkos Truk
                 $ongkos_truk = 0;
                 if ($sj->tujuanPengambilanRelation) {
@@ -88,7 +90,9 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                 $nik_supir = '-';
                 if ($sjb->supir) {
                     $k = \App\Models\Karyawan::where('nama_panggilan', $sjb->supir)->orWhere('nama_lengkap', $sjb->supir)->first();
-                    if ($k) $nik_supir = $k->nik;
+                    if ($k) {
+                        $nik_supir = $k->nik;
+                    }
                 }
 
                 $keterangan_lengkap = 'kegiatan bongkar barang '.$muatan.' ke '.$tujuan.' '.$pt;
@@ -186,8 +190,8 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
 
                 $sheet->insertNewRowBefore(1, 4);
                 $sheet->setCellValue('A1', 'PRANOTA ONGKOS TRUK');
-                $sheet->setCellValue('A2', 'Nomor: ' . $this->pranota->no_pranota);
-                $sheet->setCellValue('A3', 'Tanggal: ' . $this->pranota->tanggal_pranota->format('d/m/Y'));
+                $sheet->setCellValue('A2', 'Nomor: '.$this->pranota->no_pranota);
+                $sheet->setCellValue('A3', 'Tanggal: '.$this->pranota->tanggal_pranota->format('d/m/Y'));
 
                 $lastCol = 'M';
                 $headerRow = 5;
@@ -196,7 +200,7 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                 $sheet->mergeCells("A1:{$lastCol}1");
                 $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-                
+
                 $sheet->getStyle('A2:A3')->getFont()->setBold(true);
 
                 // Style Header
@@ -224,7 +228,7 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                 $sheet->setCellValue("M{$currentRow}", "=SUM(M{$dataStartRow}:M{$lastDataRow})");
                 $sheet->getStyle("K{$currentRow}:M{$currentRow}")->getFont()->setBold(true);
                 $currentRow++;
-                
+
                 // Adjustment
                 if ($this->pranota->adjustment != 0) {
                     $sheet->setCellValue("K{$currentRow}", 'Adjustment');
@@ -246,7 +250,7 @@ class PranotaOngkosTrukExport2 implements FromCollection, ShouldAutoSize, WithCo
                         'startColor' => ['rgb' => 'E2EFDA'],
                     ],
                 ]);
-                
+
                 // Style data borders
                 $sheet->getStyle("A{$headerRow}:{$lastCol}{$currentRow}")->applyFromArray([
                     'borders' => [

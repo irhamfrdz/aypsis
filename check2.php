@@ -1,15 +1,16 @@
 <?php
-require "vendor/autoload.php";
-$app = require_once "bootstrap/app.php";
+
+require 'vendor/autoload.php';
+$app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-$prospeks = App\Models\Prospek::where("status", "sudah_muat")
-    ->whereHas("naikKapal", function($q) {
-        $q->where("sudah_ob", false)
-          ->orWhereNull("sudah_ob");
+$prospeks = App\Models\Prospek::where('status', 'sudah_muat')
+    ->whereHas('naikKapal', function ($q) {
+        $q->where('sudah_ob', false)
+            ->orWhereNull('sudah_ob');
     })
-    ->with("manifests", "bls", "naikKapal")
+    ->with('manifests', 'bls', 'naikKapal')
     ->get();
 
 $result = [];
@@ -18,20 +19,22 @@ foreach ($prospeks as $p) {
     $hasBl = count($p->bls) > 0;
     $isSudahOb = false;
     foreach ($p->naikKapal as $nk) {
-        if ($nk->sudah_ob) $isSudahOb = true;
+        if ($nk->sudah_ob) {
+            $isSudahOb = true;
+        }
     }
-    
-    if (!$hasManifest && !$hasBl && !$isSudahOb) {
+
+    if (! $hasManifest && ! $hasBl && ! $isSudahOb) {
         $result[] = [
-            "id" => $p->id,
-            "no_surat_jalan" => $p->no_surat_jalan,
-            "naik_kapal" => $p->naikKapal->map(function($nk) {
+            'id' => $p->id,
+            'no_surat_jalan' => $p->no_surat_jalan,
+            'naik_kapal' => $p->naikKapal->map(function ($nk) {
                 return [
-                    "id" => $nk->id,
-                    "no_voyage" => $nk->no_voyage,
-                    "nomor_kontainer" => $nk->nomor_kontainer
+                    'id' => $nk->id,
+                    'no_voyage' => $nk->no_voyage,
+                    'nomor_kontainer' => $nk->nomor_kontainer,
                 ];
-            })
+            }),
         ];
     }
 }
