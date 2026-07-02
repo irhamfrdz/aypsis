@@ -178,7 +178,7 @@ class CoaTransactionService
                         $pembayaran->tanggal_pembayaran,
                         $pembayaran->nomor_pembayaran,
                         'pembayaran_biaya_kapal',
-                        "Penerimaan (Refund/Koreksi) {$biaya->nomor_invoice} - {$biaya->nama_kapal} ({$klasifikasi})"
+                        "Penerimaan (Refund/Koreksi) {$biaya->nomor_invoice} - {$biaya->display_nama_kapal} ({$klasifikasi})"
                     );
                 } else {
                     // DEBIT expense (increase), KREDIT bank (decrease) - normal payment
@@ -188,7 +188,7 @@ class CoaTransactionService
                         $pembayaran->tanggal_pembayaran,
                         $pembayaran->nomor_pembayaran,
                         'pembayaran_biaya_kapal',
-                        "Pembayaran {$biaya->nomor_invoice} - {$biaya->nama_kapal} ({$klasifikasi})"
+                        "Pembayaran {$biaya->nomor_invoice} - {$biaya->display_nama_kapal} ({$klasifikasi})"
                     );
                 }
             }
