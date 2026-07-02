@@ -367,6 +367,8 @@
     });
 
     // Print SPKBM functions
+    let spkbmVoyageData = [];
+
     function openPrintSpkbmModal(id, name) {
         document.getElementById('printSpkbmKapalName').textContent = name;
         const form = document.getElementById('printSpkbmForm');
@@ -374,10 +376,88 @@
         
         // Reset form
         form.reset();
+        spkbmVoyageData = [];
         
+        // Reset and disable voyage select while loading
+        const voyageSelect = document.getElementById('voyage');
+        voyageSelect.innerHTML = '<option value="">Memuat voyage...</option>';
+        voyageSelect.disabled = true;
+
         const modal = document.getElementById('printSpkbmModal');
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+
+        // Fetch voyages from manifests
+        fetch('/master-kapal/' + id + '/voyages', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            spkbmVoyageData = data;
+            voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
+            data.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.no_voyage;
+                opt.textContent = v.no_voyage + ' (' + (v.total_kontainer || 0) + ' kontainer)';
+                voyageSelect.appendChild(opt);
+            });
+            // Add manual option at end
+            const manualOpt = document.createElement('option');
+            manualOpt.value = '__manual__';
+            manualOpt.textContent = '-- Input Manual --';
+            voyageSelect.appendChild(manualOpt);
+            voyageSelect.disabled = false;
+        })
+        .catch(() => {
+            voyageSelect.innerHTML = '<option value="">Gagal memuat voyage</option>';
+            voyageSelect.disabled = false;
+        });
+    }
+
+    function onVoyageChange() {
+        const voyageSelect = document.getElementById('voyage');
+        const voyageManualInput = document.getElementById('voyage_manual');
+        const selectedVal = voyageSelect.value;
+
+        if (selectedVal === '__manual__') {
+            voyageManualInput.classList.remove('hidden');
+            voyageManualInput.required = true;
+            voyageManualInput.focus();
+            return;
+        } else {
+            voyageManualInput.classList.add('hidden');
+            voyageManualInput.required = false;
+            voyageManualInput.value = '';
+        }
+
+        if (!selectedVal) return;
+
+        const voyage = spkbmVoyageData.find(v => v.no_voyage === selectedVal);
+        if (!voyage) return;
+
+        // Auto-fill fields
+        const tujuanParts = [voyage.pelabuhan_asal, voyage.pelabuhan_tujuan].filter(Boolean);
+        if (tujuanParts.length > 0) {
+            document.getElementById('tujuan').value = tujuanParts.join(' - ');
+        }
+
+        if (voyage.tanggal_berangkat) {
+            try {
+                const d = new Date(voyage.tanggal_berangkat);
+                const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+                const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                const formatted = days[d.getDay()] + ', ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+                document.getElementById('rencana_tiba').value = formatted;
+                document.getElementById('rencana_sandar').value = formatted;
+            } catch(e) {}
+        }
+
+        if (voyage.summary) {
+            document.getElementById('rencana_bongkar').value = voyage.summary;
+        }
     }
 
     function closePrintSpkbmModal() {
@@ -450,9 +530,13 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label for="voyage" class="block text-sm font-medium text-gray-700">Voyage <span class="text-red-500">*</span></label>
-                    <input type="text" name="voyage" id="voyage" required
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                           placeholder="Contoh: 08/JP">
+                    <select name="voyage" id="voyage" required onchange="onVoyageChange()"
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        <option value="">-- Pilih Voyage --</option>
+                    </select>
+                    <input type="text" name="voyage_manual" id="voyage_manual"
+                           class="mt-2 hidden block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                           placeholder="Ketik voyage manual...">
                 </div>
                 <div>
                     <label for="tujuan" class="block text-sm font-medium text-gray-700">Tujuan <span class="text-red-500">*</span></label>

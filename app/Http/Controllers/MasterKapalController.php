@@ -585,12 +585,19 @@ class MasterKapalController extends Controller
             'hal' => 'required|string|max:255',
             'ditujukan_kepada' => 'required|string',
             'voyage' => 'required|string|max:255',
+            'voyage_manual' => 'nullable|string|max:255',
             'rencana_tiba' => 'required|string|max:255',
             'rencana_sandar' => 'required|string|max:255',
             'rencana_bongkar' => 'required|string',
             'rencana_muat' => 'required|string',
             'tujuan' => 'required|string|max:255',
         ]);
+
+        // If user chose manual input, use voyage_manual value
+        if ($validated['voyage'] === '__manual__' && ! empty($validated['voyage_manual'])) {
+            $validated['voyage'] = $validated['voyage_manual'];
+        }
+        unset($validated['voyage_manual']);
 
         // Simpan atau update data SPKBM ke database
         \App\Models\KapalSpkbm::updateOrCreate(
@@ -613,5 +620,51 @@ class MasterKapalController extends Controller
         $filename = 'SPKBM_'.str_replace('/', '_', $validated['nomor_surat']).'.pdf';
 
         return $pdf->stream($filename);
+    }
+
+    /**
+     * Get voyages from manifests for a given kapal (AJAX API).
+     */
+    public function getVoyages(MasterKapal $masterKapal)
+    {
+        $namaKapal = $masterKapal->nama_kapal;
+        $kapalClean = strtolower(str_replace('.', '', $namaKapal));
+
+        $manifests = \App\Models\Manifest::where(function ($q) use ($namaKapal, $kapalClean) {
+            $q->where('nama_kapal', $namaKapal)
+                ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) LIKE ?", ["%{$kapalClean}%"]);
+        })
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->select('no_voyage', 'pelabuhan_tujuan', 'pelabuhan_asal', 'pelabuhan_muat', 'pelabuhan_bongkar', 'tanggal_berangkat', 'size_kontainer', 'tipe_kontainer', 'nama_barang')
+            ->orderBy('no_voyage', 'desc')
+            ->get();
+
+        // Group and aggregate by voyage
+        $grouped = $manifests->groupBy('no_voyage')->map(function ($items, $voyage) {
+            $first = $items->first();
+
+            // Build rencana bongkar / muat summary
+            $sizeCounts = $items->groupBy('size_kontainer')->map(function ($sizeGroup) {
+                return $sizeGroup->count();
+            });
+
+            $summary = $sizeCounts->map(function ($count, $size) {
+                return "- {$count} Box Container {$size}";
+            })->values()->implode("\n");
+
+            return [
+                'no_voyage' => $voyage,
+                'pelabuhan_tujuan' => $first->pelabuhan_tujuan,
+                'pelabuhan_asal' => $first->pelabuhan_asal,
+                'pelabuhan_muat' => $first->pelabuhan_muat,
+                'pelabuhan_bongkar' => $first->pelabuhan_bongkar,
+                'tanggal_berangkat' => $first->tanggal_berangkat ? $first->tanggal_berangkat->format('Y-m-d') : null,
+                'total_kontainer' => $items->count(),
+                'summary' => $summary,
+            ];
+        })->values();
+
+        return response()->json($grouped);
     }
 }

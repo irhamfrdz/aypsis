@@ -1785,6 +1785,10 @@ Route::middleware([
             ->name('master-kapal.print-spkbm')
             ->middleware('can:master-kapal.view');
 
+        Route::get('master-kapal/{master_kapal}/voyages', [\App\Http\Controllers\MasterKapalController::class, 'getVoyages'])
+            ->name('master-kapal.voyages')
+            ->middleware('can:master-kapal.view');
+
         // 🚢 Master Kapal (Ship Master) Management with permissions
         Route::resource('master-kapal', \App\Http\Controllers\MasterKapalController::class)
             ->names('master-kapal')
