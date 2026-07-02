@@ -444,6 +444,14 @@
             document.getElementById('tujuan').value = tujuanParts.join(' - ');
         }
 
+        // Auto-fill Ditujukan Kepada based on voyage code (JP = Tanjung Pinang, JB = Batam)
+        const voyageUpper = selectedVal.toUpperCase();
+        if (voyageUpper.includes('JP')) {
+            document.getElementById('ditujukan_kepada').value = 'Branch Manager\nPT. Pelindo Multi Terminal\nBranch Tanjung Pinang';
+        } else if (voyageUpper.includes('JB')) {
+            document.getElementById('ditujukan_kepada').value = 'Branch Manager\nPT. Pelindo Multi Terminal\nBranch Batam';
+        }
+
         if (voyage.tanggal_berangkat) {
             try {
                 const d = new Date(voyage.tanggal_berangkat);
