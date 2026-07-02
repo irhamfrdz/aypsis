@@ -895,6 +895,7 @@
                             <option value="jakarta">Jakarta</option>
                         </select>
                     </div>
+                </div>
 
                 <!-- Guide -->
                 <div class="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
@@ -2126,7 +2127,20 @@ function openEditModal(suratJalanId) {
         return;
     }
     modal.classList.remove('hidden');
-    console.log('Modal element hidden class removed. Style display status:', modal.style.display);
+    console.log('Modal element hidden class removed. Style display status:', window.getComputedStyle(modal).display);
+    console.log('modalEditSuratJalan parent tag:', modal.parentElement ? modal.parentElement.tagName : 'none');
+    console.log('modalEditSuratJalan parent ID:', modal.parentElement ? modal.parentElement.id : 'none');
+    console.log('modalEditSuratJalan parent classes:', modal.parentElement ? modal.parentElement.className : 'none');
+    
+    // Check all ancestors to see if any are hidden
+    let parent = modal.parentElement;
+    while (parent) {
+        const style = window.getComputedStyle(parent);
+        if (style.display === 'none') {
+            console.warn('HIDDEN ANCESTOR DETECTED:', parent.tagName, 'ID:', parent.id, 'Classes:', parent.className);
+        }
+        parent = parent.parentElement;
+    }
     
     const fetchUrl = `{{ route('api.surat-jalan-bongkaran-batam.show', ['id' => ':id'], false) }}`.replace(':id', suratJalanId);
     console.log('Starting fetch request to URL:', fetchUrl);
@@ -2145,141 +2159,148 @@ function openEditModal(suratJalanId) {
             return response.json();
         })
         .then(data => {
-            // Populate hidden ID
-            document.getElementById('edit_modal_surat_jalan_id').value = suratJalanId;
-            document.getElementById('edit_modal_manifest_id').value = data.manifest_id || '';
-            document.getElementById('edit_modal_bl_id').value = data.bl_id || '';
-            
-            // Populate nama kapal and no voyage from surat jalan data
-            if (data.nama_kapal) {
-                document.getElementById('edit_modal_nama_kapal').value = data.nama_kapal;
-            }
-            if (data.no_voyage) {
-                document.getElementById('edit_modal_no_voyage').value = data.no_voyage;
-            }
-            
-            // Set form action URL
-            document.getElementById('formEditSuratJalan').action = `/surat-jalan-bongkaran-batam/${suratJalanId}`;
-            
-            // Populate form fields
-            document.getElementById('edit_modal_nomor_surat_jalan').value = data.nomor_surat_jalan || '';
-            document.getElementById('edit_modal_lokasi').value = data.lokasi || '';
-            document.getElementById('edit_modal_tanggal_surat_jalan').value = data.tanggal_surat_jalan || '';
-            document.getElementById('edit_modal_ring').value = data.ring || '';
-            
-            // Populate term with robust matching
-            const editTermSelect = document.getElementById('edit_modal_term');
-            const editTermToMatch = (data.term || '').toLowerCase();
-            const editTermNamaToMatch = (data.term_nama || '').toLowerCase();
-            
-            editTermSelect.value = data.term || '';
-            if (editTermSelect.value === '') {
-                const options = editTermSelect.options;
-                for (let i = 0; i < options.length; i++) {
-                    const optValue = options[i].value.toLowerCase();
-                    const optText = options[i].text.toLowerCase();
-                    if (optValue === editTermToMatch || 
-                        optText === editTermToMatch || 
-                        optText.includes(editTermToMatch) ||
-                        (editTermNamaToMatch && optText.includes(editTermNamaToMatch))) {
-                        editTermSelect.value = options[i].value;
-                        break;
+            console.log('openEditModal data received:', data);
+            try {
+                // Populate hidden ID
+                document.getElementById('edit_modal_surat_jalan_id').value = suratJalanId;
+                document.getElementById('edit_modal_manifest_id').value = data.manifest_id || '';
+                document.getElementById('edit_modal_bl_id').value = data.bl_id || '';
+                
+                // Populate nama kapal and no voyage from surat jalan data
+                if (data.nama_kapal) {
+                    document.getElementById('edit_modal_nama_kapal').value = data.nama_kapal;
+                }
+                if (data.no_voyage) {
+                    document.getElementById('edit_modal_no_voyage').value = data.no_voyage;
+                }
+                
+                // Set form action URL
+                document.getElementById('formEditSuratJalan').action = `/surat-jalan-bongkaran-batam/${suratJalanId}`;
+                
+                // Populate form fields
+                document.getElementById('edit_modal_nomor_surat_jalan').value = data.nomor_surat_jalan || '';
+                document.getElementById('edit_modal_lokasi').value = data.lokasi || '';
+                document.getElementById('edit_modal_tanggal_surat_jalan').value = data.tanggal_surat_jalan || '';
+                document.getElementById('edit_modal_ring').value = data.ring || '';
+                
+                // Populate term with robust matching
+                const editTermSelect = document.getElementById('edit_modal_term');
+                const editTermToMatch = (data.term || '').toLowerCase();
+                const editTermNamaToMatch = (data.term_nama || '').toLowerCase();
+                
+                editTermSelect.value = data.term || '';
+                if (editTermSelect.value === '') {
+                    const options = editTermSelect.options;
+                    for (let i = 0; i < options.length; i++) {
+                        const optValue = options[i].value.toLowerCase();
+                        const optText = options[i].text.toLowerCase();
+                        if (optValue === editTermToMatch || 
+                            optText === editTermToMatch || 
+                            optText.includes(editTermToMatch) ||
+                            (editTermNamaToMatch && optText.includes(editTermNamaToMatch))) {
+                            editTermSelect.value = options[i].value;
+                            break;
+                        }
                     }
                 }
-            }
-            document.getElementById('edit_modal_aktifitas').value = data.aktifitas || '';
-            document.getElementById('edit_modal_pengirim').value = data.pengirim || '';
-            document.getElementById('edit_modal_penerima').value = data.penerima || '';
-            document.getElementById('edit_modal_jenis_barang').value = data.jenis_barang || '';
-            document.getElementById('edit_modal_tujuan_alamat').value = data.tujuan_alamat || '';
-            document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan || '';
-            document.getElementById('edit_modal_jenis_pengiriman').value = data.jenis_pengiriman || '';
-            document.getElementById('edit_modal_tanggal_ambil_barang').value = data.tanggal_ambil_barang || '';
-            
-            document.getElementById('edit_modal_supir').value = data.supir || '';
-            document.getElementById('edit_modal_no_plat').value = data.no_plat || '';
-            document.getElementById('edit_modal_kenek').value = data.kenek || '';
-            document.getElementById('edit_modal_krani').value = data.krani || '';
-            
-            document.getElementById('edit_modal_no_kontainer').value = data.no_kontainer || '';
-            document.getElementById('edit_modal_no_seal').value = data.no_seal || '';
-            document.getElementById('edit_modal_no_bl').value = data.no_bl || '';
-            // Populate size with normalization
-            const editSizeSelect = document.getElementById('edit_modal_size');
-            const editSizeVal = data.size || '';
-            editSizeSelect.value = editSizeVal;
-            if (editSizeSelect.value === '' && editSizeVal !== '') {
-                const normSize = editSizeVal.toLowerCase().replace(/\s/g, '');
-                if (normSize.includes('20')) editSizeSelect.value = '20ft';
-                else if (normSize.includes('40')) editSizeSelect.value = '40ft';
-            }
-            
-            // Set radio buttons
-            // Set radio buttons safely
-            if (data.karton) {
-                const el = document.querySelector(`#modalEditSuratJalan input[name="karton"][value="${data.karton}"]`);
-                if (el) el.checked = true;
-            }
-            if (data.plastik) {
-                const el = document.querySelector(`#modalEditSuratJalan input[name="plastik"][value="${data.plastik}"]`);
-                if (el) el.checked = true;
-            }
-            if (data.terpal) {
-                const el = document.querySelector(`#modalEditSuratJalan input[name="terpal"][value="${data.terpal}"]`);
-                if (el) el.checked = true;
-            }
-            if (data.rit) {
-                const el = document.querySelector(`#modalEditSuratJalan input[name="rit"][value="${data.rit}"]`);
-                if (el) el.checked = true;
-            }
-            if (data.uang_jalan_type) {
-                const el = document.querySelector(`#modalEditSuratJalan input[name="uang_jalan_type"][value="${data.uang_jalan_type.toLowerCase()}"]`) ||
-                           document.querySelector(`#modalEditSuratJalan input[name="uang_jalan_type"][value="${data.uang_jalan_type}"]`);
-                if (el) el.checked = true;
-            }
-            if (data.f_e) {
-                const feRadio = document.querySelector(`#modalEditSuratJalan input[name="f_e"][value="${data.f_e}"]`);
-                if (feRadio) feRadio.checked = true;
-            }
-            
-            // Convert to integer to remove decimal places
-            const nominalValue = data.uang_jalan_nominal ? Math.round(parseFloat(data.uang_jalan_nominal)) : '';
-            document.getElementById('edit_modal_uang_jalan_nominal').value = nominalValue;
-            
-            const editTanpaUangJalanCheckbox = document.getElementById('edit_modal_tanpa_uang_jalan');
-            if (editTanpaUangJalanCheckbox) {
-                editTanpaUangJalanCheckbox.checked = (data.tanpa_uang_jalan == 1);
-                const uangJalanInput = document.getElementById('edit_modal_uang_jalan_nominal');
-                if (editTanpaUangJalanCheckbox.checked) {
-                    uangJalanInput.readOnly = true;
-                    uangJalanInput.classList.add('bg-gray-100', 'text-gray-500');
-                } else {
-                    uangJalanInput.readOnly = false;
-                    uangJalanInput.classList.remove('bg-gray-100', 'text-gray-500');
+                document.getElementById('edit_modal_aktifitas').value = data.aktifitas || '';
+                document.getElementById('edit_modal_pengirim').value = data.pengirim || '';
+                document.getElementById('edit_modal_penerima').value = data.penerima || '';
+                document.getElementById('edit_modal_jenis_barang').value = data.jenis_barang || '';
+                document.getElementById('edit_modal_tujuan_alamat').value = data.tujuan_alamat || '';
+                document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan || '';
+                document.getElementById('edit_modal_jenis_pengiriman').value = data.jenis_pengiriman || '';
+                document.getElementById('edit_modal_tanggal_ambil_barang').value = data.tanggal_ambil_barang || '';
+                
+                document.getElementById('edit_modal_supir').value = data.supir || '';
+                document.getElementById('edit_modal_no_plat').value = data.no_plat || '';
+                document.getElementById('edit_modal_kenek').value = data.kenek || '';
+                document.getElementById('edit_modal_krani').value = data.krani || '';
+                
+                document.getElementById('edit_modal_no_kontainer').value = data.no_kontainer || '';
+                document.getElementById('edit_modal_no_seal').value = data.no_seal || '';
+                document.getElementById('edit_modal_no_bl').value = data.no_bl || '';
+                // Populate size with normalization
+                const editSizeSelect = document.getElementById('edit_modal_size');
+                const editSizeVal = data.size || '';
+                editSizeSelect.value = editSizeVal;
+                if (editSizeSelect.value === '' && editSizeVal !== '') {
+                    const normSize = editSizeVal.toLowerCase().replace(/\s/g, '');
+                    if (normSize.includes('20')) editSizeSelect.value = '20ft';
+                    else if (normSize.includes('40')) editSizeSelect.value = '40ft';
                 }
-            }
-            
-            // Update destinations based on fetched lokasi
-            updateDestinationOptions('edit');
-            // Restore selection after update because updateDestinationOptions clears it
-            if (data.tujuan_pengambilan) {
-                document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan;
-            }
-
-            // Add listener for lokasi change in edit modal
-            const editLokasiSelect = document.getElementById('edit_modal_lokasi');
-            if (editLokasiSelect) {
-                editLokasiSelect.onchange = () => {
-                    updateDestinationOptions('edit');
-                    if (editLokasiSelect.value === 'batam') {
-                        document.getElementById('edit_modal_jenis_barang').value = data.nama_barang_manifest || '';
+                
+                // Set radio buttons
+                // Set radio buttons safely
+                if (data.karton) {
+                    const el = document.querySelector(`#modalEditSuratJalan input[name="karton"][value="${data.karton}"]`);
+                    if (el) el.checked = true;
+                }
+                if (data.plastik) {
+                    const el = document.querySelector(`#modalEditSuratJalan input[name="plastik"][value="${data.plastik}"]`);
+                    if (el) el.checked = true;
+                }
+                if (data.terpal) {
+                    const el = document.querySelector(`#modalEditSuratJalan input[name="terpal"][value="${data.terpal}"]`);
+                    if (el) el.checked = true;
+                }
+                if (data.rit) {
+                    const el = document.querySelector(`#modalEditSuratJalan input[name="rit"][value="${data.rit}"]`);
+                    if (el) el.checked = true;
+                }
+                if (data.uang_jalan_type) {
+                    const el = document.querySelector(`#modalEditSuratJalan input[name="uang_jalan_type"][value="${data.uang_jalan_type.toLowerCase()}"]`) ||
+                               document.querySelector(`#modalEditSuratJalan input[name="uang_jalan_type"][value="${data.uang_jalan_type}"]`);
+                    if (el) el.checked = true;
+                }
+                if (data.f_e) {
+                    const feRadio = document.querySelector(`#modalEditSuratJalan input[name="f_e"][value="${data.f_e}"]`);
+                    if (feRadio) feRadio.checked = true;
+                }
+                
+                // Convert to integer to remove decimal places
+                const nominalValue = data.uang_jalan_nominal ? Math.round(parseFloat(data.uang_jalan_nominal)) : '';
+                document.getElementById('edit_modal_uang_jalan_nominal').value = nominalValue;
+                
+                const editTanpaUangJalanCheckbox = document.getElementById('edit_modal_tanpa_uang_jalan');
+                if (editTanpaUangJalanCheckbox) {
+                    editTanpaUangJalanCheckbox.checked = (data.tanpa_uang_jalan == 1);
+                    const uangJalanInput = document.getElementById('edit_modal_uang_jalan_nominal');
+                    if (editTanpaUangJalanCheckbox.checked) {
+                        uangJalanInput.readOnly = true;
+                        uangJalanInput.classList.add('bg-gray-100', 'text-gray-500');
+                    } else {
+                        uangJalanInput.readOnly = false;
+                        uangJalanInput.classList.remove('bg-gray-100', 'text-gray-500');
                     }
-                };
-            }
+                }
+                
+                // Update destinations based on fetched lokasi
+                updateDestinationOptions('edit');
+                // Restore selection after update because updateDestinationOptions clears it
+                if (data.tujuan_pengambilan) {
+                    document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan;
+                }
 
-            // Setup auto-fill and auto-calculate functions
-            setupEditModalSupirAutoFill();
-            setupEditModalUangJalanCalculation(data.size);
+                // Add listener for lokasi change in edit modal
+                const editLokasiSelect = document.getElementById('edit_modal_lokasi');
+                if (editLokasiSelect) {
+                    editLokasiSelect.onchange = () => {
+                        updateDestinationOptions('edit');
+                        if (editLokasiSelect.value === 'batam') {
+                            document.getElementById('edit_modal_jenis_barang').value = data.nama_barang_manifest || '';
+                        }
+                    };
+                }
+
+                // Setup auto-fill and auto-calculate functions
+                setupEditModalSupirAutoFill();
+                setupEditModalUangJalanCalculation(data.size);
+                console.log('Successfully completed openEditModal populate block.');
+            } catch (err) {
+                console.error('CRITICAL ERROR in openEditModal populate block:', err);
+                alert('JS Error: ' + err.message);
+            }
         })
         .catch(error => {
             console.error('Error fetching Surat Jalan data:', error);
