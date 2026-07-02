@@ -305,6 +305,7 @@
                                     if ($firstUsage->kapal) $refItems[] = $firstUsage->kapal->nama_kapal;
                                     if ($firstUsage->alatBerat) $refItems[] = $firstUsage->alatBerat->nama;
                                     if ($firstUsage->kendaraan) $refItems[] = $firstUsage->kendaraan->nomor_polisi;
+                                    if ($firstUsage->chasisBatam) $refItems[] = 'Buntut: ' . $firstUsage->chasisBatam->kode;
                                     if ($firstUsage->buntut) $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);
                                     if ($firstUsage->kantor) $refItems[] = $firstUsage->kantor;
                                 }
@@ -566,10 +567,20 @@
                                                     @if($kendaraans->count() > 0)
                                                         @foreach($kendaraans as $buntut)
                                                             <div class="buntut-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
-                                                                 data-value="{{ $buntut->id }}" 
-                                                                 data-name="{{ $buntut->no_kir }} {{ $buntut->nomor_polisi }}"
-                                                                 onclick="selectBuntut('{{ $buntut->id }}', '{{ str_replace("'", "\\'", $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-')) }}')">
-                                                                <span class="block truncate font-medium">{{ $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-') }}</span>
+                                                                 data-value="mobil_{{ $buntut->id }}" 
+                                                                 data-name="{{ $buntut->no_kir }} {{ $buntut->nomor_polisi }} (Mobil)"
+                                                                 onclick="selectBuntut('mobil_{{ $buntut->id }}', '{{ str_replace("'", "\\'", $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-')) }} (Mobil)')">
+                                                                <span class="block truncate font-medium">{{ $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-') }} (Mobil)</span>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+                                                    @if($chasis->count() > 0)
+                                                        @foreach($chasis as $c)
+                                                            <div class="buntut-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                                                 data-value="chasis_{{ $c->id }}" 
+                                                                 data-name="{{ $c->kode }} (Chasis)"
+                                                                 onclick="selectBuntut('chasis_{{ $c->id }}', '{{ str_replace("'", "\\'", $c->kode) }} (Chasis)')">
+                                                                <span class="block truncate font-medium">{{ $c->kode }} (Chasis)</span>
                                                             </div>
                                                         @endforeach
                                                     @endif

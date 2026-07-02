@@ -410,8 +410,13 @@
                                         <select name="buntut_id" id="buntut_id" class="hidden">
                                             <option value="">-- Pilih Buntut --</option>
                                             @foreach($kendaraans as $m)
-                                                <option value="{{ $m->id }}" {{ old('buntut_id') == $m->id ? 'selected' : '' }}>
-                                                    {{ $m->no_kir ?: ($m->nomor_polisi ?: 'No KIR: -') }}
+                                                <option value="mobil_{{ $m->id }}" {{ old('buntut_id') == 'mobil_'.$m->id ? 'selected' : '' }}>
+                                                    {{ $m->no_kir ?: ($m->nomor_polisi ?: 'No KIR: -') }} (Mobil)
+                                                </option>
+                                            @endforeach
+                                            @foreach($chasis as $c)
+                                                <option value="chasis_{{ $c->id }}" {{ old('buntut_id') == 'chasis_'.$c->id ? 'selected' : '' }}>
+                                                    {{ $c->kode }} (Chasis)
                                                 </option>
                                             @endforeach
                                         </select>

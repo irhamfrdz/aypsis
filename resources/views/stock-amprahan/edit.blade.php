@@ -379,8 +379,13 @@
                                         <select name="buntut_id" id="buntut_id" style="display: none !important;">
                                             <option value="">-- Pilih Buntut --</option>
                                             @foreach($kendaraans as $m)
-                                                <option value="{{ $m->id }}" {{ old('buntut_id', $directUsage->buntut_id ?? '') == $m->id ? 'selected' : '' }}>
-                                                    {{ $m->no_kir ?: ($m->nomor_polisi ?: 'No KIR: -') }}
+                                                <option value="mobil_{{ $m->id }}" {{ old('buntut_id', isset($directUsage) && $directUsage->buntut_id ? 'mobil_'.$directUsage->buntut_id : '') == 'mobil_'.$m->id ? 'selected' : '' }}>
+                                                    {{ $m->no_kir ?: ($m->nomor_polisi ?: 'No KIR: -') }} (Mobil)
+                                                </option>
+                                            @endforeach
+                                            @foreach($chasis as $c)
+                                                <option value="chasis_{{ $c->id }}" {{ old('buntut_id', isset($directUsage) && $directUsage->chasis_batam_id ? 'chasis_'.$directUsage->chasis_batam_id : '') == 'chasis_'.$c->id ? 'selected' : '' }}>
+                                                    {{ $c->kode }} (Chasis)
                                                 </option>
                                             @endforeach
                                         </select>

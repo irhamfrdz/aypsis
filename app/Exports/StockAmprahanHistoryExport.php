@@ -83,7 +83,7 @@ class StockAmprahanHistoryExport implements FromCollection, ShouldAutoSize, With
         }
 
         // 2. Get Usages (Keluar)
-        $usagesQuery = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
+        $usagesQuery = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'chasisBatam', 'kapal', 'alatBerat', 'createdBy']);
 
         if ($id) {
             $usagesQuery->where('stock_amprahan_id', $id);
@@ -110,6 +110,13 @@ class StockAmprahanHistoryExport implements FromCollection, ShouldAutoSize, With
         }
 
         $usages = $usagesQuery->get()->map(function ($usage) {
+            $buntutVal = '-';
+            if ($usage->chasisBatam) {
+                $buntutVal = $usage->chasisBatam->kode;
+            } elseif ($usage->buntut) {
+                $buntutVal = $usage->buntut->no_kir ?? $usage->buntut->nomor_polisi;
+            }
+
             return (object) [
                 'type' => 'Keluar',
                 'tanggal_raw' => $usage->tanggal_pengambilan,
@@ -119,7 +126,7 @@ class StockAmprahanHistoryExport implements FromCollection, ShouldAutoSize, With
                 'penerima' => $usage->penerima->nama_lengkap ?? '-',
                 'kendaraan' => $usage->kendaraan ? ($usage->kendaraan->nomor_polisi.' - '.$usage->kendaraan->merek) : '-',
                 'truck' => $usage->truck ? ($usage->truck->nomor_polisi.' - '.$usage->truck->merek) : '-',
-                'buntut' => $usage->buntut ? ($usage->buntut->no_kir ?? $usage->buntut->nomor_polisi) : '-',
+                'buntut' => $buntutVal,
                 'kapal' => $usage->kapal->nama_kapal ?? '-',
                 'alat_berat' => $usage->alatBerat ? ($usage->alatBerat->kode_alat.' - '.$usage->alatBerat->nama) : '-',
                 'kantor' => $usage->kantor ?? '-',
