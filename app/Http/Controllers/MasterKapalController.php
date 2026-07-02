@@ -636,22 +636,35 @@ class MasterKapalController extends Controller
         })
             ->whereNotNull('no_voyage')
             ->where('no_voyage', '!=', '')
-            ->select('no_voyage', 'pelabuhan_tujuan', 'pelabuhan_asal', 'pelabuhan_muat', 'pelabuhan_bongkar', 'tanggal_berangkat', 'size_kontainer', 'tipe_kontainer', 'nama_barang')
+            ->select('no_voyage', 'pelabuhan_tujuan', 'pelabuhan_asal', 'pelabuhan_muat', 'pelabuhan_bongkar', 'tanggal_berangkat', 'size_kontainer', 'tipe_kontainer', 'nama_barang', 'nomor_kontainer', 'nomor_bl', 'kuantitas', 'volume_perincian', 'tonnage_perincian')
             ->orderBy('no_voyage', 'desc')
             ->get();
 
         // Group and aggregate by voyage
-        $grouped = $manifests->groupBy('no_voyage')->map(function ($items, $voyage) {
+        $self = $this;
+        $grouped = $manifests->groupBy('no_voyage')->map(function ($items, $voyage) use ($self) {
             $first = $items->first();
 
-            // Build rencana bongkar / muat summary
-            $sizeCounts = $items->groupBy('size_kontainer')->map(function ($sizeGroup) {
-                return $sizeGroup->count();
-            });
+            // Separate into Bongkar vs Muat based on local port matching (JP = Tanjung Pinang, JB = Batam)
+            $isTanjungPinang = str_contains(strtoupper($voyage), 'JP');
+            $localPortKeyword = $isTanjungPinang ? 'pinang' : 'batam';
 
-            $summary = $sizeCounts->map(function ($count, $size) {
-                return "- {$count} Box Container {$size}";
-            })->values()->implode("\n");
+            $bongkarItems = collect();
+            $muatItems = collect();
+
+            foreach ($items as $item) {
+                $dest = strtolower($item->pelabuhan_tujuan ?? $item->pelabuhan_bongkar ?? '');
+                $origin = strtolower($item->pelabuhan_asal ?? $item->pelabuhan_muat ?? '');
+
+                if (str_contains($dest, $localPortKeyword)) {
+                    $bongkarItems->push($item);
+                } elseif (str_contains($origin, $localPortKeyword)) {
+                    $muatItems->push($item);
+                } else {
+                    // Default to bongkar
+                    $bongkarItems->push($item);
+                }
+            }
 
             return [
                 'no_voyage' => $voyage,
@@ -661,10 +674,125 @@ class MasterKapalController extends Controller
                 'pelabuhan_bongkar' => $first->pelabuhan_bongkar,
                 'tanggal_berangkat' => $first->tanggal_berangkat ? $first->tanggal_berangkat->format('Y-m-d') : null,
                 'total_kontainer' => $items->count(),
-                'summary' => $summary,
+                'summary_bongkar' => $self->formatManifestSummary($bongkarItems),
+                'summary_muat' => $self->formatManifestSummary($muatItems),
             ];
         })->values();
 
         return response()->json($grouped);
+    }
+
+    /**
+     * Formats manifest items into a structured summary string mimicking buildRekapBongkaranPerincianItems.
+     */
+    public function formatManifestSummary($items)
+    {
+        if ($items->isEmpty()) {
+            return '';
+        }
+
+        $containerItems = collect();
+        $cargoItems = collect();
+
+        foreach ($items as $item) {
+            $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
+            if ($isCargo) {
+                $cargoItems->push($item);
+            } else {
+                $containerItems->push($item);
+            }
+        }
+
+        $lines = [];
+
+        // 1. Process Containers into "- X Unit FCL (Ax20 ft & Bx40 ft)" format
+        if ($containerItems->isNotEmpty()) {
+            $groupedContainers = $containerItems->groupBy(function ($item) {
+                $size = trim(str_ireplace(['ft', 'feet', ' '], '', $item->size_kontainer ?? ''));
+                if (empty($size)) {
+                    $size = '20';
+                }
+
+                return $size;
+            })->map(function ($group) {
+                $uniqueContainers = $group->whereNotNull('nomor_kontainer')
+                    ->where('nomor_kontainer', '!=', '')
+                    ->pluck('nomor_kontainer')->unique()->count();
+                $emptyContainers = $group->filter(fn ($i) => empty($i->nomor_kontainer) || $i->nomor_kontainer === '-')->count();
+
+                return $uniqueContainers + $emptyContainers;
+            });
+
+            $totalContainers = $groupedContainers->sum();
+
+            $detailParts = [];
+            // Sort by size so 20 ft is shown before 40 ft
+            $sortedKeys = $groupedContainers->keys()->sort();
+            foreach ($sortedKeys as $size) {
+                $count = $groupedContainers[$size];
+                if ($count > 0) {
+                    $detailParts[] = "{$count}x{$size} ft";
+                }
+            }
+            $detailsStr = implode(' & ', $detailParts);
+
+            if ($totalContainers > 0) {
+                $lines[] = "- {$totalContainers} Unit FCL ({$detailsStr})";
+            }
+        }
+
+        // 2. Process Cargo into "- Y Colly (Item1, Item2, ...)" format
+        if ($cargoItems->isNotEmpty()) {
+            $totalCargoQty = 0;
+            $distinctNames = collect();
+
+            foreach ($cargoItems as $item) {
+                $qty = $item->kuantitas ?: 1;
+                $totalCargoQty += $qty;
+
+                $name = trim($item->nama_barang ?? 'Cargo');
+
+                // Map/Simplify names based on rules to get nice category tags
+                $cleanName = '';
+                if (stripos($name, 'mobil') !== false || stripos($name, 'toyota') !== false || stripos($name, 'fortuner') !== false) {
+                    $cleanName = 'Mobil';
+                } elseif (stripos($name, 'saklar') !== false) {
+                    $cleanName = 'Kotak Saklar';
+                } elseif (stripos($name, 'accessories') !== false || stripos($name, 'aksesoris') !== false) {
+                    $cleanName = 'Aksesoris';
+                } elseif (stripos($name, 'pipa') !== false) {
+                    $cleanName = 'Pipa';
+                } elseif (stripos($name, 'forklift') !== false) {
+                    $cleanName = 'Forklift';
+                } elseif (stripos($name, 'kds') !== false || stripos($name, 'ulir') !== false || stripos($name, 'besi') !== false) {
+                    $cleanName = 'Besi Beton';
+                } else {
+                    // Extract first 2 non-numeric words as fallback
+                    $words = preg_split('/[\s,]+/', $name);
+                    $kept = [];
+                    foreach ($words as $w) {
+                        if (is_numeric($w) || strlen($w) <= 1) {
+                            continue;
+                        }
+                        $kept[] = ucfirst(strtolower($w));
+                        if (count($kept) >= 2) {
+                            break;
+                        }
+                    }
+                    $cleanName = implode(' ', $kept) ?: 'Cargo';
+                }
+
+                $distinctNames->push($cleanName);
+            }
+
+            $uniqueCargoNames = $distinctNames->unique()->filter()->values()->all();
+            $cargoNamesStr = implode(', ', $uniqueCargoNames);
+
+            if ($totalCargoQty > 0) {
+                $lines[] = "- {$totalCargoQty} Colly ({$cargoNamesStr})";
+            }
+        }
+
+        return implode("\n", $lines);
     }
 }

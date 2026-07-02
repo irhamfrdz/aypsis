@@ -463,9 +463,8 @@
             } catch(e) {}
         }
 
-        if (voyage.summary) {
-            document.getElementById('rencana_bongkar').value = voyage.summary;
-        }
+        document.getElementById('rencana_bongkar').value = voyage.summary_bongkar || '';
+        document.getElementById('rencana_muat').value = voyage.summary_muat || '';
     }
 
     function closePrintSpkbmModal() {
