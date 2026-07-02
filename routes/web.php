@@ -1918,6 +1918,10 @@ Route::middleware([
             ->name('biaya-kapal.destroy')
             ->middleware('can:biaya-kapal-delete');
 
+        Route::post('pembayaran-biaya-kapal/{pembayaran}/sync-coa', [\App\Http\Controllers\PembayaranBiayaKapalController::class, 'syncCoa'])
+            ->name('pembayaran-biaya-kapal.sync-coa')
+            ->middleware('can:pembayaran-biaya-kapal-edit');
+
         Route::resource('pembayaran-biaya-kapal', \App\Http\Controllers\PembayaranBiayaKapalController::class);
 
         // Rekap Biaya Kapal Routes

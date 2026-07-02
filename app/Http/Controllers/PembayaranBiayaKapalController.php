@@ -23,7 +23,7 @@ class PembayaranBiayaKapalController extends Controller
         $this->middleware('auth');
         $this->middleware('can:pembayaran-biaya-kapal-view')->only(['index', 'show']);
         $this->middleware('can:pembayaran-biaya-kapal-create')->only(['create', 'store']);
-        $this->middleware('can:pembayaran-biaya-kapal-edit')->only(['edit', 'update']);
+        $this->middleware('can:pembayaran-biaya-kapal-edit')->only(['edit', 'update', 'syncCoa']);
         $this->middleware('can:pembayaran-biaya-kapal-delete')->only(['destroy']);
     }
 
@@ -289,6 +289,37 @@ class PembayaranBiayaKapalController extends Controller
             DB::rollBack();
 
             return back()->with('error', 'Gagal membatalkan pembayaran: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Synchronize the payment to COA.
+     */
+    public function syncCoa($id)
+    {
+        $pembayaran = PembayaranBiayaKapal::with(['biayaKapals.klasifikasiBiaya'])->findOrFail($id);
+
+        DB::beginTransaction();
+
+        try {
+            // 1. Delete existing COA transactions for this reference number
+            $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
+
+            // 2. Re-run integration
+            if (method_exists($this->coaTransactionService, 'pembayaranBiayaKapal')) {
+                $this->coaTransactionService->pembayaranBiayaKapal($pembayaran);
+            }
+
+            DB::commit();
+
+            return redirect()->route('pembayaran-biaya-kapal.show', $pembayaran->id)
+                ->with('success', 'Sinkronisasi COA berhasil.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error sync COA pembayaran biaya kapal: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal sinkronisasi COA: '.$e->getMessage());
         }
     }
 
