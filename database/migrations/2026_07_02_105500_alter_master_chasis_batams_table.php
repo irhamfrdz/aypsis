@@ -12,6 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('master_chasis_batams', function (Blueprint $table) {
+            // Drop status index first to prevent SQLite errors
+            $table->dropIndex(['status']);
+
             // Drop old columns
             $table->dropColumn(['plat_nomor', 'merek', 'tahun_pembuatan', 'status']);
 
@@ -36,6 +39,8 @@ return new class extends Migration
             $table->string('merek', 100)->nullable()->comment('Merek Chasis')->after('tipe');
             $table->integer('tahun_pembuatan')->nullable()->comment('Tahun Pembuatan')->after('merek');
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif')->comment('Status Chasis')->after('catatan');
+
+            $table->index('status');
         });
     }
 };
