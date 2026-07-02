@@ -662,6 +662,8 @@ class SuratJalanBongkaranBatamController extends Controller
         $namaKapal = $request->input('nama_kapal', '');
         $noVoyage = $request->input('no_voyage', '');
         $lokasi = $request->input('lokasi', 'batam');
+        $tujuanPengambilan = $request->input('tujuan_pengambilan', '');
+        $f_e = $request->input('f_e', 'Full');
 
         if (empty($rows)) {
             return response()->json([
@@ -733,6 +735,62 @@ class SuratJalanBongkaranBatamController extends Controller
                     $finalJenisPengiriman = $manifest ? $manifest->tipe_kontainer : null;
                     $manifestId = $manifest ? $manifest->id : null;
 
+                    // Calculate Uang Jalan
+                    $uangJalanNominal = 0;
+                    $finalRing = null;
+
+                    if (!empty($tujuanPengambilan)) {
+                        if ($lokasi === 'batam') {
+                            // Find Pricelist Uang Jalan Batam
+                            $pricelistItems = \App\Models\PricelistUangJalanBatam::activeBbm()->get();
+                            $matchedItem = null;
+                            foreach ($pricelistItems as $item) {
+                                if (!$item->wilayah) continue;
+                                $subWilayahs = array_map('trim', explode(',', $item->wilayah));
+                                if (in_array($tujuanPengambilan, $subWilayahs)) {
+                                    $matchedItem = $item;
+                                    break;
+                                }
+                            }
+
+                            if ($matchedItem) {
+                                $finalRing = (string)$matchedItem->ring;
+                                // Determine size (default to 20 if empty)
+                                $is20ft = true;
+                                if (!empty($finalSize)) {
+                                    $normSize = strtolower(str_replace(' ', '', $finalSize));
+                                    if (strpos($normSize, '40') !== false) {
+                                        $is20ft = false;
+                                    }
+                                }
+                                $isFull = (strtolower($f_e) === 'full');
+                                
+                                if ($is20ft) {
+                                    $uangJalanNominal = $isFull ? ($matchedItem->tarif_20ft_full ?? 0) : ($matchedItem->tarif_20ft_empty ?? 0);
+                                } else {
+                                    $uangJalanNominal = $isFull ? ($matchedItem->tarif_40ft_full ?? 0) : ($matchedItem->tarif_40ft_empty ?? 0);
+                                }
+                            }
+                        } else {
+                            // Jakarta location
+                            $tujuanUtama = \App\Models\TujuanKegiatanUtama::where('ke', $tujuanPengambilan)->first();
+                            if ($tujuanUtama) {
+                                $is20ft = true;
+                                if (!empty($finalSize)) {
+                                    $normSize = strtolower(str_replace(' ', '', $finalSize));
+                                    if (strpos($normSize, '40') !== false) {
+                                        $is20ft = false;
+                                    }
+                                }
+                                if ($is20ft) {
+                                    $uangJalanNominal = $tujuanUtama->uang_jalan_20ft ?? 0;
+                                } else {
+                                    $uangJalanNominal = $tujuanUtama->uang_jalan_40ft ?? 0;
+                                }
+                            }
+                        }
+                    }
+
                     SuratJalanBongkaranBatam::create([
                         'nomor_surat_jalan' => $nomorSuratJalan,
                         'tanggal_surat_jalan' => ! empty($row['tanggal_surat_jalan']) ? $row['tanggal_surat_jalan'] : now()->toDateString(),
@@ -748,6 +806,10 @@ class SuratJalanBongkaranBatamController extends Controller
                         'penerima' => $finalPenerima,
                         'jenis_barang' => $finalJenisBarang,
                         'tujuan_alamat' => $finalTujuanAlamat,
+                        'tujuan_pengambilan' => $tujuanPengambilan,
+                        'uang_jalan_nominal' => $uangJalanNominal,
+                        'f_e' => $lokasi === 'batam' ? $f_e : null,
+                        'ring' => $finalRing,
                         'term' => $finalTerm,
                         'aktifitas' => $row['aktifitas'] ?? null,
                         'jenis_pengiriman' => $finalJenisPengiriman,

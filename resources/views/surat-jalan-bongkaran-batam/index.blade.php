@@ -888,12 +888,36 @@
 
                 <!-- Shared Fields -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <!-- Lokasi -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
                         <select id="bulk_lokasi" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="batam" selected>Batam</option>
                             <option value="jakarta">Jakarta</option>
                         </select>
+                    </div>
+
+                    <!-- Tujuan Pengiriman -->
+                    <div>
+                        <label for="bulk_tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
+                        <select id="bulk_tujuan_pengambilan" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Pilih tujuan pengiriman</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Muatan (F/E) -->
+                    <div id="bulk_f_e_wrapper" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status Muatan (F/E)</label>
+                        <div class="flex space-x-4 py-2">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="bulk_f_e" value="Full" class="form-radio text-indigo-600" checked>
+                                <span class="ml-2 text-sm text-gray-700">Full</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="bulk_f_e" value="Empty" class="form-radio text-indigo-600">
+                                <span class="ml-2 text-sm text-gray-700">Empty</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -1457,7 +1481,7 @@ const destinations = {
 
 // Function to update Tujuan Pengiriman options based on selected Lokasi
 function updateDestinationOptions(modalType) {
-    const prefix = modalType === 'create' ? 'modal_' : 'edit_modal_';
+    const prefix = modalType === 'create' ? 'modal_' : (modalType === 'edit' ? 'edit_modal_' : 'bulk_');
     const lokasiSelect = document.getElementById(prefix + 'lokasi');
     const tujuanSelect = document.getElementById(prefix + 'tujuan_pengambilan');
     const feWrapper = document.getElementById(prefix + 'f_e_wrapper');
@@ -2644,6 +2668,17 @@ function buatSuratJalanMassal() {
     document.getElementById('btnSubmitBulk').disabled = true;
     document.getElementById('bulkModalAlertArea').innerHTML = '';
     bulkParsedRows = [];
+
+    // Initialize lokasi and destination options
+    const bulkLokasiSelect = document.getElementById('bulk_lokasi');
+    if (bulkLokasiSelect) {
+        bulkLokasiSelect.value = 'batam'; // Default to batam
+        updateDestinationOptions('bulk');
+        
+        bulkLokasiSelect.onchange = () => {
+            updateDestinationOptions('bulk');
+        };
+    }
 }
 
 function closeBulkModal() {
@@ -2755,10 +2790,13 @@ function submitBulkSuratJalan() {
     submitText.classList.add('hidden');
     submitLoading.classList.remove('hidden');
 
+    const bulkFEVal = document.querySelector('input[name="bulk_f_e"]:checked') ? document.querySelector('input[name="bulk_f_e"]:checked').value : 'Full';
     const payload = {
         nama_kapal: '{{ $selectedKapal }}',
         no_voyage: '{{ $selectedVoyage }}',
         lokasi: document.getElementById('bulk_lokasi').value,
+        tujuan_pengambilan: document.getElementById('bulk_tujuan_pengambilan').value,
+        f_e: bulkFEVal,
         rows: bulkParsedRows,
         _token: '{{ csrf_token() }}'
     };
