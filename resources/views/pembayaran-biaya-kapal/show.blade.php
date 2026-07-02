@@ -13,6 +13,11 @@
             <a href="{{ route('pembayaran-biaya-kapal.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 Kembali
             </a>
+            @can('pembayaran-biaya-kapal-edit')
+            <a href="{{ route('pembayaran-biaya-kapal.edit', $pembayaran->id) }}" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                Edit
+            </a>
+            @endcan
             @can('pembayaran-biaya-kapal-delete')
             <form action="{{ route('pembayaran-biaya-kapal.destroy', $pembayaran->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan dan menghapus pembayaran ini? Status invoice akan kembali menjadi belum lunas.')">
                 @csrf

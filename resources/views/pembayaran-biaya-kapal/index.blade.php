@@ -104,6 +104,9 @@
                                 @if($biaya->pembayarans->count() > 0)
                                     @foreach($biaya->pembayarans as $pembayaran)
                                         <a href="{{ route('pembayaran-biaya-kapal.show', $pembayaran->id) }}" class="text-blue-600 hover:text-blue-800 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded">Detail Bayar</a>
+                                        @can('pembayaran-biaya-kapal-edit')
+                                        <a href="{{ route('pembayaran-biaya-kapal.edit', $pembayaran->id) }}" class="text-yellow-600 hover:text-yellow-800 text-xs bg-yellow-50 hover:bg-yellow-100 px-2 py-1 rounded">Edit</a>
+                                        @endcan
                                     @endforeach
                                 @endif
                             </div>
