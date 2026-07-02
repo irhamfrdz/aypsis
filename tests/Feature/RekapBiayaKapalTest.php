@@ -27,6 +27,12 @@ class RekapBiayaKapalTest extends TestCase
         // Create user and attach permission
         $this->user = User::factory()->create();
         $this->user->permissions()->attach($permission->id);
+
+        // Seed KlasifikasiBiaya for FK constraint
+        \App\Models\KlasifikasiBiaya::create([
+            'kode' => 'KB001',
+            'nama' => 'Test Biaya Kapal',
+        ]);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

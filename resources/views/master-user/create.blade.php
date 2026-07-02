@@ -404,6 +404,22 @@
                                 <td>-</td>
                             </tr>
 
+                            {{-- Master Chasis Batam --}}
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Master Chasis Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
                             <tr class="submodule-row" data-parent="user">
                                 <td class="submodule">
                                     <div class="flex items-center">

@@ -23,6 +23,20 @@ class TagihanPelindoTest extends TestCase
         Permission::firstOrCreate(['name' => 'tagihan-pelindo-create'], ['description' => 'Create']);
         Permission::firstOrCreate(['name' => 'tagihan-pelindo-edit'], ['description' => 'Edit']);
         Permission::firstOrCreate(['name' => 'tagihan-pelindo-delete'], ['description' => 'Delete']);
+
+        // Define Gates for testing env since AppServiceProvider boots before migrations
+        \Illuminate\Support\Facades\Gate::define('tagihan-pelindo-view', function ($user) {
+            return $user->permissions()->where('name', 'tagihan-pelindo-view')->exists();
+        });
+        \Illuminate\Support\Facades\Gate::define('tagihan-pelindo-create', function ($user) {
+            return $user->permissions()->where('name', 'tagihan-pelindo-create')->exists();
+        });
+        \Illuminate\Support\Facades\Gate::define('tagihan-pelindo-edit', function ($user) {
+            return $user->permissions()->where('name', 'tagihan-pelindo-edit')->exists();
+        });
+        \Illuminate\Support\Facades\Gate::define('tagihan-pelindo-delete', function ($user) {
+            return $user->permissions()->where('name', 'tagihan-pelindo-delete')->exists();
+        });
     }
 
     public function test_user_without_permission_cannot_view_index()
