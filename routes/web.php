@@ -2669,6 +2669,10 @@ Route::middleware([
             ->name('surat-jalan-batam.store')
             ->middleware('can:surat-jalan-batam-create');
 
+        Route::post('surat-jalan-batam/store-bulk', [\App\Http\Controllers\SuratJalanBatamController::class, 'storeBulk'])
+            ->name('surat-jalan-batam.store-bulk')
+            ->middleware('can:surat-jalan-batam-create');
+
         Route::get('surat-jalan-batam/{id}', [\App\Http\Controllers\SuratJalanBatamController::class, 'show'])
             ->name('surat-jalan-batam.show')
             ->middleware('can:surat-jalan-batam-view');
