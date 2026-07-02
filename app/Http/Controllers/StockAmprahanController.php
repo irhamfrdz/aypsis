@@ -197,7 +197,7 @@ class StockAmprahanController extends Controller
         $data = $request->validate([
             'nomor_bukti' => 'nullable|string|max:255',
             'tanggal_beli' => 'nullable|date',
-            'type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi',
+            'type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi,Inventory',
             'nama_barang' => 'required|string|max:255',
             'master_nama_barang_amprahan_id' => 'required|exists:master_nama_barang_amprahans,id',
             'harga_satuan' => 'nullable|numeric|min:0',
@@ -331,7 +331,7 @@ class StockAmprahanController extends Controller
         $data = $request->validate([
             'nomor_bukti' => 'nullable|string|max:255',
             'tanggal_beli' => 'nullable|date',
-            'type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi',
+            'type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi,Inventory',
             'nama_barang' => 'required|string|max:255',
             'master_nama_barang_amprahan_id' => 'required|exists:master_nama_barang_amprahans,id',
             'harga_satuan' => 'nullable|numeric|min:0',
