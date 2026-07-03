@@ -374,6 +374,7 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
 function openAddUangJalanModal() {
     document.getElementById('addUangJalanModal').style.display = 'block';
@@ -405,7 +406,16 @@ function toggleSelectAllUangJalan(selectAllCheckbox) {
         }
     });
 }
+
+// Auto hide alerts after 3 seconds
+setTimeout(function() {
+    const successAlert = document.getElementById('success-alert');
+    const errorAlert = document.getElementById('error-alert');
+    if (successAlert) successAlert.remove();
+    if (errorAlert) errorAlert.remove();
+}, 3000);
 </script>
+@endpush
 
 @if(session('success'))
     <div class="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" id="success-alert">
@@ -418,14 +428,4 @@ function toggleSelectAllUangJalan(selectAllCheckbox) {
         {{ session('error') }}
     </div>
 @endif
-
-<script>
-// Auto hide alerts after 3 seconds
-setTimeout(function() {
-    const successAlert = document.getElementById('success-alert');
-    const errorAlert = document.getElementById('error-alert');
-    if (successAlert) successAlert.remove();
-    if (errorAlert) errorAlert.remove();
-}, 3000);
-</script>
 @endsection
