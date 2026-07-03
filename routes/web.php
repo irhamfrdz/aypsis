@@ -5704,6 +5704,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::post('stock-amprahan/{id}/usage', [\App\Http\Controllers\StockAmprahanController::class, 'storeUsage'])
         ->name('stock-amprahan.usage')
         ->middleware('can:stock-amprahan-update');
+    Route::delete('stock-amprahan/usage/{id}', [\App\Http\Controllers\StockAmprahanController::class, 'destroyUsage'])
+        ->name('stock-amprahan.usage.destroy')
+        ->middleware('can:stock-amprahan-delete');
     Route::get('stock-amprahan/history/print', [\App\Http\Controllers\StockAmprahanController::class, 'historyPrint'])->name('stock-amprahan.history.print')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi/print', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPrint'])->name('stock-amprahan.valuasi-print')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi-pemakaian/print', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPemakaianPrint'])->name('stock-amprahan.valuasi-pemakaian-print')->middleware('can:stock-amprahan-view');

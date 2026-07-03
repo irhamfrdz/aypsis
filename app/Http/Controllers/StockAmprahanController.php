@@ -538,6 +538,32 @@ class StockAmprahanController extends Controller
             ->with('success', 'Pengambilan barang berhasil dicatat. Sisa stock: '.$item->jumlah.' '.$item->satuan);
     }
 
+    public function destroyUsage($id)
+    {
+        $usage = StockAmprahanUsage::findOrFail($id);
+
+        // Check if user is restricted to a branch (Batam) and trying to delete usage of non-Batam stock
+        $user = Auth::user();
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM' && strpos(strtoupper($usage->stockAmprahan->lokasi ?? ''), 'BATAM') === false) {
+                abort(403, 'Unauthorized access to this branch data.');
+            }
+        }
+
+        DB::transaction(function () use ($usage) {
+            // Restore quantity to parent stock
+            $stock = $usage->stockAmprahan;
+            if ($stock) {
+                $stock->increment('jumlah', $usage->jumlah);
+            }
+
+            $usage->delete();
+        });
+
+        return redirect()->back()->with('success', 'Catatan pemakaian berhasil dihapus dan jumlah stock dikembalikan.');
+    }
+
     public function history(Request $request, $id)
     {
         $item = StockAmprahan::with(['masterNamaBarangAmprahan', 'createdBy', 'usages'])->findOrFail($id);

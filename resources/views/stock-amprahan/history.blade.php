@@ -151,6 +151,7 @@
                         <th class="px-6 py-4 text-left">KM</th>
                         <th class="px-6 py-4 text-left">Keterangan</th>
                         <th class="px-6 py-4 text-left">Oleh</th>
+                        <th class="px-6 py-4 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
@@ -247,10 +248,27 @@
                             <div class="text-xs">Dicatat oleh:</div>
                             <div class="font-medium text-gray-700">{{ $usage->createdBy->name ?? '-' }}</div>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                            @if(!$usage->is_addition)
+                                @can('stock-amprahan-delete')
+                                <form action="{{ route('stock-amprahan.usage.destroy', $usage->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus catatan pemakaian ini? Tindakan ini akan mengembalikan jumlah stock.')" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900 font-semibold text-xs bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-all duration-150 flex items-center justify-center mx-auto">
+                                        <i class="fas fa-trash-alt mr-1"></i> Hapus
+                                    </button>
+                                </form>
+                                @else
+                                <span class="text-gray-400 font-mono text-xs">-</span>
+                                @endcan
+                            @else
+                                <span class="text-gray-400 font-mono text-xs">-</span>
+                            @endif
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="{{ isset($item) ? 12 : 13 }}" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="{{ isset($item) ? 17 : 19 }}" class="px-6 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
