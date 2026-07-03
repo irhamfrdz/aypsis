@@ -235,6 +235,79 @@ class SuratJalanBongkaranBatamController extends Controller
         return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage'));
     }
 
+    public function penarikanIndex(Request $request)
+    {
+        $selectedKapal = $request->nama_kapal;
+        $selectedVoyage = $request->no_voyage;
+
+        $query = SuratJalanBongkaranBatam::query()
+            ->where('lokasi', 'batam');
+
+        // Filter by selected kapal and voyage if provided
+        if ($selectedKapal) {
+            $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
+            $query->where(function ($q) use ($selectedKapal, $kapalClean) {
+                $q->where('nama_kapal', $selectedKapal)
+                    ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+            });
+        }
+        if ($selectedVoyage) {
+            $query->where('no_voyage', $selectedVoyage);
+        }
+
+        // Filter by types (FCL, LCL, Cargo)
+        if ($request->filled('types')) {
+            $types = (array) $request->types;
+            $query->where(function ($q) use ($types) {
+                $q->whereIn('jenis_pengiriman', $types)
+                    ->orWhereIn('tipe_kontainer', $types);
+            });
+        }
+
+        // Search in surat jalan bongkaran (ignore punctuation)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
+
+            $query->where(function ($q) use ($search, $searchClean) {
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                    ->orWhere('no_kontainer', 'like', "%{$search}%")
+                    ->orWhere('no_seal', 'like', "%{$search}%")
+                    ->orWhere('term', 'like', "%{$search}%")
+                    ->orWhere('jenis_barang', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('tipe_kontainer', 'like', "%{$search}%")
+                    ->orWhere('jenis_pengiriman', 'like', "%{$search}%")
+                    ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_surat_jalan, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                    ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                    ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                    ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_plat, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
+            });
+        }
+
+        $suratJalans = $query->orderBy('created_at', 'desc')->paginate(25);
+
+        // Get dropdown lists for filters
+        $ships = SuratJalanBongkaranBatam::select('nama_kapal')
+            ->whereNotNull('nama_kapal')
+            ->distinct()
+            ->orderBy('nama_kapal')
+            ->pluck('nama_kapal');
+
+        $voyages = [];
+        if ($selectedKapal) {
+            $voyages = SuratJalanBongkaranBatam::select('no_voyage')
+                ->where('nama_kapal', $selectedKapal)
+                ->whereNotNull('no_voyage')
+                ->distinct()
+                ->orderBy('no_voyage')
+                ->pluck('no_voyage');
+        }
+
+        return view('surat-jalan-bongkaran-batam.penarikan', compact('suratJalans', 'selectedKapal', 'selectedVoyage', 'ships', 'voyages'));
+    }
+
     /**
      * Export data to Excel.
      */
