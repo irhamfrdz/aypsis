@@ -374,57 +374,63 @@
     </div>
 </div>
 
-@push('scripts')
 <script>
 function openAddUangJalanModal() {
-    document.getElementById('addUangJalanModal').style.display = 'block';
+    var modal = document.getElementById('addUangJalanModal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function closeAddUangJalanModal() {
-    document.getElementById('addUangJalanModal').style.display = 'none';
+    var modal = document.getElementById('addUangJalanModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
 }
 
 function filterModalUangJalan() {
-    const searchVal = document.getElementById('modalSearchInput').value.toLowerCase();
-    const rows = document.querySelectorAll('.modal-uj-row');
-    rows.forEach(row => {
-        const text = row.getAttribute('data-search');
-        if (text.includes(searchVal)) {
-            row.style.display = '';
+    var searchVal = document.getElementById('modalSearchInput').value.toLowerCase();
+    var rows = document.querySelectorAll('.modal-uj-row');
+    for (var i = 0; i < rows.length; i++) {
+        var text = rows[i].getAttribute('data-search') || '';
+        if (text.indexOf(searchVal) !== -1) {
+            rows[i].style.display = '';
         } else {
-            row.style.display = 'none';
+            rows[i].style.display = 'none';
         }
-    });
+    }
 }
 
 function toggleSelectAllUangJalan(selectAllCheckbox) {
-    const checkboxes = document.querySelectorAll('.uj-checkbox');
-    checkboxes.forEach(cb => {
-        const row = cb.closest('tr');
+    var checkboxes = document.querySelectorAll('.uj-checkbox');
+    for (var i = 0; i < checkboxes.length; i++) {
+        var row = checkboxes[i].closest('tr');
         if (row && row.style.display !== 'none') {
-            cb.checked = selectAllCheckbox.checked;
+            checkboxes[i].checked = selectAllCheckbox.checked;
         }
-    });
+    }
 }
 
 // Auto hide alerts after 3 seconds
 setTimeout(function() {
-    const successAlert = document.getElementById('success-alert');
-    const errorAlert = document.getElementById('error-alert');
+    var successAlert = document.getElementById('success-alert');
+    var errorAlert = document.getElementById('error-alert');
     if (successAlert) successAlert.remove();
     if (errorAlert) errorAlert.remove();
 }, 3000);
 </script>
-@endpush
 
 @if(session('success'))
-    <div class="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" id="success-alert">
+    <div class="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50" id="success-alert">
         {{ session('success') }}
     </div>
 @endif
 
 @if(session('error'))
-    <div class="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" id="error-alert">
+    <div class="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50" id="error-alert">
         {{ session('error') }}
     </div>
 @endif
