@@ -2092,12 +2092,23 @@
             <form action="{{ route('stock-amprahan.valuasi-print') }}" method="GET" target="_blank" class="mt-4">
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Barang <span class="text-red-500">*</span></label>
-                    <select name="nama_barang" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700 searchable-select">
-                        <option value="">-- Pilih Nama Barang --</option>
+                    <input type="text" id="valuasi_barang_search" placeholder="Cari barang..." class="w-full px-3 py-2 border border-gray-300 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700">
+                    <div id="valuasi_barang_checkboxes" class="border border-t-0 border-gray-300 rounded-b-lg p-3 max-h-60 overflow-y-auto bg-white space-y-2">
                         @foreach($uniqueNamaBarang as $name)
-                            <option value="{{ $name }}">{{ $name }}</option>
+                            <div class="flex items-center barang-checkbox-item">
+                                <input type="checkbox" name="nama_barang[]" value="{{ $name }}" id="val_barang_{{ $loop->iteration }}" class="rounded border-gray-300 text-rose-600 focus:ring-rose-500 mr-2">
+                                <label for="val_barang_{{ $loop->iteration }}" class="text-sm text-gray-700 select-none cursor-pointer">{{ $name }}</label>
+                            </div>
                         @endforeach
-                    </select>
+                    </div>
+                    <div class="text-[10px] text-gray-500 mt-1 flex justify-between">
+                        <span>Pilih satu atau lebih barang</span>
+                        <div class="space-x-2">
+                            <button type="button" onclick="selectAllValuasiBarang(true)" class="text-blue-600 hover:underline">Pilih Semua</button>
+                            <span class="text-gray-300">|</span>
+                            <button type="button" onclick="selectAllValuasiBarang(false)" class="text-red-600 hover:underline">Hapus Semua Pilihan</button>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4 mb-6">
@@ -2430,18 +2441,62 @@
 
     function submitValuasiPersediaanExcel() {
         const form = document.querySelector('#valuasiModal form');
+        const checkedCount = document.querySelectorAll('#valuasi_barang_checkboxes input[type="checkbox"]:checked').length;
+        
+        if (checkedCount === 0) {
+            alert('Silakan pilih minimal satu barang.');
+            return;
+        }
+
         const originalAction = form.action;
         const originalTarget = form.target;
         
         form.action = "{{ route('stock-amprahan.valuasi-excel') }}";
         form.target = '_self';
         
-        if (form.reportValidity()) {
-            form.submit();
-        }
+        form.submit();
         
         form.action = originalAction;
         form.target = originalTarget;
+    }
+
+    // Live search for checkboxes in valuasiModal
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('valuasi_barang_search');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                const items = document.querySelectorAll('.barang-checkbox-item');
+                items.forEach(item => {
+                    const label = item.querySelector('label').textContent.toLowerCase();
+                    if (label.includes(query)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        const valuasiForm = document.querySelector('#valuasiModal form');
+        if (valuasiForm) {
+            valuasiForm.addEventListener('submit', function(e) {
+                const checkedCount = document.querySelectorAll('#valuasi_barang_checkboxes input[type="checkbox"]:checked').length;
+                if (checkedCount === 0) {
+                    e.preventDefault();
+                    alert('Silakan pilih minimal satu barang.');
+                }
+            });
+        }
+    });
+
+    function selectAllValuasiBarang(checked) {
+        const checkboxes = document.querySelectorAll('#valuasi_barang_checkboxes input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            if (cb.parentElement.style.display !== 'none') {
+                cb.checked = checked;
+            }
+        });
     }
 </script>
 
