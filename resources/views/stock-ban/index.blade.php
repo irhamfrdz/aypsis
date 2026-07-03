@@ -1613,8 +1613,8 @@
                                     'qty' => $item->qty,
                                     'lokasi' => $item->lokasi ?? '-',
                                     'tanggal_masuk' => $item->tanggal_masuk,
-                                    'url_use' => url('stock-ban/ban-perut/'.$item->id.'/use'),
-                                    'url_detail' => url('stock-ban/ban-perut/'.$item->id),
+                                    'url_use' => url('stock-ban/ban-dalam/'.$item->id.'/use'),
+                                    'url_detail' => url('stock-ban/ban-dalam/'.$item->id),
                                     'url_edit' => route('stock-ban.edit-lain', ['type' => 'ban-perut', 'id' => $item->id]),
                                     'url_destroy' => route('stock-ban.destroy-lain', ['type' => 'ban-perut', 'id' => $item->id]),
                                 ]);
@@ -1631,8 +1631,8 @@
                                     'qty' => $item->qty,
                                     'lokasi' => $item->lokasi ?? '-',
                                     'tanggal_masuk' => $item->tanggal_masuk,
-                                    'url_use' => url('stock-ban/lock-kontainer/'.$item->id.'/use'),
-                                    'url_detail' => url('stock-ban/lock-kontainer/'.$item->id),
+                                    'url_use' => url('stock-ban/ban-dalam/'.$item->id.'/use'),
+                                    'url_detail' => url('stock-ban/ban-dalam/'.$item->id),
                                     'url_edit' => route('stock-ban.edit-lain', ['type' => 'lock-kontainer', 'id' => $item->id]),
                                     'url_destroy' => route('stock-ban.destroy-lain', ['type' => 'lock-kontainer', 'id' => $item->id]),
                                 ]);
@@ -1649,8 +1649,8 @@
                                     'qty' => $item->qty,
                                     'lokasi' => $item->lokasi ?? '-',
                                     'tanggal_masuk' => $item->tanggal_masuk,
-                                    'url_use' => url('stock-ban/ring-velg/'.$item->id.'/use'),
-                                    'url_detail' => url('stock-ban/ring-velg/'.$item->id),
+                                    'url_use' => url('stock-ban/ban-dalam/'.$item->id.'/use'),
+                                    'url_detail' => url('stock-ban/ban-dalam/'.$item->id),
                                     'url_edit' => route('stock-ban.edit-lain', ['type' => 'ring-velg', 'id' => $item->id]),
                                     'url_destroy' => route('stock-ban.destroy-lain', ['type' => 'ring-velg', 'id' => $item->id]),
                                 ]);
@@ -1667,8 +1667,8 @@
                                     'qty' => $item->qty,
                                     'lokasi' => $item->lokasi ?? '-',
                                     'tanggal_masuk' => $item->tanggal_masuk,
-                                    'url_use' => url('stock-ban/velg/'.$item->id.'/use'),
-                                    'url_detail' => url('stock-ban/velg/'.$item->id),
+                                    'url_use' => url('stock-ban/ban-dalam/'.$item->id.'/use'),
+                                    'url_detail' => url('stock-ban/ban-dalam/'.$item->id),
                                     'url_edit' => route('stock-ban.edit-lain', ['type' => 'velg', 'id' => $item->id]),
                                     'url_destroy' => route('stock-ban.destroy-lain', ['type' => 'velg', 'id' => $item->id]),
                                 ]);
