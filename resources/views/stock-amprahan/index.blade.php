@@ -480,58 +480,18 @@
                     <div id="tab-content-store" class="block">
                         <form action="{{ route('stock-amprahan.bulk-store') }}" method="POST" id="bulkStoreForm">
                             @csrf
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Nomor Bukti</label>
-                                    <input type="text" name="bulk_nomor_bukti" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Tanggal Beli</label>
-                                    <input type="date" name="bulk_tanggal_beli" value="{{ date('Y-m-d') }}" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Tipe Amprahan <span class="text-red-500">*</span></label>
-                                    <select name="bulk_type_amprahan" required class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="Pemakaian">Pemakaian</option>
-                                        <option value="Perbaikan">Perbaikan</option>
-                                        <option value="Perlengkapan">Perlengkapan</option>
-                                        <option value="Peralatan">Peralatan</option>
-                                        <option value="Transportasi">Transportasi</option>
-                                        <option value="Inventory">Inventory</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Toko/Vendor <span class="text-red-500">*</span></label>
-                                    <select name="bulk_vendor_amprahan_id" required class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 searchable-select">
-                                        <option value="">Pilih Toko...</option>
-                                        @foreach(\App\Models\VendorAmprahan::orderBy('nama_toko')->get() as $v)
-                                            <option value="{{ $v->id }}">{{ $v->nama_toko }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Lokasi</label>
-                                    <select name="bulk_lokasi" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="">Pilih Lokasi</option>
-                                        <option value="KANTOR AYP JAKARTA">KANTOR AYP JAKARTA</option>
-                                        <option value="KANTOR AYP BATAM">KANTOR AYP BATAM</option>
-                                        <option value="LAINNYA">LAINNYA</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
                             <div class="mt-4 border border-blue-100 bg-blue-50 p-3 rounded-md text-sm text-blue-800 mb-3 flex items-start gap-3">
                                 <i class="fas fa-info-circle mt-0.5"></i>
                                 <div>
                                     <strong>Format Paste (Bisa langsung paste dari Excel):</strong><br>
-                                    <span class="font-mono text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-blue-200">Nama Barang | Jumlah | Satuan (opsional) | Harga Satuan (opsional) | Keterangan (opsional)</span>
+                                    <span class="font-mono text-[10px] sm:text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-blue-200">No. Bukti | Tanggal | Tipe | Vendor | Lokasi | Nama Barang | Jml | Satuan | Harga | Keterangan</span>
                                 </div>
                             </div>
 
                             <label class="block text-sm font-bold text-gray-700 mb-2">Paste Data Di Sini <span class="text-red-500">*</span></label>
                             <textarea name="bulk_data" id="bulk_data_store" rows="8" required
                                 class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono whitespace-pre focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Filter Solar | 5 | Pcs | 85000&#10;Oli Mesin | 2 | Galon | 350000 | Untuk cadangan"></textarea>
+                                placeholder="INV-001 | 2026-07-03 | Pemakaian | Toko Abadi | BATAM | Filter Solar | 5 | Pcs | 85000 | Untuk cadangan&#10;INV-001 | 2026-07-03 | Pemakaian | Toko Abadi | BATAM | Oli Mesin | 2 | Galon | 350000 | "></textarea>
 
                             <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
                                 <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">

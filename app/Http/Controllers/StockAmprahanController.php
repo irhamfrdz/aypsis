@@ -455,16 +455,11 @@ class StockAmprahanController extends Controller
 
     /**
      * Bulk create stock items from textarea input.
-     * Format per line: Nama Barang | Jumlah | Satuan | Harga Satuan | Keterangan
+     * Format per line: No. Bukti | Tanggal | Tipe | Vendor | Lokasi | Nama Barang | Jumlah | Satuan | Harga | Keterangan
      */
     public function bulkStore(Request $request)
     {
         $request->validate([
-            'bulk_nomor_bukti' => 'nullable|string|max:255',
-            'bulk_tanggal_beli' => 'nullable|date',
-            'bulk_type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi,Inventory',
-            'bulk_vendor_amprahan_id' => 'required|exists:vendor_amprahans,id',
-            'bulk_lokasi' => 'nullable|string|max:255',
             'bulk_data' => 'required|string',
         ]);
 
@@ -477,6 +472,10 @@ class StockAmprahanController extends Controller
         $successCount = 0;
         $errors = [];
         $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->get();
+        $vendors = VendorAmprahan::all(); // Load all vendors for text matching
+
+        // Valid tipe amprahan
+        $validTipe = ['Pemakaian', 'Perbaikan', 'Perlengkapan', 'Peralatan', 'Transportasi', 'Inventory'];
 
         DB::beginTransaction();
         try {
@@ -485,16 +484,21 @@ class StockAmprahanController extends Controller
                 // Support both pipe and tab as delimiter
                 $parts = str_contains($line, '|') ? array_map('trim', explode('|', $line)) : array_map('trim', explode("\t", $line));
 
-                if (count($parts) < 2) {
-                    $errors[] = "Baris {$lineNum}: Format tidak valid (minimal: Nama Barang | Jumlah)";
+                if (count($parts) < 7) {
+                    $errors[] = "Baris {$lineNum}: Format tidak valid (minimal 7 kolom: No. Bukti, Tanggal, Tipe, Vendor, Lokasi, Nama Barang, Jumlah)";
                     continue;
                 }
 
-                $namaBarang = $parts[0] ?? '';
-                $jumlah = $parts[1] ?? 0;
-                $satuan = $parts[2] ?? 'Pcs';
-                $hargaSatuan = $parts[3] ?? 0;
-                $keterangan = $parts[4] ?? '';
+                $nomorBukti = $parts[0] ?? '';
+                $tanggalBeli = $parts[1] ?? '';
+                $tipeAmprahan = $parts[2] ?? '';
+                $vendorName = $parts[3] ?? '';
+                $lokasi = $parts[4] ?? '';
+                $namaBarang = $parts[5] ?? '';
+                $jumlah = $parts[6] ?? 0;
+                $satuan = $parts[7] ?? 'Pcs';
+                $hargaSatuan = $parts[8] ?? 0;
+                $keterangan = $parts[9] ?? '';
 
                 if (empty($namaBarang)) {
                     $errors[] = "Baris {$lineNum}: Nama barang kosong";
@@ -503,6 +507,47 @@ class StockAmprahanController extends Controller
 
                 if (! is_numeric($jumlah) || $jumlah <= 0) {
                     $errors[] = "Baris {$lineNum}: Jumlah harus angka positif (ditemukan: '{$jumlah}')";
+                    continue;
+                }
+
+                // Validate Tanggal
+                if (!empty($tanggalBeli) && !strtotime($tanggalBeli)) {
+                    $errors[] = "Baris {$lineNum}: Format tanggal tidak valid (gunakan YYYY-MM-DD)";
+                    continue;
+                }
+
+                // Validate Tipe Amprahan
+                $matchedTipe = null;
+                foreach ($validTipe as $tipe) {
+                    if (strtolower($tipe) === strtolower($tipeAmprahan)) {
+                        $matchedTipe = $tipe;
+                        break;
+                    }
+                }
+                if (!$matchedTipe) {
+                    $errors[] = "Baris {$lineNum}: Tipe amprahan '{$tipeAmprahan}' tidak valid";
+                    continue;
+                }
+
+                // Validate & Match Vendor
+                if (empty($vendorName)) {
+                    $errors[] = "Baris {$lineNum}: Nama vendor kosong";
+                    continue;
+                }
+                
+                $vendorMatch = $vendors->first(function ($v) use ($vendorName) {
+                    return strtolower(trim($v->nama_toko)) === strtolower(trim($vendorName));
+                });
+
+                if (!$vendorMatch) {
+                    // Try partial match if exact match fails
+                    $vendorMatch = $vendors->first(function ($v) use ($vendorName) {
+                        return str_contains(strtolower($v->nama_toko), strtolower(trim($vendorName)));
+                    });
+                }
+
+                if (!$vendorMatch) {
+                    $errors[] = "Baris {$lineNum}: Vendor/Toko '{$vendorName}' tidak ditemukan di database";
                     continue;
                 }
 
@@ -518,17 +563,17 @@ class StockAmprahanController extends Controller
                 });
 
                 StockAmprahan::create([
-                    'nomor_bukti' => $request->bulk_nomor_bukti,
-                    'tanggal_beli' => $request->bulk_tanggal_beli,
-                    'type_amprahan' => $request->bulk_type_amprahan,
+                    'nomor_bukti' => $nomorBukti,
+                    'tanggal_beli' => $tanggalBeli ?: date('Y-m-d'),
+                    'type_amprahan' => $matchedTipe,
                     'nama_barang' => $namaBarang,
                     'master_nama_barang_amprahan_id' => $masterMatch ? $masterMatch->id : $masterItems->first()?->id,
                     'harga_satuan' => $hargaSatuan,
                     'jumlah' => $jumlah,
-                    'satuan' => $satuan,
-                    'lokasi' => $request->bulk_lokasi,
+                    'satuan' => $satuan ?: 'Pcs',
+                    'lokasi' => $lokasi,
                     'keterangan' => $keterangan,
-                    'vendor_amprahan_id' => $request->bulk_vendor_amprahan_id,
+                    'vendor_amprahan_id' => $vendorMatch->id,
                     'created_by' => Auth::id(),
                 ]);
 
