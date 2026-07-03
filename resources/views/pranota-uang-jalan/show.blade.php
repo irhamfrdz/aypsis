@@ -36,7 +36,7 @@
                         </svg>
                         Edit
                     </a>
-                    <button type="button" onclick="openAddUangJalanModal()"
+                    <button type="button" onclick="var m=document.getElementById('addUangJalanModal');if(m){m.style.display='block';document.body.style.overflow='hidden';}else{alert('Modal tidak ditemukan!');}"
                             class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-sm flex items-center">
                         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
