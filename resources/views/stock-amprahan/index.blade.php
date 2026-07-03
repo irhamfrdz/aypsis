@@ -2237,6 +2237,10 @@
 
                 <div class="flex justify-end gap-2 border-t pt-4">
                     <button type="button" onclick="closeValuasiPemakaianModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold">Batal</button>
+                    <button type="button" onclick="submitValuasiPemakaianExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-semibold flex items-center" style="background-color: #059669; color: white;">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Export Excel
+                    </button>
                     <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-semibold flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -2402,6 +2406,22 @@
                 }
             }
         }
+    }
+
+    function submitValuasiPemakaianExcel() {
+        const form = document.querySelector('#valuasiPemakaianModal form');
+        const originalAction = form.action;
+        const originalTarget = form.target;
+        
+        form.action = "{{ route('stock-amprahan.valuasi-pemakaian-excel') }}";
+        form.target = '_self';
+        
+        if (form.reportValidity()) {
+            form.submit();
+        }
+        
+        form.action = originalAction;
+        form.target = originalTarget;
     }
 </script>
 

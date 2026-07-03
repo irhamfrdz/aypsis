@@ -5710,6 +5710,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('stock-amprahan/history/print', [\App\Http\Controllers\StockAmprahanController::class, 'historyPrint'])->name('stock-amprahan.history.print')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi/print', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPrint'])->name('stock-amprahan.valuasi-print')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi-pemakaian/print', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPemakaianPrint'])->name('stock-amprahan.valuasi-pemakaian-print')->middleware('can:stock-amprahan-view');
+    Route::get('stock-amprahan/valuasi-pemakaian/excel', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPemakaianExcel'])->name('stock-amprahan.valuasi-pemakaian-excel')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi-pembelian/print', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPembelianPrint'])->name('stock-amprahan.valuasi-pembelian-print')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/{id}/history', [\App\Http\Controllers\StockAmprahanController::class, 'history'])->name('stock-amprahan.history')->middleware('can:stock-amprahan-view');
     Route::resource('stock-amprahan', \App\Http\Controllers\StockAmprahanController::class)
