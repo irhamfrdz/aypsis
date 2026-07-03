@@ -453,6 +453,204 @@ class StockAmprahanController extends Controller
         return redirect()->route('stock-amprahan.index')->with('success', 'Data stock amprahan berhasil dihapus');
     }
 
+    /**
+     * Bulk create stock items from textarea input.
+     * Format per line: Nama Barang | Jumlah | Satuan | Harga Satuan | Keterangan
+     */
+    public function bulkStore(Request $request)
+    {
+        $request->validate([
+            'bulk_nomor_bukti' => 'nullable|string|max:255',
+            'bulk_tanggal_beli' => 'nullable|date',
+            'bulk_type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi,Inventory',
+            'bulk_vendor_amprahan_id' => 'required|exists:vendor_amprahans,id',
+            'bulk_lokasi' => 'nullable|string|max:255',
+            'bulk_data' => 'required|string',
+        ]);
+
+        $lines = array_filter(array_map('trim', explode("\n", $request->bulk_data)));
+
+        if (empty($lines)) {
+            return redirect()->back()->with('error', 'Tidak ada data yang valid untuk diproses.');
+        }
+
+        $successCount = 0;
+        $errors = [];
+        $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->get();
+
+        DB::beginTransaction();
+        try {
+            foreach ($lines as $index => $line) {
+                $lineNum = $index + 1;
+                // Support both pipe and tab as delimiter
+                $parts = str_contains($line, '|') ? array_map('trim', explode('|', $line)) : array_map('trim', explode("\t", $line));
+
+                if (count($parts) < 2) {
+                    $errors[] = "Baris {$lineNum}: Format tidak valid (minimal: Nama Barang | Jumlah)";
+                    continue;
+                }
+
+                $namaBarang = $parts[0] ?? '';
+                $jumlah = $parts[1] ?? 0;
+                $satuan = $parts[2] ?? 'Pcs';
+                $hargaSatuan = $parts[3] ?? 0;
+                $keterangan = $parts[4] ?? '';
+
+                if (empty($namaBarang)) {
+                    $errors[] = "Baris {$lineNum}: Nama barang kosong";
+                    continue;
+                }
+
+                if (! is_numeric($jumlah) || $jumlah <= 0) {
+                    $errors[] = "Baris {$lineNum}: Jumlah harus angka positif (ditemukan: '{$jumlah}')";
+                    continue;
+                }
+
+                // Clean harga_satuan (remove dots/commas for thousand separators)
+                $hargaSatuan = str_replace(['.', ','], ['', '.'], $hargaSatuan);
+                if (! is_numeric($hargaSatuan)) {
+                    $hargaSatuan = 0;
+                }
+
+                // Auto-match master nama barang
+                $masterMatch = $masterItems->first(function ($m) use ($namaBarang) {
+                    return strtolower(trim($m->nama_barang)) === strtolower(trim($namaBarang));
+                });
+
+                StockAmprahan::create([
+                    'nomor_bukti' => $request->bulk_nomor_bukti,
+                    'tanggal_beli' => $request->bulk_tanggal_beli,
+                    'type_amprahan' => $request->bulk_type_amprahan,
+                    'nama_barang' => $namaBarang,
+                    'master_nama_barang_amprahan_id' => $masterMatch ? $masterMatch->id : $masterItems->first()?->id,
+                    'harga_satuan' => $hargaSatuan,
+                    'jumlah' => $jumlah,
+                    'satuan' => $satuan,
+                    'lokasi' => $request->bulk_lokasi,
+                    'keterangan' => $keterangan,
+                    'vendor_amprahan_id' => $request->bulk_vendor_amprahan_id,
+                    'created_by' => Auth::id(),
+                ]);
+
+                $successCount++;
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Gagal menyimpan data: '.$e->getMessage());
+        }
+
+        $message = "{$successCount} item stock berhasil ditambahkan.";
+        if (! empty($errors)) {
+            $message .= ' '.count($errors).' baris error: '.implode('; ', array_slice($errors, 0, 5));
+            if (count($errors) > 5) {
+                $message .= '... dan '.(count($errors) - 5).' error lainnya.';
+            }
+        }
+
+        return redirect()->route('stock-amprahan.index')->with('success', $message);
+    }
+
+    /**
+     * Bulk record usage from textarea input.
+     * Format per line: ID Stock / Nama Barang | Jumlah
+     */
+    public function bulkUsage(Request $request)
+    {
+        $request->validate([
+            'bulk_usage_penerima_id' => 'required|exists:karyawans,id',
+            'bulk_usage_tanggal' => 'required|date',
+            'bulk_usage_keterangan' => 'required|string',
+            'bulk_usage_data' => 'required|string',
+        ]);
+
+        $lines = array_filter(array_map('trim', explode("\n", $request->bulk_usage_data)));
+
+        if (empty($lines)) {
+            return redirect()->back()->with('error', 'Tidak ada data yang valid untuk diproses.');
+        }
+
+        $successCount = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+        try {
+            foreach ($lines as $index => $line) {
+                $lineNum = $index + 1;
+                $parts = str_contains($line, '|') ? array_map('trim', explode('|', $line)) : array_map('trim', explode("\t", $line));
+
+                if (count($parts) < 2) {
+                    $errors[] = "Baris {$lineNum}: Format tidak valid (minimal: ID/Nama | Jumlah)";
+                    continue;
+                }
+
+                $identifier = $parts[0] ?? '';
+                $jumlah = $parts[1] ?? 0;
+
+                if (empty($identifier)) {
+                    $errors[] = "Baris {$lineNum}: ID/Nama barang kosong";
+                    continue;
+                }
+
+                if (! is_numeric($jumlah) || $jumlah <= 0) {
+                    $errors[] = "Baris {$lineNum}: Jumlah harus angka positif";
+                    continue;
+                }
+
+                // Find stock item by ID or name
+                if (is_numeric($identifier)) {
+                    $stockItem = StockAmprahan::find((int) $identifier);
+                } else {
+                    $stockItem = StockAmprahan::where('nama_barang', 'like', '%'.trim($identifier).'%')
+                        ->where('jumlah', '>', 0)
+                        ->first();
+                }
+
+                if (! $stockItem) {
+                    $errors[] = "Baris {$lineNum}: Barang '{$identifier}' tidak ditemukan";
+                    continue;
+                }
+
+                if ($jumlah > $stockItem->jumlah) {
+                    $errors[] = "Baris {$lineNum}: Jumlah ({$jumlah}) melebihi stock ({$stockItem->jumlah}) untuk '{$stockItem->nama_barang}'";
+                    continue;
+                }
+
+                // Decrement stock
+                $stockItem->jumlah -= $jumlah;
+                $stockItem->updated_by = Auth::id();
+                $stockItem->save();
+
+                // Create usage record
+                StockAmprahanUsage::create([
+                    'stock_amprahan_id' => $stockItem->id,
+                    'penerima_id' => $request->bulk_usage_penerima_id,
+                    'jumlah' => $jumlah,
+                    'tanggal_pengambilan' => $request->bulk_usage_tanggal,
+                    'keterangan' => $request->bulk_usage_keterangan,
+                    'created_by' => Auth::id(),
+                ]);
+
+                $successCount++;
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Gagal menyimpan data: '.$e->getMessage());
+        }
+
+        $message = "{$successCount} pengambilan barang berhasil dicatat.";
+        if (! empty($errors)) {
+            $message .= ' '.count($errors).' baris error: '.implode('; ', array_slice($errors, 0, 5));
+        }
+
+        return redirect()->route('stock-amprahan.index')->with('success', $message);
+    }
+
     public function storeUsage(Request $request, $id)
     {
         $item = StockAmprahan::findOrFail($id);
