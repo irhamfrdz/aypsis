@@ -484,14 +484,14 @@
                                 <i class="fas fa-info-circle mt-0.5"></i>
                                 <div>
                                     <strong>Format Paste (Bisa langsung paste dari Excel):</strong><br>
-                                    <span class="font-mono text-[10px] sm:text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-blue-200">No. Bukti | Tanggal | Tipe | Vendor | Lokasi | Nama Barang | Jml | Satuan | Harga | Keterangan</span>
+                                    <span class="font-mono text-[10px] sm:text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-blue-200">No. Bukti ; Tanggal ; Tipe ; Vendor ; Lokasi ; Nama Barang ; Jml ; Satuan ; Harga ; Keterangan</span>
                                 </div>
                             </div>
 
                             <label class="block text-sm font-bold text-gray-700 mb-2">Paste Data Di Sini <span class="text-red-500">*</span></label>
                             <textarea name="bulk_data" id="bulk_data_store" rows="8" required
                                 class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono whitespace-pre focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="INV-001 | 2026-07-03 | Pemakaian | Toko Abadi | BATAM | Filter Solar | 5 | Pcs | 85000 | Untuk cadangan&#10;INV-001 | 2026-07-03 | Pemakaian | Toko Abadi | BATAM | Oli Mesin | 2 | Galon | 350000 | "></textarea>
+                                placeholder="INV-001 ; 2026-07-03 ; Pemakaian ; Toko Abadi ; BATAM ; Filter Solar ; 5 ; Pcs ; 85000 ; Untuk cadangan&#10;INV-001 ; 2026-07-03 ; Pemakaian ; Toko Abadi ; BATAM ; Oli Mesin ; 2 ; Galon ; 350000 ; "></textarea>
 
                             <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
                                 <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
@@ -532,7 +532,7 @@
                                 <i class="fas fa-exclamation-circle mt-0.5"></i>
                                 <div>
                                     <strong>Format Paste (Bisa langsung paste dari Excel):</strong><br>
-                                    <span class="font-mono text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-orange-200">ID Stock (atau Nama Barang) | Jumlah Ambil</span><br>
+                                    <span class="font-mono text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-orange-200">ID Stock (atau Nama Barang) ; Jumlah Ambil</span><br>
                                     <em class="text-xs opacity-75 mt-1 block">Pastikan ID atau nama barang persis sama dengan yang ada di sistem, dan stock mencukupi.</em>
                                 </div>
                             </div>
@@ -540,7 +540,7 @@
                             <label class="block text-sm font-bold text-gray-700 mb-2">Paste Data Di Sini <span class="text-red-500">*</span></label>
                             <textarea name="bulk_usage_data" id="bulk_data_usage" rows="8" required
                                 class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono whitespace-pre focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                placeholder="105 | 2&#10;Oli Mesin SAE 40 | 1"></textarea>
+                                placeholder="105 ; 2&#10;Oli Mesin SAE 40 ; 1"></textarea>
 
                             <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
                                 <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">

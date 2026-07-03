@@ -481,8 +481,17 @@ class StockAmprahanController extends Controller
         try {
             foreach ($lines as $index => $line) {
                 $lineNum = $index + 1;
-                // Support both pipe and tab as delimiter
-                $parts = str_contains($line, '|') ? array_map('trim', explode('|', $line)) : array_map('trim', explode("\t", $line));
+                // Support pipe, semicolon, and tab as delimiter
+                if (str_contains($line, "\t")) {
+                    $parts = array_map('trim', explode("\t", $line));
+                } elseif (str_contains($line, '|')) {
+                    $parts = array_map('trim', explode('|', $line));
+                } elseif (str_contains($line, ';')) {
+                    $parts = array_map('trim', explode(';', $line));
+                } else {
+                    // Fallback to try space or just 1 column
+                    $parts = [$line];
+                }
 
                 if (count($parts) < 7) {
                     $errors[] = "Baris {$lineNum}: Format tidak valid (minimal 7 kolom: No. Bukti, Tanggal, Tipe, Vendor, Lokasi, Nama Barang, Jumlah)";
@@ -624,7 +633,16 @@ class StockAmprahanController extends Controller
         try {
             foreach ($lines as $index => $line) {
                 $lineNum = $index + 1;
-                $parts = str_contains($line, '|') ? array_map('trim', explode('|', $line)) : array_map('trim', explode("\t", $line));
+                // Support pipe, semicolon, and tab as delimiter
+                if (str_contains($line, "\t")) {
+                    $parts = array_map('trim', explode("\t", $line));
+                } elseif (str_contains($line, '|')) {
+                    $parts = array_map('trim', explode('|', $line));
+                } elseif (str_contains($line, ';')) {
+                    $parts = array_map('trim', explode(';', $line));
+                } else {
+                    $parts = [$line];
+                }
 
                 if (count($parts) < 2) {
                     $errors[] = "Baris {$lineNum}: Format tidak valid (minimal: ID/Nama | Jumlah)";
