@@ -3057,6 +3057,10 @@ Route::middleware([
             ->name('pranota-uang-jalan.remove-uang-jalan')
             ->middleware('can:pranota-uang-jalan-update');
 
+        Route::post('pranota-uang-jalan/{pranotaUangJalan}/add-uang-jalan', [\App\Http\Controllers\PranotaSuratJalanController::class, 'addUangJalan'])
+            ->name('pranota-uang-jalan.add-uang-jalan')
+            ->middleware('can:pranota-uang-jalan-update');
+
         Route::resource('pranota-uang-jalan', \App\Http\Controllers\PranotaSuratJalanController::class)
             ->middleware([
                 'index' => 'can:pranota-uang-jalan-view',
