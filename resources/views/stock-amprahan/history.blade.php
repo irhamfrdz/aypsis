@@ -220,9 +220,9 @@
                             {{ $usage->truck ? ($usage->truck->nomor_polisi . ' - ' . $usage->truck->merek) : '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            @if($usage->chasisBatam)
+                            @if(isset($usage->chasisBatam) && $usage->chasisBatam)
                                 {{ $usage->chasisBatam->kode }}
-                            @elseif($usage->buntut)
+                            @elseif(isset($usage->buntut) && $usage->buntut)
                                 {{ $usage->buntut->no_kir ?: ($usage->buntut->nomor_polisi ?: '-') }}
                             @else
                                 -
