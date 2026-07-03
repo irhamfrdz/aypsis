@@ -145,12 +145,18 @@ class StockAmprahanController extends Controller
         }
 
         $masterItems = \App\Models\MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
+        $uniqueNamaBarang = \App\Models\StockAmprahan::select('nama_barang')
+            ->whereNotNull('nama_barang')
+            ->where('nama_barang', '!=', '')
+            ->distinct()
+            ->orderBy('nama_barang')
+            ->pluck('nama_barang');
         $vendors = \App\Models\VendorAmprahan::orderBy('nama_toko')->get();
         $chasis = MasterChasisBatam::orderBy('kode')->get();
 
         $banks = Bank::orderBy('name')->pluck('name')->toArray();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'selectedMobil', 'banks', 'vendors', 'chasis'));
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'uniqueNamaBarang', 'selectedMobil', 'banks', 'vendors', 'chasis'));
     }
 
     public function exportExcel(Request $request)
@@ -1419,18 +1425,22 @@ class StockAmprahanController extends Controller
     public function valuasiPrint(Request $request)
     {
         $request->validate([
-            'master_id' => 'required|exists:master_nama_barang_amprahans,id',
+            'nama_barang' => 'required|string',
             'from_date' => 'required|date',
             'to_date' => 'required|date',
         ]);
 
-        $masterItem = \App\Models\MasterNamaBarangAmprahan::findOrFail($request->master_id);
+        $namaBarang = $request->nama_barang;
+        $masterItem = (object) [
+            'id' => '-',
+            'nama_barang' => $namaBarang
+        ];
         $fromDate = \Carbon\Carbon::parse($request->from_date)->startOfDay();
         $toDate = \Carbon\Carbon::parse($request->to_date)->endOfDay();
 
         // Saldo Awal (sebelum from_date)
         // Masuk sebelum from_date
-        $masukSebelumQuery = \App\Models\StockAmprahan::where('master_nama_barang_amprahan_id', $masterItem->id)
+        $masukSebelumQuery = \App\Models\StockAmprahan::where('nama_barang', $namaBarang)
             ->where(function ($q) use ($fromDate) {
                 $q->whereDate('tanggal_beli', '<', $fromDate)
                     ->orWhere(function ($sq) use ($fromDate) {
@@ -1460,8 +1470,8 @@ class StockAmprahanController extends Controller
         }
 
         // Keluar sebelum from_date
-        $keluarSebelumQuery = \App\Models\StockAmprahanUsage::whereHas('stockAmprahan', function ($q) use ($masterItem) {
-            $q->where('master_nama_barang_amprahan_id', $masterItem->id);
+        $keluarSebelumQuery = \App\Models\StockAmprahanUsage::whereHas('stockAmprahan', function ($q) use ($namaBarang) {
+            $q->where('nama_barang', $namaBarang);
         })
             ->whereDate('tanggal_pengambilan', '<', $fromDate);
 
@@ -1487,7 +1497,7 @@ class StockAmprahanController extends Controller
         $saldoAwalNilai = $nilaiMasukSebelum - $nilaiKeluarSebelum;
 
         // Transaksi dalam periode
-        $additionsQuery = \App\Models\StockAmprahan::where('master_nama_barang_amprahan_id', $masterItem->id)
+        $additionsQuery = \App\Models\StockAmprahan::where('nama_barang', $namaBarang)
             ->where(function ($q) use ($fromDate, $toDate) {
                 $q->where(function ($qq) use ($fromDate, $toDate) {
                     $qq->whereNotNull('tanggal_beli')->whereBetween('tanggal_beli', [$fromDate, $toDate]);
@@ -1522,8 +1532,8 @@ class StockAmprahanController extends Controller
         });
 
         $usagesQuery = \App\Models\StockAmprahanUsage::with('stockAmprahan')
-            ->whereHas('stockAmprahan', function ($q) use ($masterItem) {
-                $q->where('master_nama_barang_amprahan_id', $masterItem->id);
+            ->whereHas('stockAmprahan', function ($q) use ($namaBarang) {
+                $q->where('nama_barang', $namaBarang);
             })
             ->whereBetween('tanggal_pengambilan', [$fromDate, $toDate]);
 
@@ -1597,6 +1607,194 @@ class StockAmprahanController extends Controller
             'saldoAwalNilai' => $saldoAwalNilai,
             'transaksi' => $transaksi,
         ]);
+    }
+
+    public function valuasiExcel(Request $request)
+    {
+        $request->validate([
+            'nama_barang' => 'required|string',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date',
+        ]);
+
+        $namaBarang = $request->nama_barang;
+        $masterItem = (object) [
+            'id' => '-',
+            'nama_barang' => $namaBarang
+        ];
+        $fromDate = \Carbon\Carbon::parse($request->from_date)->startOfDay();
+        $toDate = \Carbon\Carbon::parse($request->to_date)->endOfDay();
+
+        // Saldo Awal (sebelum from_date)
+        // Masuk sebelum from_date
+        $masukSebelumQuery = \App\Models\StockAmprahan::where('nama_barang', $namaBarang)
+            ->where(function ($q) use ($fromDate) {
+                $q->whereDate('tanggal_beli', '<', $fromDate)
+                    ->orWhere(function ($sq) use ($fromDate) {
+                        $sq->whereNull('tanggal_beli')->whereDate('created_at', '<', $fromDate);
+                    });
+            });
+
+        // Filter based on Karyawan Cabang (Branch)
+        $user = Auth::user();
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $masukSebelumQuery->where('lokasi', 'like', '%BATAM%');
+            }
+        }
+
+        $masukSebelum = $masukSebelumQuery->get();
+        $qtyMasukSebelum = 0;
+        $nilaiMasukSebelum = 0;
+
+        foreach ($masukSebelum as $masuk) {
+            $totalUsage = $masuk->usages()->sum('jumlah');
+            $initialStock = $masuk->jumlah + $totalUsage;
+            $qtyMasukSebelum += $initialStock;
+            $nilaiMasukSebelum += ($initialStock * ($masuk->harga_satuan ?? 0));
+        }
+
+        // Keluar sebelum from_date
+        $keluarSebelumQuery = \App\Models\StockAmprahanUsage::whereHas('stockAmprahan', function ($q) use ($namaBarang) {
+            $q->where('nama_barang', $namaBarang);
+        })
+            ->whereDate('tanggal_pengambilan', '<', $fromDate);
+
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $keluarSebelumQuery->whereHas('stockAmprahan', function ($q) {
+                    $q->where('lokasi', 'like', '%BATAM%');
+                });
+            }
+        }
+
+        $keluarSebelum = $keluarSebelumQuery->with('stockAmprahan')->get();
+        $qtyKeluarSebelum = 0;
+        $nilaiKeluarSebelum = 0;
+
+        foreach ($keluarSebelum as $keluar) {
+            $qtyKeluarSebelum += $keluar->jumlah;
+            $nilaiKeluarSebelum += ($keluar->jumlah * ($keluar->stockAmprahan->harga_satuan ?? 0));
+        }
+
+        $saldoAwalQty = $qtyMasukSebelum - $qtyKeluarSebelum;
+        $saldoAwalNilai = $nilaiMasukSebelum - $nilaiKeluarSebelum;
+
+        // Transaksi dalam periode
+        $additionsQuery = \App\Models\StockAmprahan::where('nama_barang', $namaBarang)
+            ->where(function ($q) use ($fromDate, $toDate) {
+                $q->where(function ($qq) use ($fromDate, $toDate) {
+                    $qq->whereNotNull('tanggal_beli')->whereBetween('tanggal_beli', [$fromDate, $toDate]);
+                })->orWhere(function ($sq) use ($fromDate, $toDate) {
+                    $sq->whereNull('tanggal_beli')->whereBetween('created_at', [$fromDate, $toDate]);
+                });
+            });
+
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $additionsQuery->where('lokasi', 'like', '%BATAM%');
+            }
+        }
+
+        $additions = $additionsQuery->get()->map(function ($item) {
+            $totalUsage = $item->usages()->sum('jumlah');
+            $initialStock = $item->jumlah + $totalUsage;
+
+            return (object) [
+                'tanggal' => $item->tanggal_beli ? $item->tanggal_beli->format('d M Y') : $item->created_at->format('d M Y'),
+                'tanggal_raw' => $item->tanggal_beli ?? $item->created_at,
+                'tipe' => $item->type_amprahan ?? 'Penerimaan Barang',
+                'nama_barang' => $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-'),
+                'no_faktur' => $item->nomor_bukti ?? '-',
+                'referensi' => $item->vendorAmprahan->nama_toko ?? '-',
+                'kts_masuk' => $initialStock,
+                'nilai_masuk' => $initialStock * ($item->harga_satuan ?? 0),
+                'kts_keluar' => 0,
+                'nilai_keluar' => 0,
+            ];
+        });
+
+        $usagesQuery = \App\Models\StockAmprahanUsage::with('stockAmprahan')
+            ->whereHas('stockAmprahan', function ($q) use ($namaBarang) {
+                $q->where('nama_barang', $namaBarang);
+            })
+            ->whereBetween('tanggal_pengambilan', [$fromDate, $toDate]);
+
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $usagesQuery->whereHas('stockAmprahan', function ($q) {
+                    $q->where('lokasi', 'like', '%BATAM%');
+                });
+            }
+        }
+
+        $usages = $usagesQuery->get()->map(function ($usage) {
+            $noFaktur = '-';
+            if ($usage->kendaraan) {
+                $noFaktur = $usage->kendaraan->nomor_polisi;
+            } elseif ($usage->kapal) {
+                $noFaktur = $usage->kapal->nama_kapal;
+            } elseif ($usage->alatBerat) {
+                $noFaktur = $usage->alatBerat->nama;
+            } elseif ($usage->kantor) {
+                $noFaktur = $usage->kantor;
+            }
+
+            return (object) [
+                'tanggal' => \Carbon\Carbon::parse($usage->tanggal_pengambilan)->format('d M Y'),
+                'tanggal_raw' => $usage->tanggal_pengambilan,
+                'tipe' => 'Pemakaian Bahan Baku',
+                'nama_barang' => $usage->stockAmprahan->nama_barang ?? ($usage->stockAmprahan->masterNamaBarangAmprahan->nama_barang ?? '-'),
+                'no_faktur' => '-',
+                'referensi' => $noFaktur,
+                'kts_masuk' => 0,
+                'nilai_masuk' => 0,
+                'kts_keluar' => $usage->jumlah,
+                'nilai_keluar' => $usage->jumlah * ($usage->stockAmprahan->harga_satuan ?? 0),
+            ];
+        });
+
+        $transaksi = $additions->concat($usages)->sort(function ($a, $b) {
+            $timeA = \Carbon\Carbon::parse($a->tanggal_raw)->timestamp;
+            $timeB = \Carbon\Carbon::parse($b->tanggal_raw)->timestamp;
+
+            if ($timeA == $timeB) {
+                $aIsMasuk = $a->kts_masuk > 0 ? 1 : 0;
+                $bIsMasuk = $b->kts_masuk > 0 ? 1 : 0;
+
+                return $bIsMasuk <=> $aIsMasuk;
+            }
+
+            return $timeA <=> $timeB;
+        })->values();
+
+        $runningQty = $saldoAwalQty;
+        $runningNilai = $saldoAwalNilai;
+
+        foreach ($transaksi as $trx) {
+            $runningQty += $trx->kts_masuk - $trx->kts_keluar;
+            $runningNilai += $trx->nilai_masuk - $trx->nilai_keluar;
+
+            $trx->kuantitas = $runningQty;
+            $trx->nilai_akhir = $runningNilai;
+        }
+
+        $data = [
+            'masterItem' => $masterItem,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'saldoAwalQty' => $saldoAwalQty,
+            'saldoAwalNilai' => $saldoAwalNilai,
+            'transaksi' => $transaksi,
+        ];
+
+        $fileName = 'Valuasi_Persediaan_'.str_replace(' ', '_', $masterItem->nama_barang).'_'.date('Ymd_His').'.xlsx';
+
+        return Excel::download(new \App\Exports\ValuasiPersediaanExport($data), $fileName);
     }
 
     public function valuasiPemakaianPrint(Request $request)

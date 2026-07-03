@@ -2092,10 +2092,10 @@
             <form action="{{ route('stock-amprahan.valuasi-print') }}" method="GET" target="_blank" class="mt-4">
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Barang <span class="text-red-500">*</span></label>
-                    <select name="master_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700 searchable-select">
-                        <option value="">-- Pilih Master Barang --</option>
-                        @foreach($masterItems as $item)
-                            <option value="{{ $item->id }}">{{ $item->nama_barang }}</option>
+                    <select name="nama_barang" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700 searchable-select">
+                        <option value="">-- Pilih Nama Barang --</option>
+                        @foreach($uniqueNamaBarang as $name)
+                            <option value="{{ $name }}">{{ $name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -2113,6 +2113,10 @@
 
                 <div class="flex justify-end gap-2 border-t pt-4">
                     <button type="button" onclick="closeValuasiModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold">Batal</button>
+                    <button type="button" onclick="submitValuasiPersediaanExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-semibold flex items-center" style="background-color: #059669; color: white;">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Export Excel
+                    </button>
                     <button type="submit" class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors text-sm font-semibold flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -2414,6 +2418,22 @@
         const originalTarget = form.target;
         
         form.action = "{{ route('stock-amprahan.valuasi-pemakaian-excel') }}";
+        form.target = '_self';
+        
+        if (form.reportValidity()) {
+            form.submit();
+        }
+        
+        form.action = originalAction;
+        form.target = originalTarget;
+    }
+
+    function submitValuasiPersediaanExcel() {
+        const form = document.querySelector('#valuasiModal form');
+        const originalAction = form.action;
+        const originalTarget = form.target;
+        
+        form.action = "{{ route('stock-amprahan.valuasi-excel') }}";
         form.target = '_self';
         
         if (form.reportValidity()) {
