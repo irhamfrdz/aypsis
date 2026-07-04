@@ -679,7 +679,10 @@ class MasterKapalController extends Controller
             ];
         })->values();
 
-        return response()->json($grouped);
+        return response()->json([
+            'next_nomor_surat' => \App\Models\KapalSpkbm::generateNomor(),
+            'voyages' => $grouped
+        ]);
     }
 
     /**

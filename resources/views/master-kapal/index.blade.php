@@ -395,7 +395,11 @@
             }
         })
         .then(r => r.json())
-        .then(data => {
+        .then(res => {
+            if (res.next_nomor_surat) {
+                document.getElementById('nomor_surat').value = res.next_nomor_surat;
+            }
+            const data = res.voyages || [];
             spkbmVoyageData = data;
             voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
             data.forEach(v => {
