@@ -99,7 +99,7 @@ class ProspekBatamController extends Controller
             }
 
             // Allow configurable rows per page, default to 15. Validate allowed values to prevent abuse.
-            $allowedPerPage = [10, 25, 50, 100];
+            $allowedPerPage = [10, 25, 50, 100, 200];
             $perPage = (int) $request->get('per_page', 10);
             if (! in_array($perPage, $allowedPerPage)) {
                 $perPage = 10;
