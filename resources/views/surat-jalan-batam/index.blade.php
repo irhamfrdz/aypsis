@@ -627,6 +627,7 @@ function updateStatus(suratJalanId, status) {
 function printPreprinted(suratJalanId) {
     window.open(`/surat-jalan-batam/${suratJalanId}/print-preprinted`, '_blank');
 }
+</script>
 
     <!-- Modal Buat Surat Jalan Batam Massal -->
     <div id="modalBuatSuratJalanMassal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
