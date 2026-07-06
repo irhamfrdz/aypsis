@@ -650,7 +650,7 @@ function printPreprinted(suratJalanId) {
                 <div id="bulkModalAlertArea"></div>
 
                 <!-- Shared Fields -->
-                <div class="bg-gray-50 p-4 rounded-xl mb-6 border border-gray-150">
+                <div class="hidden">
                     <h4 class="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">Shared Fields / Default Value</h4>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
@@ -706,10 +706,10 @@ function printPreprinted(suratJalanId) {
                     </h4>
                     <p class="text-xs text-indigo-700 mb-1 font-semibold">Format baris data:</p>
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
-                        No SJ ; No Kontainer ; No Seal ; Size (20FT/40FT) ; Tipe ; F/E (Full/Empty) ; Supir ; No Plat ; Kenek ; Krani ; Jenis Barang ; Tujuan Pengiriman ; Tanggal
+                        No SJ ; No Kontainer ; No Seal ; Size (20FT/40FT) ; Tipe ; F/E (Full/Empty) ; Supir ; No Plat ; Kenek ; Krani ; Jenis Barang ; Tujuan Pengiriman ; Tanggal ; Term ; Pengirim ; Penerima ; Alamat ; Tujuan Pengambilan
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJB/2026/06/0001;CONT123456;SEAL123;20FT;Dry Container;Full;Supir Andi;BP 1234 XX;Kenek Budi;Krani Cici;Beras;Batu Ampar;2026-07-02
+                        <strong>Contoh:</strong> SJB/2026/06/0001;CONT123456;SEAL123;20FT;Dry Container;Full;Supir Andi;BP 1234 XX;Kenek Budi;Krani Cici;Beras;Batu Ampar;2026-07-02;BTJ;PT Pengirim;Penerima Indah;Jl. Alamat;Tujuan Ambil
                     </p>
                 </div>
 
@@ -755,6 +755,11 @@ function printPreprinted(suratJalanId) {
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Plat</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Term</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Alamat</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
                                     <th class="px-3 py-2 text-right font-medium text-gray-500 uppercase tracking-wider">Est. Uang Jalan</th>
                                 </tr>
                             </thead>
@@ -851,7 +856,8 @@ function parseBulkData() {
     const lines = rawText.split('\n').filter(line => line.trim() !== '');
     const columnKeys = [
         'nomor_surat_jalan', 'no_kontainer', 'no_seal', 'size', 'tipe_kontainer', 
-        'f_e', 'supir', 'no_plat', 'kenek', 'krani', 'jenis_barang', 'tujuan_pengiriman', 'tanggal_surat_jalan'
+        'f_e', 'supir', 'no_plat', 'kenek', 'krani', 'jenis_barang', 'tujuan_pengiriman', 'tanggal_surat_jalan',
+        'term', 'pengirim', 'penerima', 'alamat', 'tujuan_pengambilan'
     ];
 
     bulkParsedRows = [];
@@ -915,6 +921,11 @@ function parseBulkData() {
             row.supir || '-',
             row.no_plat || '-',
             resolvedTujuan || '-',
+            row.term || '-',
+            row.pengirim || '-',
+            row.penerima || '-',
+            row.alamat || '-',
+            row.tujuan_pengambilan || '-',
             estUangJalan
         ];
 
@@ -924,7 +935,7 @@ function parseBulkData() {
             if (i === 1) {
                 td.className += ' font-semibold text-indigo-700';
             }
-            if (i === 11) {
+            if (i === 16) {
                 td.className += ' text-right font-mono font-bold';
             }
             td.innerHTML = val;
