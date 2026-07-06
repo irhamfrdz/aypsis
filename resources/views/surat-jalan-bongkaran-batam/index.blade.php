@@ -887,7 +887,7 @@
                 <div id="bulkModalAlertArea"></div>
 
                 <!-- Shared Fields -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="hidden">
                     <!-- Lokasi -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
@@ -931,10 +931,10 @@
                     </h4>
                     <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
-                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Kenek ; Krani ; Aktifitas
+                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Kenek ; Krani ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty)
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar;batam;Batu Ampar;Full
                     </p>
                 </div>
 
@@ -978,6 +978,9 @@
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Kenek</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Krani</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Aktifitas</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tujuan Pengiriman</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">F/E</th>
                                 </tr>
                             </thead>
                             <tbody id="bulkPreviewBody" class="bg-white divide-y divide-gray-100">
@@ -2698,7 +2701,7 @@ function parseBulkData() {
     const lines = rawText.split('\n').filter(line => line.trim() !== '');
     const columnKeys = [
         'nomor_surat_jalan', 'tanggal_surat_jalan', 'no_kontainer',
-        'supir', 'no_plat', 'kenek', 'krani', 'aktifitas'
+        'supir', 'no_plat', 'kenek', 'krani', 'aktifitas', 'lokasi', 'tujuan_pengiriman', 'f_e'
     ];
 
     bulkParsedRows = [];
@@ -2735,7 +2738,10 @@ function parseBulkData() {
             row.no_plat || '-',
             row.kenek || '-',
             row.krani || '-',
-            row.aktifitas || '-'
+            row.aktifitas || '-',
+            row.lokasi || 'batam',
+            row.tujuan_pengiriman || '-',
+            row.f_e || 'Full'
         ];
 
         cellValues.forEach((val, i) => {

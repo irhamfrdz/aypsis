@@ -812,8 +812,12 @@ class SuratJalanBongkaranBatamController extends Controller
                     $uangJalanNominal = 0;
                     $finalRing = null;
 
-                    if (! empty($tujuanPengambilan)) {
-                        if ($lokasi === 'batam') {
+                    $rowLokasi = strtolower(trim($row['lokasi'] ?? '')) ?: $lokasi;
+                    $rowTujuan = trim($row['tujuan_pengiriman'] ?? ($row['tujuan_pengambilan'] ?? '')) ?: $tujuanPengambilan;
+                    $rowFE = trim($row['f_e'] ?? '') ?: $f_e;
+
+                    if (! empty($rowTujuan)) {
+                        if ($rowLokasi === 'batam') {
                             // Find Pricelist Uang Jalan Batam
                             $pricelistItems = \App\Models\PricelistUangJalanBatam::activeBbm()->get();
                             $matchedItem = null;
@@ -822,7 +826,7 @@ class SuratJalanBongkaranBatamController extends Controller
                                     continue;
                                 }
                                 $subWilayahs = array_map('trim', explode(',', $item->wilayah));
-                                if (in_array($tujuanPengambilan, $subWilayahs)) {
+                                if (in_array($rowTujuan, $subWilayahs)) {
                                     $matchedItem = $item;
                                     break;
                                 }
@@ -838,7 +842,7 @@ class SuratJalanBongkaranBatamController extends Controller
                                         $is20ft = false;
                                     }
                                 }
-                                $isFull = (strtolower($f_e) === 'full');
+                                $isFull = (strtolower($rowFE) === 'full');
 
                                 if ($is20ft) {
                                     $uangJalanNominal = $isFull ? ($matchedItem->tarif_20ft_full ?? 0) : ($matchedItem->tarif_20ft_empty ?? 0);
@@ -848,7 +852,7 @@ class SuratJalanBongkaranBatamController extends Controller
                             }
                         } else {
                             // Jakarta location
-                            $tujuanUtama = \App\Models\TujuanKegiatanUtama::where('ke', $tujuanPengambilan)->first();
+                            $tujuanUtama = \App\Models\TujuanKegiatanUtama::where('ke', $rowTujuan)->first();
                             if ($tujuanUtama) {
                                 $is20ft = true;
                                 if (! empty($finalSize)) {
@@ -881,9 +885,9 @@ class SuratJalanBongkaranBatamController extends Controller
                         'penerima' => $finalPenerima,
                         'jenis_barang' => $finalJenisBarang,
                         'tujuan_alamat' => $finalTujuanAlamat,
-                        'tujuan_pengambilan' => $tujuanPengambilan,
+                        'tujuan_pengambilan' => $rowTujuan,
                         'uang_jalan_nominal' => $uangJalanNominal,
-                        'f_e' => $lokasi === 'batam' ? $f_e : null,
+                        'f_e' => $rowLokasi === 'batam' ? $rowFE : null,
                         'ring' => $finalRing,
                         'term' => $finalTerm,
                         'aktifitas' => $row['aktifitas'] ?? null,
@@ -891,7 +895,7 @@ class SuratJalanBongkaranBatamController extends Controller
                         'manifest_id' => $manifestId,
                         'nama_kapal' => $namaKapal,
                         'no_voyage' => $noVoyage,
-                        'lokasi' => $lokasi,
+                        'lokasi' => $rowLokasi,
                         'input_by' => Auth::id(),
                     ]);
                     $successCount++;
