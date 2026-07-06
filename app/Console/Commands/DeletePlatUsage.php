@@ -18,19 +18,20 @@ class DeletePlatUsage extends Command
         $dryRun = $this->option('dry-run');
 
         // Cari data stock induk untuk plat 12mm dan plat 10mm
-        $stockItems = StockAmprahan::where(function($query) {
+        $stockItems = StockAmprahan::where(function ($query) {
             $query->where('nama_barang', 'like', '%plat 12mm%')
-                  ->orWhere('nama_barang', 'like', '%plat 10mm%')
-                  ->orWhere('nama_barang', 'like', '%plat 12 mm%')
-                  ->orWhere('nama_barang', 'like', '%plat 10 mm%');
+                ->orWhere('nama_barang', 'like', '%plat 10mm%')
+                ->orWhere('nama_barang', 'like', '%plat 12 mm%')
+                ->orWhere('nama_barang', 'like', '%plat 10 mm%');
         })->get();
 
         if ($stockItems->isEmpty()) {
             $this->warn('Tidak ditemukan data stock induk untuk Plat 12mm atau Plat 10mm.');
+
             return Command::FAILURE;
         }
 
-        $this->info("Ditemukan " . $stockItems->count() . " item stock induk:");
+        $this->info('Ditemukan '.$stockItems->count().' item stock induk:');
         foreach ($stockItems as $item) {
             $this->line("- ID: {$item->id} | {$item->nama_barang} | Sisa Stock Saat Ini: {$item->jumlah} {$item->satuan}");
         }
@@ -40,14 +41,15 @@ class DeletePlatUsage extends Command
 
         if ($usages->isEmpty()) {
             $this->info("\nTidak ada catatan pemakaian (usages) yang ditemukan untuk item-item tersebut.");
+
             return Command::SUCCESS;
         }
 
-        $this->info("\nDitemukan " . $usages->count() . " catatan pemakaian:");
+        $this->info("\nDitemukan ".$usages->count().' catatan pemakaian:');
         foreach ($usages as $usage) {
             $namaBarang = $usage->stockAmprahan->nama_barang ?? 'Tidak Diketahui';
             $penerima = $usage->penerima->nama ?? '-';
-            
+
             $tanggal = $usage->tanggal_pengambilan;
             if ($tanggal instanceof \Carbon\Carbon) {
                 $tanggalStr = $tanggal->format('Y-m-d');
@@ -62,11 +64,13 @@ class DeletePlatUsage extends Command
 
         if ($dryRun) {
             $this->info("\n[DRY RUN] Tidak ada perubahan yang dilakukan pada database.");
+
             return Command::SUCCESS;
         }
 
-        if (!$this->confirm('Apakah Anda yakin ingin menghapus catatan pemakaian di atas dan mengembalikan stock-nya?')) {
+        if (! $this->confirm('Apakah Anda yakin ingin menghapus catatan pemakaian di atas dan mengembalikan stock-nya?')) {
             $this->info('Proses dibatalkan.');
+
             return Command::SUCCESS;
         }
 
@@ -85,6 +89,7 @@ class DeletePlatUsage extends Command
         });
 
         $this->info("\nSelesai! Seluruh pemakaian plat 12mm dan plat 10mm berhasil dihapus dan stock dikembalikan.");
+
         return Command::SUCCESS;
     }
 }

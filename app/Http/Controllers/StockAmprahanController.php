@@ -495,6 +495,7 @@ class StockAmprahanController extends Controller
 
                 if (count($parts) < 7) {
                     $errors[] = "Baris {$lineNum}: Format tidak valid (minimal 7 kolom: No. Bukti, Tanggal, Tipe, Vendor, Lokasi, Nama Barang, Jumlah)";
+
                     continue;
                 }
 
@@ -511,17 +512,20 @@ class StockAmprahanController extends Controller
 
                 if (empty($namaBarang)) {
                     $errors[] = "Baris {$lineNum}: Nama barang kosong";
+
                     continue;
                 }
 
                 if (! is_numeric($jumlah) || $jumlah <= 0) {
                     $errors[] = "Baris {$lineNum}: Jumlah harus angka positif (ditemukan: '{$jumlah}')";
+
                     continue;
                 }
 
                 // Validate Tanggal
-                if (!empty($tanggalBeli) && !strtotime($tanggalBeli)) {
+                if (! empty($tanggalBeli) && ! strtotime($tanggalBeli)) {
                     $errors[] = "Baris {$lineNum}: Format tanggal tidak valid (gunakan YYYY-MM-DD)";
+
                     continue;
                 }
 
@@ -533,30 +537,33 @@ class StockAmprahanController extends Controller
                         break;
                     }
                 }
-                if (!$matchedTipe) {
+                if (! $matchedTipe) {
                     $errors[] = "Baris {$lineNum}: Tipe amprahan '{$tipeAmprahan}' tidak valid";
+
                     continue;
                 }
 
                 // Validate & Match Vendor
                 if (empty($vendorName)) {
                     $errors[] = "Baris {$lineNum}: Nama vendor kosong";
+
                     continue;
                 }
-                
+
                 $vendorMatch = $vendors->first(function ($v) use ($vendorName) {
                     return strtolower(trim($v->nama_toko)) === strtolower(trim($vendorName));
                 });
 
-                if (!$vendorMatch) {
+                if (! $vendorMatch) {
                     // Try partial match if exact match fails
                     $vendorMatch = $vendors->first(function ($v) use ($vendorName) {
                         return str_contains(strtolower($v->nama_toko), strtolower(trim($vendorName)));
                     });
                 }
 
-                if (!$vendorMatch) {
+                if (! $vendorMatch) {
                     $errors[] = "Baris {$lineNum}: Vendor/Toko '{$vendorName}' tidak ditemukan di database";
+
                     continue;
                 }
 
@@ -646,6 +653,7 @@ class StockAmprahanController extends Controller
 
                 if (count($parts) < 2) {
                     $errors[] = "Baris {$lineNum}: Format tidak valid (minimal: ID/Nama | Jumlah)";
+
                     continue;
                 }
 
@@ -654,11 +662,13 @@ class StockAmprahanController extends Controller
 
                 if (empty($identifier)) {
                     $errors[] = "Baris {$lineNum}: ID/Nama barang kosong";
+
                     continue;
                 }
 
                 if (! is_numeric($jumlah) || $jumlah <= 0) {
                     $errors[] = "Baris {$lineNum}: Jumlah harus angka positif";
+
                     continue;
                 }
 
@@ -673,11 +683,13 @@ class StockAmprahanController extends Controller
 
                 if (! $stockItem) {
                     $errors[] = "Baris {$lineNum}: Barang '{$identifier}' tidak ditemukan";
+
                     continue;
                 }
 
                 if ($jumlah > $stockItem->jumlah) {
                     $errors[] = "Baris {$lineNum}: Jumlah ({$jumlah}) melebihi stock ({$stockItem->jumlah}) untuk '{$stockItem->nama_barang}'";
+
                     continue;
                 }
 
@@ -1695,7 +1707,7 @@ class StockAmprahanController extends Controller
         $namaBarang = $request->nama_barang;
         $masterItem = (object) [
             'id' => '-',
-            'nama_barang' => implode(', ', $namaBarang)
+            'nama_barang' => implode(', ', $namaBarang),
         ];
         $fromDate = \Carbon\Carbon::parse($request->from_date)->startOfDay();
         $toDate = \Carbon\Carbon::parse($request->to_date)->endOfDay();
@@ -1883,7 +1895,7 @@ class StockAmprahanController extends Controller
         $namaBarang = $request->nama_barang;
         $masterItem = (object) [
             'id' => '-',
-            'nama_barang' => implode(', ', $namaBarang)
+            'nama_barang' => implode(', ', $namaBarang),
         ];
         $fromDate = \Carbon\Carbon::parse($request->from_date)->startOfDay();
         $toDate = \Carbon\Carbon::parse($request->to_date)->endOfDay();

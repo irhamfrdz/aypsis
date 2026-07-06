@@ -3010,7 +3010,7 @@ class BlController extends Controller
                 $totalKuantitas = $uniqueContainers + $emptyContainers;
             }
 
-            $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container {$size} feet";
+            $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container Full {$size} feet";
 
             return [
                 'kuantitas' => $totalKuantitas,
