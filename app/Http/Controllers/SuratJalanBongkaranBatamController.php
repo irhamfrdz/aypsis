@@ -813,6 +813,9 @@ class SuratJalanBongkaranBatamController extends Controller
                     $finalRing = null;
 
                     $rowLokasi = strtolower(trim($row['lokasi'] ?? '')) ?: $lokasi;
+                    if (! in_array($rowLokasi, ['batam', 'jakarta'])) {
+                        $rowLokasi = $lokasi;
+                    }
                     $rowTujuan = trim($row['tujuan_pengiriman'] ?? ($row['tujuan_pengambilan'] ?? '')) ?: $tujuanPengambilan;
                     $rowFE = trim($row['f_e'] ?? '') ?: $f_e;
 
