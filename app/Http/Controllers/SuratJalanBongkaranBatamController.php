@@ -788,11 +788,24 @@ class SuratJalanBongkaranBatamController extends Controller
                         }
 
                         $query->where(function ($q) use ($noKontainerOrBl) {
-                            $q->where('nomor_kontainer', 'LIKE', '%'.$noKontainerOrBl.'%')
-                                ->orWhere('nomor_bl', 'LIKE', '%'.$noKontainerOrBl.'%');
+                            if (preg_match('/([A-Z]{4}\d{7})/i', $noKontainerOrBl, $matches)) {
+                                $containerPart = strtoupper($matches[1]);
+                                $q->where('nomor_kontainer', 'LIKE', '%'.$containerPart.'%');
+                            } else {
+                                $q->where('nomor_kontainer', 'LIKE', '%'.$noKontainerOrBl.'%')
+                                    ->orWhere('nomor_bl', 'LIKE', '%'.$noKontainerOrBl.'%');
+                            }
                         });
 
-                        $manifest = $query->first();
+                        $manifests = $query->get();
+                        if ($manifests->count() > 1 && strpos($noKontainerOrBl, '/') !== false) {
+                            $parts = explode('/', $noKontainerOrBl);
+                            $suffix = trim(end($parts));
+                            $exactBl = $manifests->first(fn ($m) => strtolower(trim($m->nomor_bl)) === strtolower($suffix));
+                            $manifest = $exactBl ?: $manifests->first();
+                        } else {
+                            $manifest = $manifests->first();
+                        }
                     }
 
                     // If manifest is found, autofill missing fields
