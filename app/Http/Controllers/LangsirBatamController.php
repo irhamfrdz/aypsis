@@ -68,28 +68,7 @@ class LangsirBatamController extends Controller
         $stock_kontainers = \App\Models\StockKontainer::select('nomor_seri_gabungan as no_kontainer', 'ukuran as size')->get();
         $all_kontainers = $kontainers->concat($stock_kontainers)->unique('no_kontainer')->sortBy('no_kontainer');
 
-        $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
-            ->get(['ring', 'expedisi', 'wilayah'])
-            ->flatMap(function ($item) {
-                $mapped = [];
-                if ($item->wilayah) {
-                    $subWilayahs = explode(',', $item->wilayah);
-                    foreach ($subWilayahs as $sw) {
-                        $trimmed = trim($sw);
-                        if ($trimmed !== '') {
-                            $mapped[] = [
-                                'name' => $trimmed,
-                            ];
-                        }
-                    }
-                }
-                return $mapped;
-            })
-            ->unique('name')
-            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
-            ->values();
-
-        $locations = $pricelistRings->pluck('name');
+        $locations = ['SRIMAS', 'PELABUHAN', 'TPK/RTG'];
 
         return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations'));
     }
@@ -112,9 +91,11 @@ class LangsirBatamController extends Controller
             'biaya' => 'required|numeric',
             'keterangan' => 'nullable|string',
             'status' => 'required|string',
+            'ob_dalam_pelabuhan' => 'nullable|boolean',
         ]);
 
         $validated['input_by'] = Auth::id();
+        $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
 
         $langsir = LangsirBatam::create($validated);
 
@@ -127,6 +108,8 @@ class LangsirBatamController extends Controller
         $asalGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['dari']))->first();
         $tujuanGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['ke']))->first();
 
+        $obSuffix = $validated['ob_dalam_pelabuhan'] ? " [OB Dalam Pelabuhan]" : "";
+
         \App\Models\HistoryKontainer::create([
             'nomor_kontainer' => $validated['no_kontainer'],
             'tipe_kontainer' => $tipeKontainer,
@@ -134,7 +117,7 @@ class LangsirBatamController extends Controller
             'tanggal_kegiatan' => $validated['tanggal'],
             'asal_gudang_id' => $asalGudang?->id,
             'gudang_id' => $tujuanGudang?->id,
-            'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$validated['no_transaksi']}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+            'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']}{$obSuffix} [No Transaksi: {$validated['no_transaksi']}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
             'created_by' => Auth::id(),
         ]);
 
@@ -171,28 +154,7 @@ class LangsirBatamController extends Controller
         $stock_kontainers = \App\Models\StockKontainer::select('nomor_seri_gabungan as no_kontainer', 'ukuran as size')->get();
         $all_kontainers = $kontainers->concat($stock_kontainers)->unique('no_kontainer')->sortBy('no_kontainer');
 
-        $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
-            ->get(['ring', 'expedisi', 'wilayah'])
-            ->flatMap(function ($item) {
-                $mapped = [];
-                if ($item->wilayah) {
-                    $subWilayahs = explode(',', $item->wilayah);
-                    foreach ($subWilayahs as $sw) {
-                        $trimmed = trim($sw);
-                        if ($trimmed !== '') {
-                            $mapped[] = [
-                                'name' => $trimmed,
-                            ];
-                        }
-                    }
-                }
-                return $mapped;
-            })
-            ->unique('name')
-            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
-            ->values();
-
-        $locations = $pricelistRings->pluck('name');
+        $locations = ['SRIMAS', 'PELABUHAN', 'TPK/RTG'];
 
         return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations'));
     }
@@ -216,7 +178,10 @@ class LangsirBatamController extends Controller
             'biaya' => 'required|numeric',
             'keterangan' => 'nullable|string',
             'status' => 'required|string',
+            'ob_dalam_pelabuhan' => 'nullable|boolean',
         ]);
+
+        $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
 
         $langsir->update($validated);
 
@@ -229,6 +194,8 @@ class LangsirBatamController extends Controller
         $asalGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['dari']))->first();
         $tujuanGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['ke']))->first();
 
+        $obSuffix = $validated['ob_dalam_pelabuhan'] ? " [OB Dalam Pelabuhan]" : "";
+
         $history = \App\Models\HistoryKontainer::where('keterangan', 'like', "%[No Transaksi: {$langsir->no_transaksi}]%")->first();
         if ($history) {
             $history->update([
@@ -237,7 +204,7 @@ class LangsirBatamController extends Controller
                 'tanggal_kegiatan' => $validated['tanggal'],
                 'asal_gudang_id' => $asalGudang?->id,
                 'gudang_id' => $tujuanGudang?->id,
-                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']}{$obSuffix} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
             ]);
         } else {
             \App\Models\HistoryKontainer::create([
@@ -247,7 +214,7 @@ class LangsirBatamController extends Controller
                 'tanggal_kegiatan' => $validated['tanggal'],
                 'asal_gudang_id' => $asalGudang?->id,
                 'gudang_id' => $tujuanGudang?->id,
-                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']}{$obSuffix} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
                 'created_by' => Auth::id(),
             ]);
         }
