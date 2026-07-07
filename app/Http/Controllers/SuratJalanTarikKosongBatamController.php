@@ -123,8 +123,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             'no_kontainer' => 'nullable|string',
             'size' => 'nullable|string',
             'f_e' => 'nullable|string',
-            'uang_jalan' => 'nullable|string',
-            'status' => 'required|in:draft,active,completed,cancelled',
+            'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
         ]);
 
@@ -132,6 +131,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             $validated['uang_jalan'] = (float) str_replace(['.', ','], ['', '.'], $request->uang_jalan);
         }
 
+        $validated['status'] = $validated['status'] ?? 'active';
         $validated['input_by'] = Auth::id();
         $validated['input_date'] = now();
         $validated['lokasi'] = 'batam';
@@ -235,9 +235,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             'kenek' => 'nullable|string',
             'no_kontainer' => 'nullable|string',
             'size' => 'nullable|string',
-            'f_e' => 'nullable|string',
-            'uang_jalan' => 'nullable|string',
-            'status' => 'required|in:draft,active,completed,cancelled',
+            'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
         ]);
 
@@ -245,6 +243,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             $validated['uang_jalan'] = (float) str_replace(['.', ','], ['', '.'], $request->uang_jalan);
         }
 
+        $validated['status'] = $validated['status'] ?? $item->status ?? 'active';
         $item->update($validated);
 
         return redirect()->route('surat-jalan-tarik-kosong-batam.index')->with('success', 'Surat Jalan Tarik Kosong Batam berhasil diperbarui');
