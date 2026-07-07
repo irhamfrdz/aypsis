@@ -2090,7 +2090,7 @@
                 @endif
 
                 {{-- Daftar Voyage --}}
-                @if($user && $user->can('voyage-view'))
+                @if($user && $user->can('voyage-view') && \Illuminate\Support\Facades\Route::has('voyage.index'))
                     <a href="{{ route('voyage.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('voyage.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Daftar Voyage</span>
                     </a>
