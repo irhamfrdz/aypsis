@@ -449,6 +449,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Check if route is SRIMAS -> PELABUHAN or PELABUHAN -> SRIMAS
         const isSrimasPelabuhan = (dariVal === 'SRIMAS' && keVal === 'PELABUHAN') || (dariVal === 'PELABUHAN' && keVal === 'SRIMAS');
+        // Check if route is TPK/RTG -> SRIMAS or SRIMAS -> TPK/RTG
+        const isTpkSrimas = (dariVal === 'TPK/RTG' && keVal === 'SRIMAS') || (dariVal === 'SRIMAS' && keVal === 'TPK/RTG');
 
         if (isSrimasPelabuhan) {
             let price = 0;
@@ -456,6 +458,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 price = statusVal === 'FULL' ? 40000 : 35000;
             } else if (sizeVal === '40FT') {
                 price = statusVal === 'FULL' ? 50000 : 45000;
+            }
+
+            if (price > 0) {
+                if (biayaDisplay && biayaHidden) {
+                    biayaHidden.value = price;
+                    biayaDisplay.value = formatRupiah(price.toString());
+                }
+            }
+        } else if (isTpkSrimas) {
+            let price = 0;
+            if (statusVal === 'FULL') {
+                if (sizeVal === '20FT') {
+                    price = 50000;
+                } else if (sizeVal === '40FT') {
+                    price = 60000;
+                }
             }
 
             if (price > 0) {
