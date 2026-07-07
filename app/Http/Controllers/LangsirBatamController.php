@@ -63,7 +63,30 @@ class LangsirBatamController extends Controller
         $stock_kontainers = \App\Models\StockKontainer::select('nomor_seri_gabungan as no_kontainer', 'ukuran as size')->get();
         $all_kontainers = $kontainers->concat($stock_kontainers)->unique('no_kontainer')->sortBy('no_kontainer');
 
-        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers'));
+        $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
+            ->get(['ring', 'expedisi', 'wilayah'])
+            ->flatMap(function ($item) {
+                $mapped = [];
+                if ($item->wilayah) {
+                    $subWilayahs = explode(',', $item->wilayah);
+                    foreach ($subWilayahs as $sw) {
+                        $trimmed = trim($sw);
+                        if ($trimmed !== '') {
+                            $mapped[] = [
+                                'name' => $trimmed,
+                            ];
+                        }
+                    }
+                }
+                return $mapped;
+            })
+            ->unique('name')
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
+        $locations = $pricelistRings->pluck('name');
+
+        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations'));
     }
 
     /**
@@ -138,7 +161,30 @@ class LangsirBatamController extends Controller
         $stock_kontainers = \App\Models\StockKontainer::select('nomor_seri_gabungan as no_kontainer', 'ukuran as size')->get();
         $all_kontainers = $kontainers->concat($stock_kontainers)->unique('no_kontainer')->sortBy('no_kontainer');
 
-        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers'));
+        $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
+            ->get(['ring', 'expedisi', 'wilayah'])
+            ->flatMap(function ($item) {
+                $mapped = [];
+                if ($item->wilayah) {
+                    $subWilayahs = explode(',', $item->wilayah);
+                    foreach ($subWilayahs as $sw) {
+                        $trimmed = trim($sw);
+                        if ($trimmed !== '') {
+                            $mapped[] = [
+                                'name' => $trimmed,
+                            ];
+                        }
+                    }
+                }
+                return $mapped;
+            })
+            ->unique('name')
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
+        $locations = $pricelistRings->pluck('name');
+
+        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations'));
     }
 
     /**

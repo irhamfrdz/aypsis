@@ -108,10 +108,20 @@
                                 <input type="text" name="dari" value="{{ old('dari') }}" required placeholder="Lokasi Asal"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all uppercase">
                             </div>
-                            <div>
+                            <div class="relative ke-dropdown-container">
                                 <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Ke <span class="text-red-500">*</span></label>
-                                <input type="text" name="ke" value="{{ old('ke') }}" required placeholder="Lokasi Tujuan"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all uppercase">
+                                <div class="relative">
+                                    <input type="text" name="ke" id="ke_search" placeholder="Cari Lokasi Tujuan..." autocomplete="off" value="{{ old('ke') }}" required
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all uppercase">
+                                    <div id="ke_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                                        @foreach($locations as $loc)
+                                            <div class="px-4 py-2 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 ke-item" 
+                                                 data-name="{{ $loc }}">
+                                                <div class="font-medium uppercase">{{ $loc }}</div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -247,6 +257,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!e.target.closest('.supir-dropdown-container')) {
             supirList.classList.add('hidden');
         }
+        if (!e.target.closest('.ke-dropdown-container')) {
+            const keList = document.getElementById('ke_list');
+            if (keList) keList.classList.add('hidden');
+        }
     });
 
     kontainerSearch.addEventListener('input', () => {
@@ -327,6 +341,38 @@ document.addEventListener('DOMContentLoaded', function() {
         if (initialItem) {
             supirSearch.value = initialItem.getAttribute('data-name');
         }
+    }
+
+    // Searchable Dropdown for Ke (Tujuan)
+    const keSearch = document.getElementById('ke_search');
+    const keList = document.getElementById('ke_list');
+    const keItems = document.querySelectorAll('.ke-item');
+
+    if (keSearch && keList) {
+        keSearch.addEventListener('focus', () => {
+            keList.classList.remove('hidden');
+        });
+
+        keSearch.addEventListener('input', () => {
+            const filter = keSearch.value.toLowerCase();
+            keItems.forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                if (name.includes(filter)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+            keList.classList.remove('hidden');
+        });
+
+        keItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const name = item.getAttribute('data-name');
+                keSearch.value = name;
+                keList.classList.add('hidden');
+            });
+        });
     }
 });
 </script>
