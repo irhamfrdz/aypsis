@@ -134,7 +134,7 @@ class LangsirBatamController extends Controller
             'tanggal_kegiatan' => $validated['tanggal'],
             'asal_gudang_id' => $asalGudang?->id,
             'gudang_id' => $tujuanGudang?->id,
-            'keterangan' => "Langsir dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$validated['no_transaksi']}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+            'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$validated['no_transaksi']}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
             'created_by' => Auth::id(),
         ]);
 
@@ -237,7 +237,7 @@ class LangsirBatamController extends Controller
                 'tanggal_kegiatan' => $validated['tanggal'],
                 'asal_gudang_id' => $asalGudang?->id,
                 'gudang_id' => $tujuanGudang?->id,
-                'keterangan' => "Langsir dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
             ]);
         } else {
             \App\Models\HistoryKontainer::create([
@@ -247,7 +247,7 @@ class LangsirBatamController extends Controller
                 'tanggal_kegiatan' => $validated['tanggal'],
                 'asal_gudang_id' => $asalGudang?->id,
                 'gudang_id' => $tujuanGudang?->id,
-                'keterangan' => "Langsir dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
                 'created_by' => Auth::id(),
             ]);
         }
