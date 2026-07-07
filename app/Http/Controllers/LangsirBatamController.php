@@ -73,6 +73,31 @@ class LangsirBatamController extends Controller
         return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations'));
     }
 
+    public function getContainerManifestHistory(Request $request)
+    {
+        $no_kontainer = $request->input('no_kontainer');
+        if (!$no_kontainer) {
+            return response()->json(['success' => false, 'message' => 'No kontainer provided']);
+        }
+
+        $manifest = \App\Models\Manifest::where('nomor_kontainer', $no_kontainer)
+            ->orderBy('tanggal_berangkat', 'desc')
+            ->first();
+
+        if ($manifest) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'nama_kapal' => $manifest->nama_kapal,
+                    'no_voyage' => $manifest->no_voyage,
+                    'tanggal_berangkat' => $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('d-m-Y') : null,
+                ]
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Manifest not found']);
+    }
+
     /**
      * Store a newly created resource in storage.
      */

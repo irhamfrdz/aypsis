@@ -78,6 +78,16 @@
                                         @endforeach
                                     </div>
                                 </div>
+                                <div id="manifest_history_section" class="hidden mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <h4 class="text-xs font-bold text-blue-800 uppercase mb-1 flex items-center">
+                                        <i class="fas fa-ship mr-2"></i> History Manifest
+                                    </h4>
+                                    <div class="text-xs text-blue-900 space-y-1">
+                                        <p><strong>Kapal:</strong> <span id="history_nama_kapal">-</span></p>
+                                        <p><strong>Voyage:</strong> <span id="history_no_voyage">-</span></p>
+                                        <p><strong>Tgl Berangkat:</strong> <span id="history_tgl_berangkat">-</span></p>
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Size <span class="text-red-500">*</span></label>
@@ -324,6 +334,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
             kontainerList.classList.add('hidden');
             autoCalculateBiaya();
+            
+            // Fetch Manifest History
+            const manifestSection = document.getElementById('manifest_history_section');
+            if (manifestSection) {
+                // Show loading state
+                document.getElementById('history_nama_kapal').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                document.getElementById('history_no_voyage').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                document.getElementById('history_tgl_berangkat').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                manifestSection.classList.remove('hidden');
+
+                fetch(`{{ route('langsir-batam.api.manifest-history') }}?no_kontainer=${no}`)
+                    .then(response => response.json())
+                    .then(res => {
+                        if (res.success && res.data) {
+                            document.getElementById('history_nama_kapal').innerText = res.data.nama_kapal || '-';
+                            document.getElementById('history_no_voyage').innerText = res.data.no_voyage || '-';
+                            document.getElementById('history_tgl_berangkat').innerText = res.data.tanggal_berangkat || '-';
+                        } else {
+                            manifestSection.classList.add('hidden');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        manifestSection.classList.add('hidden');
+                    });
+            }
         });
     });
 

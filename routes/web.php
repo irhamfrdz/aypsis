@@ -2747,6 +2747,9 @@ Route::middleware([
         Route::get('langsir-batam', [\App\Http\Controllers\LangsirBatamController::class, 'index'])
             ->name('langsir-batam.index')
             ->middleware('can:langsir-batam-view');
+        Route::get('langsir-batam/api/container-manifest-history', [\App\Http\Controllers\LangsirBatamController::class, 'getContainerManifestHistory'])
+            ->name('langsir-batam.api.manifest-history')
+            ->middleware('can:langsir-batam-view');
         Route::get('langsir-batam/create', [\App\Http\Controllers\LangsirBatamController::class, 'create'])
             ->name('langsir-batam.create')
             ->middleware('can:langsir-batam-create');
