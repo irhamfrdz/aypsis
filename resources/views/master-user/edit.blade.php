@@ -710,6 +710,23 @@
                                 <td><input type="checkbox" name="permissions[gaji-supir-batam][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['export']) && $userMatrixPermissions['gaji-supir-batam']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Report Kerja Supir Batam --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="inline-block w-3 h-3 bg-indigo-100 rounded-full mr-3"></span>
+                                        <div class="text-sm font-medium">Report Kerja Supir Batam</div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[report-kerja-supir-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['report-kerja-supir-batam']['view']) && $userMatrixPermissions['report-kerja-supir-batam']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Term --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

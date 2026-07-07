@@ -1737,6 +1737,13 @@
                                 <span class="text-xs">Penarikan Surat Jalan Batam</span>
                             </a>
                         @endif
+
+                        {{-- Report Kerja Supir Batam --}}
+                        @if($user && $user->can('report-kerja-supir-batam-view'))
+                        <a href="{{ route('report-kerja-supir-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('report-kerja-supir-batam.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <span class="text-xs font-semibold">Report Kerja Supir Batam</span>
+                        </a>
+                        @endif
                     </div>
                 </div>
                 @endif
