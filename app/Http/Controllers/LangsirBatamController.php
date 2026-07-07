@@ -84,8 +84,8 @@ class LangsirBatamController extends Controller
             'no_kontainer' => 'required|string',
             'size' => 'required|string',
             'no_seal' => 'nullable|string',
-            'dari' => 'required|string',
-            'ke' => 'required|string',
+            'dari' => 'nullable|string',
+            'ke' => 'nullable|string',
             'no_plat' => 'nullable|string',
             'supir' => 'nullable|string',
             'biaya' => 'required|numeric',
@@ -96,6 +96,15 @@ class LangsirBatamController extends Controller
 
         $validated['input_by'] = Auth::id();
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
+
+        if ($validated['ob_dalam_pelabuhan']) {
+            $validated['dari'] = 'PELABUHAN';
+            $validated['ke'] = 'PELABUHAN';
+        } else {
+            if (empty($validated['dari']) || empty($validated['ke'])) {
+                return redirect()->back()->withErrors(['dari' => 'Lokasi asal dan tujuan wajib diisi jika bukan OB Dalam Pelabuhan.'])->withInput();
+            }
+        }
 
         $langsir = LangsirBatam::create($validated);
 
@@ -171,8 +180,8 @@ class LangsirBatamController extends Controller
             'no_kontainer' => 'required|string',
             'size' => 'required|string',
             'no_seal' => 'nullable|string',
-            'dari' => 'required|string',
-            'ke' => 'required|string',
+            'dari' => 'nullable|string',
+            'ke' => 'nullable|string',
             'no_plat' => 'nullable|string',
             'supir' => 'nullable|string',
             'biaya' => 'required|numeric',
@@ -182,6 +191,15 @@ class LangsirBatamController extends Controller
         ]);
 
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
+
+        if ($validated['ob_dalam_pelabuhan']) {
+            $validated['dari'] = 'PELABUHAN';
+            $validated['ke'] = 'PELABUHAN';
+        } else {
+            if (empty($validated['dari']) || empty($validated['ke'])) {
+                return redirect()->back()->withErrors(['dari' => 'Lokasi asal dan tujuan wajib diisi jika bukan OB Dalam Pelabuhan.'])->withInput();
+            }
+        }
 
         $langsir->update($validated);
 

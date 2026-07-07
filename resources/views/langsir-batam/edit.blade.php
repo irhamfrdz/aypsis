@@ -112,7 +112,7 @@
                             Rute & Transportasi
                         </h3>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-4" id="rute_grid_container">
                             <div class="relative dari-dropdown-container">
                                 <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Dari <span class="text-red-500">*</span></label>
                                 <div class="relative">
@@ -432,6 +432,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Automatic Fee Calculation
     function autoCalculateBiaya() {
+        const obCheckbox = document.getElementById('ob_dalam_pelabuhan');
+        if (obCheckbox && obCheckbox.checked) {
+            if (biayaDisplay && biayaHidden) {
+                biayaHidden.value = 20000;
+                biayaDisplay.value = formatRupiah('20000');
+            }
+            return;
+        }
+
         const dariVal = (dariSearch?.value || '').trim().toUpperCase();
         const keVal = (keSearch?.value || '').trim().toUpperCase();
         const sizeVal = sizeSelect?.value || '';
@@ -464,6 +473,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusSelect = document.getElementById('status_select');
     if (statusSelect) {
         statusSelect.addEventListener('change', autoCalculateBiaya);
+    }
+
+    // OB Dalam Pelabuhan checkbox logic
+    const obCheckbox = document.getElementById('ob_dalam_pelabuhan');
+    const ruteRow = document.getElementById('rute_grid_container');
+
+    function handleObChange() {
+        const isOb = obCheckbox?.checked;
+        if (isOb) {
+            if (ruteRow) ruteRow.classList.add('hidden');
+            if (dariSearch) {
+                dariSearch.removeAttribute('required');
+                dariSearch.value = '';
+            }
+            if (keSearch) {
+                keSearch.removeAttribute('required');
+                keSearch.value = '';
+            }
+            if (biayaDisplay && biayaHidden) {
+                biayaHidden.value = 20000;
+                biayaDisplay.value = formatRupiah('20000');
+            }
+        } else {
+            if (ruteRow) ruteRow.classList.remove('hidden');
+            if (dariSearch) dariSearch.setAttribute('required', 'required');
+            if (keSearch) keSearch.setAttribute('required', 'required');
+            autoCalculateBiaya();
+        }
+    }
+
+    if (obCheckbox) {
+        obCheckbox.addEventListener('change', handleObChange);
+        handleObChange();
     }
 });
 </script>
