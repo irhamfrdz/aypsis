@@ -89,10 +89,19 @@
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">No. Seal</label>
-                            <input type="text" name="no_seal" value="{{ old('no_seal', $langsir->no_seal) }}" placeholder="Opsional"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all uppercase">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">No. Seal</label>
+                                <input type="text" name="no_seal" value="{{ old('no_seal', $langsir->no_seal) }}" placeholder="Opsional"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all uppercase">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Status <span class="text-red-500">*</span></label>
+                                <select name="status" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                                    <option value="FULL" {{ old('status', $langsir->status) == 'FULL' ? 'selected' : '' }}>FULL</option>
+                                    <option value="EMPTY" {{ old('status', $langsir->status) == 'EMPTY' ? 'selected' : '' }}>EMPTY</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 

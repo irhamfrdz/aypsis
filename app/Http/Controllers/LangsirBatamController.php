@@ -54,8 +54,13 @@ class LangsirBatamController extends Controller
     public function create()
     {
         $no_transaksi = LangsirBatam::generateNoTransaksi();
-        $supirs = Karyawan::where('pekerjaan', 'LIKE', '%supir%')
-            ->orWhere('divisi', 'LIKE', '%supir%')
+        $supirs = Karyawan::where('status', 'active')
+            ->whereIn('cabang', ['BTM', 'BATAM'])
+            ->where(function ($q) {
+                $q->where('pekerjaan', 'LIKE', '%supir%')
+                    ->orWhere('divisi', 'LIKE', '%supir%')
+                    ->orWhere('divisi', 'SUPIR');
+            })
             ->orderBy('nama_panggilan', 'asc')
             ->get();
 
@@ -152,8 +157,13 @@ class LangsirBatamController extends Controller
     public function edit($id)
     {
         $langsir = LangsirBatam::findOrFail($id);
-        $supirs = Karyawan::where('pekerjaan', 'LIKE', '%supir%')
-            ->orWhere('divisi', 'LIKE', '%supir%')
+        $supirs = Karyawan::where('status', 'active')
+            ->whereIn('cabang', ['BTM', 'BATAM'])
+            ->where(function ($q) {
+                $q->where('pekerjaan', 'LIKE', '%supir%')
+                    ->orWhere('divisi', 'LIKE', '%supir%')
+                    ->orWhere('divisi', 'SUPIR');
+            })
             ->orderBy('nama_panggilan', 'asc')
             ->get();
 
