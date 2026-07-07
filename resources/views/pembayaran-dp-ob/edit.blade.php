@@ -2,6 +2,32 @@
 
 @section('title', $title)
 
+@push('styles')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Custom Select2 styling to match Tailwind */
+    .select2-container--default .select2-selection--single {
+        height: 38px !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.375rem !important;
+        padding-top: 5px !important;
+        padding-bottom: 5px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 20px !important;
+        color: #374151 !important;
+        font-size: 0.875rem !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
@@ -488,11 +514,17 @@ async function loadNomorVoyage() {
     // Reset voyage select
     voyageSelect.innerHTML = '<option value="">-- Loading... --</option>';
     voyageSelect.disabled = true;
+    if (typeof $.fn.select2 !== 'undefined') {
+        $(voyageSelect).trigger('change');
+    }
 
     if (!kegiatan) {
         voyageSelect.innerHTML = '<option value="">-- Pilih Kegiatan Terlebih Dahulu --</option>';
         helpText.textContent = 'Pilih nomor voyage dari data yang tersedia';
         helpText.className = 'mt-1 text-sm text-gray-500';
+        if (typeof $.fn.select2 !== 'undefined') {
+            $(voyageSelect).trigger('change');
+        }
         return;
     }
 
@@ -534,10 +566,23 @@ async function loadNomorVoyage() {
         helpText.textContent = 'Terjadi kesalahan saat memuat data voyage';
         helpText.className = 'mt-1 text-sm text-red-600';
     }
+
+    if (typeof $.fn.select2 !== 'undefined') {
+        $(voyageSelect).trigger('change');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     updateSupirDisplay();
+    
+    // Initialize Select2 on voyage select
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('#nomor_voyage').select2({
+            placeholder: '-- Pilih Nomor Voyage --',
+            allowClear: true,
+            width: '100%'
+        });
+    }
     
     // Load voyage if kegiatan already selected (for edit mode)
     const kegiatanValue = document.getElementById('kegiatan').value;
@@ -644,3 +689,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 @endsection
+
+@push('scripts')
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+@endpush
