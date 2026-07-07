@@ -88,7 +88,27 @@ class LangsirBatamController extends Controller
 
         $validated['input_by'] = Auth::id();
 
-        LangsirBatam::create($validated);
+        $langsir = LangsirBatam::create($validated);
+
+        // Log to HistoryKontainer
+        $tipeKontainer = 'kontainer';
+        if (\App\Models\StockKontainer::where('nomor_seri_gabungan', $validated['no_kontainer'])->exists()) {
+            $tipeKontainer = 'stock';
+        }
+
+        $asalGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['dari']))->first();
+        $tujuanGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['ke']))->first();
+
+        \App\Models\HistoryKontainer::create([
+            'nomor_kontainer' => $validated['no_kontainer'],
+            'tipe_kontainer' => $tipeKontainer,
+            'jenis_kegiatan' => 'Langsir',
+            'tanggal_kegiatan' => $validated['tanggal'],
+            'asal_gudang_id' => $asalGudang?->id,
+            'gudang_id' => $tujuanGudang?->id,
+            'keterangan' => "Langsir dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$validated['no_transaksi']}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+            'created_by' => Auth::id(),
+        ]);
 
         return redirect()->route('langsir-batam.index')->with('success', 'Data Langsir Batam berhasil disimpan.');
     }
@@ -144,6 +164,38 @@ class LangsirBatamController extends Controller
 
         $langsir->update($validated);
 
+        // Update HistoryKontainer
+        $tipeKontainer = 'kontainer';
+        if (\App\Models\StockKontainer::where('nomor_seri_gabungan', $validated['no_kontainer'])->exists()) {
+            $tipeKontainer = 'stock';
+        }
+
+        $asalGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['dari']))->first();
+        $tujuanGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['ke']))->first();
+
+        $history = \App\Models\HistoryKontainer::where('keterangan', 'like', "%[No Transaksi: {$langsir->no_transaksi}]%")->first();
+        if ($history) {
+            $history->update([
+                'nomor_kontainer' => $validated['no_kontainer'],
+                'tipe_kontainer' => $tipeKontainer,
+                'tanggal_kegiatan' => $validated['tanggal'],
+                'asal_gudang_id' => $asalGudang?->id,
+                'gudang_id' => $tujuanGudang?->id,
+                'keterangan' => "Langsir dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+            ]);
+        } else {
+            \App\Models\HistoryKontainer::create([
+                'nomor_kontainer' => $validated['no_kontainer'],
+                'tipe_kontainer' => $tipeKontainer,
+                'jenis_kegiatan' => 'Langsir',
+                'tanggal_kegiatan' => $validated['tanggal'],
+                'asal_gudang_id' => $asalGudang?->id,
+                'gudang_id' => $tujuanGudang?->id,
+                'keterangan' => "Langsir dari {$validated['dari']} ke {$validated['ke']} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+                'created_by' => Auth::id(),
+            ]);
+        }
+
         return redirect()->route('langsir-batam.index')->with('success', 'Data Langsir Batam berhasil diperbarui.');
     }
 
@@ -153,6 +205,10 @@ class LangsirBatamController extends Controller
     public function destroy($id)
     {
         $langsir = LangsirBatam::findOrFail($id);
+        
+        // Delete HistoryKontainer
+        \App\Models\HistoryKontainer::where('keterangan', 'like', "%[No Transaksi: {$langsir->no_transaksi}]%")->delete();
+
         $langsir->delete();
 
         return redirect()->route('langsir-batam.index')->with('success', 'Data Langsir Batam berhasil dihapus.');
