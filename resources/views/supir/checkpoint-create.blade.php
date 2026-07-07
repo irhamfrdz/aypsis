@@ -209,22 +209,21 @@
 
                             {{-- Upload Gambar untuk Permohonan --}}
                             <div>
-                                <label for="gambar_permohonan" class="block text-sm font-medium text-gray-700">Foto Surat Jalan / DO (Bisa Banyak)</label>
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <h3 class="block text-sm font-bold text-gray-800 mb-2">Foto Surat Jalan / DO (Bisa Banyak)</h3>
+                                <label for="gambar_permohonan" class="cursor-pointer block mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-indigo-300 border-dashed rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-colors bg-white shadow-sm">
+                                    <div class="space-y-3 text-center">
+                                        <svg class="mx-auto h-16 w-16 text-indigo-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <div class="flex text-sm text-gray-600 justify-center">
-                                            <label for="gambar_permohonan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                                <span>Ambil / Pilih Foto</span>
-                                                <input id="gambar_permohonan" name="gambar[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewFilePermohonan(this)">
-                                            </label>
+                                            <span class="relative font-bold text-indigo-600 text-lg">
+                                                Ketuk untuk Ambil Foto
+                                                <input id="gambar_permohonan" name="gambar[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple capture="environment" onchange="previewFilePermohonan(this)">
+                                            </span>
                                         </div>
-                                        <p class="text-xs text-gray-500">Format Gambar: JPG, JPEG, PNG, atau PDF</p>
-                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih/foto beberapa gambar sekaligus</p>
+                                        <p class="text-xs text-gray-500 font-medium mt-2">Bisa pilih/foto beberapa gambar sekaligus</p>
                                     </div>
-                                </div>
+                                </label>
 
                                 {{-- Preview Area untuk Permohonan --}}
                                 <div id="file-preview-permohonan" class="mt-3 hidden">
@@ -243,22 +242,21 @@
 
                             {{-- Upload Bukti Muat untuk Permohonan --}}
                             <div>
-                                <label for="bukti_muat_permohonan" class="block text-sm font-medium text-gray-700">Foto Bukti Muat (Bisa Banyak)</label>
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <h3 class="block text-sm font-bold text-gray-800 mb-2">Foto Bukti Muat (Bisa Banyak)</h3>
+                                <label for="bukti_muat_permohonan" class="cursor-pointer block mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-indigo-300 border-dashed rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-colors bg-white shadow-sm">
+                                    <div class="space-y-3 text-center">
+                                        <svg class="mx-auto h-16 w-16 text-indigo-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <div class="flex text-sm text-gray-600 justify-center">
-                                            <label for="bukti_muat_permohonan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                                <span>Ambil / Pilih Foto</span>
-                                                <input id="bukti_muat_permohonan" name="bukti_muat[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewBuktiMuatPermohonan(this)">
-                                            </label>
+                                            <span class="relative font-bold text-indigo-600 text-lg">
+                                                Ketuk untuk Ambil Foto
+                                                <input id="bukti_muat_permohonan" name="bukti_muat[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple capture="environment" onchange="previewBuktiMuatPermohonan(this)">
+                                            </span>
                                         </div>
-                                        <p class="text-xs text-gray-500">Format Gambar: JPG, JPEG, PNG, atau PDF</p>
-                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih/foto beberapa gambar sekaligus</p>
+                                        <p class="text-xs text-gray-500 font-medium mt-2">Bisa pilih/foto beberapa gambar sekaligus</p>
                                     </div>
-                                </div>
+                                </label>
 
                                 {{-- Preview Area untuk Bukti Muat Permohonan --}}
                                 <div id="file-preview-bukti-muat-permohonan" class="mt-3 hidden">
@@ -277,22 +275,21 @@
 
                             {{-- Upload Bukti Timbangan Muat untuk Permohonan --}}
                             <div>
-                                <label for="bukti_timbangan_muat_permohonan" class="block text-sm font-medium text-gray-700">Foto Bukti Timbangan Muat (Bisa Banyak)</label>
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <h3 class="block text-sm font-bold text-gray-800 mb-2">Foto Bukti Timbangan Muat (Bisa Banyak)</h3>
+                                <label for="bukti_timbangan_muat_permohonan" class="cursor-pointer block mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-indigo-300 border-dashed rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-colors bg-white shadow-sm">
+                                    <div class="space-y-3 text-center">
+                                        <svg class="mx-auto h-16 w-16 text-indigo-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <div class="flex text-sm text-gray-600 justify-center">
-                                            <label for="bukti_timbangan_muat_permohonan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                                <span>Ambil / Pilih Foto</span>
-                                                <input id="bukti_timbangan_muat_permohonan" name="bukti_timbangan_muat[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewBuktiTimbanganMuatPermohonan(this)">
-                                            </label>
+                                            <span class="relative font-bold text-indigo-600 text-lg">
+                                                Ketuk untuk Ambil Foto
+                                                <input id="bukti_timbangan_muat_permohonan" name="bukti_timbangan_muat[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple capture="environment" onchange="previewBuktiTimbanganMuatPermohonan(this)">
+                                            </span>
                                         </div>
-                                        <p class="text-xs text-gray-500">Format Gambar: JPG, JPEG, PNG, atau PDF</p>
-                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih/foto beberapa gambar sekaligus</p>
+                                        <p class="text-xs text-gray-500 font-medium mt-2">Bisa pilih/foto beberapa gambar sekaligus</p>
                                     </div>
-                                </div>
+                                </label>
 
                                 {{-- Preview Area untuk Bukti Timbangan Muat Permohonan --}}
                                 <div id="file-preview-bukti-timbangan-muat-permohonan" class="mt-3 hidden">
@@ -311,22 +308,21 @@
 
                             {{-- Upload Bukti Timbangan untuk Permohonan --}}
                             <div>
-                                <label for="bukti_timbangan_permohonan" class="block text-sm font-medium text-gray-700">Foto Bukti Timbang Kosong / Lainnya (Bisa Banyak)</label>
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <h3 class="block text-sm font-bold text-gray-800 mb-2">Foto Bukti Timbang Kosong / Lainnya (Bisa Banyak)</h3>
+                                <label for="bukti_timbangan_permohonan" class="cursor-pointer block mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-indigo-300 border-dashed rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-colors bg-white shadow-sm">
+                                    <div class="space-y-3 text-center">
+                                        <svg class="mx-auto h-16 w-16 text-indigo-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <div class="flex text-sm text-gray-600 justify-center">
-                                            <label for="bukti_timbangan_permohonan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                                <span>Ambil / Pilih Foto</span>
-                                                <input id="bukti_timbangan_permohonan" name="bukti_timbangan[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewBuktiTimbanganPermohonan(this)">
-                                            </label>
+                                            <span class="relative font-bold text-indigo-600 text-lg">
+                                                Ketuk untuk Ambil Foto
+                                                <input id="bukti_timbangan_permohonan" name="bukti_timbangan[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple capture="environment" onchange="previewBuktiTimbanganPermohonan(this)">
+                                            </span>
                                         </div>
-                                        <p class="text-xs text-gray-500">Format Gambar: JPG, JPEG, PNG, atau PDF</p>
-                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih/foto beberapa gambar sekaligus</p>
+                                        <p class="text-xs text-gray-500 font-medium mt-2">Bisa pilih/foto beberapa gambar sekaligus</p>
                                     </div>
-                                </div>
+                                </label>
 
                                 {{-- Preview Area untuk Bukti Timbangan Permohonan --}}
                                 <div id="file-preview-bukti-timbangan-permohonan" class="mt-3 hidden">
@@ -475,22 +471,21 @@
 
                             {{-- Upload Gambar untuk Surat Jalan --}}
                             <div>
-                                <label for="gambar_surat_jalan" class="block text-sm font-medium text-gray-700">Foto Surat Jalan / DO (Bisa Banyak)</label>
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <h3 class="block text-sm font-bold text-gray-800 mb-2">Foto Surat Jalan / DO (Bisa Banyak)</h3>
+                                <label for="gambar_surat_jalan" class="cursor-pointer block mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-indigo-300 border-dashed rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-colors bg-white shadow-sm">
+                                    <div class="space-y-3 text-center">
+                                        <svg class="mx-auto h-16 w-16 text-indigo-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <div class="flex text-sm text-gray-600 justify-center">
-                                            <label for="gambar_surat_jalan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                                <span>Ambil / Pilih Foto</span>
-                                                <input id="gambar_surat_jalan" name="gambar[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewFileSuratJalan(this)">
-                                            </label>
+                                            <span class="relative font-bold text-indigo-600 text-lg">
+                                                Ketuk untuk Ambil Foto
+                                                <input id="gambar_surat_jalan" name="gambar[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple capture="environment" onchange="previewFileSuratJalan(this)">
+                                            </span>
                                         </div>
-                                        <p class="text-xs text-gray-500">Format Gambar: JPG, JPEG, PNG, atau PDF</p>
-                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih/foto beberapa gambar sekaligus</p>
+                                        <p class="text-xs text-gray-500 font-medium mt-2">Bisa pilih/foto beberapa gambar sekaligus</p>
                                     </div>
-                                </div>
+                                </label>
 
                                 {{-- Preview Area untuk Surat Jalan --}}
                                 <div id="file-preview-surat-jalan" class="mt-3 hidden">
@@ -509,22 +504,21 @@
 
                             {{-- Upload Bukti Muat untuk Surat Jalan --}}
                             <div>
-                                <label for="bukti_muat_surat_jalan" class="block text-sm font-medium text-gray-700">Foto Bukti Muat (Bisa Banyak)</label>
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <h3 class="block text-sm font-bold text-gray-800 mb-2">Foto Bukti Muat (Bisa Banyak)</h3>
+                                <label for="bukti_muat_surat_jalan" class="cursor-pointer block mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-indigo-300 border-dashed rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-colors bg-white shadow-sm">
+                                    <div class="space-y-3 text-center">
+                                        <svg class="mx-auto h-16 w-16 text-indigo-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <div class="flex text-sm text-gray-600 justify-center">
-                                            <label for="bukti_muat_surat_jalan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                                <span>Ambil / Pilih Foto</span>
-                                                <input id="bukti_muat_surat_jalan" name="bukti_muat[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewBuktiMuatSuratJalan(this)">
-                                            </label>
+                                            <span class="relative font-bold text-indigo-600 text-lg">
+                                                Ketuk untuk Ambil Foto
+                                                <input id="bukti_muat_surat_jalan" name="bukti_muat[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple capture="environment" onchange="previewBuktiMuatSuratJalan(this)">
+                                            </span>
                                         </div>
-                                        <p class="text-xs text-gray-500">Format Gambar: JPG, JPEG, PNG, atau PDF</p>
-                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih/foto beberapa gambar sekaligus</p>
+                                        <p class="text-xs text-gray-500 font-medium mt-2">Bisa pilih/foto beberapa gambar sekaligus</p>
                                     </div>
-                                </div>
+                                </label>
 
                                 {{-- Preview Area untuk Bukti Muat Surat Jalan --}}
                                 <div id="file-preview-bukti-muat-surat-jalan" class="mt-3 hidden">
@@ -542,22 +536,21 @@
                             </div>
                             {{-- Upload Bukti Timbangan Muat untuk Surat Jalan --}}
                             <div>
-                                <label for="bukti_timbangan_muat_surat_jalan" class="block text-sm font-medium text-gray-700">Foto Bukti Timbangan Muat (Bisa Banyak)</label>
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <h3 class="block text-sm font-bold text-gray-800 mb-2">Foto Bukti Timbangan Muat (Bisa Banyak)</h3>
+                                <label for="bukti_timbangan_muat_surat_jalan" class="cursor-pointer block mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-indigo-300 border-dashed rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-colors bg-white shadow-sm">
+                                    <div class="space-y-3 text-center">
+                                        <svg class="mx-auto h-16 w-16 text-indigo-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <div class="flex text-sm text-gray-600 justify-center">
-                                            <label for="bukti_timbangan_muat_surat_jalan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                                <span>Ambil / Pilih Foto</span>
-                                                <input id="bukti_timbangan_muat_surat_jalan" name="bukti_timbangan_muat[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewBuktiTimbanganMuatSuratJalan(this)">
-                                            </label>
+                                            <span class="relative font-bold text-indigo-600 text-lg">
+                                                Ketuk untuk Ambil Foto
+                                                <input id="bukti_timbangan_muat_surat_jalan" name="bukti_timbangan_muat[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple capture="environment" onchange="previewBuktiTimbanganMuatSuratJalan(this)">
+                                            </span>
                                         </div>
-                                        <p class="text-xs text-gray-500">Format Gambar: JPG, JPEG, PNG, atau PDF</p>
-                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih/foto beberapa gambar sekaligus</p>
+                                        <p class="text-xs text-gray-500 font-medium mt-2">Bisa pilih/foto beberapa gambar sekaligus</p>
                                     </div>
-                                </div>
+                                </label>
 
                                 {{-- Preview Area untuk Bukti Timbangan Muat Surat Jalan --}}
                                 <div id="file-preview-bukti-timbangan-muat-surat-jalan" class="mt-3 hidden">
@@ -576,22 +569,21 @@
 
                             {{-- Upload Bukti Timbangan untuk Surat Jalan --}}
                             <div>
-                                <label for="bukti_timbangan_surat_jalan" class="block text-sm font-medium text-gray-700">Foto Bukti Timbang Kosong / Lainnya (Bisa Banyak)</label>
-                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <h3 class="block text-sm font-bold text-gray-800 mb-2">Foto Bukti Timbang Kosong / Lainnya (Bisa Banyak)</h3>
+                                <label for="bukti_timbangan_surat_jalan" class="cursor-pointer block mt-1 flex justify-center px-6 pt-10 pb-10 border-2 border-indigo-300 border-dashed rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-colors bg-white shadow-sm">
+                                    <div class="space-y-3 text-center">
+                                        <svg class="mx-auto h-16 w-16 text-indigo-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                             <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <div class="flex text-sm text-gray-600 justify-center">
-                                            <label for="bukti_timbangan_surat_jalan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                                <span>Ambil / Pilih Foto</span>
-                                                <input id="bukti_timbangan_surat_jalan" name="bukti_timbangan[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewBuktiTimbanganSuratJalan(this)">
-                                            </label>
+                                            <span class="relative font-bold text-indigo-600 text-lg">
+                                                Ketuk untuk Ambil Foto
+                                                <input id="bukti_timbangan_surat_jalan" name="bukti_timbangan[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple capture="environment" onchange="previewBuktiTimbanganSuratJalan(this)">
+                                            </span>
                                         </div>
-                                        <p class="text-xs text-gray-500">Format Gambar: JPG, JPEG, PNG, atau PDF</p>
-                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih/foto beberapa gambar sekaligus</p>
+                                        <p class="text-xs text-gray-500 font-medium mt-2">Bisa pilih/foto beberapa gambar sekaligus</p>
                                     </div>
-                                </div>
+                                </label>
 
                                 {{-- Preview Area untuk Bukti Timbangan Surat Jalan --}}
                                 <div id="file-preview-bukti-timbangan-surat-jalan" class="mt-3 hidden">
