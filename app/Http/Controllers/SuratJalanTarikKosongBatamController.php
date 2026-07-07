@@ -73,19 +73,30 @@ class SuratJalanTarikKosongBatamController extends Controller
         $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
 
         $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
-            ->get(['ring', 'expedisi', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
-            ->map(function ($item) {
-                return [
-                    'name' => "Ring {$item->ring} {$item->expedisi}",
-                    'rates' => [
-                        '20_F' => $item->tarif_20ft_full,
-                        '20_E' => $item->tarif_20ft_empty,
-                        '40_F' => $item->tarif_40ft_full,
-                        '40_E' => $item->tarif_40ft_empty,
-                        '45_F' => $item->tarif_40ft_full,
-                        '45_E' => $item->tarif_40ft_empty,
-                    ],
-                ];
+            ->get(['ring', 'expedisi', 'wilayah', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
+            ->flatMap(function ($item) {
+                $mapped = [];
+                if ($item->wilayah) {
+                    $subWilayahs = explode(',', $item->wilayah);
+                    foreach ($subWilayahs as $sw) {
+                        $trimmed = trim($sw);
+                        if ($trimmed !== '') {
+                            $mapped[] = [
+                                'name' => $trimmed,
+                                'label' => $trimmed.' (Ring '.$item->ring.' - '.$item->expedisi.')',
+                                'rates' => [
+                                    '20_F' => $item->tarif_20ft_full,
+                                    '20_E' => $item->tarif_20ft_empty,
+                                    '40_F' => $item->tarif_40ft_full,
+                                    '40_E' => $item->tarif_40ft_empty,
+                                    '45_F' => $item->tarif_40ft_full,
+                                    '45_E' => $item->tarif_40ft_empty,
+                                ],
+                            ];
+                        }
+                    }
+                }
+                return $mapped;
             })
             ->unique('name')
             ->values();
@@ -173,19 +184,30 @@ class SuratJalanTarikKosongBatamController extends Controller
         $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
 
         $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
-            ->get(['ring', 'expedisi', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
-            ->map(function ($item) {
-                return [
-                    'name' => "Ring {$item->ring} {$item->expedisi}",
-                    'rates' => [
-                        '20_F' => $item->tarif_20ft_full,
-                        '20_E' => $item->tarif_20ft_empty,
-                        '40_F' => $item->tarif_40ft_full,
-                        '40_E' => $item->tarif_40ft_empty,
-                        '45_F' => $item->tarif_40ft_full,
-                        '45_E' => $item->tarif_40ft_empty,
-                    ],
-                ];
+            ->get(['ring', 'expedisi', 'wilayah', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
+            ->flatMap(function ($item) {
+                $mapped = [];
+                if ($item->wilayah) {
+                    $subWilayahs = explode(',', $item->wilayah);
+                    foreach ($subWilayahs as $sw) {
+                        $trimmed = trim($sw);
+                        if ($trimmed !== '') {
+                            $mapped[] = [
+                                'name' => $trimmed,
+                                'label' => $trimmed.' (Ring '.$item->ring.' - '.$item->expedisi.')',
+                                'rates' => [
+                                    '20_F' => $item->tarif_20ft_full,
+                                    '20_E' => $item->tarif_20ft_empty,
+                                    '40_F' => $item->tarif_40ft_full,
+                                    '40_E' => $item->tarif_40ft_empty,
+                                    '45_F' => $item->tarif_40ft_full,
+                                    '45_E' => $item->tarif_40ft_empty,
+                                ],
+                            ];
+                        }
+                    }
+                }
+                return $mapped;
             })
             ->unique('name')
             ->values();
