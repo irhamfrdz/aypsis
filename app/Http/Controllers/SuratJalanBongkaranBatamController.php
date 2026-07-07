@@ -211,6 +211,7 @@ class SuratJalanBongkaranBatamController extends Controller
         // Get data for modal form
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
             ->whereNull('tanggal_berhenti')
+            ->whereIn('cabang', ['BTM', 'BATAM'])
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
@@ -511,6 +512,7 @@ class SuratJalanBongkaranBatamController extends Controller
         // Get karyawan dengan divisi supir untuk dropdown supir
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
             ->whereNull('tanggal_berhenti')
+            ->whereIn('cabang', ['BTM', 'BATAM'])
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
@@ -969,6 +971,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
             ->whereNull('tanggal_berhenti')
+            ->whereIn('cabang', ['BTM', 'BATAM'])
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
 
