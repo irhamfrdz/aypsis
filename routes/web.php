@@ -3115,6 +3115,11 @@ Route::middleware([
                 'destroy' => 'can:gaji-supir-batam-delete',
             ]);
 
+        // Report Kerja Supir Batam
+        Route::get('report-kerja-supir-batam', [\App\Http\Controllers\ReportKerjaSupirBatamController::class, 'index'])
+            ->name('report-kerja-supir-batam.index')
+            ->middleware('can:report-kerja-supir-batam-view');
+
         // Pranota Uang Jalan Bongkaran - list & basic management
         Route::get('pranota-uang-jalan-bongkaran', [\App\Http\Controllers\PranotaUangJalanBongkaranController::class, 'index'])
             ->name('pranota-uang-jalan-bongkaran.index')
