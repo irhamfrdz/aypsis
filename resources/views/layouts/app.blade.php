@@ -2097,28 +2097,28 @@
                 @endif
 
                 {{-- Jadwal Kapal --}}
-                @if($user && $user->can('jadwal-kapal-view'))
+                @if($user && $user->can('jadwal-kapal-view') && \Illuminate\Support\Facades\Route::has('jadwal-kapal.index'))
                     <a href="{{ route('jadwal-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('jadwal-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Jadwal Kapal</span>
                     </a>
                 @endif
 
                 {{-- Status Kapal --}}
-                @if($user && $user->can('status-kapal-view'))
+                @if($user && $user->can('status-kapal-view') && \Illuminate\Support\Facades\Route::has('status-kapal.index'))
                     <a href="{{ route('status-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('status-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Status Kapal</span>
                     </a>
                 @endif
 
                 {{-- Log Aktivitas --}}
-                @if($user && $user->can('log-aktivitas-kapal-view'))
+                @if($user && $user->can('log-aktivitas-kapal-view') && \Illuminate\Support\Facades\Route::has('log-aktivitas-kapal.index'))
                     <a href="{{ route('log-aktivitas-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('log-aktivitas-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Log Aktivitas</span>
                     </a>
                 @endif
 
                 {{-- Monitoring Kapal --}}
-                @if($user && $user->can('monitoring-kapal-view'))
+                @if($user && $user->can('monitoring-kapal-view') && \Illuminate\Support\Facades\Route::has('monitoring-kapal.index'))
                     <a href="{{ route('monitoring-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('monitoring-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Monitoring Kapal</span>
                     </a>
