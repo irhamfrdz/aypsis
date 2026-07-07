@@ -41,7 +41,7 @@ class SuratJalanTarikKosongBatamController extends Controller
 
     public function create()
     {
-        $supirs = Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->orderBy('nama_lengkap')->get();
+        $supirs = Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->whereIn('cabang', ['BTM', 'BATAM'])->orderBy('nama_lengkap')->get();
         $keneks = Karyawan::where('status', 'active')->where('divisi', 'KENEK')->orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         // Get kontainer data dari 2 table: stock_kontainers dan kontainers
@@ -151,7 +151,7 @@ class SuratJalanTarikKosongBatamController extends Controller
     public function edit($id)
     {
         $item = SuratJalanTarikKosongBatam::findOrFail($id);
-        $supirs = Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->orderBy('nama_lengkap')->get();
+        $supirs = Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->whereIn('cabang', ['BTM', 'BATAM'])->orderBy('nama_lengkap')->get();
         $keneks = Karyawan::where('status', 'active')->where('divisi', 'KENEK')->orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
 
