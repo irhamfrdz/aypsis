@@ -502,6 +502,7 @@ class PembayaranObController extends Controller
         // Validasi input
         $validated = $request->validate([
             'nomor_pembayaran' => 'required|string|max:255',
+            'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'kas_bank' => 'required|exists:akun_coa,id',
             'akun_coa_id' => 'required|exists:akun_coa,id',
