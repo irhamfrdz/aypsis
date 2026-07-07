@@ -156,7 +156,7 @@
                                     <option value="">-- Pilih Akun Kas/Bank --</option>
                                     @foreach($kasBankList as $kasBank)
                                         <option value="{{ $kasBank->id }}" 
-                                            {{ old('kas_bank', $pembayaran->kas_bank_akun_id) == $kasBank->id ? 'selected' : '' }}>
+                                            {{ old('kas_bank', $pembayaran->kas_bank_id) == $kasBank->id ? 'selected' : '' }}>
                                             {{ $kasBank->nomor_akun }} - {{ $kasBank->nama_akun }}
                                             @if($kasBank->saldo != 0)
                                                 (Saldo: Rp {{ number_format($kasBank->saldo, 0, ',', '.') }})
