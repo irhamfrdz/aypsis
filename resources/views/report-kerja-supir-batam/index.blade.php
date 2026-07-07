@@ -74,7 +74,10 @@
             <h3 class="text-lg font-bold text-gray-900">Hasil Report Kerja Supir</h3>
             <p class="text-xs text-gray-500 mt-1">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p>
         </div>
-        <div class="no-print">
+        <div class="no-print flex space-x-2">
+            <a href="{{ route('report-kerja-supir-batam.export', request()->query()) }}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                <i class="fas fa-file-excel mr-1"></i> Export Excel
+            </a>
             <button onclick="window.print()" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
                 <i class="fas fa-print mr-1"></i> Cetak / PDF
             </button>

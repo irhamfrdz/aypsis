@@ -25,6 +25,53 @@ class ReportKerjaSupirBatamController extends Controller
             ->orderBy('nama_lengkap')
             ->get();
 
+        $data = $this->getData($startDate, $endDate, $karyawanId, $supirList);
+
+        return view('report-kerja-supir-batam.index', [
+            'supirList' => $supirList,
+            'waybills' => $data['waybills'],
+            'totalRit' => $data['totalRit'],
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'karyawanId' => $karyawanId
+        ]);
+    }
+
+    /**
+     * Export to Excel.
+     */
+    public function export(Request $request)
+    {
+        $startDate = $request->get('start_date', '');
+        $endDate = $request->get('end_date', '');
+        $karyawanId = $request->get('karyawan_id', '');
+
+        if (!$startDate || !$endDate) {
+            return back()->with('error', 'Silakan pilih rentang tanggal terlebih dahulu.');
+        }
+
+        // Get list of Batam supir for filter dropdown
+        $supirList = Karyawan::where('cabang', 'BATAM')
+            ->where(function ($q) {
+                $q->where('pekerjaan', 'like', 'SUPIR%')
+                    ->orWhere('pekerjaan', 'like', '%DRIVER%');
+            })
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        $data = $this->getData($startDate, $endDate, $karyawanId, $supirList);
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\ReportKerjaSupirBatamExport($data['waybills'], $startDate, $endDate, $data['totalRit']),
+            'Report_Kerja_Supir_Batam_' . $startDate . '_sd_' . $endDate . '.xlsx'
+        );
+    }
+
+    /**
+     * Private helper to fetch the report data.
+     */
+    private function getData($startDate, $endDate, $karyawanId, $supirList)
+    {
         $waybills = [];
         $totalRit = 0;
 
@@ -127,6 +174,9 @@ class ReportKerjaSupirBatamController extends Controller
             }
         }
 
-        return view('report-kerja-supir-batam.index', compact('supirList', 'waybills', 'totalRit', 'startDate', 'endDate', 'karyawanId'));
+        return [
+            'waybills' => $waybills,
+            'totalRit' => $totalRit
+        ];
     }
 }

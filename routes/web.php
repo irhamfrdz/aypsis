@@ -3119,6 +3119,9 @@ Route::middleware([
         Route::get('report-kerja-supir-batam', [\App\Http\Controllers\ReportKerjaSupirBatamController::class, 'index'])
             ->name('report-kerja-supir-batam.index')
             ->middleware('can:report-kerja-supir-batam-view');
+        Route::get('report-kerja-supir-batam/export', [\App\Http\Controllers\ReportKerjaSupirBatamController::class, 'export'])
+            ->name('report-kerja-supir-batam.export')
+            ->middleware('can:report-kerja-supir-batam-view');
 
         // Pranota Uang Jalan Bongkaran - list & basic management
         Route::get('pranota-uang-jalan-bongkaran', [\App\Http\Controllers\PranotaUangJalanBongkaranController::class, 'index'])
