@@ -50,7 +50,7 @@
 
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">No. Transaksi (Otomatis)</label>
-                            <input type="text" value="{{ $no_transaksi }}" readonly 
+                            <input type="text" name="no_transaksi" value="{{ $no_transaksi }}" readonly 
                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm font-bold text-gray-500">
                         </div>
 
