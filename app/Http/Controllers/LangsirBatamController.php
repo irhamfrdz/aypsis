@@ -80,18 +80,22 @@ class LangsirBatamController extends Controller
             return response()->json(['success' => false, 'message' => 'No kontainer provided']);
         }
 
-        $manifest = \App\Models\Manifest::where('nomor_kontainer', $no_kontainer)
-            ->orderBy('tanggal_berangkat', 'desc')
-            ->first();
+        $manifests = \App\Models\Manifest::where('nomor_kontainer', $no_kontainer)
+            ->orderBy('tanggal_berangkat', 'asc')
+            ->get();
 
-        if ($manifest) {
-            return response()->json([
-                'success' => true,
-                'data' => [
+        if ($manifests->isNotEmpty()) {
+            $data = $manifests->map(function ($manifest) {
+                return [
                     'nama_kapal' => $manifest->nama_kapal,
                     'no_voyage' => $manifest->no_voyage,
                     'tanggal_berangkat' => $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('d-m-Y') : null,
-                ]
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
             ]);
         }
 
