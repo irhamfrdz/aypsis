@@ -97,7 +97,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Status <span class="text-red-500">*</span></label>
-                                <select name="status" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                                <select name="status" id="status_select" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                                     <option value="FULL" {{ old('status', $langsir->status) == 'FULL' ? 'selected' : '' }}>FULL</option>
                                     <option value="EMPTY" {{ old('status', $langsir->status) == 'EMPTY' ? 'selected' : '' }}>EMPTY</option>
                                 </select>
@@ -317,6 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             kontainerList.classList.add('hidden');
+            autoCalculateBiaya();
         });
     });
 
@@ -382,6 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             dariList.classList.remove('hidden');
+            autoCalculateBiaya();
         });
 
         dariItems.forEach(item => {
@@ -389,6 +391,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const name = item.getAttribute('data-name');
                 dariSearch.value = name;
                 dariList.classList.add('hidden');
+                autoCalculateBiaya();
             });
         });
     }
@@ -414,6 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             keList.classList.remove('hidden');
+            autoCalculateBiaya();
         });
 
         keItems.forEach(item => {
@@ -421,8 +425,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 const name = item.getAttribute('data-name');
                 keSearch.value = name;
                 keList.classList.add('hidden');
+                autoCalculateBiaya();
             });
         });
+    }
+
+    // Automatic Fee Calculation
+    function autoCalculateBiaya() {
+        const dariVal = (dariSearch?.value || '').trim().toUpperCase();
+        const keVal = (keSearch?.value || '').trim().toUpperCase();
+        const sizeVal = sizeSelect?.value || '';
+        const statusSelect = document.getElementById('status_select');
+        const statusVal = statusSelect?.value || '';
+
+        // Check if route is SRIMAS -> PELABUHAN or PELABUHAN -> SRIMAS
+        const isSrimasPelabuhan = (dariVal === 'SRIMAS' && keVal === 'PELABUHAN') || (dariVal === 'PELABUHAN' && keVal === 'SRIMAS');
+
+        if (isSrimasPelabuhan) {
+            let price = 0;
+            if (sizeVal === '20FT') {
+                price = statusVal === 'FULL' ? 40000 : 35000;
+            } else if (sizeVal === '40FT') {
+                price = statusVal === 'FULL' ? 50000 : 45000;
+            }
+
+            if (price > 0) {
+                if (biayaDisplay && biayaHidden) {
+                    biayaHidden.value = price;
+                    biayaDisplay.value = formatRupiah(price.toString());
+                }
+            }
+        }
+    }
+
+    if (sizeSelect) {
+        sizeSelect.addEventListener('change', autoCalculateBiaya);
+    }
+    const statusSelect = document.getElementById('status_select');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', autoCalculateBiaya);
     }
 });
 </script>
