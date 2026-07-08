@@ -33,6 +33,7 @@ class Absensi extends Model
         'longitude',
         'device',
         'detail_lokasi',
+        'foto',
     ];
 
     /**
