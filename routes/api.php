@@ -4,8 +4,13 @@ use App\Http\Controllers\Api\ApiAuthController;
 use App\Http\Controllers\Api\ApiAttendanceController;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Api\AbsensiSyncController;
+
 // Public routes
 Route::post('/login', [ApiAuthController::class, 'login']);
+
+// Endpoint Push Absensi dari Mesin/Lokal
+Route::post('/absensi/push', [AbsensiSyncController::class, 'push']);
 
 // Protected routes (Sanctum)
 Route::middleware('auth:sanctum')->group(function () {

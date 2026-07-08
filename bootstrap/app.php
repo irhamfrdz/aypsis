@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         $middleware->validateCsrfTokens(except: [
             'api/sewa-kontainer/sync',
+            'iclock/*',
         ]);
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,

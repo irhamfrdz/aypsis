@@ -102,6 +102,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Rute untuk login dan logout
+use App\Http\Controllers\Api\ADMSController;
+
+// ADMS ZKTeco Push Endpoint
+Route::get('iclock/cdata', [ADMSController::class, 'handshake']);
+Route::post('iclock/cdata', [ADMSController::class, 'receiveData']);
+Route::get('iclock/getrequest', [ADMSController::class, 'getRequest']);
+
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
