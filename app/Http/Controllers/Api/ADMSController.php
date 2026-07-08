@@ -19,18 +19,20 @@ class ADMSController extends Controller
     {
         $sn = $request->query('SN'); // Serial Number mesin
         
+        Log::info("ADMS Handshake dari Mesin SN: {$sn}");
+
         // Response wajib agar mesin tahu server merespon dan siap menerima data
-        $response = "GET OPTION FROM: {$sn}\n";
-        $response .= "Stamp=0\n";
-        $response .= "OpStamp=0\n";
-        $response .= "ErrorDelay=60\n";
-        $response .= "Delay=30\n";
-        $response .= "TransTimes=00:00;14:00\n";
-        $response .= "TransInterval=1\n";
-        $response .= "TransFlag=1111000000\n";
-        $response .= "TimeZone=74\n"; // Jakarta GMT+7
-        $response .= "Realtime=1\n";
-        $response .= "Encrypt=0\n";
+        $response = "GET OPTION FROM: {$sn}\r\n";
+        $response .= "Stamp=0\r\n";
+        $response .= "OpStamp=0\r\n";
+        $response .= "ErrorDelay=60\r\n";
+        $response .= "Delay=30\r\n";
+        $response .= "TransTimes=00:00;14:00\r\n";
+        $response .= "TransInterval=1\r\n";
+        $response .= "TransFlag=1111000000\r\n";
+        $response .= "TimeZone=74\r\n"; // Jakarta GMT+7
+        $response .= "Realtime=1\r\n";
+        $response .= "Encrypt=0\r\n";
 
         return response($response, 200)->header('Content-Type', 'text/plain');
     }
@@ -45,13 +47,15 @@ class ADMSController extends Controller
         
         $rawData = $request->getContent();
         
+        Log::info("ADMS Terima Data dari SN: {$sn} | Table: {$table} | Payload:", ['data' => $rawData]);
+
         if ($table === 'ATTLOG') {
             $this->processAttLog($rawData, $sn);
         }
 
         // Harus membalas "OK" agar mesin menganggap data sudah terkirim 
         // dan menghapusnya dari memori antrean pengiriman.
-        return response("OK\n", 200)->header('Content-Type', 'text/plain');
+        return response("OK\r\n", 200)->header('Content-Type', 'text/plain');
     }
 
     /**
@@ -59,8 +63,11 @@ class ADMSController extends Controller
      */
     public function getRequest(Request $request)
     {
+        $sn = $request->query('SN');
+        Log::info("ADMS GetRequest dari SN: {$sn}");
+        
         // Balas OK untuk memberitahu tidak ada perintah (reboot, clear log, dll)
-        return response("OK\n", 200)->header('Content-Type', 'text/plain');
+        return response("OK\r\n", 200)->header('Content-Type', 'text/plain');
     }
 
     /**
