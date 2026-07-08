@@ -103,7 +103,8 @@ class ADMSController extends Controller
                 $datetimeStr = $dateStr . ' ' . $timeStr;
                 
                 try {
-                    $logTime = Carbon::parse($datetimeStr)->format('Y-m-d H:i:s');
+                    // Memastikan data yang diproses selalu menggunakan zona waktu Jakarta (WIB)
+                    $logTime = Carbon::parse($datetimeStr, 'Asia/Jakarta')->format('Y-m-d H:i:s');
                 } catch (\Exception $e) {
                     continue; // Skip format tanggal salah
                 }
