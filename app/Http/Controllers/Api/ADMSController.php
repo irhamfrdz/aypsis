@@ -79,6 +79,11 @@ class ADMSController extends Controller
         $lines = explode("\n", $rawData);
         
         $employees = Karyawan::select('id', 'nik')->whereNotNull('nik')->get()->pluck('id', 'nik')->toArray();
+        // Cari Mesin ID berdasarkan SN, atau gunakan mesin pertama sebagai fallback
+        $mesin = \App\Models\Mesin::where('kode_mesin', $sn)
+                    ->orWhere('keterangan', 'like', "%{$sn}%")
+                    ->first();
+        $mesinId = $mesin ? $mesin->id : (\App\Models\Mesin::first()->id ?? null);
         
         foreach ($lines as $line) {
             $line = trim($line);
@@ -119,6 +124,7 @@ class ADMSController extends Controller
                         'waktu' => $logTime,
                         'tipe' => $type,
                         'karyawan_id' => $employees[$nik] ?? null,
+                        'mesin_id' => $mesinId,
                         'keterangan' => 'ADMS Push (SN: ' . $sn . ')',
                     ]);
                 }
