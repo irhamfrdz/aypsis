@@ -100,17 +100,51 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .permission-matrix {
-                font-size: 12px;
+            .permission-matrix thead {
+                display: none;
             }
-
-            .permission-matrix th,
+            .permission-matrix, 
+            .permission-matrix tbody, 
+            .permission-matrix tr {
+                display: block;
+                width: 100%;
+            }
+            .permission-matrix tr {
+                margin-bottom: 1rem;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.5rem;
+                background-color: #fff;
+                padding: 0.5rem;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            }
+            .permission-matrix tr.module-row {
+                background-color: #f3f4f6;
+                border-color: #d1d5db;
+            }
             .permission-matrix td {
-                padding: 6px 8px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                text-align: left !important;
+                border: none !important;
+                padding: 0.375rem 0.75rem !important;
+                width: 100%;
+                box-sizing: border-box;
             }
-
+            .permission-matrix td:not(.module-header):not(.submodule)::before {
+                content: attr(data-label);
+                font-weight: 500;
+                font-size: 0.75rem;
+                color: #4b5563;
+                margin-right: auto;
+            }
+            .permission-matrix td.empty-cell {
+                display: none !important;
+            }
             .submodule {
-                padding-left: 30px !important;
+                padding-left: 0.75rem !important;
+                font-weight: 600;
+                border-bottom: 1px solid #f3f4f6 !important;
             }
         }
 
@@ -4445,9 +4479,29 @@
             // Initialize permission search
             initializePermissionSearch();
 
+            // Initialize mobile labels
+            initializeMobileLabels();
+
             // ==========================================
             // KARYAWAN SELECT INITIALIZATION
             // ==========================================
+
+            function initializeMobileLabels() {
+                const table = document.querySelector('.permission-matrix');
+                if (!table) return;
+                const headers = Array.from(table.querySelectorAll('thead th')).map(th => {
+                    return th.textContent.trim().replace(/\s+/g, ' ');
+                });
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    cells.forEach((cell, index) => {
+                        if (index > 0 && headers[index]) {
+                            cell.setAttribute('data-label', headers[index]);
+                        }
+                    });
+                });
+            }
 
             function initializeKaryawanSelect() {
                 // ---- Tab Switcher ----

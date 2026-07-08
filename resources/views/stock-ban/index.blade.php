@@ -328,7 +328,7 @@
                     
                     <!-- Ban Afkir -->
                     @php
-                        $banAfkir = $stockBans->whereIn('kondisi', ['afkir', 'rusak'])->count();
+                        $banAfkir = $stockBans->whereIn('kondisi', ['afkir', 'rusak'])->whereIn('status', ['Stok', 'Rusak'])->count();
                     @endphp
                     <div id="card-afkir" onclick="setCardFilter('afkir', false)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -913,7 +913,7 @@
                     
                     <!-- Ban Afkir -->
                     @php
-                        $banAfkirBtm = $banBatamList->whereIn('kondisi', ['afkir', 'rusak'])->count();
+                        $banAfkirBtm = $banBatamList->whereIn('kondisi', ['afkir', 'rusak'])->whereIn('status', ['Stok', 'Rusak'])->count();
                     @endphp
                     <div id="card-batam-afkir" onclick="setCardFilter('afkir', true)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -3119,7 +3119,7 @@
                         if (activeTab.id === 'tab-ban-luar') filterMatch = kondisi === 'kanisir' && lokasi.includes('ruko 10') && status === 'stok';
                         else filterMatch = kondisi === 'kanisir' && status === 'stok';
                     }
-                    else if (currentCardFilter === 'afkir') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak');
+                    else if (currentCardFilter === 'afkir') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'garasi-pluit') filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
                     else if (currentCardFilter === 'ruko-10') filterMatch = lokasi.includes('ruko 10') && status === 'stok';
                     else if (currentCardFilter === 'gudang-batam') filterMatch = lokasi.includes('gudang batam') && status === 'stok';
@@ -3172,7 +3172,7 @@
                         if (activeTab.id === 'tab-ban-luar') filterMatch = kondisi === 'kanisir' && lokasi.includes('ruko 10') && status === 'stok';
                         else filterMatch = kondisi === 'kanisir' && status === 'stok';
                     }
-                    else if (currentCardFilter === 'afkir') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak');
+                    else if (currentCardFilter === 'afkir') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'garasi-pluit') filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
                     else if (currentCardFilter === 'ruko-10') filterMatch = lokasi.includes('ruko 10') && status === 'stok';
                     else if (currentCardFilter === 'gudang-batam') filterMatch = lokasi.includes('gudang batam') && status === 'stok';
