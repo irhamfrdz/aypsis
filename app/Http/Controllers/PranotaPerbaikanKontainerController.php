@@ -99,6 +99,7 @@ class PranotaPerbaikanKontainerController extends Controller
                 'item_id' => 'required|exists:perbaikan_kontainers,id',
                 'estimasi_biaya' => 'required|numeric|min:0',
                 'biaya_riil' => 'required|numeric|min:0',
+                'biaya_cat' => 'nullable|numeric|min:0',
             ]);
 
             $pranota = PranotaPerbaikanKontainer::findOrFail($id);
@@ -118,6 +119,7 @@ class PranotaPerbaikanKontainerController extends Controller
                 if (isset($item['id']) && $item['id'] == $data['item_id']) {
                     $item['estimasi_biaya'] = $data['estimasi_biaya'];
                     $item['biaya_riil'] = $data['biaya_riil'];
+                    $item['biaya_cat'] = $data['biaya_cat'] ?? 0;
                     $itemUpdated = true;
                 }
 
@@ -145,6 +147,7 @@ class PranotaPerbaikanKontainerController extends Controller
             $perbaikan->update([
                 'estimasi_biaya' => $data['estimasi_biaya'],
                 'biaya_riil' => $data['biaya_riil'],
+                'biaya_cat' => $data['biaya_cat'] ?? 0,
                 'updated_by' => \Illuminate\Support\Facades\Auth::id(),
             ]);
 

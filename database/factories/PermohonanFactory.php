@@ -14,7 +14,8 @@ class PermohonanFactory extends Factory
         return [
             'nomor_memo' => 'MEMO-'.$this->faker->unique()->numerify('####'),
             'tanggal_memo' => $this->faker->date('Y-m-d'),
-            'tujuan' => $this->faker->city(),
+            'dari' => $this->faker->city(),
+            'ke' => $this->faker->city(),
             'kegiatan' => 'pengiriman',
             'ukuran' => '20',
             'jumlah_kontainer' => 1,

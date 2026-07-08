@@ -71,10 +71,16 @@
                                     <a href="{{ route('pranota-ongkos-truk.show', $pranota->id) }}" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="Lihat Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    <a href="{{ route('pranota-ongkos-truk.edit', $pranota->id) }}" class="p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
                                     <a href="{{ route('pranota-ongkos-truk.print', $pranota->id) }}" target="_blank" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Cetak">
                                         <i class="fas fa-print"></i>
                                     </a>
                                     <a href="{{ route('pranota-ongkos-truk.export', $pranota->id) }}" class="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors" title="Download Excel">
+                                        <i class="fas fa-file-excel"></i>
+                                    </a>
+                                    <a href="{{ route('pranota-ongkos-truk.export-2', $pranota->id) }}" class="p-2 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 transition-colors" title="Download Excel 2">
                                         <i class="fas fa-file-excel"></i>
                                     </a>
                                     @can('pranota-ongkos-truk-delete')

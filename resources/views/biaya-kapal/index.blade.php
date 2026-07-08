@@ -60,18 +60,18 @@
             <!-- Filter & Search -->
             <form method="GET" action="{{ route('biaya-kapal.index') }}" class="mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <div class="md:col-span-4">
+                    <div class="md:col-span-3">
                         <label for="search" class="block text-xs font-medium text-gray-700 mb-1">Cari Data</label>
                         <input type="text"
                                name="search"
                                id="search"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
                                placeholder="Kapal, invoice, jenis biaya, ket..."
                                value="{{ request('search') }}">
                     </div>
-                    <div class="md:col-span-4">
+                    <div class="md:col-span-3">
                         <label for="jenis_biaya_select" class="block text-xs font-medium text-gray-700 mb-1">Jenis Biaya</label>
-                        <select name="jenis_biaya" id="jenis_biaya_select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                        <select name="jenis_biaya" id="jenis_biaya_select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent select2 text-sm">
                             <option value="">Semua Jenis Biaya</option>
                             @foreach($klasifikasiBiayas as $kb)
                                 <option value="{{ $kb->kode }}" {{ request('jenis_biaya') == $kb->kode ? 'selected' : '' }}>
@@ -80,12 +80,28 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="md:col-span-4 flex items-end gap-2">
-                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center justify-center">
-                            <i class="fas fa-search mr-2"></i> Cari
+                    <div class="md:col-span-2">
+                        <label for="start_date" class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                        <input type="date"
+                               name="start_date"
+                               id="start_date"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
+                               value="{{ request('start_date') }}">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="end_date" class="block text-xs font-medium text-gray-700 mb-1">Ke Tanggal</label>
+                        <input type="date"
+                               name="end_date"
+                               id="end_date"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
+                               value="{{ request('end_date') }}">
+                    </div>
+                    <div class="md:col-span-2 flex items-end gap-2">
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition duration-200 flex items-center justify-center text-sm font-medium">
+                            <i class="fas fa-search mr-1.5"></i> Cari
                         </button>
-                        <a href="{{ route('biaya-kapal.index') }}" class="flex-1 text-center bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center justify-center">
-                            <i class="fas fa-redo mr-2"></i> Reset
+                        <a href="{{ route('biaya-kapal.index') }}" class="flex-1 text-center bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg transition duration-200 flex items-center justify-center text-sm font-medium">
+                            <i class="fas fa-redo mr-1.5"></i> Reset
                         </a>
                     </div>
                 </div>

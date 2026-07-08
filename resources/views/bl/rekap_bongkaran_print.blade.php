@@ -227,8 +227,13 @@
                 <tr>
                     <td>Voyage</td>
                     <td>: {{ $noVoyage }}</td>
-                    <td></td>
-                    <td></td>
+                    <td>Dari</td>
+                    <td>: 
+                        @if(Str::contains($noVoyage, 'BJ')) Batam 
+                        @elseif(Str::contains($noVoyage, 'PJ')) Pinang
+                        @elseif(Str::contains($noVoyage, ['JB', 'JP'])) Jakarta
+                        @else - @endif
+                    </td>
                 </tr>
             </table>
         </div>
@@ -237,9 +242,9 @@
             <thead>
                 <tr>
                     <th style="width: 8%;">No</th>
-                    <th style="width: 25%;" colspan="2">Jumlah Barang</th>
-                    <th style="width: 47%;">Nama Barang</th>
-                    <th style="width: 20%;" colspan="2">Ton / M3</th>
+                    <th style="width: 20%;" colspan="2">Jumlah Barang</th>
+                    <th style="width: 57%;">Nama Barang</th>
+                    <th style="width: 15%;" colspan="2">Ton / M3</th>
                 </tr>
             </thead>
             <tbody>
@@ -252,13 +257,13 @@
                     <td class="text-left" style="border-left: none;">
                         {{ $item['satuan'] }}
                     </td>
-                    <td style="font-weight: bold;">
-                        {{ $item['nama_barang'] }}
+                    <td style="font-weight: bold;" title="{{ $item['nama_barang'] }}">
+                        {{ Str::limit($item['nama_barang'], 80) }}
                     </td>
-                    <td class="text-right" style="border-right: none;">
+                    <td class="text-right" style="border-right: none; width: 75%;">
                         {{ $item['amount'] !== null ? number_format($item['amount'], 3, ',', '.') : '' }}
                     </td>
-                    <td class="text-center" style="border-left: none;">
+                    <td class="text-center" style="border-left: none; width: 25%;">
                         {{ $item['unit'] }}
                     </td>
                 </tr>

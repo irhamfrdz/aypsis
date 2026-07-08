@@ -2,6 +2,32 @@
 
 @section('title', $title)
 
+@push('styles')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Custom Select2 styling to match Tailwind */
+    .select2-container--default .select2-selection--single {
+        height: 38px !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.375rem !important;
+        padding-top: 5px !important;
+        padding-bottom: 5px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 20px !important;
+        color: #374151 !important;
+        font-size: 0.875rem !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+    .select2-container {
+        width: 100% !important;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
@@ -85,7 +111,7 @@
                             </div>
                         @endif
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <!-- Nomor Pembayaran (Readonly) -->
                             <div>
                                 <label for="nomor_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
@@ -98,6 +124,23 @@
                                        readonly
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
                                 <p class="mt-1 text-sm text-gray-500">Nomor pembayaran tidak dapat diubah</p>
+                            </div>
+
+                            <!-- Nomor Accurate -->
+                            <div>
+                                <label for="nomor_accurate" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nomor Accurate
+                                </label>
+                                <input type="text"
+                                       name="nomor_accurate"
+                                       id="nomor_accurate"
+                                       value="{{ old('nomor_accurate', $pembayaran->nomor_accurate) }}"
+                                       placeholder="Masukkan nomor accurate..."
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_accurate') border-red-300 @enderror">
+                                @error('nomor_accurate')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-sm text-gray-500">Nomor dari sistem Accurate (opsional)</p>
                             </div>
 
                             <!-- Tanggal Pembayaran -->
@@ -130,7 +173,7 @@
                                     <option value="">-- Pilih Akun Kas/Bank --</option>
                                     @foreach($kasBankList as $kasBank)
                                         <option value="{{ $kasBank->id }}" 
-                                            {{ old('kas_bank', $pembayaran->kas_bank_akun_id) == $kasBank->id ? 'selected' : '' }}>
+                                            {{ old('kas_bank', $pembayaran->kas_bank_id) == $kasBank->id ? 'selected' : '' }}>
                                             {{ $kasBank->nomor_akun }} - {{ $kasBank->nama_akun }}
                                             @if($kasBank->saldo != 0)
                                                 (Saldo: Rp {{ number_format($kasBank->saldo, 0, ',', '.') }})
@@ -488,11 +531,17 @@ async function loadNomorVoyage() {
     // Reset voyage select
     voyageSelect.innerHTML = '<option value="">-- Loading... --</option>';
     voyageSelect.disabled = true;
+    if (typeof $.fn.select2 !== 'undefined') {
+        $(voyageSelect).trigger('change');
+    }
 
     if (!kegiatan) {
         voyageSelect.innerHTML = '<option value="">-- Pilih Kegiatan Terlebih Dahulu --</option>';
         helpText.textContent = 'Pilih nomor voyage dari data yang tersedia';
         helpText.className = 'mt-1 text-sm text-gray-500';
+        if (typeof $.fn.select2 !== 'undefined') {
+            $(voyageSelect).trigger('change');
+        }
         return;
     }
 
@@ -534,10 +583,23 @@ async function loadNomorVoyage() {
         helpText.textContent = 'Terjadi kesalahan saat memuat data voyage';
         helpText.className = 'mt-1 text-sm text-red-600';
     }
+
+    if (typeof $.fn.select2 !== 'undefined') {
+        $(voyageSelect).trigger('change');
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     updateSupirDisplay();
+    
+    // Initialize Select2 on voyage select
+    if (typeof $.fn.select2 !== 'undefined') {
+        $('#nomor_voyage').select2({
+            placeholder: '-- Pilih Nomor Voyage --',
+            allowClear: true,
+            width: '100%'
+        });
+    }
     
     // Load voyage if kegiatan already selected (for edit mode)
     const kegiatanValue = document.getElementById('kegiatan').value;
@@ -644,3 +706,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 @endsection
+
+@push('scripts')
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+@endpush

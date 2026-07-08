@@ -22,7 +22,7 @@ class PenerimaController extends Controller
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('nama_penerima', 'LIKE', '%'.$searchTerm.'%')
-                    ->orWhere('contact_person', 'LIKE', '%'.$searchTerm.'%')
+                    ->orWhere('pic', 'LIKE', '%'.$searchTerm.'%')
                     ->orWhere('catatan', 'LIKE', '%'.$searchTerm.'%');
             });
         }
@@ -85,7 +85,8 @@ class PenerimaController extends Controller
     {
         $request->validate([
             'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima',
-            'contact_person' => 'nullable|string|max:255',
+            'pic' => 'nullable|string|max:255',
+            'telepon' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
             'nitku' => 'nullable|string',
@@ -128,7 +129,8 @@ class PenerimaController extends Controller
 
         $request->validate([
             'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima,'.$id,
-            'contact_person' => 'nullable|string|max:255',
+            'pic' => 'nullable|string|max:255',
+            'telepon' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
             'nitku' => 'nullable|string',
@@ -221,7 +223,8 @@ class PenerimaController extends Controller
     {
         $request->validate([
             'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima',
-            'contact_person' => 'nullable|string|max:255',
+            'pic' => 'nullable|string|max:255',
+            'telepon' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
             'nitku' => 'nullable|string',
@@ -305,7 +308,8 @@ class PenerimaController extends Controller
     {
         $validated = $request->validate([
             'nama_penerima' => 'required|string|max:255|unique:penerimas,nama_penerima,'.$penerima->id,
-            'contact_person' => 'nullable|string|max:255',
+            'pic' => 'nullable|string|max:255',
+            'telepon' => 'nullable|string|max:50',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string|max:20',
             'nitku' => 'nullable|string|max:255',

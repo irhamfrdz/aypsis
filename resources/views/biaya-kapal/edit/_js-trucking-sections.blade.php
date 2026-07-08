@@ -210,6 +210,7 @@
         const countDisplay = section.querySelector('.trucking-bl-count');
         const placeholder = section.querySelector('.placeholder-text');
 
+        // Clear previous
         hiddenInputsContainer.innerHTML = '';
         chipsContainer.innerHTML = '';
         countDisplay.textContent = 'Terpilih: 0 kontainer';
@@ -236,10 +237,14 @@
         .then(response => response.json())
         .then(data => {
             if (data.success && data.bls && Object.keys(data.bls).length > 0) {
+                // Create search input and options container
                 let html = `
                     <div class="sticky top-0 bg-white border-b border-gray-200 p-2 z-10">
                         <div class="relative">
-                            <input type="text" class="trucking-kontainer-search w-full px-3 py-2 pl-9 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" placeholder="Cari nomor kontainer atau seal..." autocomplete="off">
+                            <input type="text" 
+                                   class="trucking-kontainer-search w-full px-3 py-2 pl-9 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                   placeholder="Cari nomor kontainer atau seal..."
+                                   autocomplete="off">
                             <i class="fas fa-search absolute left-3 top-3 text-gray-400 text-sm"></i>
                         </div>
                     </div>
@@ -259,36 +264,67 @@
                 html += '</div>';
                 blDropdown.innerHTML = html;
 
+                // Setup search functionality
                 const searchInput = blDropdown.querySelector('.trucking-kontainer-search');
                 const optionsList = blDropdown.querySelector('.trucking-bl-options-list');
                 const allOptions = optionsList.querySelectorAll('.trucking-bl-option');
                 
                 searchInput.addEventListener('input', function(e) {
                     const searchTerm = e.target.value.toLowerCase().trim();
+                    let visibleCount = 0;
+                    
                     allOptions.forEach(option => {
                         const kontainer = option.getAttribute('data-kontainer').toLowerCase();
                         const seal = option.getAttribute('data-seal').toLowerCase();
-                        if (kontainer.includes(searchTerm) || seal.includes(searchTerm)) {
+                        const size = option.getAttribute('data-size');
+                        
+                        if (kontainer.includes(searchTerm) || seal.includes(searchTerm) || size.includes(searchTerm)) {
                             option.style.display = 'block';
+                            visibleCount++;
                         } else {
                             option.style.display = 'none';
                         }
                     });
+                    
+                    // Show "no results" message if nothing found
+                    let noResultsMsg = optionsList.querySelector('.no-results-message');
+                    if (visibleCount === 0) {
+                        if (!noResultsMsg) {
+                            noResultsMsg = document.createElement('p');
+                            noResultsMsg.className = 'no-results-message px-3 py-4 text-sm text-gray-500 italic text-center';
+                            noResultsMsg.textContent = 'Tidak ada kontainer yang cocok dengan pencarian';
+                            optionsList.appendChild(noResultsMsg);
+                        }
+                    } else {
+                        if (noResultsMsg) {
+                            noResultsMsg.remove();
+                        }
+                    }
                 });
                 
-                searchInput.addEventListener('click', function(e) { e.stopPropagation(); });
+                // Prevent dropdown from closing when clicking search input
+                searchInput.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
 
+                // Clear previous totals when new bls loaded
+                calculateTruckingTotals(sectionIndex);
+
+                // Bind clicks to BL options
                 blDropdown.querySelectorAll('.trucking-bl-option').forEach(opt => {
                     opt.addEventListener('click', function(e) {
                         e.stopPropagation();
                         const id = this.getAttribute('data-id');
                         const kontainer = this.getAttribute('data-kontainer');
+                        const seal = this.getAttribute('data-seal');
 
                         if (this.classList.contains('selected')) {
+                            // Remove
                             this.classList.remove('selected');
                             section.querySelector(`.trucking-chip[data-id="${id}"]`).remove();
                             section.querySelector(`input[value="${id}"]`).remove();
                         } else {
+                            // Add
                             this.classList.add('selected');
                             placeholder.classList.add('hidden');
                             
@@ -296,7 +332,10 @@
                             chip.className = 'trucking-chip bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1';
                             chip.setAttribute('data-id', id);
                             chip.innerHTML = `${kontainer} <i class="fas fa-times cursor-pointer hover:text-red-200"></i>`;
-                            chip.querySelector('i').onclick = (e) => { e.stopPropagation(); opt.click(); };
+                            chip.querySelector('i').onclick = (e) => {
+                                e.stopPropagation();
+                                opt.click();
+                            };
                             chipsContainer.appendChild(chip);
 
                             const input = document.createElement('input');
@@ -347,10 +386,9 @@
                     subtotal += parseFloat(priceItem.biaya) || 0;
                 }
             });
-        } else if (selectedOptions.length === 0) {
-            // If nothing selected, maybe keep the manual value if edited?
-            // For now, let's reset only if it's auto-mode
-            // subtotal = 0;
+        } else {
+            // Fallback: use current subtotal input value (e.g. from DB load or manual input)
+            subtotal = parseFloat(subtotalInput.value.replace(/\D/g, '')) || 0;
         }
 
         const pph = Math.round(subtotal * 0.02);
@@ -358,11 +396,9 @@
         
         const formatRupiah = (val) => new Intl.NumberFormat('id-ID').format(Math.round(val));
 
-        if (subtotal > 0) {
-            subtotalInput.value = formatRupiah(subtotal);
-            pphInput.value = formatRupiah(pph);
-            totalInput.value = formatRupiah(total);
-        }
+        subtotalInput.value = subtotal > 0 ? formatRupiah(subtotal) : '0';
+        pphInput.value = formatRupiah(pph);
+        totalInput.value = formatRupiah(total);
 
         calculateTotalFromAllTruckingSections();
     }
@@ -374,7 +410,7 @@
             totalSubtotal += sub;
         });
 
-        const currentJenis = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].getAttribute('data-kode');
+        const currentJenis = selectedJenisBiaya.kode || '';
         if (selectedJenisBiaya.nama.toLowerCase().includes('trucking')) {
             if (nominalInput) {
                 nominalInput.value = totalSubtotal > 0 ? Math.round(totalSubtotal).toLocaleString('id-ID') : '';

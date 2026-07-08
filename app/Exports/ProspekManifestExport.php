@@ -172,10 +172,38 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
         $tanpaSjs = TandaTerimaTanpaSuratJalan::whereIn('no_tanda_terima', $noSjs)->get()->keyBy('no_tanda_terima');
         $lcls = TandaTerimaLcl::whereIn('nomor_tanda_terima', $noSjs)->with(['tujuanKirim', 'kontainerPivot', 'items'])->get()->keyBy('nomor_tanda_terima');
 
-        $data = $prospeks->map(function ($p) use ($tanpaSjs, $lcls) {
+        // Also pre-fetch LCL records by container number for LCL-typed prospeks
+        $lclContainers = $prospeks->filter(function ($p) {
+            return strtoupper($p->tipe) === 'LCL' && $p->nomor_kontainer;
+        })->pluck('nomor_kontainer')->filter()->unique();
+
+        $lclByContainer = collect();
+        if ($lclContainers->isNotEmpty()) {
+            $allContainers = $lclContainers->flatMap(function ($c) {
+                return array_filter(explode(',', $c), 'trim');
+            })->unique()->values();
+
+            $lclByContainer = TandaTerimaLcl::whereHas('kontainerPivot', function ($q) use ($allContainers) {
+                $q->whereIn('nomor_kontainer', $allContainers);
+            })->with(['tujuanKirim', 'kontainerPivot', 'items'])->get();
+        }
+
+        $data = $prospeks->map(function ($p) use ($tanpaSjs, $lcls, $lclByContainer) {
             $tt = $p->tandaTerima;
             $tsj = $tanpaSjs->get($p->no_surat_jalan);
             $lcl = $lcls->get($p->no_surat_jalan);
+
+            // If LCL not found by no_surat_jalan, try finding by container number
+            if (! $lcl && strtoupper($p->tipe) === 'LCL' && $p->nomor_kontainer) {
+                $containers = array_filter(explode(',', $p->nomor_kontainer), 'trim');
+                $lcl = $lclByContainer->first(function ($lclRecord) use ($containers) {
+                    if (! $lclRecord->kontainerPivot) {
+                        return false;
+                    }
+
+                    return $lclRecord->kontainerPivot->whereIn('nomor_kontainer', $containers)->isNotEmpty();
+                });
+            }
 
             $source = 'Standard';
             if ($lcl || strtoupper($p->tipe) === 'LCL') {
@@ -285,7 +313,7 @@ class ProspekManifestExport implements FromCollection, WithCustomStartCell, With
             return [
                 'source' => $source,
                 'tanggal' => $p->tanggal,
-                'no_tt' => $p->no_surat_jalan,
+                'no_tt' => $lcl?->nomor_tanda_terima ?? $tsj?->no_tanda_terima ?? $p->no_surat_jalan,
                 'no_sj_pabrik' => $noSjPabrik,
                 'no_kontainer' => $p->nomor_kontainer,
                 'no_seal' => $p->no_seal,

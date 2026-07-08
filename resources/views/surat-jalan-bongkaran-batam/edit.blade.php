@@ -21,7 +21,7 @@
         </div>
 
         <!-- Form -->
-        <form action="{{ route('surat-jalan-bongkaran-batam.update', $suratJalanBongkaran) }}" method="POST" class="p-3">
+        <form action="{{ route('surat-jalan-bongkaran-batam.update', $suratJalanBongkaran) }}" method="POST" class="p-4">
             @csrf
             @method('PUT')
 
@@ -53,79 +53,130 @@
         </div>
     @endif
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Basic Information -->
-                <div class="md:col-span-3">
-                    <h3 class="text-base font-medium text-gray-900 mb-2">Informasi Dasar</h3>
+                <div class="md:col-span-2">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Dasar</h3>
                 </div>
+                    <!-- Kapal (if not pre-selected) -->
+                    @if(!isset($selectedKapal))
+                    <div>
+                        <label for="kapal_id" class="block text-sm font-medium text-gray-700 mb-1">Kapal</label>
+                        <select name="kapal_id" id="kapal_id"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('kapal_id') border-red-300 @enderror">
+                            <option value="">Pilih Kapal</option>
+                            @foreach($kapals as $kapal)
+                                <option value="{{ $kapal->id }}" {{ old('kapal_id') == $kapal->id ? 'selected' : '' }}>
+                                    {{ $kapal->nama_kapal }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('kapal_id')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    @endif
 
+                    <!-- Nomor Surat Jalan -->
+                    <div>
+                        <label for="nomor_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nomor Surat Jalan <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="nomor_surat_jalan" id="nomor_surat_jalan" required
+                               value="{{ old('nomor_surat_jalan', $suratJalanBongkaran->nomor_surat_jalan) }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_surat_jalan') border-red-300 @enderror"
+                               placeholder="Masukkan nomor surat jalan">
+                        @error('nomor_surat_jalan')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
+                    <!-- Tanggal Surat Jalan -->
+                    <div>
+                        <label for="tanggal_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
+                            Tanggal Surat Jalan <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" name="tanggal_surat_jalan" id="tanggal_surat_jalan" required
+                               value="{{ old('tanggal_surat_jalan', $suratJalanBongkaran->tanggal_surat_jalan ? $suratJalanBongkaran->tanggal_surat_jalan->format('Y-m-d') : '') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tanggal_surat_jalan') border-red-300 @enderror">
+                        @error('tanggal_surat_jalan')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                <!-- Nomor Surat Jalan -->
-                <div>
-                    <label for="nomor_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
-                        Nomor Surat Jalan <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="nomor_surat_jalan" id="nomor_surat_jalan" required
-                           value="{{ old('nomor_surat_jalan', $suratJalanBongkaran->nomor_surat_jalan) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_surat_jalan') border-red-300 @enderror"
-                           placeholder="Masukkan nomor surat jalan">
-                    @error('nomor_surat_jalan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    <!-- Lokasi -->
+                    <div>
+                        <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-1">
+                            Lokasi <span class="text-red-500">*</span>
+                        </label>
+                        <select name="lokasi" id="lokasi" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('lokasi') border-red-300 @enderror">
+                            <option value="">Pilih Lokasi</option>
+                            <option value="jakarta" {{ old('lokasi', $suratJalanBongkaran->lokasi) == 'jakarta' ? 'selected' : '' }}>Jakarta</option>
+                            <option value="batam" {{ old('lokasi', $suratJalanBongkaran->lokasi) == 'batam' ? 'selected' : '' }}>Batam</option>
+                        </select>
+                        @error('lokasi')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                <!-- Tanggal Surat Jalan -->
-                <div>
-                    <label for="tanggal_surat_jalan" class="block text-sm font-medium text-gray-700 mb-1">
-                        Tanggal Surat Jalan <span class="text-red-500">*</span>
-                    </label>
-                    <input type="date" name="tanggal_surat_jalan" id="tanggal_surat_jalan" required
-                           value="{{ old('tanggal_surat_jalan', $suratJalanBongkaran->tanggal_surat_jalan ? $suratJalanBongkaran->tanggal_surat_jalan->format('Y-m-d') : '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tanggal_surat_jalan') border-red-300 @enderror">
-                    @error('tanggal_surat_jalan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    <!-- Lanjut Muat -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Lanjut Muat</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="lanjut_muat" value="tidak" {{ old('lanjut_muat', 'tidak') == 'tidak' ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="lanjut_muat" value="ya" {{ old('lanjut_muat') == 'ya' ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Ya</span>
+                            </label>
+                        </div>
+                        @error('lanjut_muat')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                <!-- Lokasi -->
-                <div>
-                    <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-1">
-                        Lokasi <span class="text-red-500">*</span>
-                    </label>
-                    <select name="lokasi" id="lokasi" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('lokasi') border-red-300 @enderror">
-                        <option value="">Pilih Lokasi</option>
-                        <option value="jakarta" {{ old('lokasi', $suratJalanBongkaran->lokasi) == 'jakarta' ? 'selected' : '' }}>Jakarta</option>
-                        <option value="batam" {{ old('lokasi', $suratJalanBongkaran->lokasi) == 'batam' ? 'selected' : '' }}>Batam</option>
-                    </select>
-                    @error('lokasi')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    <!-- Nomor Surat Jalan Sebelumnya -->
+                    <div id="nomor_sj_sebelumnya_wrapper" style="display: none;">
+                        <label for="nomor_sj_sebelumnya" class="block text-sm font-medium text-gray-700 mb-1">
+                            Nomor Surat Jalan Sebelumnya <span class="text-red-500" id="required_indicator">*</span>
+                        </label>
+                        <input type="text" name="nomor_sj_sebelumnya" id="nomor_sj_sebelumnya"
+                               value="{{ old('nomor_sj_sebelumnya') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_sj_sebelumnya') border-red-300 @enderror"
+                               placeholder="Masukkan nomor surat jalan sebelumnya">
+                        @error('nomor_sj_sebelumnya')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1 text-xs text-blue-600">Wajib diisi jika memilih lanjut muat</p>
+                    </div>
 
-                <!-- Term -->
-                <div>
-                    <label for="term" class="block text-sm font-medium text-gray-700 mb-1">Term</label>
-                    <select name="term" id="term"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('term') border-red-300 @enderror">
-                        <option value="">Pilih Term</option>
-                        @foreach($terms as $term)
-                            <option value="{{ $term->kode }}" {{ old('term', $suratJalanBongkaran->term) == $term->kode ? 'selected' : '' }}>
-                                {{ $term->kode }} - {{ $term->nama_status }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('term')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    <!-- Term -->
+                    <div>
+                        <label for="term" class="block text-sm font-medium text-gray-700 mb-1">Term</label>
+                        <select name="term" id="term"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('term') border-red-300 @enderror">
+                            <option value="">Pilih Term</option>
+                            @foreach($terms as $term)
+                                <option value="{{ $term->kode }}" {{ old('term', $suratJalanBongkaran->term) == $term->kode ? 'selected' : '' }}>
+                                    {{ $term->kode }} - {{ $term->nama_status }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('term')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
                 <!-- Aktifitas -->
                 <div>
                     <label for="aktifitas" class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
                     <select name="aktifitas" id="aktifitas"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('aktifitas') border-red-300 @enderror">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('aktifitas') border-red-500 @enderror">
                         <option value="">Pilih aktifitas</option>
                         @foreach($masterKegiatans as $kegiatan)
                             <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('aktifitas', $suratJalanBongkaran->aktifitas) == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
@@ -139,51 +190,54 @@
                 </div>
 
                 <!-- Informasi Pengiriman -->
-                <div class="md:col-span-3 mt-3">
-                    <h3 class="text-base font-medium text-gray-900 mb-2">Informasi Pengiriman</h3>
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Pengiriman</h3>
                 </div>
 
                 <!-- Pengirim -->
                 <div>
                     <label for="pengirim" class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
-                    <input type="text" name="pengirim" id="pengirim"
-                           value="{{ old('pengirim', $suratJalanBongkaran->pengirim) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('pengirim') border-red-300 @enderror"
-                           placeholder="Masukkan nama pengirim">
+                    <input type="text" name="pengirim" id="pengirim" readonly
+                           value="{{ old('pengirim', isset($selectedContainer) ? $selectedContainer->pengirim : '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('pengirim') border-red-500 @enderror"
+                           placeholder="Pengirim akan terisi otomatis">
                     @error('pengirim')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    
                 </div>
 
                 <!-- Jenis Barang -->
                 <div>
                     <label for="jenis_barang" class="block text-sm font-medium text-gray-700 mb-1">Jenis Barang</label>
-                    <input type="text" name="jenis_barang" id="jenis_barang"
-                           value="{{ old('jenis_barang', $suratJalanBongkaran->jenis_barang) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jenis_barang') border-red-300 @enderror"
-                           placeholder="Masukkan jenis barang">
+                    <input type="text" name="jenis_barang" id="jenis_barang" readonly
+                           value="{{ old('jenis_barang', isset($selectedContainer) ? $selectedContainer->nama_barang : '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none {{ $errors->has('jenis_barang') ? 'border-red-500' : '' }}"
+                           placeholder="Otomatis terisi dari BL">
                     @error('jenis_barang')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    
                 </div>
 
                 <!-- Tujuan Alamat -->
                 <div>
                     <label for="tujuan_alamat" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Alamat</label>
                     <input type="text" name="tujuan_alamat" id="tujuan_alamat"
-                           value="{{ old('tujuan_alamat', $suratJalanBongkaran->tujuan_alamat) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tujuan_alamat') border-red-300 @enderror"
+                           value="{{ old('tujuan_alamat', isset($selectedContainer) ? $selectedContainer->alamat_pengiriman : '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_alamat') border-red-500 @enderror"
                            placeholder="Masukkan tujuan alamat">
                     @error('tujuan_alamat')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    
                 </div>
 
                 <!-- Tujuan Pengambilan -->
                 <div>
                     <label for="tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
                     <select name="tujuan_pengambilan" id="tujuan_pengambilan"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tujuan_pengambilan') border-red-300 @enderror">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_pengambilan') border-red-500 @enderror">
                         <option value="">Pilih tujuan pengambilan</option>
                         @foreach($tujuanKegiatanUtamas as $tujuan)
                             <option value="{{ $tujuan->ke }}" {{ old('tujuan_pengambilan', $suratJalanBongkaran->tujuan_pengambilan) == $tujuan->ke ? 'selected' : '' }}>
@@ -199,28 +253,31 @@
                 <!-- Tujuan Pengiriman -->
                 <div>
                     <label for="tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
-                    <input type="text" name="tujuan_pengiriman" id="tujuan_pengiriman"
-                           value="{{ old('tujuan_pengiriman', $suratJalanBongkaran->tujuan_pengiriman) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tujuan_pengiriman') border-red-300 @enderror"
-                           placeholder="Masukkan tujuan pengiriman">
+                    <input type="text" name="tujuan_pengiriman" id="tujuan_pengiriman" readonly
+                           value="{{ old('tujuan_pengiriman', $suratJalanBongkaran->tujuan_pengiriman ?? '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('tujuan_pengiriman') border-red-500 @enderror"
+                           placeholder="Tujuan pengiriman akan terisi otomatis">
                     @error('tujuan_pengiriman')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    
                 </div>
 
                 <!-- Jenis Pengiriman -->
                 <div>
                     <label for="jenis_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Jenis Pengiriman</label>
+                    <?php $selectedJenisPengiriman = old("jenis_pengiriman", $suratJalanBongkaran->jenis_pengiriman ?? ""); ?>
                     <select name="jenis_pengiriman" id="jenis_pengiriman"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jenis_pengiriman') border-red-300 @enderror">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jenis_pengiriman') border-red-500 @enderror">
                         <option value="">Pilih jenis pengiriman</option>
-                        <option value="FCL" {{ old('jenis_pengiriman', $suratJalanBongkaran->jenis_pengiriman) == 'FCL' ? 'selected' : '' }}>FCL</option>
-                        <option value="LCL" {{ old('jenis_pengiriman', $suratJalanBongkaran->jenis_pengiriman) == 'LCL' ? 'selected' : '' }}>LCL</option>
-                        <option value="Cargo" {{ old('jenis_pengiriman', $suratJalanBongkaran->jenis_pengiriman) == 'Cargo' ? 'selected' : '' }}>Cargo</option>
+                        <option value="FCL" {{ $selectedJenisPengiriman == 'FCL' ? 'selected' : '' }}>FCL</option>
+                        <option value="LCL" {{ $selectedJenisPengiriman == 'LCL' ? 'selected' : '' }}>LCL</option>
+                        <option value="Cargo" {{ $selectedJenisPengiriman == 'Cargo' ? 'selected' : '' }}>Cargo</option>
                     </select>
                     @error('jenis_pengiriman')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    
                 </div>
 
                 <!-- Tanggal Ambil Barang -->
@@ -228,22 +285,21 @@
                     <label for="tanggal_ambil_barang" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Ambil Barang</label>
                     <input type="date" name="tanggal_ambil_barang" id="tanggal_ambil_barang"
                            value="{{ old('tanggal_ambil_barang', $suratJalanBongkaran->tanggal_ambil_barang ? $suratJalanBongkaran->tanggal_ambil_barang->format('Y-m-d') : '') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tanggal_ambil_barang') border-red-300 @enderror">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_ambil_barang') border-red-500 @enderror">
                     @error('tanggal_ambil_barang')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <!-- Informasi Personal -->
-                <div class="md:col-span-3 mt-3">
-                    <h3 class="text-base font-medium text-gray-900 mb-2">Informasi Personal</h3>
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Personal</h3>
                 </div>
-
                 <!-- Supir -->
                 <div>
                     <label for="supir" class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
                     <select name="supir" id="supir"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('supir') border-red-300 @enderror">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('supir') border-red-500 @enderror">
                         <option value="">Pilih Supir</option>
                         @foreach($karyawanSupirs as $supir)
                             <option value="{{ $supir->nama_lengkap }}" 
@@ -266,7 +322,7 @@
                     <label for="no_plat" class="block text-sm font-medium text-gray-700 mb-1">No Plat</label>
                     <input type="text" name="no_plat" id="no_plat"
                            value="{{ old('no_plat', $suratJalanBongkaran->no_plat) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('no_plat') border-red-300 @enderror"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_plat') border-red-500 @enderror"
                            placeholder="Masukkan nomor plat">
                     @error('no_plat')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -277,7 +333,7 @@
                 <div>
                     <label for="kenek" class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
                     <select name="kenek" id="kenek"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('kenek') border-red-300 @enderror">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('kenek') border-red-500 @enderror">
                         <option value="">Pilih Kenek</option>
                         @foreach($karyawanKranis as $krani)
                             <option value="{{ $krani->nama_lengkap }}" {{ old('kenek', $suratJalanBongkaran->kenek) == $krani->nama_lengkap ? 'selected' : '' }}>
@@ -297,7 +353,7 @@
                 <div>
                     <label for="krani" class="block text-sm font-medium text-gray-700 mb-1">Krani</label>
                     <select name="krani" id="krani"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('krani') border-red-300 @enderror">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('krani') border-red-500 @enderror">
                         <option value="">Pilih Krani</option>
                         @foreach($karyawanKranis as $krani)
                             <option value="{{ $krani->nama_lengkap }}" {{ old('krani', $suratJalanBongkaran->krani) == $krani->nama_lengkap ? 'selected' : '' }}>
@@ -314,17 +370,17 @@
                 </div>
 
                 <!-- Informasi Container -->
-                <div class="md:col-span-3 mt-3">
-                    <h3 class="text-base font-medium text-gray-900 mb-2">Informasi Container</h3>
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Container</h3>
                 </div>
 
                 <!-- No Kontainer -->
                 <div>
                     <label for="no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">No Kontainer</label>
-                    <input type="text" name="no_kontainer" id="no_kontainer"
-                           value="{{ old('no_kontainer', $suratJalanBongkaran->no_kontainer) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('no_kontainer') border-red-300 @enderror"
-                           placeholder="Masukkan nomor kontainer">
+                    <input type="text" name="no_kontainer" id="no_kontainer" readonly
+                           value="{{ old('no_kontainer', isset($selectedContainer) ? $selectedContainer->nomor_kontainer : '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('no_kontainer') border-red-500 @enderror"
+                           placeholder="Nomor kontainer akan terisi otomatis">
                     @error('no_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -333,176 +389,232 @@
                 <!-- No Seal -->
                 <div>
                     <label for="no_seal" class="block text-sm font-medium text-gray-700 mb-1">No Seal</label>
-                    <input type="text" name="no_seal" id="no_seal"
-                           value="{{ old('no_seal', $suratJalanBongkaran->no_seal) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('no_seal') border-red-300 @enderror"
-                           placeholder="Masukkan nomor seal">
+                    <input type="text" name="no_seal" id="no_seal" readonly
+                           value="{{ old('no_seal', isset($selectedContainer) ? $selectedContainer->no_seal : '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('no_seal') border-red-500 @enderror"
+                           placeholder="Nomor seal akan terisi otomatis">
                     @error('no_seal')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    
                 </div>
 
                 <!-- Nomor BL -->
                 <div>
                     <label for="no_bl" class="block text-sm font-medium text-gray-700 mb-1">Nomor BL</label>
-                    <input type="text" name="no_bl" id="no_bl"
-                           value="{{ old('no_bl', $suratJalanBongkaran->no_bl) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('no_bl') border-red-300 @enderror"
-                           placeholder="Masukkan nomor BL">
+                        <input type="text" name="no_bl" id="no_bl" readonly
+                                  value="{{ old('no_bl', isset($selectedBl) && $selectedBl->nomor_bl ? $selectedBl->nomor_bl : (request('no_bl') ?? (isset($selectedContainer) ? ($selectedContainer->nomor_bl ?? $selectedContainer->no_bl ?? $selectedContainer->noBillOfLading ?? '') : ''))) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('no_bl') border-red-500 @enderror"
+                           placeholder="Nomor BL akan terisi otomatis">
                     @error('no_bl')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    @if(isset($selectedBl) && $selectedBl)
+                        <p class="mt-1 text-xs text-blue-600">Otomasis dari tabel BL: {{ $selectedBl->nomor_bl }}</p>
+                    @elseif(request('no_bl'))
+                        <p class="mt-1 text-xs text-blue-600">Otomasis dari halaman pemilihan BL: {{ request('no_bl') }}</p>
+                    @elseif(isset($selectedContainer) && (isset($selectedContainer->no_bl) || isset($selectedContainer->noBillOfLading)))
+                        <p class="mt-1 text-xs text-green-600">Otomatis dari BL terpilih</p>
+                    @endif
                 </div>
 
                 <!-- Size Kontainer -->
                 <div>
                     <label for="size" class="block text-sm font-medium text-gray-700 mb-1">Size Kontainer</label>
-                    <input type="text" name="size" id="size"
-                           value="{{ old('size', $suratJalanBongkaran->size) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('size') border-red-300 @enderror"
-                           placeholder="Masukkan ukuran kontainer">
+                    @php
+                        $defaultSize = '';
+                        $displaySize = '';
+                        if (isset($selectedContainer)) {
+                            $defaultSize = $selectedContainer->size_kontainer 
+                                ?: $selectedContainer->tipe_kontainer 
+                                ?: '';
+                            
+                            $displaySize = $defaultSize;
+                            if ($defaultSize == '20' || $defaultSize == '20ft') {
+                                $displaySize = '20ft';
+                            } elseif ($defaultSize == '40' || $defaultSize == '40ft') {
+                                $displaySize = '40ft';
+                            } elseif (strtolower($defaultSize) == '40hc' || strtolower($defaultSize) == '40 hc') {
+                                $displaySize = '40HC';
+                            } elseif ($defaultSize == '45' || $defaultSize == '45ft') {
+                                $displaySize = '45ft';
+                            }
+                        }
+                        $selectedSize = old('size', $defaultSize);
+                    @endphp
+                    <input type="text" name="size_display" id="size_display" readonly
+                           value="{{ $displaySize ?: 'Belum dipilih' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
+                           placeholder="Size kontainer akan terisi otomatis">
+                    <input type="hidden" name="size" value="{{ $selectedSize }}">
                     @error('size')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    
+                </div>
+
+                <!-- Informasi Packaging -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Packaging</h3>
+                </div>
+
+                <!-- Karton -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Karton</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="karton" value="ya" {{ old('karton') == 'ya' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Ya</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="karton" value="tidak" {{ old('karton', 'tidak') == 'tidak' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                        </label>
+                    </div>
+                    @error('karton')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Informasi Packaging -->
-                <div class="md:col-span-3 mt-3">
-                    <h3 class="text-base font-medium text-gray-900 mb-2">Informasi Packaging</h3>
-                    <div class="grid grid-cols-3 gap-4">
-                        <!-- Karton -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Karton</label>
-                            <div class="flex space-x-3">
-                                <label class="flex items-center">
-                                    <input type="radio" name="karton" value="ya" {{ old('karton', $suratJalanBongkaran->karton) == 'ya' ? 'checked' : '' }}
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <span class="ml-1 text-sm text-gray-700">Ya</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="karton" value="tidak" {{ old('karton', $suratJalanBongkaran->karton ?? 'tidak') == 'tidak' ? 'checked' : '' }}
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <span class="ml-1 text-sm text-gray-700">Tidak</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Plastik -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Plastik</label>
-                            <div class="flex space-x-3">
-                                <label class="flex items-center">
-                                    <input type="radio" name="plastik" value="ya" {{ old('plastik', $suratJalanBongkaran->plastik) == 'ya' ? 'checked' : '' }}
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <span class="ml-1 text-sm text-gray-700">Ya</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="plastik" value="tidak" {{ old('plastik', $suratJalanBongkaran->plastik ?? 'tidak') == 'tidak' ? 'checked' : '' }}
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <span class="ml-1 text-sm text-gray-700">Tidak</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Terpal -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Terpal</label>
-                            <div class="flex space-x-3">
-                                <label class="flex items-center">
-                                    <input type="radio" name="terpal" value="ya" {{ old('terpal', $suratJalanBongkaran->terpal) == 'ya' ? 'checked' : '' }}
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <span class="ml-1 text-sm text-gray-700">Ya</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="terpal" value="tidak" {{ old('terpal', $suratJalanBongkaran->terpal ?? 'tidak') == 'tidak' ? 'checked' : '' }}
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <span class="ml-1 text-sm text-gray-700">Tidak</span>
-                                </label>
-                            </div>
-                        </div>
+                <!-- Plastik -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Plastik</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="plastik" value="ya" {{ old('plastik') == 'ya' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Ya</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="plastik" value="tidak" {{ old('plastik', 'tidak') == 'tidak' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                        </label>
                     </div>
+                    @error('plastik')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <!-- Informasi Keuangan & Tagihan -->
-                <div class="md:col-span-3 mt-3">
-                    <h3 class="text-base font-medium text-gray-900 mb-2">Informasi Keuangan & Tagihan</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Left Column -->
-                        <div class="space-y-3">
-                            <!-- RIT -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">RIT</label>
-                                <div class="flex space-x-3">
-                                    <label class="flex items-center">
-                                        <input type="radio" name="rit" value="menggunakan_rit" {{ old('rit', $suratJalanBongkaran->rit) == 'menggunakan_rit' ? 'checked' : '' }}
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                        <span class="ml-1 text-sm text-gray-700">Ya</span>
-                                    </label>
-                                    <label class="flex items-center">
-                                        <input type="radio" name="rit" value="tidak_menggunakan_rit" {{ old('rit', $suratJalanBongkaran->rit) == 'tidak_menggunakan_rit' ? 'checked' : '' }}
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                        <span class="ml-1 text-sm text-gray-700">Tidak</span>
-                                    </label>
-                                </div>
-                            </div>
+                <!-- Terpal -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Terpal</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="terpal" value="ya" {{ old('terpal') == 'ya' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Ya</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="terpal" value="tidak" {{ old('terpal', 'tidak') == 'tidak' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                        </label>
+                    </div>
+                    @error('terpal')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                            <!-- Uang Jalan Type -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
-                                <div class="flex space-x-3">
-                                    <label class="flex items-center">
-                                        <input type="radio" name="uang_jalan_type" value="full" {{ old('uang_jalan_type', $suratJalanBongkaran->uang_jalan_type) == 'full' ? 'checked' : '' }}
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                        <span class="ml-1 text-sm text-gray-700">Full</span>
-                                    </label>
-                                    <label class="flex items-center">
-                                        <input type="radio" name="uang_jalan_type" value="setengah" {{ old('uang_jalan_type', $suratJalanBongkaran->uang_jalan_type) == 'setengah' ? 'checked' : '' }}
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                        <span class="ml-1 text-sm text-gray-700">Setengah</span>
-                                    </label>
-                                </div>
-                            </div>
+                <!-- Informasi Keuangan -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Keuangan</h3>
+                </div>
+
+                <!-- RIT -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">RIT</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="rit" value="menggunakan_rit" {{ old('rit') == 'menggunakan_rit' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Menggunakan RIT</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="rit" value="tidak_menggunakan_rit" {{ old('rit') == 'tidak_menggunakan_rit' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Tidak Menggunakan RIT</span>
+                        </label>
+                    </div>
+                    @error('rit')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Uang Jalan -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
+                    <div class="space-y-2">
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="uang_jalan_type" value="full" {{ old('uang_jalan_type', $suratJalanBongkaran->uang_jalan_type) == 'full' ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Full</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="uang_jalan_type" value="setengah" {{ old('uang_jalan_type', $suratJalanBongkaran->uang_jalan_type) == 'setengah' ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Setengah</span>
+                            </label>
+                        </div>
+                        <input type="number" name="uang_jalan_nominal" id="uang_jalan_nominal"
+                               value="{{ old('uang_jalan_nominal', $suratJalanBongkaran->uang_jalan_nominal) }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('uang_jalan_nominal') border-red-500 @enderror"
+                               placeholder="Nominal uang jalan" min="0" step="1000">
+                    </div>
+                    @error('uang_jalan_type')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @error('uang_jalan_nominal')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-md font-medium text-gray-700 mb-2">Tagihan</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <!-- AYP -->
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="tagihan_ayp" value="1" {{ old('tagihan_ayp') ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-sm text-gray-700">AYP</span>
+                            </label>
+                            @error('tagihan_ayp')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
-                        <!-- Right Column -->
-                        <div class="space-y-3">
-                            <!-- Uang Jalan Nominal -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Nominal</label>
-                                <input type="number" name="uang_jalan_nominal" id="uang_jalan_nominal"
-                                       value="{{ old('uang_jalan_nominal', $suratJalanBongkaran->uang_jalan_nominal) }}"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('uang_jalan_nominal') border-red-300 @enderror"
-                                       placeholder="Nominal uang jalan" min="0" step="1000">
-                            </div>
+                        <!-- ATB -->
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="tagihan_atb" value="1" {{ old('tagihan_atb') ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-sm text-gray-700">ATB</span>
+                            </label>
+                            @error('tagihan_atb')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                            <!-- Tagihan -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Tagihan</label>
-                                <div class="flex space-x-4">
-                                    <label class="flex items-center">
-                                        <input type="checkbox" name="tagihan_ayp" value="1" {{ old('tagihan_ayp', $suratJalanBongkaran->tagihan_ayp) ? 'checked' : '' }}
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                        <span class="ml-1 text-sm text-gray-700">AYP</span>
-                                    </label>
-                                    <label class="flex items-center">
-                                        <input type="checkbox" name="tagihan_atb" value="1" {{ old('tagihan_atb', $suratJalanBongkaran->tagihan_atb) ? 'checked' : '' }}
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                        <span class="ml-1 text-sm text-gray-700">ATB</span>
-                                    </label>
-                                    <label class="flex items-center">
-                                        <input type="checkbox" name="tagihan_pb" value="1" {{ old('tagihan_pb', $suratJalanBongkaran->tagihan_pb) ? 'checked' : '' }}
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                        <span class="ml-1 text-sm text-gray-700">PB</span>
-                                    </label>
-                                </div>
-                            </div>
+                        <!-- PB -->
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="tagihan_pb" value="1" {{ old('tagihan_pb') ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-sm text-gray-700">PB</span>
+                            </label>
+                            @error('tagihan_pb')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Submit Buttons -->
-            <div class="flex justify-end gap-3 mt-4 pt-3 border-t border-gray-200">
+            <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
                 <a href="{{ route('surat-jalan-bongkaran-batam.list') }}"
                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -515,7 +627,7 @@
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    Update
+                    Simpan
                 </button>
             </div>
         </form>
@@ -538,8 +650,58 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle lanjut muat toggle
+    const lanjutMuatRadios = document.querySelectorAll('input[name="lanjut_muat"]');
+    const nomorSjSebelumnyaWrapper = document.getElementById('nomor_sj_sebelumnya_wrapper');
+    const nomorSjSebelumnyaInput = document.getElementById('nomor_sj_sebelumnya');
+    
+    function toggleNomorSjSebelumnya() {
+        const lanjutMuatValue = document.querySelector('input[name="lanjut_muat"]:checked')?.value;
+        
+        if (lanjutMuatValue === 'ya') {
+            nomorSjSebelumnyaWrapper.style.display = 'block';
+            nomorSjSebelumnyaInput.setAttribute('required', 'required');
+        } else {
+            nomorSjSebelumnyaWrapper.style.display = 'none';
+            nomorSjSebelumnyaInput.removeAttribute('required');
+            nomorSjSebelumnyaInput.value = ''; // Clear value when hidden
+        }
+    }
+    
+    // Add event listeners to radio buttons
+    lanjutMuatRadios.forEach(radio => {
+        radio.addEventListener('change', toggleNomorSjSebelumnya);
+    });
+    
+    // Initialize on page load
+    toggleNomorSjSebelumnya();
+    
     // Tujuan kegiatan utama data for uang jalan calculation
     const tujuanKegiatanData = @json($tujuanKegiatanUtamas->keyBy('ke'));
+    
+    // Auto generate nomor surat jalan if needed
+    const generateNomor = () => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const date = String(today.getDate()).padStart(2, '0');
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        
+        return `SJB/${year}${month}${date}/${random}`;
+    };
+    
+    // Set default nomor if empty
+    const nomorInput = document.getElementById('nomor_surat_jalan');
+    if (nomorInput && !nomorInput.value) {
+        nomorInput.value = generateNomor();
+    }
+    
+    // Set default tanggal to today
+    const tanggalInput = document.getElementById('tanggal_surat_jalan');
+    if (tanggalInput && !tanggalInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        tanggalInput.value = today;
+    }
     
     // Auto-fill plat nomor when supir is selected
     const supirSelect = document.getElementById('supir');

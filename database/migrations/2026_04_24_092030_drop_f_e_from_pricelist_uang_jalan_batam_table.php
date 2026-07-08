@@ -6,12 +6,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('pricelist_uang_jalan_batam', function (Blueprint $table) {
+            if (\Illuminate\Support\Facades\DB::getDriverName() === 'sqlite') {
+                $table->dropIndex('pricelist_uang_jalan_batam_expedisi_ring_size_f_e_index');
+            }
             $table->dropColumn('f_e');
         });
     }

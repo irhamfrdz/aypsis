@@ -3454,7 +3454,7 @@ class ObController extends Controller
             // Mode baru: per-kontainer supir berbeda
             'items' => 'nullable|array',
             'items.*.nomor_kontainer' => 'required_with:items|string',
-            'items.*.supir_id' => 'required_with:items|exists:karyawans,id',
+            'items.*.supir_id' => 'nullable|exists:karyawans,id',
             // Mode lama: satu supir untuk semua (backward compat)
             'nomor_kontainers' => 'nullable|string',
             'supir_id' => 'nullable|exists:karyawans,id',
@@ -3472,9 +3472,9 @@ class ObController extends Controller
             $nomorList = collect($request->items)
                 ->map(fn ($item) => [
                     'nomor_kontainer' => strtoupper(trim(preg_replace('/[^A-Z0-9]/i', '', $item['nomor_kontainer'] ?? ''))),
-                    'supir_id' => $item['supir_id'],
+                    'supir_id' => ! empty($item['supir_id']) ? $item['supir_id'] : null,
                 ])
-                ->filter(fn ($item) => strlen($item['nomor_kontainer']) >= 3 && $item['supir_id'])
+                ->filter(fn ($item) => strlen($item['nomor_kontainer']) >= 3)
                 ->values()
                 ->toArray();
         } else {
@@ -3533,7 +3533,8 @@ class ObController extends Controller
             if (! $processed && $kegiatan !== 'bongkar') {
                 $query = NaikKapal::where('nomor_kontainer', $nomorKontainer);
                 if ($namaKapal) {
-                    $query->where('nama_kapal', $namaKapal);
+                    $normalized = $this->normalizeShipName($namaKapal);
+                    $query->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalized]);
                 }
                 if ($noVoyage) {
                     $query->where('no_voyage', $noVoyage);
@@ -3548,8 +3549,15 @@ class ObController extends Controller
                             $naikKapal->supir_id = $supirId;
                             $naikKapal->catatan_ob = $catatan;
                             $naikKapal->updated_by = $user->id;
-                            if ($naikKapal->is_tl) {
-                                $naikKapal->is_tl = false;
+                            if ($supirId) {
+                                if ($naikKapal->is_tl) {
+                                    $naikKapal->is_tl = false;
+                                }
+                            } else {
+                                $naikKapal->is_tl = true;
+                                if (! $naikKapal->catatan_ob) {
+                                    $naikKapal->catatan_ob = 'Proses TL (Tanda Langsung) - Langsung Dimuat';
+                                }
                             }
                             $naikKapal->save();
 
@@ -3614,10 +3622,14 @@ class ObController extends Controller
                             $naikKapal->sudah_ob = true;
                             $naikKapal->supir_id = $supirId;
                             $naikKapal->tanggal_ob = now();
-                            $naikKapal->catatan_ob = $catatan;
+                            $naikKapal->catatan_ob = $catatan ?: ($supirId ? null : 'Proses TL (Tanda Langsung) - Langsung Dimuat');
                             $naikKapal->updated_by = $user->id;
-                            if ($naikKapal->is_tl) {
-                                $naikKapal->is_tl = false;
+                            if ($supirId) {
+                                if ($naikKapal->is_tl) {
+                                    $naikKapal->is_tl = false;
+                                }
+                            } else {
+                                $naikKapal->is_tl = true;
                             }
                             $naikKapal->save();
 
@@ -3706,7 +3718,8 @@ class ObController extends Controller
             if (! $processed && $kegiatan !== 'muat') {
                 $query = Bl::where('nomor_kontainer', $nomorKontainer);
                 if ($namaKapal) {
-                    $query->where('nama_kapal', $namaKapal);
+                    $normalized = $this->normalizeShipName($namaKapal);
+                    $query->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalized]);
                 }
                 if ($noVoyage) {
                     $query->where('no_voyage', $noVoyage);
@@ -3721,8 +3734,15 @@ class ObController extends Controller
                             $bl->supir_id = $supirId;
                             $bl->catatan_ob = $catatan;
                             $bl->updated_by = $user->id;
-                            if ($bl->sudah_tl) {
-                                $bl->sudah_tl = false;
+                            if ($supirId) {
+                                if ($bl->sudah_tl) {
+                                    $bl->sudah_tl = false;
+                                }
+                            } else {
+                                $bl->sudah_tl = true;
+                                if (! $bl->catatan_ob) {
+                                    $bl->catatan_ob = 'Proses TL Bongkar (Tanda Langsung) - Langsung Dibongkar';
+                                }
                             }
                             $bl->save();
 
@@ -3755,10 +3775,14 @@ class ObController extends Controller
                             $bl->sudah_ob = true;
                             $bl->supir_id = $supirId;
                             $bl->tanggal_ob = now();
-                            $bl->catatan_ob = $catatan;
+                            $bl->catatan_ob = $catatan ?: ($supirId ? null : 'Proses TL Bongkar (Tanda Langsung) - Langsung Dibongkar');
                             $bl->updated_by = $user->id;
-                            if ($bl->sudah_tl) {
-                                $bl->sudah_tl = false;
+                            if ($supirId) {
+                                if ($bl->sudah_tl) {
+                                    $bl->sudah_tl = false;
+                                }
+                            } else {
+                                $bl->sudah_tl = true;
                             }
                             $bl->save();
 
@@ -3812,7 +3836,7 @@ class ObController extends Controller
         ]);
     }
 
-    private function createManifestForNaikKapal(NaikKapal $naikKapal, $user)
+    public function createManifestForNaikKapal(NaikKapal $naikKapal, $user)
     {
         // PENGECUALIAN: Hanya buat manifest jika naik_kapal terisi
         if (! $naikKapal) {

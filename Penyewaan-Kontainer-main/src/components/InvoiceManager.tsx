@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { AppState, compileAllPeriods } from '../dataStore';
 import { TagihanBulan, InvoiceGrup } from '../types';
 import { formatRupiah, formatIndoDate, parseInputDate, formatEntryDate } from '../utils';
-import { Check, Loader, FileText, Printer, CheckCircle2, Circle, AlertCircle, ShoppingBag, ArrowRight, Trash2, Calendar, FileSpreadsheet, Edit3, Sparkles, Coins, Building2, ArrowUpRight } from 'lucide-react';
+import { Check, Loader, FileText, Printer, CheckCircle2, Circle, AlertCircle, ShoppingBag, ArrowRight, Trash2, Calendar, FileSpreadsheet, Edit3, Sparkles, Coins, Building2, ArrowUpRight, PlusCircle, Search, Plus } from 'lucide-react';
 import SearchableSelect from './SearchableSelect';
+import SearchableCombobox from './SearchableCombobox';
+import { PaymentWorkspace } from './PaymentWorkspace';
+import { FormDateInput } from './FormDateInput';
 
 interface InvoiceManagerProps {
   state: AppState;
   onStateChange: (updated: AppState) => void;
   utcTime: string;
-  appMode?: 'sewa_out' | 'sewa_in';
 }
 
 interface EditableDateCellProps {
@@ -19,7 +21,7 @@ interface EditableDateCellProps {
   className?: string;
 }
 
-const EditableDateCell: React.FC<EditableDateCellProps> = ({ value, onChange, placeholder = 'dd/mm/yyyy', className }) => {
+const EditableDateCell: React.FC<EditableDateCellProps> = ({ value, onChange, placeholder = 'dd Mmm yy', className }) => {
   const [typedValue, setTypedValue] = useState<string | null>(null);
 
   const isEditing = typedValue !== null;
@@ -76,13 +78,95 @@ const EditableDateCell: React.FC<EditableDateCellProps> = ({ value, onChange, pl
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       placeholder={placeholder}
+      className={`${className} text-slate-800 font-medium`}
+    />
+  );
+};
+
+interface FastNumberInputProps {
+  value: number | null | undefined;
+  placeholder?: string;
+  onChange: (val: number | null) => void;
+  className?: string;
+}
+
+const FastNumberInput: React.FC<FastNumberInputProps> = ({ value, placeholder, onChange, className }) => {
+  const [localVal, setLocalVal] = useState<string>(value !== null && value !== undefined ? String(value) : '');
+
+  React.useEffect(() => {
+    setLocalVal(value !== null && value !== undefined ? String(value) : '');
+  }, [value]);
+
+  const handleBlur = () => {
+    const trimmed = localVal.trim();
+    const parsed = trimmed === '' ? null : Number(trimmed);
+    if (parsed !== value) {
+      onChange(parsed);
+    }
+  };
+
+  return (
+    <input
+      type="number"
+      value={localVal}
+      placeholder={placeholder}
+      onChange={(e) => setLocalVal(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          (e.target as HTMLInputElement).blur();
+        }
+      }}
       className={className}
     />
   );
 };
 
-export default function InvoiceManager({ state, onStateChange, utcTime, appMode }: InvoiceManagerProps) {
-  const isSewaIn = appMode === 'sewa_in';
+interface FastTextInputProps {
+  value: string | null | undefined;
+  placeholder?: string;
+  onChange: (val: string) => void;
+  className?: string;
+}
+
+const FastTextInput: React.FC<FastTextInputProps> = ({ value, placeholder, onChange, className }) => {
+  const [localVal, setLocalVal] = useState<string>(value || '');
+
+  React.useEffect(() => {
+    setLocalVal(value || '');
+  }, [value]);
+
+  const handleBlur = () => {
+    const trimmed = (localVal || '').trim();
+    if (trimmed !== (value || '').trim()) {
+      onChange(trimmed);
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      value={localVal}
+      placeholder={placeholder}
+      onChange={(e) => setLocalVal(e.target.value)}
+      onBlur={handleBlur}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          (e.target as HTMLInputElement).blur();
+        }
+      }}
+      className={className}
+    />
+  );
+};
+
+export default function InvoiceManager({ state, onStateChange, utcTime }: InvoiceManagerProps) {
+  // Compile billing periods combining generators and localStorage overrides
+  const allPeriods = React.useMemo(() => {
+    return compileAllPeriods(state, utcTime);
+  }, [state, utcTime]);
+
+  const isSewaIn = true;
   const [custFilter, setCustFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [searchNoKontainer, setSearchNoKontainer] = useState('');
@@ -111,6 +195,82 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
   const [collectiveStatusFilter, setCollectiveStatusFilter] = useState('Semua');
   const [collectiveCustFilter, setCollectiveCustFilter] = useState('');
   const [selectedCollectiveInvoices, setSelectedCollectiveInvoices] = useState<string[]>([]);
+  
+  const [bulkInvoiceNo, setBulkInvoiceNo] = useState('');
+  const [bulkInvoiceDate, setBulkInvoiceDate] = useState('');
+
+  const [bulkPranotaNo, setBulkPranotaNo] = useState('');
+  const [bulkPranotaDate, setBulkPranotaDate] = useState('');
+  const [bulkPranotaStatus, setBulkPranotaStatus] = useState<'Pranota' | 'Belum Bayar' | ''>('Pranota');
+
+  const [bulkBuktiBayarNo, setBulkBuktiBayarNo] = useState('');
+  const [bulkBuktiBayarDate, setBulkBuktiBayarDate] = useState('');
+
+  // States for Tab 1 Rekonsiliasi Tagihan Vendor
+  const [selectedVendorTagihanNo, setSelectedVendorTagihanNo] = useState('');
+  const [selectedVendorCustomer, setSelectedVendorCustomer] = useState('');
+  const [searchDraftContainer, setSearchDraftContainer] = useState('');
+  const [selectedVendorTagihanDate, setSelectedVendorTagihanDate] = useState('');
+
+  // Separated Entry and Search Submodes for Tab 1
+  const [sheetSubMode, setSheetSubMode] = useState<'search' | 'create'>('search');
+  const [newVendorId, setNewVendorId] = useState('');
+  const [newInvoiceNo, setNewInvoiceNo] = useState('');
+  const [newInvoiceDate, setNewInvoiceDate] = useState('');
+
+  // States for Tab 2 (Tagihan -> Draft Pembayaran)
+  const [selectedVendorPranotaNo, setSelectedVendorPranotaNo] = useState('');
+  const [selectedVendorPranotaDate, setSelectedVendorPranotaDate] = useState('');
+  const [searchTagihanNo, setSearchTagihanNo] = useState('');
+  const [pranotaSubMode, setPranotaSubMode] = useState<'search' | 'create'>('search');
+  const [newPranotaVendorId, setNewPranotaVendorId] = useState('');
+  const [newPranotaNo, setNewPranotaNo] = useState('');
+  const [newPranotaDate, setNewPranotaDate] = useState('');
+  const [pranotaSearchStartDate, setPranotaSearchStartDate] = useState('');
+  const [pranotaSearchEndDate, setPranotaSearchEndDate] = useState('');
+
+  // States for Tab 3 (Draft Pembayaran -> Lunas)
+  const [selectedPaymentNo, setSelectedPaymentNo] = useState('');
+  const [selectedPaymentDate, setSelectedPaymentDate] = useState('');
+  const [searchPranotaNo, setSearchPranotaNo] = useState('');
+
+  // Local state for Entry Tagihan Manual
+  const [manualSewaId, setManualSewaId] = useState('');
+  const [manualBulanKe, setManualBulanKe] = useState('1');
+  const [manualTglAwal, setManualTglAwal] = useState('');
+  const [manualTglAkhir, setManualTglAkhir] = useState('');
+  const [manualTipeTarif, setManualTipeTarif] = useState<'BULANAN' | 'PRORATE' | 'HARIAN'>('BULANAN');
+  const [manualNominalEstimasi, setManualNominalEstimasi] = useState('');
+  const [manualNominalRiil, setManualNominalRiil] = useState('');
+  const [manualKeterangan, setManualKeterangan] = useState('');
+
+  React.useEffect(() => {
+    if (!manualSewaId) {
+      setManualNominalEstimasi('');
+      setManualTipeTarif('BULANAN');
+      return;
+    }
+    const sewa = state.sewas.find(s => s.id_sewa === manualSewaId);
+    if (sewa) {
+      setManualTipeTarif(sewa.jenis_tarif === 'Bulanan' ? 'BULANAN' : 'HARIAN');
+      setManualNominalEstimasi(String(sewa.jenis_tarif === 'Bulanan' ? sewa.tarif_bulanan : sewa.tarif_harian));
+      
+      // Auto pre-fill dates based on sewa.tanggal_sewa
+      if (!manualTglAwal) {
+        setManualTglAwal(sewa.tanggal_sewa);
+        // End date: 30 days later
+        const start = new Date(sewa.tanggal_sewa);
+        start.setDate(start.getDate() + 30);
+        setManualTglAkhir(start.toISOString().split('T')[0]);
+      }
+    }
+  }, [manualSewaId, state.sewas]);
+
+  const [tab2Search, setTab2Search] = useState('');
+  const [tab2CustFilter, setTab2CustFilter] = useState('');
+  const [tab2StatusFilter, setTab2StatusFilter] = useState('Semua');
+  const [selectedTab2Invoices, setSelectedTab2Invoices] = useState<string[]>([]);
+  const [expandedInvoices, setExpandedInvoices] = useState<Record<string, boolean>>({});
 
   interface ParsedPaymentRow {
     lineNum: number;
@@ -143,6 +303,56 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
   React.useEffect(() => {
     setSelectedCollectiveInvoices([]);
   }, [collectiveSearch, collectiveCustFilter, collectiveStatusFilter, activeViewTab]);
+
+  React.useEffect(() => {
+    if (!selectedVendorCustomer && state.customers.length > 0) {
+      setSelectedVendorCustomer(state.customers[0].id_customer);
+    }
+  }, [state.customers, selectedVendorCustomer]);
+
+  // Auto-detect and switch vendor if the typed/selected vendor tagihan matches an existing tagihan
+  React.useEffect(() => {
+    if (selectedVendorTagihanNo.trim()) {
+      const match = allPeriods.find(p => p.nomor_invoice_grup && p.nomor_invoice_grup.toLowerCase() === selectedVendorTagihanNo.toLowerCase().trim());
+      if (match) {
+        const sewa = state.sewas.find(s => s.id_sewa === match.id_sewa);
+        if (sewa && sewa.id_customer !== selectedVendorCustomer) {
+          setSelectedVendorCustomer(sewa.id_customer);
+        }
+      } else {
+        const invMatch = state.invoices.find(i => i.nomor_invoice && i.nomor_invoice.toLowerCase() === selectedVendorTagihanNo.toLowerCase().trim());
+        if (invMatch && invMatch.id_customer !== selectedVendorCustomer) {
+          setSelectedVendorCustomer(invMatch.id_customer);
+        }
+      }
+    }
+  }, [selectedVendorTagihanNo, allPeriods, state.sewas, state.invoices, selectedVendorCustomer]);
+
+  // Auto-detect and switch vendor if the typed/selected vendor pranota matches an existing pranota
+  React.useEffect(() => {
+    if (selectedVendorPranotaNo.trim()) {
+      const match = allPeriods.find(p => p.nomor_pranota && p.nomor_pranota.toLowerCase() === selectedVendorPranotaNo.toLowerCase().trim());
+      if (match) {
+        const sewa = state.sewas.find(s => s.id_sewa === match.id_sewa);
+        if (sewa && sewa.id_customer !== selectedVendorCustomer) {
+          setSelectedVendorCustomer(sewa.id_customer);
+        }
+      }
+    }
+  }, [selectedVendorPranotaNo, allPeriods, state.sewas, selectedVendorCustomer]);
+
+  // Auto-detect and switch vendor if the typed/selected payment matches an existing payment
+  React.useEffect(() => {
+    if (selectedPaymentNo.trim()) {
+      const match = allPeriods.find(p => p.nomor_bayar && p.nomor_bayar.toLowerCase() === selectedPaymentNo.toLowerCase().trim());
+      if (match) {
+        const sewa = state.sewas.find(s => s.id_sewa === match.id_sewa);
+        if (sewa && sewa.id_customer !== selectedVendorCustomer) {
+          setSelectedVendorCustomer(sewa.id_customer);
+        }
+      }
+    }
+  }, [selectedPaymentNo, allPeriods, state.sewas, selectedVendorCustomer]);
 
   const toggleLedgerSort = (field: string) => {
     if (ledgerSortField === field) {
@@ -182,9 +392,6 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
     setTimeout(() => setNoti(null), 4000);
   };
 
-  // Compile billing periods combining generators and localStorage overrides
-  const allPeriods = compileAllPeriods(state, utcTime);
-
   // Generate unique rentang sewa
   const distinctRanges = (() => {
     const sewasMap = new Map<string, typeof state.sewas[0]>();
@@ -213,6 +420,89 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
 
     return Array.from(new Set(ranges)).filter(Boolean);
   })();
+
+  // Distill existing draft and saved tagihans (all vendor tagihans/invoices) filtered by selected vendor if selected
+  const existingDraftVendorTagihans = React.useMemo(() => {
+    const set = new Set<string>();
+    allPeriods.forEach(p => {
+      const sObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+      const isMatch = !selectedVendorCustomer || sObj?.id_customer === selectedVendorCustomer;
+      if (p.nomor_invoice_grup && isMatch) {
+        set.add(p.nomor_invoice_grup);
+      }
+    });
+    state.invoices.forEach(i => {
+      const isMatch = !selectedVendorCustomer || i.id_customer === selectedVendorCustomer;
+      if (i.nomor_invoice && isMatch) {
+        set.add(i.nomor_invoice);
+      }
+    });
+    return Array.from(set).sort();
+  }, [allPeriods, selectedVendorCustomer, state.sewas, state.invoices]);
+
+  // Distill existing pranotas filtered by selected vendor if selected with optional Date Range
+  const existingDraftVendorPranotas = React.useMemo(() => {
+    const set = new Set<string>();
+    allPeriods.forEach(p => {
+      const sObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+      const isMatch = !selectedVendorCustomer || sObj?.id_customer === selectedVendorCustomer;
+      let isMatchDate = true;
+      if (pranotaSearchStartDate && p.tanggal_pranota) {
+        if (p.tanggal_pranota < pranotaSearchStartDate) isMatchDate = false;
+      }
+      if (pranotaSearchEndDate && p.tanggal_pranota) {
+        if (p.tanggal_pranota > pranotaSearchEndDate) isMatchDate = false;
+      }
+      if (p.nomor_pranota && isMatch && isMatchDate) {
+        set.add(p.nomor_pranota);
+      }
+    });
+    return Array.from(set).sort();
+  }, [allPeriods, selectedVendorCustomer, state.sewas, pranotaSearchStartDate, pranotaSearchEndDate]);
+
+  // Distill existing payments/EBK filtered by selected vendor if selected
+  const existingDraftPayments = React.useMemo(() => {
+    const set = new Set<string>();
+    allPeriods.forEach(p => {
+      const sObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+      const isMatch = !selectedVendorCustomer || sObj?.id_customer === selectedVendorCustomer;
+      if (p.nomor_bayar && isMatch) {
+        set.add(p.nomor_bayar);
+      }
+    });
+    return Array.from(set).sort();
+  }, [allPeriods, selectedVendorCustomer, state.sewas]);
+
+  // Autocomplete suggestions lists
+  const autocompleteTab1 = React.useMemo(() => {
+    const items = new Set<string>();
+    state.sewas.forEach(s => { if (s.no_kontainer) items.add(s.no_kontainer); });
+    allPeriods.forEach(p => {
+      if (p.id_tagihan) items.add(p.id_tagihan);
+      if (p.nomor_invoice_grup) items.add(p.nomor_invoice_grup);
+    });
+    return Array.from(items).sort();
+  }, [state.sewas, allPeriods]);
+
+  const autocompleteTab2 = React.useMemo(() => {
+    const items = new Set<string>();
+    allPeriods.forEach(p => {
+      if (p.nomor_invoice_grup) items.add(p.nomor_invoice_grup);
+    });
+    state.invoices.forEach(i => {
+      if (i.nomor_invoice) items.add(i.nomor_invoice);
+    });
+    return Array.from(items).sort();
+  }, [allPeriods, state.invoices]);
+
+  const autocompleteTab3 = React.useMemo(() => {
+    const items = new Set<string>();
+    allPeriods.forEach(p => {
+      if (p.nomor_bayar) items.add(p.nomor_bayar);
+      if (p.nomor_invoice_grup) items.add(p.nomor_invoice_grup);
+    });
+    return Array.from(items).sort();
+  }, [allPeriods]);
 
   // Distil all unique invoice / nota numbers in natural order
   const distinctInvoiceNumbers = Array.from(
@@ -265,8 +555,14 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
     // Status filter
     if (statusFilter && p.status_bayar !== statusFilter) return false;
 
-    // Container number search
-    if (searchNoKontainer && !sewa.no_kontainer.toLowerCase().includes(searchNoKontainer.toLowerCase())) return false;
+    // Container, Tagihan, or Pranota search
+    if (searchNoKontainer) {
+      const q = searchNoKontainer.toLowerCase().trim();
+      const matchKontainer = sewa.no_kontainer.toLowerCase().includes(q);
+      const matchTagihanId = p.id_tagihan.toLowerCase().includes(q);
+      const matchInvoiceNo = p.nomor_invoice_grup && p.nomor_invoice_grup.toLowerCase().includes(q);
+      if (!matchKontainer && !matchTagihanId && !matchInvoiceNo) return false;
+    }
 
     // Rentang Sewa filter
     if (filterRentangSewa) {
@@ -304,6 +600,64 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
     return sz ? sz.deskripsi_ukuran : '-';
   };
 
+  // Compile active/outstanding draft tagihans for quick selection dashboard
+  const outstandingDraftGroups = React.useMemo(() => {
+    const groupsMap = new Map<string, {
+      nomor_invoice_grup: string;
+      id_customer: string;
+      customerName: string;
+      status_bayar: string;
+      count: number;
+      totalEstimasi: number;
+      totalAktual: number;
+      lastUpdated: string | null;
+    }>();
+
+    allPeriods.forEach(p => {
+      const groupNo = p.nomor_invoice_grup;
+      if (!groupNo || groupNo.trim() === '') return;
+
+      const sObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+      const custId = sObj?.id_customer || '';
+      const custName = custId ? getCustomerName(custId) : 'Umum/Campuran';
+
+      const amt = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+
+      if (!groupsMap.has(groupNo)) {
+        groupsMap.set(groupNo, {
+          nomor_invoice_grup: groupNo,
+          id_customer: custId,
+          customerName: custName,
+          status_bayar: p.status_bayar,
+          count: 1,
+          totalEstimasi: p.jumlah_tagihan,
+          totalAktual: amt,
+          lastUpdated: p.tanggal_tagihan || p.tanggal_bayar || null
+        });
+      } else {
+        const existing = groupsMap.get(groupNo)!;
+        existing.count += 1;
+        existing.totalEstimasi += p.jumlah_tagihan;
+        existing.totalAktual += amt;
+        if (p.status_bayar !== 'Lunas' && existing.status_bayar === 'Lunas') {
+          existing.status_bayar = p.status_bayar;
+        }
+      }
+    });
+
+    const list = Array.from(groupsMap.values())
+      .filter(g => g.status_bayar !== 'Lunas')
+      .sort((a, b) => {
+        const statusOrder = { 'Belum Ditagih': 0, 'Pranota': 1, 'Belum Bayar': 2 };
+        const orderA = statusOrder[a.status_bayar as keyof typeof statusOrder] ?? 9;
+        const orderB = statusOrder[b.status_bayar as keyof typeof statusOrder] ?? 9;
+        if (orderA !== orderB) return orderA - orderB;
+        return b.nomor_invoice_grup.localeCompare(a.nomor_invoice_grup);
+      });
+
+    return list.slice(0, 20);
+  }, [allPeriods, state.sewas, state.customers]);
+
   // Helper to handle all specific inline field corrections smoothly
   const handleUpdateFieldValue = (
     idTagihan: string,
@@ -332,6 +686,31 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
       [field]: value
     };
 
+    const sewa = state.sewas.find(s => s.id_sewa === period.id_sewa);
+    const isNonPpn = sewa?.non_ppn === true;
+
+    if (field === 'nomor_invoice_grup') {
+      if (value === null || value === '') {
+        // DETACHING/REMOVING from group: reset ALL overrides to revert back to normal/imported state!
+        updatedOverride.status_bayar = 'Belum Ditagih';
+        updatedOverride.jumlah_tagihan_override = null;
+        updatedOverride.ppn = null;
+        updatedOverride.pph = null;
+        updatedOverride.keterangan_selisih = null;
+        updatedOverride.selisih_pembayaran = 0;
+        updatedOverride.nomor_invoice_grup = null;
+        updatedOverride.tanggal_tagihan = null;
+      } else {
+        // ATTACHING/ADDING to group: pre-fill the actual nominal with the estimasi so it's ready to edit!
+        updatedOverride.status_bayar = 'Belum Bayar';
+        if (updatedOverride.jumlah_tagihan_override === null || updatedOverride.jumlah_tagihan_override === undefined) {
+          updatedOverride.jumlah_tagihan_override = period.jumlah_tagihan;
+          updatedOverride.ppn = isNonPpn ? 0 : Math.round(period.jumlah_tagihan * 0.11);
+          updatedOverride.pph = Math.round(period.jumlah_tagihan * 0.02);
+        }
+      }
+    }
+
     // Calculate core dependencies
     const estimasi = period.jumlah_tagihan; // standard estimated cycle amount
     const currentTagihan = updatedOverride.jumlah_tagihan_override !== undefined && updatedOverride.jumlah_tagihan_override !== null
@@ -343,7 +722,7 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
 
     // Auto-calculate default taxes if they altered the actual Tagihan amount directly
     if (field === 'jumlah_tagihan_override') {
-      updatedOverride.ppn = Math.round(currentTagihan * 0.11);
+      updatedOverride.ppn = isNonPpn ? 0 : Math.round(currentTagihan * 0.11);
       updatedOverride.pph = Math.round(currentTagihan * 0.02);
     }
 
@@ -370,6 +749,401 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
         [idTagihan]: updatedOverride
       }
     });
+  };
+
+  const handleBulkUpdate = (
+    idTagihans: string[],
+    updates: Record<string, any>,
+    newStatus?: 'Belum Ditagih' | 'Belum Bayar' | 'Lunas' | 'Pranota'
+  ) => {
+    if (idTagihans.length === 0) return;
+
+    const updatedOverrides = { ...state.paymentOverrides };
+
+    idTagihans.forEach(idTagihan => {
+      const period = allPeriods.find(p => p.id_tagihan === idTagihan);
+      if (!period) return;
+
+      const existingOverride = updatedOverrides[idTagihan] || {
+        status_bayar: 'Belum Ditagih',
+        tanggal_tagihan: null,
+        tanggal_bayar: null,
+        nomor_invoice_grup: null,
+        jumlah_tagihan_override: null,
+        jumlah_bayar: null,
+        selisih_pembayaran: null,
+        keterangan_selisih: null,
+        ppn: null,
+        pph: null,
+        nomor_bayar: null
+      };
+
+      let updatedOverride = {
+        ...existingOverride,
+        ...updates
+      };
+
+      if (newStatus) {
+        updatedOverride.status_bayar = newStatus;
+        if (newStatus === 'Lunas') {
+          if (!updatedOverride.tanggal_bayar) {
+            updatedOverride.tanggal_bayar = utcTime.split('T')[0];
+          }
+          if (!updatedOverride.tanggal_tagihan) {
+            updatedOverride.tanggal_tagihan = utcTime.split('T')[0];
+          }
+        } else if (newStatus === 'Pranota' || newStatus === 'Belum Bayar') {
+          if (!updatedOverride.tanggal_tagihan) {
+            updatedOverride.tanggal_tagihan = utcTime.split('T')[0];
+          }
+        }
+      }
+
+      // Calculate core dependencies
+      const estimasi = period.jumlah_tagihan;
+      const currentTagihan = updatedOverride.jumlah_tagihan_override !== undefined && updatedOverride.jumlah_tagihan_override !== null
+        ? updatedOverride.jumlah_tagihan_override
+        : estimasi;
+
+      // Auto-calculate Difference
+      updatedOverride.selisih_pembayaran = currentTagihan - estimasi;
+
+      updatedOverrides[idTagihan] = updatedOverride;
+    });
+
+    onStateChange({
+      ...state,
+      paymentOverrides: updatedOverrides
+    });
+
+    // Clear selection after bulk update
+    setSelectedRowIds([]);
+  };
+
+  // Helper to update a field across all sirkulasi periods under a specific Invoice Number (propagates down)
+  const handleUpdateInvoiceFieldValue = (
+    invoiceNo: string,
+    field: string,
+    value: any
+  ) => {
+    const matchedPeriods = allPeriods.filter(p => p.nomor_invoice_grup === invoiceNo);
+    const updatedOverrides = { ...state.paymentOverrides };
+    
+    if (field === 'nomor_invoice_grup') {
+      const newInvoiceNo = String(value).trim();
+      if (!newInvoiceNo) return;
+      
+      matchedPeriods.forEach(p => {
+        const existing = updatedOverrides[p.id_tagihan] || {
+          status_bayar: 'Belum Ditagih',
+          tanggal_tagihan: null,
+          tanggal_bayar: null,
+          nomor_invoice_grup: null,
+          jumlah_tagihan_override: null,
+          jumlah_bayar: null,
+          selisih_pembayaran: null,
+          keterangan_selisih: null,
+          ppn: null,
+          pph: null,
+          nomor_bayar: null
+        };
+        updatedOverrides[p.id_tagihan] = {
+          ...existing,
+          nomor_invoice_grup: newInvoiceNo
+        };
+      });
+
+      // Update state.invoices
+      const updatedInvoices = state.invoices.map(inv => {
+        if (inv.nomor_invoice.toLowerCase() === invoiceNo.toLowerCase()) {
+          return {
+            ...inv,
+            nomor_invoice: newInvoiceNo
+          };
+        }
+        return inv;
+      });
+
+      onStateChange({
+        ...state,
+        paymentOverrides: updatedOverrides,
+        invoices: updatedInvoices
+      });
+      return;
+    }
+
+    if (field === 'tanggal_tagihan') {
+      matchedPeriods.forEach(p => {
+        const existing = updatedOverrides[p.id_tagihan] || {
+          status_bayar: 'Belum Ditagih',
+          tanggal_tagihan: null,
+          tanggal_bayar: null,
+          nomor_invoice_grup: null,
+          jumlah_tagihan_override: null,
+          jumlah_bayar: null,
+          selisih_pembayaran: null,
+          keterangan_selisih: null,
+          ppn: null,
+          pph: null,
+          nomor_bayar: null
+        };
+        updatedOverrides[p.id_tagihan] = {
+          ...existing,
+          tanggal_tagihan: value
+        };
+      });
+
+      const updatedInvoices = state.invoices.map(inv => {
+        if (inv.nomor_invoice.toLowerCase() === invoiceNo.toLowerCase()) {
+          return {
+            ...inv,
+            tanggal_invoice: value
+          };
+        }
+        return inv;
+      });
+
+      onStateChange({
+        ...state,
+        paymentOverrides: updatedOverrides,
+        invoices: updatedInvoices
+      });
+      return;
+    }
+
+    if (field === 'nomor_bayar') {
+      matchedPeriods.forEach(p => {
+        const existing = updatedOverrides[p.id_tagihan] || {
+          status_bayar: 'Belum Ditagih',
+          tanggal_tagihan: null,
+          tanggal_bayar: null,
+          nomor_invoice_grup: null,
+          jumlah_tagihan_override: null,
+          jumlah_bayar: null,
+          selisih_pembayaran: null,
+          keterangan_selisih: null,
+          ppn: null,
+          pph: null,
+          nomor_bayar: null
+        };
+        updatedOverrides[p.id_tagihan] = {
+          ...existing,
+          nomor_bayar: value
+        };
+      });
+
+      onStateChange({
+        ...state,
+        paymentOverrides: updatedOverrides
+      });
+      return;
+    }
+
+    if (field === 'tanggal_bayar') {
+      matchedPeriods.forEach(p => {
+        const existing = updatedOverrides[p.id_tagihan] || {
+          status_bayar: 'Belum Ditagih',
+          tanggal_tagihan: null,
+          tanggal_bayar: null,
+          nomor_invoice_grup: null,
+          jumlah_tagihan_override: null,
+          jumlah_bayar: null,
+          selisih_pembayaran: null,
+          keterangan_selisih: null,
+          ppn: null,
+          pph: null,
+          nomor_bayar: null
+        };
+        updatedOverrides[p.id_tagihan] = {
+          ...existing,
+          tanggal_bayar: value
+        };
+      });
+
+      onStateChange({
+        ...state,
+        paymentOverrides: updatedOverrides
+      });
+      return;
+    }
+
+    if (field === 'status_bayar') {
+      matchedPeriods.forEach(p => {
+        const existing = updatedOverrides[p.id_tagihan] || {
+          status_bayar: 'Belum Ditagih',
+          tanggal_tagihan: null,
+          tanggal_bayar: null,
+          nomor_invoice_grup: null,
+          jumlah_tagihan_override: null,
+          jumlah_bayar: null,
+          selisih_pembayaran: null,
+          keterangan_selisih: null,
+          ppn: null,
+          pph: null,
+          nomor_bayar: null
+        };
+        const updated = {
+          ...existing,
+          status_bayar: value as any
+        };
+        if (value === 'Lunas') {
+          if (!updated.tanggal_bayar) {
+            updated.tanggal_bayar = utcTime.split('T')[0];
+          }
+          if (!updated.tanggal_tagihan) {
+            updated.tanggal_tagihan = utcTime.split('T')[0];
+          }
+        } else if (value === 'Pranota' || value === 'Belum Bayar') {
+          if (!updated.tanggal_tagihan) {
+            updated.tanggal_tagihan = utcTime.split('T')[0];
+          }
+        }
+        updatedOverrides[p.id_tagihan] = updated;
+      });
+
+      const updatedInvoices: InvoiceGrup[] = state.invoices.map(inv => {
+        if (inv.nomor_invoice.toLowerCase() === invoiceNo.toLowerCase()) {
+          return {
+            ...inv,
+            status_pembayaran: (value === 'Lunas' ? 'Lunas' : 'Belum Bayar') as 'Belum Bayar' | 'Lunas'
+          };
+        }
+        return inv;
+      });
+
+      onStateChange({
+        ...state,
+        paymentOverrides: updatedOverrides,
+        invoices: updatedInvoices
+      });
+      return;
+    }
+
+    if (field === 'jumlah_tagihan_override') {
+      const val = value === null ? null : parseFloat(value);
+      if (val === null) {
+        matchedPeriods.forEach(p => {
+          if (updatedOverrides[p.id_tagihan]) {
+            updatedOverrides[p.id_tagihan].jumlah_tagihan_override = null;
+            updatedOverrides[p.id_tagihan].selisih_pembayaran = 0;
+            updatedOverrides[p.id_tagihan].ppn = Math.round(p.jumlah_tagihan * 0.11);
+            updatedOverrides[p.id_tagihan].pph = Math.round(p.jumlah_tagihan * 0.02);
+          }
+        });
+      } else {
+        const totalEstimasi = matchedPeriods.reduce((sum, p) => sum + p.jumlah_tagihan, 0);
+        let remainingVal = val;
+        matchedPeriods.forEach((p, idx) => {
+          const estimasi = p.jumlah_tagihan;
+          let portion = 0;
+          if (idx === matchedPeriods.length - 1) {
+            portion = remainingVal;
+          } else {
+            portion = totalEstimasi > 0 ? Math.round((estimasi / totalEstimasi) * val) : Math.round(val / matchedPeriods.length);
+            remainingVal -= portion;
+          }
+          const existing = updatedOverrides[p.id_tagihan] || {
+            status_bayar: 'Belum Ditagih' as const,
+            tanggal_tagihan: null,
+            tanggal_bayar: null,
+            nomor_invoice_grup: invoiceNo
+          };
+          updatedOverrides[p.id_tagihan] = {
+            ...existing,
+            jumlah_tagihan_override: portion,
+            selisih_pembayaran: portion - estimasi,
+            ppn: Math.round(portion * 0.11),
+            pph: Math.round(portion * 0.02)
+          };
+        });
+      }
+      onStateChange({ ...state, paymentOverrides: updatedOverrides });
+      return;
+    }
+
+    if (field === 'ppn') {
+      const val = value === null ? null : parseFloat(value);
+      if (val === null) {
+        matchedPeriods.forEach(p => {
+          if (updatedOverrides[p.id_tagihan]) {
+            updatedOverrides[p.id_tagihan].ppn = null;
+          }
+        });
+      } else {
+        const totalTagihan = matchedPeriods.reduce((sum, p) => {
+          const tagihan = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+          return sum + tagihan;
+        }, 0);
+        
+        let remainingPPN = val;
+        matchedPeriods.forEach((p, idx) => {
+          if (idx === matchedPeriods.length - 1) {
+            const existing = updatedOverrides[p.id_tagihan] || {
+              status_bayar: 'Belum Ditagih' as const,
+              tanggal_tagihan: null,
+              tanggal_bayar: null,
+              nomor_invoice_grup: invoiceNo
+            };
+            updatedOverrides[p.id_tagihan] = { ...existing, ppn: remainingPPN };
+          } else {
+            const tagihan = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+            const portion = totalTagihan > 0 ? Math.round((tagihan / totalTagihan) * val) : Math.round(val / matchedPeriods.length);
+            const existing = updatedOverrides[p.id_tagihan] || {
+              status_bayar: 'Belum Ditagih' as const,
+              tanggal_tagihan: null,
+              tanggal_bayar: null,
+              nomor_invoice_grup: invoiceNo
+            };
+            updatedOverrides[p.id_tagihan] = { ...existing, ppn: portion };
+            remainingPPN -= portion;
+          }
+        });
+      }
+      onStateChange({ ...state, paymentOverrides: updatedOverrides });
+      return;
+    }
+
+    if (field === 'pph') {
+      const val = value === null ? null : parseFloat(value);
+      if (val === null) {
+        matchedPeriods.forEach(p => {
+          if (updatedOverrides[p.id_tagihan]) {
+            updatedOverrides[p.id_tagihan].pph = null;
+          }
+        });
+      } else {
+        const totalTagihan = matchedPeriods.reduce((sum, p) => {
+          const tagihan = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+          return sum + tagihan;
+        }, 0);
+        
+        let remainingPPh = val;
+        matchedPeriods.forEach((p, idx) => {
+          if (idx === matchedPeriods.length - 1) {
+            const existing = updatedOverrides[p.id_tagihan] || {
+              status_bayar: 'Belum Ditagih' as const,
+              tanggal_tagihan: null,
+              tanggal_bayar: null,
+              nomor_invoice_grup: invoiceNo
+            };
+            updatedOverrides[p.id_tagihan] = { ...existing, pph: remainingPPh };
+          } else {
+            const tagihan = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+            const portion = totalTagihan > 0 ? Math.round((tagihan / totalTagihan) * val) : Math.round(val / matchedPeriods.length);
+            const existing = updatedOverrides[p.id_tagihan] || {
+              status_bayar: 'Belum Ditagih' as const,
+              tanggal_tagihan: null,
+              tanggal_bayar: null,
+              nomor_invoice_grup: invoiceNo
+            };
+            updatedOverrides[p.id_tagihan] = { ...existing, pph: portion };
+            remainingPPh -= portion;
+          }
+        });
+      }
+      onStateChange({ ...state, paymentOverrides: updatedOverrides });
+      return;
+    }
   };
 
   // Complete grouped invoice checkout lunas state and mark sub-items
@@ -505,7 +1279,7 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
 
       updatedOverrides[item.id_tagihan] = {
         ...existing,
-        status_bayar: status,
+        status_bayar: status === 'Lunas' ? 'Lunas' : 'Pranota',
         tanggal_bayar: parsedTglBayar,
         nomor_bayar: buktiBayar.trim() || null,
         nomor_invoice_grup: nomorInvoice
@@ -867,7 +1641,7 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
               activeViewTab === 'sheet' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            {isSewaIn ? '1. Kertas Kerja Rekonsiliasi Tagihan' : '1. Pranota / Proforma (Kertas Kerja - 4.png)'}
+            1. Rekonsiliasi Tagihan Vendor
           </button>
           <button
             onClick={() => setActiveViewTab('group')}
@@ -875,7 +1649,7 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
               activeViewTab === 'group' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            {isSewaIn ? '2. Verifikasi Pembayaran & Pajak Vendor' : '2. Pembayaran & Pelunasan Pajak (Panggil No. Nota - 5.png)'}
+            2. Penerbitan Pranota / Proforma
             <span className={`px-1.5 py-0.5 text-[9px] font-mono rounded-full font-extrabold ${isSewaIn ? 'bg-indigo-100 text-indigo-800' : 'bg-emerald-100 text-emerald-800'}`}>{distinctInvoiceNumbers.length}</span>
           </button>
           <button
@@ -884,7 +1658,7 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
               activeViewTab === 'collective' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <span>{isSewaIn ? '3. Pelunasan & Adjustment Kolektif per Nota' : '3. Pelunasan & Adjustment Kolektif per Nota (6.png)'}</span>
+            <span>3. Pembayaran &amp; Pelunasan Pajak</span>
             <span className={`px-1.5 py-0.5 text-[9px] font-mono rounded-full font-extrabold ${isSewaIn ? 'bg-indigo-100 text-indigo-800' : 'bg-emerald-100 text-emerald-800'}`}>DASHBOARD</span>
           </button>
           <button
@@ -899,22 +1673,687 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
         </div>
       </div>
 
-      {activeViewTab === 'sheet' && (
+      {activeViewTab === 'sheet' && (() => {
+        // Filter the active containers inside the selected vendor tagihan group
+        const selectedGroupPeriods = allPeriods.filter(p => {
+          const sObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+          return (
+            p.nomor_invoice_grup === selectedVendorTagihanNo &&
+            selectedVendorTagihanNo.trim() !== '' &&
+            (!selectedVendorCustomer || sObj?.id_customer === selectedVendorCustomer)
+          );
+        });
+
+        // Filter the loose draft containers (no tagihan group assigned yet) for the selected vendor
+        const looseDraftPeriods = allPeriods.filter(p => {
+          const sObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+          const isMatchCustomer = !selectedVendorCustomer || sObj?.id_customer === selectedVendorCustomer;
+          const isDraft = p.status_bayar === 'Belum Ditagih';
+          const hasNoGroup = !p.nomor_invoice_grup || p.nomor_invoice_grup.trim() === '';
+          
+          if (!isMatchCustomer || !isDraft || !hasNoGroup) return false;
+          
+          if (searchDraftContainer.trim()) {
+            return sObj?.no_kontainer?.toLowerCase().includes(searchDraftContainer.toLowerCase()) || false;
+          }
+          return true;
+        });
+
+        // Calculate totals for selected group
+        const totalEstimasiGroup = selectedGroupPeriods.reduce((sum, p) => sum + p.jumlah_tagihan, 0);
+        const totalAktualGroup = selectedGroupPeriods.reduce((sum, p) => {
+          const amt = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+          return sum + amt;
+        }, 0);
+        const totalPPNGroup = selectedGroupPeriods.reduce((sum, p) => {
+          const amt = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+          const ppn = p.ppn !== null && p.ppn !== undefined ? p.ppn : Math.round(amt * 0.11);
+          return sum + ppn;
+        }, 0);
+        const totalPPhGroup = selectedGroupPeriods.reduce((sum, p) => {
+          const amt = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+          const pph = p.pph !== null && p.pph !== undefined ? p.pph : Math.round(amt * 0.02);
+          return sum + pph;
+        }, 0);
+        const grandNetTotalGroup = totalAktualGroup + totalPPNGroup - totalPPhGroup;
+
+        return (
+          <div className="space-y-6" id="spreadsheet-workspace">
+            {/* SUB-TABS SELECTOR FOR MANUAL ENTRY MODE */}
+            <div className="bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/60 flex flex-wrap gap-1">
+              <button
+                type="button"
+                onClick={() => setSheetSubMode('search')}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 rounded-lg transition-all cursor-pointer ${
+                  sheetSubMode === 'search'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                }`}
+              >
+                <Search className="w-4 h-4" />
+                Cari &amp; Kelola Draft Tagihan Vendor (Outstanding)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSheetSubMode('create');
+                }}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 rounded-lg transition-all cursor-pointer ${
+                  sheetSubMode === 'create'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                }`}
+              >
+                <PlusCircle className="w-4 h-4" />
+                Buat Draft Tagihan Vendor Baru (Manual Entry)
+              </button>
+            </div>
+
+            {/* VENDOR & GROUP SELECTION CARD (DYNAMIC BASED ON SUB-MODE) */}
+            {sheetSubMode === 'search' ? (
+              <div className="bg-white p-5 rounded-2xl border border-slate-150 shadow-sm space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-3.5">
+                  <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center shrink-0">
+                    <Search className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">CARI &amp; KELOLA DRAFT TAGIHAN</h3>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Pilih Vendor dan cari No. Tagihan Vendor yang sudah ada/di-impor untuk menambah atau melepas kontainer.</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Vendor</label>
+                    <select
+                      value={selectedVendorCustomer}
+                      onChange={(e) => {
+                        setSelectedVendorCustomer(e.target.value);
+                        setSelectedVendorTagihanNo(''); // reset group when customer changes
+                      }}
+                      className="w-full text-xs font-medium border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">-- Semua Vendor --</option>
+                      {state.customers.map(c => (
+                        <option key={c.id_customer} value={c.id_customer}>{c.nama_customer}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Cari No. Tagihan Vendor</label>
+                    <SearchableCombobox
+                      id="draft-tagihan-vendor-combobox"
+                      value={selectedVendorTagihanNo}
+                      onChange={(val) => {
+                        setSelectedVendorTagihanNo(val);
+                        // Auto detect vendor for this tagihan group if possible
+                        if (val) {
+                          const matchedPeriod = allPeriods.find(p => p.nomor_invoice_grup === val);
+                          if (matchedPeriod) {
+                            const sObj = state.sewas.find(s => s.id_sewa === matchedPeriod.id_sewa);
+                            if (sObj?.id_customer) {
+                              setSelectedVendorCustomer(sObj.id_customer);
+                            }
+                          }
+                        }
+                      }}
+                      options={existingDraftVendorTagihans}
+                      placeholder="Ketik atau pilih No. Tagihan..."
+                      inputClassName="bg-slate-50 text-slate-800 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Tgl. Tagihan Vendor</label>
+                    <FormDateInput
+                      value={selectedVendorTagihanDate}
+                      onChange={(val) => {
+                        setSelectedVendorTagihanDate(val);
+                        // Bulk update the selectedGroupPeriods' dates in the state automatically!
+                        if (selectedVendorTagihanNo) {
+                          selectedGroupPeriods.forEach(gp => {
+                            handleUpdateFieldValue(gp.id_tagihan, 'tanggal_tagihan', val);
+                          });
+                        }
+                      }}
+                      className="w-full text-xs font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white p-5 rounded-2xl border border-slate-150 shadow-sm space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-3.5">
+                  <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center shrink-0">
+                    <Plus className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">BUAT DRAFT TAGIHAN VENDOR BARU (MANUAL)</h3>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Masukkan Nomor Tagihan baru secara manual. Kolom ini bebas hambatan (tanpa loading / autocomplete) sehingga sangat cepat!</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Vendor <span className="text-rose-500">*</span></label>
+                    <select
+                      value={newVendorId}
+                      onChange={(e) => setNewVendorId(e.target.value)}
+                      className="w-full text-xs font-medium border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">-- Pilih Vendor --</option>
+                      {state.customers.map(c => (
+                        <option key={c.id_customer} value={c.id_customer}>{c.nama_customer}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">No. Tagihan Baru <span className="text-rose-500">*</span></label>
+                    <input
+                      type="text"
+                      value={newInvoiceNo}
+                      onChange={(e) => setNewInvoiceNo(e.target.value)}
+                      placeholder="Contoh: INV-TM-2026-001"
+                      className="w-full text-xs font-mono font-semibold border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Tgl. Tagihan</label>
+                    <FormDateInput
+                      value={newInvoiceDate}
+                      onChange={(val) => setNewInvoiceDate(val)}
+                      className="w-full text-xs font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!newVendorId) {
+                          triggerNoti('error', 'Silakan pilih Vendor terlebih dahulu.');
+                          return;
+                        }
+                        if (!newInvoiceNo.trim()) {
+                          triggerNoti('error', 'Silakan isi No. Tagihan baru.');
+                          return;
+                        }
+                        
+                        const tagihanClean = newInvoiceNo.trim();
+                        const tagihanDateClean = newInvoiceDate || utcTime.split('T')[0];
+
+                        // Set active workspace to this new tagihan group
+                        setSelectedVendorCustomer(newVendorId);
+                        setSelectedVendorTagihanNo(tagihanClean);
+                        setSelectedVendorTagihanDate(tagihanDateClean);
+
+                        // Reset fields
+                        setNewInvoiceNo('');
+                        
+                        // Keep on create/entry submode as requested by the user
+                        // setSheetSubMode('search');
+                        triggerNoti('sukses', `Draft Tagihan "${tagihanClean}" berhasil dibuat! Silakan pilih kontainer di sebelah kanan untuk ditambahkan ke tagihan.`);
+                      }}
+                      className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer h-[38px]"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Buat &amp; Mulai Susun
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TWO PANELS WORKSPACE */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* LEFT PANEL: CONTIANERS IN SELECTED GROUP */}
+              <div className="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <div>
+                      <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                        Detail Kontainer dalam Tagihan Ini
+                      </h4>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Kontainer yang dikelompokkan ke dalam No. Tagihan <span className="font-mono font-bold text-slate-700">{selectedVendorTagihanNo || '-'}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded-md">
+                      {selectedGroupPeriods.length} Kontainer
+                    </span>
+                    {selectedGroupPeriods.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm('Apakah Anda yakin ingin melepas semua kontainer dari tagihan ini sekaligus?')) {
+                            selectedGroupPeriods.forEach(p => {
+                              handleUpdateFieldValue(p.id_tagihan, 'nomor_invoice_grup', null);
+                            });
+                            triggerNoti('sukses', 'Semua kontainer berhasil dilepas dari tagihan.');
+                          }
+                        }}
+                        className="text-[10px] font-bold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 px-2 py-1 rounded-md transition-all cursor-pointer bg-white"
+                        title="Lepas semua kontainer dari tagihan ini sekaligus"
+                      >
+                        ✕ Lepas Semua
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {!selectedVendorTagihanNo ? (
+                  <div className="space-y-6">
+                    <div className="py-8 px-4 text-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+                      <Sparkles className="w-6 h-6 text-indigo-500 mx-auto mb-2" />
+                      <p className="text-xs font-bold text-slate-700">Silakan masukkan No. Tagihan Vendor di atas untuk mulai menyusun.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Anda dapat memilih draf yang ada di daftar cepat di bawah ini atau mengetik No. Tagihan baru di kolom input.</p>
+                    </div>
+
+                    <div className="border border-slate-150 rounded-2xl p-4 bg-white shadow-3xs space-y-3">
+                      <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
+                        <FileText className="w-4 h-4 text-indigo-600" />
+                        <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                          Daftar Draft Tagihan Aktif / Outstanding Terbaru (Maks. 20)
+                        </h4>
+                      </div>
+
+                      {outstandingDraftGroups.length === 0 ? (
+                        <div className="text-center py-6 text-xs text-slate-400 italic">
+                          Tidak ada draf tagihan aktif / outstanding saat ini. Silakan buat baru!
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto border border-slate-100 rounded-xl">
+                          <table className="w-full text-left border-collapse text-[10px] font-sans">
+                            <thead>
+                              <tr className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
+                                <th className="p-2 py-2.5 font-mono">No. Tagihan Vendor</th>
+                                <th className="p-2 py-2.5">Nama Vendor/Mitra</th>
+                                <th className="p-2 py-2.5 text-center">Jumlah Kontainer</th>
+                                <th className="p-2 py-2.5 text-right">Estimasi Tagihan</th>
+                                <th className="p-2 py-2.5 text-center">Status</th>
+                                <th className="p-2 py-2.5 text-center">Aksi</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {outstandingDraftGroups.map((g) => (
+                                <tr key={g.nomor_invoice_grup} className="hover:bg-slate-50/60 transition-colors">
+                                  <td className="p-2 py-2.5 font-mono font-bold text-slate-800">{g.nomor_invoice_grup}</td>
+                                  <td className="p-2 py-2.5 font-semibold text-slate-600">{g.customerName}</td>
+                                  <td className="p-2 py-2.5 text-center font-bold text-indigo-700 bg-indigo-50/20">{g.count} Kontainer</td>
+                                  <td className="p-2 py-2.5 text-right font-mono font-bold text-slate-800">{formatRupiah(g.totalEstimasi)}</td>
+                                  <td className="p-2 py-2.5 text-center">
+                                    <span className={`inline-block px-1.5 py-0.5 rounded-[4px] text-[8px] font-extrabold tracking-wide uppercase ${
+                                      g.status_bayar === 'Belum Ditagih'
+                                        ? 'bg-slate-100 text-slate-700 border border-slate-200/60'
+                                        : g.status_bayar === 'Pranota'
+                                        ? 'bg-amber-50 text-amber-700 border border-amber-200/60'
+                                        : 'bg-sky-50 text-sky-700 border border-sky-200/60'
+                                    }`}>
+                                      {g.status_bayar === 'Belum Ditagih' ? 'DRAF (Belum Ditagih)' : g.status_bayar === 'Pranota' ? 'PRANOTA (Draft Invoice)' : 'SUDAH DITAGIH'}
+                                    </span>
+                                  </td>
+                                  <td className="p-2 py-2.5 text-center">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (g.id_customer) {
+                                          setSelectedVendorCustomer(g.id_customer);
+                                        }
+                                        setSelectedVendorTagihanNo(g.nomor_invoice_grup);
+                                        triggerNoti('sukses', `Draft ${g.nomor_invoice_grup} berhasil dimuat.`);
+                                      }}
+                                      className="px-2 py-1 bg-indigo-50 border border-indigo-200 rounded text-[9px] text-indigo-600 font-extrabold hover:bg-indigo-600 hover:text-white transition-all cursor-pointer shadow-3xs"
+                                    >
+                                      Buka &amp; Kelola ➜
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : selectedGroupPeriods.length === 0 ? (
+                  <div className="py-12 text-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+                    <p className="text-xs font-semibold text-slate-500">Tagihan ini masih kosong.</p>
+                    <p className="text-[10px] text-slate-400 mt-1">Gunakan panel kanan untuk menambahkan draf kontainer ke tagihan ini.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="overflow-x-auto border border-slate-150 rounded-xl">
+                      <table className="w-full text-left border-collapse text-[10px] font-sans">
+                        <thead>
+                          <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold font-mono">
+                            <th className="p-2 py-2.5">No. Kontainer</th>
+                            <th className="p-2 py-2.5">Bulan / Periode</th>
+                            <th className="p-2 py-2.5 text-right">Estimasi</th>
+                            <th className="p-2 py-2.5 text-right bg-amber-50">Nominal Riil (Edit)</th>
+                            <th className="p-2 py-2.5 text-right">PPN (11%)</th>
+                            <th className="p-2 py-2.5 text-right">PPh (2%)</th>
+                            <th className="p-2 py-2.5 text-center">Selisih</th>
+                            <th className="p-2 py-2.5">Keterangan / Alasan Selisih</th>
+                            <th className="p-2 py-2.5 text-center">Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-150">
+                          {selectedGroupPeriods.map((p, idx) => {
+                            const isSewaObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+                            const nominalEstimasi = p.jumlah_tagihan;
+                            const nominalAktual = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : nominalEstimasi;
+                            const ppn = p.ppn !== null && p.ppn !== undefined ? p.ppn : Math.round(nominalAktual * 0.11);
+                            const pph = p.pph !== null && p.pph !== undefined ? p.pph : Math.round(nominalAktual * 0.02);
+                            const selisih = nominalAktual - nominalEstimasi;
+
+                            return (
+                              <tr key={p.id_tagihan} className="hover:bg-slate-50/50">
+                                <td className="p-2 font-mono font-bold text-slate-800">
+                                  <div>{isSewaObj?.no_kontainer || 'Manual'}</div>
+                                  {p.status_bayar !== 'Belum Ditagih' && (
+                                    <span className={`inline-block text-[8px] font-bold px-1 rounded mt-0.5 border ${
+                                      p.status_bayar === 'Lunas'
+                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                        : p.status_bayar === 'Belum Bayar'
+                                        ? 'bg-sky-50 border-sky-200 text-sky-700'
+                                        : 'bg-amber-50 border-amber-200 text-amber-700'
+                                    }`}>
+                                      {p.status_bayar === 'Lunas' ? 'Lunas' : p.status_bayar === 'Belum Bayar' ? 'Sudah Ditagih' : 'Tagihan'}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="p-2 text-slate-500">
+                                  Bulan {p.bulan_ke} <span className="text-[8px] font-mono block">({formatIndoDate(p.tanggal_awal)} - {formatIndoDate(p.tanggal_akhir)})</span>
+                                </td>
+                                <td className="p-2 text-right font-mono text-slate-600">{formatRupiah(nominalEstimasi)}</td>
+                                <td className="p-1 text-right bg-amber-50/30">
+                                  <FastNumberInput
+                                    value={p.jumlah_tagihan_override}
+                                    placeholder={String(nominalEstimasi)}
+                                    onChange={(val) => {
+                                      handleUpdateFieldValue(p.id_tagihan, 'jumlah_tagihan_override', val);
+                                    }}
+                                    className="w-20 text-[10px] font-mono border border-slate-200 rounded px-1.5 py-1 text-right bg-white focus:ring-1 focus:ring-indigo-500"
+                                  />
+                                </td>
+                                <td className="p-1 text-right">
+                                  <FastNumberInput
+                                    value={ppn}
+                                    onChange={(val) => {
+                                      handleUpdateFieldValue(p.id_tagihan, 'ppn', val);
+                                    }}
+                                    className="w-16 text-[10px] font-mono border border-slate-200 rounded px-1.5 py-1 text-right bg-white focus:ring-1 focus:ring-indigo-500"
+                                  />
+                                </td>
+                                <td className="p-1 text-right">
+                                  <FastNumberInput
+                                    value={pph}
+                                    onChange={(val) => {
+                                      handleUpdateFieldValue(p.id_tagihan, 'pph', val);
+                                    }}
+                                    className="w-14 text-[10px] font-mono border border-slate-200 rounded px-1.5 py-1 text-right bg-white focus:ring-1 focus:ring-indigo-500"
+                                  />
+                                </td>
+                                <td className="p-2 text-center font-mono">
+                                  {selisih === 0 ? (
+                                    <span className="text-slate-400">-</span>
+                                  ) : selisih > 0 ? (
+                                    <span className="text-emerald-600 font-bold">+{formatRupiah(selisih)}</span>
+                                  ) : (
+                                    <span className="text-rose-600 font-bold">{formatRupiah(selisih)}</span>
+                                  )}
+                                </td>
+                                <td className="p-1 min-w-[150px]">
+                                  <FastTextInput
+                                    value={p.keterangan_selisih}
+                                    placeholder={selisih !== 0 ? "Wajib diisi (alasan selisih)..." : "Keterangan tambahan..."}
+                                    onChange={(val) => handleUpdateFieldValue(p.id_tagihan, 'keterangan_selisih', val)}
+                                    className={`w-full text-[10px] border rounded px-1.5 py-1 text-left ${
+                                      selisih !== 0 && (!p.keterangan_selisih || p.keterangan_selisih.trim() === '')
+                                        ? 'border-rose-300 bg-rose-50/50 placeholder-rose-400 focus:ring-rose-500 text-rose-900 font-medium'
+                                        : 'border-slate-200 bg-white focus:ring-indigo-500 text-slate-700'
+                                    }`}
+                                  />
+                                </td>
+                                <td className="p-2 text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <button
+                                      onClick={() => handleUpdateFieldValue(p.id_tagihan, 'nomor_invoice_grup', null)}
+                                      className="text-[9px] font-bold text-slate-500 hover:text-white hover:bg-slate-500 border border-slate-200 px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                                      title="Keluarkan dari tagihan ini"
+                                    >
+                                      ✕ Lepas
+                                    </button>
+                                    {p.id_tagihan.startsWith('manual_tagihan_') && (
+                                      <button
+                                        onClick={() => {
+                                          const updatedManuals = (state.manualTagihans || []).filter(mt => mt.id_tagihan !== p.id_tagihan);
+                                          onStateChange({
+                                            ...state,
+                                            manualTagihans: updatedManuals
+                                          });
+                                          triggerNoti('sukses', 'Tagihan manual berhasil dihapus.');
+                                        }}
+                                        className="text-[9px] font-bold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                                        title="Hapus tagihan manual secara permanen"
+                                      >
+                                        ✕ Hapus
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Left panel totals & Save actions */}
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
+                        <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-3xs">
+                          <span className="text-[8px] font-bold text-slate-400 block uppercase">Estimasi</span>
+                          <span className="text-xs font-mono font-bold text-slate-700">{formatRupiah(totalEstimasiGroup)}</span>
+                        </div>
+                        <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-3xs">
+                          <span className="text-[8px] font-bold text-slate-400 block uppercase">Aktual / Riil</span>
+                          <span className="text-xs font-mono font-bold text-slate-800">{formatRupiah(totalAktualGroup)}</span>
+                        </div>
+                        <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-3xs">
+                          <span className="text-[8px] font-bold text-indigo-50 block uppercase">PPN (11%)</span>
+                          <span className="text-xs font-mono font-bold text-indigo-700">+{formatRupiah(totalPPNGroup)}</span>
+                        </div>
+                        <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-3xs">
+                          <span className="text-[8px] font-bold text-rose-500 block uppercase">Potongan PPh (2%)</span>
+                          <span className="text-xs font-mono font-bold text-rose-600">-{formatRupiah(totalPPhGroup)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-200">
+                        <div>
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Grand Net Total</span>
+                          <span className="text-sm font-extrabold text-emerald-800 font-mono">{formatRupiah(grandNetTotalGroup)}</span>
+                        </div>
+                        
+                        <button
+                          onClick={() => {
+                            // Validation: if there is a discrepancy (selisih !== 0), keterangan_selisih must not be empty!
+                            const missingReasonContainer = selectedGroupPeriods.find(p => {
+                              const nominalEstimasi = p.jumlah_tagihan;
+                              const nominalAktual = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : nominalEstimasi;
+                              const selisih = nominalAktual - nominalEstimasi;
+                              return selisih !== 0 && (!p.keterangan_selisih || p.keterangan_selisih.trim() === '');
+                            });
+
+                            if (missingReasonContainer) {
+                              const sObj = state.sewas.find(s => s.id_sewa === missingReasonContainer.id_sewa);
+                              triggerNoti('error', `Gagal menyimpan! Kontainer ${sObj?.no_kontainer || 'Manual'} memiliki selisih nominal tetapi Alasan Selisih belum diisi.`);
+                              return;
+                            }
+
+                            // Change all these periods to 'Pranota' (Tagihan) status
+                            const periodIds = selectedGroupPeriods.map(p => p.id_tagihan);
+                            const updates = {
+                              status_bayar: 'Belum Bayar',
+                              tanggal_tagihan: selectedVendorTagihanDate || utcTime.split('T')[0]
+                            };
+                            handleBulkUpdate(periodIds, updates, 'Belum Bayar');
+                            triggerNoti('sukses', `Sukses! Tagihan Vendor "${selectedVendorTagihanNo}" telah disimpan. Silakan lanjut menginput tagihan berikutnya di Tab 1 ini.`);
+                            
+                            // Reset states so they can input the next one
+                            setSelectedVendorTagihanNo('');
+                            // NOTE: Do NOT change activeViewTab! Stays on 'sheet' (Tab 1) for higher efficiency!
+                          }}
+                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer font-extrabold"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>✓ Simpan Tagihan (Tetap di Tab 1)</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* RIGHT PANEL: AVAILABLE DRAFT CONTAINERS */}
+              <div className="lg:col-span-5 space-y-6">
+                
+                {/* AVAILABLE DRAFT CONTAINERS */}
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-indigo-600 shrink-0" />
+                      <div>
+                        <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                          Daftar Draft Kontainer Tersedia
+                        </h4>
+                        <p className="text-[10px] text-slate-400 mt-0.5">
+                          Daftar draf berjalan yang belum dikelompokkan ke tagihan manapun
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Filter and Search box inside draft list */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Cari No. Kontainer draf..."
+                      value={searchDraftContainer}
+                      onChange={(e) => setSearchDraftContainer(e.target.value)}
+                      className="flex-1 text-xs font-mono border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50/50 text-slate-800 focus:bg-white"
+                    />
+                    {searchDraftContainer && (
+                      <button
+                        onClick={() => setSearchDraftContainer('')}
+                        className="text-[10px] font-bold text-slate-400 hover:text-slate-600"
+                      >
+                        Batal
+                      </button>
+                    )}
+                  </div>
+
+                  {looseDraftPeriods.length === 0 ? (
+                    <div className="py-12 text-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+                      <p className="text-xs font-semibold text-slate-500">Tidak ada draf tersedia.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Seluruh siklus sewa aktif untuk vendor ini telah dikelompokkan.</p>
+                    </div>
+                  ) : (
+                    <div className="max-h-[500px] overflow-y-auto border border-slate-150 rounded-xl">
+                      <table className="w-full text-left border-collapse text-[10px] font-sans">
+                        <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 text-slate-600 font-bold font-mono">
+                          <tr>
+                            <th className="p-2 py-2">No. Kontainer</th>
+                            <th className="p-2 py-2">Bulan / Periode</th>
+                            <th className="p-2 py-2 text-right">Estimasi</th>
+                            <th className="p-2 py-2 text-center">Aksi</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-150">
+                          {looseDraftPeriods.map(p => {
+                            const isSewaObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+                            return (
+                              <tr key={p.id_tagihan} className="hover:bg-slate-50/50">
+                                <td className="p-2 font-mono font-bold text-slate-800">{isSewaObj?.no_kontainer || 'Manual'}</td>
+                                <td className="p-2 text-slate-500">
+                                  Bulan {p.bulan_ke} <span className="text-[8px] font-mono block">({formatIndoDate(p.tanggal_awal)} - {formatIndoDate(p.tanggal_akhir)})</span>
+                                </td>
+                                <td className="p-2 text-right font-mono text-slate-600">{formatRupiah(p.jumlah_tagihan)}</td>
+                                <td className="p-2 text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <button
+                                      disabled={!selectedVendorTagihanNo}
+                                      onClick={() => handleUpdateFieldValue(p.id_tagihan, 'nomor_invoice_grup', selectedVendorTagihanNo)}
+                                      className={`text-[9px] font-bold border rounded px-1.5 py-0.5 transition-all cursor-pointer ${
+                                        selectedVendorTagihanNo
+                                          ? 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-600 hover:text-white font-extrabold shadow-3xs'
+                                          : 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
+                                      }`}
+                                      title={!selectedVendorTagihanNo ? 'Silakan isi No. Tagihan Vendor terlebih dahulu di atas' : 'Tambahkan ke tagihan vendor aktif'}
+                                    >
+                                      ⊕ Tambahkan
+                                    </button>
+                                    {p.id_tagihan.startsWith('manual_tagihan_') && (
+                                      <button
+                                        onClick={() => {
+                                          const updatedManuals = (state.manualTagihans || []).filter(mt => mt.id_tagihan !== p.id_tagihan);
+                                          onStateChange({
+                                            ...state,
+                                            manualTagihans: updatedManuals
+                                          });
+                                          triggerNoti('sukses', 'Tagihan manual berhasil dihapus.');
+                                        }}
+                                        className="text-[9px] font-bold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                                        title="Hapus tagihan manual ini"
+                                      >
+                                        Hapus
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {false && (
         <div className="space-y-6" id="spreadsheet-workspace">
           
           {/* SEARCH & FILTERS PANEL */}
           <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1">Cari No. Kontainer</label>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">Cari No. Tagihan / Kontainer</label>
                 <input
                   id="search-box-kontainer"
                   type="text"
-                  placeholder="Ketik no kontainer..."
+                  placeholder="Ketik no. tagihan, kontainer, pranota..."
                   value={searchNoKontainer}
                   onChange={(e) => setSearchNoKontainer(e.target.value)}
+                  list="autocomplete-tab1-datalist"
                   className="w-full text-xs font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50/50"
                 />
+                <datalist id="autocomplete-tab1-datalist">
+                  {autocompleteTab1.map(val => (
+                    <option key={val} value={val} />
+                  ))}
+                </datalist>
               </div>
 
               <div>
@@ -988,6 +2427,135 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
             )}
           </div>
 
+          {/* PENGISIAN MASAL / KOLEKTIF (BULK ENTRY PANEL) */}
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 shadow-xs space-y-4" id="bulk-entry-workspace">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-3 gap-3">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0" />
+                <div>
+                  <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                    Panel Pembuatan Pranota / Invoice Masal
+                  </h4>
+                  <p className="text-[10px] text-slate-500">
+                    Beri tanda centang (☑) pada baris tabel di bawah, lalu masukkan No. Pranota / Invoice dan Tanggal untuk mengelompokkan tagihan kontainer terpilih.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-lg px-3 py-1.5 font-mono shadow-3xs">
+                  {selectedRowIds.length} kontainer terpilih
+                </span>
+                {selectedRowIds.length > 0 && (
+                  <button
+                    onClick={() => setSelectedRowIds([])}
+                    className="text-[10px] text-rose-600 hover:text-rose-800 font-extrabold px-2.5 py-1.5 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                  >
+                    Batal Pilih Semua
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Helper Selectors */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="text-[10px] font-bold text-slate-500 uppercase">Pilih Cepat Halaman Ini:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const targetIds = paginatedPeriods
+                    .filter(p => p.status_bayar === 'Belum Ditagih' || p.status_bayar === 'Belum Bayar')
+                    .map(p => p.id_tagihan);
+                  setSelectedRowIds(prev => Array.from(new Set([...prev, ...targetIds])));
+                }}
+                className="text-[10px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-300 rounded-lg px-3 py-1.5 transition-all cursor-pointer shadow-3xs"
+              >
+                ☑ Pilih Semua "Belum Ditagih &amp; Belum Bayar"
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const targetIds = paginatedPeriods
+                    .filter(p => p.status_bayar === 'Pranota')
+                    .map(p => p.id_tagihan);
+                  setSelectedRowIds(prev => Array.from(new Set([...prev, ...targetIds])));
+                }}
+                className="text-[10px] font-bold bg-white border border-slate-200 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 rounded-lg px-3 py-1.5 transition-all cursor-pointer shadow-3xs"
+              >
+                ☑ Pilih Semua "Draft Pembayaran / Pranota"
+              </button>
+            </div>
+
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-3xs space-y-3 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-indigo-500" />
+              <div className="pl-2">
+                <h5 className="text-[11px] font-extrabold text-slate-800 flex items-center gap-1.5">
+                  <span>INPUT NOMOR &amp; TANGGAL NOTA (PRANOTA / INVOICE)</span>
+                </h5>
+                <p className="text-[9px] text-slate-400 mt-0.5">
+                  Sistem akan mengelompokkan semua kontainer yang dicentang di bawah ke dalam nomor pranota/invoice yang sama.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 pt-1 pl-2 items-end">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 mb-1">No. Pranota / Invoice</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: INV/2026/..."
+                    value={bulkPranotaNo}
+                    onChange={(e) => setBulkPranotaNo(e.target.value)}
+                    className="w-full text-xs font-mono border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50 focus:bg-white focus:outline-none h-9"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 mb-1">Tgl. Pranota / Invoice</label>
+                  <FormDateInput
+                    value={bulkPranotaDate}
+                    onChange={(val) => setBulkPranotaDate(val)}
+                    className="w-full text-xs font-mono border border-slate-200 rounded-lg px-2.5 py-1.5 bg-slate-50 focus:bg-white focus:outline-none h-9"
+                  />
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:col-span-1">
+                  <div className="flex-1">
+                    <label className="block text-[10px] font-bold text-slate-500 mb-1">Ubah Status Ke:</label>
+                    <select
+                      value={bulkPranotaStatus}
+                      onChange={(e) => setBulkPranotaStatus(e.target.value as any)}
+                      className="text-[10px] font-bold border border-slate-200 rounded-lg px-2 py-1 bg-slate-50 h-9 w-full"
+                    >
+                      <option value="Pranota">Pranota (Draft Invoice)</option>
+                      <option value="Belum Bayar">Belum Bayar (Billed)</option>
+                      <option value="">Jangan Ubah Status</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  disabled={selectedRowIds.length === 0 || !bulkPranotaNo}
+                  onClick={() => {
+                    const updates: Record<string, any> = {
+                      nomor_invoice_grup: bulkPranotaNo,
+                      tanggal_tagihan: bulkPranotaDate || null
+                    };
+                    handleBulkUpdate(selectedRowIds, updates, bulkPranotaStatus || undefined);
+                    setBulkPranotaNo('');
+                    setBulkPranotaDate('');
+                  }}
+                  className={`text-[10px] font-extrabold px-4 py-2 rounded-lg transition-all flex items-center gap-1 cursor-pointer h-9 ${
+                    selectedRowIds.length === 0 || !bulkPranotaNo
+                      ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                      : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs'
+                  }`}
+                >
+                  <span>✓ Kelompokkan {selectedRowIds.length} Kontainer</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* SPREADSHEET LEDGER GRID */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
             
@@ -1016,8 +2584,24 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
               <table className="w-full text-left border-collapse text-[10px] min-w-[1550px]" id="invoice-spreadsheet-table">
                 <thead>
                   <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold font-mono">
-                    <th className="p-2 py-3 text-center border-r border-slate-200 w-[50px] min-w-[50px] max-w-[50px] sticky top-0 left-0 z-40 bg-slate-100 shadow-[1px_1px_0_rgba(226,232,240,1)]">NO</th>
-                    <th className="p-2 py-3 border-r-2 border-slate-300 w-28 text-center sticky top-0 left-[50px] z-40 bg-slate-100 shadow-[2px_1px_4px_rgba(0,0,0,0.08)]">
+                    <th className="p-2 py-3 text-center border-r border-slate-200 w-[40px] min-w-[40px] max-w-[40px] sticky top-0 left-0 z-40 bg-slate-100 shadow-[1px_1px_0_rgba(226,232,240,1)]">
+                      <input
+                        type="checkbox"
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer"
+                        checked={paginatedPeriods.length > 0 && paginatedPeriods.every(p => selectedRowIds.includes(p.id_tagihan))}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            const pageIds = paginatedPeriods.map(p => p.id_tagihan);
+                            setSelectedRowIds(prev => Array.from(new Set([...prev, ...pageIds])));
+                          } else {
+                            const pageIds = paginatedPeriods.map(p => p.id_tagihan);
+                            setSelectedRowIds(prev => prev.filter(id => !pageIds.includes(id)));
+                          }
+                        }}
+                      />
+                    </th>
+                    <th className="p-2 py-3 text-center border-r border-slate-200 w-[50px] min-w-[50px] max-w-[50px] sticky top-0 left-[40px] z-40 bg-slate-100 shadow-[1px_1px_0_rgba(226,232,240,1)]">NO</th>
+                    <th className="p-2 py-3 border-r-2 border-slate-300 w-28 text-center sticky top-0 left-[90px] z-40 bg-slate-100 shadow-[2px_1px_4px_rgba(0,0,0,0.08)]">
                       {isSewaIn ? 'VENDOR / UNIT' : 'KONTAINER / PENYEWA'}
                     </th>
                     <th className="p-2 py-3 border-r border-slate-200 w-16 text-center sticky top-0 z-20 bg-slate-100 shadow-[0_1px_0_rgba(226,232,240,1)]">UKURAN</th>
@@ -1060,13 +2644,27 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
                       ? p.pph
                       : Math.round(tagihan * 0.02);
                     const netTotal = tagihan + ppn - pph;
-
                     return (
                       <tr key={p.id_tagihan} className="hover:bg-slate-50 select-text align-middle group">
+                        {/* CHECKBOX CELL */}
+                        <td className="p-2 text-center border-r border-slate-200 sticky left-0 z-30 bg-white group-hover:bg-slate-100 shadow-[1px_0_0_rgba(226,232,240,1)] w-[40px] min-w-[40px] max-w-[40px]">
+                          <input
+                            type="checkbox"
+                            className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer"
+                            checked={selectedRowIds.includes(p.id_tagihan)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedRowIds(prev => [...prev, p.id_tagihan]);
+                              } else {
+                                setSelectedRowIds(prev => prev.filter(id => id !== p.id_tagihan));
+                              }
+                            }}
+                          />
+                        </td>
                         {/* 1. NO */}
-                        <td className="p-2 text-center font-mono text-slate-400 border-r border-slate-200 sticky left-0 z-30 bg-white group-hover:bg-slate-100 shadow-[1px_0_0_rgba(226,232,240,1)] w-[50px] min-w-[50px] max-w-[50px]">{indexRow + 1}</td>
+                        <td className="p-2 text-center font-mono text-slate-400 border-r border-slate-200 sticky left-[40px] z-30 bg-white group-hover:bg-slate-100 shadow-[1px_0_0_rgba(226,232,240,1)] w-[50px] min-w-[50px] max-w-[50px]">{indexRow + 1}</td>
                         {/* 2. KONTAINER */}
-                        <td className="p-2 font-mono font-bold text-slate-900 text-center border-r-2 border-slate-300 sticky left-[50px] z-30 bg-white group-hover:bg-slate-100 shadow-[2px_0_4px_rgba(0,0,0,0.08)]">
+                        <td className="p-2 font-mono font-bold text-slate-900 text-center border-r-2 border-slate-300 sticky left-[90px] z-30 bg-white group-hover:bg-slate-100 shadow-[2px_0_4px_rgba(0,0,0,0.08)]">
                           {getSewaContainerNo(p.id_sewa)}
                           <p className="text-[8px] font-sans text-slate-400 font-normal truncate max-w-[100px] mx-auto">
                             {getCustomerName(state.sewas.find(s => s.id_sewa === p.id_sewa)?.id_customer || '')}
@@ -1106,13 +2704,11 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
                         
                         {/* 11. TAGIHAN (EDITABLE) IMMERSED IN YELLOW */}
                         <td className="p-1 px-2 border-r border-slate-150 bg-amber-50">
-                          <input
-                            type="text"
-                            value={p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : ''}
+                          <FastNumberInput
+                            value={p.jumlah_tagihan_override}
                             placeholder={String(estimasi)}
-                            onChange={(e) => {
-                              const v = e.target.value.replace(/[^0-9.-]/g, '');
-                              handleUpdateFieldValue(p.id_tagihan, 'jumlah_tagihan_override', v ? parseFloat(v) : null);
+                            onChange={(val) => {
+                              handleUpdateFieldValue(p.id_tagihan, 'jumlah_tagihan_override', val);
                             }}
                             className="w-full text-right font-mono font-bold bg-amber-50 text-slate-800 border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm text-[11px]"
                           />
@@ -1133,24 +2729,21 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
 
                         {/* 13. KETERANGAN SELISIH (EDITABLE) */}
                         <td className="p-1 px-2 border-r border-slate-150 bg-amber-50">
-                          <input
-                            type="text"
-                            value={p.keterangan_selisih || ''}
-                            onChange={(e) => handleUpdateFieldValue(p.id_tagihan, 'keterangan_selisih', e.target.value)}
+                          <FastTextInput
+                            value={p.keterangan_selisih}
                             placeholder="Klaim, Denda, Diskon, dll..."
-                            className="w-full text-left font-sans text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm"
+                            onChange={(val) => handleUpdateFieldValue(p.id_tagihan, 'keterangan_selisih', val)}
+                            className="w-full text-left font-sans text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm text-slate-800 font-medium"
                           />
                         </td>
 
                         {/* 14. PPN (EDITABLE BUT DEFAULT 11%) */}
                         <td className="p-1 px-2 border-r border-slate-150 bg-amber-50/30">
-                          <input
-                            type="text"
-                            value={p.ppn !== null && p.ppn !== undefined ? p.ppn : ''}
+                          <FastNumberInput
+                            value={p.ppn}
                             placeholder={String(Math.round(tagihan * 0.11))}
-                            onChange={(e) => {
-                              const v = e.target.value.replace(/[^0-9.-]/g, '');
-                              handleUpdateFieldValue(p.id_tagihan, 'ppn', v ? parseFloat(v) : null);
+                            onChange={(val) => {
+                              handleUpdateFieldValue(p.id_tagihan, 'ppn', val);
                             }}
                             className="w-full text-right font-mono text-slate-800 border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm"
                           />
@@ -1158,13 +2751,11 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
 
                         {/* 15. PPh (EDITABLE BUT DEFAULT 2%) */}
                         <td className="p-1 px-2 border-r border-slate-150 bg-amber-50/30">
-                          <input
-                            type="text"
-                            value={p.pph !== null && p.pph !== undefined ? p.pph : ''}
+                          <FastNumberInput
+                            value={p.pph}
                             placeholder={String(Math.round(tagihan * 0.02))}
-                            onChange={(e) => {
-                              const v = e.target.value.replace(/[^0-9.-]/g, '');
-                              handleUpdateFieldValue(p.id_tagihan, 'pph', v ? parseFloat(v) : null);
+                            onChange={(val) => {
+                              handleUpdateFieldValue(p.id_tagihan, 'pph', val);
                             }}
                             className="w-full text-right font-mono text-slate-800 border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm"
                           />
@@ -1177,12 +2768,11 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
 
                         {/* 17. NO. TAGIHAN / INVOICE REF */}
                         <td className="p-1 px-2 border-r border-slate-150 bg-amber-50/30">
-                          <input
-                            type="text"
-                            value={p.nomor_invoice_grup || ''}
-                            onChange={(e) => handleUpdateFieldValue(p.id_tagihan, 'nomor_invoice_grup', e.target.value)}
+                          <FastTextInput
+                            value={p.nomor_invoice_grup}
+                            onChange={(val) => handleUpdateFieldValue(p.id_tagihan, 'nomor_invoice_grup', val)}
                             placeholder="ZONA25052..."
-                            className="w-full text-center font-mono text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm"
+                            className="w-full text-center font-mono text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm text-slate-800 font-medium"
                           />
                         </td>
 
@@ -1191,19 +2781,18 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
                           <EditableDateCell
                             value={p.tanggal_tagihan}
                             onChange={(val) => handleUpdateFieldValue(p.id_tagihan, 'tanggal_tagihan', val)}
-                            placeholder="dd/mm/yyyy"
+                            placeholder="dd Mmm yy"
                             className="w-full text-center font-mono text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm"
                           />
                         </td>
 
                         {/* 19. NO. BUKTI BAYAR */}
                         <td className="p-1 px-2 border-r border-slate-150 bg-amber-50/30">
-                          <input
-                            type="text"
-                            value={p.nomor_bayar || ''}
-                            onChange={(e) => handleUpdateFieldValue(p.id_tagihan, 'nomor_bayar', e.target.value)}
+                          <FastTextInput
+                            value={p.nomor_bayar}
+                            onChange={(val) => handleUpdateFieldValue(p.id_tagihan, 'nomor_bayar', val)}
                             placeholder="EBK2506002..."
-                            className="w-full text-center font-mono text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm"
+                            className="w-full text-center font-mono text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm text-slate-800 font-medium"
                           />
                         </td>
 
@@ -1212,7 +2801,7 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
                           <EditableDateCell
                             value={p.tanggal_bayar}
                             onChange={(val) => handleUpdateFieldValue(p.id_tagihan, 'tanggal_bayar', val)}
-                            placeholder="dd/mm/yyyy"
+                            placeholder="dd Mmm yy"
                             className="w-full text-center font-mono text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm"
                           />
                         </td>
@@ -1229,10 +2818,10 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
                               'bg-slate-50 text-slate-700 border-slate-250'
                             }`}
                           >
-                            <option value="Belum Ditagih">Belum Ditagih</option>
-                            <option value="Pranota">Pranota (Draft)</option>
-                            <option value="Belum Bayar">Belum Bayar</option>
-                            <option value="Lunas">Lunas</option>
+                            <option value="Belum Ditagih">1. Draft Tagihan</option>
+                            <option value="Belum Bayar">2. Belum Bayar</option>
+                            <option value="Pranota">3. Draft Pembayaran (Pranota)</option>
+                            <option value="Lunas">4. Lunas / Bayar</option>
                           </select>
                         </td>
                       </tr>
@@ -1359,716 +2948,1007 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
           </div>
         </div>
       )}
+        
+        {/* VIEW TAB 2: PEMBAYARAN & TAX SETTLEMENT VERIFICATION VIEW (DETAIL TAGIHAN - 5.png) */}
+        {activeViewTab === 'group' && (() => {
+          // Filter the active tagihans inside the selected vendor proforma/pranota group
+          const selectedGroupPeriods = allPeriods.filter(p => {
+            const sObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+            return (
+              p.nomor_pranota === selectedVendorPranotaNo &&
+              selectedVendorPranotaNo.trim() !== '' &&
+              (!selectedVendorCustomer || sObj?.id_customer === selectedVendorCustomer)
+            );
+          });
 
-      {/* VIEW TAB 2: PEMBAYARAN & TAX SETTLEMENT VERIFICATION VIEW (PANGGIL NO. NOTA / 5.png) */}
-      {activeViewTab === 'group' && (
-        <div className="space-y-6" id="grouped-collection-dashboard">
-          
-          {/* Action Top Bar */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h3 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse" />
-                PANGGIL NO. NOTA TAGIHAN (5.png)
-              </h3>
-              <p className="text-[11px] text-slate-500">
-                Pilih atau ketik Nomor Nota untuk memeriksa rincian kontainer dan memverifikasi status rincian tersebut.
-              </p>
-            </div>
+          // Group the selectedGroupPeriods by nomor_invoice_grup (No. Tagihan) for display on the left side
+          interface GroupedSelectedInvoice {
+            nomor_invoice_grup: string;
+            tanggal_tagihan: string | null;
+            total_estimasi: number;
+            total_aktual: number;
+            selisih: number;
+            keterangan_selisih: string;
+            id_tagihan_list: string[];
+          }
 
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <div className="w-full sm:w-64">
-                <SearchableSelect
-                  id="select-nota-registered"
-                  placeholder="-- Cari/Pilih Nota Terdaftar --"
-                  searchPlaceholder="Ketik No Nota..."
-                  value={selectedNota}
-                  onChange={(val) => setSelectedNota(val)}
-                  inputClassName="bg-slate-50 py-1.5 text-xs font-bold text-slate-800 h-9"
-                  options={[
-                    { value: "", label: "-- Pilih dari list --" },
-                    ...distinctInvoiceNumbers.map(no => ({
-                      value: no,
-                      label: no
-                    }))
-                  ]}
-                />
-              </div>
+          const leftGroupsMap = new Map<string, GroupedSelectedInvoice>();
+          selectedGroupPeriods.forEach(p => {
+            const groupNo = p.nomor_invoice_grup || '-';
+            const baseAmt = p.jumlah_tagihan;
+            const actAmt = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : baseAmt;
+            const selisih = actAmt - baseAmt;
+            const ket = p.keterangan_selisih || '';
 
-              <div className="w-full sm:w-60">
-                <input
-                  id="input-nota-manual"
-                  type="text"
-                  value={selectedNota}
-                  placeholder="Masukkan nomor nota manual..."
-                  onChange={(e) => setSelectedNota(e.target.value)}
-                  className="w-full text-xs font-mono font-bold border border-slate-200 rounded-xl px-3 py-2 bg-slate-50/50 text-slate-800 placeholder-slate-400 h-9"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Ledger Table specifically for the selectedNota */}
-          {selectedNota ? (
-            (() => {
-              // Match items keeping literal/natural import order, or apply interactive sorting if selected!
-              let matchedPeriods = allPeriods.filter(p => p.nomor_invoice_grup === selectedNota);
-
-              if (ledgerSortField) {
-                matchedPeriods = [...matchedPeriods].sort((a, b) => {
-                  let valA: any = '';
-                  let valB: any = '';
-                  
-                  switch (ledgerSortField) {
-                    case 'id_tagihan':
-                      valA = a.id_tagihan;
-                      valB = b.id_tagihan;
-                      break;
-                    case 'no_kontainer':
-                      valA = getSewaContainerNo(a.id_sewa);
-                      valB = getSewaContainerNo(b.id_sewa);
-                      break;
-                    case 'ukuran':
-                      valA = getSewaContainerSizeDesc(a.id_sewa);
-                      valB = getSewaContainerSizeDesc(b.id_sewa);
-                      break;
-                    case 'periode':
-                      valA = a.bulan_ke;
-                      valB = b.bulan_ke;
-                      break;
-                    case 'tanggal_awal':
-                      valA = a.tanggal_awal;
-                      valB = b.tanggal_awal;
-                      break;
-                    case 'tanggal_akhir':
-                      valA = a.tanggal_akhir;
-                      valB = b.tanggal_akhir;
-                      break;
-                    case 'jumlah_hari':
-                      valA = a.jumlah_hari;
-                      valB = b.jumlah_hari;
-                      break;
-                    case 'tipe_tarif':
-                      valA = a.tipe_tarif;
-                      valB = b.tipe_tarif;
-                      break;
-                    case 'estimasi':
-                      valA = a.jumlah_tagihan;
-                      valB = b.jumlah_tagihan;
-                      break;
-                    case 'tagihan':
-                      valA = a.jumlah_tagihan_override !== null && a.jumlah_tagihan_override !== undefined ? a.jumlah_tagihan_override : a.jumlah_tagihan;
-                      valB = b.jumlah_tagihan_override !== null && b.jumlah_tagihan_override !== undefined ? b.jumlah_tagihan_override : b.jumlah_tagihan;
-                      break;
-                    case 'selisih':
-                      valA = a.selisih_pembayaran !== null && a.selisih_pembayaran !== undefined ? a.selisih_pembayaran : 0;
-                      valB = b.selisih_pembayaran !== null && b.selisih_pembayaran !== undefined ? b.selisih_pembayaran : 0;
-                      break;
-                    case 'ppn':
-                      valA = a.ppn !== null && a.ppn !== undefined ? a.ppn : Math.round((a.jumlah_tagihan_override !== null && a.jumlah_tagihan_override !== undefined ? a.jumlah_tagihan_override : a.jumlah_tagihan) * 0.11);
-                      valB = b.ppn !== null && b.ppn !== undefined ? b.ppn : Math.round((b.jumlah_tagihan_override !== null && b.jumlah_tagihan_override !== undefined ? b.jumlah_tagihan_override : b.jumlah_tagihan) * 0.11);
-                      break;
-                    case 'pph':
-                      valA = a.pph !== null && a.pph !== undefined ? a.pph : Math.round((a.jumlah_tagihan_override !== null && a.jumlah_tagihan_override !== undefined ? a.jumlah_tagihan_override : a.jumlah_tagihan) * 0.02);
-                      valB = b.pph !== null && b.pph !== undefined ? b.pph : Math.round((b.jumlah_tagihan_override !== null && b.jumlah_tagihan_override !== undefined ? b.jumlah_tagihan_override : b.jumlah_tagihan) * 0.02);
-                      break;
-                    case 'netTotal': {
-                      const tagA = a.jumlah_tagihan_override !== null && a.jumlah_tagihan_override !== undefined ? a.jumlah_tagihan_override : a.jumlah_tagihan;
-                      const ppmA = a.ppn !== null && a.ppn !== undefined ? a.ppn : Math.round(tagA * 0.11);
-                      const pphA = a.pph !== null && a.pph !== undefined ? a.pph : Math.round(tagA * 0.02);
-                      valA = tagA + ppmA - pphA;
-
-                      const tagB = b.jumlah_tagihan_override !== null && b.jumlah_tagihan_override !== undefined ? b.jumlah_tagihan_override : b.jumlah_tagihan;
-                      const ppnB = b.ppn !== null && b.ppn !== undefined ? b.ppn : Math.round(tagB * 0.11);
-                      const pphB = b.pph !== null && b.pph !== undefined ? b.pph : Math.round(tagB * 0.02);
-                      valB = tagB + ppnB - pphB;
-                      break;
-                    }
-                    case 'nomor_invoice_grup':
-                      valA = a.nomor_invoice_grup || '';
-                      valB = b.nomor_invoice_grup || '';
-                      break;
-                    case 'tanggal_tagihan':
-                      valA = a.tanggal_tagihan || '';
-                      valB = b.tanggal_tagihan || '';
-                      break;
-                    case 'nomor_bayar':
-                      valA = a.nomor_bayar || '';
-                      valB = b.nomor_bayar || '';
-                      break;
-                    case 'tanggal_bayar':
-                      valA = a.tanggal_bayar || '';
-                      valB = b.tanggal_bayar || '';
-                      break;
-                    case 'status_bayar':
-                      valA = a.status_bayar || '';
-                      valB = b.status_bayar || '';
-                      break;
-                    default:
-                      break;
-                  }
-                  
-                  if (typeof valA === 'string' && typeof valB === 'string') {
-                    return ledgerSortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                  }
-                  return ledgerSortAsc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
-                });
+            if (!leftGroupsMap.has(groupNo)) {
+              leftGroupsMap.set(groupNo, {
+                nomor_invoice_grup: groupNo,
+                tanggal_tagihan: p.tanggal_tagihan || null,
+                total_estimasi: baseAmt,
+                total_aktual: actAmt,
+                selisih: selisih,
+                keterangan_selisih: ket,
+                id_tagihan_list: [p.id_tagihan]
+              });
+            } else {
+              const existing = leftGroupsMap.get(groupNo)!;
+              existing.total_estimasi += baseAmt;
+              existing.total_aktual += actAmt;
+              existing.selisih += selisih;
+              if (ket && !existing.keterangan_selisih.includes(ket)) {
+                existing.keterangan_selisih = existing.keterangan_selisih ? existing.keterangan_selisih + '; ' + ket : ket;
               }
+              if (!existing.id_tagihan_list.includes(p.id_tagihan)) {
+                existing.id_tagihan_list.push(p.id_tagihan);
+              }
+            }
+          });
 
-              return (
-                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden space-y-4">
-                  <div className="p-4 px-5 bg-gradient-to-r from-slate-50 to-indigo-50/20 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          const leftGroupedInvoices = Array.from(leftGroupsMap.values());
+
+          // Filter loose Tagihans and group them by No. Tagihan (nomor_invoice_grup)
+          interface GroupedLooseTagihan {
+            nomor_invoice_grup: string;
+            tanggal_tagihan: string | null;
+            total_estimasi: number;
+            id_tagihan_list: string[];
+            container_list: string[];
+          }
+
+          const rawLoosePeriods = allPeriods.filter(p => {
+            const sObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+            const isMatchCustomer = !selectedVendorCustomer || sObj?.id_customer === selectedVendorCustomer;
+            const isOutstanding = p.status_bayar === 'Belum Bayar';
+            const hasNoPranota = !p.nomor_pranota || p.nomor_pranota.trim() === '';
+            
+            return isMatchCustomer && isOutstanding && hasNoPranota;
+          });
+
+          const looseGroupsMap = new Map<string, GroupedLooseTagihan>();
+          rawLoosePeriods.forEach(p => {
+            const groupNo = p.nomor_invoice_grup || '-';
+            const sObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+            const containerNo = sObj?.no_kontainer || '';
+
+            // Calculate grand total nett after PPN and PPh
+            const baseAmt = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+            const ppnAmt = p.ppn !== null && p.ppn !== undefined ? p.ppn : Math.round(baseAmt * 0.11);
+            const pphAmt = p.pph !== null && p.pph !== undefined ? p.pph : Math.round(baseAmt * 0.02);
+            const netTotal = baseAmt + ppnAmt - pphAmt;
+
+            if (!looseGroupsMap.has(groupNo)) {
+              looseGroupsMap.set(groupNo, {
+                nomor_invoice_grup: groupNo,
+                tanggal_tagihan: p.tanggal_tagihan || null,
+                total_estimasi: netTotal,
+                id_tagihan_list: [p.id_tagihan],
+                container_list: containerNo ? [containerNo] : []
+              });
+            } else {
+              const existing = looseGroupsMap.get(groupNo)!;
+              existing.total_estimasi += netTotal;
+              if (!existing.id_tagihan_list.includes(p.id_tagihan)) {
+                existing.id_tagihan_list.push(p.id_tagihan);
+              }
+              if (containerNo && !existing.container_list.includes(containerNo)) {
+                existing.container_list.push(containerNo);
+              }
+            }
+          });
+
+          let looseTagihanGroups = Array.from(looseGroupsMap.values());
+          if (searchTagihanNo.trim()) {
+            const q = searchTagihanNo.toLowerCase();
+            looseTagihanGroups = looseTagihanGroups.filter(g =>
+              g.nomor_invoice_grup.toLowerCase().includes(q) ||
+              g.container_list.some(c => c.toLowerCase().includes(q))
+            );
+          }
+
+          // Compile outstanding proforma/pranotas draft groups for quick selection
+          const outstandingDraftPranotas = (() => {
+            const groupsMap = new Map<string, {
+              nomor_pranota: string;
+              id_customer: string;
+              customerName: string;
+              status_bayar: string;
+              count: number;
+              totalEstimasi: number;
+              totalAktual: number;
+              tanggal_pranota: string | null;
+            }>();
+
+            allPeriods.forEach(p => {
+              const pranotaNo = p.nomor_pranota;
+              if (!pranotaNo || pranotaNo.trim() === '') return;
+
+              const sObj = state.sewas.find(s => s.id_sewa === p.id_sewa);
+              const custId = sObj?.id_customer || '';
+              const custName = custId ? getCustomerName(custId) : 'Umum/Campuran';
+
+              const amt = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+
+              if (!groupsMap.has(pranotaNo)) {
+                groupsMap.set(pranotaNo, {
+                  nomor_pranota: pranotaNo,
+                  id_customer: custId,
+                  customerName: custName,
+                  status_bayar: p.status_bayar,
+                  count: 1,
+                  totalEstimasi: p.jumlah_tagihan,
+                  totalAktual: amt,
+                  tanggal_pranota: p.tanggal_pranota || null
+                });
+              } else {
+                const existing = groupsMap.get(pranotaNo)!;
+                existing.count += 1;
+                existing.totalEstimasi += p.jumlah_tagihan;
+                existing.totalAktual += amt;
+              }
+            });
+
+            return Array.from(groupsMap.values())
+              .filter(g => g.status_bayar === 'Belum Bayar')
+              .sort((a, b) => b.nomor_pranota.localeCompare(a.nomor_pranota))
+              .slice(0, 20);
+          })();
+
+          // Local state handlers
+          const handleAttachPranota = (idTagihan: string | string[]) => {
+            if (!selectedVendorPranotaNo) {
+              triggerNoti('error', 'Masukkan atau pilih No. Pranota terlebih dahulu.');
+              return;
+            }
+            const idList = Array.isArray(idTagihan) ? idTagihan : [idTagihan];
+            const updatedOverrides = { ...state.paymentOverrides };
+            
+            idList.forEach(id => {
+              const existing = updatedOverrides[id] || {
+                status_bayar: 'Belum Bayar',
+                tanggal_tagihan: null,
+                tanggal_bayar: null,
+                nomor_invoice_grup: null,
+                jumlah_tagihan_override: null,
+                jumlah_bayar: null,
+                selisih_pembayaran: null,
+                keterangan_selisih: null,
+                ppn: null,
+                pph: null,
+                nomor_bayar: null
+              };
+              updatedOverrides[id] = {
+                ...existing,
+                nomor_pranota: selectedVendorPranotaNo,
+                tanggal_pranota: selectedVendorPranotaDate || utcTime.split('T')[0]
+              };
+            });
+
+            onStateChange({
+              ...state,
+              paymentOverrides: updatedOverrides
+            });
+          };
+
+          const handleDetachPranota = (idTagihan: string | string[]) => {
+            const idList = Array.isArray(idTagihan) ? idTagihan : [idTagihan];
+            const updatedOverrides = { ...state.paymentOverrides };
+            idList.forEach(id => {
+              const existing = updatedOverrides[id] || {
+                status_bayar: 'Belum Bayar',
+                tanggal_tagihan: null,
+                tanggal_bayar: null,
+                nomor_invoice_grup: null,
+                jumlah_tagihan_override: null,
+                jumlah_bayar: null,
+                selisih_pembayaran: null,
+                keterangan_selisih: null,
+                ppn: null,
+                pph: null,
+                nomor_bayar: null
+              };
+              updatedOverrides[id] = {
+                ...existing,
+                nomor_pranota: null,
+                tanggal_pranota: null
+              };
+            });
+            onStateChange({
+              ...state,
+              paymentOverrides: updatedOverrides
+            });
+          };
+
+          const handleUpdateGroupFieldValue = (
+            idTagihanList: string[],
+            field: string,
+            value: any
+          ) => {
+            const updatedOverrides = { ...state.paymentOverrides };
+            
+            if (field === 'jumlah_tagihan_override') {
+              if (idTagihanList.length === 1) {
+                const id = idTagihanList[0];
+                const periodObj = allPeriods.find(x => x.id_tagihan === id);
+                const sewaObj = state.sewas.find(s => s.id_sewa === periodObj?.id_sewa);
+                const isNonPpn = sewaObj?.non_ppn === true;
+
+                const existing = updatedOverrides[id] || {
+                  status_bayar: 'Belum Bayar',
+                  tanggal_tagihan: null,
+                  tanggal_bayar: null,
+                  nomor_invoice_grup: null,
+                  jumlah_tagihan_override: null,
+                  jumlah_bayar: null,
+                  selisih_pembayaran: null,
+                  keterangan_selisih: null,
+                  ppn: null,
+                  pph: null,
+                  nomor_bayar: null
+                };
+                const numVal = value === '' || value === null ? null : Number(value);
+                updatedOverrides[id] = {
+                  ...existing,
+                  jumlah_tagihan_override: numVal,
+                  ppn: numVal !== null ? (isNonPpn ? 0 : Math.round(numVal * 0.11)) : null,
+                  pph: numVal !== null ? Math.round(numVal * 0.02) : null
+                };
+              } else {
+                const totalEstimasi = idTagihanList.reduce((sum, id) => {
+                  const p = allPeriods.find(x => x.id_tagihan === id);
+                  return sum + (p?.jumlah_tagihan || 0);
+                }, 0);
+
+                const numVal = value === '' || value === null ? null : Number(value);
+                if (numVal === null) {
+                  idTagihanList.forEach(id => {
+                    const existing = updatedOverrides[id] || {
+                      status_bayar: 'Belum Bayar',
+                      tanggal_tagihan: null,
+                      tanggal_bayar: null,
+                      nomor_invoice_grup: null,
+                      jumlah_tagihan_override: null,
+                      jumlah_bayar: null,
+                      selisih_pembayaran: null,
+                      keterangan_selisih: null,
+                      ppn: null,
+                      pph: null,
+                      nomor_bayar: null
+                    };
+                    updatedOverrides[id] = {
+                      ...existing,
+                      jumlah_tagihan_override: null,
+                      ppn: null,
+                      pph: null
+                    };
+                  });
+                } else {
+                  let distributedSum = 0;
+                  idTagihanList.forEach((id, idx) => {
+                    const p = allPeriods.find(x => x.id_tagihan === id);
+                    const est = p?.jumlah_tagihan || 0;
+                    let portion = 0;
+                    if (idx === idTagihanList.length - 1) {
+                      portion = numVal - distributedSum;
+                    } else {
+                      portion = Math.round((est / (totalEstimasi || 1)) * numVal);
+                      distributedSum += portion;
+                    }
+
+                    const sewaObj = state.sewas.find(s => s.id_sewa === p?.id_sewa);
+                    const isNonPpn = sewaObj?.non_ppn === true;
+
+                    const existing = updatedOverrides[id] || {
+                      status_bayar: 'Belum Bayar',
+                      tanggal_tagihan: null,
+                      tanggal_bayar: null,
+                      nomor_invoice_grup: null,
+                      jumlah_tagihan_override: null,
+                      jumlah_bayar: null,
+                      selisih_pembayaran: null,
+                      keterangan_selisih: null,
+                      ppn: null,
+                      pph: null,
+                      nomor_bayar: null
+                    };
+                    updatedOverrides[id] = {
+                      ...existing,
+                      jumlah_tagihan_override: portion,
+                      ppn: isNonPpn ? 0 : Math.round(portion * 0.11),
+                      pph: Math.round(portion * 0.02)
+                    };
+                  });
+                }
+              }
+            } else {
+              idTagihanList.forEach(id => {
+                const existing = updatedOverrides[id] || {
+                  status_bayar: 'Belum Bayar',
+                  tanggal_tagihan: null,
+                  tanggal_bayar: null,
+                  nomor_invoice_grup: null,
+                  jumlah_tagihan_override: null,
+                  jumlah_bayar: null,
+                  selisih_pembayaran: null,
+                  keterangan_selisih: null,
+                  ppn: null,
+                  pph: null,
+                  nomor_bayar: null
+                };
+                updatedOverrides[id] = {
+                  ...existing,
+                  [field]: value
+                };
+              });
+            }
+
+            onStateChange({
+              ...state,
+              paymentOverrides: updatedOverrides
+            });
+          };
+
+          // Calculate totals for selected group
+          const totalEstimasiGroup = selectedGroupPeriods.reduce((sum, p) => sum + p.jumlah_tagihan, 0);
+          const totalAktualGroup = selectedGroupPeriods.reduce((sum, p) => {
+            const amt = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+            return sum + amt;
+          }, 0);
+          const totalPPNGroup = selectedGroupPeriods.reduce((sum, p) => {
+            const amt = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+            const ppn = p.ppn !== null && p.ppn !== undefined ? p.ppn : Math.round(amt * 0.11);
+            return sum + ppn;
+          }, 0);
+          const totalPPhGroup = selectedGroupPeriods.reduce((sum, p) => {
+            const amt = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
+            const pph = p.pph !== null && p.pph !== undefined ? p.pph : Math.round(amt * 0.02);
+            return sum + pph;
+          }, 0);
+          const grandNetTotalGroup = totalAktualGroup + totalPPNGroup - totalPPhGroup;
+
+        return (
+          <div className="space-y-6" id="pranota-group-workspace">
+            {/* SUB-TABS SELECTOR FOR MANUAL PRANOTA ENTRY MODE */}
+            <div className="bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/60 flex flex-wrap gap-1">
+              <button
+                type="button"
+                onClick={() => setPranotaSubMode('search')}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 rounded-lg transition-all cursor-pointer ${
+                  pranotaSubMode === 'search'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                }`}
+              >
+                <Search className="w-4 h-4" />
+                Cari &amp; Kelola Draft Pranota (Outstanding)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setPranotaSubMode('create');
+                }}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 rounded-lg transition-all cursor-pointer ${
+                  pranotaSubMode === 'create'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                }`}
+              >
+                <PlusCircle className="w-4 h-4" />
+                Buat Draft Pranota Baru (Manual Entry)
+              </button>
+            </div>
+
+            {/* VENDOR & GROUP SELECTION CARD (DYNAMIC BASED ON SUB-MODE) */}
+            {pranotaSubMode === 'search' ? (
+              <div className="bg-white p-5 rounded-2xl border border-slate-150 shadow-sm space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-3.5">
+                  <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center shrink-0">
+                    <Search className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">CARI &amp; KELOLA DRAFT PRANOTA</h3>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Pilih Vendor, Tgl Pencarian (Optional) dan cari No. Pranota Vendor yang sudah ada/di-impor.</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Vendor</label>
+                    <select
+                      value={selectedVendorCustomer}
+                      onChange={(e) => {
+                        setSelectedVendorCustomer(e.target.value);
+                        setSelectedVendorPranotaNo(''); // reset group when customer changes
+                      }}
+                      className="w-full text-xs font-medium border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">-- Semua Vendor --</option>
+                      {state.customers.map(c => (
+                        <option key={c.id_customer} value={c.id_customer}>{c.nama_customer}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Pilih Range Tgl (Awal)</label>
+                    <input
+                      type="date"
+                      value={pranotaSearchStartDate}
+                      onChange={(e) => setPranotaSearchStartDate(e.target.value)}
+                      className="w-full text-xs font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Pilih Range Tgl (Akhir)</label>
+                    <input
+                      type="date"
+                      value={pranotaSearchEndDate}
+                      onChange={(e) => setPranotaSearchEndDate(e.target.value)}
+                      className="w-full text-xs font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Cari No. Pranota</label>
+                    <SearchableCombobox
+                      id="draft-pranota-vendor-combobox"
+                      value={selectedVendorPranotaNo}
+                      onChange={(val) => {
+                        setSelectedVendorPranotaNo(val);
+                        if (val) {
+                          const matchedPeriod = allPeriods.find(p => p.nomor_pranota === val);
+                          if (matchedPeriod) {
+                            const sObj = state.sewas.find(s => s.id_sewa === matchedPeriod.id_sewa);
+                            if (sObj?.id_customer) {
+                              setSelectedVendorCustomer(sObj.id_customer);
+                            }
+                            if (matchedPeriod.tanggal_pranota) {
+                              setSelectedVendorPranotaDate(matchedPeriod.tanggal_pranota);
+                            }
+                          }
+                        }
+                      }}
+                      options={existingDraftVendorPranotas}
+                      placeholder="Ketik atau pilih No. Pranota..."
+                      inputClassName="bg-slate-50 text-slate-800 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white p-5 rounded-2xl border border-slate-150 shadow-sm space-y-4">
+                <div className="flex items-center gap-3 border-b border-slate-100 pb-3.5">
+                  <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-150 flex items-center justify-center shrink-0">
+                    <Plus className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider">BUAT DRAFT PRANOTA VENDOR BARU (MANUAL)</h3>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Masukkan Nomor Pranota baru secara manual. Kolom ini bebas hambatan (tanpa loading / autocomplete) sehingga sangat cepat!</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Vendor <span className="text-rose-500">*</span></label>
+                    <select
+                      value={newPranotaVendorId}
+                      onChange={(e) => setNewPranotaVendorId(e.target.value)}
+                      className="w-full text-xs font-medium border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <option value="">-- Pilih Vendor --</option>
+                      {state.customers.map(c => (
+                        <option key={c.id_customer} value={c.id_customer}>{c.nama_customer}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">No. Pranota Baru <span className="text-rose-500">*</span></label>
+                    <input
+                      type="text"
+                      value={newPranotaNo}
+                      onChange={(e) => setNewPranotaNo(e.target.value)}
+                      placeholder="Contoh: PRANOTA-TM-2026-001"
+                      className="w-full text-xs font-mono font-semibold border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1">Tgl. Pranota</label>
+                    <FormDateInput
+                      value={newPranotaDate}
+                      onChange={(val) => setNewPranotaDate(val)}
+                      className="w-full text-xs font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!newPranotaVendorId) {
+                          triggerNoti('error', 'Silakan pilih Vendor terlebih dahulu.');
+                          return;
+                        }
+                        if (!newPranotaNo.trim()) {
+                          triggerNoti('error', 'Silakan isi No. Pranota baru.');
+                          return;
+                        }
+                        
+                        const pranotaClean = newPranotaNo.trim();
+                        
+                        // Validasi No. Pranota tidak boleh sama dengan No. Pembayaran
+                        const isSameAsPayment = allPeriods.some(p => p.nomor_bayar && p.nomor_bayar.toLowerCase().trim() === pranotaClean.toLowerCase());
+                        if (isSameAsPayment) {
+                          triggerNoti('error', `Nomor Pranota tidak boleh sama dengan Nomor Pembayaran yang sudah ada (${pranotaClean})!`);
+                          return;
+                        }
+
+                        const pranotaDateClean = newPranotaDate || utcTime.split('T')[0];
+
+                        // Set active workspace to this new pranota group
+                        setSelectedVendorCustomer(newPranotaVendorId);
+                        setSelectedVendorPranotaNo(pranotaClean);
+                        setSelectedVendorPranotaDate(pranotaDateClean);
+
+                        // Reset fields
+                        setNewPranotaNo('');
+                        
+                        // Switch back to search/manage view to immediately show workspace!
+                        // Keep on create/entry submode as requested by the user
+                        // setPranotaSubMode('search');
+                        triggerNoti('sukses', `Draft Pranota "${pranotaClean}" berhasil dibuat! Silakan pilih tagihan di sebelah kanan untuk ditambahkan ke pranota.`);
+                      }}
+                      className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer h-[38px]"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Buat &amp; Mulai Susun
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TWO PANELS WORKSPACE */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              {/* LEFT PANEL: TAGIHANS IN SELECTED PRANOTA */}
+              <div className="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0" />
                     <div>
-                      <h4 className="text-xs font-bold text-slate-800 flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
-                        <span>RINCIAN LEGER PEMBAYARAN NOTA: <strong className="font-mono text-indigo-700 text-sm">{selectedNota}</strong></span>
+                      <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                        Detail Tagihan dalam Pranota Ini
                       </h4>
-                      <p className="text-[10px] text-slate-500 mt-0.5">
-                        Daftar rincian sirkulasi sewa di bawah ditampilkan **sesuai urutan entry asli** (tanpa disortir) mempermudah crosscheck manual.
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Tagihan yang dikelompokkan ke dalam No. Pranota <span className="font-mono font-bold text-slate-700">{selectedVendorPranotaNo || '-'}</span>
                       </p>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-1 rounded-md">
+                      {selectedGroupPeriods.length} Tagihan
+                    </span>
+                    {selectedGroupPeriods.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm('Apakah Anda yakin ingin melepas semua tagihan dari pranota ini sekaligus?')) {
+                            const allIds = selectedGroupPeriods.map(p => p.id_tagihan);
+                            handleDetachPranota(allIds);
+                            triggerNoti('sukses', 'Semua tagihan berhasil dilepas dari pranota.');
+                          }
+                        }}
+                        className="text-[10px] font-bold text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 px-2 py-1 rounded-md transition-all cursor-pointer bg-white"
+                        title="Lepas semua tagihan dari pranota ini sekaligus"
+                      >
+                        ✕ Lepas Semua
+                      </button>
+                    )}
+                  </div>
+                </div>
 
-                    <div className="flex flex-wrap gap-2">
+                {!selectedVendorPranotaNo ? (
+                  <div className="space-y-6">
+                    <div className="py-8 px-4 text-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+                      <Sparkles className="w-6 h-6 text-indigo-500 mx-auto mb-2" />
+                      <p className="text-xs font-bold text-slate-700">Silakan masukkan atau pilih No. Pranota di atas untuk mulai menyusun.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Anda dapat memuat draf yang ada dari dashboard di bawah ini.</p>
+                    </div>
 
-                      {matchedPeriods.length > 0 && (
-                        <button
-                          onClick={() => {
-                            const virtualInvoiceGrup: InvoiceGrup = {
-                              nomor_invoice: selectedNota,
-                              id_customer: state.sewas.find(s => s.id_sewa === matchedPeriods[0].id_sewa)?.id_customer || '',
-                              tanggal_invoice: matchedPeriods[0].tanggal_tagihan || utcTime.split('T')[0],
-                              status_pembayaran: matchedPeriods.every(p => p.status_bayar === 'Lunas') ? 'Lunas' : 'Belum Bayar',
-                              deskripsi: 'Virtual Grouping for Nota ' + selectedNota,
-                              list_id_tagihan: matchedPeriods.map(p => p.id_tagihan)
-                            };
-                            setPrintInvoice(virtualInvoiceGrup);
-                          }}
-                          className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-[11px] py-1.5 px-3 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Printer className="w-3.5 h-3.5" /> Cetak Nota Ini (PDF)
-                        </button>
-                      )}
+                    <div className="border border-slate-150 rounded-2xl p-4 bg-white shadow-3xs space-y-3">
+                      <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
+                        <FileText className="w-4 h-4 text-indigo-600" />
+                        <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                          Daftar Draft Pranota Aktif / Outstanding Terbaru (Maks. 20)
+                        </h4>
+                      </div>
 
-                      {/* Quick delete / disassociate all items from this invoice number */}
-                      {matchedPeriods.length > 0 && (
-                        <button
-                          onClick={() => {
-                            if (confirm(`Apakah Anda yakin ingin melepas / menghapus No. Nota "${selectedNota}" dari semua (${matchedPeriods.length}) item tagihan ini?`)) {
-                              const updatedOverrides = { ...state.paymentOverrides };
-                              matchedPeriods.forEach(p => {
-                                if (updatedOverrides[p.id_tagihan]) {
-                                  updatedOverrides[p.id_tagihan].nomor_invoice_grup = null;
-                                  updatedOverrides[p.id_tagihan].status_bayar = 'Belum Ditagih';
-                                }
-                              });
-                              onStateChange({
-                                ...state,
-                                paymentOverrides: updatedOverrides
-                              });
-                              setSelectedNota('');
-                              triggerNoti('sukses', `Asosiasi Nota "${selectedNota}" berhasil dibersihkan.`);
-                            }
-                          }}
-                          className="inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-750 font-bold text-[11px] py-1.5 px-3 rounded-lg transition-colors cursor-pointer border border-red-200"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" /> Lepas Semua
-                        </button>
+                      {outstandingDraftPranotas.length === 0 ? (
+                        <div className="text-center py-6 text-xs text-slate-400 italic">
+                          Tidak ada draf pranota aktif saat ini. Silakan buat baru!
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto border border-slate-100 rounded-xl">
+                          <table className="w-full text-left border-collapse text-[10px] font-sans">
+                            <thead>
+                              <tr className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
+                                <th className="p-2 py-2.5 font-mono">No. Pranota / Proforma</th>
+                                <th className="p-2 py-2.5">Nama Vendor/Mitra</th>
+                                <th className="p-2 py-2.5 text-center">Jumlah Tagihan</th>
+                                <th className="p-2 py-2.5 text-right">Total Tagihan</th>
+                                <th className="p-2 py-2.5 text-center">Aksi</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              {outstandingDraftPranotas.map((g) => (
+                                <tr key={g.nomor_pranota} className="hover:bg-slate-50/60 transition-colors">
+                                  <td className="p-2 py-2.5 font-mono font-bold text-slate-800">{g.nomor_pranota}</td>
+                                  <td className="p-2 py-2.5 font-semibold text-slate-600">{g.customerName}</td>
+                                  <td className="p-2 py-2.5 text-center font-bold text-indigo-700 bg-indigo-50/20">{g.count} Tagihan</td>
+                                  <td className="p-2 py-2.5 text-right font-mono font-bold text-slate-800">{formatRupiah(g.totalAktual)}</td>
+                                  <td className="p-2 py-2.5 text-center">
+                                    <div className="flex items-center justify-center gap-2">
+                                      <button
+                                        onClick={() => {
+                                          setSelectedVendorPranotaNo(g.nomor_pranota);
+                                          setSelectedVendorPranotaDate(g.tanggal_pranota || '');
+                                          const matchingSewa = allPeriods.find(p => p.nomor_pranota === g.nomor_pranota);
+                                          if (matchingSewa) {
+                                            const sObj = state.sewas.find(s => s.id_sewa === matchingSewa.id_sewa);
+                                            if (sObj?.id_customer) {
+                                              setSelectedVendorCustomer(sObj.id_customer);
+                                            }
+                                          }
+                                        }}
+                                        className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[9px] font-extrabold cursor-pointer transition-colors shadow-3xs shrink-0"
+                                      >
+                                        Buka &amp; Kelola
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          const pranotaNoClean = g.nomor_pranota.trim();
+                                          const isSameAsPayment = allPeriods.some(p => p.nomor_bayar && p.nomor_bayar.toLowerCase().trim() === pranotaNoClean.toLowerCase());
+                                          if (isSameAsPayment) {
+                                            triggerNoti('error', `Nomor Pranota tidak boleh sama dengan Nomor Pembayaran yang sudah ada (${pranotaNoClean})!`);
+                                            return;
+                                          }
+
+                                          const periodIds = allPeriods
+                                            .filter(p => p.nomor_pranota === g.nomor_pranota)
+                                            .map(p => p.id_tagihan);
+                                          
+                                          if (periodIds.length === 0) {
+                                            triggerNoti('error', 'Grup Pranota ini kosong!');
+                                            return;
+                                          }
+
+                                          const updates = {
+                                            status_bayar: 'Pranota',
+                                            nomor_pranota: g.nomor_pranota,
+                                            tanggal_pranota: g.tanggal_pranota || utcTime.split('T')[0]
+                                          };
+                                          handleBulkUpdate(periodIds, updates, 'Pranota');
+                                          triggerNoti('sukses', `Sukses! Status Pranota "${g.nomor_pranota}" berhasil diperbarui menjadi "Pranota" (sejajar menu entry)!`);
+                                        }}
+                                        className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[9px] font-extrabold cursor-pointer transition-colors shadow-3xs shrink-0"
+                                      >
+                                        Set Status Pranota
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       )}
                     </div>
                   </div>
-
-                  {/* Quick Broad Bulk Inputs (Requested for No & Tgl Pembayaran gabungan) */}
-                  {selectedRowIds.length > 0 && (
-                    <div className="mx-5 bg-gradient-to-r from-indigo-50/70 to-slate-100 border border-indigo-200 p-3.5 rounded-xl shadow-xs space-y-3">
-                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-indigo-100 pb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse shrink-0"></span>
-                          <span className="text-[11px] font-extrabold text-indigo-900 tracking-tight">
-                            AKSI MASSAL REKAP TAGIHAN ({selectedRowIds.length} ITEM TERPILIH)
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => setSelectedRowIds([])}
-                          className="text-[10px] text-slate-500 hover:text-slate-800 font-medium underline flex items-center gap-1 cursor-pointer"
-                        >
-                          Batal Centang / Bersihkan Pilihan
-                        </button>
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row items-center gap-4">
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                          <span className="text-[10px] font-bold text-slate-500 whitespace-nowrap">Ubah Status Masa/Verifikasi:</span>
-                          <select
-                            onChange={(e) => {
-                              const newStatus = e.target.value;
-                              if (!newStatus) return;
-                              
-                              if (confirm(`Apakah Anda yakin ingin mengubah status (${selectedRowIds.length}) item terpilih ke "${newStatus === 'Belum Bayar' ? 'Sudah Ditagih/Belum Bayar' : newStatus === 'Lunas' ? 'Sudah Dibayar/Lunas' : newStatus}"?`)) {
-                                const updatedOverrides = { ...state.paymentOverrides };
-                                selectedRowIds.forEach(id => {
-                                  if (!updatedOverrides[id]) {
-                                    updatedOverrides[id] = {
-                                      status_bayar: 'Belum Ditagih',
-                                      tanggal_tagihan: null,
-                                      tanggal_bayar: null,
-                                      nomor_invoice_grup: null,
-                                      jumlah_tagihan_override: null,
-                                      jumlah_bayar: null,
-                                      selisih_pembayaran: null,
-                                      keterangan_selisih: null,
-                                      ppn: null,
-                                      pph: null,
-                                      nomor_bayar: null
-                                    };
-                                  }
-                                  updatedOverrides[id].status_bayar = newStatus as any;
-                                  if (newStatus === 'Lunas' && !updatedOverrides[id].tanggal_bayar) {
-                                    updatedOverrides[id].tanggal_bayar = utcTime.split('T')[0].split('-').reverse().join('/');
-                                  }
-                                  if (newStatus === 'Belum Bayar' && !updatedOverrides[id].tanggal_tagihan) {
-                                    updatedOverrides[id].tanggal_tagihan = utcTime.split('T')[0].split('-').reverse().join('/');
-                                  }
-                                });
-                                onStateChange({ ...state, paymentOverrides: updatedOverrides });
-                                triggerNoti('sukses', `Berhasil mengubah status ${selectedRowIds.length} item ke "${newStatus}".`);
-                              }
-                              e.target.value = "";
-                            }}
-                            className="text-[10px] font-bold bg-white text-indigo-900 border border-slate-200 rounded px-2.5 py-1.5 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                            defaultValue=""
-                          >
-                            <option value="" disabled>-- Pilih Status --</option>
-                            <option value="Belum Ditagih">Belum Ditagih (Sewa Berjalan)</option>
-                            <option value="Pranota">Pranota (Draft Tagihan)</option>
-                            <option value="Belum Bayar">Sudah Ditagih (Belum Bayar)</option>
-                          </select>
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            if (confirm(`Apakah Anda yakin ingin melepas (${selectedRowIds.length}) item tagihan terpilih dari No. Nota "${selectedNota}"?\n\nStatus item-item ini akan dikembalikan ke "Belum Ditagih".`)) {
-                              const updatedOverrides = { ...state.paymentOverrides };
-                              selectedRowIds.forEach(id => {
-                                if (updatedOverrides[id]) {
-                                  updatedOverrides[id].nomor_invoice_grup = null;
-                                  updatedOverrides[id].status_bayar = 'Belum Ditagih';
-                                } else {
-                                  updatedOverrides[id] = {
-                                    status_bayar: 'Belum Ditagih',
-                                    tanggal_tagihan: null,
-                                    tanggal_bayar: null,
-                                    nomor_invoice_grup: null,
-                                    jumlah_tagihan_override: null,
-                                    jumlah_bayar: null,
-                                    selisih_pembayaran: null,
-                                    keterangan_selisih: null,
-                                    ppn: null,
-                                    pph: null,
-                                    nomor_bayar: null
-                                  };
-                                }
-                              });
-                              onStateChange({ ...state, paymentOverrides: updatedOverrides });
-                              setSelectedRowIds([]);
-                              triggerNoti('sukses', `Berhasil melepas ${selectedRowIds.length} item.`);
-                            }
-                          }}
-                          className="bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-800 font-extrabold text-[10px] py-1.5 px-3 rounded flex items-center gap-1.5 cursor-pointer transition-all"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" /> Lepaskan Dari Nota Ini
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {matchedPeriods.length > 0 ? (
-                    <div className="overflow-x-auto max-h-[600px] overflow-y-auto border border-slate-200 rounded-xl relative shadow-xs">
-                      <table className="w-full text-left border-collapse text-[10px] min-w-[1620px]" id="invoice-spreadsheet-table-pembayaran">
+                ) : (
+                  <div className="space-y-4">
+                    {/* TABLE OF MATCHED PERIODS */}
+                    <div className="overflow-x-auto border border-slate-150 rounded-xl bg-white shadow-3xs">
+                      <table className="w-full text-left border-collapse text-[10px] font-sans">
                         <thead>
-                          <tr className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold font-mono">
-                            <th className="p-2 py-3 text-center border-r border-slate-200 w-[56px] min-w-[56px] max-w-[56px] bg-slate-100 sticky top-0 left-0 z-40 shadow-[1px_1px_0_rgba(226,232,240,1)]">
-                              <input
-                                type="checkbox"
-                                checked={matchedPeriods.length > 0 && selectedRowIds.length === matchedPeriods.length}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedRowIds(matchedPeriods.map(p => p.id_tagihan));
-                                  } else {
-                                    setSelectedRowIds([]);
-                                  }
-                                }}
-                                className="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer"
-                              />
-                            </th>
-                            {renderSortableHeader('no_kontainer', 'KONTAINER', 'w-28 text-center sticky top-0 left-[56px] z-40 bg-slate-100 border-r-2 border-slate-300 shadow-[2px_1px_4px_rgba(0,0,0,0.08)]')}
-                            {renderSortableHeader('ukuran', 'UKURAN', 'w-16 text-center sticky top-0 z-20 bg-slate-100 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('periode', 'PERIODE', 'w-24 text-center sticky top-0 z-20 bg-slate-100 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('tanggal_awal', 'MULAI AWAL', 'w-20 text-center sticky top-0 z-20 bg-slate-100 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('tanggal_akhir', 'AKHIR SIKLUS', 'w-20 text-center sticky top-0 z-20 bg-slate-100 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('jumlah_hari', 'HARI', 'w-12 text-center sticky top-0 z-20 bg-slate-100 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('tipe_tarif', 'TARIF', 'w-16 text-center sticky top-0 z-20 bg-slate-100 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('estimasi', 'ESTIMASI (SISTEM)', 'text-right w-24 pr-3 sticky top-0 z-20 bg-slate-100 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('tagihan', 'TAGIHAN (AKTUAL)', 'text-right w-28 pr-3 bg-amber-100 sticky top-0 z-20 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('selisih', 'SELISIH', 'text-right w-24 pr-3 sticky top-0 z-20 bg-slate-100 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('rek_bayar', 'REK. BAYAR', 'text-right w-24 pr-3 sticky top-0 z-20 bg-emerald-100 text-emerald-900 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('keterangan_selisih', 'KETERANGAN SELISIH', 'w-36 bg-amber-100 sticky top-0 z-20 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('ppn', 'PPN (11%)', 'text-right w-24 pr-3 bg-amber-100 sticky top-0 z-20 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('pph', 'PPh (2%)', 'text-right w-24 pr-3 bg-amber-100 sticky top-0 z-20 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('netTotal', 'NET TOTAL', 'text-right w-24 pr-3 text-slate-900 sticky top-0 z-20 bg-slate-100 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('nomor_invoice_grup', 'NO. INVOICE', 'w-28 bg-amber-100 text-center sticky top-0 z-20 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('tanggal_tagihan', 'TGL. TAGIHAN', 'w-24 bg-amber-100 text-center sticky top-0 z-20 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('nomor_bayar', 'NO. BUKTI BAYAR', 'w-28 bg-amber-100 text-center sticky top-0 z-20 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('tanggal_bayar', 'TGL. BAYAR', 'w-24 bg-amber-100 text-center sticky top-0 z-20 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            {renderSortableHeader('status_bayar', 'STATUS SIKLUS', 'w-32 text-center bg-indigo-100 font-semibold text-slate-700 sticky top-0 z-20 shadow-[0_1px_0_rgba(226,232,240,1)]')}
-                            <th className="p-2 py-3 w-16 text-center border-l border-slate-200 bg-indigo-100 font-semibold text-slate-700 sticky top-0 z-20 shadow-[0_1px_0_rgba(203,213,225,1)]">AKSI</th>
+                          <tr className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
+                            <th className="p-2.5 py-3">No. Tagihan</th>
+                            <th className="p-2.5 py-3">Tgl. Tagihan</th>
+                            <th className="p-2.5 py-3 text-right">Estimasi</th>
+                            <th className="p-2.5 py-3 text-right">Real</th>
+                            <th className="p-2.5 py-3 text-right">Selisih</th>
+                            <th className="p-2.5 py-3 text-left">Keterangan</th>
+                            <th className="p-2.5 py-3 text-center">Aksi</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-150 text-[10px] font-sans">
-                          {matchedPeriods.map((p, indexRow) => {
-                            const estimasi = p.jumlah_tagihan;
-                            const tagihan = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined
-                              ? p.jumlah_tagihan_override
-                              : estimasi;
-                            const selisih = p.selisih_pembayaran !== null && p.selisih_pembayaran !== undefined
-                              ? p.selisih_pembayaran
-                              : 0;
-                            
-                            const ppn = p.ppn !== null && p.ppn !== undefined
-                              ? p.ppn
-                              : Math.round(tagihan * 0.11);
-                            const pph = p.pph !== null && p.pph !== undefined
-                              ? p.pph
-                              : Math.round(tagihan * 0.02);
-                            const netTotal = tagihan + ppn - pph;
-
-                            return (
-                              <tr key={p.id_tagihan} className="hover:bg-slate-50 select-text align-middle group">
-                                {/* CHECKBOX & NO */}
-                                <td className="p-2 text-center border-r border-slate-200 bg-white sticky left-0 z-30 group-hover:bg-slate-100 shadow-[1px_0_0_rgba(226,232,240,1)] w-[56px] min-w-[56px] max-w-[56px]">
-                                  <div className="flex items-center justify-center gap-2">
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedRowIds.includes(p.id_tagihan)}
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          setSelectedRowIds(prev => [...prev, p.id_tagihan]);
-                                        } else {
-                                          setSelectedRowIds(prev => prev.filter(id => id !== p.id_tagihan));
-                                        }
+                        <tbody className="divide-y divide-slate-100">
+                          {leftGroupedInvoices.length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="p-12 text-center text-slate-400 italic">
+                                Grup Pranota ini masih kosong. Silakan cari dan tambahkan "Tagihan" dari panel kanan!
+                              </td>
+                            </tr>
+                          ) : (
+                            leftGroupedInvoices.map(g => {
+                              return (
+                                <tr key={g.nomor_invoice_grup} className="hover:bg-slate-50/50 transition-colors">
+                                  <td className="p-2.5 font-bold text-slate-800">
+                                    {g.nomor_invoice_grup}
+                                  </td>
+                                  <td className="p-2.5 font-mono text-slate-500">
+                                    {formatIndoDate(g.tanggal_tagihan)}
+                                  </td>
+                                  <td className="p-2.5 text-right font-mono text-slate-600">
+                                    {formatRupiah(g.total_estimasi)}
+                                  </td>
+                                  <td className="p-1 text-right bg-amber-50/30">
+                                    <FastNumberInput
+                                      value={g.total_aktual === g.total_estimasi && selectedGroupPeriods.filter(p => g.id_tagihan_list.includes(p.id_tagihan)).every(p => p.jumlah_tagihan_override === null) ? null : g.total_aktual}
+                                      placeholder={String(g.total_estimasi)}
+                                      onChange={(val) => {
+                                        handleUpdateGroupFieldValue(g.id_tagihan_list, 'jumlah_tagihan_override', val);
                                       }}
-                                      className="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer"
+                                      className="w-24 text-[10px] font-mono border border-slate-200 rounded px-1.5 py-1 text-right bg-white focus:ring-1 focus:ring-indigo-500"
                                     />
-                                    <span className="font-mono text-slate-400 text-[9px]">{indexRow + 1}</span>
-                                  </div>
-                                </td>
-                                {/* KONTAINER */}
-                                <td className="p-2 font-mono font-bold text-slate-900 text-center border-r-2 border-slate-300 sticky left-[56px] z-30 bg-white group-hover:bg-slate-100 shadow-[2px_0_4px_rgba(0,0,0,0.08)]">
-                                  {getSewaContainerNo(p.id_sewa)}
-                                  <p className="text-[8px] font-sans text-slate-400 font-normal truncate max-w-[100px] mx-auto">
-                                    {getCustomerName(state.sewas.find(s => s.id_sewa === p.id_sewa)?.id_customer || '')}
-                                  </p>
-                                </td>
-                                {/* UKURAN */}
-                                <td className="p-2 text-center text-slate-700 border-r border-slate-100 font-mono font-medium">{getSewaContainerSizeDesc(p.id_sewa)}</td>
-                                {/* PERIODE */}
-                                <td className="p-2 text-center border-r border-slate-100 font-semibold text-emerald-800">
-                                  Bulan ke-{p.bulan_ke}
-                                </td>
-                                {/* MULAI AWAL */}
-                                <td className="p-2 text-center text-slate-600 border-r border-slate-100 font-mono">{formatIndoDate(p.tanggal_awal)}</td>
-                                {/* AKHIR SIKLUS */}
-                                <td className="p-2 text-center text-slate-600 border-r border-slate-100 font-mono">{formatIndoDate(p.tanggal_akhir)}</td>
-                                {/* HARI */}
-                                <td className="p-2 text-center font-mono font-bold text-slate-700 border-r border-slate-100 bg-slate-100">{p.jumlah_hari}</td>
-                                {/* TARIF TYPE */}
-                                <td className="p-2 text-center border-r border-slate-100 font-mono text-[9px] font-semibold text-indigo-700">
-                                  <span className={`px-1.5 py-0.5 rounded-md ${
-                                    p.tipe_tarif === 'BULANAN' ? 'bg-indigo-50 text-indigo-700' :
-                                    p.tipe_tarif === 'HARIAN' ? 'bg-amber-50 text-amber-800' : 'bg-teal-50 text-teal-800'
-                                  }`}>
-                                    {p.tipe_tarif}
-                                  </span>
-                                </td>
-                                {/* ESTIMASI */}
-                                <td className="p-2 text-right pr-3 font-mono font-bold text-slate-400 border-r border-slate-100">{formatRupiah(estimasi)}</td>
-                                
-                                {/* TAGIHAN (EDITABLE) */}
-                                <td className="p-1 px-2 border-r border-slate-150 bg-amber-55 bg-amber-50">
-                                  <input
-                                    type="text"
-                                    value={p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : ''}
-                                    placeholder={String(estimasi)}
-                                    onChange={(e) => {
-                                      const v = e.target.value.replace(/[^0-9.-]/g, '');
-                                      handleUpdateFieldValue(p.id_tagihan, 'jumlah_tagihan_override', v ? parseFloat(v) : null);
-                                    }}
-                                    className="w-full text-right font-mono font-bold bg-amber-50 text-slate-800 border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm text-[11px]"
-                                  />
-                                </td>
-
-                                {/* SELISIH */}
-                                <td className={`p-2 text-right pr-3 font-mono font-bold border-r border-slate-100 ${
-                                  selisih < 0 ? 'text-rose-600' :
-                                  selisih > 0 ? 'text-emerald-700' : 'text-slate-400'
-                                }`}>
-                                  {selisih > 0 ? '+' : ''}{formatRupiah(selisih)}
-                                </td>
-
-                                {/* REK. BAYAR */}
-                                <td className="p-2 text-right pr-3 font-mono text-emerald-800 bg-emerald-50 border-r border-slate-100 font-extrabold shadow-[inset_0_-2px_0_rgba(16,185,129,0.2)]">
-                                  {formatRupiah(Math.min(tagihan, estimasi))}
-                                </td>
-
-                                {/* KETERANGAN SELISIH */}
-                                <td className="p-1 px-2 border-r border-slate-150 bg-amber-50">
-                                  <input
-                                    type="text"
-                                    value={p.keterangan_selisih || ''}
-                                    onChange={(e) => handleUpdateFieldValue(p.id_tagihan, 'keterangan_selisih', e.target.value)}
-                                    placeholder="Keterangan..."
-                                    className="w-full text-left font-sans text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm"
-                                  />
-                                </td>
-
-                                {/* PPN */}
-                                <td className="p-1 px-2 border-r border-slate-150 bg-amber-50">
-                                  <input
-                                    type="text"
-                                    value={p.ppn !== null && p.ppn !== undefined ? p.ppn : ''}
-                                    placeholder={String(Math.round(tagihan * 0.11))}
-                                    onChange={(e) => {
-                                      const v = e.target.value.replace(/[^0-9.-]/g, '');
-                                      handleUpdateFieldValue(p.id_tagihan, 'ppn', v ? parseFloat(v) : null);
-                                    }}
-                                    className="w-full text-right font-mono text-slate-800 border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm"
-                                  />
-                                </td>
-
-                                {/* PPh */}
-                                <td className="p-1 px-2 border-r border-slate-150 bg-amber-50">
-                                  <input
-                                    type="text"
-                                    value={p.pph !== null && p.pph !== undefined ? p.pph : ''}
-                                    placeholder={String(Math.round(tagihan * 0.02))}
-                                    onChange={(e) => {
-                                      const v = e.target.value.replace(/[^0-9.-]/g, '');
-                                      handleUpdateFieldValue(p.id_tagihan, 'pph', v ? parseFloat(v) : null);
-                                    }}
-                                    className="w-full text-right font-mono text-slate-800 border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm"
-                                  />
-                                </td>
-
-                                {/* NET TOTAL */}
-                                <td className="p-2 text-right pr-3 font-mono font-bold text-teal-850 bg-teal-50 border-r border-slate-100 text-[11px]">
-                                  {formatRupiah(netTotal)}
-                                </td>
-
-                                {/* NO. TAGIHAN / INVOICE REF */}
-                                <td className="p-1 px-2 border-r border-slate-150 bg-amber-50">
-                                  <input
-                                    type="text"
-                                    value={p.nomor_invoice_grup || ''}
-                                    onChange={(e) => handleUpdateFieldValue(p.id_tagihan, 'nomor_invoice_grup', e.target.value)}
-                                    placeholder="No. Nota..."
-                                    className="w-full text-center font-mono text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm text-indigo-700 font-extrabold"
-                                  />
-                                </td>
-
-                                {/* TANGGAL TAGIHAN */}
-                                <td className="p-1 px-2 border-r border-slate-150 bg-amber-50">
-                                  <EditableDateCell
-                                    value={p.tanggal_tagihan}
-                                    onChange={(val) => handleUpdateFieldValue(p.id_tagihan, 'tanggal_tagihan', val)}
-                                    placeholder="dd/mm/yyyy"
-                                    className="w-full text-center font-mono text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm"
-                                  />
-                                </td>
-
-                                {/* NO. BUKTI BAYAR */}
-                                <td className="p-1 px-2 border-r border-slate-150 bg-amber-50">
-                                  <input
-                                    type="text"
-                                    value={p.nomor_bayar || ''}
-                                    onChange={(e) => handleUpdateFieldValue(p.id_tagihan, 'nomor_bayar', e.target.value)}
-                                    placeholder="EBK-..."
-                                    className="w-full text-center font-mono text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm text-emerald-850 font-bold"
-                                  />
-                                </td>
-
-                                {/* TANGGAL BAYAR */}
-                                <td className="p-1 px-2 border-r border-slate-150 bg-amber-50">
-                                  <EditableDateCell
-                                    value={p.tanggal_bayar}
-                                    onChange={(val) => handleUpdateFieldValue(p.id_tagihan, 'tanggal_bayar', val)}
-                                    placeholder="dd/mm/yyyy"
-                                    className="w-full text-center font-mono text-[10px] bg-transparent border-b border-dashed border-amber-300 focus:border-amber-500 focus:bg-white focus:outline-none p-1 rounded-sm text-emerald-850"
-                                  />
-                                </td>
-
-                                {/* STATUS SELECTOR */}
-                                <td className="p-2 text-center bg-indigo-50 align-middle">
-                                  <select
-                                    value={p.status_bayar}
-                                    onChange={(e) => handleUpdateFieldValue(p.id_tagihan, 'status_bayar', e.target.value)}
-                                    className={`text-[10px] font-bold p-1 rounded-md border w-full text-center cursor-pointer ${
-                                      p.status_bayar === 'Lunas' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' :
-                                      p.status_bayar === 'Belum Bayar' ? 'bg-rose-50 text-rose-800 border-rose-200' :
-                                      p.status_bayar === 'Pranota' ? 'bg-blue-50 text-blue-800 border-blue-200' :
-                                      'bg-slate-50 text-slate-700 border-slate-250'
-                                    }`}
-                                  >
-                                    <option value="Belum Ditagih">Belum Ditagih</option>
-                                    <option value="Pranota">Pranota (Draft)</option>
-                                    <option value="Belum Bayar">Belum Bayar</option>
-                                    <option value="Lunas">Lunas</option>
-                                  </select>
-                                </td>
-
-                                {/* ACTIONS COL */}
-                                <td className="p-2 text-center border-l border-slate-200 bg-indigo-50">
-                                  <button
-                                    onClick={() => {
-                                      if (confirm(`Apakah Anda yakin ingin melepas item "${getSewaContainerNo(p.id_sewa)}" (Periode Bulan Ke-${p.bulan_ke}) dari Nota "${selectedNota}"?\n\nItem ini akan kembali berstatus "Belum Ditagih" sehingga Anda dapat mengupdate tanggal kembali dan mengimpor ulang.`)) {
-                                        const updatedOverrides = { ...state.paymentOverrides };
-                                        if (updatedOverrides[p.id_tagihan]) {
-                                          updatedOverrides[p.id_tagihan].nomor_invoice_grup = null;
-                                          updatedOverrides[p.id_tagihan].status_bayar = 'Belum Ditagih';
-                                        } else {
-                                          updatedOverrides[p.id_tagihan] = {
-                                            status_bayar: 'Belum Ditagih',
-                                            tanggal_tagihan: null,
-                                            tanggal_bayar: null,
-                                            nomor_invoice_grup: null,
-                                            jumlah_tagihan_override: null,
-                                            jumlah_bayar: null,
-                                            selisih_pembayaran: null,
-                                            keterangan_selisih: null,
-                                            ppn: null,
-                                            pph: null,
-                                            nomor_bayar: null
-                                          };
-                                        }
-                                        onStateChange({
-                                          ...state,
-                                          paymentOverrides: updatedOverrides
-                                        });
-                                        setSelectedRowIds(prev => prev.filter(id => id !== p.id_tagihan));
-                                        triggerNoti('sukses', `Berhasil melepas item ${getSewaContainerNo(p.id_sewa)} dari Nota.`);
-                                      }
-                                    }}
-                                    className="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-100 rounded-md transition-colors inline-flex cursor-pointer"
-                                    title="Lepas item ini saja dari Nota"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </td>
-                              </tr>
-                            );
-                          })}
+                                  </td>
+                                  <td className="p-2.5 text-right">
+                                    {g.selisih === 0 ? (
+                                      <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-sm border border-emerald-100">Pas</span>
+                                    ) : (
+                                      <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-sm border ${g.selisih > 0 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-rose-700 bg-rose-50 border-rose-200'}`}>
+                                        {g.selisih > 0 ? '+' : ''}{formatRupiah(g.selisih)}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="p-1 min-w-[150px]">
+                                    <FastTextInput
+                                      value={g.keterangan_selisih}
+                                      placeholder={g.selisih !== 0 ? "Wajib diisi..." : "Keterangan..."}
+                                      onChange={(val) => handleUpdateGroupFieldValue(g.id_tagihan_list, 'keterangan_selisih', val)}
+                                      className={`w-full text-[10px] border rounded px-1.5 py-1 text-left ${
+                                        g.selisih !== 0 && (!g.keterangan_selisih || g.keterangan_selisih.trim() === '')
+                                          ? 'border-rose-300 bg-rose-50/50 placeholder-rose-400 focus:ring-rose-500 text-rose-900 font-medium'
+                                          : 'border-slate-200 bg-white text-slate-800'
+                                      }`}
+                                    />
+                                  </td>
+                                  <td className="p-2.5 text-center">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDetachPranota(g.id_tagihan_list)}
+                                      className="px-2 py-1 bg-amber-50 hover:bg-rose-50 border border-amber-200 hover:border-rose-200 text-amber-700 hover:text-rose-700 rounded text-[9px] font-bold cursor-pointer transition-colors"
+                                    >
+                                      ✕ Lepas
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
                         </tbody>
                       </table>
                     </div>
-                  ) : (
-                    <div className="p-14 text-center font-semibold text-slate-400 bg-slate-50/50">
-                      Tidak ditemukan item sirkulasi sewa yang memuat No. Nota "{selectedNota}". Periksa kembali tulisan atau pilih nota lain.
-                    </div>
-                  )}
 
-                  {/* SPREADSHEET FOOTER AGGREGATES FOR MATCHED NOTA */}
-                  {matchedPeriods.length > 0 && (
-                    (() => {
-                      const totalEstimasi = matchedPeriods.reduce((sum, p) => sum + p.jumlah_tagihan, 0);
-                      const totalAktual = matchedPeriods.reduce((sum, p) => {
-                        const tagihan = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
-                        return sum + tagihan;
-                      }, 0);
-                      const totalSelisih = totalAktual - totalEstimasi;
-                      
-                      const totalRekBayar = matchedPeriods.reduce((sum, p) => {
-                        const tagihan = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
-                        return sum + Math.min(tagihan, p.jumlah_tagihan);
-                      }, 0);
-
-                      const totalPPN = matchedPeriods.reduce((sum, p) => {
-                        const tagihan = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
-                        const ppn = p.ppn !== null && p.ppn !== undefined ? p.ppn : Math.round(tagihan * 0.11);
-                        return sum + ppn;
-                      }, 0);
-
-                      const totalPPh = matchedPeriods.reduce((sum, p) => {
-                        const tagihan = p.jumlah_tagihan_override !== null && p.jumlah_tagihan_override !== undefined ? p.jumlah_tagihan_override : p.jumlah_tagihan;
-                        const pph = p.pph !== null && p.pph !== undefined ? p.pph : Math.round(tagihan * 0.02);
-                        return sum + pph;
-                      }, 0);
-
-                      const groupInvoice = state.invoices.find(i => i.nomor_invoice === selectedNota);
-                      const adjBiayaVal = groupInvoice?.adjustment_biaya ?? 0;
-                      const adjKetVal = groupInvoice?.adjustment_keterangan ?? '';
-
-                      const grandNetTotal = totalRekBayar + totalPPN - totalPPh + adjBiayaVal;
-
-                      return (
-                        <div className="bg-slate-100 p-4 border-t border-slate-200 text-xs font-mono grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 text-slate-700">
-                          <div>
-                            <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider block">Total Estimasi</span>
-                            <span className="font-bold text-slate-800">{formatRupiah(totalEstimasi)}</span>
-                          </div>
-                          <div>
-                            <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider block">Total Tagihan (Aktual)</span>
-                            <span className="font-bold text-slate-900">{formatRupiah(totalAktual)}</span>
-                          </div>
-                          <div>
-                            <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider block">Total Selisih</span>
-                            <span className={`font-bold ${totalSelisih < 0 ? 'text-rose-600' : totalSelisih > 0 ? 'text-emerald-700' : 'text-slate-600'}`}>
-                              {totalSelisih > 0 ? '+' : ''}{formatRupiah(totalSelisih)}
-                            </span>
-                          </div>
-                          <div className="bg-emerald-50 px-2 py-1 rounded border border-emerald-150">
-                            <span className="text-[9px] uppercase font-bold text-emerald-800 tracking-wider block">Total Rek. Bayar</span>
-                            <span className="font-bold text-emerald-700">{formatRupiah(totalRekBayar)}</span>
-                          </div>
-                          <div>
-                            <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider block">Total PPN (11%)</span>
-                            <span className="font-bold text-indigo-700">{formatRupiah(totalPPN)}</span>
-                          </div>
-                          <div>
-                            <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider block">Total PPh (2%)</span>
-                            <span className="font-bold text-rose-600">{formatRupiah(totalPPh)}</span>
-                          </div>
-                          <div className={adjBiayaVal !== 0 ? "bg-amber-100/50 px-2 py-1 rounded border border-amber-250 animate-pulse" : ""}>
-                            <span className="text-[9px] uppercase font-bold text-amber-800 tracking-wider block">Adjustment Nota</span>
-                            <span className={`font-bold block ${adjBiayaVal > 0 ? 'text-emerald-700' : adjBiayaVal < 0 ? 'text-rose-600' : 'text-slate-500'}`}>
-                              {adjBiayaVal > 0 ? '+' : ''}{formatRupiah(adjBiayaVal)}
-                            </span>
-                            {adjKetVal && (
-                              <span className="text-[8px] text-amber-700 block truncate" title={adjKetVal}>({adjKetVal})</span>
-                            )}
-                          </div>
-                          <div className="bg-emerald-600 p-2 rounded-lg border border-emerald-700 text-white col-span-2 sm:col-span-1">
-                            <span className="text-[9px] uppercase font-extrabold text-emerald-100 tracking-wider block">Grand Net (Final)</span>
-                            <span className="font-extrabold block text-sm">{formatRupiah(grandNetTotal)}</span>
-                          </div>
+                    {/* TOTALS & SAVE ACTION BUTTONS */}
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
+                        <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-3xs">
+                          <span className="text-[8px] font-bold text-slate-400 block uppercase">Estimasi</span>
+                          <span className="text-xs font-mono font-bold text-slate-700">{formatRupiah(totalEstimasiGroup)}</span>
                         </div>
-                      );
-                    })()
-                  )}
+                        <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-3xs">
+                          <span className="text-[8px] font-bold text-slate-400 block uppercase">Aktual / Riil</span>
+                          <span className="text-xs font-mono font-bold text-slate-800">{formatRupiah(totalAktualGroup)}</span>
+                        </div>
+                        <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-3xs">
+                          <span className="text-[8px] font-bold text-indigo-500 block uppercase">PPN (11%)</span>
+                          <span className="text-xs font-mono font-bold text-indigo-700">+{formatRupiah(totalPPNGroup)}</span>
+                        </div>
+                        <div className="bg-white p-2 rounded-lg border border-slate-100 shadow-3xs">
+                          <span className="text-[8px] font-bold text-rose-500 block uppercase">PPh (2%)</span>
+                          <span className="text-xs font-mono font-bold text-rose-600">-{formatRupiah(totalPPhGroup)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-200">
+                        <div>
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block">Grand Net Total</span>
+                          <span className="text-sm font-extrabold text-emerald-800 font-mono">{formatRupiah(grandNetTotalGroup)}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedVendorPranotaNo('');
+                              setSelectedVendorPranotaDate('');
+                            }}
+                            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                          >
+                            Batal
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!selectedVendorPranotaNo.trim()) {
+                                triggerNoti('error', 'Silakan isi No. Pranota / Proforma terlebih dahulu.');
+                                  return;
+                              }
+                              
+                              const pranotaNo = selectedVendorPranotaNo.trim();
+                              
+                              // Validasi No. Pranota tidak boleh sama dengan No. Pembayaran
+                              const isSameAsPayment = allPeriods.some(p => p.nomor_bayar && p.nomor_bayar.toLowerCase().trim() === pranotaNo.toLowerCase());
+                              if (isSameAsPayment) {
+                                triggerNoti('error', `Nomor Pranota tidak boleh sama dengan Nomor Pembayaran yang sudah ada (${pranotaNo})!`);
+                                return;
+                              }
+
+                              const periodIds = selectedGroupPeriods.map(p => p.id_tagihan);
+                              if (periodIds.length === 0) {
+                                triggerNoti('error', 'Grup pranota ini kosong! Harap tambah minimal 1 tagihan dari panel kanan.');
+                                return;
+                              }
+
+                              const updates = {
+                                status_bayar: 'Pranota',
+                                nomor_pranota: selectedVendorPranotaNo,
+                                tanggal_pranota: selectedVendorPranotaDate || utcTime.split('T')[0]
+                              };
+                              handleBulkUpdate(periodIds, updates, 'Pranota');
+                              triggerNoti('sukses', `Sukses! Draft Pembayaran "${selectedVendorPranotaNo}" telah disimpan. Silakan lanjut menginput di Tab 2 ini.`);
+                              setSelectedVendorPranotaNo('');
+                              setSelectedVendorPranotaDate('');
+                            }}
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer font-extrabold"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Simpan Draft Pembayaran</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* RIGHT PANEL: AVAILABLE LOOSE TAGIHANS (FROM TAB 1) */}
+              <div className="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <PlusCircle className="w-5 h-5 text-indigo-600 shrink-0" />
+                    <div>
+                      <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                        Daftar Tagihan Tersedia (Hasil Tab 1)
+                      </h4>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Tagihan vendor outstanding yang belum memiliki Pranota
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-1 rounded-md">
+                    {looseTagihanGroups.length} Tagihan
+                  </span>
                 </div>
-              );
-            })()
-          ) : (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center text-amber-900 shadow-xs">
-              <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
-              <h4 className="font-bold text-sm">Menunggu Pemanggilan No. Nota</h4>
-              <p className="text-xs text-amber-700 mt-1 max-w-md mx-auto">
-                Silakan pilih nomor nota/bukti tagihan dari dropdown pencarian diatas, atau ketik langsung No Nota yang ingin Anda periksa untuk memuat rincian pajaknya.
-              </p>
+
+                {/* Search bar inside Right Panel */}
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Cari No. Tagihan Vendor..."
+                    value={searchTagihanNo}
+                    onChange={(e) => setSearchTagihanNo(e.target.value)}
+                    className="w-full text-xs border border-slate-200 rounded-xl pl-9 pr-3 py-2 bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-indigo-400 focus:bg-white transition-all font-medium"
+                  />
+                </div>
+
+                {/* TABLE OF LOOSE TAGIHANS */}
+                <div className="overflow-y-auto max-h-[500px] border border-slate-150 rounded-xl bg-white shadow-3xs">
+                  <table className="w-full text-left border-collapse text-[10px] font-sans">
+                    <thead>
+                      <tr className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
+                        <th className="p-2 py-2.5">No. Tagihan</th>
+                        <th className="p-2 py-2.5">Tgl. Tagihan</th>
+                        <th className="p-2 py-2.5 text-right">Estimasi</th>
+                        <th className="p-2 py-2.5 text-center">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {looseTagihanGroups.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="p-10 text-center text-slate-400 italic">
+                            Tidak ada tagihan tersedia yang cocok dengan pencarian / filter vendor saat ini.
+                          </td>
+                        </tr>
+                      ) : (
+                        looseTagihanGroups.map(g => {
+                          const nominalEstimasi = g.total_estimasi;
+
+                          return (
+                            <tr key={g.nomor_invoice_grup} className="hover:bg-slate-50/60 transition-colors">
+                              <td className="p-2 py-2.5">
+                                <div className="font-bold text-slate-800">{g.nomor_invoice_grup}</div>
+                              </td>
+                              <td className="p-2 py-2.5 font-mono text-slate-500">
+                                {formatIndoDate(g.tanggal_tagihan)}
+                              </td>
+                              <td className="p-2 py-2.5 text-right font-mono font-bold text-slate-700">
+                                {formatRupiah(nominalEstimasi)}
+                              </td>
+                              <td className="p-2 py-2.5 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleAttachPranota(g.id_tagihan_list)}
+                                  disabled={!selectedVendorPranotaNo}
+                                  className={`px-2 py-1 rounded text-[9px] font-bold cursor-pointer transition-colors shadow-3xs flex items-center gap-0.5 mx-auto ${selectedVendorPranotaNo ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'}`}
+                                  title={!selectedVendorPranotaNo ? 'Masukkan No. Pranota terlebih dahulu' : 'Tambahkan ke Pranota'}
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  <span>Tambah</span>
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        );
+
+              })()}
 
       {/* VIEW TAB 3: PELUNASAN & ADJUSTMENT KOLEKTIF PER NOTA (6.png) */}
-      {activeViewTab === 'collective' && (() => {
+      {activeViewTab === 'collective' && (
+        <PaymentWorkspace
+          state={state}
+          onStateChange={onStateChange}
+          allPeriods={allPeriods}
+          selectedVendorCustomer={selectedVendorCustomer}
+          setSelectedVendorCustomer={setSelectedVendorCustomer}
+          selectedPaymentNo={selectedPaymentNo}
+          setSelectedPaymentNo={setSelectedPaymentNo}
+          selectedPaymentDate={selectedPaymentDate}
+          setSelectedPaymentDate={setSelectedPaymentDate}
+          searchPranotaNo={searchPranotaNo}
+          setSearchPranotaNo={setSearchPranotaNo}
+          getCustomerName={getCustomerName}
+          formatRupiah={formatRupiah}
+          formatIndoDate={formatIndoDate}
+          utcTime={utcTime}
+          triggerNoti={triggerNoti}
+          handleBulkUpdate={handleBulkUpdate}
+          existingDraftPayments={existingDraftPayments}
+        />
+      )}
+
+      {false && (() => {
         // Collect distinct invoices summary
         const invoicesSummaryList = distinctInvoiceNumbers.map(no => {
           const matchedPeriods = allPeriods.filter(p => p.nomor_invoice_grup === no);
@@ -2123,8 +4003,13 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
 
         // Filter collective list
         const filteredCollectiveList = invoicesSummaryList.filter(item => {
-          if (collectiveSearch.trim() && !item.nomor_invoice.toLowerCase().includes(collectiveSearch.toLowerCase())) {
-            return false;
+          if (collectiveSearch.trim()) {
+            const q = collectiveSearch.toLowerCase().trim();
+            const matchesNota = item.nomor_invoice.toLowerCase().includes(q);
+            const matchesBuktiBayar = item.buktiBayarMapped && item.buktiBayarMapped.toLowerCase().includes(q);
+            if (!matchesNota && !matchesBuktiBayar) {
+              return false;
+            }
           }
           if (collectiveCustFilter && item.customerId !== collectiveCustFilter) {
             return false;
@@ -2325,19 +4210,15 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
             {/* Filters Area for Collective dashboard */}
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1.5">Cari Nomor Nota / Invoice</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Ketik sebagian nomor nota..."
-                    value={collectiveSearch}
-                    onChange={(e) => setCollectiveSearch(e.target.value)}
-                    className="w-full text-xs font-mono border border-slate-200 rounded-xl pl-9 pr-3 py-2 bg-slate-50/50"
-                  />
-                  <div className="absolute left-3 top-2.5 text-slate-400">
-                    <FileText className="w-4 h-4" />
-                  </div>
-                </div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1.5">Cari No. Bukti Bayar / Nota</label>
+                <SearchableCombobox
+                  id="tab3-search-combobox"
+                  value={collectiveSearch}
+                  onChange={(val) => setCollectiveSearch(val)}
+                  options={autocompleteTab3}
+                  placeholder="Ketik no. bukti bayar, EBK, atau no. nota..."
+                  inputClassName="bg-slate-50/50 pl-3"
+                />
               </div>
 
               <div>
@@ -2514,7 +4395,7 @@ export default function InvoiceManager({ state, onStateChange, utcTime, appMode 
 
                             copyOverrides[id_tagihan] = {
                               ...existing,
-                              status_bayar: bulkStatus === 'Lunas' ? 'Lunas' : 'Belum Bayar',
+                              status_bayar: bulkStatus === 'Lunas' ? 'Lunas' : 'Pranota',
                               tanggal_bayar: bulkStatus === 'Lunas' ? finalTglISO : null,
                               nomor_bayar: bulkStatus === 'Lunas' ? finalNoBayar : null,
                               nomor_invoice_grup: noNota

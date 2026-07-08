@@ -428,10 +428,25 @@
                 </table>
             </div>
             
+            @if($pranota->adjustment != 0)
+            <div class="summary-total-container" style="border-top: 1.5px solid #000; padding-top: 3px; font-size: 8px; color: #555; font-weight: normal; margin-bottom: 2px;">
+                <div style="width: 120px; font-weight: bold;">Subtotal Biaya</div>
+                <div style="width: 100px; text-align: right; font-weight: bold;">{{ number_format($summaryGrandTotal, 0, ',', '.') }}</div>
+            </div>
+            <div class="summary-total-container" style="border-top: none; padding-top: 0; font-size: 8px; color: #555; font-weight: normal; margin-bottom: 2px;">
+                <div style="width: 120px; font-weight: bold;">Adjustment</div>
+                <div style="width: 100px; text-align: right; font-weight: bold;">{{ number_format($pranota->adjustment, 0, ',', '.') }}</div>
+            </div>
+            <div class="summary-total-container" style="border-top: 1px solid #000; padding-top: 3px;">
+                <div style="width: 120px;">Total Biaya</div>
+                <div style="width: 100px; text-align: right;">{{ number_format($summaryGrandTotal + $pranota->adjustment, 0, ',', '.') }}</div>
+            </div>
+            @else
             <div class="summary-total-container">
                 <div style="width: 120px;">Total Biaya</div>
                 <div style="width: 100px; text-align: right;">{{ number_format($summaryGrandTotal, 0, ',', '.') }}</div>
             </div>
+            @endif
         </div>
 
         <div class="footer-signatures">

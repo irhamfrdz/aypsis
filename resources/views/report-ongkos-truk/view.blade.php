@@ -47,6 +47,9 @@
                 <a href="{{ route('report.ongkos-truk.export', request()->query()) }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200 flex items-center shadow-sm font-medium">
                     <i class="fas fa-file-excel mr-2"></i> Export Excel
                 </a>
+                <a href="{{ route('report.ongkos-truk.export-2', request()->query()) }}" class="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition duration-200 flex items-center shadow-sm font-medium">
+                    <i class="fas fa-file-excel mr-2"></i> Export Excel 2
+                </a>
             </div>
         </div>
     </div>

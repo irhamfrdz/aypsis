@@ -169,11 +169,20 @@
                             <option value="{{ $ring['value'] }}" 
                                     data-rates="{{ json_encode($ring['rates']) }}"
                                     data-rates-prev="{{ json_encode($ring['rates_prev']) }}"
+                                    data-ring="{{ $ring['ring'] ?? '' }}"
                                     {{ old('tujuan_pengambilan', $selectedOrder->tujuan_ambil ?? '') == $ring['value'] ? 'selected' : '' }}>
                                 {{ $ring['label'] }}
                             </option>
                         @endforeach
                     </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ring</label>
+                    <input type="text" name="ring" id="ring_input" readonly
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500"
+                           placeholder="Ring otomatis terisi"
+                           value="{{ old('ring', $selectedOrder->ring ?? '') }}">
                 </div>
 
                 <div>
@@ -659,9 +668,14 @@
     function calculateUangJalan() {
         if (!tujuanSelect || !sizeSelect || !feSelect || !uangJalanInput) return;
         
+        const selectedOption = tujuanSelect.options[tujuanSelect.selectedIndex];
+        const ringInput = document.getElementById('ring_input');
+        if (ringInput) {
+            ringInput.value = selectedOption ? (selectedOption.getAttribute('data-ring') || '') : '';
+        }
+
         if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
 
-        const selectedOption = tujuanSelect.options[tujuanSelect.selectedIndex];
         if (!selectedOption) return;
         
         const usePrevBbm = document.getElementById('use_prev_bbm')?.checked;

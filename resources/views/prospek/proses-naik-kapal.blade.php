@@ -222,7 +222,7 @@
                                             </div>
 
                                             <!-- Filter and Search -->
-                                            <div class="flex flex-col sm:flex-row gap-3 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                                            <div class="flex flex-col md:flex-row gap-3 mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
                                                 <div class="flex-1 relative">
                                                     <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Cari Prospek</label>
                                                     <input type="text" 
@@ -231,7 +231,25 @@
                                                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
                                                     <i class="fas fa-search absolute left-3 top-[34px] text-gray-400"></i>
                                                 </div>
+                                                <div class="w-full md:w-44">
+                                                    <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Tanggal Awal</label>
+                                                    <input type="date" 
+                                                           id="modalStartDate" 
+                                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                                                </div>
+                                                <div class="w-full md:w-44">
+                                                    <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Tanggal Akhir</label>
+                                                    <input type="date" 
+                                                           id="modalEndDate" 
+                                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                                                </div>
                                                 <div class="flex items-end gap-2">
+                                                    <button type="button" 
+                                                            id="clearDateFilterBtn"
+                                                            title="Reset Filter Tanggal"
+                                                            class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-lg font-semibold text-sm transition-all duration-200 h-[42px] border border-gray-300">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
                                                     <button type="button" 
                                                             onclick="toggleSelectAllInModal()" 
                                                             id="modalSelectAllBtn"
@@ -278,6 +296,7 @@
                                                                     data-tipe="{{ $prospek->tipe }}"
                                                                     data-supir="{{ $prospek->nama_supir }}"
                                                                     data-tanggal="{{ $prospek->created_at ? $prospek->created_at->format('d/m/Y') : '-' }}"
+                                                                    data-date-raw="{{ $prospek->created_at ? $prospek->created_at->format('Y-m-d') : '' }}"
                                                                     data-pengirim="{{ $prospek->pt_pengirim ?? '-' }}"
                                                                     data-barang="{{ $prospek->barang ?? '-' }}"
                                                                     onclick="toggleProspekSelection('{{ $prospek->id }}')">
@@ -695,16 +714,56 @@
             syncToMainForm();
         };
 
+        const modalStartDate = document.getElementById('modalStartDate');
+        const modalEndDate = document.getElementById('modalEndDate');
+        const clearDateFilterBtn = document.getElementById('clearDateFilterBtn');
+
+        function filterModalRows() {
+            const term = modalSearch ? modalSearch.value.toLowerCase() : '';
+            const startDate = modalStartDate ? modalStartDate.value : '';
+            const endDate = modalEndDate ? modalEndDate.value : '';
+
+            modalRows.forEach(row => {
+                const text = row.getAttribute('data-text').toLowerCase();
+                const supir = row.getAttribute('data-supir').toLowerCase();
+                const pengirim = row.getAttribute('data-pengirim').toLowerCase();
+                const barang = row.getAttribute('data-barang').toLowerCase();
+                const dateRaw = row.getAttribute('data-date-raw');
+
+                // Text search match
+                const matchesText = text.includes(term) || supir.includes(term) || pengirim.includes(term) || barang.includes(term);
+
+                // Date filter match
+                let matchesDate = true;
+                if (dateRaw) {
+                    if (startDate && dateRaw < startDate) {
+                        matchesDate = false;
+                    }
+                    if (endDate && dateRaw > endDate) {
+                        matchesDate = false;
+                    }
+                } else if (startDate || endDate) {
+                    matchesDate = false;
+                }
+
+                row.style.display = (matchesText && matchesDate) ? '' : 'none';
+            });
+        }
+
         if (modalSearch) {
-            modalSearch.addEventListener('input', function() {
-                const term = this.value.toLowerCase();
-                modalRows.forEach(row => {
-                    const text = row.getAttribute('data-text').toLowerCase();
-                    const supir = row.getAttribute('data-supir').toLowerCase();
-                    const pengirim = row.getAttribute('data-pengirim').toLowerCase();
-                    const barang = row.getAttribute('data-barang').toLowerCase();
-                    row.style.display = (text.includes(term) || supir.includes(term) || pengirim.includes(term) || barang.includes(term)) ? '' : 'none';
-                });
+            modalSearch.addEventListener('input', filterModalRows);
+        }
+        if (modalStartDate) {
+            modalStartDate.addEventListener('change', filterModalRows);
+        }
+        if (modalEndDate) {
+            modalEndDate.addEventListener('change', filterModalRows);
+        }
+        if (clearDateFilterBtn) {
+            clearDateFilterBtn.addEventListener('click', function() {
+                if (modalStartDate) modalStartDate.value = '';
+                if (modalEndDate) modalEndDate.value = '';
+                filterModalRows();
             });
         }
 

@@ -219,7 +219,14 @@ class PranotaSuratJalanController extends Controller
         // Load relationships including both suratJalan and suratJalanBongkaran
         $pranotaUangJalan->load(['uangJalans.suratJalan', 'uangJalans.suratJalanBongkaran', 'creator']);
 
-        return view('pranota-uang-jalan.show', compact('pranotaUangJalan'));
+        // Get available uang jalans for addition
+        $availableUangJalans = UangJalan::with(['suratJalan', 'suratJalanBongkaran'])
+            ->whereDoesntHave('pranotaUangJalan')
+            ->whereIn('status', ['belum_dibayar', 'belum_masuk_pranota'])
+            ->orderBy('tanggal_uang_jalan', 'desc')
+            ->get();
+
+        return view('pranota-uang-jalan.show', compact('pranotaUangJalan', 'availableUangJalans'));
     }
 
     /**
@@ -464,6 +471,76 @@ class PranotaSuratJalanController extends Controller
             Log::error('Error removing uang jalan from pranota: '.$e->getMessage());
 
             return back()->with('error', 'Gagal mengeluarkan uang jalan: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Add selected uang jalans to the pranota.
+     */
+    public function addUangJalan(Request $request, PranotaUangJalan $pranotaUangJalan)
+    {
+        $user = Auth::user();
+
+        // Check permission
+        if (! $this->hasPranotaUangJalanPermission($user, 'pranota-uang-jalan-update')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengubah pranota uang jalan.');
+        }
+
+        // Only allow adding if status is unpaid or approved or paid
+        if (! in_array($pranotaUangJalan->status_pembayaran, ['unpaid', 'approved', 'paid'])) {
+            return back()->with('error', 'Uang jalan tidak dapat ditambahkan ke pranota dengan status '.$pranotaUangJalan->status_pembayaran);
+        }
+
+        $request->validate([
+            'uang_jalan_ids' => 'required|array|min:1',
+            'uang_jalan_ids.*' => 'exists:uang_jalans,id',
+        ]);
+
+        // Filter and verify available uang jalans
+        $selectedUangJalans = UangJalan::whereIn('id', $request->uang_jalan_ids)
+            ->whereDoesntHave('pranotaUangJalan')
+            ->whereIn('status', ['belum_dibayar', 'belum_masuk_pranota'])
+            ->get();
+
+        if ($selectedUangJalans->count() === 0) {
+            return back()->with('error', 'Tidak ada uang jalan terpilih yang tersedia untuk dimasukkan.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Attach to pivot table
+            $pranotaUangJalan->uangJalans()->syncWithoutDetaching($selectedUangJalans->pluck('id')->toArray());
+
+            // Update status uang jalans: belum_masuk_pranota -> sudah_masuk_pranota
+            UangJalan::whereIn('id', $selectedUangJalans->pluck('id')->toArray())
+                ->update(['status' => 'sudah_masuk_pranota']);
+
+            // Recalculate total amount and count
+            $pranotaUangJalan->load('uangJalans');
+            $totalAmount = $pranotaUangJalan->uangJalans->sum('jumlah_total');
+            $jumlahUangJalan = $pranotaUangJalan->uangJalans->count();
+
+            $pranotaUangJalan->update([
+                'total_amount' => $totalAmount,
+                'jumlah_uang_jalan' => $jumlahUangJalan,
+                'updated_by' => $user->id,
+            ]);
+
+            Log::info('Uang jalans added to pranota', [
+                'pranota_id' => $pranotaUangJalan->id,
+                'uang_jalan_ids' => $selectedUangJalans->pluck('id')->toArray(),
+                'added_by' => $user->name,
+            ]);
+
+            DB::commit();
+
+            return back()->with('success', count($selectedUangJalans).' Uang jalan berhasil ditambahkan ke pranota.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error adding uang jalan to pranota: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal menambahkan uang jalan: '.$e->getMessage());
         }
     }
 

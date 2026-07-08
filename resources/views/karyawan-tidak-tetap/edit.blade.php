@@ -4,225 +4,282 @@
 @section('page_title', 'Edit Karyawan Tidak Tetap')
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
-        <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
-            <h2 class="text-lg font-medium text-gray-900">Edit Data Karyawan</h2>
-            <a href="{{ route('karyawan-tidak-tetap.index') }}" class="text-sm text-gray-600 hover:text-gray-900">
-                <i class="fas fa-arrow-left mr-1"></i> Kembali
+<div class="space-y-6 max-w-4xl mx-auto">
+
+    {{-- Notifikasi --}}
+    @if(session('success'))
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md" role="alert">
+            <p class="font-bold">Sukses</p>
+            <p>{{ session('success') }}</p>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
+            <p class="font-bold">Error</p>
+            <p>{{ session('error') }}</p>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
+            <p class="font-bold">Terdapat kesalahan dalam formulir:</p>
+            <ul class="list-disc list-inside mt-2">
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Edit Karyawan Tidak Tetap</h2>
+                <p class="text-gray-600 mt-1">Perbarui data karyawan tidak tetap di bawah ini</p>
+            </div>
+            <a href="{{ route('karyawan-tidak-tetap.index') }}" class="text-sm text-indigo-600 hover:text-indigo-900 flex items-center gap-1">
+                <i class="fas fa-arrow-left"></i> Kembali
             </a>
         </div>
-        
-        <form action="{{ route('karyawan-tidak-tetap.update', $karyawanTidakTetap->id) }}" method="POST" class="p-6">
+
+        <form action="{{ route('karyawan-tidak-tetap.update', $karyawanTidakTetap->id) }}" method="POST">
             @csrf
             @method('PUT')
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Data Pribadi -->
-                <div class="col-span-1 md:col-span-2">
-                    <h3 class="text-lg font-medium leading-6 text-gray-900 border-b pb-2 mb-4">Data Pribadi</h3>
-                </div>
 
-                <!-- NIK -->
-                <div>
-                    <label for="nik" class="block text-sm font-medium text-gray-700">NIK <span class="text-red-500">*</span></label>
-                    <input type="text" name="nik" id="nik" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('nik', $karyawanTidakTetap->nik) }}" required>
-                    @error('nik')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+            @php
+                // Definisikan kelas Tailwind yang sederhana dan konsisten
+                $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
+                $readonlyInputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-200 shadow-sm text-[10px] p-2.5";
+                $selectClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
+                $labelClasses = "block text-xs font-medium text-gray-700";
+            @endphp
 
-                <!-- Nama Lengkap -->
-                <div>
-                    <label for="nama_lengkap" class="block text-sm font-medium text-gray-700">Nama Lengkap <span class="text-red-500">*</span></label>
-                    <input type="text" name="nama_lengkap" id="nama_lengkap" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('nama_lengkap', $karyawanTidakTetap->nama_lengkap) }}" required>
-                    @error('nama_lengkap')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+        {{-- Informasi Pribadi --}}
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Pribadi</legend>
+            <div class="form-section pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="nik" class="{{ $labelClasses }}">NIK <span class="text-red-500">*</span></label>
+                        <input type="text" name="nik" id="nik" class="{{ $readonlyInputClasses }}" required
+                            value="{{ old('nik', $karyawanTidakTetap->nik) }}" readonly>
+                    </div>
 
-                <!-- Nama Panggilan -->
-                <div>
-                    <label for="nama_panggilan" class="block text-sm font-medium text-gray-700">Nama Panggilan</label>
-                    <input type="text" name="nama_panggilan" id="nama_panggilan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('nama_panggilan', $karyawanTidakTetap->nama_panggilan) }}">
-                    @error('nama_panggilan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    <div>
+                        <label for="nama_lengkap" class="{{ $labelClasses }}">Nama Lengkap <span class="text-red-500">*</span></label>
+                        <input type="text" name="nama_lengkap" id="nama_lengkap" class="{{ $inputClasses }}" required value="{{ old('nama_lengkap', $karyawanTidakTetap->nama_lengkap) }}" placeholder="Masukkan nama lengkap">
+                    </div>
 
-                <!-- NIK KTP -->
-                <div>
-                    <label for="nik_ktp" class="block text-sm font-medium text-gray-700">NIK KTP</label>
-                    <input type="text" name="nik_ktp" id="nik_ktp" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('nik_ktp', $karyawanTidakTetap->nik_ktp) }}">
-                    @error('nik_ktp')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    <div>
+                        <label for="nama_panggilan" class="{{ $labelClasses }}">Nama Panggilan</label>
+                        <input type="text" name="nama_panggilan" id="nama_panggilan" class="{{ $inputClasses }}" value="{{ old('nama_panggilan', $karyawanTidakTetap->nama_panggilan) }}" placeholder="Masukkan nama panggilan">
+                    </div>
 
-                <!-- Jenis Kelamin -->
-                <div>
-                    <label for="jenis_kelamin" class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
-                    <select name="jenis_kelamin" id="jenis_kelamin" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                        <option value="">Pilih Jenis Kelamin</option>
-                        <option value="Laki-laki" {{ old('jenis_kelamin', $karyawanTidakTetap->jenis_kelamin) == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
-                        <option value="Perempuan" {{ old('jenis_kelamin', $karyawanTidakTetap->jenis_kelamin) == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
-                    </select>
-                    @error('jenis_kelamin')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    <div>
+                        <label for="email" class="{{ $labelClasses }}">Email</label>
+                        <input type="email" name="email" id="email" class="{{ $inputClasses }}" value="{{ old('email', $karyawanTidakTetap->email) }}" placeholder="contoh@email.com">
+                    </div>
 
-                <!-- Agama -->
-                <div>
-                    <label for="agama" class="block text-sm font-medium text-gray-700">Agama</label>
-                    <select name="agama" id="agama" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                        <option value="">Pilih Agama</option>
-                        <option value="Islam" {{ old('agama', $karyawanTidakTetap->agama) == 'Islam' ? 'selected' : '' }}>Islam</option>
-                        <option value="Kristen" {{ old('agama', $karyawanTidakTetap->agama) == 'Kristen' ? 'selected' : '' }}>Kristen</option>
-                        <option value="Katolik" {{ old('agama', $karyawanTidakTetap->agama) == 'Katolik' ? 'selected' : '' }}>Katolik</option>
-                        <option value="Hindu" {{ old('agama', $karyawanTidakTetap->agama) == 'Hindu' ? 'selected' : '' }}>Hindu</option>
-                        <option value="Buddha" {{ old('agama', $karyawanTidakTetap->agama) == 'Buddha' ? 'selected' : '' }}>Buddha</option>
-                        <option value="Konghucu" {{ old('agama', $karyawanTidakTetap->agama) == 'Konghucu' ? 'selected' : '' }}>Konghucu</option>
-                    </select>
-                    @error('agama')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    <div>
+                        <label for="jenis_kelamin" class="{{ $labelClasses }}">Jenis Kelamin</label>
+                        <select name="jenis_kelamin" id="jenis_kelamin" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Jenis Kelamin --</option>
+                            <option value="Laki-laki" {{ old('jenis_kelamin', $karyawanTidakTetap->jenis_kelamin) == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                            <option value="Perempuan" {{ old('jenis_kelamin', $karyawanTidakTetap->jenis_kelamin) == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                        </select>
+                    </div>
 
-                <!-- Email -->
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" name="email" id="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('email', $karyawanTidakTetap->email) }}">
-                    @error('email')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    <div>
+                        <label for="agama" class="{{ $labelClasses }}">Agama</label>
+                        <select name="agama" id="agama" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Agama --</option>
+                            <option value="Islam" {{ old('agama', $karyawanTidakTetap->agama) == 'Islam' ? 'selected' : '' }}>Islam</option>
+                            <option value="Kristen" {{ old('agama', $karyawanTidakTetap->agama) == 'Kristen' ? 'selected' : '' }}>Kristen</option>
+                            <option value="Katolik" {{ old('agama', $karyawanTidakTetap->agama) == 'Katolik' ? 'selected' : '' }}>Katolik</option>
+                            <option value="Hindu" {{ old('agama', $karyawanTidakTetap->agama) == 'Hindu' ? 'selected' : '' }}>Hindu</option>
+                            <option value="Buddha" {{ old('agama', $karyawanTidakTetap->agama) == 'Buddha' ? 'selected' : '' }}>Buddha</option>
+                            <option value="Konghucu" {{ old('agama', $karyawanTidakTetap->agama) == 'Konghucu' ? 'selected' : '' }}>Konghucu</option>
+                        </select>
+                    </div>
 
-                <!-- Data Pekerjaan -->
-                <div class="col-span-1 md:col-span-2 mt-6">
-                    <h3 class="text-lg font-medium leading-6 text-gray-900 border-b pb-2 mb-4">Data Pekerjaan</h3>
-                </div>
-
-                <!-- Divisi -->
-                <div>
-                    <label for="divisi" class="block text-sm font-medium text-gray-700">Divisi</label>
-                    <input type="text" name="divisi" id="divisi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('divisi', $karyawanTidakTetap->divisi) }}">
-                    @error('divisi')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Pekerjaan -->
-                <div>
-                    <label for="pekerjaan" class="block text-sm font-medium text-gray-700">Pekerjaan</label>
-                    <input type="text" name="pekerjaan" id="pekerjaan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('pekerjaan', $karyawanTidakTetap->pekerjaan) }}">
-                    @error('pekerjaan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Cabang AYP -->
-                <div>
-                    <label for="cabang" class="block text-sm font-medium text-gray-700">Cabang AYP</label>
-                    <input type="text" name="cabang" id="cabang" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('cabang', $karyawanTidakTetap->cabang) }}">
-                    @error('cabang')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Tanggal Masuk -->
-                <div>
-                    <label for="tanggal_masuk" class="block text-sm font-medium text-gray-700">Tanggal Masuk Kerja</label>
-                    <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('tanggal_masuk', $karyawanTidakTetap->tanggal_masuk ? $karyawanTidakTetap->tanggal_masuk->format('Y-m-d') : '') }}">
-                    @error('tanggal_masuk')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Status Pajak -->
-                <div>
-                    <label for="status_pajak" class="block text-sm font-medium text-gray-700">Status Pajak</label>
-                    <input type="text" name="status_pajak" id="status_pajak" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('status_pajak', $karyawanTidakTetap->status_pajak) }}">
-                    @error('status_pajak')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Alamat Domisili -->
-                <div class="col-span-1 md:col-span-2 mt-6">
-                    <h3 class="text-lg font-medium leading-6 text-gray-900 border-b pb-2 mb-4">Alamat Domisili</h3>
-                </div>
-
-                <!-- Alamat Lengkap -->
-                <div class="col-span-1 md:col-span-2">
-                    <label for="alamat_lengkap" class="block text-sm font-medium text-gray-700">Alamat Lengkap</label>
-                    <textarea name="alamat_lengkap" id="alamat_lengkap" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">{{ old('alamat_lengkap', $karyawanTidakTetap->alamat_lengkap) }}</textarea>
-                    @error('alamat_lengkap')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- RT/RW -->
-                <div>
-                    <label for="rt_rw" class="block text-sm font-medium text-gray-700">RT/RW</label>
-                    <input type="text" name="rt_rw" id="rt_rw" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('rt_rw', $karyawanTidakTetap->rt_rw) }}">
-                    @error('rt_rw')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Kelurahan -->
-                <div>
-                    <label for="kelurahan" class="block text-sm font-medium text-gray-700">Kelurahan</label>
-                    <input type="text" name="kelurahan" id="kelurahan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('kelurahan', $karyawanTidakTetap->kelurahan) }}">
-                    @error('kelurahan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Kecamatan -->
-                <div>
-                    <label for="kecamatan" class="block text-sm font-medium text-gray-700">Kecamatan</label>
-                    <input type="text" name="kecamatan" id="kecamatan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('kecamatan', $karyawanTidakTetap->kecamatan) }}">
-                    @error('kecamatan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Kabupaten -->
-                <div>
-                    <label for="kabupaten" class="block text-sm font-medium text-gray-700">Kabupaten/Kota</label>
-                    <input type="text" name="kabupaten" id="kabupaten" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('kabupaten', $karyawanTidakTetap->kabupaten) }}">
-                    @error('kabupaten')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Provinsi -->
-                <div>
-                    <label for="provinsi" class="block text-sm font-medium text-gray-700">Provinsi</label>
-                    <input type="text" name="provinsi" id="provinsi" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('provinsi', $karyawanTidakTetap->provinsi) }}">
-                    @error('provinsi')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Kode Pos -->
-                <div>
-                    <label for="kode_pos" class="block text-sm font-medium text-gray-700">Kode Pos</label>
-                    <input type="text" name="kode_pos" id="kode_pos" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" value="{{ old('kode_pos', $karyawanTidakTetap->kode_pos) }}">
-                    @error('kode_pos')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <div>
+                        <label for="nik_ktp" class="{{ $labelClasses }}">Nomor KTP</label>
+                        <input type="text" name="nik_ktp" id="nik_ktp" class="{{ $inputClasses }}" value="{{ old('nik_ktp', $karyawanTidakTetap->nik_ktp) }}" placeholder="Masukkan nomor KTP">
+                    </div>
                 </div>
             </div>
+        </fieldset>
 
-            <div class="mt-6 flex justify-end">
-                <button type="submit" class="bg-blue-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Update Data
-                </button>
+        {{-- Informasi Pekerjaan --}}
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Pekerjaan</legend>
+            <div class="form-section pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="divisi" class="{{ $labelClasses }}">Divisi</label>
+                        <input type="text" name="divisi" id="divisi" class="{{ $readonlyInputClasses }}" value="{{ old('divisi', $karyawanTidakTetap->divisi ?? 'NON KARYAWAN') }}" readonly>
+                    </div>
+
+                    <div class="relative">
+                        <label for="pekerjaan" class="{{ $labelClasses }}">Pekerjaan</label>
+                        <div class="relative">
+                            <input type="text" id="pekerjaan_search" class="{{ $inputClasses }}" placeholder="-- Pilih Pekerjaan --" autocomplete="off" value="{{ old('pekerjaan', $karyawanTidakTetap->pekerjaan) }}">
+                            <input type="hidden" name="pekerjaan" id="pekerjaan" value="{{ old('pekerjaan', $karyawanTidakTetap->pekerjaan) }}">
+                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none top-4">
+                                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                        <ul id="pekerjaan_dropdown" class="absolute z-50 w-full bg-white border border-gray-300 rounded-md mt-1 shadow-lg max-h-40 overflow-y-auto hidden text-[10px]">
+                            @foreach($pekerjaans as $p)
+                                <li class="px-3 py-2 cursor-pointer hover:bg-indigo-50 text-gray-700" data-value="{{ $p->nama_pekerjaan }}">{{ $p->nama_pekerjaan }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+
+                    <div>
+                        <label for="cabang" class="{{ $labelClasses }}">Kantor Cabang AYP</label>
+                        <select name="cabang" id="cabang" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Kantor Cabang AYP --</option>
+                            <option value="JAKARTA" {{ old('cabang', $karyawanTidakTetap->cabang) == 'JAKARTA' ? 'selected' : '' }}>JAKARTA</option>
+                            <option value="BATAM" {{ old('cabang', $karyawanTidakTetap->cabang) == 'BATAM' ? 'selected' : '' }}>BATAM</option>
+                            <option value="TANJUNG PINANG" {{ old('cabang', $karyawanTidakTetap->cabang) == 'TANJUNG PINANG' ? 'selected' : '' }}>TANJUNG PINANG</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="tanggal_masuk" class="{{ $labelClasses }}">Tanggal Masuk Kerja</label>
+                        <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="{{ $inputClasses }}" value="{{ old('tanggal_masuk', $karyawanTidakTetap->tanggal_masuk ? $karyawanTidakTetap->tanggal_masuk->format('Y-m-d') : '') }}">
+                    </div>
+
+                    <div>
+                        <label for="status_pajak" class="{{ $labelClasses }}">Status Pajak</label>
+                        <select name="status_pajak" id="status_pajak" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Status Pajak --</option>
+                            @foreach($pajaks as $pajak)
+                                <option value="{{ $pajak->nama_status }}" {{ old('status_pajak', $karyawanTidakTetap->status_pajak) == $pajak->nama_status ? 'selected' : '' }}>{{ $pajak->nama_status }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
             </div>
+        </fieldset>
+
+        {{-- Informasi Alamat --}}
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Alamat Domisili</legend>
+            <div class="form-section pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div class="lg:col-span-2">
+                        <label for="alamat_lengkap" class="{{ $labelClasses }}">Alamat Lengkap</label>
+                        <textarea name="alamat_lengkap" id="alamat_lengkap" rows="3" class="{{ $inputClasses }}" placeholder="Alamat lengkap">{{ old('alamat_lengkap', $karyawanTidakTetap->alamat_lengkap) }}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="rt_rw" class="{{ $labelClasses }}">RT/RW</label>
+                        <input type="text" name="rt_rw" id="rt_rw" class="{{ $inputClasses }}" value="{{ old('rt_rw', $karyawanTidakTetap->rt_rw) }}" placeholder="00/00">
+                    </div>
+
+                    <div>
+                        <label for="kelurahan" class="{{ $labelClasses }}">Kelurahan</label>
+                        <input type="text" name="kelurahan" id="kelurahan" class="{{ $inputClasses }}" value="{{ old('kelurahan', $karyawanTidakTetap->kelurahan) }}" placeholder="Nama kelurahan">
+                    </div>
+
+                    <div>
+                        <label for="kecamatan" class="{{ $labelClasses }}">Kecamatan</label>
+                        <input type="text" name="kecamatan" id="kecamatan" class="{{ $inputClasses }}" value="{{ old('kecamatan', $karyawanTidakTetap->kecamatan) }}" placeholder="Nama kecamatan">
+                    </div>
+
+                    <div>
+                        <label for="kabupaten" class="{{ $labelClasses }}">Kabupaten/Kota</label>
+                        <input type="text" name="kabupaten" id="kabupaten" class="{{ $inputClasses }}" value="{{ old('kabupaten', $karyawanTidakTetap->kabupaten) }}" placeholder="Nama kabupaten/kota">
+                    </div>
+
+                    <div>
+                        <label for="provinsi" class="{{ $labelClasses }}">Provinsi</label>
+                        <input type="text" name="provinsi" id="provinsi" class="{{ $inputClasses }}" value="{{ old('provinsi', $karyawanTidakTetap->provinsi) }}" placeholder="Nama provinsi">
+                    </div>
+
+                    <div>
+                        <label for="kode_pos" class="{{ $labelClasses }}">Kode Pos</label>
+                        <input type="text" name="kode_pos" id="kode_pos" class="{{ $inputClasses }}" value="{{ old('kode_pos', $karyawanTidakTetap->kode_pos) }}" placeholder="12345">
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="flex justify-end mt-8">
+            <a href="{{ route('karyawan-tidak-tetap.index') }}" class="inline-flex justify-center py-2 px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
+                Batal
+            </a>
+            <button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Simpan Perubahan
+            </button>
+        </div>
         </form>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('pekerjaan_search');
+        const hiddenInput = document.getElementById('pekerjaan');
+        const dropdown = document.getElementById('pekerjaan_dropdown');
+        const options = dropdown.querySelectorAll('li');
+
+        // Show dropdown on focus or click
+        searchInput.addEventListener('focus', () => {
+            dropdown.classList.remove('hidden');
+        });
+        
+        searchInput.addEventListener('click', () => {
+            dropdown.classList.remove('hidden');
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Filter options
+        searchInput.addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            let hasResults = false;
+            
+            options.forEach(option => {
+                const text = option.innerText.toLowerCase();
+                if (text.includes(filter)) {
+                    option.classList.remove('hidden');
+                    hasResults = true;
+                } else {
+                    option.classList.add('hidden');
+                }
+            });
+
+            dropdown.classList.remove('hidden');
+        });
+
+        // Select option
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                const text = this.innerText;
+                
+                searchInput.value = text;
+                hiddenInput.value = value;
+                dropdown.classList.add('hidden');
+            });
+        });
+        
+        // Handle manual input
+        searchInput.addEventListener('change', function() {
+             hiddenInput.value = this.value; 
+        });
+    });
+</script>
+@endpush

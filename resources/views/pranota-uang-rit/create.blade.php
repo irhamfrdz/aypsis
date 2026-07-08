@@ -3,7 +3,7 @@
 @section('title', 'Tambah Pranota Uang Supir')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
     <div class="bg-white shadow-lg rounded-lg p-4">
         {{-- Notifikasi --}}
         @if($errors->any())
@@ -465,10 +465,6 @@
                             @endforelse
                         </tbody>
                         <tfoot class="bg-gray-100 border-t-2 border-gray-300">
-                            <!-- Grand Total Per Person (will be populated by JavaScript) -->
-                            <tbody id="grandTotalPerPerson" class="bg-yellow-50 border-t-2 border-yellow-300 hidden">
-                                <!-- Per person totals will be inserted here by JavaScript -->
-                            </tbody>
                             <!-- Overall Grand Total -->
                             <tr class="font-semibold text-gray-800 bg-gray-200">
                                 <td class="px-2 py-3 text-xs font-bold" colspan="5">
@@ -539,6 +535,33 @@
                 @enderror
             </div>
 
+            <!-- Rincian Per Supir (Dedicated Section) -->
+            <div id="rincianPerSupirSection" class="bg-white border border-gray-200 rounded-lg overflow-hidden mt-4 hidden">
+                <div class="bg-yellow-50 px-3 py-2.5 border-b border-yellow-200">
+                    <h4 class="text-sm font-semibold text-yellow-800 flex items-center gap-2">
+                        <span>📊 Rincian Potongan & Penyesuaian per Supir</span>
+                    </h4>
+                </div>
+                <div class="p-3">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Supir</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Surat Jalan</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Total Uang Supir</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Potongan & Penyesuaian (Rupiah)</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Grand Total Bersih</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rincianPerSupirBody" class="divide-y divide-gray-100 bg-white">
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Submit Button -->
             @if($suratJalans->count() > 0)
                 <div class="flex flex-col sm:flex-row justify-end gap-2">
@@ -567,6 +590,8 @@
 
 @push('scripts')
 <script>
+const driverAttendance = @json($driverAttendance ?? []);
+const driverBalances = @json($driverBalances ?? []);
 document.addEventListener('DOMContentLoaded', function () {
     const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     const suratJalanCheckboxes = document.querySelectorAll('.surat-jalan-checkbox');
@@ -655,29 +680,33 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updatePersonTotals(personTotals) {
-        const grandTotalPerPersonContainer = document.getElementById('grandTotalPerPerson');
+        const rincianSection = document.getElementById('rincianPerSupirSection');
+        const rincianBody = document.getElementById('rincianPerSupirBody');
         
-        if (!grandTotalPerPersonContainer) return;
+        if (!rincianSection || !rincianBody) return;
+
+        // Save current input values to preserve user edits
+        const savedValues = {};
+        document.querySelectorAll('.person-utang-input').forEach(input => {
+            const personId = input.dataset.person;
+            savedValues[personId] = {
+                utang: input.value,
+                tabungan: document.querySelector(`.person-tabungan-input[data-person="${personId}"]`)?.value || '0',
+                bpjs: document.querySelector(`.person-bpjs-input[data-person="${personId}"]`)?.value || '0',
+                adjustment: document.querySelector(`.person-adjustment-input[data-person="${personId}"]`)?.value || '0',
+                lastCount: input.dataset.lastCount || '0'
+            };
+        });
 
         // Clear existing content
-        grandTotalPerPersonContainer.innerHTML = '';
+        rincianBody.innerHTML = '';
 
         // Check if there are any person totals to display
         const hasPersonTotals = Object.keys(personTotals).length > 0;
         
         if (hasPersonTotals) {
-            grandTotalPerPersonContainer.classList.remove('hidden');
+            rincianSection.classList.remove('hidden');
             
-            // Add header row for per person totals
-            const headerRow = document.createElement('tr');
-            headerRow.className = 'bg-yellow-100 font-semibold text-gray-700';
-            headerRow.innerHTML = `
-                <td class="px-2 py-2 text-xs font-bold" colspan="6">
-                    📊 TOTAL PER SUPIR
-                </td>
-            `;
-            grandTotalPerPersonContainer.appendChild(headerRow);
-
             // Sort persons alphabetically
             const sortedPersons = Object.keys(personTotals).sort();
 
@@ -685,67 +714,115 @@ document.addEventListener('DOMContentLoaded', function () {
             sortedPersons.forEach(personId => {
                 const totals = personTotals[personId];
                 const personName = totals.name;
-                
+
+                // Get active balance from driverBalances object
+                const activeBalance = parseFloat(driverBalances[personId.toUpperCase()]) || 0;
+
+                // Determine default values, applying the formula for utang (kelipatan 5 -> 100k)
+                let utangValue = 0;
+                let tabunganValue = 0;
+                let bpjsValue = 0;
+                let adjustmentValue = 0;
+
+                if (savedValues[personId]) {
+                    const saved = savedValues[personId];
+                    tabunganValue = saved.tabungan;
+                    bpjsValue = saved.bpjs;
+                    adjustmentValue = saved.adjustment;
+
+                    if (activeBalance <= 0) {
+                        utangValue = 0;
+                    } else if (parseInt(saved.lastCount) !== totals.count) {
+                        utangValue = Math.floor(totals.count / 5) * 100000;
+                    } else {
+                        utangValue = saved.utang;
+                    }
+                } else {
+                    if (activeBalance <= 0) {
+                        utangValue = 0;
+                    } else {
+                        utangValue = Math.floor(totals.count / 5) * 100000;
+                    }
+                }
                 const personRow = document.createElement('tr');
-                personRow.className = 'bg-yellow-50 text-gray-700 border-t border-yellow-200';
+                personRow.className = 'hover:bg-gray-50 transition-colors border-b border-gray-100';
                 
+                const grandTotal = totals.uangSupir - utangValue - tabunganValue - bpjsValue + adjustmentValue;
+                
+                // Get attendance count from pre-calculated driverAttendance object
+                const supirKeyUpper = personId.toUpperCase();
+                const absenCount = driverAttendance[supirKeyUpper] || 0;
+
                 personRow.innerHTML = `
-                    <td class="px-2 py-2 text-xs font-medium" colspan="2">
+                    <td class="px-4 py-3 text-xs font-semibold text-gray-800">
                         👤 ${personName}
                     </td>
-                    <td class="px-2 py-2 text-xs text-center">
-                        ${totals.count} surat jalan
+                    <td class="px-4 py-3 text-xs text-center text-gray-600">
+                        <div class="flex flex-col items-center gap-1">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-medium">${totals.count} surat jalan</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold" title="Jumlah hari absen berdasarkan Cek Kendaraan supir selama rentang tanggal">Absen: ${absenCount} hari</span>
+                        </div>
                     </td>
-                    <td class="px-2 py-2 text-xs text-center">
-                        -
-                    </td>
-                    <td class="px-2 py-2 text-right text-xs font-semibold text-indigo-600">
+                    <td class="px-4 py-3 text-right text-xs font-semibold text-indigo-600">
                         Rp ${totals.uangSupir.toLocaleString('id-ID')}
                     </td>
-                    <td class="px-2 py-2 text-right text-xs">
-                        <div class="flex gap-1">
-                            <input type="number" 
-                                   class="person-utang-input w-16 px-1 py-1 text-xs border border-red-300 rounded focus:ring-1 focus:ring-red-500 focus:border-red-500 text-right"
-                                   placeholder="Hutang" 
-                                   value="0"
-                                   min="0" 
-                                   step="1"
-                                   data-person="${personId}">
-                            <input type="number" 
-                                   class="person-tabungan-input w-16 px-1 py-1 text-xs border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 text-right"
-                                   placeholder="Tabungan" 
-                                   value="0"
-                                   min="0" 
-                                   step="1"
-                                   data-person="${personId}">
-                            <input type="number" 
-                                   class="person-bpjs-input w-16 px-1 py-1 text-xs border border-yellow-300 rounded focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 text-right"
-                                   placeholder="BPJS" 
-                                   value="0"
-                                   min="0" 
-                                   step="1"
-                                   data-person="${personId}">
-                            <input type="number" 
-                                   class="person-adjustment-input w-16 px-1 py-1 text-xs border border-sky-300 rounded focus:ring-1 focus:ring-sky-500 focus:border-sky-500 text-right"
-                                   placeholder="Adjusment" 
-                                   value="0"
-                                   step="1"
-                                   data-person="${personId}">
-                            <div class="person-grand-total w-20 px-1 py-1 text-xs bg-purple-50 border border-purple-200 rounded text-right font-semibold text-purple-700"
-                                 data-person="${personId}">
-                                Rp ${totals.uangSupir.toLocaleString('id-ID')}
+                    <td class="px-4 py-3 text-center text-xs">
+                        <div class="flex items-center justify-center gap-3">
+                            <div class="flex flex-col items-center">
+                                <span class="text-[9px] font-bold text-red-500 mb-0.5">HUTANG</span>
+                                <input type="number" 
+                                       class="person-utang-input w-24 px-2 py-1 text-xs border border-red-300 rounded focus:ring-1 focus:ring-red-500 focus:border-red-500 text-right"
+                                       value="${utangValue}"
+                                       min="0" 
+                                       step="1000"
+                                       data-person="${personId}"
+                                       data-last-count="${totals.count}">
                             </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-[9px] font-bold text-green-500 mb-0.5">TABUNGAN</span>
+                                <input type="number" 
+                                       class="person-tabungan-input w-24 px-2 py-1 text-xs border border-green-300 rounded focus:ring-1 focus:ring-green-500 focus:border-green-500 text-right"
+                                       value="${tabunganValue}"
+                                       min="0" 
+                                       step="1000"
+                                       data-person="${personId}">
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-[9px] font-bold text-yellow-600 mb-0.5">BPJS</span>
+                                <input type="number" 
+                                       class="person-bpjs-input w-24 px-2 py-1 text-xs border border-yellow-300 rounded focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 text-right"
+                                       value="${bpjsValue}"
+                                       min="0" 
+                                       step="1000"
+                                       data-person="${personId}">
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <span class="text-[9px] font-bold text-sky-500 mb-0.5">ADJUSMENT</span>
+                                <input type="number" 
+                                       class="person-adjustment-input w-24 px-2 py-1 text-xs border border-sky-300 rounded focus:ring-1 focus:ring-sky-500 focus:border-sky-500 text-right"
+                                       value="${adjustmentValue}"
+                                       step="1000"
+                                       data-person="${personId}">
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-right text-xs">
+                        <div class="person-grand-total inline-block px-3 py-1.5 text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200 rounded-md text-right"
+                             data-person="${personId}">
+                            Rp ${grandTotal.toLocaleString('id-ID')}
                         </div>
                     </td>
                 `;
                 
-                grandTotalPerPersonContainer.appendChild(personRow);
+                rincianBody.appendChild(personRow);
             });
             
             // Add event listeners for person-level inputs
             addPersonInputListeners();
+            // Automatically update overall totals to reflect values
+            updatePersonGrandTotals();
         } else {
-            grandTotalPerPersonContainer.classList.add('hidden');
+            rincianSection.classList.add('hidden');
         }
     }
 
@@ -1225,6 +1302,27 @@ document.addEventListener('DOMContentLoaded', function () {
             adjustmentInput.name = `supir_details[${realSupirNama}][adjustment]`;
             adjustmentInput.value = adjustmentValue;
             supirDetailsContainer.appendChild(adjustmentInput);
+        });
+
+        // Add hidden input for each supir's absen
+        personUtangInputs.forEach(input => {
+            const personId = input.dataset.person;
+            let realSupirNama = personId;
+            for (let cb of suratJalanCheckboxes) {
+                if ((cb.dataset.supir_identifier || cb.dataset.supir_nama) === personId) {
+                    realSupirNama = cb.dataset.supir_nama;
+                    break;
+                }
+            }
+
+            const supirKeyUpper = personId.toUpperCase();
+            const absenValue = driverAttendance[supirKeyUpper] || 0;
+
+            const absenInput = document.createElement('input');
+            absenInput.type = 'hidden';
+            absenInput.name = `supir_details[${realSupirNama}][absen]`;
+            absenInput.value = absenValue;
+            supirDetailsContainer.appendChild(absenInput);
         });
     }
 

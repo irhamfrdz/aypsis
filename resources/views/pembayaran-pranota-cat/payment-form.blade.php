@@ -51,6 +51,9 @@
             @foreach($pranotaList as $pranota)
                 <input type="hidden" name="pranota_ids[]" value="{{ $pranota->id }}">
             @endforeach
+            @foreach($pranotaTagihanCatList as $pranota)
+                <input type="hidden" name="pranota_tagihan_ids[]" value="{{ $pranota->id }}">
+            @endforeach
 
             <!-- Data Pembayaran & Bank -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
@@ -174,6 +177,29 @@
                                         @endforeach
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->calculateTotalCatAmount(), 0, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                            @foreach ($pranotaTagihanCatList as $pranota)
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                                        {{ $pranota->no_invoice }}
+                                        <input type="hidden" name="pranota_tagihan_ids[]" value="{{ $pranota->id }}">
+                                    </td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        @php
+                                            $tagihans = $pranota->tagihanCatItems();
+                                        @endphp
+                                        @foreach($tagihans as $item)
+                                            <div>{{ $item->no_kontainer ?? '-' }}</div>
+                                        @endforeach
+                                    </td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        {{ $pranota->supplier ?? '-' }}
+                                    </td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        {{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d/M/Y') : '-' }}
+                                    </td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->total_amount, 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

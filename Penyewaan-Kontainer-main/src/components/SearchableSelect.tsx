@@ -16,6 +16,7 @@ interface SearchableSelectProps {
   searchPlaceholder?: string;
   className?: string;
   inputClassName?: string;
+  disabled?: boolean;
 }
 
 export default function SearchableSelect({
@@ -27,6 +28,7 @@ export default function SearchableSelect({
   searchPlaceholder = 'Cari...',
   className = '',
   inputClassName = '',
+  disabled = false,
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -53,11 +55,15 @@ export default function SearchableSelect({
     <div ref={containerRef} className={`relative ${className}`} id={id}>
       <button
         type="button"
+        disabled={disabled}
         onClick={() => {
+          if (disabled) return;
           setIsOpen(!isOpen);
           setSearch('');
         }}
-        className={`w-full text-left text-sm border border-slate-200 rounded-xl px-3.5 py-2 bg-white text-slate-800 flex items-center justify-between hover:border-slate-300 transition-all cursor-pointer ${inputClassName}`}
+        className={`w-full text-left text-sm border border-slate-200 rounded-xl px-3.5 py-2 bg-white text-slate-800 flex items-center justify-between hover:border-slate-300 transition-all ${
+          disabled ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-slate-200' : 'cursor-pointer'
+        } ${inputClassName}`}
       >
         <span className={selectedOption ? 'font-mono text-slate-800 font-bold' : 'text-slate-400'}>
           {selectedOption ? selectedOption.label : placeholder}
@@ -75,7 +81,7 @@ export default function SearchableSelect({
               onChange={(e) => setSearch(e.target.value)}
               placeholder={searchPlaceholder}
               autoFocus
-              className="w-full bg-transparent border-none outline-none text-xs p-1 font-sans"
+              className="w-full bg-transparent border-none outline-none text-xs p-1 font-sans text-slate-800 focus:text-slate-800"
             />
             {search && (
               <button 

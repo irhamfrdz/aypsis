@@ -135,10 +135,10 @@
                         <i class="fas fa-file-excel mr-2"></i>
                         Export Excel
                     </a>
-                    <a href="{{ route('prospek.export-excel', array_merge(request()->query(), ['template' => 'manifest'])) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                    <button type="button" onclick="openManifestModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                         <i class="fas fa-file-invoice mr-2"></i>
                         Export Manifest
-                    </a>
+                    </button>
                     <a href="{{ route('prospek.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
                         <i class="fas fa-times mr-2"></i>
                         Reset
@@ -1192,7 +1192,75 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+function openManifestModal() {
+    document.getElementById('modalExportManifest').classList.remove('hidden');
+}
+
+function closeManifestModal() {
+    document.getElementById('modalExportManifest').classList.add('hidden');
+}
 </script>
+
+<!-- Modal Export Manifest -->
+<div id="modalExportManifest" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background Overlay -->
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="closeManifestModal()"></div>
+        
+        <!-- Center Modal -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-150">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100 text-indigo-600">
+                        <i class="fas fa-file-invoice text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Export Manifest</h3>
+                        <p class="text-[9px] text-gray-400 uppercase tracking-wider mt-0.5">Filter Data Manifest sebelum diexport</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeManifestModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+            
+            <form action="{{ route('prospek.export-excel') }}" method="GET" target="_blank" onsubmit="closeManifestModal()">
+                <input type="hidden" name="template" value="manifest">
+                
+                <div class="space-y-4">
+                    <!-- Tanggal Mulai -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Tanggal Mulai</label>
+                        <input type="date" name="tanggal_dari" value="{{ request('tanggal_dari', date('Y-m-d')) }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                    </div>
+                    
+                    <!-- Tanggal Akhir -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Tanggal Akhir</label>
+                        <input type="date" name="tanggal_sampai" value="{{ request('tanggal_sampai', date('Y-m-d')) }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                    </div>
+                    <!-- Tujuan -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Tujuan Pengiriman</label>
+                        <input type="text" name="tujuan" value="{{ request('tujuan') }}" placeholder="Contoh: Jakarta, Batam, dll." class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex justify-end space-x-2">
+                    <button type="button" onclick="closeManifestModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs uppercase tracking-wider transition">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-100 transition text-xs uppercase tracking-wider">
+                        Export Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @endsection
 

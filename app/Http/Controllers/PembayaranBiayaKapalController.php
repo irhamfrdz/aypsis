@@ -23,7 +23,7 @@ class PembayaranBiayaKapalController extends Controller
         $this->middleware('auth');
         $this->middleware('can:pembayaran-biaya-kapal-view')->only(['index', 'show']);
         $this->middleware('can:pembayaran-biaya-kapal-create')->only(['create', 'store']);
-        $this->middleware('can:pembayaran-biaya-kapal-edit')->only(['edit', 'update']);
+        $this->middleware('can:pembayaran-biaya-kapal-edit')->only(['edit', 'update', 'syncCoa']);
         $this->middleware('can:pembayaran-biaya-kapal-delete')->only(['destroy']);
     }
 
@@ -194,6 +194,72 @@ class PembayaranBiayaKapalController extends Controller
     }
 
     /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+    {
+        $pembayaran = PembayaranBiayaKapal::with(['biayaKapals.klasifikasiBiaya'])->findOrFail($id);
+
+        $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%kas%')
+            ->orderBy('nama_akun')
+            ->get();
+
+        return view('pembayaran-biaya-kapal.edit', compact('pembayaran', 'akunCoa'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $pembayaran = PembayaranBiayaKapal::findOrFail($id);
+
+        $validated = $request->validate([
+            'tanggal_pembayaran' => 'required|date',
+            'bank' => 'required|string',
+            'jenis_transaksi' => ['required', Rule::in(['debit', 'kredit'])],
+            'total_tagihan_penyesuaian' => 'nullable|numeric',
+            'alasan_penyesuaian' => 'nullable|string',
+            'keterangan' => 'nullable|string',
+            'nomor_accurate' => 'nullable|string',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $pembayaran->update([
+                'nomor_accurate' => $request->nomor_accurate,
+                'tanggal_pembayaran' => $request->tanggal_pembayaran,
+                'bank' => $request->bank,
+                'jenis_transaksi' => $request->jenis_transaksi,
+                'total_pembayaran' => $pembayaran->biayaKapals()->sum(DB::raw('nominal')), // preserve original total of items
+                'total_tagihan_penyesuaian' => $request->total_tagihan_penyesuaian ?? 0,
+                'alasan_penyesuaian' => $request->alasan_penyesuaian,
+                'keterangan' => $request->keterangan,
+                'updated_by' => Auth::id(),
+            ]);
+
+            // Re-run accounting if exists
+            if (method_exists($this->coaTransactionService, 'pembayaranBiayaKapal')) {
+                $this->coaTransactionService->pembayaranBiayaKapal($pembayaran);
+            }
+
+            DB::commit();
+
+            return redirect()->route('pembayaran-biaya-kapal.index')
+                ->with('success', 'Pembayaran biaya kapal berhasil diperbarui.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating pembayaran biaya kapal: '.$e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: '.$e->getMessage())->withInput();
+        }
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy($id)
@@ -223,6 +289,37 @@ class PembayaranBiayaKapalController extends Controller
             DB::rollBack();
 
             return back()->with('error', 'Gagal membatalkan pembayaran: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Synchronize the payment to COA.
+     */
+    public function syncCoa($id)
+    {
+        $pembayaran = PembayaranBiayaKapal::with(['biayaKapals.klasifikasiBiaya'])->findOrFail($id);
+
+        DB::beginTransaction();
+
+        try {
+            // 1. Delete existing COA transactions for this reference number
+            $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
+
+            // 2. Re-run integration
+            if (method_exists($this->coaTransactionService, 'pembayaranBiayaKapal')) {
+                $this->coaTransactionService->pembayaranBiayaKapal($pembayaran);
+            }
+
+            DB::commit();
+
+            return redirect()->route('pembayaran-biaya-kapal.show', $pembayaran->id)
+                ->with('success', 'Sinkronisasi COA berhasil.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error sync COA pembayaran biaya kapal: '.$e->getMessage());
+
+            return back()->with('error', 'Gagal sinkronisasi COA: '.$e->getMessage());
         }
     }
 

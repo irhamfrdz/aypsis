@@ -1,16 +1,19 @@
 export interface Customer {
   id_customer: string; // UUID/Random string
   nama_customer: string;
+  status_aktif?: boolean;
 }
 
 export interface TipeKontainer {
   id_tipe: string;
   nama_tipe: string; // e.g. "Dry", "Reefer", "Flat Rack"
+  status_aktif?: boolean;
 }
 
 export interface UkuranKontainer {
   id_ukuran: string;
   deskripsi_ukuran: string; // e.g. "20'", "40'"
+  status_aktif?: boolean;
 }
 
 export interface Kontainer {
@@ -30,6 +33,7 @@ export interface TarifSewa {
   tarif_harian: number;
   tanggal_mulai_berlaku: string; // YYYY-MM-DD
   tanggal_akhir_berlaku: string | null; // YYYY-MM-DD atau null jika masih berlaku
+  status_aktif?: boolean;
 }
 
 export interface Sewa {
@@ -58,6 +62,8 @@ export interface TagihanBulan {
   tanggal_tagihan: string | null;
   tanggal_bayar: string | null;
   nomor_invoice_grup: string | null; // Nomor Tagihan / Invoice No
+  nomor_pranota?: string | null; // Nomor Pranota / Proforma
+  tanggal_pranota?: string | null; // Tanggal Pranota / Proforma
   jumlah_tagihan_override?: number | null; // Nominal tagihan asli/aktual yang diimpor/diedit
   jumlah_bayar?: number | null; // Nominal yang dibayar
   selisih_pembayaran?: number | null; // Selisih TAGIHAN - ESTIMASI

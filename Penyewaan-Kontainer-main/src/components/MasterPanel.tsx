@@ -4,16 +4,16 @@ import { Customer, TipeKontainer, UkuranKontainer, Kontainer, TarifSewa } from '
 import { formatRupiah, formatIndoDate, parseInputDate, formatEntryDate } from '../utils';
 import { Plus, Trash2, Search, Edit2, Upload, AlertTriangle, Check, BookOpen, Save } from 'lucide-react';
 import SearchableSelect from './SearchableSelect';
+import { FormDateInput } from './FormDateInput';
 
 interface MasterPanelProps {
   state: AppState;
   onStateChange: (updated: AppState) => void;
   utcTime: string;
-  appMode?: 'sewa_out' | 'sewa_in';
 }
 
-export default function MasterPanel({ state, onStateChange, utcTime, appMode }: MasterPanelProps) {
-  const isSewaIn = appMode === 'sewa_in';
+export default function MasterPanel({ state, onStateChange, utcTime }: MasterPanelProps) {
+  const isSewaIn = true;
   const [activeSubTab, setActiveSubTab] = useState<'customer' | 'tipe' | 'ukuran' | 'kontainer' | 'tarif'>('customer');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -49,6 +49,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
   const [tarifBulan, setTarifBulan] = useState('');
   const [tarifHari, setTarifHari] = useState('');
   const [tarifStart, setTarifStart] = useState('');
+  const [tarifEnd, setTarifEnd] = useState('');
 
   // Notification state
   const [noti, setNoti] = useState<{ type: 'sukses' | 'error'; msg: string } | null>(null);
@@ -67,7 +68,8 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
     }
     const newCust: Customer = {
       id_customer: 'cust_' + Date.now(),
-      nama_customer: custName.trim()
+      nama_customer: custName.trim(),
+      status_aktif: true
     };
     const updated = { ...state, customers: [...state.customers, newCust] };
     onStateChange(updated);
@@ -75,19 +77,16 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
     triggerNoti('sukses', `Customer "${newCust.nama_customer}" berhasil ditambahkan`);
   };
 
-  const handleDeleteCustomer = (id: string, name: string) => {
-    // Check references
-    const hasSewa = state.sewas.some(s => s.id_customer === id);
-    if (hasSewa) {
-      triggerNoti('error', `Gagal: Customer "${name}" memiliki transaksi sewa aktif`);
-      return;
-    }
-    const updated = {
-      ...state,
-      customers: state.customers.filter(c => c.id_customer !== id)
-    };
-    onStateChange(updated);
-    triggerNoti('sukses', `Customer "${name}" telah dihapus`);
+  const handleToggleCustomerStatus = (id: string) => {
+    const updated = state.customers.map(c =>
+      c.id_customer === id
+        ? { ...c, status_aktif: c.status_aktif === false ? true : false }
+        : c
+    );
+    onStateChange({ ...state, customers: updated });
+    const c = state.customers.find(x => x.id_customer === id);
+    const nextVal = c?.status_aktif === false ? 'diaktifkan' : 'dinonaktifkan';
+    triggerNoti('sukses', `Customer "${c?.nama_customer}" berhasil ${nextVal}`);
   };
 
   // 2. Tipe Handlers
@@ -99,7 +98,8 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
     }
     const newTipe: TipeKontainer = {
       id_tipe: 'tipe_' + Date.now(),
-      nama_tipe: tipeName.trim()
+      nama_tipe: tipeName.trim(),
+      status_aktif: true
     };
     const updated = { ...state, tipes: [...state.tipes, newTipe] };
     onStateChange(updated);
@@ -107,15 +107,16 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
     triggerNoti('sukses', `Tipe "${newTipe.nama_tipe}" berhasil ditambahkan`);
   };
 
-  const handleDeleteTipe = (id: string, name: string) => {
-    const hasKont = state.kontainers.some(k => k.id_tipe === id);
-    if (hasKont) {
-      triggerNoti('error', `Gagal: Tipe "${name}" sedang digunakan oleh Data Kontainer`);
-      return;
-    }
-    const updated = { ...state, tipes: state.tipes.filter(t => t.id_tipe !== id) };
-    onStateChange(updated);
-    triggerNoti('sukses', `Tipe "${name}" telah dihapus`);
+  const handleToggleTipeStatus = (id: string) => {
+    const updated = state.tipes.map(t =>
+      t.id_tipe === id
+        ? { ...t, status_aktif: t.status_aktif === false ? true : false }
+        : t
+    );
+    onStateChange({ ...state, tipes: updated });
+    const t = state.tipes.find(x => x.id_tipe === id);
+    const nextVal = t?.status_aktif === false ? 'diaktifkan' : 'dinonaktifkan';
+    triggerNoti('sukses', `Tipe "${t?.nama_tipe}" berhasil ${nextVal}`);
   };
 
   // 3. Ukuran Handlers (Automatic Formatting 20 -> 20', 40 -> 40')
@@ -140,7 +141,8 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
 
     const newSize: UkuranKontainer = {
       id_ukuran: 'sz_' + Date.now(),
-      deskripsi_ukuran: formatted
+      deskripsi_ukuran: formatted,
+      status_aktif: true
     };
     const updated = { ...state, ukurans: [...state.ukurans, newSize] };
     onStateChange(updated);
@@ -148,15 +150,16 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
     triggerNoti('sukses', `Ukuran "${newSize.deskripsi_ukuran}" berhasil disimpan`);
   };
 
-  const handleDeleteUkuran = (id: string, desc: string) => {
-    const hasKont = state.kontainers.some(k => k.id_ukuran === id);
-    if (hasKont) {
-      triggerNoti('error', `Gagal: Ukuran "${desc}" sedang digunakan oleh Data Kontainer`);
-      return;
-    }
-    const updated = { ...state, ukurans: state.ukurans.filter(u => u.id_ukuran !== id) };
-    onStateChange(updated);
-    triggerNoti('sukses', `Ukuran "${desc}" telah dihapus`);
+  const handleToggleUkuranStatus = (id: string) => {
+    const updated = state.ukurans.map(u =>
+      u.id_ukuran === id
+        ? { ...u, status_aktif: u.status_aktif === false ? true : false }
+        : u
+    );
+    onStateChange({ ...state, ukurans: updated });
+    const u = state.ukurans.find(x => x.id_ukuran === id);
+    const nextVal = u?.status_aktif === false ? 'diaktifkan' : 'dinonaktifkan';
+    triggerNoti('sukses', `Ukuran "${u?.deskripsi_ukuran}" berhasil ${nextVal}`);
   };
 
   // 4. Kontainer Handlers
@@ -193,15 +196,16 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
     triggerNoti('sukses', `Kontainer "${cleanNo}" berhasil terdaftar`);
   };
 
-  const handleDeleteKontainer = (no: string) => {
-    const hasSewa = state.sewas.some(s => s.no_kontainer === no);
-    if (hasSewa) {
-      triggerNoti('error', `Gagal: Kontainer "${no}" sudah memiliki sejarah transaksi sewa`);
-      return;
-    }
-    const updated = { ...state, kontainers: state.kontainers.filter(k => k.no_kontainer !== no) };
-    onStateChange(updated);
-    triggerNoti('sukses', `Kontainer "${no}" telah dihapus`);
+  const handleToggleKontainerStatus = (no: string) => {
+    const updated = state.kontainers.map(k =>
+      k.no_kontainer === no
+        ? { ...k, status_aktif: !k.status_aktif }
+        : k
+    );
+    onStateChange({ ...state, kontainers: updated });
+    const k = state.kontainers.find(x => x.no_kontainer === no);
+    const nextVal = k?.status_aktif ? 'dinonaktifkan' : 'diaktifkan';
+    triggerNoti('sukses', `Kontainer "${no}" berhasil ${nextVal}`);
   };
 
   // 5. Tarif Handlers
@@ -221,6 +225,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
     }
 
     const validDate = parseInputDate(tarifStart) || utcTime.split('T')[0];
+    const parsedEnd = tarifEnd.trim() ? parseInputDate(tarifEnd) : null;
 
     // Check duplicate active tarif (overlapping starting dates with open tanggal_akhir_berlaku)
     const existingIdx = state.tarifs.findIndex(t => 
@@ -253,7 +258,8 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
       tarif_bulanan: monthlyRate,
       tarif_harian: dailyRate,
       tanggal_mulai_berlaku: validDate,
-      tanggal_akhir_berlaku: null
+      tanggal_akhir_berlaku: parsedEnd,
+      status_aktif: true
     };
 
     const updated = { ...state, tarifs: [...updatedTarifs, newTarif] };
@@ -262,13 +268,20 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
     // reset form
     setTarifBulan('');
     setTarifHari('');
+    setTarifEnd('');
     triggerNoti('sukses', 'Tarif berhasil disimpan dalam sistem database');
   };
 
-  const handleDeleteTarif = (id: string) => {
-    const updated = { ...state, tarifs: state.tarifs.filter(t => t.id_tarif !== id) };
-    onStateChange(updated);
-    triggerNoti('sukses', 'Satu rekor Tarif berhasil dihapus');
+  const handleToggleTarifStatus = (id: string) => {
+    const updated = state.tarifs.map(t =>
+      t.id_tarif === id
+        ? { ...t, status_aktif: t.status_aktif === false ? true : false }
+        : t
+    );
+    onStateChange({ ...state, tarifs: updated });
+    const t = state.tarifs.find(x => x.id_tarif === id);
+    const nextVal = t?.status_aktif === false ? 'diaktifkan' : 'dinonaktifkan';
+    triggerNoti('sukses', `Tarif berhasil ${nextVal}`);
   };
 
   // Helper getters for display names (ID disembunyikan!)
@@ -293,8 +306,8 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
           { id: 'customer', label: isSewaIn ? '1. Master Vendor / Owner' : '1. Master Customer' },
           { id: 'tipe', label: '2. Master Tipe Kontainer' },
           { id: 'ukuran', label: '3. Master Ukuran' },
-          { id: 'kontainer', label: '4. Master Kontainer' },
-          { id: 'tarif', label: isSewaIn ? '5. Master Tarif Sewa In' : '5. Master Tarif Sewa' },
+          { id: 'tarif', label: isSewaIn ? '4. Master Tarif Sewa In' : '4. Master Tarif Sewa' },
+          { id: 'kontainer', label: '5. Master Kontainer' },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -305,9 +318,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
             }}
             className={`px-4 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
               activeSubTab === tab.id
-                ? appMode === 'sewa_in'
-                  ? 'bg-indigo-650 text-white shadow-xs ring-1 ring-black/5'
-                  : 'bg-white text-emerald-700 shadow-xs ring-1 ring-black/5'
+                ? 'bg-indigo-600 text-white shadow-xs ring-1 ring-black/5'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
             }`}
           >
@@ -347,19 +358,15 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                     value={custName}
                     onChange={(e) => setCustName(e.target.value)}
                     placeholder={isSewaIn ? 'Contoh: PT. Temas Line' : 'Contoh: CV. Samudera Raya'}
-                    className={`w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 focus:ring-2 bg-white ${
-                      appMode === 'sewa_in' ? 'focus:ring-indigo-500/20 focus:border-indigo-500' : 'focus:ring-emerald-500/20 focus:border-emerald-500'
-                    }`}
+                    className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 focus:ring-2 bg-white focus:ring-indigo-500/20 focus:border-indigo-500"
                   />
                 </div>
                 <button
                   id="btn-submit-customer"
                   type="submit"
-                  className={`w-full inline-flex items-center justify-center text-white font-medium text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer ${
-                    appMode === 'sewa_in' ? 'bg-indigo-650 hover:bg-indigo-700' : 'bg-emerald-600 hover:bg-emerald-700'
-                  }`}
+                  className="w-full inline-flex items-center justify-center text-white font-medium text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer bg-indigo-600 hover:bg-indigo-700"
                 >
-                  <Save className="w-4 h-4 mr-1.5" /> {isSewaIn ? 'Simpan Vendor / Owner' : 'Simpan Customer'}
+                  <Save className="w-4 h-4 mr-1.5" /> Simpan {isSewaIn ? 'Vendor / Owner' : 'Customer'}
                 </button>
               </form>
             </div>
@@ -373,7 +380,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                   placeholder={isSewaIn ? 'Cari nama vendor / owner...' : 'Cari nama customer (FreetextSearch)...'}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none text-sm w-full"
+                  className="bg-transparent border-none outline-none text-sm w-full text-slate-800 font-medium focus:text-slate-900"
                 />
               </div>
 
@@ -382,7 +389,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-100 text-slate-600 font-medium">
                       <th className="p-3">{isSewaIn ? 'Nama Vendor / Owner' : 'Nama Customer'}</th>
-                      <th className="p-3 text-right">Aksi</th>
+                      <th className="p-3 text-right">Status / Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -392,13 +399,22 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                         <tr key={cust.id_customer} className="hover:bg-slate-50 text-slate-700">
                           <td className="p-3 font-medium text-sm">{cust.nama_customer}</td>
                           <td className="p-3 text-right">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold ${
+                              cust.status_aktif !== false
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-slate-100 text-slate-500 border border-slate-200'
+                            }`}>
+                              {cust.status_aktif !== false ? 'Aktif' : 'Non-Aktif'}
+                            </span>
                             <button
-                              id={`delete-cust-${cust.id_customer}`}
-                              onClick={() => handleDeleteCustomer(cust.id_customer, cust.nama_customer)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
-                              title="Hapus Customer"
+                              onClick={() => handleToggleCustomerStatus(cust.id_customer)}
+                              className={`ml-2 text-2xs px-2 py-1 rounded border transition-all font-medium cursor-pointer ${
+                                cust.status_aktif !== false
+                                  ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-200 bg-white'
+                                  : 'text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border-indigo-200 bg-white'
+                              }`}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              {cust.status_aktif !== false ? 'Nonaktifkan' : 'Aktifkan'}
                             </button>
                           </td>
                         </tr>
@@ -430,17 +446,13 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                     value={tipeName}
                     onChange={(e) => setTipeName(e.target.value)}
                     placeholder="Contoh: Dry, Reefer, Flat Rack"
-                    className={`w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 focus:ring-2 bg-white ${
-                      appMode === 'sewa_in' ? 'focus:ring-indigo-500/20 focus:border-indigo-500' : 'focus:ring-emerald-500/20 focus:border-emerald-500'
-                    }`}
+                    className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 focus:ring-2 bg-white focus:ring-indigo-500/20 focus:border-indigo-500"
                   />
                 </div>
                 <button
                   id="btn-submit-tipe"
                   type="submit"
-                  className={`w-full inline-flex items-center justify-center text-white font-medium text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer ${
-                    appMode === 'sewa_in' ? 'bg-indigo-650 hover:bg-indigo-700' : 'bg-emerald-600 hover:bg-emerald-700'
-                  }`}
+                  className="w-full inline-flex items-center justify-center text-white font-medium text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer bg-indigo-600 hover:bg-indigo-700"
                 >
                   <Save className="w-4 h-4 mr-1.5" /> Simpan Tipe
                 </button>
@@ -456,7 +468,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                   placeholder="Cari tipe..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none text-sm w-full"
+                  className="bg-transparent border-none outline-none text-sm w-full text-slate-800 font-medium focus:text-slate-900"
                 />
               </div>
 
@@ -465,7 +477,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-100 text-slate-600 font-medium">
                       <th className="p-3">Nama Tipe</th>
-                      <th className="p-3 text-right">Aksi</th>
+                      <th className="p-3 text-right">Status / Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -475,12 +487,22 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                         <tr key={tipe.id_tipe} className="hover:bg-slate-50 text-slate-700">
                           <td className="p-3 font-medium text-sm">{tipe.nama_tipe}</td>
                           <td className="p-3 text-right">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold ${
+                              tipe.status_aktif !== false
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-slate-100 text-slate-500 border border-slate-200'
+                            }`}>
+                              {tipe.status_aktif !== false ? 'Aktif' : 'Non-Aktif'}
+                            </span>
                             <button
-                              id={`delete-tipe-${tipe.id_tipe}`}
-                              onClick={() => handleDeleteTipe(tipe.id_tipe, tipe.nama_tipe)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
+                              onClick={() => handleToggleTipeStatus(tipe.id_tipe)}
+                              className={`ml-2 text-2xs px-2 py-1 rounded border transition-all font-medium cursor-pointer ${
+                                tipe.status_aktif !== false
+                                  ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-200 bg-white'
+                                  : 'text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border-indigo-200 bg-white'
+                              }`}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              {tipe.status_aktif !== false ? 'Nonaktifkan' : 'Aktifkan'}
                             </button>
                           </td>
                         </tr>
@@ -512,9 +534,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                     value={ukuranDesc}
                     onChange={(e) => setUkuranDesc(e.target.value)}
                     placeholder="Ketik 20 atau 40 (Sistem otomatis ubah ke 20' / 40')"
-                    className={`w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 focus:ring-2 bg-white ${
-                      appMode === 'sewa_in' ? 'focus:ring-indigo-500/20 focus:border-indigo-500' : 'focus:ring-emerald-500/20 focus:border-emerald-500'
-                    }`}
+                    className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 focus:ring-2 bg-white focus:ring-indigo-500/20 focus:border-indigo-500"
                   />
                   <span className="text-[10px] text-slate-500 mt-1 block font-mono">
                     Sistem otomatis menambahkan petik tunggal (&#39;) agar langsung tersaji sebagai format 20&#39; / 40&#39;.
@@ -523,9 +543,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                 <button
                   id="btn-submit-ukuran"
                   type="submit"
-                  className={`w-full inline-flex items-center justify-center text-white font-medium text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer ${
-                    appMode === 'sewa_in' ? 'bg-indigo-650 hover:bg-indigo-700' : 'bg-emerald-600 hover:bg-emerald-700'
-                  }`}
+                  className="w-full inline-flex items-center justify-center text-white font-medium text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer bg-indigo-600 hover:bg-indigo-700"
                 >
                   <Save className="w-4 h-4 mr-1.5" /> Simpan Ukuran
                 </button>
@@ -541,7 +559,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                   placeholder="Cari ukuran kontainer..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none text-sm w-full"
+                  className="bg-transparent border-none outline-none text-sm w-full text-slate-800 font-medium focus:text-slate-900"
                 />
               </div>
 
@@ -550,7 +568,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-100 text-slate-600 font-medium">
                       <th className="p-3">Deskripsi Ukuran</th>
-                      <th className="p-3 text-right">Aksi</th>
+                      <th className="p-3 text-right">Status / Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -560,12 +578,22 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                         <tr key={sz.id_ukuran} className="hover:bg-slate-50 text-slate-700">
                           <td className="p-3 font-mono text-sm font-semibold text-emerald-800">{sz.deskripsi_ukuran}</td>
                           <td className="p-3 text-right">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold ${
+                              sz.status_aktif !== false
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : 'bg-slate-100 text-slate-500 border border-slate-200'
+                            }`}>
+                              {sz.status_aktif !== false ? 'Aktif' : 'Non-Aktif'}
+                            </span>
                             <button
-                              id={`delete-ukuran-${sz.id_ukuran}`}
-                              onClick={() => handleDeleteUkuran(sz.id_ukuran, sz.deskripsi_ukuran)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
+                              onClick={() => handleToggleUkuranStatus(sz.id_ukuran)}
+                              className={`ml-2 text-2xs px-2 py-1 rounded border transition-all font-medium cursor-pointer ${
+                                sz.status_aktif !== false
+                                  ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-200 bg-white'
+                                  : 'text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border-indigo-200 bg-white'
+                              }`}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              {sz.status_aktif !== false ? 'Nonaktifkan' : 'Aktifkan'}
                             </button>
                           </td>
                         </tr>
@@ -597,21 +625,19 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                     value={kontNo}
                     onChange={(e) => setKontNo(e.target.value)}
                     placeholder="Contoh: GLDU7252828"
-                    className={`w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 focus:ring-2 bg-white font-mono ${
-                      appMode === 'sewa_in' ? 'focus:ring-indigo-500/20 focus:border-indigo-500' : 'focus:ring-emerald-500/20 focus:border-emerald-500'
-                    }`}
+                    className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-mono focus:text-slate-900 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">{isSewaIn ? 'Vendor Terkait (Pemilik)' : 'Customer Terkait'}</label>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Vendor Terkait (Pemilik)</label>
                   <SearchableSelect
                     id="select-kontainer-customer"
                     placeholder={isSewaIn ? '-- Pilih Vendor --' : '-- Pilih Customer --'}
                     searchPlaceholder={isSewaIn ? "Ketik nama vendor..." : "Ketik nama customer..."}
                     value={kontCustId}
                     onChange={(val) => setKontCustId(val)}
-                    options={state.customers.map(c => ({
+                    options={state.customers.filter(c => c.status_aktif !== false).map(c => ({
                       value: c.id_customer,
                       label: c.nama_customer
                     }))}
@@ -627,7 +653,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                       searchPlaceholder="Cari tipe..."
                       value={kontTipeId}
                       onChange={(val) => setKontTipeId(val)}
-                      options={state.tipes.map(t => ({
+                      options={state.tipes.filter(t => t.status_aktif !== false).map(t => ({
                         value: t.id_tipe,
                         label: t.nama_tipe
                       }))}
@@ -641,7 +667,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                       searchPlaceholder="Cari ukuran..."
                       value={kontUkuranId}
                       onChange={(val) => setKontUkuranId(val)}
-                      options={state.ukurans.map(u => ({
+                      options={state.ukurans.filter(u => u.status_aktif !== false).map(u => ({
                         value: u.id_ukuran,
                         label: u.deskripsi_ukuran
                       }))}
@@ -652,9 +678,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                 <button
                   id="btn-submit-kontainer"
                   type="submit"
-                  className={`w-full inline-flex items-center justify-center text-white font-medium text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer ${
-                    appMode === 'sewa_in' ? 'bg-indigo-650 hover:bg-indigo-700' : 'bg-emerald-600 hover:bg-emerald-700'
-                  }`}
+                  className="w-full inline-flex items-center justify-center text-white font-medium text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer bg-indigo-600 hover:bg-indigo-700"
                 >
                   <Save className="w-4 h-4 mr-1.5" /> Simpan Kontainer
                 </button>
@@ -670,7 +694,7 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                   placeholder={isSewaIn ? 'Cari No Kontainer atau Vendor...' : 'Cari No Kontainer atau Customer...'}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none text-sm w-full"
+                  className="bg-transparent border-none outline-none text-sm w-full text-slate-800 font-medium focus:text-slate-900"
                 />
               </div>
 
@@ -712,18 +736,24 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                               <td className="p-3 font-medium">{getTipeName(kont.id_tipe)}</td>
                               <td className="p-3 font-mono font-semibold text-emerald-800">{getUkuranDesc(kont.id_ukuran)}</td>
                               <td className="p-3">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-800">
-                                  Aktif
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold ${
+                                  kont.status_aktif !== false
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    : 'bg-slate-100 text-slate-500 border border-slate-200'
+                                }`}>
+                                  {kont.status_aktif !== false ? 'Aktif' : 'Non-Aktif'}
                                 </span>
                               </td>
                               <td className="p-3 text-right">
                                 <button
-                                  id={`delete-kontainer-${kont.no_kontainer}`}
-                                  onClick={() => handleDeleteKontainer(kont.no_kontainer)}
-                                  className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
-                                  title="Hapus Kontainer"
+                                  onClick={() => handleToggleKontainerStatus(kont.no_kontainer)}
+                                  className={`text-2xs px-2 py-1 rounded border transition-all font-medium cursor-pointer ${
+                                    kont.status_aktif !== false
+                                      ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-200 bg-white'
+                                      : 'text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border-indigo-200 bg-white'
+                                  }`}
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  {kont.status_aktif !== false ? 'Nonaktifkan' : 'Aktifkan'}
                                 </button>
                               </td>
                             </tr>
@@ -802,10 +832,10 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                   <SearchableSelect
                     id="select-tarif-customer"
                     placeholder={isSewaIn ? '-- Pilih Vendor --' : '-- Pilih Customer --'}
-                    searchPlaceholder={isSewaIn ? "Ketik nama vendor..." : "Ketik nama customer..."}
+                    searchPlaceholder="Cari..."
                     value={tarifCustId}
                     onChange={(val) => setTarifCustId(val)}
-                    options={state.customers.map(c => ({
+                    options={state.customers.filter(c => c.status_aktif !== false).map(c => ({
                       value: c.id_customer,
                       label: c.nama_customer
                     }))}
@@ -818,10 +848,10 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                     <SearchableSelect
                       id="select-tarif-tipe"
                       placeholder="-- Pilih Tipe --"
-                      searchPlaceholder="Cari tipe..."
+                      searchPlaceholder="Cari..."
                       value={tarifTipeId}
                       onChange={(val) => setTarifTipeId(val)}
-                      options={state.tipes.map(t => ({
+                      options={state.tipes.filter(t => t.status_aktif !== false).map(t => ({
                         value: t.id_tipe,
                         label: t.nama_tipe
                       }))}
@@ -832,10 +862,10 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                     <SearchableSelect
                       id="select-tarif-ukuran"
                       placeholder="-- Pilih Ukuran --"
-                      searchPlaceholder="Cari ukuran..."
+                      searchPlaceholder="Cari..."
                       value={tarifUkuranId}
                       onChange={(val) => setTarifUkuranId(val)}
-                      options={state.ukurans.map(u => ({
+                      options={state.ukurans.filter(u => u.status_aktif !== false).map(u => ({
                         value: u.id_ukuran,
                         label: u.deskripsi_ukuran
                       }))}
@@ -851,10 +881,8 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                       type="number"
                       value={tarifBulan}
                       onChange={(e) => setTarifBulan(e.target.value)}
-                      placeholder="Contoh: 3000000"
-                      className={`w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:ring-2 ${
-                        appMode === 'sewa_in' ? 'focus:ring-indigo-500/20 focus:border-indigo-500' : 'focus:ring-emerald-500/20 focus:border-emerald-500'
-                      }`}
+                      placeholder="Contoh: 1500000"
+                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-mono text-slate-800"
                     />
                   </div>
                   <div>
@@ -864,35 +892,39 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                       type="number"
                       value={tarifHari}
                       onChange={(e) => setTarifHari(e.target.value)}
-                      placeholder="Contoh: 150000"
-                      className={`w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:ring-2 ${
-                        appMode === 'sewa_in' ? 'focus:ring-indigo-500/20 focus:border-indigo-500' : 'focus:ring-emerald-500/20 focus:border-emerald-500'
-                      }`}
+                      placeholder="Contoh: 75000"
+                      className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-mono text-slate-800"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Tanggal Mulai Berlaku</label>
-                  <input
-                    id="input-tarif-tanggal-mulai"
-                    type="text"
-                    value={tarifStart}
-                    onChange={(e) => setTarifStart(e.target.value)}
-                    placeholder="dd/mm/yyyy (cth: 01/01/2026)"
-                    className={`w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 bg-white focus:ring-2 ${
-                      appMode === 'sewa_in' ? 'focus:ring-indigo-500/20 focus:border-indigo-500' : 'focus:ring-emerald-500/20 focus:border-emerald-500'
-                    }`}
-                  />
-                  <p className="text-[10px] text-slate-500 mt-0.5">Biarkan kosong untuk menggunakan tanggal hari ini.</p>
+                <div className="grid grid-cols-2 gap-3" id="tariff-dates">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Tanggal Mulai Berlaku</label>
+                    <FormDateInput
+                      id="input-tarif-tanggal-mulai"
+                      value={tarifStart}
+                      onChange={(val) => setTarifStart(val)}
+                      placeholder="dd/mm/yyyy"
+                      className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Berlaku Sampai Tanggal</label>
+                    <FormDateInput
+                      id="input-tarif-tanggal-akhir"
+                      value={tarifEnd}
+                      onChange={(val) => setTarifEnd(val)}
+                      placeholder="dd/mm/yyyy"
+                      className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800"
+                    />
+                  </div>
                 </div>
 
                 <button
                   id="btn-submit-tarif"
                   type="submit"
-                  className={`w-full inline-flex items-center justify-center text-white font-medium text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer ${
-                    appMode === 'sewa_in' ? 'bg-indigo-650 hover:bg-indigo-700' : 'bg-emerald-600 hover:bg-emerald-700'
-                  }`}
+                  className="w-full inline-flex items-center justify-center text-white font-medium text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer bg-indigo-600 hover:bg-indigo-700"
                 >
                   <Save className="w-4 h-4 mr-1.5" /> Simpan Tarif
                 </button>
@@ -905,10 +937,10 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                 <input
                   id="search-tarif"
                   type="text"
-                  placeholder="Cari tarif customer..."
+                  placeholder="Cari tarif vendor..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none outline-none text-sm w-full"
+                  className="bg-transparent border-none outline-none text-sm w-full text-slate-800 font-medium focus:text-slate-900"
                 />
               </div>
 
@@ -916,13 +948,13 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                 <table className="w-full text-left border-collapse text-xs" id="table-tarif">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-100 text-slate-600 font-medium">
-                      <th className="p-3">Customer</th>
+                      <th className="p-3">Vendor / Owner</th>
                       <th className="p-3">Tipe &amp; Ukuran</th>
                       <th className="p-3 text-right">Tarif Bulanan</th>
                       <th className="p-3 text-right">Tarif Harian</th>
                       <th className="p-3 text-center">Berlaku Mulai</th>
                       <th className="p-3 text-center">Berlaku Selesai</th>
-                      <th className="p-3 text-right">Aksi</th>
+                      <th className="p-3 text-right">Status / Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -949,14 +981,25 @@ export default function MasterPanel({ state, onStateChange, utcTime, appMode }: 
                             )}
                           </td>
                           <td className="p-3 text-right">
-                            <button
-                              id={`delete-tarif-${tarif.id_tarif}`}
-                              onClick={() => handleDeleteTarif(tarif.id_tarif)}
-                              className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors cursor-pointer"
-                              title="Hapus Tarif"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <div className="flex flex-col items-end gap-1">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold ${
+                                tarif.status_aktif !== false
+                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-slate-100 text-slate-500 border border-slate-200'
+                              }`}>
+                                {tarif.status_aktif !== false ? 'Aktif' : 'Non-Aktif'}
+                              </span>
+                              <button
+                                onClick={() => handleToggleTarifStatus(tarif.id_tarif)}
+                                className={`text-2xs px-1.5 py-0.5 rounded border transition-all font-medium cursor-pointer ${
+                                  tarif.status_aktif !== false
+                                    ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-200 bg-white'
+                                    : 'text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border-indigo-200 bg-white'
+                                }`}
+                              >
+                                {tarif.status_aktif !== false ? 'Nonaktifkan' : 'Aktifkan'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}

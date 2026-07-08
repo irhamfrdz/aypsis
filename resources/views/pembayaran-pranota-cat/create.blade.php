@@ -144,34 +144,49 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($pranotaList as $pranota)
+                            @foreach ($pranotaList as $pranota)
                                 <tr class="hover:bg-gray-50 transition-colors">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         <input type="checkbox" name="pranota_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded" checked>
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->nomor_pranota }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        {{ $pranota->vendor ?? '-' }}
+                                        {{ $pranota->vendor ?? '-' }} <span class="text-xs text-gray-400 font-normal">(Perbaikan)</span>
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         {{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d/M/Y') : '-' }}
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->calculateTotalCatAmount(), 0, ',', '.') }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @if ($pranota->status == 'paid')
-                                            <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-green-100 text-green-800">Lunas</span>
-                                        @else
-                                            <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-yellow-100 text-yellow-800">Belum</span>
-                                        @endif
+                                        <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-yellow-100 text-yellow-800">Belum</span>
                                     </td>
                                 </tr>
-                            @empty
+                            @endforeach
+                            @foreach ($pranotaTagihanCatList as $pranota)
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        <input type="checkbox" name="pranota_tagihan_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded" checked>
+                                    </td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->no_invoice }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        {{ $pranota->supplier ?? '-' }} <span class="text-xs text-indigo-400 font-normal">(Tagihan CAT)</span>
+                                    </td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        {{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d/M/Y') : '-' }}
+                                    </td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->total_amount, 0, ',', '.') }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-yellow-100 text-yellow-800">Belum</span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            @if ($pranotaList->isEmpty() && $pranotaTagihanCatList->isEmpty())
                                 <tr>
                                     <td colspan="6" class="px-2 py-4 text-center text-xs text-gray-500">
-                                        Tidak ada pranota CAT kontainer yang tersedia.
+                                        Tidak ada pranota perbaikan atau tagihan CAT kontainer yang tersedia.
                                     </td>
                                 </tr>
-                            @endforelse
+                            @endif
                         </tbody>
                     </table>
                 </div>

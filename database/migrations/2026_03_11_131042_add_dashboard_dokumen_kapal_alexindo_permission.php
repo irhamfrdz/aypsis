@@ -29,7 +29,7 @@ return new class extends Migration
 
             // Give permission to admin (user_id = 1)
             $permissionId = DB::table('permissions')->where('name', $permission['name'])->value('id');
-            if ($permissionId) {
+            if ($permissionId && DB::table('users')->where('id', 1)->exists()) {
                 DB::table('user_permissions')->updateOrInsert(
                     ['user_id' => 1, 'permission_id' => $permissionId],
                     []

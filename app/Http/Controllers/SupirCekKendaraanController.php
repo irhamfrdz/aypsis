@@ -39,15 +39,19 @@ class SupirCekKendaraanController extends Controller
         // Find default mobil for this supir
         $defaultMobilId = null;
         if ($user->karyawan) {
-            // Priority 1: Check mobils table for karyawan_id link
-            $assignedMobil = Mobil::where('karyawan_id', $user->karyawan_id)->first();
-            if ($assignedMobil) {
-                $defaultMobilId = $assignedMobil->id;
-            } elseif ($user->karyawan->plat) {
-                // Priority 2: Check plat column in karyawans table matching nomor_polisi
+            // Priority 1: Check plat column in karyawans table matching nomor_polisi
+            if ($user->karyawan->plat) {
                 $matchedMobil = Mobil::where('nomor_polisi', $user->karyawan->plat)->first();
                 if ($matchedMobil) {
                     $defaultMobilId = $matchedMobil->id;
+                }
+            }
+
+            // Priority 2: Check mobils table for karyawan_id link
+            if (! $defaultMobilId) {
+                $assignedMobil = Mobil::where('karyawan_id', $user->karyawan_id)->first();
+                if ($assignedMobil) {
+                    $defaultMobilId = $assignedMobil->id;
                 }
             }
         }

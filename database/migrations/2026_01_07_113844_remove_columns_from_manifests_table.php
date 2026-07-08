@@ -15,6 +15,11 @@ return new class extends Migration
             // Drop foreign key first
             $table->dropForeign(['supir_id']);
 
+            // Drop index for SQLite
+            if (\Illuminate\Support\Facades\DB::getDriverName() === 'sqlite') {
+                $table->dropIndex(['supir_id']);
+            }
+
             // Drop columns
             $table->dropColumn([
                 'status_bongkar',

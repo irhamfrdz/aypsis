@@ -16,7 +16,7 @@
                 <i class="fas fa-download mr-2"></i>
                 Download Template
             </a>
-            <a href="{{ route('pricelist-uang-jalan-batam.export', ['search' => $search]) }}" 
+            <a href="{{ route('pricelist-uang-jalan-batam.export', ['search' => $search, 'kelola_bbm_id' => $selectedBbmId]) }}" 
                class="inline-flex items-center px-4 py-2 border border-green-600 text-sm font-medium rounded-md shadow-sm text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
                 <i class="fas fa-file-excel mr-2"></i>
                 Export Data
@@ -121,6 +121,27 @@
                            class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                 </div>
             </div>
+            <div class="w-full md:w-64">
+                <label for="kelola_bbm_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Periode BBM
+                </label>
+                <select name="kelola_bbm_id" id="kelola_bbm_id" onchange="this.form.submit()"
+                        class="block w-full py-2.5 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    <option value="base" {{ $selectedBbmId == 'base' ? 'selected' : '' }}>Tarif Dasar (Base)</option>
+                    @foreach($bbmPeriods as $period)
+                        @php
+                            $monthNames = [
+                                1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                                7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                            ];
+                            $monthName = $monthNames[$period->bulan] ?? '';
+                        @endphp
+                        <option value="{{ $period->id }}" {{ $selectedBbmId == $period->id ? 'selected' : '' }}>
+                            {{ $monthName }} {{ $period->tahun }} ({{ $period->persentase }}%)
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <div class="flex items-end space-x-3">
                 <button type="submit" 
                         class="inline-flex items-center px-4 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
@@ -146,12 +167,13 @@
 </div>
 
 <!-- Table -->
-<div class="bg-white shadow-md rounded-lg overflow-hidden">
+<div class="bg-white shadow-md rounded-lg overflow-hidden overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expedisi</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ring</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wilayah</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif 20FT Full</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif 20FT Empty</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif 40FT Full</th>
@@ -167,6 +189,7 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pricelist->expedisi }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pricelist->ring }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pricelist->wilayah ?? '-' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">Rp {{ number_format($pricelist->tarif_20ft_full, 0, ',', '.') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">Rp {{ number_format($pricelist->tarif_20ft_empty, 0, ',', '.') }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">Rp {{ number_format($pricelist->tarif_40ft_full, 0, ',', '.') }}</td>
@@ -201,6 +224,17 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                             @endcan
+                            @can('master-pricelist-uang-jalan-batam-create')
+                                <form method="POST" action="{{ route('pricelist-uang-jalan-batam.copy', $pricelist->id) }}" class="inline"
+                                      onsubmit="return confirm('Apakah Anda yakin ingin menduplikat/copy pricelist ini?')">
+                                    @csrf
+                                    <button type="submit" 
+                                            class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                                            title="Copy Data">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </form>
+                            @endcan
                             @can('master-pricelist-uang-jalan-batam-delete')
                                 <form method="POST" action="{{ route('pricelist-uang-jalan-batam.destroy', $pricelist) }}" class="inline" 
                                       onsubmit="return confirm('Apakah Anda yakin ingin menghapus pricelist ini?\n\nExpedisi: {{ $pricelist->expedisi }}\nRing: {{ $pricelist->ring }}')">
@@ -218,7 +252,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="px-6 py-12 text-center">
+                    <td colspan="11" class="px-6 py-12 text-center">
                         <div class="flex flex-col items-center justify-center">
                             <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
                             <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data ditemukan</h3>

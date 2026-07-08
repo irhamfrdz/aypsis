@@ -13,6 +13,7 @@ class PranotaUangRitSupirDetail extends Model
         'no_pranota',
         'supir_nama',
         'jumlah_rit',
+        'absen',
         'total_uang_supir',
         'hutang',
         'tabungan',
@@ -23,6 +24,7 @@ class PranotaUangRitSupirDetail extends Model
 
     protected $casts = [
         'jumlah_rit' => 'integer',
+        'absen' => 'integer',
         'total_uang_supir' => 'decimal:2',
         'hutang' => 'decimal:2',
         'tabungan' => 'decimal:2',

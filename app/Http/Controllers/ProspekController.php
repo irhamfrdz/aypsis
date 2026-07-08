@@ -33,6 +33,17 @@ class ProspekController extends Controller
                 abort(403, 'Tidak memiliki akses ke halaman prospek');
             }
 
+            // Auto sync active prospeks that have manifests, BLs, or NaikKapal records
+            Prospek::where('status', Prospek::STATUS_AKTIF)
+                ->where(function ($q) {
+                    $q->has('manifests')
+                        ->orWhereHas('bls')
+                        ->orWhereHas('naikKapal', function ($q2) {
+                            $q2->where('sudah_ob', true);
+                        });
+                })
+                ->update(['status' => Prospek::STATUS_SUDAH_MUAT]);
+
             // Default to 'aktif' status if status parameter is not present in URL/request at all
             if (! $request->has('status')) {
                 $request->merge(['status' => 'aktif']);
@@ -102,7 +113,7 @@ class ProspekController extends Controller
             }
 
             // Allow configurable rows per page, default to 15. Validate allowed values to prevent abuse.
-            $allowedPerPage = [10, 25, 50, 100];
+            $allowedPerPage = [10, 25, 50, 100, 200];
             $perPage = (int) $request->get('per_page', 10);
             if (! in_array($perPage, $allowedPerPage)) {
                 $perPage = 10;

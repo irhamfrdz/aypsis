@@ -69,7 +69,8 @@ class PenerimaExport implements FromCollection, ShouldAutoSize, WithEvents, With
             return [
                 $index + 1,
                 $penerima->nama_penerima,
-                $penerima->contact_person ?? '-',
+                $penerima->pic ?? '-',
+                $penerima->telepon ?? '-',
                 $penerima->alamat ?? '-',
                 $penerima->npwp ?? '-',
                 $penerima->nitku ?? '-',
@@ -86,7 +87,8 @@ class PenerimaExport implements FromCollection, ShouldAutoSize, WithEvents, With
         return [
             'No',
             'Nama Penerima',
-            'Contact Person',
+            'PIC',
+            'Telepon',
             'Alamat',
             'NPWP',
             'NITKU',
@@ -102,7 +104,7 @@ class PenerimaExport implements FromCollection, ShouldAutoSize, WithEvents, With
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 // Style the header row
-                $event->sheet->getStyle('A1:J1')->applyFromArray([
+                $event->sheet->getStyle('A1:K1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'color' => ['rgb' => 'FFFFFF'],
@@ -123,17 +125,17 @@ class PenerimaExport implements FromCollection, ShouldAutoSize, WithEvents, With
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 // Center align the IU BP Kawasan column
-                $event->sheet->getStyle('H2:H'.($event->sheet->getHighestRow()))
-                    ->getAlignment()
-                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-                // Center align the Status column
                 $event->sheet->getStyle('I2:I'.($event->sheet->getHighestRow()))
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
+                // Center align the Status column
+                $event->sheet->getStyle('J2:J'.($event->sheet->getHighestRow()))
+                    ->getAlignment()
+                    ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
                 // Add border to all cells
-                $event->sheet->getStyle('A1:J'.($event->sheet->getHighestRow()))
+                $event->sheet->getStyle('A1:K'.($event->sheet->getHighestRow()))
                     ->applyFromArray([
                         'borders' => [
                             'allBorders' => [

@@ -69,6 +69,13 @@
                         </svg>
                         Tambah Surat Jalan
                     </button>
+                    <button onclick="buatSuratJalanMassal()" 
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Tambah Massal
+                    </button>
                     <a href="{{ route('surat-jalan-bongkaran-batam.export', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage, 'mode' => request('mode', 'manifest')] + request()->only(['search', 'types'])) }}" 
                        class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -587,6 +594,14 @@
                                 </select>
                             </div>
                             
+                            <!-- Ring -->
+                            <div>
+                                <label for="modal_ring" class="block text-sm font-medium text-gray-700 mb-1">Ring</label>
+                                <input type="text" name="ring" id="modal_ring" readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Ring otomatis terisi">
+                            </div>
+                            
                             <!-- Full/Empty Radio (Visible for Batam) -->
                             <div id="modal_f_e_wrapper" class="hidden">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Status Muatan (F/E)</label>
@@ -848,6 +863,154 @@
         </div>
     </div>
 
+    <!-- Modal Buat Surat Jalan Massal -->
+    <div id="modalBuatSuratJalanMassal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-5 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-lg bg-white">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900">Buat Surat Jalan Massal</h3>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Kapal: <strong>{{ $selectedKapal }}</strong> | Voyage: <strong>{{ $selectedVoyage }}</strong>
+                    </p>
+                </div>
+                <button type="button" onclick="closeBulkModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="mt-4 max-h-[80vh] overflow-y-auto px-1">
+                <!-- Alert area for bulk modal -->
+                <div id="bulkModalAlertArea"></div>
+
+                <!-- Shared Fields -->
+                <div class="hidden">
+                    <!-- Lokasi -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
+                        <select id="bulk_lokasi" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="batam" selected>Batam</option>
+                            <option value="jakarta">Jakarta</option>
+                        </select>
+                    </div>
+
+                    <!-- Tujuan Pengiriman -->
+                    <div>
+                        <label for="bulk_tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
+                        <select id="bulk_tujuan_pengambilan" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Pilih tujuan pengiriman</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Muatan (F/E) -->
+                    <div id="bulk_f_e_wrapper" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status Muatan (F/E)</label>
+                        <div class="flex space-x-4 py-2">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="bulk_f_e" value="Full" class="form-radio text-indigo-600" checked>
+                                <span class="ml-2 text-sm text-gray-700">Full</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="bulk_f_e" value="Empty" class="form-radio text-indigo-600">
+                                <span class="ml-2 text-sm text-gray-700">Empty</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guide -->
+                <div class="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                    <h4 class="text-sm font-semibold text-indigo-800 mb-2">
+                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Panduan Format Data (Semicolon-separated / Dipisahkan Titik Koma)
+                    </h4>
+                    <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
+                    <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
+                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Kenek ; Krani ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty)
+                    </div>
+                    <p class="text-xs text-indigo-600 mt-1">
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar;batam;Batu Ampar;Full
+                    </p>
+                </div>
+
+                <!-- Textarea Input -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Data Surat Jalan <span class="text-red-500">*</span>
+                        <span class="text-xs text-gray-400 ml-2 font-normal">(dipisahkan titik koma)</span>
+                    </label>
+                    <textarea id="bulkTextarea" rows="10"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                              placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar&#10;SJ-002;2026-06-27;CONT456;DEDI;B5678YY;EKO;FANI;Bongkar"></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center gap-3 mb-4">
+                    <button type="button" onclick="parseBulkData()"
+                            class="inline-flex items-center px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-sm font-medium rounded-lg transition-colors duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        Parse & Preview
+                    </button>
+                    <span id="bulkParseInfo" class="text-sm text-gray-500"></span>
+                </div>
+
+                <!-- Preview Table -->
+                <div id="bulkPreviewContainer" class="hidden mb-4">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Preview Data</h4>
+                    <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200 text-xs" id="bulkPreviewTable">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">#</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No SJ</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Kontainer / BL</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Plat</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Kenek</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Krani</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Aktifitas</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tujuan Pengiriman</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">F/E</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bulkPreviewBody" class="bg-white divide-y divide-gray-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-end gap-3 mt-4 pt-3 border-t">
+                <button type="button" onclick="closeBulkModal()"
+                        class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                    Batal
+                </button>
+                <button type="button" id="btnSubmitBulk" onclick="submitBulkSuratJalan()" disabled
+                        class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                    <span id="btnBulkSubmitText">Simpan Semua</span>
+                    <span id="btnBulkSubmitLoading" class="hidden">
+                        <svg class="animate-spin h-4 w-4 inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Menyimpan...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Edit Surat Jalan -->
     <div id="modalEditSuratJalan" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
         <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-lg bg-white">
@@ -985,6 +1148,14 @@
                                         </option>
                                     @endforeach
                                 </select>
+                            </div>
+                            
+                            <!-- Ring -->
+                            <div>
+                                <label for="edit_modal_ring" class="block text-sm font-medium text-gray-700 mb-1">Ring</label>
+                                <input type="text" name="ring" id="edit_modal_ring" readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Ring otomatis terisi">
                             </div>
 
                             <!-- Full/Empty Radio (Visible for Batam) -->
@@ -1285,33 +1456,35 @@ function parseJsonResponse(response) {
 
 // Data for destinations based on location
 const destinations = {
-    jakarta: [
-        @foreach($tujuanKegiatanUtamas as $tujuan)
-        { 
-            label: "{{ $tujuan->ke }}", 
-            value: "{{ $tujuan->ke }}", 
-            uj20: {{ $tujuan->uang_jalan_20ft ?? 0 }}, 
-            uj40: {{ $tujuan->uang_jalan_40ft ?? 0 }} 
-        },
-        @endforeach
-    ],
-    batam: [
-        @foreach($pricelistUangJalanBatams as $item)
-        { 
-            label: "{{ $item->expedisi }} - {{ $item->ring }} (Ring {{ $item->ring }})", 
-            value: "{{ $item->expedisi }} - {{ $item->ring }}", 
-            uj20_full: {{ $item->tarif_20ft_full ?? 0 }},
-            uj20_empty: {{ $item->tarif_20ft_empty ?? 0 }},
-            uj40_full: {{ $item->tarif_40ft_full ?? 0 }},
-            uj40_empty: {{ $item->tarif_40ft_empty ?? 0 }}
-        },
-        @endforeach
-    ]
+    jakarta: {!! json_encode(collect($tujuanKegiatanUtamas)->map(function($tujuan) {
+        return [
+            'label' => $tujuan->ke,
+            'value' => $tujuan->ke,
+            'ring' => '',
+            'uj20' => (float)($tujuan->uang_jalan_20ft ?? 0),
+            'uj40' => (float)($tujuan->uang_jalan_40ft ?? 0),
+        ];
+    })) !!},
+    batam: {!! json_encode(collect($pricelistUangJalanBatams)->flatMap(function($item) {
+        if (!$item->wilayah) return [];
+        return collect(explode(',', $item->wilayah))
+            ->map(fn($w) => trim($w))
+            ->filter()
+            ->map(fn($subWilayah) => [
+                'label' => $subWilayah . ' (Ring ' . $item->ring . ' - ' . $item->expedisi . ')',
+                'value' => $subWilayah,
+                'ring' => (string)$item->ring,
+                'uj20_full' => (float)($item->tarif_20ft_full ?? 0),
+                'uj20_empty' => (float)($item->tarif_20ft_empty ?? 0),
+                'uj40_full' => (float)($item->tarif_40ft_full ?? 0),
+                'uj40_empty' => (float)($item->tarif_40ft_empty ?? 0),
+            ]);
+    })->values()) !!}
 };
 
 // Function to update Tujuan Pengiriman options based on selected Lokasi
 function updateDestinationOptions(modalType) {
-    const prefix = modalType === 'create' ? 'modal_' : 'edit_modal_';
+    const prefix = modalType === 'create' ? 'modal_' : (modalType === 'edit' ? 'edit_modal_' : 'bulk_');
     const lokasiSelect = document.getElementById(prefix + 'lokasi');
     const tujuanSelect = document.getElementById(prefix + 'tujuan_pengambilan');
     const feWrapper = document.getElementById(prefix + 'f_e_wrapper');
@@ -1347,9 +1520,11 @@ function updateDestinationOptions(modalType) {
             option.setAttribute('data-uj20-empty', dest.uj20_empty);
             option.setAttribute('data-uj40-full', dest.uj40_full);
             option.setAttribute('data-uj40-empty', dest.uj40_empty);
+            option.setAttribute('data-ring', dest.ring || '');
         } else {
             option.setAttribute('data-uang-jalan-20', dest.uj20);
             option.setAttribute('data-uang-jalan-40', dest.uj40);
+            option.setAttribute('data-ring', '');
         }
         
         if (dest.value === currentValue) {
@@ -1445,7 +1620,7 @@ function buatSuratJalan(manifestId) {
     document.getElementById('modalBuatSuratJalan').classList.remove('hidden');
     
     // Fetch Manifest data
-    fetch(`/api/manifest-batam/${manifestId}`)
+    fetch(`{{ route('api.manifest-batam.show', ['id' => ':id'], false) }}`.replace(':id', manifestId))
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -1607,8 +1782,13 @@ function setupModalUangJalanCalculation(containerSize) {
     }
 
     function calculateModalUangJalan() {
-        if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const selectedOption = tujuanPengambilanSelect.options[tujuanPengambilanSelect.selectedIndex];
+        const ringInput = document.getElementById('modal_ring');
+        if (ringInput) {
+            ringInput.value = selectedOption ? (selectedOption.getAttribute('data-ring') || '') : '';
+        }
+        if (!selectedOption) return;
+        if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
         const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
         const uangJalanType = document.querySelector('input[name="uang_jalan_type"]:checked');
@@ -1951,24 +2131,51 @@ function printBA(blId) {
 
 // Functions for Surat Jalan Bongkaran mode
 function editSuratJalan(suratJalanId) {
+    console.log('editSuratJalan called with ID:', suratJalanId);
     // Open edit modal and populate with Surat Jalan data
     openEditModal(suratJalanId);
 }
 
 // Edit Surat Jalan from BL (when BL already has Surat Jalan)
 function editSuratJalanFromBL(suratJalanId) {
+    console.log('editSuratJalanFromBL called with ID:', suratJalanId);
     // Open edit modal and populate with Surat Jalan data
     openEditModal(suratJalanId);
 }
 
 // Open edit modal and fetch surat jalan data
 function openEditModal(suratJalanId) {
+    console.log('openEditModal called with ID:', suratJalanId);
     // Show modal
-    document.getElementById('modalEditSuratJalan').classList.remove('hidden');
+    const modal = document.getElementById('modalEditSuratJalan');
+    if (!modal) {
+        console.error('ERROR: modalEditSuratJalan element not found in DOM!');
+        alert('Error: Modal element not found in page.');
+        return;
+    }
+    modal.classList.remove('hidden');
+    console.log('Modal element hidden class removed. Style display status:', window.getComputedStyle(modal).display);
+    console.log('modalEditSuratJalan parent tag:', modal.parentElement ? modal.parentElement.tagName : 'none');
+    console.log('modalEditSuratJalan parent ID:', modal.parentElement ? modal.parentElement.id : 'none');
+    console.log('modalEditSuratJalan parent classes:', modal.parentElement ? modal.parentElement.className : 'none');
     
+    // Check all ancestors to see if any are hidden
+    let parent = modal.parentElement;
+    while (parent) {
+        const style = window.getComputedStyle(parent);
+        if (style.display === 'none') {
+            console.warn('HIDDEN ANCESTOR DETECTED:', parent.tagName, 'ID:', parent.id, 'Classes:', parent.className);
+        }
+        parent = parent.parentElement;
+    }
+    
+    const fetchUrl = `{{ route('api.surat-jalan-bongkaran-batam.show', ['id' => ':id'], false) }}`.replace(':id', suratJalanId);
+    console.log('Starting fetch request to URL:', fetchUrl);
+
     // Fetch Surat Jalan data
-    fetch(`/api/surat-jalan-bongkaran-batam/${suratJalanId}`)
+    fetch(fetchUrl)
         .then(response => {
+            console.log('Received response from server. Status:', response.status, 'OK:', response.ok);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -1979,136 +2186,152 @@ function openEditModal(suratJalanId) {
             return response.json();
         })
         .then(data => {
-            // Populate hidden ID
-            document.getElementById('edit_modal_surat_jalan_id').value = suratJalanId;
-            document.getElementById('edit_modal_manifest_id').value = data.manifest_id || '';
-            document.getElementById('edit_modal_bl_id').value = data.bl_id || '';
-            
-            // Populate nama kapal and no voyage from surat jalan data
-            if (data.nama_kapal) {
-                document.getElementById('edit_modal_nama_kapal').value = data.nama_kapal;
-            }
-            if (data.no_voyage) {
-                document.getElementById('edit_modal_no_voyage').value = data.no_voyage;
-            }
-            
-            // Set form action URL
-            document.getElementById('formEditSuratJalan').action = `/surat-jalan-bongkaran-batam/${suratJalanId}`;
-            
-            // Populate form fields
-            document.getElementById('edit_modal_nomor_surat_jalan').value = data.nomor_surat_jalan || '';
-            document.getElementById('edit_modal_lokasi').value = data.lokasi || '';
-            document.getElementById('edit_modal_tanggal_surat_jalan').value = data.tanggal_surat_jalan || '';
-            
-            // Populate term with robust matching
-            const editTermSelect = document.getElementById('edit_modal_term');
-            const editTermToMatch = (data.term || '').toLowerCase();
-            const editTermNamaToMatch = (data.term_nama || '').toLowerCase();
-            
-            editTermSelect.value = data.term || '';
-            if (editTermSelect.value === '') {
-                const options = editTermSelect.options;
-                for (let i = 0; i < options.length; i++) {
-                    const optValue = options[i].value.toLowerCase();
-                    const optText = options[i].text.toLowerCase();
-                    if (optValue === editTermToMatch || 
-                        optText === editTermToMatch || 
-                        optText.includes(editTermToMatch) ||
-                        (editTermNamaToMatch && optText.includes(editTermNamaToMatch))) {
-                        editTermSelect.value = options[i].value;
-                        break;
+            console.log('openEditModal data received:', data);
+            try {
+                // Populate hidden ID
+                document.getElementById('edit_modal_surat_jalan_id').value = suratJalanId;
+                document.getElementById('edit_modal_manifest_id').value = data.manifest_id || '';
+                document.getElementById('edit_modal_bl_id').value = data.bl_id || '';
+                
+                // Populate nama kapal and no voyage from surat jalan data
+                if (data.nama_kapal) {
+                    document.getElementById('edit_modal_nama_kapal').value = data.nama_kapal;
+                }
+                if (data.no_voyage) {
+                    document.getElementById('edit_modal_no_voyage').value = data.no_voyage;
+                }
+                
+                // Set form action URL
+                document.getElementById('formEditSuratJalan').action = `/surat-jalan-bongkaran-batam/${suratJalanId}`;
+                
+                // Populate form fields
+                document.getElementById('edit_modal_nomor_surat_jalan').value = data.nomor_surat_jalan || '';
+                document.getElementById('edit_modal_lokasi').value = data.lokasi || '';
+                document.getElementById('edit_modal_tanggal_surat_jalan').value = data.tanggal_surat_jalan || '';
+                document.getElementById('edit_modal_ring').value = data.ring || '';
+                
+                // Populate term with robust matching
+                const editTermSelect = document.getElementById('edit_modal_term');
+                const editTermToMatch = (data.term || '').toLowerCase();
+                const editTermNamaToMatch = (data.term_nama || '').toLowerCase();
+                
+                editTermSelect.value = data.term || '';
+                if (editTermSelect.value === '') {
+                    const options = editTermSelect.options;
+                    for (let i = 0; i < options.length; i++) {
+                        const optValue = options[i].value.toLowerCase();
+                        const optText = options[i].text.toLowerCase();
+                        if (optValue === editTermToMatch || 
+                            optText === editTermToMatch || 
+                            optText.includes(editTermToMatch) ||
+                            (editTermNamaToMatch && optText.includes(editTermNamaToMatch))) {
+                            editTermSelect.value = options[i].value;
+                            break;
+                        }
                     }
                 }
-            }
-            document.getElementById('edit_modal_aktifitas').value = data.aktifitas || '';
-            document.getElementById('edit_modal_pengirim').value = data.pengirim || '';
-            document.getElementById('edit_modal_penerima').value = data.penerima || '';
-            document.getElementById('edit_modal_jenis_barang').value = data.jenis_barang || '';
-            document.getElementById('edit_modal_tujuan_alamat').value = data.tujuan_alamat || '';
-            document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan || '';
-            document.getElementById('edit_modal_jenis_pengiriman').value = data.jenis_pengiriman || '';
-            document.getElementById('edit_modal_tanggal_ambil_barang').value = data.tanggal_ambil_barang || '';
-            
-            document.getElementById('edit_modal_supir').value = data.supir || '';
-            document.getElementById('edit_modal_no_plat').value = data.no_plat || '';
-            document.getElementById('edit_modal_kenek').value = data.kenek || '';
-            document.getElementById('edit_modal_krani').value = data.krani || '';
-            
-            document.getElementById('edit_modal_no_kontainer').value = data.no_kontainer || '';
-            document.getElementById('edit_modal_no_seal').value = data.no_seal || '';
-            document.getElementById('edit_modal_no_bl').value = data.no_bl || '';
-            // Populate size with normalization
-            const editSizeSelect = document.getElementById('edit_modal_size');
-            const editSizeVal = data.size || '';
-            editSizeSelect.value = editSizeVal;
-            if (editSizeSelect.value === '' && editSizeVal !== '') {
-                const normSize = editSizeVal.toLowerCase().replace(/\s/g, '');
-                if (normSize.includes('20')) editSizeSelect.value = '20ft';
-                else if (normSize.includes('40')) editSizeSelect.value = '40ft';
-            }
-            
-            // Set radio buttons
-            if (data.karton) {
-                document.querySelector(`#modalEditSuratJalan input[name="karton"][value="${data.karton}"]`).checked = true;
-            }
-            if (data.plastik) {
-                document.querySelector(`#modalEditSuratJalan input[name="plastik"][value="${data.plastik}"]`).checked = true;
-            }
-            if (data.terpal) {
-                document.querySelector(`#modalEditSuratJalan input[name="terpal"][value="${data.terpal}"]`).checked = true;
-            }
-            if (data.rit) {
-                document.querySelector(`#modalEditSuratJalan input[name="rit"][value="${data.rit}"]`).checked = true;
-            }
-            if (data.uang_jalan_type) {
-                document.querySelector(`#modalEditSuratJalan input[name="uang_jalan_type"][value="${data.uang_jalan_type}"]`).checked = true;
-            }
-            if (data.f_e) {
-                const feRadio = document.querySelector(`#modalEditSuratJalan input[name="f_e"][value="${data.f_e}"]`);
-                if (feRadio) feRadio.checked = true;
-            }
-            
-            // Convert to integer to remove decimal places
-            const nominalValue = data.uang_jalan_nominal ? Math.round(parseFloat(data.uang_jalan_nominal)) : '';
-            document.getElementById('edit_modal_uang_jalan_nominal').value = nominalValue;
-            
-            const editTanpaUangJalanCheckbox = document.getElementById('edit_modal_tanpa_uang_jalan');
-            if (editTanpaUangJalanCheckbox) {
-                editTanpaUangJalanCheckbox.checked = (data.tanpa_uang_jalan == 1);
-                const uangJalanInput = document.getElementById('edit_modal_uang_jalan_nominal');
-                if (editTanpaUangJalanCheckbox.checked) {
-                    uangJalanInput.readOnly = true;
-                    uangJalanInput.classList.add('bg-gray-100', 'text-gray-500');
-                } else {
-                    uangJalanInput.readOnly = false;
-                    uangJalanInput.classList.remove('bg-gray-100', 'text-gray-500');
+                document.getElementById('edit_modal_aktifitas').value = data.aktifitas || '';
+                document.getElementById('edit_modal_pengirim').value = data.pengirim || '';
+                document.getElementById('edit_modal_penerima').value = data.penerima || '';
+                document.getElementById('edit_modal_jenis_barang').value = data.jenis_barang || '';
+                document.getElementById('edit_modal_tujuan_alamat').value = data.tujuan_alamat || '';
+                document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan || '';
+                document.getElementById('edit_modal_jenis_pengiriman').value = data.jenis_pengiriman || '';
+                document.getElementById('edit_modal_tanggal_ambil_barang').value = data.tanggal_ambil_barang || '';
+                
+                document.getElementById('edit_modal_supir').value = data.supir || '';
+                document.getElementById('edit_modal_no_plat').value = data.no_plat || '';
+                document.getElementById('edit_modal_kenek').value = data.kenek || '';
+                document.getElementById('edit_modal_krani').value = data.krani || '';
+                
+                document.getElementById('edit_modal_no_kontainer').value = data.no_kontainer || '';
+                document.getElementById('edit_modal_no_seal').value = data.no_seal || '';
+                document.getElementById('edit_modal_no_bl').value = data.no_bl || '';
+                // Populate size with normalization
+                const editSizeSelect = document.getElementById('edit_modal_size');
+                const editSizeVal = data.size || '';
+                editSizeSelect.value = editSizeVal;
+                if (editSizeSelect.value === '' && editSizeVal !== '') {
+                    const normSize = editSizeVal.toLowerCase().replace(/\s/g, '');
+                    if (normSize.includes('20')) editSizeSelect.value = '20ft';
+                    else if (normSize.includes('40')) editSizeSelect.value = '40ft';
                 }
-            }
-            
-            // Update destinations based on fetched lokasi
-            updateDestinationOptions('edit');
-            // Restore selection after update because updateDestinationOptions clears it
-            if (data.tujuan_pengambilan) {
-                document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan;
-            }
-
-            // Add listener for lokasi change in edit modal
-            const editLokasiSelect = document.getElementById('edit_modal_lokasi');
-            if (editLokasiSelect) {
-                editLokasiSelect.onchange = () => {
-                    updateDestinationOptions('edit');
-                    if (editLokasiSelect.value === 'batam') {
-                        document.getElementById('edit_modal_jenis_barang').value = data.nama_barang_manifest || '';
+                
+                // Set radio buttons
+                // Set radio buttons safely
+                if (data.karton) {
+                    const el = document.querySelector(`#modalEditSuratJalan input[name="karton"][value="${data.karton}"]`);
+                    if (el) el.checked = true;
+                }
+                if (data.plastik) {
+                    const el = document.querySelector(`#modalEditSuratJalan input[name="plastik"][value="${data.plastik}"]`);
+                    if (el) el.checked = true;
+                }
+                if (data.terpal) {
+                    const el = document.querySelector(`#modalEditSuratJalan input[name="terpal"][value="${data.terpal}"]`);
+                    if (el) el.checked = true;
+                }
+                if (data.rit) {
+                    const el = document.querySelector(`#modalEditSuratJalan input[name="rit"][value="${data.rit}"]`);
+                    if (el) el.checked = true;
+                }
+                if (data.uang_jalan_type) {
+                    const el = document.querySelector(`#modalEditSuratJalan input[name="uang_jalan_type"][value="${data.uang_jalan_type.toLowerCase()}"]`) ||
+                               document.querySelector(`#modalEditSuratJalan input[name="uang_jalan_type"][value="${data.uang_jalan_type}"]`);
+                    if (el) el.checked = true;
+                }
+                if (data.f_e) {
+                    const feRadio = document.querySelector(`#modalEditSuratJalan input[name="f_e"][value="${data.f_e}"]`);
+                    if (feRadio) feRadio.checked = true;
+                }
+                
+                // Convert to integer to remove decimal places
+                const nominalValue = data.uang_jalan_nominal ? Math.round(parseFloat(data.uang_jalan_nominal)) : '';
+                document.getElementById('edit_modal_uang_jalan_nominal').value = nominalValue;
+                
+                const editTanpaUangJalanCheckbox = document.getElementById('edit_modal_tanpa_uang_jalan');
+                if (editTanpaUangJalanCheckbox) {
+                    editTanpaUangJalanCheckbox.checked = (data.tanpa_uang_jalan == 1);
+                    const uangJalanInput = document.getElementById('edit_modal_uang_jalan_nominal');
+                    if (editTanpaUangJalanCheckbox.checked) {
+                        uangJalanInput.readOnly = true;
+                        uangJalanInput.classList.add('bg-gray-100', 'text-gray-500');
+                    } else {
+                        uangJalanInput.readOnly = false;
+                        uangJalanInput.classList.remove('bg-gray-100', 'text-gray-500');
                     }
-                };
-            }
+                }
+                
+                // Update destinations based on fetched lokasi
+                updateDestinationOptions('edit');
+                // Restore selection after update because updateDestinationOptions clears it
+                if (data.tujuan_pengambilan) {
+                    document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan;
+                }
 
-            // Setup auto-fill and auto-calculate functions
-            setupEditModalSupirAutoFill();
-            setupEditModalUangJalanCalculation(data.size);
+                // Add listener for lokasi change in edit modal
+                const editLokasiSelect = document.getElementById('edit_modal_lokasi');
+                if (editLokasiSelect) {
+                    editLokasiSelect.onchange = () => {
+                        updateDestinationOptions('edit');
+                        if (editLokasiSelect.value === 'batam') {
+                            document.getElementById('edit_modal_jenis_barang').value = data.nama_barang_manifest || '';
+                        }
+                    };
+                }
+
+                // Setup auto-fill and auto-calculate functions
+                setupEditModalSupirAutoFill();
+                setupEditModalUangJalanCalculation(data.size);
+                console.log('Successfully completed openEditModal populate block.');
+            } catch (err) {
+                console.error('CRITICAL ERROR in openEditModal populate block:', err);
+                alert('JS Error: ' + err.message);
+            }
         })
         .catch(error => {
             console.error('Error fetching Surat Jalan data:', error);
+            alert('Error saat memuat data: ' + error.message);
             closeEditModal();
             
             // Show more detailed error message
@@ -2170,8 +2393,13 @@ function setupEditModalUangJalanCalculation(containerSize) {
     }
     
     function calculateEditModalUangJalan() {
-        if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const selectedOption = tujuanPengambilanSelect.options[tujuanPengambilanSelect.selectedIndex];
+        const ringInput = document.getElementById('edit_modal_ring');
+        if (ringInput) {
+            ringInput.value = selectedOption ? (selectedOption.getAttribute('data-ring') || '') : '';
+        }
+        if (!selectedOption) return;
+        if (tanpaUangJalanCheckbox && tanpaUangJalanCheckbox.checked) return;
         const uangJalan20 = parseFloat(selectedOption.getAttribute('data-uang-jalan-20')) || 0;
         const uangJalan40 = parseFloat(selectedOption.getAttribute('data-uang-jalan-40')) || 0;
         const uangJalanType = document.querySelector('#modalEditSuratJalan input[name="uang_jalan_type"]:checked');
@@ -2427,5 +2655,235 @@ function deleteSuratJalan(suratJalanId) {
         form.submit();
     }
 }
+
+// ============================================================
+// BULK CREATE SURAT JALAN FUNCTIONS
+// ============================================================
+
+let bulkParsedRows = [];
+
+function buatSuratJalanMassal() {
+    document.getElementById('modalBuatSuratJalanMassal').classList.remove('hidden');
+    document.getElementById('bulkTextarea').value = '';
+    document.getElementById('bulkPreviewContainer').classList.add('hidden');
+    document.getElementById('bulkPreviewBody').innerHTML = '';
+    document.getElementById('bulkParseInfo').textContent = '';
+    document.getElementById('btnSubmitBulk').disabled = true;
+    document.getElementById('bulkModalAlertArea').innerHTML = '';
+    bulkParsedRows = [];
+
+    // Initialize lokasi and destination options
+    const bulkLokasiSelect = document.getElementById('bulk_lokasi');
+    if (bulkLokasiSelect) {
+        bulkLokasiSelect.value = 'batam'; // Default to batam
+        updateDestinationOptions('bulk');
+        
+        bulkLokasiSelect.onchange = () => {
+            updateDestinationOptions('bulk');
+        };
+    }
+}
+
+function closeBulkModal() {
+    document.getElementById('modalBuatSuratJalanMassal').classList.add('hidden');
+    bulkParsedRows = [];
+}
+
+function parseBulkData() {
+    const textarea = document.getElementById('bulkTextarea');
+    const rawText = textarea.value.trim();
+
+    if (!rawText) {
+        showBulkAlert('Data Kosong', 'Silakan paste atau ketik data surat jalan terlebih dahulu.', 'error');
+        return;
+    }
+
+    const lines = rawText.split('\n').filter(line => line.trim() !== '');
+    const columnKeys = [
+        'nomor_surat_jalan', 'tanggal_surat_jalan', 'no_kontainer',
+        'supir', 'no_plat', 'kenek', 'krani', 'aktifitas', 'lokasi', 'tujuan_pengiriman', 'f_e'
+    ];
+
+    bulkParsedRows = [];
+    const tbody = document.getElementById('bulkPreviewBody');
+    tbody.innerHTML = '';
+
+    let warnings = [];
+
+    lines.forEach((line, index) => {
+        const cols = line.split(';');
+        const row = {};
+
+        columnKeys.forEach((key, colIndex) => {
+            row[key] = (cols[colIndex] || '').trim();
+        });
+
+        if (!row.nomor_surat_jalan) {
+            warnings.push(`Baris ${index + 1}: Nomor Surat Jalan kosong, baris ini akan diabaikan.`);
+            return;
+        }
+
+        bulkParsedRows.push(row);
+
+        // Build preview row
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-50';
+
+        const cellValues = [
+            bulkParsedRows.length,
+            row.nomor_surat_jalan,
+            row.tanggal_surat_jalan || '<span class="text-gray-400 italic">hari ini</span>',
+            row.no_kontainer || '-',
+            row.supir || '-',
+            row.no_plat || '-',
+            row.kenek || '-',
+            row.krani || '-',
+            row.aktifitas || '-',
+            row.lokasi || 'batam',
+            row.tujuan_pengiriman || '-',
+            row.f_e || 'Full'
+        ];
+
+        cellValues.forEach((val, i) => {
+            const td = document.createElement('td');
+            td.className = 'px-3 py-2 whitespace-nowrap';
+            if (i === 1) {
+                td.className += ' font-semibold text-indigo-700';
+            }
+            td.innerHTML = val;
+            tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+    });
+
+    // Show preview
+    const previewContainer = document.getElementById('bulkPreviewContainer');
+    const parseInfo = document.getElementById('bulkParseInfo');
+    const submitBtn = document.getElementById('btnSubmitBulk');
+
+    if (bulkParsedRows.length > 0) {
+        previewContainer.classList.remove('hidden');
+        parseInfo.innerHTML = `<span class="text-green-600 font-semibold">${bulkParsedRows.length} baris valid</span>` +
+            (warnings.length > 0 ? ` | <span class="text-amber-600">${warnings.length} peringatan</span>` : '');
+        submitBtn.disabled = false;
+
+        if (warnings.length > 0) {
+            showBulkAlert('Peringatan', warnings.join('<br>'), 'warning');
+        } else {
+            document.getElementById('bulkModalAlertArea').innerHTML = '';
+        }
+    } else {
+        previewContainer.classList.add('hidden');
+        parseInfo.innerHTML = '<span class="text-red-600 font-semibold">Tidak ada baris valid ditemukan</span>';
+        submitBtn.disabled = true;
+        showBulkAlert('Tidak Ada Data', 'Tidak ada baris dengan Nomor Surat Jalan yang valid. Pastikan format data sesuai panduan.', 'error');
+    }
+}
+
+function submitBulkSuratJalan() {
+    if (bulkParsedRows.length === 0) {
+        showBulkAlert('Error', 'Tidak ada data untuk disimpan. Silakan parse data terlebih dahulu.', 'error');
+        return;
+    }
+
+    const submitBtn = document.getElementById('btnSubmitBulk');
+    const submitText = document.getElementById('btnBulkSubmitText');
+    const submitLoading = document.getElementById('btnBulkSubmitLoading');
+
+    // Loading state
+    submitBtn.disabled = true;
+    submitText.classList.add('hidden');
+    submitLoading.classList.remove('hidden');
+
+    const bulkFEVal = document.querySelector('input[name="bulk_f_e"]:checked') ? document.querySelector('input[name="bulk_f_e"]:checked').value : 'Full';
+    const payload = {
+        nama_kapal: '{{ $selectedKapal }}',
+        no_voyage: '{{ $selectedVoyage }}',
+        lokasi: document.getElementById('bulk_lokasi').value,
+        tujuan_pengambilan: document.getElementById('bulk_tujuan_pengambilan').value,
+        f_e: bulkFEVal,
+        rows: bulkParsedRows,
+        _token: '{{ csrf_token() }}'
+    };
+
+    fetch('{{ route("surat-jalan-bongkaran-batam.store-bulk", [], false) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Reset loading
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitLoading.classList.add('hidden');
+
+        if (data.success) {
+            let msg = data.message;
+            if (data.errors && data.errors.length > 0) {
+                msg += '<br><br><strong>Detail error:</strong><br>' + data.errors.join('<br>');
+                showBulkAlert('Sebagian Berhasil', msg, 'warning');
+            } else {
+                showBulkAlert('Berhasil!', msg, 'success');
+            }
+
+            // Redirect after 2 seconds
+            setTimeout(() => {
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    window.location.reload();
+                }
+            }, 2000);
+        } else {
+            let errorMsg = data.message || 'Gagal menyimpan data.';
+            if (data.errors && data.errors.length > 0) {
+                errorMsg += '<br><br><strong>Detail:</strong><br>' + data.errors.join('<br>');
+            }
+            showBulkAlert('Gagal', errorMsg, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Bulk submit error:', error);
+        submitBtn.disabled = false;
+        submitText.classList.remove('hidden');
+        submitLoading.classList.add('hidden');
+        showBulkAlert('Error', 'Terjadi kesalahan jaringan. Silakan coba lagi.', 'error');
+    });
+}
+
+function showBulkAlert(title, message, type = 'error') {
+    const alertArea = document.getElementById('bulkModalAlertArea');
+
+    const colorMap = {
+        'error': { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', btn: 'text-red-600 hover:text-red-800' },
+        'success': { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-800', btn: 'text-green-600 hover:text-green-800' },
+        'warning': { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-800', btn: 'text-amber-600 hover:text-amber-800' }
+    };
+    const colors = colorMap[type] || colorMap['error'];
+
+    alertArea.innerHTML = `
+        <div class="mb-4 px-4 py-3 rounded-lg ${colors.bg} ${colors.border} border ${colors.text}">
+            <div class="flex items-start">
+                <div class="flex-1">
+                    <div class="font-semibold mb-1">${title}</div>
+                    <div class="text-sm">${message}</div>
+                </div>
+                <button type="button" class="ml-3 flex-shrink-0 ${colors.btn}" onclick="this.closest('.mb-4').remove()">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
 </script>
 @endpush

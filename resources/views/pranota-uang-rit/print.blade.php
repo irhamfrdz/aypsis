@@ -202,14 +202,15 @@
                 <tr>
                     <th style="width: 4%;">No</th>
                     <th style="width: 8%;">NIK</th>
-                    <th style="width: 24%;">Supir</th>
+                    <th style="width: 20%;">Supir</th>
                     <th style="width: 5%;">Rit</th>
+                    <th style="width: 5%;">Absen</th>
                     <th style="width: 11%;">Total Uang</th>
                     <th style="width: 8%;">Hutang</th>
                     <th style="width: 8%;">Tabungan</th>
                     <th style="width: 8%;">BPJS</th>
                     <th style="width: 10%;">Adjusment</th>
-                    <th style="width: 14%;">Grand Total</th>
+                    <th style="width: 13%;">Grand Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -234,6 +235,7 @@
                         <td class="text-center">{{ $nik ?? str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                         <td class="text-left">{{ strtoupper($detail->supir_nama) }}</td>
                         <td class="text-center">{{ $detail->total_uang_supir > 0 ? round($detail->total_uang_supir / 85000) : 0 }}</td>
+                        <td class="text-center">{{ $detail->absen ?? 0 }} hari</td>
                         <td class="text-right">{{ number_format($detail->total_uang_supir, 0, ',', '.') }}</td>
                         <td class="text-right">{{ number_format($detail->hutang, 0, ',', '.') }}</td>
                         <td class="text-right">{{ number_format($detail->tabungan, 0, ',', '.') }}</td>
@@ -263,6 +265,7 @@
                         <td class="text-center">{{ $nik ?? str_pad($no-1, 4, '0', STR_PAD_LEFT) }}</td>
                         <td class="text-left">{{ strtoupper($supirName) }}</td>
                         <td class="text-center">{{ $totalUangSupir > 0 ? round($totalUangSupir / 85000) : 0 }}</td>
+                        <td class="text-center">-</td>
                         <td class="text-right">{{ number_format($totalUangSupir, 0, ',', '.') }}</td>
                         <td class="text-right">-</td>
                         <td class="text-right">-</td>
@@ -290,6 +293,13 @@
                                 }
                                 echo $totalRit;
                             @endphp
+                        @endif
+                    </strong></td>
+                    <td class="text-center"><strong>
+                        @if($supirDetails && $supirDetails->count() > 0)
+                            {{ $supirDetails->sum('absen') }}
+                        @else
+                            -
                         @endif
                     </strong></td>
                     <td class="text-right"><strong>

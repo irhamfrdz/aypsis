@@ -41,7 +41,8 @@ class PengirimExport implements FromCollection, ShouldAutoSize, WithEvents, With
                 $pengirim->kode,
                 $pengirim->nama_pengirim,
                 $pengirim->nickname1 ?? '-',
-                $pengirim->contact_person ?? '-',
+                $pengirim->pic ?? '-',
+                $pengirim->telepon ?? '-',
                 $pengirim->catatan ?? '-',
                 $pengirim->status === 'active' ? 'Aktif' : 'Tidak Aktif',
                 $pengirim->created_at ? $pengirim->created_at->format('d/m/Y H:i') : '-',
@@ -56,7 +57,8 @@ class PengirimExport implements FromCollection, ShouldAutoSize, WithEvents, With
             'Kode',
             'Nama Pengirim',
             'Nickname 1',
-            'Contact Person',
+            'PIC',
+            'Telepon',
             'Catatan',
             'Status',
             'Tanggal Dibuat',
@@ -68,7 +70,7 @@ class PengirimExport implements FromCollection, ShouldAutoSize, WithEvents, With
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 // Style the header row
-                $event->sheet->getStyle('A1:H1')->applyFromArray([
+                $event->sheet->getStyle('A1:I1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'color' => ['rgb' => 'FFFFFF'],
@@ -89,12 +91,12 @@ class PengirimExport implements FromCollection, ShouldAutoSize, WithEvents, With
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 // Center align the Status column
-                $event->sheet->getStyle('G2:G'.($event->sheet->getHighestRow()))
+                $event->sheet->getStyle('H2:H'.($event->sheet->getHighestRow()))
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                 // Add border to all cells
-                $event->sheet->getStyle('A1:H'.($event->sheet->getHighestRow()))
+                $event->sheet->getStyle('A1:I'.($event->sheet->getHighestRow()))
                     ->applyFromArray([
                         'borders' => [
                             'allBorders' => [

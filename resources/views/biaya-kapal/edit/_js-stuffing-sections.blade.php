@@ -405,8 +405,8 @@
             }
         });
 
-        const currentJenis = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].getAttribute('data-kode');
-        if (currentJenis === 'Stuffing') {
+        const currentJenis = selectedJenisBiaya.nama || '';
+        if (currentJenis.toLowerCase().includes('stuffing')) {
             if (nominalInput) {
                 nominalInput.value = new Intl.NumberFormat('id-ID').format(totalSubtotal);
             }

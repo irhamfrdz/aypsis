@@ -1,9 +1,9 @@
     // Function to calculate nominal for Biaya Dokumen (vendor tariff × number of containers)
     function calculateDokumenNominal() {
-        const selectedJenisBiaya = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].text;
+        const currentJenisBiaya = selectedJenisBiaya.nama || '';
         
         // Only calculate if jenis biaya is "Biaya Dokumen"
-        if (!selectedJenisBiaya.toLowerCase().includes('dokumen')) {
+        if (!currentJenisBiaya.toLowerCase().includes('dokumen')) {
             return;
         }
         
@@ -46,10 +46,10 @@
         console.log('Vendor selected:', this.value);
         console.log('Biaya from vendor:', biaya);
         
-        const selectedJenisBiaya = jenisBiayaSelect.options[jenisBiayaSelect.selectedIndex].text;
+        const currentJenisBiaya = selectedJenisBiaya.nama || '';
         
         // If Biaya Dokumen, use the calculate function
-        if (selectedJenisBiaya.toLowerCase().includes('dokumen')) {
+        if (currentJenisBiaya.toLowerCase().includes('dokumen')) {
             calculateDokumenNominal();
         } else {
             // For other jenis biaya, use original logic
@@ -155,42 +155,6 @@
             if (vendorSelect) vendorSelect.value = '';
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
-            ppnWrapper.classList.add('hidden');
-            pphWrapper.classList.add('hidden');
-            totalBiayaWrapper.classList.add('hidden');
-            dpWrapper.classList.add('hidden');
-            sisaPembayaranWrapper.classList.add('hidden');
-            
-            // Show standard fields
-            kapalWrapper.classList.remove('hidden');
-            voyageWrapper.classList.remove('hidden');
-            blWrapper.classList.remove('hidden');
-            
-            // Reset values
-            ppnInput.value = '0';
-            pphInput.value = '0';
-            totalBiayaInput.value = '';
-            dpInput.value = '0';
-            sisaPembayaranInput.value = '0';
-            
-            // Calculate PPH if nominal already filled
-            if (nominalInput.value) {
-                calculatePphDokumen();
-            }
-        }
-        // Show PPH fields if "Biaya Trucking" is selected
-        else if (selectedText.toLowerCase().includes('trucking')) {
-            // Show PPH Dokumen and Grand Total fields for Biaya Trucking
-            pphDokumenWrapper.classList.remove('hidden');
-            grandTotalDokumenWrapper.classList.remove('hidden');
-            
-            // Hide other type-specific fields
-            vendorWrapper.classList.add('hidden');
-            if (vendorSelect) vendorSelect.value = '';
-            barangWrapper.classList.add('hidden');
-            clearAllKapalSections();
-            airWrapper.classList.add('hidden');
-            clearAllAirSections();
             ppnWrapper.classList.add('hidden');
             pphWrapper.classList.add('hidden');
             totalBiayaWrapper.classList.add('hidden');
@@ -700,6 +664,16 @@
             // Hide normal nominal
             if(nominalWrapper) nominalWrapper.classList.add('hidden');
             if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaWrapper) {
+                penerimaWrapper.classList.add('hidden');
+                if(penerimaInput) penerimaInput.removeAttribute('required');
+            }
+            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+            if(bankIdWrapper) {
+                bankIdWrapper.classList.add('hidden');
+                if(bankIdSelect) bankIdSelect.value = '';
+            }
             
             // Hide other type-specific fields
             barangWrapper.classList.add('hidden');

@@ -484,22 +484,117 @@ class PembayaranObController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        // Pre-process jumlah data to ensure it's clean
+        $jumlahData = $request->input('jumlah', []);
+        if (! is_array($jumlahData)) {
+            return back()->withErrors(['jumlah' => 'Data jumlah harus berupa array'])->withInput();
+        }
+
+        // Clean jumlah data - remove any non-numeric values
+        $cleanJumlahData = [];
+        foreach ($jumlahData as $supirId => $jumlah) {
+            $cleanJumlahData[$supirId] = is_numeric($jumlah) ? floatval($jumlah) : 0;
+        }
+
+        // Replace jumlah in request
+        $request->merge(['jumlah' => $cleanJumlahData]);
+
         // Validasi input
-        $request->validate([
+        $validated = $request->validate([
             'nomor_pembayaran' => 'required|string|max:255',
+            'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'kas_bank' => 'required|exists:akun_coa,id',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|in:debit,kredit',
             'kegiatan' => 'nullable|string|max:255',
             'nomor_voyage' => 'nullable|string|max:255',
             'supir' => 'required|array|min:1',
             'supir.*' => 'required|exists:karyawans,id',
-            'jumlah' => 'required|numeric|min:0',
+            'jumlah' => 'required|array|min:1',
+            'jumlah.*' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
 
-        return redirect()->route('pembayaran-ob.index')
-            ->with('success', 'Pembayaran OB berhasil diupdate.');
+        try {
+            DB::beginTransaction();
+
+            $pembayaran = PembayaranOb::findOrFail($id);
+
+            // Reverse old journal transactions and their COA balance updates
+            $oldTransactions = \App\Models\CoaTransaction::where('nomor_referensi', $pembayaran->nomor_pembayaran)->get();
+            foreach ($oldTransactions as $trans) {
+                $akun = \App\Models\Coa::find($trans->coa_id);
+                if ($akun && isset($akun->posisi_normal)) {
+                    if ($akun->posisi_normal === 'debit') {
+                        $akun->saldo_sekarang = $akun->saldo_sekarang - $trans->debit + $trans->kredit;
+                    } else {
+                        $akun->saldo_sekarang = $akun->saldo_sekarang + $trans->debit - $trans->kredit;
+                    }
+                    $akun->save();
+                }
+                $trans->delete();
+            }
+
+            // Hitung total pembayaran dari semua supir
+            $subtotalPembayaran = 0;
+            $jumlahPerSupirData = [];
+
+            foreach ($validated['supir'] as $supirId) {
+                $jumlah = floatval($validated['jumlah'][$supirId] ?? 0);
+                $jumlahPerSupirData[$supirId] = $jumlah;
+                $subtotalPembayaran += $jumlah;
+            }
+
+            $subtotalPembayaran = floatval($subtotalPembayaran);
+            $totalPembayaran = $subtotalPembayaran;
+
+            // Kurangi dengan Uang Muka jika ada
+            $uangMukaAmount = 0;
+            $pembayaranUangMukaId = $pembayaran->pembayaran_uang_muka_id;
+
+            if ($pembayaranUangMukaId) {
+                $uangMuka = \App\Models\PembayaranUangMuka::find($pembayaranUangMukaId);
+                if ($uangMuka) {
+                    $uangMukaAmount = floatval($uangMuka->total_pembayaran);
+                    $totalPembayaran = $subtotalPembayaran - $uangMukaAmount;
+                    $totalPembayaran = max(0, $totalPembayaran);
+                }
+            }
+
+            // Update pembayaran
+            $pembayaran->update([
+                'nomor_pembayaran' => $validated['nomor_pembayaran'],
+                'nomor_accurate' => $validated['nomor_accurate'] ?? null,
+                'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
+                'kas_bank_id' => $validated['kas_bank'],
+                'akun_coa_id' => $validated['akun_coa_id'],
+                'jenis_transaksi' => $validated['jenis_transaksi'],
+                'kegiatan' => $validated['kegiatan'] ?? null,
+                'nomor_voyage' => $validated['nomor_voyage'] ?? null,
+                'supir_ids' => $validated['supir'],
+                'jumlah_per_supir' => $jumlahPerSupirData,
+                'subtotal_pembayaran' => $subtotalPembayaran,
+                'uang_muka_amount' => $uangMukaAmount,
+                'dp_amount' => $subtotalPembayaran,
+                'total_pembayaran' => $totalPembayaran,
+                'keterangan' => $validated['keterangan'] ?? null,
+            ]);
+
+            // Create new journal entries
+            $this->createDoubleBookJournal($pembayaran, $validated, $totalPembayaran);
+
+            DB::commit();
+
+            return redirect()->route('pembayaran-ob.index')
+                ->with('success', 'Pembayaran OB berhasil diupdate.');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal mengupdate data: ' . $e->getMessage());
+        }
     }
 
     /**

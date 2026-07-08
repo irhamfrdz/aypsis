@@ -635,6 +635,9 @@ class TandaTerimaController extends Controller
             $tandaTerima->tipe_kontainer = $suratJalan->tipe_kontainer;
             $tandaTerima->size = $suratJalan->size;
             $tandaTerima->jumlah_kontainer = $suratJalan->jumlah_kontainer;
+            $tandaTerima->bukti_muat = $suratJalan->bukti_muat;
+            $tandaTerima->bukti_timbangan = $suratJalan->bukti_timbangan;
+            $tandaTerima->bukti_timbangan_muat = $suratJalan->bukti_timbangan_muat;
             $tandaTerima->tujuan_pengiriman = $request->tujuan_pengiriman ?: $suratJalan->tujuan_pengiriman;
             $pengirimName = $request->pengirim;
             if ($pengirimName) {

@@ -42,6 +42,12 @@
                 </svg>
                 Export Excel
             </a>
+            <button type="button" onclick="openBulkInputModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                Input Masal
+            </button>
             <a href="{{ route('stock-amprahan.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -305,6 +311,7 @@
                                     if ($firstUsage->kapal) $refItems[] = $firstUsage->kapal->nama_kapal;
                                     if ($firstUsage->alatBerat) $refItems[] = $firstUsage->alatBerat->nama;
                                     if ($firstUsage->kendaraan) $refItems[] = $firstUsage->kendaraan->nomor_polisi;
+                                    if ($firstUsage->chasisBatam) $refItems[] = 'Buntut: ' . $firstUsage->chasisBatam->kode;
                                     if ($firstUsage->buntut) $refItems[] = 'Buntut: ' . ($firstUsage->buntut->no_kir ?: $firstUsage->buntut->nomor_polisi);
                                     if ($firstUsage->kantor) $refItems[] = $firstUsage->kantor;
                                 }
@@ -432,6 +439,122 @@
             {{ $items->links() }}
         </div>
         @endif
+    </div>
+
+    {{-- Modal Input Masal --}}
+    <div id="bulkInputModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="bulk-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeBulkInputModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-gray-100">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-100">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-bold text-gray-900" id="bulk-modal-title">
+                                Input Masal Data Stock
+                            </h3>
+                            <p class="text-sm text-gray-500 mt-1">Gunakan fitur ini untuk memasukkan data sekaligus banyak (copy-paste dari Excel).</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Tabs --}}
+                <div class="border-b border-gray-200 bg-gray-50 px-6">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button onclick="switchBulkTab('store')" id="tab-btn-store" type="button" class="border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors focus:outline-none">
+                            <i class="fas fa-box-open mr-2"></i> Tambah Stock Baru (Stock Masuk)
+                        </button>
+                        <button onclick="switchBulkTab('usage')" id="tab-btn-usage" type="button" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none">
+                            <i class="fas fa-share-square mr-2"></i> Catat Pemakaian (Stock Digunakan)
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="p-6 bg-white">
+                    {{-- Tab Content 1: Stock Masuk --}}
+                    <div id="tab-content-store" class="block">
+                        <form action="{{ route('stock-amprahan.bulk-store') }}" method="POST" id="bulkStoreForm">
+                            @csrf
+                            <div class="mt-4 border border-blue-100 bg-blue-50 p-3 rounded-md text-sm text-blue-800 mb-3 flex items-start gap-3">
+                                <i class="fas fa-info-circle mt-0.5"></i>
+                                <div>
+                                    <strong>Format Paste (Bisa langsung paste dari Excel):</strong><br>
+                                    <span class="font-mono text-[10px] sm:text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-blue-200">No. Bukti ; Tanggal ; Tipe ; Vendor ; Lokasi ; Nama Barang ; Jml ; Satuan ; Harga ; Keterangan</span>
+                                </div>
+                            </div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Paste Data Di Sini <span class="text-red-500">*</span></label>
+                            <textarea name="bulk_data" id="bulk_data_store" rows="8" required
+                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono whitespace-pre focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="INV-001 ; 2026-07-03 ; Pemakaian ; Toko Abadi ; BATAM ; Filter Solar ; 5 ; Pcs ; 85000 ; Untuk cadangan&#10;INV-001 ; 2026-07-03 ; Pemakaian ; Toko Abadi ; BATAM ; Oli Mesin ; 2 ; Galon ; 350000 ; "></textarea>
+
+                            <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+                                <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                                    <i class="fas fa-save mr-2 mt-1"></i> Simpan Stock Baru
+                                </button>
+                                <button type="button" onclick="closeBulkInputModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                                    Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {{-- Tab Content 2: Stock Digunakan --}}
+                    <div id="tab-content-usage" class="hidden">
+                        <form action="{{ route('stock-amprahan.bulk-usage') }}" method="POST" id="bulkUsageForm">
+                            @csrf
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Penerima <span class="text-red-500">*</span></label>
+                                    <select name="bulk_usage_penerima_id" required class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 searchable-select">
+                                        <option value="">Pilih Karyawan...</option>
+                                        @foreach(\App\Models\Karyawan::orderBy('nama_lengkap')->get() as $k)
+                                            <option value="{{ $k->id }}">{{ $k->nama_lengkap }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Tanggal Pengambilan <span class="text-red-500">*</span></label>
+                                    <input type="date" name="bulk_usage_tanggal" value="{{ date('Y-m-d') }}" required class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Keterangan Umum <span class="text-red-500">*</span></label>
+                                    <input type="text" name="bulk_usage_keterangan" required placeholder="Contoh: Pemakaian bulanan" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                            </div>
+
+                            <div class="mt-4 border border-orange-100 bg-orange-50 p-3 rounded-md text-sm text-orange-800 mb-3 flex items-start gap-3">
+                                <i class="fas fa-exclamation-circle mt-0.5"></i>
+                                <div>
+                                    <strong>Format Paste (Bisa langsung paste dari Excel):</strong><br>
+                                    <span class="font-mono text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-orange-200">ID Stock (atau Nama Barang) ; Jumlah Ambil</span><br>
+                                    <em class="text-xs opacity-75 mt-1 block">Pastikan ID atau nama barang persis sama dengan yang ada di sistem, dan stock mencukupi.</em>
+                                </div>
+                            </div>
+
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Paste Data Di Sini <span class="text-red-500">*</span></label>
+                            <textarea name="bulk_usage_data" id="bulk_data_usage" rows="8" required
+                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono whitespace-pre focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                placeholder="105 ; 2&#10;Oli Mesin SAE 40 ; 1"></textarea>
+
+                            <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+                                <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                                    <i class="fas fa-share-square mr-2 mt-1"></i> Catat Pemakaian
+                                </button>
+                                <button type="button" onclick="closeBulkInputModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                                    Batal
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- Modal Pengambilan Stock --}}
@@ -566,10 +689,20 @@
                                                     @if($kendaraans->count() > 0)
                                                         @foreach($kendaraans as $buntut)
                                                             <div class="buntut-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
-                                                                 data-value="{{ $buntut->id }}" 
-                                                                 data-name="{{ $buntut->no_kir }} {{ $buntut->nomor_polisi }}"
-                                                                 onclick="selectBuntut('{{ $buntut->id }}', '{{ str_replace("'", "\\'", $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-')) }}')">
-                                                                <span class="block truncate font-medium">{{ $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-') }}</span>
+                                                                 data-value="mobil_{{ $buntut->id }}" 
+                                                                 data-name="{{ $buntut->no_kir }} {{ $buntut->nomor_polisi }} (Mobil)"
+                                                                 onclick="selectBuntut('mobil_{{ $buntut->id }}', '{{ str_replace("'", "\\'", $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-')) }} (Mobil)')">
+                                                                <span class="block truncate font-medium">{{ $buntut->no_kir ?: ($buntut->nomor_polisi ?: '-') }} (Mobil)</span>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+                                                    @if($chasis->count() > 0)
+                                                        @foreach($chasis as $c)
+                                                            <div class="buntut-option cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-blue-50 text-gray-900 transition-colors duration-150 border-b border-gray-50 last:border-0" 
+                                                                 data-value="chasis_{{ $c->id }}" 
+                                                                 data-name="{{ $c->kode }} (Chasis)"
+                                                                 onclick="selectBuntut('chasis_{{ $c->id }}', '{{ str_replace("'", "\\'", $c->kode) }} (Chasis)')">
+                                                                <span class="block truncate font-medium">{{ $c->kode }} (Chasis)</span>
                                                             </div>
                                                         @endforeach
                                                     @endif
@@ -2081,12 +2214,23 @@
             <form action="{{ route('stock-amprahan.valuasi-print') }}" method="GET" target="_blank" class="mt-4">
                 <div class="mb-4">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Barang <span class="text-red-500">*</span></label>
-                    <select name="master_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700 searchable-select">
-                        <option value="">-- Pilih Master Barang --</option>
-                        @foreach($masterItems as $item)
-                            <option value="{{ $item->id }}">{{ $item->nama_barang }}</option>
+                    <input type="text" id="valuasi_barang_search" placeholder="Cari barang..." class="w-full px-3 py-2 border border-gray-300 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700">
+                    <div id="valuasi_barang_checkboxes" class="border border-t-0 border-gray-300 rounded-b-lg p-3 max-h-60 overflow-y-auto bg-white space-y-2">
+                        @foreach($uniqueNamaBarang as $name)
+                            <div class="flex items-center barang-checkbox-item">
+                                <input type="checkbox" name="nama_barang[]" value="{{ $name }}" id="val_barang_{{ $loop->iteration }}" class="rounded border-gray-300 text-rose-600 focus:ring-rose-500 mr-2">
+                                <label for="val_barang_{{ $loop->iteration }}" class="text-sm text-gray-700 select-none cursor-pointer">{{ $name }}</label>
+                            </div>
                         @endforeach
-                    </select>
+                    </div>
+                    <div class="text-[10px] text-gray-500 mt-1 flex justify-between">
+                        <span>Pilih satu atau lebih barang</span>
+                        <div class="space-x-2">
+                            <button type="button" onclick="selectAllValuasiBarang(true)" class="text-blue-600 hover:underline">Pilih Semua</button>
+                            <span class="text-gray-300">|</span>
+                            <button type="button" onclick="selectAllValuasiBarang(false)" class="text-red-600 hover:underline">Hapus Semua Pilihan</button>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-4 mb-6">
@@ -2102,6 +2246,10 @@
 
                 <div class="flex justify-end gap-2 border-t pt-4">
                     <button type="button" onclick="closeValuasiModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold">Batal</button>
+                    <button type="button" onclick="submitValuasiPersediaanExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-semibold flex items-center" style="background-color: #059669; color: white;">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Export Excel
+                    </button>
                     <button type="submit" class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors text-sm font-semibold flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -2226,6 +2374,10 @@
 
                 <div class="flex justify-end gap-2 border-t pt-4">
                     <button type="button" onclick="closeValuasiPemakaianModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-semibold">Batal</button>
+                    <button type="button" onclick="submitValuasiPemakaianExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-semibold flex items-center" style="background-color: #059669; color: white;">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Export Excel
+                    </button>
                     <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-semibold flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -2290,6 +2442,40 @@
 </div>
 
 <script>
+    function openBulkInputModal() {
+        document.getElementById('bulkInputModal').classList.remove('hidden');
+    }
+    
+    function closeBulkInputModal() {
+        document.getElementById('bulkInputModal').classList.add('hidden');
+    }
+    
+    function switchBulkTab(tabName) {
+        // Hide all contents
+        document.getElementById('tab-content-store').classList.add('hidden');
+        document.getElementById('tab-content-store').classList.remove('block');
+        document.getElementById('tab-content-usage').classList.add('hidden');
+        document.getElementById('tab-content-usage').classList.remove('block');
+        
+        // Reset all tabs style
+        const btnStore = document.getElementById('tab-btn-store');
+        const btnUsage = document.getElementById('tab-btn-usage');
+        
+        btnStore.className = "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none";
+        btnUsage.className = "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none";
+        
+        // Active selected tab
+        if (tabName === 'store') {
+            document.getElementById('tab-content-store').classList.remove('hidden');
+            document.getElementById('tab-content-store').classList.add('block');
+            btnStore.className = "border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors focus:outline-none";
+        } else {
+            document.getElementById('tab-content-usage').classList.remove('hidden');
+            document.getElementById('tab-content-usage').classList.add('block');
+            btnUsage.className = "border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors focus:outline-none";
+        }
+    }
+
     function openValuasiModal() {
         document.getElementById('valuasiModal').classList.remove('hidden');
     }
@@ -2306,6 +2492,8 @@
         const valuasiModal = document.getElementById('valuasiModal');
         const valuasiPemakaianModal = document.getElementById('valuasiPemakaianModal');
         const valuasiPembelianModal = document.getElementById('valuasiPembelianModal');
+        const bulkInputModal = document.getElementById('bulkInputModal');
+        
         if (event.target == valuasiModal) {
             closeValuasiModal();
         }
@@ -2314,6 +2502,9 @@
         }
         if (event.target == valuasiPembelianModal) {
             closeValuasiPembelianModal();
+        }
+        if (event.target == bulkInputModal) {
+            closeBulkInputModal();
         }
     }
 
@@ -2391,6 +2582,82 @@
                 }
             }
         }
+    }
+
+    function submitValuasiPemakaianExcel() {
+        const form = document.querySelector('#valuasiPemakaianModal form');
+        const originalAction = form.action;
+        const originalTarget = form.target;
+        
+        form.action = "{{ route('stock-amprahan.valuasi-pemakaian-excel') }}";
+        form.target = '_self';
+        
+        if (form.reportValidity()) {
+            form.submit();
+        }
+        
+        form.action = originalAction;
+        form.target = originalTarget;
+    }
+
+    function submitValuasiPersediaanExcel() {
+        const form = document.querySelector('#valuasiModal form');
+        const checkedCount = document.querySelectorAll('#valuasi_barang_checkboxes input[type="checkbox"]:checked').length;
+        
+        if (checkedCount === 0) {
+            alert('Silakan pilih minimal satu barang.');
+            return;
+        }
+
+        const originalAction = form.action;
+        const originalTarget = form.target;
+        
+        form.action = "{{ route('stock-amprahan.valuasi-excel') }}";
+        form.target = '_self';
+        
+        form.submit();
+        
+        form.action = originalAction;
+        form.target = originalTarget;
+    }
+
+    // Live search for checkboxes in valuasiModal
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('valuasi_barang_search');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                const items = document.querySelectorAll('.barang-checkbox-item');
+                items.forEach(item => {
+                    const label = item.querySelector('label').textContent.toLowerCase();
+                    if (label.includes(query)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        const valuasiForm = document.querySelector('#valuasiModal form');
+        if (valuasiForm) {
+            valuasiForm.addEventListener('submit', function(e) {
+                const checkedCount = document.querySelectorAll('#valuasi_barang_checkboxes input[type="checkbox"]:checked').length;
+                if (checkedCount === 0) {
+                    e.preventDefault();
+                    alert('Silakan pilih minimal satu barang.');
+                }
+            });
+        }
+    });
+
+    function selectAllValuasiBarang(checked) {
+        const checkboxes = document.querySelectorAll('#valuasi_barang_checkboxes input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            if (cb.parentElement.style.display !== 'none') {
+                cb.checked = checked;
+            }
+        });
     }
 </script>
 

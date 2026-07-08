@@ -50,7 +50,7 @@
 
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">No. Transaksi (Otomatis)</label>
-                            <input type="text" value="{{ $no_transaksi }}" readonly 
+                            <input type="text" name="no_transaksi" value="{{ $no_transaksi }}" readonly 
                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm font-bold text-gray-500">
                         </div>
 
@@ -78,6 +78,14 @@
                                         @endforeach
                                     </div>
                                 </div>
+                                <div id="manifest_history_section" class="hidden mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <h4 class="text-xs font-bold text-blue-800 uppercase mb-1 flex items-center border-b border-blue-200 pb-1">
+                                        <i class="fas fa-ship mr-2"></i> History Manifest
+                                    </h4>
+                                    <div id="manifest_history_list" class="text-xs text-blue-900 space-y-2 mt-2 max-h-40 overflow-y-auto">
+                                        <!-- content populated by js -->
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Size <span class="text-red-500">*</span></label>
@@ -88,10 +96,19 @@
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">No. Seal</label>
-                            <input type="text" name="no_seal" value="{{ old('no_seal') }}" placeholder="Opsional"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all uppercase">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">No. Seal</label>
+                                <input type="text" name="no_seal" value="{{ old('no_seal') }}" placeholder="Opsional"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all uppercase">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Status <span class="text-red-500">*</span></label>
+                                <select name="status" id="status_select" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
+                                    <option value="FULL" {{ old('status') == 'FULL' ? 'selected' : '' }}>FULL</option>
+                                    <option value="EMPTY" {{ old('status', 'EMPTY') == 'EMPTY' ? 'selected' : '' }}>EMPTY</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -102,17 +119,46 @@
                             Rute & Transportasi
                         </h3>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
+                        <div class="grid grid-cols-2 gap-4" id="rute_grid_container">
+                            <div class="relative dari-dropdown-container">
                                 <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Dari <span class="text-red-500">*</span></label>
-                                <input type="text" name="dari" value="{{ old('dari') }}" required placeholder="Lokasi Asal"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all uppercase">
+                                <div class="relative">
+                                    <input type="text" name="dari" id="dari_search" placeholder="Cari Lokasi Asal..." autocomplete="off" value="{{ old('dari') }}" required
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all uppercase">
+                                    <div id="dari_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                                        @foreach($locations as $loc)
+                                            <div class="px-4 py-2 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 dari-item" 
+                                                 data-name="{{ $loc }}">
+                                                <div class="font-medium uppercase">{{ $loc }}</div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
-                            <div>
+                            <div class="relative ke-dropdown-container">
                                 <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Ke <span class="text-red-500">*</span></label>
-                                <input type="text" name="ke" value="{{ old('ke') }}" required placeholder="Lokasi Tujuan"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all uppercase">
+                                <div class="relative">
+                                    <input type="text" name="ke" id="ke_search" placeholder="Cari Lokasi Tujuan..." autocomplete="off" value="{{ old('ke') }}" required
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all uppercase">
+                                    <div id="ke_list" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                                        @foreach($locations as $loc)
+                                            <div class="px-4 py-2 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer text-sm transition-colors border-b border-gray-50 last:border-0 ke-item" 
+                                                 data-name="{{ $loc }}">
+                                                <div class="font-medium uppercase">{{ $loc }}</div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+
+                        <div class="flex items-center pt-1">
+                            <input type="checkbox" name="ob_dalam_pelabuhan" id="ob_dalam_pelabuhan" value="1" 
+                                   {{ old('ob_dalam_pelabuhan') ? 'checked' : '' }}
+                                   class="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded">
+                            <label for="ob_dalam_pelabuhan" class="ml-2 text-xs font-bold text-gray-700 uppercase tracking-wider cursor-pointer">
+                                OB Dalam Pelabuhan
+                            </label>
                         </div>
 
                         <div class="relative supir-dropdown-container">
@@ -247,6 +293,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!e.target.closest('.supir-dropdown-container')) {
             supirList.classList.add('hidden');
         }
+        if (!e.target.closest('.dari-dropdown-container')) {
+            const dariList = document.getElementById('dari_list');
+            if (dariList) dariList.classList.add('hidden');
+        }
+        if (!e.target.closest('.ke-dropdown-container')) {
+            const keList = document.getElementById('ke_list');
+            if (keList) keList.classList.add('hidden');
+        }
     });
 
     kontainerSearch.addEventListener('input', () => {
@@ -277,6 +331,40 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             kontainerList.classList.add('hidden');
+            autoCalculateBiaya();
+            
+            // Fetch Manifest History
+            const manifestSection = document.getElementById('manifest_history_section');
+            const manifestList = document.getElementById('manifest_history_list');
+            if (manifestSection && manifestList) {
+                // Show loading state
+                manifestList.innerHTML = '<div class="text-center py-2"><i class="fas fa-spinner fa-spin text-blue-500"></i> Memuat...</div>';
+                manifestSection.classList.remove('hidden');
+
+                fetch(`{{ route('langsir-batam.api.manifest-history') }}?no_kontainer=${no}`)
+                    .then(response => response.json())
+                    .then(res => {
+                        if (res.success && res.data && res.data.length > 0) {
+                            let html = '';
+                            res.data.forEach((item, index) => {
+                                html += `
+                                    <div class="border-b border-blue-100 pb-2 last:border-0 last:pb-0">
+                                        <p><strong>Kapal:</strong> ${item.nama_kapal || '-'}</p>
+                                        <p><strong>Voyage:</strong> ${item.no_voyage || '-'}</p>
+                                        <p><strong>Tgl Berangkat:</strong> ${item.tanggal_berangkat || '-'}</p>
+                                    </div>
+                                `;
+                            });
+                            manifestList.innerHTML = html;
+                        } else {
+                            manifestSection.classList.add('hidden');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        manifestSection.classList.add('hidden');
+                    });
+            }
         });
     });
 
@@ -327,6 +415,170 @@ document.addEventListener('DOMContentLoaded', function() {
         if (initialItem) {
             supirSearch.value = initialItem.getAttribute('data-name');
         }
+    }
+
+    // Searchable Dropdown for Dari (Asal)
+    const dariSearch = document.getElementById('dari_search');
+    const dariList = document.getElementById('dari_list');
+    const dariItems = document.querySelectorAll('.dari-item');
+
+    if (dariSearch && dariList) {
+        dariSearch.addEventListener('focus', () => {
+            dariList.classList.remove('hidden');
+        });
+
+        dariSearch.addEventListener('input', () => {
+            const filter = dariSearch.value.toLowerCase();
+            dariItems.forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                if (name.includes(filter)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+            dariList.classList.remove('hidden');
+            autoCalculateBiaya();
+        });
+
+        dariItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const name = item.getAttribute('data-name');
+                dariSearch.value = name;
+                dariList.classList.add('hidden');
+                autoCalculateBiaya();
+            });
+        });
+    }
+
+    // Searchable Dropdown for Ke (Tujuan)
+    const keSearch = document.getElementById('ke_search');
+    const keList = document.getElementById('ke_list');
+    const keItems = document.querySelectorAll('.ke-item');
+
+    if (keSearch && keList) {
+        keSearch.addEventListener('focus', () => {
+            keList.classList.remove('hidden');
+        });
+
+        keSearch.addEventListener('input', () => {
+            const filter = keSearch.value.toLowerCase();
+            keItems.forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                if (name.includes(filter)) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+            keList.classList.remove('hidden');
+            autoCalculateBiaya();
+        });
+
+        keItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const name = item.getAttribute('data-name');
+                keSearch.value = name;
+                keList.classList.add('hidden');
+                autoCalculateBiaya();
+            });
+        });
+    }
+
+    // Automatic Fee Calculation
+    function autoCalculateBiaya() {
+        const obCheckbox = document.getElementById('ob_dalam_pelabuhan');
+        if (obCheckbox && obCheckbox.checked) {
+            if (biayaDisplay && biayaHidden) {
+                biayaHidden.value = 20000;
+                biayaDisplay.value = formatRupiah('20000');
+            }
+            return;
+        }
+
+        const dariVal = (dariSearch?.value || '').trim().toUpperCase();
+        const keVal = (keSearch?.value || '').trim().toUpperCase();
+        const sizeVal = sizeSelect?.value || '';
+        const statusSelect = document.getElementById('status_select');
+        const statusVal = statusSelect?.value || '';
+
+        // Check if route is SRIMAS -> PELABUHAN or PELABUHAN -> SRIMAS
+        const isSrimasPelabuhan = (dariVal === 'SRIMAS' && keVal === 'PELABUHAN') || (dariVal === 'PELABUHAN' && keVal === 'SRIMAS');
+        // Check if route is TPK/RTG -> SRIMAS or SRIMAS -> TPK/RTG
+        const isTpkSrimas = (dariVal === 'TPK/RTG' && keVal === 'SRIMAS') || (dariVal === 'SRIMAS' && keVal === 'TPK/RTG');
+
+        if (isSrimasPelabuhan) {
+            let price = 0;
+            if (sizeVal === '20FT') {
+                price = statusVal === 'FULL' ? 40000 : 35000;
+            } else if (sizeVal === '40FT') {
+                price = statusVal === 'FULL' ? 50000 : 45000;
+            }
+
+            if (price > 0) {
+                if (biayaDisplay && biayaHidden) {
+                    biayaHidden.value = price;
+                    biayaDisplay.value = formatRupiah(price.toString());
+                }
+            }
+        } else if (isTpkSrimas) {
+            let price = 0;
+            if (statusVal === 'FULL') {
+                if (sizeVal === '20FT') {
+                    price = 50000;
+                } else if (sizeVal === '40FT') {
+                    price = 60000;
+                }
+            }
+
+            if (price > 0) {
+                if (biayaDisplay && biayaHidden) {
+                    biayaHidden.value = price;
+                    biayaDisplay.value = formatRupiah(price.toString());
+                }
+            }
+        }
+    }
+
+    if (sizeSelect) {
+        sizeSelect.addEventListener('change', autoCalculateBiaya);
+    }
+    const statusSelect = document.getElementById('status_select');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', autoCalculateBiaya);
+    }
+
+    // OB Dalam Pelabuhan checkbox logic
+    const obCheckbox = document.getElementById('ob_dalam_pelabuhan');
+    const ruteRow = document.getElementById('rute_grid_container');
+
+    function handleObChange() {
+        const isOb = obCheckbox?.checked;
+        if (isOb) {
+            if (ruteRow) ruteRow.classList.add('hidden');
+            if (dariSearch) {
+                dariSearch.removeAttribute('required');
+                dariSearch.value = '';
+            }
+            if (keSearch) {
+                keSearch.removeAttribute('required');
+                keSearch.value = '';
+            }
+            if (biayaDisplay && biayaHidden) {
+                biayaHidden.value = 20000;
+                biayaDisplay.value = formatRupiah('20000');
+            }
+        } else {
+            if (ruteRow) ruteRow.classList.remove('hidden');
+            if (dariSearch) dariSearch.setAttribute('required', 'required');
+            if (keSearch) keSearch.setAttribute('required', 'required');
+            autoCalculateBiaya();
+        }
+    }
+
+    if (obCheckbox) {
+        obCheckbox.addEventListener('change', handleObChange);
+        handleObChange();
     }
 });
 </script>

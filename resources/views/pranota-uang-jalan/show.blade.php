@@ -36,6 +36,13 @@
                         </svg>
                         Edit
                     </a>
+                    <button type="button" onclick="var m=document.getElementById('addUangJalanModal');if(m){m.style.display='block';document.body.style.overflow='hidden';}else{alert('Modal tidak ditemukan!');}"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded text-sm flex items-center">
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Tambah Uang Jalan
+                    </button>
                 @endif
                 <a href="{{ route('pranota-uang-jalan.index') }}" 
                    class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 rounded text-sm flex items-center">
@@ -267,28 +274,164 @@
                 </form>
             </div>
         @endif
+
+        <!-- Modal Add Uang Jalan -->
+        <div id="addUangJalanModal" class="fixed inset-0 z-50 overflow-y-auto" style="display: none;" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <!-- Background overlay -->
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddUangJalanModal()"></div>
+
+                <!-- Center modal content -->
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                    <form action="{{ route('pranota-uang-jalan.add-uang-jalan', $pranotaUangJalan) }}" method="POST">
+                        @csrf
+                        <div class="bg-white px-6 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <div class="flex justify-between items-center pb-3 border-b border-gray-200 mb-4">
+                                <h3 class="text-lg font-semibold text-gray-900" id="modal-title">
+                                    Tambah Uang Jalan ke Pranota
+                                </h3>
+                                <button type="button" class="text-gray-400 hover:text-gray-500" onclick="closeAddUangJalanModal()">
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Search Input -->
+                            <div class="mb-4">
+                                <input type="text" id="modalSearchInput" placeholder="Cari No. Uang Jalan, Surat Jalan, Supir..." 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                                       onkeyup="filterModalUangJalan()">
+                            </div>
+
+                            <!-- Uang Jalan Checkbox List -->
+                            <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-md">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50 sticky top-0">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                                                <input type="checkbox" id="selectAllUangJalan" onchange="toggleSelectAllUangJalan(this)">
+                                            </th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Uang Jalan</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Surat Jalan</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200" id="modalUangJalanList">
+                                        @forelse($availableUangJalans as $uj)
+                                            @php
+                                                $surat = $uj->suratJalan ?? $uj->suratJalanBongkaran;
+                                            @endphp
+                                            <tr class="hover:bg-gray-50 modal-uj-row" 
+                                                data-search="{{ strtolower(e($uj->nomor_uang_jalan . ' ' . ($surat ? ($surat->no_surat_jalan ?? $surat->nomor_surat_jalan) . ' ' . $surat->supir : ''))) }}">
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                                    <input type="checkbox" name="uang_jalan_ids[]" value="{{ $uj->id }}" class="uj-checkbox focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <div class="text-sm font-medium text-gray-900">{{ $uj->nomor_uang_jalan }}</div>
+                                                    <div class="text-xs text-gray-500">{{ $uj->kegiatan_bongkar_muat }}</div>
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ $uj->tanggal_uang_jalan ? $uj->tanggal_uang_jalan->format('d/m/Y') : '-' }}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ $surat ? ($surat->no_surat_jalan ?? $surat->nomor_surat_jalan ?? '-') : '-' }}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                    {{ $surat->supir ?? '-' }}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-gray-900 text-right">
+                                                    Rp {{ number_format($uj->jumlah_total, 0, ',', '.') }}
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500">
+                                                    Tidak ada uang jalan yang tersedia untuk ditambahkan.
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-6 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                Simpan
+                            </button>
+                            <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" onclick="closeAddUangJalanModal()">
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
+<script>
+function openAddUangJalanModal() {
+    var modal = document.getElementById('addUangJalanModal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeAddUangJalanModal() {
+    var modal = document.getElementById('addUangJalanModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+function filterModalUangJalan() {
+    var searchVal = document.getElementById('modalSearchInput').value.toLowerCase();
+    var rows = document.querySelectorAll('.modal-uj-row');
+    for (var i = 0; i < rows.length; i++) {
+        var text = rows[i].getAttribute('data-search') || '';
+        if (text.indexOf(searchVal) !== -1) {
+            rows[i].style.display = '';
+        } else {
+            rows[i].style.display = 'none';
+        }
+    }
+}
+
+function toggleSelectAllUangJalan(selectAllCheckbox) {
+    var checkboxes = document.querySelectorAll('.uj-checkbox');
+    for (var i = 0; i < checkboxes.length; i++) {
+        var row = checkboxes[i].closest('tr');
+        if (row && row.style.display !== 'none') {
+            checkboxes[i].checked = selectAllCheckbox.checked;
+        }
+    }
+}
+
+// Auto hide alerts after 3 seconds
+setTimeout(function() {
+    var successAlert = document.getElementById('success-alert');
+    var errorAlert = document.getElementById('error-alert');
+    if (successAlert) successAlert.remove();
+    if (errorAlert) errorAlert.remove();
+}, 3000);
+</script>
+
 @if(session('success'))
-    <div class="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded" id="success-alert">
+    <div class="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50" id="success-alert">
         {{ session('success') }}
     </div>
 @endif
 
 @if(session('error'))
-    <div class="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" id="error-alert">
+    <div class="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50" id="error-alert">
         {{ session('error') }}
     </div>
 @endif
-
-<script>
-// Auto hide alerts after 3 seconds
-setTimeout(function() {
-    const successAlert = document.getElementById('success-alert');
-    const errorAlert = document.getElementById('error-alert');
-    if (successAlert) successAlert.remove();
-    if (errorAlert) errorAlert.remove();
-}, 3000);
-</script>
 @endsection

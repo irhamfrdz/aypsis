@@ -45,6 +45,16 @@ class Karyawan extends Model
         return $this->hasOne(User::class, 'karyawan_id', 'id');
     }
 
+    /**
+     * Get the user who created/inputted this karyawan
+     */
+    public function getCreatorNameAttribute(): string
+    {
+        $creatorLog = $this->auditLogs()->whereIn('action', ['created', 'imported'])->orderBy('created_at', 'asc')->first();
+
+        return $creatorLog ? $creatorLog->getUserDisplayName() : '-';
+    }
+
     public function crewChecklists()
     {
         return $this->hasMany(CrewEquipment::class, 'karyawan_id', 'id');
@@ -111,5 +121,15 @@ class Karyawan extends Model
         }
 
         return (string) $nextNikNumber;
+    }
+
+    public function saldoUtang()
+    {
+        return $this->hasOne(SaldoUtangSupir::class, 'karyawan_id');
+    }
+
+    public function riwayatUtang()
+    {
+        return $this->hasMany(RiwayatUtangSupir::class, 'karyawan_id');
     }
 }

@@ -157,18 +157,7 @@
                     </select>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Supir Cadangan</label>
-                    <select name="supir2"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Pilih Supir --</option>
-                        @foreach($supirs as $supir)
-                            <option value="{{ $supir->nama_lengkap }}" {{ old('supir2') == $supir->nama_lengkap ? 'selected' : '' }}>
-                                {{ $supir->nama_lengkap }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
@@ -251,17 +240,7 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status <span class="text-red-600">*</span></label>
-                    <select name="status"
-                            required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="active" {{ old('status', 'active') == 'active' ? 'selected' : '' }}>Active</option>
-                        <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                    </select>
-                </div>
+
 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>

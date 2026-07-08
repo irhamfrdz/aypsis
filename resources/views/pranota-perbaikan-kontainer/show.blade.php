@@ -267,11 +267,11 @@
                             <p class="text-xs text-gray-500 mt-1">Jika Biaya Riil diisi > 0, maka Biaya Terpakai akan menggunakan Biaya Riil. Jika 0, maka menggunakan Estimasi Biaya.</p>
                         </div>
 
-                        <!-- Biaya Cat (Read Only for info) -->
+                        <!-- Biaya Cat -->
                         <div id="wrapperBiayaCat" class="hidden">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Biaya Cat (Info - Rp)</label>
-                            <input type="text" id="modalBiayaCat" disabled
-                                   class="w-full px-3 py-2 border border-gray-250 bg-gray-50 text-gray-500 rounded-lg text-sm outline-none">
+                            <label for="biaya_cat" class="block text-sm font-semibold text-gray-700 mb-1">Biaya Cat (Rp)</label>
+                            <input type="number" name="biaya_cat" id="modalBiayaCat" required min="0" step="any"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none">
                         </div>
 
                         <!-- Kalkulasi Biaya Terpakai (Dynamic) -->
@@ -319,14 +319,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const labelNoPerbaikan = document.getElementById('labelNoPerbaikan');
     const labelNoKontainer = document.getElementById('labelNoKontainer');
     const submitBtn = document.getElementById('btnSubmitBiaya');
-    let currentBiayaCat = 0;
 
     function calculateTerpakai() {
         const estimasi = parseFloat(estimasiInput.value) || 0;
         const riil = parseFloat(riilInput.value) || 0;
+        const biayaCat = parseFloat(biayaCatInput.value) || 0;
         
         const baseBiaya = riil > 0 ? riil : estimasi;
-        const totalTerpakai = baseBiaya + currentBiayaCat;
+        const totalTerpakai = baseBiaya + biayaCat;
 
         labelBiayaTerpakai.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(totalTerpakai));
     }
@@ -341,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const riil = this.getAttribute('data-riil');
             const biayaCat = this.getAttribute('data-biaya-cat') || 0;
 
-            currentBiayaCat = parseFloat(biayaCat);
+            const currentBiayaCat = parseFloat(biayaCat);
 
             // Pre-fill fields
             itemIdInput.value = id;
@@ -349,9 +349,9 @@ document.addEventListener('DOMContentLoaded', function() {
             labelNoKontainer.textContent = noKontainer;
             estimasiInput.value = estimasi;
             riilInput.value = riil;
+            biayaCatInput.value = currentBiayaCat;
 
             if (currentBiayaCat > 0) {
-                biayaCatInput.value = new Intl.NumberFormat('id-ID').format(currentBiayaCat);
                 wrapperBiayaCat.classList.remove('hidden');
             } else {
                 wrapperBiayaCat.classList.add('hidden');
@@ -374,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (backdrop) backdrop.addEventListener('click', closeModal);
 
     // Form inputs change triggers calculation
-    [estimasiInput, riilInput].forEach(input => {
+    [estimasiInput, riilInput, biayaCatInput].forEach(input => {
         input.addEventListener('input', calculateTerpakai);
     });
 

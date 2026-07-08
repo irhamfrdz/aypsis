@@ -145,13 +145,41 @@
             </div>
 
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Hubungkan dengan Karyawan (Opsional)</label>
-                <select name="karyawan_id" id="karyawan_id">
-                    <option value="">-- Tidak dihubungkan --</option>
-                    @foreach ($karyawans as $karyawan)
-                        <option value="{{ $karyawan->id }}" data-nama="{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }}">{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }} @if($karyawan->nik) ({{ $karyawan->nik }}) @endif</option>
-                    @endforeach
-                </select>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Hubungkan dengan Karyawan (Opsional)</label>
+
+                {{-- Tab Toggle --}}
+                <div class="flex rounded-lg border border-gray-300 overflow-hidden mb-3 w-fit">
+                    <button type="button" id="tab-tetap"
+                        class="px-4 py-1.5 text-sm font-medium tab-karyawan-btn bg-indigo-600 text-white transition-colors"
+                        onclick="switchKaryawanTab('tetap')">
+                        Karyawan Tetap
+                    </button>
+                    <button type="button" id="tab-tidak-tetap"
+                        class="px-4 py-1.5 text-sm font-medium tab-karyawan-btn bg-white text-gray-600 transition-colors"
+                        onclick="switchKaryawanTab('tidak-tetap')">
+                        Karyawan Tidak Tetap
+                    </button>
+                </div>
+
+                {{-- Karyawan Tetap Select --}}
+                <div id="panel-tetap">
+                    <select name="karyawan_id" id="karyawan_id">
+                        <option value="">-- Tidak dihubungkan --</option>
+                        @foreach ($karyawans as $karyawan)
+                            <option value="{{ $karyawan->id }}" data-nama="{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }}">{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }} @if($karyawan->nik) ({{ $karyawan->nik }}) @endif</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Karyawan Tidak Tetap Select --}}
+                <div id="panel-tidak-tetap" style="display:none">
+                    <select name="karyawan_tidak_tetap_id" id="karyawan_tidak_tetap_id" disabled>
+                        <option value="">-- Tidak dihubungkan --</option>
+                        @foreach ($karyawanTidakTetaps as $ktt)
+                            <option value="{{ $ktt->id }}" data-nama="{{ $ktt->nama_panggilan ?: $ktt->nama_lengkap }}">{{ $ktt->nama_panggilan ?: $ktt->nama_lengkap }} @if($ktt->nik) ({{ $ktt->nik }}) @endif</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -371,6 +399,22 @@
                                 <td><input type="checkbox" name="permissions[master-mobil][create]" value="1" class="permission-checkbox"></td>
                                 <td><input type="checkbox" name="permissions[master-mobil][update]" value="1" class="permission-checkbox"></td>
                                 <td><input type="checkbox" name="permissions[master-mobil][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            {{-- Master Chasis Batam --}}
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Master Chasis Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][delete]" value="1" class="permission-checkbox"></td>
                                 <td class="text-center text-gray-400">-</td>
                                 <td>-</td>
                                 <td>-</td>
@@ -2045,14 +2089,57 @@
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Choices for karyawan select
+            // ---- Karyawan Tab Switcher ----
+            window.switchKaryawanTab = function(tab) {
+                const panelTetap       = document.getElementById('panel-tetap');
+                const panelTidakTetap  = document.getElementById('panel-tidak-tetap');
+                const btnTetap         = document.getElementById('tab-tetap');
+                const btnTidakTetap    = document.getElementById('tab-tidak-tetap');
+                const selTetap         = document.getElementById('karyawan_id');
+                const selTidakTetap    = document.getElementById('karyawan_tidak_tetap_id');
+
+                if (tab === 'tetap') {
+                    panelTetap.style.display      = 'block';
+                    panelTidakTetap.style.display  = 'none';
+                    btnTetap.classList.add('bg-indigo-600','text-white');
+                    btnTetap.classList.remove('bg-white','text-gray-600');
+                    btnTidakTetap.classList.add('bg-white','text-gray-600');
+                    btnTidakTetap.classList.remove('bg-indigo-600','text-white');
+                    selTetap.disabled        = false;
+                    selTidakTetap.disabled   = true;
+                    selTidakTetap.value      = '';
+                } else {
+                    panelTetap.style.display      = 'none';
+                    panelTidakTetap.style.display  = 'block';
+                    btnTidakTetap.classList.add('bg-indigo-600','text-white');
+                    btnTidakTetap.classList.remove('bg-white','text-gray-600');
+                    btnTetap.classList.add('bg-white','text-gray-600');
+                    btnTetap.classList.remove('bg-indigo-600','text-white');
+                    selTidakTetap.disabled   = false;
+                    selTetap.disabled        = true;
+                    selTetap.value           = '';
+                }
+            };
+
+            // Choices for karyawan tetap select
             const karyawanElement = document.getElementById('karyawan_id');
             if (karyawanElement) {
                 new Choices(karyawanElement, {
                     searchEnabled: true,
                     shouldSort: false,
                     placeholder: true,
-                    placeholderValue: 'Cari atau pilih karyawan...'
+                    placeholderValue: 'Cari atau pilih karyawan tetap...'
+                });
+            }
+
+            // Choices for karyawan tidak tetap select
+            const karyawanTtElement = document.getElementById('karyawan_tidak_tetap_id');
+            if (karyawanTtElement) {
+                new Choices(karyawanTtElement, {
+                    searchEnabled: true,
+                    shouldSort: false,
+                    placeholder: true,
+                    placeholderValue: 'Cari atau pilih karyawan tidak tetap...'
                 });
             }
 

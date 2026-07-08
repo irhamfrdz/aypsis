@@ -19,6 +19,7 @@ use App\Http\Controllers\KontainerController;
 use App\Http\Controllers\KontainerImportController;
 use App\Http\Controllers\Master\KlasifikasiBiayaController;
 use App\Http\Controllers\MasterBankController;
+use App\Http\Controllers\MasterChasisBatamController;
 use App\Http\Controllers\MasterGudangAmprahanController;
 use App\Http\Controllers\MasterItemKwitansiController;
 use App\Http\Controllers\MasterKegiatanController;
@@ -145,6 +146,10 @@ Route::get('master/permission-templates/{template}', [UserController::class, 'ge
 // Route untuk memperbaiki data nama kapal KM SUMBER ABADI - DELETED
 // Route::get('/fix-kapal-sumber-abadi', ...);
 
+// React Sewa Kontainer Sync API
+Route::get('api/sewa-kontainer/sync', [\App\Http\Controllers\ReactSewaKontainerSyncController::class, 'getState'])->name('react-sewa-kontainer.sync.get');
+Route::post('api/sewa-kontainer/sync', [\App\Http\Controllers\ReactSewaKontainerSyncController::class, 'saveState'])->name('react-sewa-kontainer.sync.post');
+
 // Rute yang dilindungi middleware auth (tambahkan pemeriksaan karyawan, persetujuan, dan checklist ABK)
 Route::middleware([
     'auth',
@@ -152,6 +157,10 @@ Route::middleware([
     \App\Http\Middleware\EnsureUserApproved::class,
     \App\Http\Middleware\EnsureCrewChecklistComplete::class,
 ])->group(function () {
+    Route::get('/open-penyewaan-kontainer', function () {
+        return redirect('/penyewaan-app/index.html');
+    })->name('open-penyewaan-kontainer');
+
     // Onboarding routes for authenticated users who need to create their Karyawan record.
     // These are intentionally named without the 'master.' prefix and do NOT use the
     // 'can:master-karyawan' gate so that newly created users (pending) can submit
@@ -245,6 +254,9 @@ Route::middleware([
     // The old routes and resource controller were deleted to allow a full rewrite.
     // If you want them restored later, use your backup or reintroduce new routes/controllers.
 
+    // Vendor Kontainer Sewa (Master Vendor - existing CRUD)
+    Route::resource('vendor-kontainer-sewa', \App\Http\Controllers\VendorKontainerSewaController::class);
+
     /*
     |===========================================================================
     | 🏠 DASHBOARD & CORE SYSTEM ROUTES
@@ -304,6 +316,10 @@ Route::middleware([
         Route::get('pelamar-karyawan/{pelamar}', [PelamarKaryawanController::class, 'show'])
             ->name('pelamar-karyawan.show')
             ->middleware('can:master-karyawan-view');
+
+        Route::get('user-online', [\App\Http\Controllers\OnlineUserController::class, 'index'])
+            ->name('user.online')
+            ->middleware('only.kiky');
 
         Route::get('user/create', [UserController::class, 'create'])
             ->name('user.create')
@@ -813,6 +829,20 @@ Route::middleware([
             ->only(['edit', 'update']);
         Route::resource('mobil', MobilController::class)
             ->middleware('can:master-mobil-delete')
+            ->only(['destroy']);
+
+        // Master chasis batam routes
+        Route::resource('chasis-batam', MasterChasisBatamController::class)
+            ->middleware('can:master-chasis-batam-create')
+            ->only(['create', 'store']);
+        Route::resource('chasis-batam', MasterChasisBatamController::class)
+            ->middleware('can:master-chasis-batam-view')
+            ->only(['index', 'show']);
+        Route::resource('chasis-batam', MasterChasisBatamController::class)
+            ->middleware('can:master-chasis-batam-update')
+            ->only(['edit', 'update']);
+        Route::resource('chasis-batam', MasterChasisBatamController::class)
+            ->middleware('can:master-chasis-batam-delete')
             ->only(['destroy']);
 
         // Ongkos Truck routes
@@ -1819,6 +1849,10 @@ Route::middleware([
             ->name('master-kapal.print-spkbm')
             ->middleware('can:master-kapal.view');
 
+        Route::get('master-kapal/{master_kapal}/voyages', [\App\Http\Controllers\MasterKapalController::class, 'getVoyages'])
+            ->name('master-kapal.voyages')
+            ->middleware('can:master-kapal.view');
+
         // 🚢 Master Kapal (Ship Master) Management with permissions
         Route::resource('master-kapal', \App\Http\Controllers\MasterKapalController::class)
             ->names('master-kapal')
@@ -1947,6 +1981,10 @@ Route::middleware([
         Route::delete('biaya-kapal/{biayaKapal}', [\App\Http\Controllers\BiayaKapalController::class, 'destroy'])
             ->name('biaya-kapal.destroy')
             ->middleware('can:biaya-kapal-delete');
+
+        Route::post('pembayaran-biaya-kapal/{pembayaran}/sync-coa', [\App\Http\Controllers\PembayaranBiayaKapalController::class, 'syncCoa'])
+            ->name('pembayaran-biaya-kapal.sync-coa')
+            ->middleware('can:pembayaran-biaya-kapal-edit');
 
         Route::resource('pembayaran-biaya-kapal', \App\Http\Controllers\PembayaranBiayaKapalController::class);
 
@@ -2120,6 +2158,10 @@ Route::middleware([
         Route::get('pricelist-uang-jalan-batam/export', [\App\Http\Controllers\PricelistUangJalanBatamController::class, 'export'])
             ->name('pricelist-uang-jalan-batam.export')
             ->middleware('can:master-pricelist-uang-jalan-batam-view');
+
+        Route::post('pricelist-uang-jalan-batam/{id}/copy', [\App\Http\Controllers\PricelistUangJalanBatamController::class, 'copy'])
+            ->name('pricelist-uang-jalan-batam.copy')
+            ->middleware('can:master-pricelist-uang-jalan-batam-create');
 
         Route::resource('pricelist-uang-jalan-batam', \App\Http\Controllers\PricelistUangJalanBatamController::class)
             ->names('pricelist-uang-jalan-batam')
@@ -2699,6 +2741,10 @@ Route::middleware([
             ->name('surat-jalan-batam.store')
             ->middleware('can:surat-jalan-batam-create');
 
+        Route::post('surat-jalan-batam/store-bulk', [\App\Http\Controllers\SuratJalanBatamController::class, 'storeBulk'])
+            ->name('surat-jalan-batam.store-bulk')
+            ->middleware('can:surat-jalan-batam-create');
+
         Route::get('surat-jalan-batam/{id}', [\App\Http\Controllers\SuratJalanBatamController::class, 'show'])
             ->name('surat-jalan-batam.show')
             ->middleware('can:surat-jalan-batam-view');
@@ -2764,6 +2810,9 @@ Route::middleware([
         // 🚚 LANGSIR BATAM
         Route::get('langsir-batam', [\App\Http\Controllers\LangsirBatamController::class, 'index'])
             ->name('langsir-batam.index')
+            ->middleware('can:langsir-batam-view');
+        Route::get('langsir-batam/api/container-manifest-history', [\App\Http\Controllers\LangsirBatamController::class, 'getContainerManifestHistory'])
+            ->name('langsir-batam.api.manifest-history')
             ->middleware('can:langsir-batam-view');
         Route::get('langsir-batam/create', [\App\Http\Controllers\LangsirBatamController::class, 'create'])
             ->name('langsir-batam.create')
@@ -3075,6 +3124,10 @@ Route::middleware([
             ->name('pranota-uang-jalan.remove-uang-jalan')
             ->middleware('can:pranota-uang-jalan-update');
 
+        Route::post('pranota-uang-jalan/{pranotaUangJalan}/add-uang-jalan', [\App\Http\Controllers\PranotaSuratJalanController::class, 'addUangJalan'])
+            ->name('pranota-uang-jalan.add-uang-jalan')
+            ->middleware('can:pranota-uang-jalan-update');
+
         Route::resource('pranota-uang-jalan', \App\Http\Controllers\PranotaSuratJalanController::class)
             ->middleware([
                 'index' => 'can:pranota-uang-jalan-view',
@@ -3107,6 +3160,32 @@ Route::middleware([
             ->middleware('can:pranota-uang-rit-batam-create');
 
         Route::resource('pranota-uang-rit-batam', \App\Http\Controllers\PranotaUangRitBatamController::class);
+
+        // Gaji Supir Batam
+        Route::get('gaji-supir-batam/calculate', [\App\Http\Controllers\GajiSupirBatamController::class, 'calculate'])
+            ->name('gaji-supir-batam.calculate')
+            ->middleware('can:gaji-supir-batam-view');
+        Route::post('gaji-supir-batam/{id}/bayar', [\App\Http\Controllers\GajiSupirBatamController::class, 'bayar'])
+            ->name('gaji-supir-batam.bayar')
+            ->middleware('can:gaji-supir-batam-edit');
+        Route::resource('gaji-supir-batam', \App\Http\Controllers\GajiSupirBatamController::class)
+            ->middleware([
+                'index' => 'can:gaji-supir-batam-view',
+                'create' => 'can:gaji-supir-batam-create',
+                'store' => 'can:gaji-supir-batam-create',
+                'show' => 'can:gaji-supir-batam-view',
+                'edit' => 'can:gaji-supir-batam-edit',
+                'update' => 'can:gaji-supir-batam-edit',
+                'destroy' => 'can:gaji-supir-batam-delete',
+            ]);
+
+        // Report Kerja Supir Batam
+        Route::get('report-kerja-supir-batam', [\App\Http\Controllers\ReportKerjaSupirBatamController::class, 'index'])
+            ->name('report-kerja-supir-batam.index')
+            ->middleware('can:report-kerja-supir-batam-view');
+        Route::get('report-kerja-supir-batam/export', [\App\Http\Controllers\ReportKerjaSupirBatamController::class, 'export'])
+            ->name('report-kerja-supir-batam.export')
+            ->middleware('can:report-kerja-supir-batam-view');
 
         // Pranota Uang Jalan Bongkaran - list & basic management
         Route::get('pranota-uang-jalan-bongkaran', [\App\Http\Controllers\PranotaUangJalanBongkaranController::class, 'index'])
@@ -3306,6 +3385,9 @@ Route::middleware([
         Route::get('/surat-jalan-bongkaran-batam/get-voyages', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'getVoyages'])
             ->name('surat-jalan-bongkaran-batam.get-voyages')
             ->middleware('can:surat-jalan-bongkaran-batam-view');
+        Route::get('/penarikan-surat-jalan-batam', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'penarikanIndex'])
+            ->name('penarikan-surat-jalan-batam.index')
+            ->middleware('can:surat-jalan-bongkaran-batam-view');
         Route::get('/surat-jalan-bongkaran-batam', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'selectShip'])
             ->name('surat-jalan-bongkaran-batam.index')
             ->middleware('can:surat-jalan-bongkaran-batam-view');
@@ -3320,6 +3402,9 @@ Route::middleware([
             ->middleware('can:surat-jalan-bongkaran-batam-create');
         Route::post('/surat-jalan-bongkaran-batam', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'store'])
             ->name('surat-jalan-bongkaran-batam.store')
+            ->middleware('can:surat-jalan-bongkaran-batam-create');
+        Route::post('/surat-jalan-bongkaran-batam/store-bulk', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'storeBulk'])
+            ->name('surat-jalan-bongkaran-batam.store-bulk')
             ->middleware('can:surat-jalan-bongkaran-batam-create');
         Route::get('/surat-jalan-bongkaran-batam/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'show'])
             ->name('surat-jalan-bongkaran-batam.show')
@@ -3515,6 +3600,15 @@ Route::middleware([
         Route::get('pranota-uang-rit/{pranotaUangRit}/print', [\App\Http\Controllers\PranotaUangRitController::class, 'print'])
             ->name('pranota-uang-rit.print')
             ->middleware('can:pranota-uang-rit-view');
+
+        // Saldo Utang Supir Management routes
+        Route::get('saldo-utang-supir/import', [\App\Http\Controllers\SaldoUtangSupirController::class, 'showImportForm'])
+            ->name('saldo-utang-supir.import');
+        Route::post('saldo-utang-supir/import', [\App\Http\Controllers\SaldoUtangSupirController::class, 'importProcess'])
+            ->name('saldo-utang-supir.import-process');
+
+        Route::resource('saldo-utang-supir', \App\Http\Controllers\SaldoUtangSupirController::class)
+            ->only(['index', 'create', 'store', 'show']);
 
         // Pembayaran Pranota Rit Management with permissions
         Route::prefix('pembayaran-pranota-rit')
@@ -4221,8 +4315,11 @@ Route::middleware([
         Route::get('/get-preview-data', [PranotaOngkosTrukController::class, 'getPreviewData'])->name('get-preview-data');
         Route::post('/', [PranotaOngkosTrukController::class, 'store'])->name('store');
         Route::get('/{id}', [PranotaOngkosTrukController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [PranotaOngkosTrukController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [PranotaOngkosTrukController::class, 'update'])->name('update');
         Route::get('/{id}/print', [PranotaOngkosTrukController::class, 'print'])->name('print');
         Route::get('/{id}/export', [PranotaOngkosTrukController::class, 'export'])->name('export');
+        Route::get('/{id}/export-2', [PranotaOngkosTrukController::class, 'export2'])->name('export-2');
         Route::delete('/{id}', [PranotaOngkosTrukController::class, 'destroy'])->name('destroy');
     });
 
@@ -5605,6 +5702,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/ongkos-truk/view', [App\Http\Controllers\ReportOngkosTrukController::class, 'view'])->name('ongkos-truk.view');
     Route::get('/ongkos-truk/print', [App\Http\Controllers\ReportOngkosTrukController::class, 'print'])->name('ongkos-truk.print');
     Route::get('/ongkos-truk/export', [App\Http\Controllers\ReportOngkosTrukController::class, 'export'])->name('ongkos-truk.export');
+    Route::get('/ongkos-truk/export-2', [App\Http\Controllers\ReportOngkosTrukController::class, 'export2'])->name('ongkos-truk.export-2');
 
     // Report Surat Jalan
     Route::get('/surat-jalan', [App\Http\Controllers\ReportSuratJalanController::class, 'index'])->name('surat_jalan.index');
@@ -5666,6 +5764,12 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ]);
 
     // 📦 Stock Amprahan
+    Route::post('stock-amprahan/bulk-store', [\App\Http\Controllers\StockAmprahanController::class, 'bulkStore'])
+        ->name('stock-amprahan.bulk-store')
+        ->middleware('can:stock-amprahan-create');
+    Route::post('stock-amprahan/bulk-usage', [\App\Http\Controllers\StockAmprahanController::class, 'bulkUsage'])
+        ->name('stock-amprahan.bulk-usage')
+        ->middleware('can:stock-amprahan-update');
     Route::get('stock-amprahan/export-excel', [\App\Http\Controllers\StockAmprahanController::class, 'exportExcel'])->name('stock-amprahan.export-excel')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/export-history-excel', [\App\Http\Controllers\StockAmprahanController::class, 'exportHistoryExcel'])->name('stock-amprahan.export-history-excel')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/history/all', [\App\Http\Controllers\StockAmprahanController::class, 'allHistory'])
@@ -5688,9 +5792,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::post('stock-amprahan/{id}/usage', [\App\Http\Controllers\StockAmprahanController::class, 'storeUsage'])
         ->name('stock-amprahan.usage')
         ->middleware('can:stock-amprahan-update');
+    Route::delete('stock-amprahan/usage/{id}', [\App\Http\Controllers\StockAmprahanController::class, 'destroyUsage'])
+        ->name('stock-amprahan.usage.destroy')
+        ->middleware('can:stock-amprahan-delete');
     Route::get('stock-amprahan/history/print', [\App\Http\Controllers\StockAmprahanController::class, 'historyPrint'])->name('stock-amprahan.history.print')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi/print', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPrint'])->name('stock-amprahan.valuasi-print')->middleware('can:stock-amprahan-view');
+    Route::get('stock-amprahan/valuasi/excel', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiExcel'])->name('stock-amprahan.valuasi-excel')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi-pemakaian/print', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPemakaianPrint'])->name('stock-amprahan.valuasi-pemakaian-print')->middleware('can:stock-amprahan-view');
+    Route::get('stock-amprahan/valuasi-pemakaian/excel', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPemakaianExcel'])->name('stock-amprahan.valuasi-pemakaian-excel')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/valuasi-pembelian/print', [\App\Http\Controllers\StockAmprahanController::class, 'valuasiPembelianPrint'])->name('stock-amprahan.valuasi-pembelian-print')->middleware('can:stock-amprahan-view');
     Route::get('stock-amprahan/{id}/history', [\App\Http\Controllers\StockAmprahanController::class, 'history'])->name('stock-amprahan.history')->middleware('can:stock-amprahan-view');
     Route::resource('stock-amprahan', \App\Http\Controllers\StockAmprahanController::class)
@@ -6383,56 +6492,4 @@ Route::middleware(['auth',
         ->name('pranota-perbaikan-kontainer.print')
         ->middleware('can:pranota-perbaikan-kontainer-print');
 
-    // 📦 PORTAL SEWA KONTAINER MODULE ROUTES
-    Route::prefix('sewa-kontainer')->name('sewa-kontainer.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\SewaKontainerController::class, 'index'])->name('index');
-
-        // Master Data CRUD
-        Route::post('/master/customer', [\App\Http\Controllers\SewaKontainerController::class, 'storeCustomer'])->name('customer.store');
-        Route::put('/master/customer/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateCustomer'])->name('customer.update');
-        Route::delete('/master/customer/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteCustomer'])->name('customer.delete');
-
-        Route::post('/master/tipe', [\App\Http\Controllers\SewaKontainerController::class, 'storeTipe'])->name('tipe.store');
-        Route::delete('/master/tipe/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteTipe'])->name('tipe.delete');
-
-        Route::post('/master/ukuran', [\App\Http\Controllers\SewaKontainerController::class, 'storeUkuran'])->name('ukuran.store');
-        Route::delete('/master/ukuran/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteUkuran'])->name('ukuran.delete');
-
-        Route::post('/master/kontainer', [\App\Http\Controllers\SewaKontainerController::class, 'storeKontainer'])->name('kontainer.store');
-        Route::delete('/master/kontainer/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteKontainer'])->name('kontainer.delete');
-
-        Route::post('/master/tarif', [\App\Http\Controllers\SewaKontainerController::class, 'storeTarif'])->name('tarif.store');
-        Route::delete('/master/tarif/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteTarif'])->name('tarif.delete');
-
-        // Transaksi Sewa (Contracts)
-        Route::post('/sewa', [\App\Http\Controllers\SewaKontainerController::class, 'storeSewa'])->name('sewa.store');
-        Route::put('/sewa/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'updateSewa'])->name('sewa.update');
-        Route::post('/sewa/{id}/terminate', [\App\Http\Controllers\SewaKontainerController::class, 'terminateSewa'])->name('sewa.terminate');
-        Route::delete('/sewa/{id}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteSewa'])->name('sewa.delete');
-
-        // Invoice Groups
-        Route::post('/invoice', [\App\Http\Controllers\SewaKontainerController::class, 'storeInvoice'])->name('invoice.store');
-        Route::put('/invoice/{nomor}', [\App\Http\Controllers\SewaKontainerController::class, 'updateInvoice'])->name('invoice.update');
-        Route::delete('/invoice/{nomor}', [\App\Http\Controllers\SewaKontainerController::class, 'deleteInvoice'])->name('invoice.delete');
-
-        // Tagihan inline update
-        Route::post('/tagihan/{id}/update', [\App\Http\Controllers\SewaKontainerController::class, 'updateTagihan'])->name('tagihan.update');
-
-        // Bulk payment import (legacy)
-        Route::post('/import-payment', [\App\Http\Controllers\SewaKontainerController::class, 'importPayment'])->name('import.payment');
-
-        // Bulk import (8 types: customer, tipe, ukuran, kontainer, tarif, sewa, pembayaran, pelunasan)
-        Route::post('/bulk-import', [\App\Http\Controllers\SewaKontainerController::class, 'bulkImport'])->name('bulk.import');
-
-        // Preview import (2-stage: parse → preview → apply; currently for pelunasan)
-        Route::post('/import-preview', [\App\Http\Controllers\SewaKontainerController::class, 'previewImport'])->name('import.preview');
-
-        // Backup / Restore JSON
-        Route::get('/export-json', [\App\Http\Controllers\SewaKontainerController::class, 'exportJson'])->name('export.json');
-        Route::post('/import-json', [\App\Http\Controllers\SewaKontainerController::class, 'importJson'])->name('import.json');
-        Route::post('/wipe-data', [\App\Http\Controllers\SewaKontainerController::class, 'wipeData'])->name('wipe.data');
-
-        // Kontainer info AJAX helper
-        Route::get('/kontainer-info/{noKontainer}', [\App\Http\Controllers\SewaKontainerController::class, 'getKontainerInfo'])->name('kontainer.info');
-    });
 });

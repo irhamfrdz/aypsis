@@ -4,6 +4,16 @@
 
 @section('content')
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    @if(session('success'))
+        <div class="mb-4 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="mb-4 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
+            {{ session('error') }}
+        </div>
+    @endif
     <div class="mb-6 flex justify-between items-center">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Pembayaran #{{ $pembayaran->nomor_pembayaran }}</h1>
@@ -13,6 +23,17 @@
             <a href="{{ route('pembayaran-biaya-kapal.index') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                 Kembali
             </a>
+            @can('pembayaran-biaya-kapal-edit')
+            <a href="{{ route('pembayaran-biaya-kapal.edit', $pembayaran->id) }}" class="bg-yellow-50 hover:bg-yellow-100 text-yellow-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                Edit
+            </a>
+            <form action="{{ route('pembayaran-biaya-kapal.sync-coa', $pembayaran->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin sinkronisasi ulang data COA ini?')">
+                @csrf
+                <button type="submit" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    Sync COA
+                </button>
+            </form>
+            @endcan
             @can('pembayaran-biaya-kapal-delete')
             <form action="{{ route('pembayaran-biaya-kapal.destroy', $pembayaran->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan dan menghapus pembayaran ini? Status invoice akan kembali menjadi belum lunas.')">
                 @csrf

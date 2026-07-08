@@ -291,13 +291,44 @@
             </div>
 
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Hubungkan dengan Karyawan (Opsional)</label>
-                <select name="karyawan_id" id="karyawan_id">
-                    <option value="">-- Tidak dihubungkan --</option>
-                    @foreach ($karyawans as $karyawan)
-                        <option value="{{ $karyawan->id }}" data-nama="{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }}" @if(old('karyawan_id', $user->karyawan_id) == $karyawan->id) selected @endif>{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }} @if($karyawan->nik) ({{ $karyawan->nik }}) @endif</option>
-                    @endforeach
-                </select>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Hubungkan dengan Karyawan (Opsional)</label>
+
+                {{-- Tab Toggle --}}
+                @php
+                    $activeTab = $user->karyawan_tidak_tetap_id ? 'tidak-tetap' : 'tetap';
+                @endphp
+                <div class="flex rounded-lg border border-gray-300 overflow-hidden mb-3 w-fit">
+                    <button type="button" id="tab-tetap"
+                        class="px-4 py-1.5 text-sm font-medium tab-karyawan-btn {{ $activeTab === 'tetap' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600' }} transition-colors"
+                        onclick="switchKaryawanTab('tetap')">
+                        Karyawan Tetap
+                    </button>
+                    <button type="button" id="tab-tidak-tetap"
+                        class="px-4 py-1.5 text-sm font-medium tab-karyawan-btn {{ $activeTab === 'tidak-tetap' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600' }} transition-colors"
+                        onclick="switchKaryawanTab('tidak-tetap')">
+                        Karyawan Tidak Tetap
+                    </button>
+                </div>
+
+                {{-- Karyawan Tetap Select --}}
+                <div id="panel-tetap" style="{{ $activeTab === 'tetap' ? '' : 'display:none' }}">
+                    <select name="karyawan_id" id="karyawan_id" {{ $activeTab !== 'tetap' ? 'disabled' : '' }}>
+                        <option value="">-- Tidak dihubungkan --</option>
+                        @foreach ($karyawans as $karyawan)
+                            <option value="{{ $karyawan->id }}" data-nama="{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }}" @if(old('karyawan_id', $user->karyawan_id) == $karyawan->id) selected @endif>{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }} @if($karyawan->nik) ({{ $karyawan->nik }}) @endif</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Karyawan Tidak Tetap Select --}}
+                <div id="panel-tidak-tetap" style="{{ $activeTab === 'tidak-tetap' ? '' : 'display:none' }}">
+                    <select name="karyawan_tidak_tetap_id" id="karyawan_tidak_tetap_id" {{ $activeTab !== 'tidak-tetap' ? 'disabled' : '' }}>
+                        <option value="">-- Tidak dihubungkan --</option>
+                        @foreach ($karyawanTidakTetaps as $ktt)
+                            <option value="{{ $ktt->id }}" data-nama="{{ $ktt->nama_panggilan ?: $ktt->nama_lengkap }}" @if(old('karyawan_tidak_tetap_id', $user->karyawan_tidak_tetap_id) == $ktt->id) selected @endif>{{ $ktt->nama_panggilan ?: $ktt->nama_lengkap }} @if($ktt->nik) ({{ $ktt->nik }}) @endif</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -679,6 +710,40 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Gaji Supir Batam --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="inline-block w-3 h-3 bg-purple-100 rounded-full mr-3"></span>
+                                        <div class="text-sm font-medium">Gaji Supir Batam</div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[gaji-supir-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['view']) && $userMatrixPermissions['gaji-supir-batam']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gaji-supir-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['create']) && $userMatrixPermissions['gaji-supir-batam']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gaji-supir-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['update']) && $userMatrixPermissions['gaji-supir-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[gaji-supir-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['delete']) && $userMatrixPermissions['gaji-supir-batam']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[gaji-supir-batam][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['export']) && $userMatrixPermissions['gaji-supir-batam']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- Report Kerja Supir Batam --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="inline-block w-3 h-3 bg-indigo-100 rounded-full mr-3"></span>
+                                        <div class="text-sm font-medium">Report Kerja Supir Batam</div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[report-kerja-supir-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['report-kerja-supir-batam']['view']) && $userMatrixPermissions['report-kerja-supir-batam']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Term --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
@@ -827,6 +892,40 @@
                                 <td><input type="checkbox" name="permissions[master-item-kwitansi][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-item-kwitansi']['create']) && $userMatrixPermissions['master-item-kwitansi']['create']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[master-item-kwitansi][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-item-kwitansi']['update']) && $userMatrixPermissions['master-item-kwitansi']['update']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[master-item-kwitansi][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-item-kwitansi']['delete']) && $userMatrixPermissions['master-item-kwitansi']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Data Mobil --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Mobil</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-mobil][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['view']) && $userMatrixPermissions['master-mobil']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['create']) && $userMatrixPermissions['master-mobil']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['update']) && $userMatrixPermissions['master-mobil']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['delete']) && $userMatrixPermissions['master-mobil']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Master Chasis Batam --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Master Chasis Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-chasis-batam']['view']) && $userMatrixPermissions['master-chasis-batam']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-chasis-batam']['create']) && $userMatrixPermissions['master-chasis-batam']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-chasis-batam']['update']) && $userMatrixPermissions['master-chasis-batam']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-chasis-batam][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-chasis-batam']['delete']) && $userMatrixPermissions['master-chasis-batam']['delete']) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
@@ -3008,6 +3107,25 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Saldo Utang Supir --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <div>
+                                            <span class="text-indigo-600 font-bold">Saldo Utang Supir</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[saldo-utang-supir][view]" value="1" class="permission-checkbox" @if(old('permissions.saldo-utang-supir.view') || (isset($userMatrixPermissions['saldo-utang-supir']['view']) && $userMatrixPermissions['saldo-utang-supir']['view']) || ($user && $user->can('saldo-utang-supir-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[saldo-utang-supir][create]" value="1" class="permission-checkbox" @if(old('permissions.saldo-utang-supir.create') || (isset($userMatrixPermissions['saldo-utang-supir']['create']) && $userMatrixPermissions['saldo-utang-supir']['create']) || ($user && $user->can('saldo-utang-supir-create'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
                             {{-- Pranota Supir --}}
                             <tr class="submodule-row" data-parent="aktivitas">
@@ -4332,13 +4450,46 @@
             // ==========================================
 
             function initializeKaryawanSelect() {
+                // ---- Tab Switcher ----
+                window.switchKaryawanTab = function(tab) {
+                    const panelTetap      = document.getElementById('panel-tetap');
+                    const panelTidakTetap = document.getElementById('panel-tidak-tetap');
+                    const btnTetap        = document.getElementById('tab-tetap');
+                    const btnTidakTetap   = document.getElementById('tab-tidak-tetap');
+                    const selTetap        = document.getElementById('karyawan_id');
+                    const selTidakTetap   = document.getElementById('karyawan_tidak_tetap_id');
+
+                    if (tab === 'tetap') {
+                        panelTetap.style.display     = 'block';
+                        panelTidakTetap.style.display = 'none';
+                        btnTetap.classList.add('bg-indigo-600','text-white');
+                        btnTetap.classList.remove('bg-white','text-gray-600');
+                        btnTidakTetap.classList.add('bg-white','text-gray-600');
+                        btnTidakTetap.classList.remove('bg-indigo-600','text-white');
+                        selTetap.disabled      = false;
+                        selTidakTetap.disabled = true;
+                        selTidakTetap.value    = '';
+                    } else {
+                        panelTetap.style.display     = 'none';
+                        panelTidakTetap.style.display = 'block';
+                        btnTidakTetap.classList.add('bg-indigo-600','text-white');
+                        btnTidakTetap.classList.remove('bg-white','text-gray-600');
+                        btnTetap.classList.add('bg-white','text-gray-600');
+                        btnTetap.classList.remove('bg-indigo-600','text-white');
+                        selTidakTetap.disabled = false;
+                        selTetap.disabled      = true;
+                        selTetap.value         = '';
+                    }
+                };
+
+                // ---- Choices for karyawan tetap ----
                 const karyawanElement = document.getElementById('karyawan_id');
                 if (karyawanElement) {
                     const karyawanChoices = new Choices(karyawanElement, {
                         searchEnabled: true,
                         shouldSort: false,
                         placeholder: true,
-                        placeholderValue: 'Cari atau pilih karyawan...'
+                        placeholderValue: 'Cari atau pilih karyawan tetap...'
                     });
 
                     karyawanElement.addEventListener('click', function(e) {
@@ -4346,20 +4497,26 @@
                         try { karyawanChoices.showDropdown(); } catch (err) { console.debug('showDropdown error', err); }
                     });
 
-                    // Mousedown handler on wrapper to ensure dropdown shows even when other handlers exist
                     const karyawanWrapper = karyawanElement.parentElement;
                     karyawanWrapper.addEventListener('mousedown', function(e) {
                         if (e.target.closest && e.target.closest('.choices')) {
                             e.preventDefault(); e.stopPropagation();
-                            console.debug('karyawanWrapper mousedown inside choices');
                             try { karyawanChoices.showDropdown(); } catch (err) { console.debug('showDropdown error', err); }
                             setTimeout(() => { try { karyawanChoices.showDropdown(); } catch (err) {} }, 50);
                         }
                     });
                 }
-                // Also apply Choices to the copy-user select for consistent dropdown behavior
-                // (Now handled inside initializeCopyPermissions for better encapsulation)
-                // initializeCopyPermissions handles the copy_user_select initialization
+
+                // ---- Choices for karyawan tidak tetap ----
+                const karyawanTtElement = document.getElementById('karyawan_tidak_tetap_id');
+                if (karyawanTtElement) {
+                    new Choices(karyawanTtElement, {
+                        searchEnabled: true,
+                        shouldSort: false,
+                        placeholder: true,
+                        placeholderValue: 'Cari atau pilih karyawan tidak tetap...'
+                    });
+                }
             }
 
             // ==========================================

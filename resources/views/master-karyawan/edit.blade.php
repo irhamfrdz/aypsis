@@ -57,6 +57,7 @@
 
             @php
                 // Definisikan kelas Tailwind yang sederhana dan konsisten
+                $isKiky = auth()->check() && (strtolower((string) auth()->user()->username) === 'kiky' || strtolower((string) auth()->user()->name) === 'kiky');
                 $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
                 $readonlyInputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-200 shadow-sm text-[10px] p-2.5";
                 $selectClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
@@ -69,8 +70,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="nik" class="{{ $labelClasses }}">NIK <span class="text-red-500">*</span></label>
-                    <input type="text" name="nik" id="nik" class="{{ $readonlyInputClasses }}" readonly required placeholder="Masukkan NIK (angka saja, tanpa huruf)" maxlength="25" pattern="[0-9]+" value="{{ old('nik', $karyawan->nik) }}">
-                    <p class="text-xs text-gray-500 mt-1">NIK tidak dapat diubah setelah data dibuat</p>
+                    <input type="text" name="nik" id="nik" class="{{ $isKiky ? $inputClasses : $readonlyInputClasses }}" {{ $isKiky ? '' : 'readonly' }} required placeholder="Masukkan NIK (angka saja, tanpa huruf)" maxlength="25" pattern="[0-9]+" value="{{ old('nik', $karyawan->nik) }}">
+                    @if($isKiky)
+                        <p class="text-xs text-gray-500 mt-1">NIK dapat diubah (Login sebagai Kiky)</p>
+                    @else
+                        <p class="text-xs text-gray-500 mt-1">NIK tidak dapat diubah setelah data dibuat</p>
+                    @endif
                     <div id="nikError" class="text-xs text-red-600 mt-1 hidden">NIK harus berupa angka saja, tidak boleh ada huruf</div>
                 </div>
 
@@ -144,16 +149,24 @@
 
                 <div>
                     <label for="ktp" class="{{ $labelClasses }}">Nomor KTP</label>
-                    <input type="text" name="ktp" id="ktp" class="{{ $readonlyInputClasses }}" readonly placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" value="{{ old('ktp', $karyawan->ktp) }}">
-                    <p class="text-xs text-gray-500 mt-1">Nomor KTP tidak dapat diubah setelah data dibuat</p>
+                    <input type="text" name="ktp" id="ktp" class="{{ $isKiky ? $inputClasses : $readonlyInputClasses }}" {{ $isKiky ? '' : 'readonly' }} placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" value="{{ old('ktp', $karyawan->ktp) }}">
+                    @if($isKiky)
+                        <p class="text-xs text-gray-500 mt-1">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf (Login sebagai Kiky)</p>
+                    @else
+                        <p class="text-xs text-gray-500 mt-1">Nomor KTP tidak dapat diubah setelah data dibuat</p>
+                    @endif
                     <div id="ktpError" class="text-xs text-red-600 mt-1 hidden">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf</div>
                     <div id="ktpWarning" class="text-xs mt-1 hidden"></div>
                 </div>
 
                 <div>
                     <label for="kk" class="{{ $labelClasses }}">Nomor KK</label>
-                    <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" placeholder="Masukkan nomor KK (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" value="{{ old('kk', $karyawan->kk) }}">
-                    <p class="text-xs text-gray-500 mt-1">Nomor KK harus tepat 16 digit angka saja, tidak boleh ada huruf</p>
+                    <input type="text" name="kk" id="kk" class="{{ $isKiky ? $inputClasses : $readonlyInputClasses }}" {{ $isKiky ? '' : 'readonly' }} placeholder="Masukkan nomor KK (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" value="{{ old('kk', $karyawan->kk) }}">
+                    @if($isKiky)
+                        <p class="text-xs text-gray-500 mt-1">Nomor KK harus tepat 16 digit angka saja, tidak boleh ada huruf (Login sebagai Kiky)</p>
+                    @else
+                        <p class="text-xs text-gray-500 mt-1">Nomor KK tidak dapat diubah setelah data dibuat</p>
+                    @endif
                     <div id="kkError" class="text-xs text-red-600 mt-1 hidden">Nomor KK harus tepat 16 digit angka saja, tidak boleh ada huruf</div>
                     <div id="kkWarning" class="text-xs mt-1 hidden"></div>
                 </div>

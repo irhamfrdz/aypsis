@@ -376,7 +376,15 @@ class NaikKapalController extends Controller
 
             // Update prospek status if naik kapal is completed
             if ($request->status == 'selesai') {
-                $prospek->update(['status' => 'sudah_muat']);
+                $isObMuat = $naikKapal->sudah_ob;
+                $isInManifest = false;
+                if (! empty($naikKapal->nomor_kontainer) && $naikKapal->nomor_kontainer !== '-') {
+                    $isInManifest = \App\Models\Manifest::where('nomor_kontainer', $naikKapal->nomor_kontainer)->exists();
+                }
+
+                if ($isObMuat || $isInManifest) {
+                    $prospek->update(['status' => 'sudah_muat']);
+                }
             } elseif ($request->status == 'batal') {
                 $prospek->update(['status' => 'aktif']);
             }
@@ -777,9 +785,17 @@ class NaikKapalController extends Controller
 
             // Update prospek status if needed
             if ($prospek) {
-                $prospek->update([
-                    'status' => 'sudah_muat',
-                ]);
+                $isObMuat = $naikKapal->sudah_ob;
+                $isInManifest = false;
+                if (! empty($naikKapal->nomor_kontainer) && $naikKapal->nomor_kontainer !== '-') {
+                    $isInManifest = \App\Models\Manifest::where('nomor_kontainer', $naikKapal->nomor_kontainer)->exists();
+                }
+
+                if ($isObMuat || $isInManifest) {
+                    $prospek->update([
+                        'status' => 'sudah_muat',
+                    ]);
+                }
             }
 
             // Mark naik kapal as processed

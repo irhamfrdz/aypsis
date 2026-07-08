@@ -3,7 +3,7 @@
 @section('title', 'Edit Pranota Uang Supir')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="w-full mx-auto px-4 sm:px-6 lg:px-8">
     <div class="bg-white shadow-lg rounded-lg p-4">
         {{-- Notifikasi --}}
         @if($errors->any())

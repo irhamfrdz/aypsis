@@ -86,13 +86,14 @@
                                value="{{ request('search') }}">
                     </div>
 
-                    <!-- Status Tanda Terima Filter -->
+                    <!-- Status Filter -->
                     <div>
-                        <label for="status_tanda_terima" class="block text-sm font-medium text-gray-700 mb-1">Status Tanda Terima</label>
+                        <label for="status_tanda_terima" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                         <select name="status_tanda_terima" id="status_tanda_terima" 
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 onchange="this.form.submit()">
                             <option value="belum" {{ request('status_tanda_terima', 'belum') == 'belum' ? 'selected' : '' }}>Belum Tanda Terima</option>
+                            <option value="belum_sj" {{ request('status_tanda_terima') == 'belum_sj' ? 'selected' : '' }}>Belum Surat Jalan</option>
                             <option value="sudah" {{ request('status_tanda_terima') == 'sudah' ? 'selected' : '' }}>Sudah Tanda Terima</option>
                             <option value="semua" {{ request('status_tanda_terima') == 'semua' ? 'selected' : '' }}>Semua</option>
                         </select>
@@ -151,133 +152,113 @@
                 <table class="min-w-full divide-y divide-gray-200 text-left">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kapal / Voyage</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">No. BL</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Term</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Kontainer</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Seal</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Supir</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">No Plat</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Lokasi</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Jenis Barang</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kapal / Voyage</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">No. BL</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Term</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kontainer / Seal</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Supir / No Plat</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Lokasi</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                            <th class="px-2 py-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider">Jenis Barang</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($suratJalans as $sj)
                             <tr class="hover:bg-gray-50 transition-colors {{ $sj->tandaTerima ? 'bg-green-50/50' : '' }}">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">
                                     @if(isset($sj->is_manifest_only) && $sj->is_manifest_only)
                                         @if($sj->lokasi == 'batam')
                                             <a href="{{ route('surat-jalan-bongkaran-batam.create', ['bl_id' => $sj->id, 'nama_kapal' => $sj->nama_kapal, 'no_voyage' => $sj->no_voyage]) }}" 
-                                               class="inline-flex items-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md transition-colors duration-200 shadow-sm">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                                </svg>
+                                               class="inline-flex items-center px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-medium rounded transition-colors duration-200 shadow-sm">
                                                 Buat SJ
                                             </a>
                                         @else
                                             <a href="{{ route('surat-jalan-bongkaran.create', ['bl_id' => $sj->id, 'nama_kapal' => $sj->nama_kapal, 'no_voyage' => $sj->no_voyage]) }}" 
-                                               class="inline-flex items-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md transition-colors duration-200 shadow-sm">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                                </svg>
+                                               class="inline-flex items-center px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-medium rounded transition-colors duration-200 shadow-sm">
                                                 Buat SJ
                                             </a>
                                         @endif
                                     @elseif($sj->tandaTerima)
                                         <a href="{{ route('tanda-terima-bongkaran.index', ['search' => $sj->nomor_surat_jalan]) }}" 
                                            target="_blank" 
-                                           class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors duration-200 shadow-sm">
-                                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                            </svg>
+                                           class="inline-flex items-center px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-medium rounded transition-colors duration-200 shadow-sm">
                                             Lihat
                                         </a>
                                     @else
                                         <a href="{{ route('tanda-terima-bongkaran.index', ['status' => 'belum', 'search' => $sj->nomor_surat_jalan]) }}" 
                                            target="_blank" 
-                                           class="inline-flex items-center px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-md transition-colors duration-200 shadow-sm">
-                                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
+                                           class="inline-flex items-center px-2 py-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-medium rounded transition-colors duration-200 shadow-sm">
                                             Tanda Terima
                                         </a>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <td class="px-2 py-2 whitespace-nowrap text-xs">
                                     @if(isset($sj->is_manifest_only) && $sj->is_manifest_only)
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                            <svg class="w-3 h-3 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                            </svg>
+                                        <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-red-100 text-red-800">
                                             Belum SJ
                                         </span>
                                     @elseif($sj->tandaTerima)
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                            <svg class="w-3 h-3 inline mr-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                            </svg>
+                                        <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-green-100 text-green-800">
                                             Sudah
                                         </span>
                                     @else
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
-                                            <svg class="w-3 h-3 inline mr-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.828a1 1 0 101.415-1.414L11 9.586V6z" clip-rule="evenodd"/>
-                                            </svg>
+                                        <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-amber-100 text-amber-800">
                                             Belum
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <td class="px-2 py-2 whitespace-nowrap text-xs">
                                     <span class="font-semibold text-gray-900">{{ $sj->nomor_surat_jalan ?: '-' }}</span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
                                     {{ $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
                                     {{ $sj->nama_kapal ?: '-' }} {{ $sj->no_voyage ? ' / ' . $sj->no_voyage : '' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
                                     {{ $sj->no_bl ?: '-' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-600">
                                     @if($sj->term)
-                                        <span class="px-2 py-0.5 text-xs font-medium rounded bg-gray-100 text-gray-800">{{ $sj->term }}</span>
+                                        <span class="px-1.5 py-0.5 text-[10px] font-medium rounded bg-gray-100 text-gray-800">{{ $sj->term }}</span>
                                     @else
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                    {{ $sj->no_kontainer ?: '-' }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {{ $sj->no_seal ?: '-' }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {{ $sj->supir ?: '-' }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {{ $sj->no_plat ?: '-' }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    @if($sj->lokasi == 'batam')
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-100 text-cyan-800">Batam</span>
-                                    @else
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Jakarta</span>
+                                <td class="px-2 py-2 text-xs text-gray-900 font-medium">
+                                    <div>{{ $sj->no_kontainer ?: '-' }}</div>
+                                    @if($sj->no_seal && $sj->no_seal !== '-')
+                                        <div class="text-[10px] text-gray-500 font-normal">Seal: {{ $sj->no_seal }}</div>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title="{{ $sj->jenis_barang }}">
+                                <td class="px-2 py-2 text-xs text-gray-600">
+                                    <div>{{ $sj->supir ?: '-' }}</div>
+                                    @if($sj->no_plat && $sj->no_plat !== '-')
+                                        <div class="text-[10px] text-gray-500">{{ $sj->no_plat }}</div>
+                                    @endif
+                                </td>
+                                <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                    @if($sj->lokasi == 'batam')
+                                        <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-cyan-100 text-cyan-800">Batam</span>
+                                    @else
+                                        <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-100 text-blue-800">Jakarta</span>
+                                    @endif
+                                </td>
+                                <td class="px-2 py-2 text-xs text-gray-600 max-w-[150px] whitespace-normal break-words" title="{{ $sj->manifest->nama_barang ?? ($sj->nama_barang ?? '') }}">
+                                    {{ $sj->manifest->nama_barang ?? ($sj->nama_barang ?? '-') }}
+                                </td>
+                                <td class="px-2 py-2 text-xs text-gray-600 max-w-[150px] whitespace-normal break-words" title="{{ $sj->jenis_barang }}">
                                     {{ $sj->jenis_barang ?: '-' }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="13" class="px-6 py-10 text-center">
+                                <td colspan="12" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>

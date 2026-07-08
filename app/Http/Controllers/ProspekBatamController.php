@@ -29,6 +29,13 @@ class ProspekBatamController extends Controller
                 abort(403, 'Tidak memiliki akses ke halaman prospek batam');
             }
 
+            // Auto sync active prospeks that have BLs
+            ProspekBatam::where('status', 'aktif')
+                ->where(function ($q) {
+                    $q->has('bls');
+                })
+                ->update(['status' => 'sudah_muat']);
+
             $query = ProspekBatam::with(['creator', 'updater', 'bls', 'suratJalan'])->orderBy('created_at', 'desc');
 
             // Filter berdasarkan status
@@ -92,7 +99,7 @@ class ProspekBatamController extends Controller
             }
 
             // Allow configurable rows per page, default to 15. Validate allowed values to prevent abuse.
-            $allowedPerPage = [10, 25, 50, 100];
+            $allowedPerPage = [10, 25, 50, 100, 200];
             $perPage = (int) $request->get('per_page', 10);
             if (! in_array($perPage, $allowedPerPage)) {
                 $perPage = 10;

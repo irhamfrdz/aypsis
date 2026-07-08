@@ -158,6 +158,8 @@ export interface OverrideItem {
   tanggal_bayar: string | null;
   tanggal_tagihan: string | null;
   nomor_invoice_grup: string | null; // NoTagihan / Invoice No
+  nomor_pranota?: string | null; // Nomor Pranota / Proforma
+  tanggal_pranota?: string | null; // Tanggal Pranota / Proforma
   jumlah_tagihan_override?: number | null; // actual billed
   jumlah_bayar?: number | null;
   selisih_pembayaran?: number | null;
@@ -176,6 +178,7 @@ export interface AppState {
   sewas: Sewa[];
   invoices: InvoiceGrup[];
   paymentOverrides: Record<string, OverrideItem>;
+  manualTagihans?: TagihanBulan[];
 }
 
 export function loadAppState(): AppState {
@@ -190,11 +193,29 @@ export function loadAppState(): AppState {
     STORE_KEYS.TAGIHANS_PAYMENT_STATE,
     INITIAL_PAYMENT_OVERRIDES
   );
+  const manualTagihans = loadData<TagihanBulan[]>('sewa_kontainer_manual_tagihans', []);
 
-  return { customers, tipes, ukurans, kontainers, tarifs, sewas, invoices, paymentOverrides };
+  return { customers, tipes, ukurans, kontainers, tarifs, sewas, invoices, paymentOverrides, manualTagihans };
 }
 
-export function saveAppState(state: AppState): void {
+export async function fetchAppStateFromDB(): Promise<AppState | null> {
+  try {
+    const response = await fetch('/api/sewa-kontainer/sync');
+    if (response.ok) {
+      const data = await response.json();
+      // Only return if it seems valid
+      if (data && data.customers && data.sewas) {
+        return data as AppState;
+      }
+    }
+  } catch (err) {
+    console.error("Gagal mengambil data dari database backend:", err);
+  }
+  return null;
+}
+
+export async function saveAppState(state: AppState): Promise<boolean> {
+  // Simpan ke local storage sebagai backup sementara
   saveData(STORE_KEYS.CUSTOMERS, state.customers);
   saveData(STORE_KEYS.TIPES, state.tipes);
   saveData(STORE_KEYS.UKURANS, state.ukurans);
@@ -203,6 +224,29 @@ export function saveAppState(state: AppState): void {
   saveData(STORE_KEYS.SEWAS, state.sewas);
   saveData(STORE_KEYS.INVOICES, state.invoices);
   saveData(STORE_KEYS.TAGIHANS_PAYMENT_STATE, state.paymentOverrides);
+  saveData('sewa_kontainer_manual_tagihans', state.manualTagihans || []);
+
+  // Sync ke database backend secara asinkron
+  try {
+    const response = await fetch('/api/sewa-kontainer/sync', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(state)
+    });
+    if (response.ok) {
+      console.log("✅ Sinkronisasi ke database MySQL berhasil.");
+      return true;
+    } else {
+      console.error("❌ Gagal sinkronisasi ke database. Status:", response.status);
+      return false;
+    }
+  } catch (err) {
+    console.error("❌ Gagal melakukan sinkronisasi ke database MySQL:", err);
+    return false;
+  }
 }
 
 export function getEmptyAppState(): AppState {
@@ -214,7 +258,8 @@ export function getEmptyAppState(): AppState {
     tarifs: [],
     sewas: [],
     invoices: [],
-    paymentOverrides: {}
+    paymentOverrides: {},
+    manualTagihans: []
   };
 }
 
@@ -227,7 +272,8 @@ export function getDemoAppState(): AppState {
     tarifs: [...INITIAL_TARIFS],
     sewas: [...INITIAL_SEWAS],
     invoices: [...INITIAL_INVOICES],
-    paymentOverrides: { ...INITIAL_PAYMENT_OVERRIDES }
+    paymentOverrides: { ...INITIAL_PAYMENT_OVERRIDES },
+    manualTagihans: []
   };
 }
 
@@ -260,12 +306,14 @@ export function compileAllPeriods(state: AppState, currentUtcStr: string): Tagih
           tanggal_bayar: override.tanggal_bayar,
           tanggal_tagihan: override.tanggal_tagihan,
           nomor_invoice_grup: override.nomor_invoice_grup,
+          nomor_pranota: override.nomor_pranota !== undefined ? override.nomor_pranota : null,
+          tanggal_pranota: override.tanggal_pranota !== undefined ? override.tanggal_pranota : null,
           jumlah_tagihan_override: hasOverrideAmt ? override.jumlah_tagihan_override : null,
           jumlah_bayar: override.jumlah_bayar !== undefined ? override.jumlah_bayar : null,
           selisih_pembayaran: tagihanAmt - p.jumlah_tagihan,
           keterangan_selisih: override.keterangan_selisih !== undefined ? override.keterangan_selisih : null,
-          ppn: override.ppn !== undefined ? override.ppn : null,
-          pph: override.pph !== undefined ? override.pph : null,
+          ppn: override.ppn !== undefined ? override.ppn : p.ppn,
+          pph: override.pph !== undefined ? override.pph : p.pph,
           nomor_bayar: override.nomor_bayar !== undefined ? override.nomor_bayar : null,
         };
       }
@@ -274,6 +322,34 @@ export function compileAllPeriods(state: AppState, currentUtcStr: string): Tagih
 
     allPeriods = allPeriods.concat(enriched);
   }
+
+  // Enrich manual tagihans as well
+  const manualEnriched = (state.manualTagihans || []).map(p => {
+    const override = state.paymentOverrides[p.id_tagihan];
+    if (override) {
+      const hasOverrideAmt = override.jumlah_tagihan_override !== undefined && override.jumlah_tagihan_override !== null;
+      const tagihanAmt = hasOverrideAmt ? override.jumlah_tagihan_override! : p.jumlah_tagihan;
+      return {
+        ...p,
+        status_bayar: override.status_bayar,
+        tanggal_bayar: override.tanggal_bayar,
+        tanggal_tagihan: override.tanggal_tagihan,
+        nomor_invoice_grup: override.nomor_invoice_grup,
+        nomor_pranota: override.nomor_pranota !== undefined ? override.nomor_pranota : null,
+        tanggal_pranota: override.tanggal_pranota !== undefined ? override.tanggal_pranota : null,
+        jumlah_tagihan_override: hasOverrideAmt ? override.jumlah_tagihan_override : null,
+        jumlah_bayar: override.jumlah_bayar !== undefined ? override.jumlah_bayar : null,
+        selisih_pembayaran: tagihanAmt - p.jumlah_tagihan,
+        keterangan_selisih: override.keterangan_selisih !== undefined ? override.keterangan_selisih : null,
+        ppn: override.ppn !== undefined ? override.ppn : null,
+        pph: override.pph !== undefined ? override.pph : null,
+        nomor_bayar: override.nomor_bayar !== undefined ? override.nomor_bayar : null,
+      };
+    }
+    return p;
+  });
+
+  allPeriods = allPeriods.concat(manualEnriched);
 
   // Update memory cache
   lastStateRef = state;

@@ -25,12 +25,14 @@ class LangsirBatam extends Model
         'biaya',
         'keterangan',
         'status',
+        'ob_dalam_pelabuhan',
         'input_by',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
         'biaya' => 'decimal:2',
+        'ob_dalam_pelabuhan' => 'boolean',
     ];
 
     public function user()

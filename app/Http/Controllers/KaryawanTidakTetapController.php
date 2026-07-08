@@ -36,8 +36,9 @@ class KaryawanTidakTetapController extends Controller
     {
         $pekerjaans = \App\Models\Pekerjaan::all();
         $pajaks = \App\Models\Pajak::all();
+        $nextNik = $this->generateNextNik();
 
-        return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks'));
+        return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks', 'nextNik'));
     }
 
     /**
@@ -67,10 +68,33 @@ class KaryawanTidakTetapController extends Controller
             'status_pajak' => 'nullable|string|max:50',
         ]);
 
+        // Auto-generate NIK if not provided
+        if (empty($validated['nik'])) {
+            $validated['nik'] = $this->generateNextNik();
+        }
+
         KaryawanTidakTetap::create($validated);
 
         return redirect()->route('karyawan-tidak-tetap.index')
             ->with('success', 'Data karyawan tidak tetap berhasil ditambahkan.');
+    }
+
+    /**
+     * Generate the next sequential NIK in the format P0001, P0002, …
+     */
+    private function generateNextNik(): string
+    {
+        $last = KaryawanTidakTetap::where('nik', 'LIKE', 'P%')
+            ->orderByRaw('CAST(SUBSTRING(nik, 2) AS UNSIGNED) DESC')
+            ->value('nik');
+
+        if ($last && preg_match('/^P(\d+)$/', $last, $m)) {
+            $next = (int) $m[1] + 1;
+        } else {
+            $next = 1;
+        }
+
+        return 'P'.str_pad($next, 4, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -86,7 +110,10 @@ class KaryawanTidakTetapController extends Controller
      */
     public function edit(KaryawanTidakTetap $karyawanTidakTetap)
     {
-        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap'));
+        $pekerjaans = \App\Models\Pekerjaan::all();
+        $pajaks = \App\Models\Pajak::all();
+
+        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks'));
     }
 
     /**

@@ -12,6 +12,15 @@
                 <i class="fas fa-arrow-left"></i> Kembali ke Daftar
             </a>
             <div class="flex gap-3">
+                <a href="{{ route('pranota-ongkos-truk.edit', $pranota->id) }}" class="px-5 py-2.5 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-all font-bold text-sm flex items-center gap-2">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{{ route('pranota-ongkos-truk.export', $pranota->id) }}" class="px-5 py-2.5 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-all font-bold text-sm flex items-center gap-2">
+                    <i class="fas fa-file-excel"></i> Export Excel
+                </a>
+                <a href="{{ route('pranota-ongkos-truk.export-2', $pranota->id) }}" class="px-5 py-2.5 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-all font-bold text-sm flex items-center gap-2">
+                    <i class="fas fa-file-excel"></i> Export Excel 2
+                </a>
                 <a href="{{ route('pranota-ongkos-truk.print', $pranota->id) }}" target="_blank" class="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-bold text-sm flex items-center gap-2">
                     <i class="fas fa-print"></i> Cetak
                 </a>
@@ -80,7 +89,7 @@
                                 @foreach($pranota->adjustments as $index => $adj)
                                     @if(isset($adj['nominal']) && $adj['nominal'] != 0)
                                     <div class="flex justify-between items-center py-2 px-4 bg-orange-50 border border-orange-100 rounded-xl">
-                                        <span class="text-[11px] text-orange-700 font-bold uppercase tracking-wide">Adjustment {{ $index + 1 }}: {{ $adj['keterangan'] ?? 'Tanpa Keterangan' }}</span>
+                                        <span class="text-[11px] text-orange-700 font-bold uppercase tracking-wide">Adjustment {{ $loop->iteration }}: {{ $adj['keterangan'] ?? 'Tanpa Keterangan' }}</span>
                                         <span class="text-sm font-black {{ $adj['nominal'] < 0 ? 'text-red-600' : 'text-green-600' }}">
                                             Rp {{ number_format($adj['nominal'], 0, ',', '.') }}
                                         </span>
@@ -258,7 +267,7 @@
                                         @if(isset($adj['nominal']) && $adj['nominal'] != 0)
                                         <tr class="bg-white">
                                             <td colspan="10" class="px-6 py-2 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                                Adjustment {{ $index + 1 }}: {{ $adj['keterangan'] ?? 'Tanpa Keterangan' }}
+                                                Adjustment {{ $loop->iteration }}: {{ $adj['keterangan'] ?? 'Tanpa Keterangan' }}
                                             </td>
                                             <td class="px-6 py-2 text-right text-sm font-black {{ $adj['nominal'] < 0 ? 'text-red-500' : 'text-green-500' }}">
                                                 {{ $adj['nominal'] < 0 ? '-' : '+' }} Rp {{ number_format(abs($adj['nominal']), 0, ',', '.') }}

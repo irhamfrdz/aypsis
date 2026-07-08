@@ -48,8 +48,8 @@ class PembayaranPranotaCatController extends Controller
                 ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota CAT. Silakan hubungi administrator.');
         }
 
-        // If pranota_ids are provided (from pranota index page), redirect to payment form
-        if ($request->has('pranota_ids') && ! empty($request->pranota_ids)) {
+        // If pranota_ids or pranota_tagihan_ids are provided (from pranota index page), redirect to payment form
+        if (($request->has('pranota_ids') && ! empty($request->pranota_ids)) || ($request->has('pranota_tagihan_ids') && ! empty($request->pranota_tagihan_ids))) {
             return $this->showPaymentForm($request);
         }
 
@@ -71,6 +71,16 @@ class PembayaranPranotaCatController extends Controller
                 return $pranota->calculateTotalCatAmount() > 0;
             });
 
+        // Get all unpaid PranotaTagihanCat
+        $pranotaTagihanCatList = \App\Models\PranotaTagihanCat::where('status', 'unpaid')
+            ->whereNotIn('id', function ($query) {
+                $query->select('pranota_tagihan_cat_id')
+                    ->from('pembayaran_pranota_cat_items')
+                    ->whereNotNull('pranota_tagihan_cat_id');
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         // Get Bank/Kas accounts only, sorted by account number
         $akunCoa = Coa::where(function ($query) {
             $query->where('tipe_akun', 'Kas/Bank')
@@ -81,7 +91,7 @@ class PembayaranPranotaCatController extends Controller
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
-        return view('pembayaran-pranota-cat.create', compact('pranotaList', 'akunCoa'));
+        return view('pembayaran-pranota-cat.create', compact('pranotaList', 'pranotaTagihanCatList', 'akunCoa'));
     }
 
     /**
@@ -90,14 +100,23 @@ class PembayaranPranotaCatController extends Controller
     public function showPaymentForm(Request $request)
     {
         $request->validate([
-            'pranota_ids' => 'required|array|min:1',
+            'pranota_ids' => 'nullable|array',
             'pranota_ids.*' => 'exists:pranota_perbaikan_kontainers,id',
+            'pranota_tagihan_ids' => 'nullable|array',
+            'pranota_tagihan_ids.*' => 'exists:pranota_tagihan_cat,id',
         ]);
 
-        $pranotaIds = $request->input('pranota_ids');
-        $pranotaList = \App\Models\PranotaPerbaikanKontainer::whereIn('id', $pranotaIds)->get();
+        $pranotaIds = $request->input('pranota_ids', []);
+        $pranotaTagihanIds = $request->input('pranota_tagihan_ids', []);
 
-        // Validate that all selected pranota are approved and have not been paid yet
+        if (empty($pranotaIds) && empty($pranotaTagihanIds)) {
+            return redirect()->back()->with('error', 'Silakan pilih minimal satu pranota CAT atau perbaikan untuk dibayar.');
+        }
+
+        $pranotaList = \App\Models\PranotaPerbaikanKontainer::whereIn('id', $pranotaIds)->get();
+        $pranotaTagihanCatList = \App\Models\PranotaTagihanCat::whereIn('id', $pranotaTagihanIds)->get();
+
+        // Validate that all selected perbaikan are approved and not paid yet
         foreach ($pranotaList as $pranota) {
             if ($pranota->status !== 'approved') {
                 return redirect()->back()->with('error', "Pranota {$pranota->nomor_pranota} statusnya bukan approved atau tidak dapat diproses");
@@ -108,19 +127,40 @@ class PembayaranPranotaCatController extends Controller
             }
         }
 
-        // Generate nomor pembayaran (akan diupdate berdasarkan bank yang dipilih)
+        // Validate that all selected tagihan are unpaid and not paid yet
+        foreach ($pranotaTagihanCatList as $pranota) {
+            if ($pranota->status !== 'unpaid') {
+                return redirect()->back()->with('error', "Pranota Tagihan {$pranota->no_invoice} statusnya bukan unpaid atau tidak dapat diproses");
+            }
+            $isPaid = \App\Models\PembayaranPranotaCatItem::where('pranota_tagihan_cat_id', $pranota->id)->exists();
+            if ($isPaid) {
+                return redirect()->back()->with('error', "Pranota Tagihan {$pranota->no_invoice} sudah dibayar");
+            }
+        }
+
+        // Generate nomor pembayaran
         $nomorPembayaran = $request->input('nomor_pembayaran', '');
         if (empty($nomorPembayaran)) {
             $nomorPembayaran = PembayaranPranotaCat::generateNomorPembayaran();
         }
+
         $totalPembayaran = $pranotaList->sum(function ($pranota) {
             return $pranota->calculateTotalCatAmount();
+        }) + $pranotaTagihanCatList->sum(function ($pranota) {
+            return $pranota->total_amount;
         });
 
-        // Get akun_coa data for bank selection
-        $akunCoa = Coa::orderBy('nama_akun')->get();
+        // Get Bank/Kas accounts only, sorted by account number
+        $akunCoa = Coa::where(function ($query) {
+            $query->where('tipe_akun', 'Kas/Bank')
+                ->orWhere('tipe_akun', 'Bank/Kas')
+                ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+        })
+            ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
+            ->get();
 
-        return view('pembayaran-pranota-cat.payment-form', compact('pranotaList', 'nomorPembayaran', 'totalPembayaran', 'akunCoa'));
+        return view('pembayaran-pranota-cat.payment-form', compact('pranotaList', 'pranotaTagihanCatList', 'nomorPembayaran', 'totalPembayaran', 'akunCoa'));
     }
 
     /**
@@ -145,21 +185,27 @@ class PembayaranPranotaCatController extends Controller
                 'bank' => 'required|string|max:255',
                 'jenis_transaksi' => 'required|in:debit,credit',
                 'tanggal_kas' => 'required|date',
-                'pranota_ids' => 'required|array|min:1',
+                'pranota_ids' => 'nullable|array',
                 'pranota_ids.*' => 'exists:pranota_perbaikan_kontainers,id',
+                'pranota_tagihan_ids' => 'nullable|array',
+                'pranota_tagihan_ids.*' => 'exists:pranota_tagihan_cat,id',
                 'total_tagihan_penyesuaian' => 'nullable|numeric',
                 'penyesuaian' => 'nullable|numeric',
                 'alasan_penyesuaian' => 'nullable|string',
                 'keterangan' => 'nullable|string',
             ]);
 
-            $pranotaIds = $request->input('pranota_ids');
+            $pranotaIds = $request->input('pranota_ids', []);
+            $pranotaTagihanIds = $request->input('pranota_tagihan_ids', []);
+
+            if (empty($pranotaIds) && empty($pranotaTagihanIds)) {
+                throw new \Exception('Silakan pilih minimal satu pranota CAT atau perbaikan untuk dibayar.');
+            }
+
             $penyesuaian = floatval($request->input('total_tagihan_penyesuaian', $request->input('penyesuaian', 0)));
 
-            // Get and validate pranota records
+            // Fetch and validate perbaikan pranotas
             $pranotas = \App\Models\PranotaPerbaikanKontainer::whereIn('id', $pranotaIds)->get();
-            Log::info('Found pranotas', ['count' => $pranotas->count(), 'ids' => $pranotaIds]);
-
             foreach ($pranotas as $pranota) {
                 if ($pranota->status !== 'approved') {
                     throw new \Exception("Pranota {$pranota->nomor_pranota} statusnya bukan approved atau tidak dapat diproses");
@@ -170,15 +216,27 @@ class PembayaranPranotaCatController extends Controller
                 }
             }
 
+            // Fetch and validate tagihan pranotas
+            $pranotaTagihans = \App\Models\PranotaTagihanCat::whereIn('id', $pranotaTagihanIds)->get();
+            foreach ($pranotaTagihans as $pranota) {
+                if ($pranota->status !== 'unpaid') {
+                    throw new \Exception("Pranota Tagihan {$pranota->no_invoice} statusnya bukan unpaid atau tidak dapat diproses");
+                }
+                $isPaid = \App\Models\PembayaranPranotaCatItem::where('pranota_tagihan_cat_id', $pranota->id)->exists();
+                if ($isPaid) {
+                    throw new \Exception("Pranota Tagihan {$pranota->no_invoice} sudah dibayar");
+                }
+            }
+
             $totalPembayaran = $pranotas->sum(function ($pranota) {
                 return $pranota->calculateTotalCatAmount();
+            }) + $pranotaTagihans->sum(function ($pranota) {
+                return $pranota->total_amount;
             });
-            Log::info('Calculated total pembayaran', ['total' => $totalPembayaran]);
 
             // Check for duplicate nomor_pembayaran
             $existingPayment = PembayaranPranotaCat::where('nomor_pembayaran', $request->nomor_pembayaran)->first();
             if ($existingPayment) {
-                // If duplicate found, generate a new number
                 $request->merge(['nomor_pembayaran' => PembayaranPranotaCat::generateNomorPembayaran()]);
             }
 
@@ -197,9 +255,8 @@ class PembayaranPranotaCatController extends Controller
                 'keterangan' => $request->keterangan,
                 'status' => 'approved',
             ]);
-            Log::info('Pembayaran record created', ['id' => $pembayaran->id]);
 
-            // Create payment items
+            // Create perbaikan payment items
             foreach ($pranotas as $pranota) {
                 $paintAmount = $pranota->calculateTotalCatAmount();
                 PembayaranPranotaCatItem::create([
@@ -207,10 +264,20 @@ class PembayaranPranotaCatController extends Controller
                     'pranota_perbaikan_kontainer_id' => $pranota->id,
                     'amount' => $paintAmount,
                 ]);
-                Log::info('Payment item created', ['pranota_id' => $pranota->id]);
             }
 
-            // Catat transaksi menggunakan double-entry COA
+            // Create tagihan payment items and mark status paid
+            foreach ($pranotaTagihans as $pranota) {
+                $paintAmount = $pranota->total_amount;
+                PembayaranPranotaCatItem::create([
+                    'pembayaran_pranota_cat_id' => $pembayaran->id,
+                    'pranota_tagihan_cat_id' => $pranota->id,
+                    'amount' => $paintAmount,
+                ]);
+                $pranota->update(['status' => 'paid']);
+            }
+
+            // Record Coa Double Entry Transaction
             $totalSetelahPenyesuaian = $totalPembayaran + $penyesuaian;
             $tanggalTransaksi = $request->tanggal_kas;
 
@@ -222,7 +289,6 @@ class PembayaranPranotaCatController extends Controller
                 $keterangan .= ' | Penyesuaian: '.$request->alasan_penyesuaian;
             }
 
-            // Catat transaksi double-entry: Biaya CAT Kontainer (Debit) dan Bank (Kredit)
             $this->coaTransactionService->recordDoubleEntry(
                 ['nama_akun' => 'Biaya CAT Kontainer', 'jumlah' => $totalSetelahPenyesuaian],
                 ['nama_akun' => $request->bank, 'jumlah' => $totalSetelahPenyesuaian],
@@ -233,10 +299,9 @@ class PembayaranPranotaCatController extends Controller
             );
 
             DB::commit();
-            Log::info('Transaction committed successfully');
 
             $message = "Pembayaran pranota CAT berhasil dibuat dengan nomor: {$request->nomor_pembayaran}. ";
-            $message .= 'Total pranota: '.count($pranotaIds).'. ';
+            $message .= 'Total item: '.(count($pranotaIds) + count($pranotaTagihanIds)).'. ';
             $message .= 'Status: Sudah dibayar.';
 
             return redirect()->route('pembayaran-pranota-cat.index')->with('success', $message);

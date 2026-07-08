@@ -402,7 +402,7 @@
                         @foreach($pranota->adjustments as $index => $adj)
                             @if(isset($adj['nominal']) && $adj['nominal'] != 0)
                             <tr>
-                                <td colspan="12" class="text-right">Adjustment {{ $index + 1 }}: {{ $adj['keterangan'] ?? 'Tanpa Keterangan' }}</td>
+                                <td colspan="12" class="text-right">Adjustment {{ $loop->iteration }}: {{ $adj['keterangan'] ?? 'Tanpa Keterangan' }}</td>
                                 <td class="text-right">{{ number_format($adj['nominal'], 0, ',', '.') }}</td>
                             </tr>
                             @endif

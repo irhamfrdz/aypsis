@@ -15,6 +15,9 @@ return new class extends Migration
             // Drop foreign key constraints first
             $table->dropForeign(['master_tujuan_kirim_id']);
 
+            // Drop index on nomor_kontainer before dropping the column (fixes SQLite migration issue in tests)
+            $table->dropIndex(['nomor_kontainer']);
+
             // Drop columns yang tidak digunakan
             $table->dropColumn([
                 'nomor_kontainer',           // Pindah ke pivot kontainer_tanda_terima_lcl

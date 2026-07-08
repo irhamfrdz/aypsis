@@ -45,18 +45,36 @@
                     @enderror
                 </div>
 
-                <!-- Contact Person -->
-                <div class="md:col-span-2">
-                    <label for="contact_person" class="block text-sm font-medium text-gray-700 mb-2">
-                        Contact Person
+                <!-- PIC -->
+                <div class="md:col-span-1">
+                    <label for="pic" class="block text-sm font-medium text-gray-700 mb-2">
+                        PIC
                     </label>
                     <input type="text" 
-                           id="contact_person" 
-                           name="contact_person" 
-                           value="{{ old('contact_person', $penerima->contact_person) }}"
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('contact_person') border-red-500 @enderror"
-                           placeholder="Masukkan nama kontak">
-                    @error('contact_person')
+                           id="pic" 
+                           name="pic" 
+                           value="{{ old('pic', $penerima->pic) }}"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('pic') border-red-500 @enderror"
+                           placeholder="Masukkan PIC">
+                    @error('pic')
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
+                        </p>
+                    @enderror
+                </div>
+
+                <!-- Telepon -->
+                <div class="md:col-span-1">
+                    <label for="telepon" class="block text-sm font-medium text-gray-700 mb-2">
+                        No. Telepon
+                    </label>
+                    <input type="text" 
+                           id="telepon" 
+                           name="telepon" 
+                           value="{{ old('telepon', $penerima->telepon) }}"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 @error('telepon') border-red-500 @enderror"
+                           placeholder="Masukkan nomor telepon">
+                    @error('telepon')
                         <p class="mt-1 text-sm text-red-600">
                             <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                         </p>

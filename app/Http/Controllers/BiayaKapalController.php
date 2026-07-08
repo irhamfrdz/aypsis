@@ -62,6 +62,14 @@ class BiayaKapalController extends Controller
             $query->where('jenis_biaya', $request->jenis_biaya);
         }
 
+        // Filter by tanggal range
+        if ($request->filled('start_date')) {
+            $query->where('tanggal', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->where('tanggal', '<=', $request->end_date);
+        }
+
         // Sort by tanggal descending by default
         $query->orderBy('tanggal', 'desc');
 
@@ -3010,6 +3018,9 @@ class BiayaKapalController extends Controller
 
         // Get pricelist tanto
         $pricelistTanto = \App\Models\PricelistTanto::where('status', 'Aktif')->orderBy('jenis_biaya')->get();
+
+        $allBuruhs = \App\Models\Buruh::where('status', 'aktif')->orderBy('nama')->get();
+        $banks = \App\Models\Bank::orderBy('name')->get();
 
         $allInvoices = BiayaKapal::whereNotNull('nomor_invoice')
             ->where('nomor_invoice', '!=', '')

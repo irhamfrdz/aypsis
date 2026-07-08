@@ -9,11 +9,10 @@ interface TransaksiSewaProps {
   state: AppState;
   onStateChange: (updated: AppState) => void;
   utcTime: string;
-  appMode?: 'sewa_out' | 'sewa_in';
 }
 
-export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }: TransaksiSewaProps) {
-  const isSewaIn = appMode === 'sewa_in';
+export default function TransaksiSewa({ state, onStateChange, utcTime }: TransaksiSewaProps) {
+  const isSewaIn = true;
   // Rent form
   const [selectedNoKontainer, setSelectedNoKontainer] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
@@ -22,6 +21,7 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
   const [customTarifBulanan, setCustomTarifBulanan] = useState(0);
   const [customTarifHarian, setCustomTarifHarian] = useState(0);
   const [rentalNotes, setRentalNotes] = useState('');
+  const [usePpn, setUsePpn] = useState(true);
 
   // Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,6 +50,11 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
     setTimeout(() => setNoti(null), 4000);
   };
 
+  const checkHasInvoices = (sewaId: string): boolean => {
+    const periodsForSewa = compileAllPeriods(state, utcTime).filter(p => p.id_sewa === sewaId);
+    return periodsForSewa.some(p => p.status_bayar !== 'Belum Ditagih' || p.nomor_invoice_grup);
+  };
+
   // Editing Sewa modals and states
   const [editingSewa, setEditingSewa] = useState<Sewa | null>(null);
   const [editTanggalSewa, setEditTanggalSewa] = useState('');
@@ -58,6 +63,7 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
   const [editTarifBulanan, setEditTarifBulanan] = useState(0);
   const [editTarifHarian, setEditTarifHarian] = useState(0);
   const [editRentalNotes, setEditRentalNotes] = useState('');
+  const [editUsePpn, setEditUsePpn] = useState(true);
 
   // Pre-load default tarif if container changes
   useEffect(() => {
@@ -153,7 +159,8 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
       tarif_harian: priceHari,
       jenis_tarif: jenisTarif,
       status_sewa: 'Aktif',
-      catatan: rentalNotes.trim()
+      catatan: rentalNotes.trim(),
+      non_ppn: !usePpn
     };
 
     const updated = {
@@ -166,6 +173,7 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
     setSelectedNoKontainer('');
     setTanggalSewaInput('');
     setRentalNotes('');
+    setUsePpn(true);
     triggerNoti('sukses', `Transaksi Sewa Kontainer "${selectedNoKontainer}" sukses dibuat`);
   };
 
@@ -176,6 +184,11 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
 
     const sewaObj = state.sewas.find(s => s.id_sewa === activeReturnSewaId);
     if (!sewaObj) return;
+
+    if (checkHasInvoices(activeReturnSewaId)) {
+      triggerNoti('error', 'Siklus transaksi & pengembalian tidak boleh di-edit/proses karena sudah ada tagihannya. Harus lepas tagihannya dulu baru bisa edit tgl ambil atau harga dll.');
+      return;
+    }
 
     const validTglKembali = parseInputDate(tanggalKembaliInput);
     if (!validTglKembali) {
@@ -217,6 +230,11 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
     const sewaObj = state.sewas.find(s => s.id_sewa === idSewa);
     if (!sewaObj) return;
 
+    if (checkHasInvoices(idSewa)) {
+      triggerNoti('error', 'Siklus transaksi tidak boleh dihapus karena sudah ada tagihannya. Harus lepas tagihannya dulu.');
+      return;
+    }
+
     // Generate billing periods for this sewa to clear corresponding payment state override keys if any
     const periods = generateBillingPeriodsForSewa(sewaObj, utcTime);
     const updatedOverrides = { ...state.paymentOverrides };
@@ -239,6 +257,10 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
   };
 
   const handleOpenEdit = (sewa: Sewa) => {
+    if (checkHasInvoices(sewa.id_sewa)) {
+      triggerNoti('error', 'Siklus transaksi & pengembalian tidak boleh di-edit karena sudah ada tagihannya. Harus lepas tagihannya dulu baru bisa edit tgl ambil atau harga dll.');
+      return;
+    }
     setEditingSewa(sewa);
     setEditTanggalSewa(formatEntryDate(sewa.tanggal_sewa));
     setEditTanggalKembali(sewa.tanggal_kembali ? formatEntryDate(sewa.tanggal_kembali) : '');
@@ -246,11 +268,17 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
     setEditTarifBulanan(sewa.tarif_bulanan);
     setEditTarifHarian(sewa.tarif_harian);
     setEditRentalNotes(sewa.catatan || '');
+    setEditUsePpn(sewa.non_ppn !== true);
   };
 
   const handleSaveEditSewa = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingSewa) return;
+
+    if (checkHasInvoices(editingSewa.id_sewa)) {
+      triggerNoti('error', 'Siklus transaksi & pengembalian tidak boleh di-edit karena sudah ada tagihannya. Harus lepas tagihannya dulu baru bisa edit tgl ambil atau harga dll.');
+      return;
+    }
 
     const validTglSewa = parseInputDate(editTanggalSewa);
     if (!validTglSewa) {
@@ -283,7 +311,8 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
           tarif_bulanan: editTarifBulanan,
           tarif_harian: editTarifHarian,
           status_sewa: updatedStatus,
-          catatan: editRentalNotes.trim()
+          catatan: editRentalNotes.trim(),
+          non_ppn: !editUsePpn
         };
       }
       return s;
@@ -372,14 +401,16 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
                 searchPlaceholder="Ketik No Kontainer untuk mencari..."
                 value={selectedNoKontainer}
                 onChange={(val) => setSelectedNoKontainer(val)}
-                options={state.kontainers.map(k => {
-                  const isActiveRent = state.sewas.some(s => s.no_kontainer === k.no_kontainer && s.status_sewa === 'Aktif');
-                  return {
-                    value: k.no_kontainer,
-                    label: `${k.no_kontainer} ${isActiveRent ? '(SEDANG DISEWA)' : `[${isSewaIn ? 'Vendor' : 'Owner'}: ${getCustomerName(k.id_customer)}]`}`,
-                    disabled: isActiveRent
-                  };
-                })}
+                options={state.kontainers
+                  .filter(k => k.status_aktif !== false)
+                  .map(k => {
+                    const isActiveRent = state.sewas.some(s => s.no_kontainer === k.no_kontainer && s.status_sewa === 'Aktif');
+                    return {
+                      value: k.no_kontainer,
+                      label: `${k.no_kontainer} ${isActiveRent ? '(SEDANG DISEWA)' : `[${isSewaIn ? 'Vendor' : 'Owner'}: ${getCustomerName(k.id_customer)}]`}`,
+                      disabled: isActiveRent
+                    };
+                  })}
               />
             </div>
 
@@ -471,12 +502,26 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
               />
             </div>
 
+            <div className="flex items-center gap-2 py-1.5 bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <input
+                id="checkbox-sewa-ppn"
+                type="checkbox"
+                checked={usePpn}
+                onChange={(e) => setUsePpn(e.target.checked)}
+                className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 rounded border-slate-300"
+              />
+              <div className="flex flex-col">
+                <label htmlFor="checkbox-sewa-ppn" className="text-xs font-semibold text-slate-700 cursor-pointer select-none">
+                  Default Pakai PPN (11%)
+                </label>
+                <span className="text-[10px] text-slate-500">Bisa di-uncheck jika transaksi Non-PPN</span>
+              </div>
+            </div>
+
             <button
               id="btn-save-sewa"
               type="submit"
-              className={`w-full inline-flex items-center justify-center text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors cursor-pointer shadow-xs ${
-                appMode === 'sewa_in' ? 'bg-indigo-650 hover:bg-indigo-700' : 'bg-emerald-600 hover:bg-emerald-700'
-              }`}
+              className="w-full inline-flex items-center justify-center text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors cursor-pointer shadow-xs bg-indigo-600 hover:bg-indigo-700"
             >
               <Save className="w-4 h-4 mr-1.5" /> Konfirmasi Sewa Kontainer
             </button>
@@ -499,7 +544,7 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
                 placeholder="Cari No Kontainer/Customer..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent border-none outline-none text-xs w-full"
+                className="bg-transparent border-none outline-none text-xs w-full text-slate-800 font-medium focus:text-slate-900"
               />
             </div>
           </div>
@@ -592,6 +637,10 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
                                 <button
                                   id={`btn-return-${sewa.id_sewa}`}
                                   onClick={() => {
+                                    if (checkHasInvoices(sewa.id_sewa)) {
+                                      triggerNoti('error', 'Siklus transaksi & pengembalian tidak boleh di-proses pengembalian karena sudah ada tagihannya. Harus lepas tagihannya dulu baru bisa edit tgl ambil atau harga dll.');
+                                      return;
+                                    }
                                     setActiveReturnSewaId(sewa.id_sewa);
                                     setTanggalKembaliInput(formatEntryDate(utcTime.split('T')[0]));
                                   }}
@@ -608,7 +657,13 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
 
                             <button
                               id={`btn-edit-sewa-${sewa.id_sewa}`}
-                              onClick={() => handleOpenEdit(sewa)}
+                              onClick={() => {
+                                if (checkHasInvoices(sewa.id_sewa)) {
+                                  triggerNoti('error', 'Siklus transaksi & pengembalian tidak boleh di-edit karena sudah ada tagihannya. Harus lepas tagihannya dulu baru bisa edit tgl ambil atau harga dll.');
+                                  return;
+                                }
+                                handleOpenEdit(sewa);
+                              }}
                               className="inline-flex items-center p-1.5 text-xs font-semibold rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 hover:text-sky-800 border border-sky-100 transition-colors cursor-pointer"
                               title="Edit Transaksi Sewa"
                             >
@@ -617,7 +672,13 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
 
                             <button
                               id={`btn-delete-sewa-${sewa.id_sewa}`}
-                              onClick={() => setSewaIdToDeleteConfirm(sewa.id_sewa)}
+                              onClick={() => {
+                                if (checkHasInvoices(sewa.id_sewa)) {
+                                  triggerNoti('error', 'Siklus transaksi tidak boleh dihapus karena sudah ada tagihannya. Harus lepas tagihannya dulu.');
+                                  return;
+                                }
+                                setSewaIdToDeleteConfirm(sewa.id_sewa);
+                              }}
                               className="inline-flex items-center p-1.5 text-xs font-semibold rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 border border-rose-100 transition-colors cursor-pointer"
                               title="Hapus Transaksi Sewa"
                             >
@@ -688,9 +749,14 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
                                   <td className="p-1.5 text-slate-500">{formatIndoDate(p.tanggal_awal)} - {formatIndoDate(p.tanggal_akhir)}</td>
                                   <td className="p-1.5 pl-2 font-sans select-all">
                                     {p.status_bayar === 'Belum Ditagih' && (
-                                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200 uppercase">
-                                        Belum Ditagih
-                                      </span>
+                                      <div className="flex flex-col gap-0.5">
+                                        <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-500 border border-slate-200 uppercase">
+                                          Belum Ditagih
+                                        </span>
+                                        {p.nomor_invoice_grup && (
+                                          <span className="text-[10px] text-indigo-700 font-mono font-bold mt-0.5" title="Draf Tagihan Terkait">Draf: {p.nomor_invoice_grup}</span>
+                                        )}
+                                      </div>
                                     )}
                                     {p.status_bayar === 'Pranota' && (
                                       <div className="flex flex-col gap-0.5">
@@ -700,6 +766,9 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
                                         {p.nomor_invoice_grup && (
                                           <span className="text-[10px] text-slate-600 font-mono font-bold mt-0.5">INV: {p.nomor_invoice_grup}</span>
                                         )}
+                                        {p.nomor_pranota && (
+                                          <span className="text-[10px] text-slate-600 font-mono font-bold">Pranota: {p.nomor_pranota}</span>
+                                        )}
                                       </div>
                                     )}
                                     {p.status_bayar === 'Belum Bayar' && (
@@ -707,9 +776,10 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
                                         <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-50 text-sky-700 border border-sky-200 uppercase animate-pulse">
                                           Sudah Ditagih
                                         </span>
-                                        {p.nomor_invoice_grup && (
-                                          <span className="text-[10px] text-sky-900 font-mono font-bold mt-0.5">INV: {p.nomor_invoice_grup}</span>
-                                        )}
+                                        <div className="text-[9.5px] text-slate-705 font-mono mt-0.5 space-y-0.5 leading-normal">
+                                          {p.nomor_invoice_grup && <div className="font-bold text-sky-900">INV: {p.nomor_invoice_grup}</div>}
+                                          {p.nomor_pranota && <div className="text-slate-655 font-semibold">Pranota: {p.nomor_pranota}</div>}
+                                        </div>
                                       </div>
                                     )}
                                     {p.status_bayar === 'Lunas' && (
@@ -719,6 +789,7 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
                                         </span>
                                         <div className="text-[9.5px] text-slate-705 font-mono mt-0.5 space-y-0.5 leading-normal">
                                           {p.nomor_invoice_grup && <div className="font-bold text-emerald-900">INV: {p.nomor_invoice_grup}</div>}
+                                          {p.nomor_pranota && <div className="text-slate-655 font-semibold">Pranota: {p.nomor_pranota}</div>}
                                           {p.nomor_bayar && <div className="text-slate-655 font-semibold">Bukti: {p.nomor_bayar}</div>}
                                           {p.tanggal_bayar && <div className="text-slate-500 text-[9px]">Bayar: {formatIndoDate(p.tanggal_bayar)}</div>}
                                         </div>
@@ -1018,6 +1089,22 @@ export default function TransaksiSewa({ state, onStateChange, utcTime, appMode }
                   placeholder="Misal: Info PO, slip jalan, dll..."
                   className="w-full text-xs border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-slate-850"
                 />
+              </div>
+
+              <div className="flex items-center gap-2 py-1.5 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                <input
+                  id="edit-sewa-use-ppn"
+                  type="checkbox"
+                  checked={editUsePpn}
+                  onChange={(e) => setEditUsePpn(e.target.checked)}
+                  className="w-4 h-4 text-sky-600 focus:ring-sky-500 rounded border-slate-300"
+                />
+                <div className="flex flex-col">
+                  <label htmlFor="edit-sewa-use-ppn" className="text-xs font-semibold text-slate-700 cursor-pointer select-none">
+                    Default Pakai PPN (11%)
+                  </label>
+                  <span className="text-[10px] text-slate-500">Bisa di-uncheck jika transaksi Non-PPN</span>
+                </div>
               </div>
 
               <div className="flex items-center gap-2 justify-end pt-2 border-t border-slate-150">

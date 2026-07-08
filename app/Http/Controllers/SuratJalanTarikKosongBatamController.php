@@ -41,7 +41,7 @@ class SuratJalanTarikKosongBatamController extends Controller
 
     public function create()
     {
-        $supirs = Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->orderBy('nama_lengkap')->get();
+        $supirs = Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->whereIn('cabang', ['BTM', 'BATAM'])->orderBy('nama_lengkap')->get();
         $keneks = Karyawan::where('status', 'active')->where('divisi', 'KENEK')->orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         // Get kontainer data dari 2 table: stock_kontainers dan kontainers
@@ -72,20 +72,31 @@ class SuratJalanTarikKosongBatamController extends Controller
         }
         $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
 
-        $pricelistRings = \App\Models\PricelistUangJalanBatam::orderBy('ring')
-            ->get(['ring', 'expedisi', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
-            ->map(function ($item) {
-                return [
-                    'name' => "Ring {$item->ring} {$item->expedisi}",
-                    'rates' => [
-                        '20_F' => $item->tarif_20ft_full,
-                        '20_E' => $item->tarif_20ft_empty,
-                        '40_F' => $item->tarif_40ft_full,
-                        '40_E' => $item->tarif_40ft_empty,
-                        '45_F' => $item->tarif_40ft_full,
-                        '45_E' => $item->tarif_40ft_empty,
-                    ],
-                ];
+        $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
+            ->get(['ring', 'expedisi', 'wilayah', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
+            ->flatMap(function ($item) {
+                $mapped = [];
+                if ($item->wilayah) {
+                    $subWilayahs = explode(',', $item->wilayah);
+                    foreach ($subWilayahs as $sw) {
+                        $trimmed = trim($sw);
+                        if ($trimmed !== '') {
+                            $mapped[] = [
+                                'name' => $trimmed,
+                                'label' => $trimmed.' (Ring '.$item->ring.' - '.$item->expedisi.')',
+                                'rates' => [
+                                    '20_F' => $item->tarif_20ft_full,
+                                    '20_E' => $item->tarif_20ft_empty,
+                                    '40_F' => $item->tarif_40ft_full,
+                                    '40_E' => $item->tarif_40ft_empty,
+                                    '45_F' => $item->tarif_40ft_full,
+                                    '45_E' => $item->tarif_40ft_empty,
+                                ],
+                            ];
+                        }
+                    }
+                }
+                return $mapped;
             })
             ->unique('name')
             ->values();
@@ -112,8 +123,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             'no_kontainer' => 'nullable|string',
             'size' => 'nullable|string',
             'f_e' => 'nullable|string',
-            'uang_jalan' => 'nullable|string',
-            'status' => 'required|in:draft,active,completed,cancelled',
+            'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
         ]);
 
@@ -121,6 +131,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             $validated['uang_jalan'] = (float) str_replace(['.', ','], ['', '.'], $request->uang_jalan);
         }
 
+        $validated['status'] = $validated['status'] ?? 'active';
         $validated['input_by'] = Auth::id();
         $validated['input_date'] = now();
         $validated['lokasi'] = 'batam';
@@ -140,7 +151,7 @@ class SuratJalanTarikKosongBatamController extends Controller
     public function edit($id)
     {
         $item = SuratJalanTarikKosongBatam::findOrFail($id);
-        $supirs = Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->orderBy('nama_lengkap')->get();
+        $supirs = Karyawan::where('status', 'active')->where('divisi', 'SUPIR')->whereIn('cabang', ['BTM', 'BATAM'])->orderBy('nama_lengkap')->get();
         $keneks = Karyawan::where('status', 'active')->where('divisi', 'KENEK')->orderBy('nama_lengkap')->get();
         $mobils = Mobil::orderBy('nomor_polisi')->get();
 
@@ -172,20 +183,31 @@ class SuratJalanTarikKosongBatamController extends Controller
         }
         $kontainers = $allKontainers->sortBy('nomor_seri_gabungan');
 
-        $pricelistRings = \App\Models\PricelistUangJalanBatam::orderBy('ring')
-            ->get(['ring', 'expedisi', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
-            ->map(function ($item) {
-                return [
-                    'name' => "Ring {$item->ring} {$item->expedisi}",
-                    'rates' => [
-                        '20_F' => $item->tarif_20ft_full,
-                        '20_E' => $item->tarif_20ft_empty,
-                        '40_F' => $item->tarif_40ft_full,
-                        '40_E' => $item->tarif_40ft_empty,
-                        '45_F' => $item->tarif_40ft_full,
-                        '45_E' => $item->tarif_40ft_empty,
-                    ],
-                ];
+        $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
+            ->get(['ring', 'expedisi', 'wilayah', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
+            ->flatMap(function ($item) {
+                $mapped = [];
+                if ($item->wilayah) {
+                    $subWilayahs = explode(',', $item->wilayah);
+                    foreach ($subWilayahs as $sw) {
+                        $trimmed = trim($sw);
+                        if ($trimmed !== '') {
+                            $mapped[] = [
+                                'name' => $trimmed,
+                                'label' => $trimmed.' (Ring '.$item->ring.' - '.$item->expedisi.')',
+                                'rates' => [
+                                    '20_F' => $item->tarif_20ft_full,
+                                    '20_E' => $item->tarif_20ft_empty,
+                                    '40_F' => $item->tarif_40ft_full,
+                                    '40_E' => $item->tarif_40ft_empty,
+                                    '45_F' => $item->tarif_40ft_full,
+                                    '45_E' => $item->tarif_40ft_empty,
+                                ],
+                            ];
+                        }
+                    }
+                }
+                return $mapped;
             })
             ->unique('name')
             ->values();
@@ -213,9 +235,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             'kenek' => 'nullable|string',
             'no_kontainer' => 'nullable|string',
             'size' => 'nullable|string',
-            'f_e' => 'nullable|string',
-            'uang_jalan' => 'nullable|string',
-            'status' => 'required|in:draft,active,completed,cancelled',
+            'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
         ]);
 
@@ -223,6 +243,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             $validated['uang_jalan'] = (float) str_replace(['.', ','], ['', '.'], $request->uang_jalan);
         }
 
+        $validated['status'] = $validated['status'] ?? $item->status ?? 'active';
         $item->update($validated);
 
         return redirect()->route('surat-jalan-tarik-kosong-batam.index')->with('success', 'Surat Jalan Tarik Kosong Batam berhasil diperbarui');

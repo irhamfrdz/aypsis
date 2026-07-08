@@ -94,6 +94,8 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PIC</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telepon</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alamat</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NPWP</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -110,6 +112,12 @@
                             <a href="{{ route('master-pengirim-penerima.show', $item) }}" class="text-blue-600 hover:text-blue-800 font-medium">
                                 {{ $item->nama }}
                             </a>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            {{ $item->pic ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            {{ $item->telepon ?? '-' }}
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-600">
                             {{ Str::limit($item->alamat ?? '-', 50) }}

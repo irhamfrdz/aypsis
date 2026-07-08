@@ -87,6 +87,7 @@
                                     <option value="Perlengkapan" {{ old('type_amprahan') == 'Perlengkapan' ? 'selected' : '' }}>Perlengkapan</option>
                                     <option value="Peralatan" {{ old('type_amprahan') == 'Peralatan' ? 'selected' : '' }}>Peralatan</option>
                                     <option value="Transportasi" {{ old('type_amprahan') == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
+                                    <option value="Inventory" {{ old('type_amprahan') == 'Inventory' ? 'selected' : '' }}>Inventory</option>
                                 </select>
                                 @error('type_amprahan')
                                     <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
@@ -410,8 +411,13 @@
                                         <select name="buntut_id" id="buntut_id" class="hidden">
                                             <option value="">-- Pilih Buntut --</option>
                                             @foreach($kendaraans as $m)
-                                                <option value="{{ $m->id }}" {{ old('buntut_id') == $m->id ? 'selected' : '' }}>
-                                                    {{ $m->no_kir ?: ($m->nomor_polisi ?: 'No KIR: -') }}
+                                                <option value="mobil_{{ $m->id }}" {{ old('buntut_id') == 'mobil_'.$m->id ? 'selected' : '' }}>
+                                                    {{ $m->no_kir ?: ($m->nomor_polisi ?: 'No KIR: -') }} (Mobil)
+                                                </option>
+                                            @endforeach
+                                            @foreach($chasis as $c)
+                                                <option value="chasis_{{ $c->id }}" {{ old('buntut_id') == 'chasis_'.$c->id ? 'selected' : '' }}>
+                                                    {{ $c->kode }} (Chasis)
                                                 </option>
                                             @endforeach
                                         </select>

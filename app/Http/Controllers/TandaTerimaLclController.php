@@ -47,6 +47,8 @@ class TandaTerimaLclController extends Controller
                 'type' => 'penerima',
                 'nama' => $item->nama_penerima,
                 'alamat' => $item->alamat,
+                'pic' => $item->pic,
+                'telepon' => $item->telepon,
             ];
         });
         $pengirims = Pengirim::where('status', 'active')->get()->map(function ($item) {
@@ -55,6 +57,8 @@ class TandaTerimaLclController extends Controller
                 'type' => 'pengirim',
                 'nama' => $item->nama_pengirim,
                 'alamat' => $item->alamat,
+                'pic' => $item->pic,
+                'telepon' => $item->telepon,
             ];
         });
         $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function ($item) {
@@ -63,6 +67,8 @@ class TandaTerimaLclController extends Controller
                 'type' => 'master',
                 'nama' => $item->nama,
                 'alamat' => $item->alamat,
+                'pic' => $item->pic,
+                'telepon' => $item->telepon,
             ];
         });
         $masterPengirimPenerima = $penerimas->concat($pengirims)->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function ($item) {
@@ -304,6 +310,8 @@ class TandaTerimaLclController extends Controller
                 'type' => 'penerima',
                 'nama' => $item->nama_penerima,
                 'alamat' => $item->alamat,
+                'pic' => $item->pic,
+                'telepon' => $item->telepon,
             ];
         });
         $pengirims = Pengirim::where('status', 'active')->get()->map(function ($item) {
@@ -312,6 +320,8 @@ class TandaTerimaLclController extends Controller
                 'type' => 'pengirim',
                 'nama' => $item->nama_pengirim,
                 'alamat' => $item->alamat,
+                'pic' => $item->pic,
+                'telepon' => $item->telepon,
             ];
         });
         $masters = MasterPengirimPenerima::where('status', 'active')->get()->map(function ($item) {
@@ -320,6 +330,8 @@ class TandaTerimaLclController extends Controller
                 'type' => 'master',
                 'nama' => $item->nama,
                 'alamat' => $item->alamat,
+                'pic' => $item->pic,
+                'telepon' => $item->telepon,
             ];
         });
         $masterPengirimPenerima = $penerimas->concat($pengirims)->concat($masters)->unique('nama')->sortBy('nama')->values()->map(function ($item) {

@@ -7,6 +7,7 @@ use App\Exports\StockAmprahanHistoryExport;
 use App\Models\AlatBerat;
 use App\Models\Bank;
 use App\Models\Karyawan;
+use App\Models\MasterChasisBatam;
 use App\Models\MasterGudangAmprahan;
 use App\Models\MasterKapal;
 use App\Models\MasterNamaBarangAmprahan;
@@ -26,7 +27,7 @@ class StockAmprahanController extends Controller
     {
         $search = $request->get('search');
 
-        $query = StockAmprahan::with(['masterNamaBarangAmprahan', 'vendorAmprahan', 'createdBy', 'updatedBy', 'usages.kendaraan', 'usages.truck', 'usages.buntut', 'usages.kapal', 'usages.alatBerat'])
+        $query = StockAmprahan::with(['masterNamaBarangAmprahan', 'vendorAmprahan', 'createdBy', 'updatedBy', 'usages.kendaraan', 'usages.truck', 'usages.buntut', 'usages.chasisBatam', 'usages.kapal', 'usages.alatBerat'])
             ->withSum('usages', 'jumlah')
             ->latest();
 
@@ -144,11 +145,18 @@ class StockAmprahanController extends Controller
         }
 
         $masterItems = \App\Models\MasterNamaBarangAmprahan::where('status', 'active')->orderBy('nama_barang')->get();
+        $uniqueNamaBarang = \App\Models\StockAmprahan::select('nama_barang')
+            ->whereNotNull('nama_barang')
+            ->where('nama_barang', '!=', '')
+            ->distinct()
+            ->orderBy('nama_barang')
+            ->pluck('nama_barang');
         $vendors = \App\Models\VendorAmprahan::orderBy('nama_toko')->get();
+        $chasis = MasterChasisBatam::orderBy('kode')->get();
 
         $banks = Bank::orderBy('name')->pluck('name')->toArray();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'selectedMobil', 'banks', 'vendors'));
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'uniqueNamaBarang', 'selectedMobil', 'banks', 'vendors', 'chasis'));
     }
 
     public function exportExcel(Request $request)
@@ -183,10 +191,11 @@ class StockAmprahanController extends Controller
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
         $vendorAmprahans = VendorAmprahan::orderBy('nama_toko')->get();
+        $chasis = MasterChasisBatam::orderBy('kode')->get();
 
         $mobils = $kendaraans;
 
-        return view('stock-amprahan.create', compact('masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'mobils', 'kapals', 'alatBerats', 'vendorAmprahans'));
+        return view('stock-amprahan.create', compact('masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'mobils', 'kapals', 'alatBerats', 'vendorAmprahans', 'chasis'));
     }
 
     public function store(Request $request)
@@ -194,7 +203,7 @@ class StockAmprahanController extends Controller
         $data = $request->validate([
             'nomor_bukti' => 'nullable|string|max:255',
             'tanggal_beli' => 'nullable|date',
-            'type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi',
+            'type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi,Inventory',
             'nama_barang' => 'required|string|max:255',
             'master_nama_barang_amprahan_id' => 'required|exists:master_nama_barang_amprahans,id',
             'harga_satuan' => 'nullable|numeric|min:0',
@@ -210,7 +219,7 @@ class StockAmprahanController extends Controller
             'penerima_id' => 'nullable|required_if:is_langsung_pakai,1|exists:karyawans,id',
             'kendaraan_id' => 'nullable|exists:mobils,id',
             'truck_id' => 'nullable|exists:mobils,id',
-            'buntut_id' => 'nullable|exists:mobils,id',
+            'buntut_id' => 'nullable|exists:master_chasis_batams,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
             'kantor' => 'nullable|string|max:255',
@@ -255,12 +264,25 @@ class StockAmprahanController extends Controller
 
         // Record usage if applicable
         if ($request->is_langsung_pakai == '1') {
+            $buntutIdInput = $request->buntut_id;
+            $buntutId = null;
+            $chasisBatamId = null;
+
+            if ($buntutIdInput) {
+                if (str_starts_with($buntutIdInput, 'mobil_')) {
+                    $buntutId = str_replace('mobil_', '', $buntutIdInput);
+                } elseif (str_starts_with($buntutIdInput, 'chasis_')) {
+                    $chasisBatamId = str_replace('chasis_', '', $buntutIdInput);
+                }
+            }
+
             StockAmprahanUsage::create([
                 'stock_amprahan_id' => $stock->id,
                 'penerima_id' => $request->penerima_id,
                 'kendaraan_id' => $request->kendaraan_id,
                 'truck_id' => $request->truck_id,
-                'buntut_id' => $request->buntut_id,
+                'buntut_id' => $buntutId,
+                'chasis_batam_id' => $chasisBatamId,
                 'kapal_id' => $request->kapal_id,
                 'alat_berat_id' => $request->alat_berat_id,
                 'kantor' => $request->kantor,
@@ -303,8 +325,9 @@ class StockAmprahanController extends Controller
         $kapals = MasterKapal::aktif()->orderBy('nama_kapal')->get();
         $alatBerats = AlatBerat::orderBy('kode_alat')->get();
         $vendorAmprahans = VendorAmprahan::orderBy('nama_toko')->get();
+        $chasis = MasterChasisBatam::orderBy('kode')->get();
 
-        return view('stock-amprahan.edit', compact('item', 'directUsage', 'masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'kapals', 'alatBerats', 'vendorAmprahans'));
+        return view('stock-amprahan.edit', compact('item', 'directUsage', 'masterItems', 'gudangItems', 'karyawans', 'kendaraans', 'kapals', 'alatBerats', 'vendorAmprahans', 'chasis'));
     }
 
     public function update(Request $request, $id)
@@ -314,7 +337,7 @@ class StockAmprahanController extends Controller
         $data = $request->validate([
             'nomor_bukti' => 'nullable|string|max:255',
             'tanggal_beli' => 'nullable|date',
-            'type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi',
+            'type_amprahan' => 'required|in:Pemakaian,Perbaikan,Perlengkapan,Peralatan,Transportasi,Inventory',
             'nama_barang' => 'required|string|max:255',
             'master_nama_barang_amprahan_id' => 'required|exists:master_nama_barang_amprahans,id',
             'harga_satuan' => 'nullable|numeric|min:0',
@@ -328,7 +351,7 @@ class StockAmprahanController extends Controller
             'penerima_id' => 'nullable|required_if:is_langsung_pakai,1|exists:karyawans,id',
             'kendaraan_id' => 'nullable|exists:mobils,id',
             'truck_id' => 'nullable|exists:mobils,id',
-            'buntut_id' => 'nullable|exists:mobils,id',
+            'buntut_id' => 'nullable|exists:master_chasis_batams,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
             'kantor' => 'nullable|string|max:255',
@@ -377,11 +400,24 @@ class StockAmprahanController extends Controller
 
         // Handle Usage Record
         if ($request->is_langsung_pakai == '1') {
+            $buntutIdInput = $request->buntut_id;
+            $buntutId = null;
+            $chasisBatamId = null;
+
+            if ($buntutIdInput) {
+                if (str_starts_with($buntutIdInput, 'mobil_')) {
+                    $buntutId = str_replace('mobil_', '', $buntutIdInput);
+                } elseif (str_starts_with($buntutIdInput, 'chasis_')) {
+                    $chasisBatamId = str_replace('chasis_', '', $buntutIdInput);
+                }
+            }
+
             $usageData = [
                 'penerima_id' => $request->penerima_id,
                 'kendaraan_id' => $request->kendaraan_id,
                 'truck_id' => $request->truck_id,
-                'buntut_id' => $request->buntut_id,
+                'buntut_id' => $buntutId,
+                'chasis_batam_id' => $chasisBatamId,
                 'kapal_id' => $request->kapal_id,
                 'alat_berat_id' => $request->alat_berat_id,
                 'kantor' => $request->kantor,
@@ -417,6 +453,279 @@ class StockAmprahanController extends Controller
         return redirect()->route('stock-amprahan.index')->with('success', 'Data stock amprahan berhasil dihapus');
     }
 
+    /**
+     * Bulk create stock items from textarea input.
+     * Format per line: No. Bukti | Tanggal | Tipe | Vendor | Lokasi | Nama Barang | Jumlah | Satuan | Harga | Keterangan
+     */
+    public function bulkStore(Request $request)
+    {
+        $request->validate([
+            'bulk_data' => 'required|string',
+        ]);
+
+        $lines = array_filter(array_map('trim', explode("\n", $request->bulk_data)));
+
+        if (empty($lines)) {
+            return redirect()->back()->with('error', 'Tidak ada data yang valid untuk diproses.');
+        }
+
+        $successCount = 0;
+        $errors = [];
+        $masterItems = MasterNamaBarangAmprahan::where('status', 'active')->get();
+        $vendors = VendorAmprahan::all(); // Load all vendors for text matching
+
+        // Valid tipe amprahan
+        $validTipe = ['Pemakaian', 'Perbaikan', 'Perlengkapan', 'Peralatan', 'Transportasi', 'Inventory'];
+
+        DB::beginTransaction();
+        try {
+            foreach ($lines as $index => $line) {
+                $lineNum = $index + 1;
+                // Support pipe, semicolon, and tab as delimiter
+                if (str_contains($line, "\t")) {
+                    $parts = array_map('trim', explode("\t", $line));
+                } elseif (str_contains($line, '|')) {
+                    $parts = array_map('trim', explode('|', $line));
+                } elseif (str_contains($line, ';')) {
+                    $parts = array_map('trim', explode(';', $line));
+                } else {
+                    // Fallback to try space or just 1 column
+                    $parts = [$line];
+                }
+
+                if (count($parts) < 7) {
+                    $errors[] = "Baris {$lineNum}: Format tidak valid (minimal 7 kolom: No. Bukti, Tanggal, Tipe, Vendor, Lokasi, Nama Barang, Jumlah)";
+
+                    continue;
+                }
+
+                $nomorBukti = $parts[0] ?? '';
+                $tanggalBeli = $parts[1] ?? '';
+                $tipeAmprahan = $parts[2] ?? '';
+                $vendorName = $parts[3] ?? '';
+                $lokasi = $parts[4] ?? '';
+                $namaBarang = $parts[5] ?? '';
+                $jumlah = $parts[6] ?? 0;
+                $satuan = $parts[7] ?? 'Pcs';
+                $hargaSatuan = $parts[8] ?? 0;
+                $keterangan = $parts[9] ?? '';
+
+                if (empty($namaBarang)) {
+                    $errors[] = "Baris {$lineNum}: Nama barang kosong";
+
+                    continue;
+                }
+
+                if (! is_numeric($jumlah) || $jumlah <= 0) {
+                    $errors[] = "Baris {$lineNum}: Jumlah harus angka positif (ditemukan: '{$jumlah}')";
+
+                    continue;
+                }
+
+                // Validate Tanggal
+                if (! empty($tanggalBeli) && ! strtotime($tanggalBeli)) {
+                    $errors[] = "Baris {$lineNum}: Format tanggal tidak valid (gunakan YYYY-MM-DD)";
+
+                    continue;
+                }
+
+                // Validate Tipe Amprahan
+                $matchedTipe = null;
+                foreach ($validTipe as $tipe) {
+                    if (strtolower($tipe) === strtolower($tipeAmprahan)) {
+                        $matchedTipe = $tipe;
+                        break;
+                    }
+                }
+                if (! $matchedTipe) {
+                    $errors[] = "Baris {$lineNum}: Tipe amprahan '{$tipeAmprahan}' tidak valid";
+
+                    continue;
+                }
+
+                // Validate & Match Vendor
+                if (empty($vendorName)) {
+                    $errors[] = "Baris {$lineNum}: Nama vendor kosong";
+
+                    continue;
+                }
+
+                $vendorMatch = $vendors->first(function ($v) use ($vendorName) {
+                    return strtolower(trim($v->nama_toko)) === strtolower(trim($vendorName));
+                });
+
+                if (! $vendorMatch) {
+                    // Try partial match if exact match fails
+                    $vendorMatch = $vendors->first(function ($v) use ($vendorName) {
+                        return str_contains(strtolower($v->nama_toko), strtolower(trim($vendorName)));
+                    });
+                }
+
+                if (! $vendorMatch) {
+                    $errors[] = "Baris {$lineNum}: Vendor/Toko '{$vendorName}' tidak ditemukan di database";
+
+                    continue;
+                }
+
+                // Clean harga_satuan (remove dots/commas for thousand separators)
+                $hargaSatuan = str_replace(['.', ','], ['', '.'], $hargaSatuan);
+                if (! is_numeric($hargaSatuan)) {
+                    $hargaSatuan = 0;
+                }
+
+                // Auto-match master nama barang
+                $masterMatch = $masterItems->first(function ($m) use ($namaBarang) {
+                    return strtolower(trim($m->nama_barang)) === strtolower(trim($namaBarang));
+                });
+
+                StockAmprahan::create([
+                    'nomor_bukti' => $nomorBukti,
+                    'tanggal_beli' => $tanggalBeli ?: date('Y-m-d'),
+                    'type_amprahan' => $matchedTipe,
+                    'nama_barang' => $namaBarang,
+                    'master_nama_barang_amprahan_id' => $masterMatch ? $masterMatch->id : $masterItems->first()?->id,
+                    'harga_satuan' => $hargaSatuan,
+                    'jumlah' => $jumlah,
+                    'satuan' => $satuan ?: 'Pcs',
+                    'lokasi' => $lokasi,
+                    'keterangan' => $keterangan,
+                    'vendor_amprahan_id' => $vendorMatch->id,
+                    'created_by' => Auth::id(),
+                ]);
+
+                $successCount++;
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Gagal menyimpan data: '.$e->getMessage());
+        }
+
+        $message = "{$successCount} item stock berhasil ditambahkan.";
+        if (! empty($errors)) {
+            $message .= ' '.count($errors).' baris error: '.implode('; ', array_slice($errors, 0, 5));
+            if (count($errors) > 5) {
+                $message .= '... dan '.(count($errors) - 5).' error lainnya.';
+            }
+        }
+
+        return redirect()->route('stock-amprahan.index')->with('success', $message);
+    }
+
+    /**
+     * Bulk record usage from textarea input.
+     * Format per line: ID Stock / Nama Barang | Jumlah
+     */
+    public function bulkUsage(Request $request)
+    {
+        $request->validate([
+            'bulk_usage_penerima_id' => 'required|exists:karyawans,id',
+            'bulk_usage_tanggal' => 'required|date',
+            'bulk_usage_keterangan' => 'required|string',
+            'bulk_usage_data' => 'required|string',
+        ]);
+
+        $lines = array_filter(array_map('trim', explode("\n", $request->bulk_usage_data)));
+
+        if (empty($lines)) {
+            return redirect()->back()->with('error', 'Tidak ada data yang valid untuk diproses.');
+        }
+
+        $successCount = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+        try {
+            foreach ($lines as $index => $line) {
+                $lineNum = $index + 1;
+                // Support pipe, semicolon, and tab as delimiter
+                if (str_contains($line, "\t")) {
+                    $parts = array_map('trim', explode("\t", $line));
+                } elseif (str_contains($line, '|')) {
+                    $parts = array_map('trim', explode('|', $line));
+                } elseif (str_contains($line, ';')) {
+                    $parts = array_map('trim', explode(';', $line));
+                } else {
+                    $parts = [$line];
+                }
+
+                if (count($parts) < 2) {
+                    $errors[] = "Baris {$lineNum}: Format tidak valid (minimal: ID/Nama | Jumlah)";
+
+                    continue;
+                }
+
+                $identifier = $parts[0] ?? '';
+                $jumlah = $parts[1] ?? 0;
+
+                if (empty($identifier)) {
+                    $errors[] = "Baris {$lineNum}: ID/Nama barang kosong";
+
+                    continue;
+                }
+
+                if (! is_numeric($jumlah) || $jumlah <= 0) {
+                    $errors[] = "Baris {$lineNum}: Jumlah harus angka positif";
+
+                    continue;
+                }
+
+                // Find stock item by ID or name
+                if (is_numeric($identifier)) {
+                    $stockItem = StockAmprahan::find((int) $identifier);
+                } else {
+                    $stockItem = StockAmprahan::where('nama_barang', 'like', '%'.trim($identifier).'%')
+                        ->where('jumlah', '>', 0)
+                        ->first();
+                }
+
+                if (! $stockItem) {
+                    $errors[] = "Baris {$lineNum}: Barang '{$identifier}' tidak ditemukan";
+
+                    continue;
+                }
+
+                if ($jumlah > $stockItem->jumlah) {
+                    $errors[] = "Baris {$lineNum}: Jumlah ({$jumlah}) melebihi stock ({$stockItem->jumlah}) untuk '{$stockItem->nama_barang}'";
+
+                    continue;
+                }
+
+                // Decrement stock
+                $stockItem->jumlah -= $jumlah;
+                $stockItem->updated_by = Auth::id();
+                $stockItem->save();
+
+                // Create usage record
+                StockAmprahanUsage::create([
+                    'stock_amprahan_id' => $stockItem->id,
+                    'penerima_id' => $request->bulk_usage_penerima_id,
+                    'jumlah' => $jumlah,
+                    'tanggal_pengambilan' => $request->bulk_usage_tanggal,
+                    'keterangan' => $request->bulk_usage_keterangan,
+                    'created_by' => Auth::id(),
+                ]);
+
+                $successCount++;
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Gagal menyimpan data: '.$e->getMessage());
+        }
+
+        $message = "{$successCount} pengambilan barang berhasil dicatat.";
+        if (! empty($errors)) {
+            $message .= ' '.count($errors).' baris error: '.implode('; ', array_slice($errors, 0, 5));
+        }
+
+        return redirect()->route('stock-amprahan.index')->with('success', $message);
+    }
+
     public function storeUsage(Request $request, $id)
     {
         $item = StockAmprahan::findOrFail($id);
@@ -428,7 +737,7 @@ class StockAmprahanController extends Controller
             'penerima_id' => 'required|exists:karyawans,id',
             'kendaraan_id' => 'nullable|exists:mobils,id',
             'truck_id' => 'nullable|exists:mobils,id',
-            'buntut_id' => 'nullable|exists:mobils,id',
+            'buntut_id' => 'nullable|string|max:50',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'alat_berat_id' => 'nullable|exists:alat_berats,id',
             'kantor' => 'nullable|string|max:255',
@@ -468,13 +777,26 @@ class StockAmprahanController extends Controller
         $item->updated_by = Auth::id();
         $item->save();
 
+        $buntutIdInput = $request->buntut_id;
+        $buntutId = null;
+        $chasisBatamId = null;
+
+        if ($buntutIdInput) {
+            if (str_starts_with($buntutIdInput, 'mobil_')) {
+                $buntutId = str_replace('mobil_', '', $buntutIdInput);
+            } elseif (str_starts_with($buntutIdInput, 'chasis_')) {
+                $chasisBatamId = str_replace('chasis_', '', $buntutIdInput);
+            }
+        }
+
         // Create usage record
         StockAmprahanUsage::create([
             'stock_amprahan_id' => $item->id,
             'penerima_id' => $request->penerima_id,
             'kendaraan_id' => $request->kendaraan_id,
             'truck_id' => $request->truck_id,
-            'buntut_id' => $request->buntut_id,
+            'buntut_id' => $buntutId,
+            'chasis_batam_id' => $chasisBatamId,
             'kapal_id' => $request->kapal_id,
             'alat_berat_id' => $request->alat_berat_id,
             'kantor' => $request->kantor,
@@ -493,6 +815,32 @@ class StockAmprahanController extends Controller
 
         return redirect()->route('stock-amprahan.index')
             ->with('success', 'Pengambilan barang berhasil dicatat. Sisa stock: '.$item->jumlah.' '.$item->satuan);
+    }
+
+    public function destroyUsage($id)
+    {
+        $usage = StockAmprahanUsage::findOrFail($id);
+
+        // Check if user is restricted to a branch (Batam) and trying to delete usage of non-Batam stock
+        $user = Auth::user();
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM' && strpos(strtoupper($usage->stockAmprahan->lokasi ?? ''), 'BATAM') === false) {
+                abort(403, 'Unauthorized access to this branch data.');
+            }
+        }
+
+        DB::transaction(function () use ($usage) {
+            // Restore quantity to parent stock
+            $stock = $usage->stockAmprahan;
+            if ($stock) {
+                $stock->increment('jumlah', $usage->jumlah);
+            }
+
+            $usage->delete();
+        });
+
+        return redirect()->back()->with('success', 'Catatan pemakaian berhasil dihapus dan jumlah stock dikembalikan.');
     }
 
     public function history(Request $request, $id)
@@ -525,6 +873,7 @@ class StockAmprahanController extends Controller
             'kendaraan' => null,
             'truck' => null,
             'buntut' => null,
+            'chasisBatam' => null,
             'kapal' => null,
             'alatBerat' => null,
             'kilometer' => '-',
@@ -594,7 +943,12 @@ class StockAmprahanController extends Controller
             $formatted = $combined->map(function ($entry) {
                 $kendaraanInfo = $entry->kendaraan ? ($entry->kendaraan->nomor_polisi.' - '.$entry->kendaraan->merek) : '-';
                 $truckInfo = $entry->truck ? ($entry->truck->nomor_polisi.' - '.$entry->truck->merek) : '-';
-                $buntutInfo = $entry->buntut ? ($entry->buntut->nomor_polisi.' - '.$entry->buntut->merek) : '-';
+                $buntutInfo = '-';
+                if ($entry->chasisBatam) {
+                    $buntutInfo = $entry->chasisBatam->kode.($entry->chasisBatam->tipe ? ' ('.$entry->chasisBatam->tipe.')' : '');
+                } elseif ($entry->buntut) {
+                    $buntutInfo = $entry->buntut->no_kir ?: ($entry->buntut->nomor_polisi ?: '-');
+                }
                 $kapalInfo = $entry->kapal ? $entry->kapal->nama_kapal : '-';
                 $alatBeratInfo = $entry->alatBerat ? ($entry->alatBerat->kode_alat.' - '.$entry->alatBerat->nama.($entry->alatBerat->merk ? ' - '.$entry->alatBerat->merk : '')) : '-';
                 $kantorInfo = $entry->kantor ?? '-';
@@ -684,6 +1038,7 @@ class StockAmprahanController extends Controller
                     'kendaraan' => null,
                     'truck' => null,
                     'buntut' => null,
+                    'chasisBatam' => null,
                     'kapal' => null,
                     'alatBerat' => null,
                     'kilometer' => '-',
@@ -694,7 +1049,7 @@ class StockAmprahanController extends Controller
         }
 
         // Usages query
-        $usagesQuery = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
+        $usagesQuery = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'chasisBatam', 'kapal', 'alatBerat', 'createdBy']);
 
         // Filter based on Karyawan Cabang (Branch)
         if ($isRestricted) {
@@ -793,6 +1148,7 @@ class StockAmprahanController extends Controller
                 'kendaraan' => null,
                 'truck' => null,
                 'buntut' => null,
+                'chasisBatam' => null,
                 'kapal' => null,
                 'alatBerat' => null,
                 'kilometer' => '-',
@@ -861,6 +1217,7 @@ class StockAmprahanController extends Controller
                         'kendaraan' => null,
                         'truck' => null,
                         'buntut' => null,
+                        'chasisBatam' => null,
                         'kapal' => null,
                         'alatBerat' => null,
                         'kilometer' => '-',
@@ -870,7 +1227,7 @@ class StockAmprahanController extends Controller
                 });
             }
 
-            $usagesQuery = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat', 'createdBy']);
+            $usagesQuery = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'chasisBatam', 'kapal', 'alatBerat', 'createdBy']);
         }
 
         if ($request->filled('from_date')) {
@@ -1080,7 +1437,7 @@ class StockAmprahanController extends Controller
         // Hydrate items with fresh data from DB to ensure no empty columns
         if (is_array($pranota->items)) {
             $itemIds = collect($pranota->items)->pluck('id')->filter()->toArray();
-            $stockItems = \App\Models\StockAmprahan::with(['usages.kendaraan', 'usages.truck', 'usages.buntut', 'usages.kapal', 'usages.alatBerat', 'masterNamaBarangAmprahan'])
+            $stockItems = \App\Models\StockAmprahan::with(['usages.kendaraan', 'usages.truck', 'usages.buntut', 'usages.chasisBatam', 'usages.kapal', 'usages.alatBerat', 'masterNamaBarangAmprahan'])
                 ->whereIn('id', $itemIds)
                 ->get()
                 ->keyBy('id');
@@ -1115,6 +1472,12 @@ class StockAmprahanController extends Controller
                             $refItems[] = 'Truck: '.$firstUsage->truck->nomor_polisi;
                             if (! $refType) {
                                 $refType = 'Truck';
+                            }
+                        }
+                        if ($firstUsage->chasisBatam) {
+                            $refItems[] = 'Buntut: '.$firstUsage->chasisBatam->kode;
+                            if (! $refType) {
+                                $refType = 'Buntut';
                             }
                         }
                         if ($firstUsage->buntut) {
@@ -1335,18 +1698,23 @@ class StockAmprahanController extends Controller
     public function valuasiPrint(Request $request)
     {
         $request->validate([
-            'master_id' => 'required|exists:master_nama_barang_amprahans,id',
+            'nama_barang' => 'required|array',
+            'nama_barang.*' => 'string',
             'from_date' => 'required|date',
             'to_date' => 'required|date',
         ]);
 
-        $masterItem = \App\Models\MasterNamaBarangAmprahan::findOrFail($request->master_id);
+        $namaBarang = $request->nama_barang;
+        $masterItem = (object) [
+            'id' => '-',
+            'nama_barang' => implode(', ', $namaBarang),
+        ];
         $fromDate = \Carbon\Carbon::parse($request->from_date)->startOfDay();
         $toDate = \Carbon\Carbon::parse($request->to_date)->endOfDay();
 
         // Saldo Awal (sebelum from_date)
         // Masuk sebelum from_date
-        $masukSebelumQuery = \App\Models\StockAmprahan::where('master_nama_barang_amprahan_id', $masterItem->id)
+        $masukSebelumQuery = \App\Models\StockAmprahan::whereIn('nama_barang', $namaBarang)
             ->where(function ($q) use ($fromDate) {
                 $q->whereDate('tanggal_beli', '<', $fromDate)
                     ->orWhere(function ($sq) use ($fromDate) {
@@ -1376,8 +1744,8 @@ class StockAmprahanController extends Controller
         }
 
         // Keluar sebelum from_date
-        $keluarSebelumQuery = \App\Models\StockAmprahanUsage::whereHas('stockAmprahan', function ($q) use ($masterItem) {
-            $q->where('master_nama_barang_amprahan_id', $masterItem->id);
+        $keluarSebelumQuery = \App\Models\StockAmprahanUsage::whereHas('stockAmprahan', function ($q) use ($namaBarang) {
+            $q->whereIn('nama_barang', $namaBarang);
         })
             ->whereDate('tanggal_pengambilan', '<', $fromDate);
 
@@ -1403,7 +1771,7 @@ class StockAmprahanController extends Controller
         $saldoAwalNilai = $nilaiMasukSebelum - $nilaiKeluarSebelum;
 
         // Transaksi dalam periode
-        $additionsQuery = \App\Models\StockAmprahan::where('master_nama_barang_amprahan_id', $masterItem->id)
+        $additionsQuery = \App\Models\StockAmprahan::whereIn('nama_barang', $namaBarang)
             ->where(function ($q) use ($fromDate, $toDate) {
                 $q->where(function ($qq) use ($fromDate, $toDate) {
                     $qq->whereNotNull('tanggal_beli')->whereBetween('tanggal_beli', [$fromDate, $toDate]);
@@ -1438,8 +1806,8 @@ class StockAmprahanController extends Controller
         });
 
         $usagesQuery = \App\Models\StockAmprahanUsage::with('stockAmprahan')
-            ->whereHas('stockAmprahan', function ($q) use ($masterItem) {
-                $q->where('master_nama_barang_amprahan_id', $masterItem->id);
+            ->whereHas('stockAmprahan', function ($q) use ($namaBarang) {
+                $q->whereIn('nama_barang', $namaBarang);
             })
             ->whereBetween('tanggal_pengambilan', [$fromDate, $toDate]);
 
@@ -1515,6 +1883,195 @@ class StockAmprahanController extends Controller
         ]);
     }
 
+    public function valuasiExcel(Request $request)
+    {
+        $request->validate([
+            'nama_barang' => 'required|array',
+            'nama_barang.*' => 'string',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date',
+        ]);
+
+        $namaBarang = $request->nama_barang;
+        $masterItem = (object) [
+            'id' => '-',
+            'nama_barang' => implode(', ', $namaBarang),
+        ];
+        $fromDate = \Carbon\Carbon::parse($request->from_date)->startOfDay();
+        $toDate = \Carbon\Carbon::parse($request->to_date)->endOfDay();
+
+        // Saldo Awal (sebelum from_date)
+        // Masuk sebelum from_date
+        $masukSebelumQuery = \App\Models\StockAmprahan::whereIn('nama_barang', $namaBarang)
+            ->where(function ($q) use ($fromDate) {
+                $q->whereDate('tanggal_beli', '<', $fromDate)
+                    ->orWhere(function ($sq) use ($fromDate) {
+                        $sq->whereNull('tanggal_beli')->whereDate('created_at', '<', $fromDate);
+                    });
+            });
+
+        // Filter based on Karyawan Cabang (Branch)
+        $user = Auth::user();
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $masukSebelumQuery->where('lokasi', 'like', '%BATAM%');
+            }
+        }
+
+        $masukSebelum = $masukSebelumQuery->get();
+        $qtyMasukSebelum = 0;
+        $nilaiMasukSebelum = 0;
+
+        foreach ($masukSebelum as $masuk) {
+            $totalUsage = $masuk->usages()->sum('jumlah');
+            $initialStock = $masuk->jumlah + $totalUsage;
+            $qtyMasukSebelum += $initialStock;
+            $nilaiMasukSebelum += ($initialStock * ($masuk->harga_satuan ?? 0));
+        }
+
+        // Keluar sebelum from_date
+        $keluarSebelumQuery = \App\Models\StockAmprahanUsage::whereHas('stockAmprahan', function ($q) use ($namaBarang) {
+            $q->whereIn('nama_barang', $namaBarang);
+        })
+            ->whereDate('tanggal_pengambilan', '<', $fromDate);
+
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $keluarSebelumQuery->whereHas('stockAmprahan', function ($q) {
+                    $q->where('lokasi', 'like', '%BATAM%');
+                });
+            }
+        }
+
+        $keluarSebelum = $keluarSebelumQuery->with('stockAmprahan')->get();
+        $qtyKeluarSebelum = 0;
+        $nilaiKeluarSebelum = 0;
+
+        foreach ($keluarSebelum as $keluar) {
+            $qtyKeluarSebelum += $keluar->jumlah;
+            $nilaiKeluarSebelum += ($keluar->jumlah * ($keluar->stockAmprahan->harga_satuan ?? 0));
+        }
+
+        $saldoAwalQty = $qtyMasukSebelum - $qtyKeluarSebelum;
+        $saldoAwalNilai = $nilaiMasukSebelum - $nilaiKeluarSebelum;
+
+        // Transaksi dalam periode
+        $additionsQuery = \App\Models\StockAmprahan::whereIn('nama_barang', $namaBarang)
+            ->where(function ($q) use ($fromDate, $toDate) {
+                $q->where(function ($qq) use ($fromDate, $toDate) {
+                    $qq->whereNotNull('tanggal_beli')->whereBetween('tanggal_beli', [$fromDate, $toDate]);
+                })->orWhere(function ($sq) use ($fromDate, $toDate) {
+                    $sq->whereNull('tanggal_beli')->whereBetween('created_at', [$fromDate, $toDate]);
+                });
+            });
+
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $additionsQuery->where('lokasi', 'like', '%BATAM%');
+            }
+        }
+
+        $additions = $additionsQuery->get()->map(function ($item) {
+            $totalUsage = $item->usages()->sum('jumlah');
+            $initialStock = $item->jumlah + $totalUsage;
+
+            return (object) [
+                'tanggal' => $item->tanggal_beli ? $item->tanggal_beli->format('d M Y') : $item->created_at->format('d M Y'),
+                'tanggal_raw' => $item->tanggal_beli ?? $item->created_at,
+                'tipe' => $item->type_amprahan ?? 'Penerimaan Barang',
+                'nama_barang' => $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-'),
+                'no_faktur' => $item->nomor_bukti ?? '-',
+                'referensi' => $item->vendorAmprahan->nama_toko ?? '-',
+                'kts_masuk' => $initialStock,
+                'nilai_masuk' => $initialStock * ($item->harga_satuan ?? 0),
+                'kts_keluar' => 0,
+                'nilai_keluar' => 0,
+            ];
+        });
+
+        $usagesQuery = \App\Models\StockAmprahanUsage::with('stockAmprahan')
+            ->whereHas('stockAmprahan', function ($q) use ($namaBarang) {
+                $q->whereIn('nama_barang', $namaBarang);
+            })
+            ->whereBetween('tanggal_pengambilan', [$fromDate, $toDate]);
+
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $usagesQuery->whereHas('stockAmprahan', function ($q) {
+                    $q->where('lokasi', 'like', '%BATAM%');
+                });
+            }
+        }
+
+        $usages = $usagesQuery->get()->map(function ($usage) {
+            $noFaktur = '-';
+            if ($usage->kendaraan) {
+                $noFaktur = $usage->kendaraan->nomor_polisi;
+            } elseif ($usage->kapal) {
+                $noFaktur = $usage->kapal->nama_kapal;
+            } elseif ($usage->alatBerat) {
+                $noFaktur = $usage->alatBerat->nama;
+            } elseif ($usage->kantor) {
+                $noFaktur = $usage->kantor;
+            }
+
+            return (object) [
+                'tanggal' => \Carbon\Carbon::parse($usage->tanggal_pengambilan)->format('d M Y'),
+                'tanggal_raw' => $usage->tanggal_pengambilan,
+                'tipe' => 'Pemakaian Bahan Baku',
+                'nama_barang' => $usage->stockAmprahan->nama_barang ?? ($usage->stockAmprahan->masterNamaBarangAmprahan->nama_barang ?? '-'),
+                'no_faktur' => '-',
+                'referensi' => $noFaktur,
+                'kts_masuk' => 0,
+                'nilai_masuk' => 0,
+                'kts_keluar' => $usage->jumlah,
+                'nilai_keluar' => $usage->jumlah * ($usage->stockAmprahan->harga_satuan ?? 0),
+            ];
+        });
+
+        $transaksi = $additions->concat($usages)->sort(function ($a, $b) {
+            $timeA = \Carbon\Carbon::parse($a->tanggal_raw)->timestamp;
+            $timeB = \Carbon\Carbon::parse($b->tanggal_raw)->timestamp;
+
+            if ($timeA == $timeB) {
+                $aIsMasuk = $a->kts_masuk > 0 ? 1 : 0;
+                $bIsMasuk = $b->kts_masuk > 0 ? 1 : 0;
+
+                return $bIsMasuk <=> $aIsMasuk;
+            }
+
+            return $timeA <=> $timeB;
+        })->values();
+
+        $runningQty = $saldoAwalQty;
+        $runningNilai = $saldoAwalNilai;
+
+        foreach ($transaksi as $trx) {
+            $runningQty += $trx->kts_masuk - $trx->kts_keluar;
+            $runningNilai += $trx->nilai_masuk - $trx->nilai_keluar;
+
+            $trx->kuantitas = $runningQty;
+            $trx->nilai_akhir = $runningNilai;
+        }
+
+        $data = [
+            'masterItem' => $masterItem,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'saldoAwalQty' => $saldoAwalQty,
+            'saldoAwalNilai' => $saldoAwalNilai,
+            'transaksi' => $transaksi,
+        ];
+
+        $fileName = 'Valuasi_Persediaan_'.str_replace(' ', '_', $masterItem->nama_barang).'_'.date('Ymd_His').'.xlsx';
+
+        return Excel::download(new \App\Exports\ValuasiPersediaanExport($data), $fileName);
+    }
+
     public function valuasiPemakaianPrint(Request $request)
     {
         $request->validate([
@@ -1582,6 +2139,79 @@ class StockAmprahanController extends Controller
             'toDate' => $toDate,
             'usages' => $usages,
         ]);
+    }
+
+    public function valuasiPemakaianExcel(Request $request)
+    {
+        $request->validate([
+            'kategori_pemakai' => 'required|in:penerima,kendaraan,alat_berat,kapal,kantor',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date',
+            'penerima_id' => 'required_if:kategori_pemakai,penerima|nullable|exists:karyawans,id',
+            'kendaraan_id' => 'required_if:kategori_pemakai,kendaraan|nullable|exists:mobils,id',
+            'alat_berat_id' => 'required_if:kategori_pemakai,alat_berat|nullable|exists:alat_berats,id',
+            'kapal_id' => 'required_if:kategori_pemakai,kapal|nullable|exists:master_kapals,id',
+            'kantor' => 'required_if:kategori_pemakai,kantor|nullable|string',
+        ]);
+
+        $fromDate = \Carbon\Carbon::parse($request->from_date)->startOfDay();
+        $toDate = \Carbon\Carbon::parse($request->to_date)->endOfDay();
+        $kategori = $request->kategori_pemakai;
+        $pemakaiName = '';
+
+        $query = \App\Models\StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'stockAmprahan.vendorAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'kapal', 'alatBerat'])
+            ->whereBetween('tanggal_pengambilan', [$fromDate, $toDate]);
+
+        // Filter by pemakai
+        if ($kategori === 'penerima') {
+            $penerima = \App\Models\Karyawan::findOrFail($request->penerima_id);
+            $pemakaiName = $penerima->nama_lengkap;
+            $query->where('penerima_id', $request->penerima_id);
+        } elseif ($kategori === 'kendaraan') {
+            $mobil = \App\Models\Mobil::findOrFail($request->kendaraan_id);
+            $pemakaiName = $mobil->nomor_polisi.($mobil->merek ? ' - '.$mobil->merek : '');
+            $query->where(function ($q) use ($request) {
+                $q->where('kendaraan_id', $request->kendaraan_id)
+                    ->orWhere('truck_id', $request->kendaraan_id)
+                    ->orWhere('buntut_id', $request->kendaraan_id);
+            });
+        } elseif ($kategori === 'alat_berat') {
+            $alat = \App\Models\AlatBerat::findOrFail($request->alat_berat_id);
+            $pemakaiName = $alat->kode_alat.' - '.$alat->nama;
+            $query->where('alat_berat_id', $request->alat_berat_id);
+        } elseif ($kategori === 'kapal') {
+            $kapal = \App\Models\MasterKapal::findOrFail($request->kapal_id);
+            $pemakaiName = $kapal->nama_kapal;
+            $query->where('kapal_id', $request->kapal_id);
+        } elseif ($kategori === 'kantor') {
+            $pemakaiName = $request->kantor;
+            $query->where('kantor', $request->kantor);
+        }
+
+        // Filter based on Karyawan Cabang (Branch)
+        $user = Auth::user();
+        if ($user && $user->karyawan && ! empty($user->karyawan->cabang) && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+            $cabang = strtoupper($user->karyawan->cabang);
+            if ($cabang === 'BATAM') {
+                $query->whereHas('stockAmprahan', function ($q) {
+                    $q->where('lokasi', 'like', '%BATAM%');
+                });
+            }
+        }
+
+        $usages = $query->orderBy('tanggal_pengambilan', 'asc')->get();
+
+        $data = [
+            'kategori' => ucfirst($kategori === 'penerima' ? 'Karyawan / Penerima' : ($kategori === 'kendaraan' ? 'Kendaraan / Truck' : str_replace('_', ' ', $kategori))),
+            'pemakaiName' => $pemakaiName,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'usages' => $usages,
+        ];
+
+        $fileName = 'Valuasi_Pemakaian_'.str_replace(' ', '_', $pemakaiName).'_'.date('Ymd_His').'.xlsx';
+
+        return Excel::download(new \App\Exports\ValuasiPemakaianExport($data), $fileName);
     }
 
     public function valuasiPembelianPrint(Request $request)

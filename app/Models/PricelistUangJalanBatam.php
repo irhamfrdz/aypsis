@@ -14,6 +14,7 @@ class PricelistUangJalanBatam extends Model
     protected $fillable = [
         'expedisi',
         'ring',
+        'wilayah',
         'tarif_20ft_full',
         'tarif_20ft_full_base',
         'tarif_20ft_empty',
@@ -27,6 +28,7 @@ class PricelistUangJalanBatam extends Model
         'tarif_antarlokasi_40ft',
         'tarif_antarlokasi_40ft_base',
         'status',
+        'kelola_bbm_id',
     ];
 
     protected $casts = [
@@ -68,6 +70,22 @@ class PricelistUangJalanBatam extends Model
         return $query->where('status', $status);
     }
 
+    /**
+     * Scope untuk mengambil pricelist periode BBM teraktif / terbaru
+     */
+    public function scopeActiveBbm($query)
+    {
+        $latestBbm = KelolaBbm::orderBy('tahun', 'desc')
+            ->orderBy('bulan', 'desc')
+            ->first();
+
+        if ($latestBbm) {
+            return $query->where('kelola_bbm_id', $latestBbm->id);
+        }
+
+        return $query->whereNull('kelola_bbm_id');
+    }
+
     public static function getTarif($expedisi, $ring, $status = null)
     {
         return self::where('expedisi', $expedisi)
@@ -76,5 +94,13 @@ class PricelistUangJalanBatam extends Model
                 return $q->where('status', $status);
             })
             ->first();
+    }
+
+    /**
+     * Relasi ke KelolaBbm
+     */
+    public function kelolaBbm()
+    {
+        return $this->belongsTo(KelolaBbm::class, 'kelola_bbm_id');
     }
 }

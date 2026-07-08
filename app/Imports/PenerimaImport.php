@@ -16,7 +16,8 @@ class PenerimaImport implements ToModel, WithHeadingRow, WithValidation
     {
         return new Penerima([
             'nama_penerima' => $row['nama_penerima'],
-            'contact_person' => $row['contact_person'] ?? null,
+            'pic' => $row['pic'] ?? null,
+            'telepon' => $row['telepon'] ?? null,
             'alamat' => $row['alamat'] ?? null,
             'npwp' => $row['npwp'] ?? null,
             'nitku' => $row['nitku'] ?? null,
@@ -30,7 +31,8 @@ class PenerimaImport implements ToModel, WithHeadingRow, WithValidation
     {
         return [
             'nama_penerima' => 'required|string|max:255',
-            'contact_person' => 'nullable|string|max:255',
+            'pic' => 'nullable|string|max:255',
+            'telepon' => 'nullable|string|max:255',
             'alamat' => 'nullable|string',
             'npwp' => 'nullable|string',
             'nitku' => 'nullable|string',

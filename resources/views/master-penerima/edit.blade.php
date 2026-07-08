@@ -33,11 +33,21 @@
                         </div>
 
                         <div class="sm:col-span-6">
-                            <label for="contact_person" class="block text-sm font-medium text-gray-700">Contact Person</label>
+                            <label for="pic" class="block text-sm font-medium text-gray-700">PIC</label>
                             <div class="mt-1">
-                                <input type="text" name="contact_person" id="contact_person" value="{{ old('contact_person', $penerima->contact_person) }}" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                                <input type="text" name="pic" id="pic" value="{{ old('pic', $penerima->pic) }}" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
                             </div>
-                            @error('contact_person')
+                            @error('pic')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="sm:col-span-6">
+                            <label for="telepon" class="block text-sm font-medium text-gray-700">No. Telepon</label>
+                            <div class="mt-1">
+                                <input type="text" name="telepon" id="telepon" value="{{ old('telepon', $penerima->telepon) }}" class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                            @error('telepon')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>

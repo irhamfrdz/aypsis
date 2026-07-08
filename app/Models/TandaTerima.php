@@ -81,6 +81,9 @@ class TandaTerima extends Model
         'dokumen_invoice',
         'dokumen_faktur_pajak',
         'dokumen_si',
+        'bukti_muat',
+        'bukti_timbangan',
+        'bukti_timbangan_muat',
     ];
 
     protected $casts = [

@@ -33,22 +33,39 @@ export function dateToExcelSerial(dateString: string): number {
   }
 }
 
-// Format date to "dd/mm/yyyy" for input/export
+// Format date to "dd mmm yy" for input/export
 export function formatEntryDate(dateStr: string): string {
   if (!dateStr) return '';
-  const parts = dateStr.split('-');
-  if (parts.length === 3) {
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  }
-  return dateStr;
+  return formatIndoDate(dateStr);
 }
 
-// Parse "dd/mm/yyyy", Excel Serial Numbers (e.g. 45768), or textual dates (e.g., "21 Mei 25", "21/05/2025") into "yyyy-mm-dd" for state/database
+// Parse "dd/mm/yyyy", "ddmmyyyy", "ddmmyy", Excel Serial Numbers (e.g. 45768), or textual dates (e.g., "21 Mei 25", "21/05/2025") into "yyyy-mm-dd" for state/database
 export function parseInputDate(inputStr: string): string | null {
   const trim = inputStr.trim();
   if (!trim) return null;
 
-  // Check if it is a pure numeric input (Excel Serial Number, e.g. 45768)
+  // 1. Support 8-digit pure numeric string "ddmmyyyy" e.g., "06012026"
+  if (/^\d{8}$/.test(trim)) {
+    const d = parseInt(trim.slice(0, 2), 10);
+    const mMonth = parseInt(trim.slice(2, 4), 10);
+    const y = parseInt(trim.slice(4, 8), 10);
+    if (d > 0 && d <= 31 && mMonth > 0 && mMonth <= 12 && y >= 1900 && y <= 2100) {
+      return `${y}-${String(mMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+  }
+
+  // 2. Support 6-digit pure numeric string "ddmmyy" e.g., "060126"
+  if (/^\d{6}$/.test(trim)) {
+    const d = parseInt(trim.slice(0, 2), 10);
+    const mMonth = parseInt(trim.slice(2, 4), 10);
+    let y = parseInt(trim.slice(4, 6), 10);
+    y += (y < 50 ? 2000 : 1900); // 2-digit year rule
+    if (d > 0 && d <= 31 && mMonth > 0 && mMonth <= 12) {
+      return `${y}-${String(mMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+  }
+
+  // 3. Check if it is a pure numeric input (Excel Serial Number, e.g. 45768)
   if (/^\d+(\.\d+)?$/.test(trim)) {
     const serial = parseFloat(trim);
     if (serial > 0) {
@@ -65,14 +82,14 @@ export function parseInputDate(inputStr: string): string | null {
     }
   }
 
-  // Support Indonesian and English textual dates e.g. "21 Mei 25", "21 Mei 2025", "21 April 2025"
+  // 4. Support Indonesian and English textual dates e.g. "21 Mei 25", "21 Mei 2025", "21 April 2025"
   const wordMatch = trim.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{2,4})$/);
   if (wordMatch) {
     const d = parseInt(wordMatch[1], 10);
     const monthWord = wordMatch[2].toLowerCase();
     let y = parseInt(wordMatch[3], 10);
     if (y < 100) {
-      y += 2000; // assume 2000s
+      y += (y < 50 ? 2000 : 1900); // assume 2000s for < 50, otherwise 1900s
     }
 
     const indEnglishMonths: Record<string, number> = {
@@ -97,16 +114,21 @@ export function parseInputDate(inputStr: string): string | null {
     }
   }
 
-  const m = trim.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  // 5. Support dd/mm/yy or dd/mm/yyyy with slashes or dashes
+  const m = trim.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
   if (m) {
     const d = parseInt(m[1], 10);
     const mMonth = parseInt(m[2], 10);
-    const y = parseInt(m[3], 10);
+    let y = parseInt(m[3], 10);
+    if (y < 100) {
+      y += (y < 50 ? 2000 : 1900); // assume 2000s for < 50, otherwise 1900s
+    }
     if (d > 0 && d <= 31 && mMonth > 0 && mMonth <= 12) {
       return `${y}-${String(mMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     }
   }
-  // Fallback to ISO-ish matching if yyyy-mm-dd is entered
+
+  // 6. Fallback to ISO-ish matching if yyyy-mm-dd is entered
   const isISO = trim.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
   if (isISO) {
     const y = parseInt(isISO[1], 10);
@@ -153,12 +175,10 @@ export function getNextCycleStart(curr: Date): Date {
 
 // Format currency in Rupiah (IDR)
 export function formatRupiah(num: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(num);
+  const isNegative = num < 0;
+  const absVal = Math.abs(num);
+  const formatted = Math.round(absVal).toLocaleString('id-ID');
+  return isNegative ? `-Rp ${formatted}` : `Rp ${formatted}`;
 }
 
 // Generate monthly periods dynamically for a rental (Sewa)
@@ -209,6 +229,7 @@ export function generateBillingPeriodsForSewa(
         tanggal_tagihan: null,
         tanggal_bayar: null,
         nomor_invoice_grup: null,
+        ppn: sewa.non_ppn ? 0 : null,
       });
 
       // Prepare for next loop
@@ -260,6 +281,7 @@ export function generateBillingPeriodsForSewa(
         tanggal_tagihan: null,
         tanggal_bayar: null,
         nomor_invoice_grup: null,
+        ppn: sewa.non_ppn ? 0 : null,
       });
 
       break; // End generation of active cycles

@@ -18,13 +18,37 @@ class PricelistUangJalanBatamController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search', '');
+        $selectedBbmId = $request->get('kelola_bbm_id', '');
+
+        $bbmPeriods = \App\Models\KelolaBbm::orderBy('tahun', 'desc')
+            ->orderBy('bulan', 'desc')
+            ->get();
 
         $query = PricelistUangJalanBatam::query();
+
+        if ($selectedBbmId === 'base') {
+            $query->whereNull('kelola_bbm_id');
+        } elseif ($selectedBbmId !== '') {
+            $query->where('kelola_bbm_id', $selectedBbmId);
+        } else {
+            // Default: if there's an active/latest BBM, show that, otherwise show base
+            $latestBbm = \App\Models\KelolaBbm::orderBy('tahun', 'desc')
+                ->orderBy('bulan', 'desc')
+                ->first();
+            if ($latestBbm) {
+                $query->where('kelola_bbm_id', $latestBbm->id);
+                $selectedBbmId = (string) $latestBbm->id;
+            } else {
+                $query->whereNull('kelola_bbm_id');
+                $selectedBbmId = 'base';
+            }
+        }
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('expedisi', 'like', "%{$search}%")
                     ->orWhere('ring', 'like', "%{$search}%")
+                    ->orWhere('wilayah', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%");
             });
         }
@@ -33,7 +57,7 @@ class PricelistUangJalanBatamController extends Controller
             ->orderBy('ring')
             ->paginate($request->get('per_page', 15));
 
-        return view('pricelist-uang-jalan-batam.index', compact('pricelists', 'search'));
+        return view('pricelist-uang-jalan-batam.index', compact('pricelists', 'search', 'bbmPeriods', 'selectedBbmId'));
     }
 
     /**
@@ -52,6 +76,7 @@ class PricelistUangJalanBatamController extends Controller
         $validated = $request->validate([
             'expedisi' => 'required|string|max:255',
             'ring' => 'required|string|max:255',
+            'wilayah' => 'nullable|string|max:255',
             'tarif_20ft_full' => 'nullable|numeric|min:0',
             'tarif_20ft_empty' => 'nullable|numeric|min:0',
             'tarif_40ft_full' => 'nullable|numeric|min:0',
@@ -99,6 +124,7 @@ class PricelistUangJalanBatamController extends Controller
         $validated = $request->validate([
             'expedisi' => 'required|string|max:255',
             'ring' => 'required|string|max:255',
+            'wilayah' => 'nullable|string|max:255',
             'tarif_20ft_full' => 'nullable|numeric|min:0',
             'tarif_20ft_empty' => 'nullable|numeric|min:0',
             'tarif_40ft_full' => 'nullable|numeric|min:0',
@@ -194,10 +220,26 @@ class PricelistUangJalanBatamController extends Controller
     public function export(Request $request)
     {
         $search = $request->get('search', '');
+        $selectedBbmId = $request->get('kelola_bbm_id', '');
 
         return Excel::download(
-            new PricelistUangJalanBatamExport($search),
+            new PricelistUangJalanBatamExport($search, $selectedBbmId),
             'pricelist_uang_jalan_batam_'.date('YmdHis').'.xlsx'
         );
+    }
+
+    /**
+     * Copy / Duplicate a pricelist record
+     */
+    public function copy(string $id)
+    {
+        $original = PricelistUangJalanBatam::findOrFail($id);
+
+        $copy = $original->replicate();
+        // Clear primary key and timestamp stuff if needed (replicate does this automatically for id/timestamps)
+        $copy->save();
+
+        return redirect()->route('pricelist-uang-jalan-batam.index')
+            ->with('success', 'Pricelist berhasil diduplikat/dicopy!');
     }
 }

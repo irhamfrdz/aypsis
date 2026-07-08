@@ -20,7 +20,7 @@ class SuratJalanBongkaranBatamController extends Controller
     {
         $this->middleware('auth');
         $this->middleware('permission:surat-jalan-bongkaran-batam-view', ['only' => ['index', 'show']]);
-        $this->middleware('permission:surat-jalan-bongkaran-batam-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:surat-jalan-bongkaran-batam-create', ['only' => ['create', 'store', 'storeBulk']]);
         $this->middleware('permission:surat-jalan-bongkaran-batam-update', ['only' => ['edit', 'update']]);
         $this->middleware('permission:surat-jalan-bongkaran-batam-delete', ['only' => ['destroy']]);
     }
@@ -211,6 +211,7 @@ class SuratJalanBongkaranBatamController extends Controller
         // Get data for modal form
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
             ->whereNull('tanggal_berhenti')
+            ->whereIn('cabang', ['BTM', 'BATAM'])
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
@@ -223,7 +224,7 @@ class SuratJalanBongkaranBatamController extends Controller
             ->orderBy('ke')
             ->get();
 
-        $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::orderBy('expedisi')->orderBy('ring')->get();
+        $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('expedisi')->orderBy('ring')->get();
 
         $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')
             ->where('status', 'aktif')
@@ -233,6 +234,79 @@ class SuratJalanBongkaranBatamController extends Controller
         $terms = \App\Models\Term::orderBy('kode')->get();
 
         return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage'));
+    }
+
+    public function penarikanIndex(Request $request)
+    {
+        $selectedKapal = $request->nama_kapal;
+        $selectedVoyage = $request->no_voyage;
+
+        $query = SuratJalanBongkaranBatam::query()
+            ->where('lokasi', 'batam');
+
+        // Filter by selected kapal and voyage if provided
+        if ($selectedKapal) {
+            $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
+            $query->where(function ($q) use ($selectedKapal, $kapalClean) {
+                $q->where('nama_kapal', $selectedKapal)
+                    ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+            });
+        }
+        if ($selectedVoyage) {
+            $query->where('no_voyage', $selectedVoyage);
+        }
+
+        // Filter by types (FCL, LCL, Cargo)
+        if ($request->filled('types')) {
+            $types = (array) $request->types;
+            $query->where(function ($q) use ($types) {
+                $q->whereIn('jenis_pengiriman', $types)
+                    ->orWhereIn('tipe_kontainer', $types);
+            });
+        }
+
+        // Search in surat jalan bongkaran (ignore punctuation)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
+
+            $query->where(function ($q) use ($search, $searchClean) {
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                    ->orWhere('no_kontainer', 'like', "%{$search}%")
+                    ->orWhere('no_seal', 'like', "%{$search}%")
+                    ->orWhere('term', 'like', "%{$search}%")
+                    ->orWhere('jenis_barang', 'like', "%{$search}%")
+                    ->orWhere('supir', 'like', "%{$search}%")
+                    ->orWhere('no_plat', 'like', "%{$search}%")
+                    ->orWhere('tipe_kontainer', 'like', "%{$search}%")
+                    ->orWhere('jenis_pengiriman', 'like', "%{$search}%")
+                    ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_surat_jalan, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                    ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                    ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                    ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_plat, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
+            });
+        }
+
+        $suratJalans = $query->orderBy('created_at', 'desc')->paginate(25);
+
+        // Get dropdown lists for filters
+        $ships = SuratJalanBongkaranBatam::select('nama_kapal')
+            ->whereNotNull('nama_kapal')
+            ->distinct()
+            ->orderBy('nama_kapal')
+            ->pluck('nama_kapal');
+
+        $voyages = [];
+        if ($selectedKapal) {
+            $voyages = SuratJalanBongkaranBatam::select('no_voyage')
+                ->where('nama_kapal', $selectedKapal)
+                ->whereNotNull('no_voyage')
+                ->distinct()
+                ->orderBy('no_voyage')
+                ->pluck('no_voyage');
+        }
+
+        return view('surat-jalan-bongkaran-batam.penarikan', compact('suratJalans', 'selectedKapal', 'selectedVoyage', 'ships', 'voyages'));
     }
 
     /**
@@ -438,6 +512,7 @@ class SuratJalanBongkaranBatamController extends Controller
         // Get karyawan dengan divisi supir untuk dropdown supir
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
             ->whereNull('tanggal_berhenti')
+            ->whereIn('cabang', ['BTM', 'BATAM'])
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
@@ -563,6 +638,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'lanjut_muat' => 'nullable|string|in:ya,tidak',
                 'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
                 'term' => 'nullable|string|max:255',
+                'ring' => 'nullable|string|max:255',
                 'aktifitas' => 'nullable|string',
                 'pengirim' => 'nullable|string|max:255',
                 'penerima' => 'nullable|string|max:255',
@@ -584,7 +660,10 @@ class SuratJalanBongkaranBatamController extends Controller
                 'plastik' => 'nullable|string|in:ya,tidak',
                 'terpal' => 'nullable|string|in:ya,tidak',
                 'rit' => 'nullable|string|in:menggunakan_rit,tidak_menggunakan_rit',
-                'uang_jalan_type' => 'nullable|string|in:full,setengah',
+                'uang_jalan_type' => 'nullable|string|in:full,setengah,titip_bon,tidak_ada',
+                'uang_jalan_extra' => 'nullable|numeric|min:0',
+                'keterangan_uang_jalan' => 'nullable|string',
+                'uang_jalan_keterangan' => 'nullable|string',
                 'tagihan_ayp' => 'nullable|boolean',
                 'tagihan_atb' => 'nullable|boolean',
                 'tagihan_pb' => 'nullable|boolean',
@@ -650,6 +729,227 @@ class SuratJalanBongkaranBatamController extends Controller
     }
 
     /**
+     * Store multiple surat jalan bongkaran batam at once (bulk create).
+     */
+    public function storeBulk(Request $request)
+    {
+        $rows = $request->input('rows', []);
+        $namaKapal = $request->input('nama_kapal', '');
+        $noVoyage = $request->input('no_voyage', '');
+        $lokasi = $request->input('lokasi', 'batam');
+        $tujuanPengambilan = $request->input('tujuan_pengambilan', '');
+        $f_e = $request->input('f_e', 'Full');
+
+        if (empty($rows)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada data yang dikirim.',
+            ], 422);
+        }
+
+        $successCount = 0;
+        $errors = [];
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($rows as $index => $row) {
+                $rowNumber = $index + 1;
+                $nomorSuratJalan = trim($row['nomor_surat_jalan'] ?? '');
+
+                if (empty($nomorSuratJalan)) {
+                    $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan wajib diisi.";
+
+                    continue;
+                }
+
+                // Check uniqueness
+                if (SuratJalanBongkaranBatam::where('nomor_surat_jalan', $nomorSuratJalan)->exists()) {
+                    $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan '{$nomorSuratJalan}' sudah ada di database.";
+
+                    continue;
+                }
+
+                try {
+                    $noKontainerOrBl = trim($row['no_kontainer'] ?? '');
+
+                    // Find matching manifest
+                    $manifest = null;
+                    if (! empty($noKontainerOrBl)) {
+                        $query = Manifest::query();
+                        if (! empty($namaKapal)) {
+                            // Normalize name search
+                            $kapalClean = strtolower(str_replace('.', '', $namaKapal));
+                            $query->where(function ($q) use ($namaKapal, $kapalClean) {
+                                $q->where('nama_kapal', $namaKapal)
+                                    ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                            });
+                        }
+                        if (! empty($noVoyage)) {
+                            $query->where('no_voyage', $noVoyage);
+                        }
+
+                        $query->where(function ($q) use ($noKontainerOrBl) {
+                            if (preg_match('/([A-Z]{4}\d{7})/i', $noKontainerOrBl, $matches)) {
+                                $containerPart = strtoupper($matches[1]);
+                                $q->where('nomor_kontainer', 'LIKE', '%'.$containerPart.'%');
+                            } else {
+                                $q->where('nomor_kontainer', 'LIKE', '%'.$noKontainerOrBl.'%')
+                                    ->orWhere('nomor_bl', 'LIKE', '%'.$noKontainerOrBl.'%');
+                            }
+                        });
+
+                        $manifests = $query->get();
+                        if ($manifests->count() > 1 && strpos($noKontainerOrBl, '/') !== false) {
+                            $parts = explode('/', $noKontainerOrBl);
+                            $suffix = trim(end($parts));
+                            $exactBl = $manifests->first(fn ($m) => strtolower(trim($m->nomor_bl)) === strtolower($suffix));
+                            $manifest = $exactBl ?: $manifests->first();
+                        } else {
+                            $manifest = $manifests->first();
+                        }
+                    }
+
+                    // If manifest is found, autofill missing fields
+                    $finalNoKontainer = $manifest ? $manifest->nomor_kontainer : $noKontainerOrBl;
+                    $finalNoSeal = $manifest ? $manifest->no_seal : null;
+                    $finalSize = $manifest ? $manifest->size_kontainer : null;
+                    $finalNoBl = $manifest ? $manifest->nomor_bl : null;
+                    $finalPengirim = $manifest ? $manifest->pengirim : null;
+                    $finalPenerima = $manifest ? $manifest->penerima : null;
+                    $finalJenisBarang = $manifest ? $manifest->nama_barang : null;
+                    $finalTujuanAlamat = $manifest ? $manifest->alamat_pengiriman : null;
+                    $finalTerm = $manifest ? $manifest->term : null;
+                    $finalJenisPengiriman = $manifest ? $manifest->tipe_kontainer : null;
+                    $manifestId = $manifest ? $manifest->id : null;
+
+                    // Calculate Uang Jalan
+                    $uangJalanNominal = 0;
+                    $finalRing = null;
+
+                    $rowLokasi = strtolower(trim($row['lokasi'] ?? '')) ?: $lokasi;
+                    if (! in_array($rowLokasi, ['batam', 'jakarta'])) {
+                        $rowLokasi = $lokasi;
+                    }
+                    $rowTujuan = trim($row['tujuan_pengiriman'] ?? ($row['tujuan_pengambilan'] ?? '')) ?: $tujuanPengambilan;
+                    $rowFE = trim($row['f_e'] ?? '') ?: $f_e;
+
+                    if (! empty($rowTujuan)) {
+                        if ($rowLokasi === 'batam') {
+                            // Find Pricelist Uang Jalan Batam
+                            $pricelistItems = \App\Models\PricelistUangJalanBatam::activeBbm()->get();
+                            $matchedItem = null;
+                            foreach ($pricelistItems as $item) {
+                                if (! $item->wilayah) {
+                                    continue;
+                                }
+                                $subWilayahs = array_map('trim', explode(',', $item->wilayah));
+                                if (in_array($rowTujuan, $subWilayahs)) {
+                                    $matchedItem = $item;
+                                    break;
+                                }
+                            }
+
+                            if ($matchedItem) {
+                                $finalRing = (string) $matchedItem->ring;
+                                // Determine size (default to 20 if empty)
+                                $is20ft = true;
+                                if (! empty($finalSize)) {
+                                    $normSize = strtolower(str_replace(' ', '', $finalSize));
+                                    if (strpos($normSize, '40') !== false) {
+                                        $is20ft = false;
+                                    }
+                                }
+                                $isFull = (strtolower($rowFE) === 'full');
+
+                                if ($is20ft) {
+                                    $uangJalanNominal = $isFull ? ($matchedItem->tarif_20ft_full ?? 0) : ($matchedItem->tarif_20ft_empty ?? 0);
+                                } else {
+                                    $uangJalanNominal = $isFull ? ($matchedItem->tarif_40ft_full ?? 0) : ($matchedItem->tarif_40ft_empty ?? 0);
+                                }
+                            }
+                        } else {
+                            // Jakarta location
+                            $tujuanUtama = \App\Models\TujuanKegiatanUtama::where('ke', $rowTujuan)->first();
+                            if ($tujuanUtama) {
+                                $is20ft = true;
+                                if (! empty($finalSize)) {
+                                    $normSize = strtolower(str_replace(' ', '', $finalSize));
+                                    if (strpos($normSize, '40') !== false) {
+                                        $is20ft = false;
+                                    }
+                                }
+                                if ($is20ft) {
+                                    $uangJalanNominal = $tujuanUtama->uang_jalan_20ft ?? 0;
+                                } else {
+                                    $uangJalanNominal = $tujuanUtama->uang_jalan_40ft ?? 0;
+                                }
+                            }
+                        }
+                    }
+
+                    SuratJalanBongkaranBatam::create([
+                        'nomor_surat_jalan' => $nomorSuratJalan,
+                        'tanggal_surat_jalan' => ! empty($row['tanggal_surat_jalan']) ? $row['tanggal_surat_jalan'] : now()->toDateString(),
+                        'no_kontainer' => $finalNoKontainer,
+                        'no_seal' => $finalNoSeal,
+                        'size' => $finalSize,
+                        'no_bl' => $finalNoBl,
+                        'supir' => $row['supir'] ?? null,
+                        'no_plat' => $row['no_plat'] ?? null,
+                        'kenek' => $row['kenek'] ?? null,
+                        'krani' => $row['krani'] ?? null,
+                        'pengirim' => $finalPengirim,
+                        'penerima' => $finalPenerima,
+                        'jenis_barang' => $finalJenisBarang,
+                        'tujuan_alamat' => $finalTujuanAlamat,
+                        'tujuan_pengambilan' => $rowTujuan,
+                        'uang_jalan_nominal' => $uangJalanNominal,
+                        'f_e' => $rowLokasi === 'batam' ? $rowFE : null,
+                        'ring' => $finalRing,
+                        'term' => $finalTerm,
+                        'aktifitas' => $row['aktifitas'] ?? null,
+                        'jenis_pengiriman' => $finalJenisPengiriman,
+                        'manifest_id' => $manifestId,
+                        'nama_kapal' => $namaKapal,
+                        'no_voyage' => $noVoyage,
+                        'lokasi' => $rowLokasi,
+                        'input_by' => Auth::id(),
+                    ]);
+                    $successCount++;
+                } catch (\Exception $e) {
+                    $errors[] = "Baris {$rowNumber}: ".$e->getMessage();
+                }
+            }
+
+            if ($successCount > 0) {
+                DB::commit();
+            } else {
+                DB::rollBack();
+            }
+
+            return response()->json([
+                'success' => $successCount > 0,
+                'message' => "{$successCount} surat jalan berhasil dibuat.".(! empty($errors) ? ' '.count($errors).' baris gagal.' : ''),
+                'success_count' => $successCount,
+                'error_count' => count($errors),
+                'errors' => $errors,
+                'redirect' => route('surat-jalan-bongkaran-batam.list', [
+                    'nama_kapal' => $namaKapal,
+                    'no_voyage' => $noVoyage,
+                ]),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(SuratJalanBongkaranBatam $suratJalanBongkaran)
@@ -671,6 +971,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
             ->whereNull('tanggal_berhenti')
+            ->whereIn('cabang', ['BTM', 'BATAM'])
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
 
@@ -679,6 +980,8 @@ class SuratJalanBongkaranBatamController extends Controller
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_panggilan', 'nama_lengkap']);
 
+        $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('expedisi')->orderBy('ring')->get();
+
         return view('surat-jalan-bongkaran-batam.edit', compact(
             'suratJalanBongkaran',
             'kapals',
@@ -686,7 +989,8 @@ class SuratJalanBongkaranBatamController extends Controller
             'masterKegiatans',
             'tujuanKegiatanUtamas',
             'karyawanSupirs',
-            'karyawanKranis'
+            'karyawanKranis',
+            'pricelistUangJalanBatams'
         ));
     }
 
@@ -706,6 +1010,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'lanjut_muat' => 'nullable|string|in:ya,tidak',
                 'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
                 'term' => 'nullable|string|max:255',
+                'ring' => 'nullable|string|max:255',
                 'aktifitas' => 'nullable|string',
                 'pengirim' => 'nullable|string|max:255',
                 'penerima' => 'nullable|string|max:255',
@@ -726,7 +1031,10 @@ class SuratJalanBongkaranBatamController extends Controller
                 'plastik' => 'nullable|string|in:ya,tidak',
                 'terpal' => 'nullable|string|in:ya,tidak',
                 'rit' => 'nullable|string|in:menggunakan_rit,tidak_menggunakan_rit',
-                'uang_jalan_type' => 'nullable|string|in:full,setengah',
+                'uang_jalan_type' => 'nullable|string|in:full,setengah,titip_bon,tidak_ada',
+                'uang_jalan_extra' => 'nullable|numeric|min:0',
+                'keterangan_uang_jalan' => 'nullable|string',
+                'uang_jalan_keterangan' => 'nullable|string',
                 'tagihan_ayp' => 'nullable|boolean',
                 'tagihan_atb' => 'nullable|boolean',
                 'tagihan_pb' => 'nullable|boolean',
@@ -927,11 +1235,12 @@ class SuratJalanBongkaranBatamController extends Controller
                 'nomor_surat_jalan' => $suratJalan->nomor_surat_jalan,
                 'tanggal_surat_jalan' => $suratJalan->tanggal_surat_jalan && is_object($suratJalan->tanggal_surat_jalan) ? $suratJalan->tanggal_surat_jalan->format('Y-m-d') : $suratJalan->tanggal_surat_jalan,
                 'term' => $suratJalan->term ?? '',
+                'ring' => $suratJalan->ring ?? '',
                 'aktifitas' => $suratJalan->aktifitas ?? '',
                 'pengirim' => $suratJalan->pengirim ?? '',
                 'penerima' => $suratJalan->penerima ?? '',
                 'jenis_barang' => $suratJalan->jenis_barang ?? '',
-                'nama_barang_manifest' => $suratJalan->manifest->nama_barang ?? '',
+                'nama_barang_manifest' => ($suratJalan->manifest ? $suratJalan->manifest->nama_barang : ''),
                 'tujuan_alamat' => $suratJalan->tujuan_alamat ?? '',
                 'tujuan_pengambilan' => $suratJalan->tujuan_pengambilan ?? '',
                 'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? '',

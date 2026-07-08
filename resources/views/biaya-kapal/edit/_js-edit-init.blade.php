@@ -156,7 +156,7 @@
                 'kapal' => $truck->kapal,
                 'voyage' => $truck->voyage,
                 'nama_vendor' => $truck->nama_vendor,
-                'no_bl_ids' => $truck->no_bl_ids ?? [], // Assuming it's an array of IDs
+                'no_bl_ids' => $truck->no_bl ?? [], 
                 'subtotal' => $truck->subtotal,
             ];
         }
@@ -356,6 +356,8 @@
                          'grand_total' => $firstItem->grand_total ?? 0,
                      ];
                  }
+            }
+        }
         // Map Nota Retur
         $editNotaReturSections = [];
         if($biayaKapal->notaReturDetails->count() > 0) {

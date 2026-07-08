@@ -14,6 +14,7 @@ class SuratJalanBongkaranBatam extends Model
     protected $table = 'surat_jalan_bongkaran_batams';
 
     protected $fillable = [
+        'ring',
         'tanggal_surat_jalan',
         'lanjut_muat',
         'nomor_sj_sebelumnya',
