@@ -493,8 +493,8 @@ class StockAmprahanController extends Controller
                     $parts = [$line];
                 }
 
-                if (count($parts) < 7) {
-                    $errors[] = "Baris {$lineNum}: Format tidak valid (minimal 7 kolom: No. Bukti, Tanggal, Tipe, Vendor, Lokasi, Nama Barang, Jumlah)";
+                if (count($parts) < 8) {
+                    $errors[] = "Baris {$lineNum}: Format tidak valid (minimal 8 kolom: No. Bukti, Tanggal, Tipe, Tipe Barang, Vendor, Lokasi, Nama Barang, Jumlah)";
 
                     continue;
                 }
@@ -502,13 +502,14 @@ class StockAmprahanController extends Controller
                 $nomorBukti = $parts[0] ?? '';
                 $tanggalBeli = $parts[1] ?? '';
                 $tipeAmprahan = $parts[2] ?? '';
-                $vendorName = $parts[3] ?? '';
-                $lokasi = $parts[4] ?? '';
-                $namaBarang = $parts[5] ?? '';
-                $jumlah = $parts[6] ?? 0;
-                $satuan = $parts[7] ?? 'Pcs';
-                $hargaSatuan = $parts[8] ?? 0;
-                $keterangan = $parts[9] ?? '';
+                $tipeBarang = $parts[3] ?? '';
+                $vendorName = $parts[4] ?? '';
+                $lokasi = $parts[5] ?? '';
+                $namaBarang = $parts[6] ?? '';
+                $jumlah = $parts[7] ?? 0;
+                $satuan = $parts[8] ?? 'Pcs';
+                $hargaSatuan = $parts[9] ?? 0;
+                $keterangan = $parts[10] ?? '';
 
                 if (empty($namaBarang)) {
                     $errors[] = "Baris {$lineNum}: Nama barang kosong";
@@ -582,6 +583,7 @@ class StockAmprahanController extends Controller
                     'nomor_bukti' => $nomorBukti,
                     'tanggal_beli' => $tanggalBeli ?: date('Y-m-d'),
                     'type_amprahan' => $matchedTipe,
+                    'type_barang' => $tipeBarang,
                     'nama_barang' => $namaBarang,
                     'master_nama_barang_amprahan_id' => $masterMatch ? $masterMatch->id : $masterItems->first()?->id,
                     'harga_satuan' => $hargaSatuan,
