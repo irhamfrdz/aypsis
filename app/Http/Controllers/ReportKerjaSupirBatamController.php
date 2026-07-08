@@ -122,7 +122,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->no_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'uang_jalan' => $ritVal,
-                        'tujuan' => $sj->tujuan_pengiriman ?? $sj->tujuan_alamat ?? $sj->tujuan_pengambilan ?? '-',
+                        'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? $sj->tujuan_alamat ?? '-',
                     ];
                 }
 
@@ -137,7 +137,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->nomor_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'uang_jalan' => $ritVal,
-                        'tujuan' => $sj->tujuan_pengiriman ?? $sj->tujuan_alamat ?? $sj->tujuan_pengambilan ?? '-',
+                        'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? $sj->tujuan_alamat ?? '-',
                     ];
                 }
 
@@ -152,7 +152,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->nomor_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'uang_jalan' => $ritVal,
-                        'tujuan' => $sj->tujuan_pengiriman ?? $sj->tujuan_pengambilan ?? '-',
+                        'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? '-',
                     ];
                 }
 
