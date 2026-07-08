@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('mesins', function (Blueprint $table) {
-            $table->string('ip_address')->nullable()->after('tipe_mesin');
-            $table->integer('port')->default(4370)->after('ip_address');
-            $table->integer('comm_key')->default(0)->after('port');
+            if (!Schema::hasColumn('mesins', 'ip_address')) {
+                $table->string('ip_address')->nullable()->after('tipe_mesin');
+            }
+            if (!Schema::hasColumn('mesins', 'port')) {
+                $table->integer('port')->default(4370)->after('ip_address');
+            }
+            if (!Schema::hasColumn('mesins', 'comm_key')) {
+                $table->integer('comm_key')->default(0)->after('port');
+            }
         });
     }
 
@@ -24,7 +30,19 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('mesins', function (Blueprint $table) {
-            $table->dropColumn(['ip_address', 'port', 'comm_key']);
+            $columns = [];
+            if (Schema::hasColumn('mesins', 'ip_address')) {
+                $columns[] = 'ip_address';
+            }
+            if (Schema::hasColumn('mesins', 'port')) {
+                $columns[] = 'port';
+            }
+            if (Schema::hasColumn('mesins', 'comm_key')) {
+                $columns[] = 'comm_key';
+            }
+            if (!empty($columns)) {
+                $table->dropColumn($columns);
+            }
         });
     }
 };
