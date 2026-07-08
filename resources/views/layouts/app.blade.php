@@ -634,8 +634,13 @@
                             </button>
                             <div id="master-karyawan-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isUserRoute) style="display: block;" @endif>
                                 @if($user && $user->can('master-user-view'))
-                                    <a href="{{ route('master.user.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.user.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.user.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.user.index') || Request::routeIs('master.user.create') || Request::routeIs('master.user.edit') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master User</span>
+                                    </a>
+                                @endif
+                                @if($user && (strtolower($user->username ?? '') === 'kiky' || strtolower($user->name ?? '') === 'kiky'))
+                                    <a href="{{ route('master.user.online') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.user.online') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">User Online</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-karyawan-view'))

@@ -307,6 +307,10 @@ Route::middleware([
             ->name('pelamar-karyawan.show')
             ->middleware('can:master-karyawan-view');
 
+        Route::get('user-online', [\App\Http\Controllers\OnlineUserController::class, 'index'])
+            ->name('user.online')
+            ->middleware('only.kiky');
+
         Route::get('user/create', [UserController::class, 'create'])
             ->name('user.create')
             ->middleware('can:master-user-create');
