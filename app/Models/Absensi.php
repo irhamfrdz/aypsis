@@ -34,6 +34,7 @@ class Absensi extends Model
         'device',
         'detail_lokasi',
         'foto',
+        'status',
     ];
 
     /**
