@@ -560,6 +560,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Kelola Mesin --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Kelola Mesin</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[mesin][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['mesin']['view']) && $userMatrixPermissions['mesin']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[mesin][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['mesin']['create']) && $userMatrixPermissions['mesin']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[mesin][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['mesin']['update']) && $userMatrixPermissions['mesin']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[mesin][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['mesin']['delete']) && $userMatrixPermissions['mesin']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Pengirim --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
@@ -827,6 +844,40 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Lokasi Absensi --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Lokasi Absensi</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-lokasi-absensi][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-lokasi-absensi']['view']) && $userMatrixPermissions['master-lokasi-absensi']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-lokasi-absensi][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-lokasi-absensi']['create']) && $userMatrixPermissions['master-lokasi-absensi']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-lokasi-absensi][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-lokasi-absensi']['update']) && $userMatrixPermissions['master-lokasi-absensi']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-lokasi-absensi][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-lokasi-absensi']['delete']) && $userMatrixPermissions['master-lokasi-absensi']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-lokasi-absensi][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-lokasi-absensi']['approve']) && $userMatrixPermissions['master-lokasi-absensi']['approve']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Jam Kerja --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Jam Kerja</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-jam-kerja][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-jam-kerja']['view']) && $userMatrixPermissions['master-jam-kerja']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-jam-kerja][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-jam-kerja']['create']) && $userMatrixPermissions['master-jam-kerja']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-jam-kerja][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-jam-kerja']['update']) && $userMatrixPermissions['master-jam-kerja']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-jam-kerja][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-jam-kerja']['delete']) && $userMatrixPermissions['master-jam-kerja']['delete']) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
@@ -2064,6 +2115,45 @@
                                 <td class="empty-cell"></td>
                                 <td><input type="checkbox" name="permissions[user-approval][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['user-approval']['print']) && $userMatrixPermissions['user-approval']['print']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[user-approval][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['user-approval']['export']) && $userMatrixPermissions['user-approval']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- Kelola Absensi (Akses Penuh) --}}
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Kelola Absensi (Akses Penuh)</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[kelola-absensi][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['kelola-absensi']['view']) && $userMatrixPermissions['kelola-absensi']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Data Absensi --}}
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data & Rekap Absensi</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[absensi][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['absensi']['view']) && $userMatrixPermissions['absensi']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[absensi][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['absensi']['create']) && $userMatrixPermissions['absensi']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[absensi][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['absensi']['update']) && $userMatrixPermissions['absensi']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[absensi][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['absensi']['delete']) && $userMatrixPermissions['absensi']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td>
+                                    <div class="flex flex-col items-center">
+                                        <input type="checkbox" name="permissions[absensi][rekap]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['absensi']['rekap']) && $userMatrixPermissions['absensi']['rekap']) checked @endif>
+                                        <span class="text-[10px] text-gray-500 font-medium mt-1">Rekap</span>
+                                    </div>
+                                </td>
+                                <td class="empty-cell"></td>
                             </tr>
 
                             {{-- Aktiva --}}
@@ -3759,6 +3849,21 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Approval Absensi --}}
+                            <tr class="submodule-row" data-parent="approval">
+                                <td class="submodule">
+                                    <span class="module-icon">📅</span>
+                                    Persetujuan Absensi (Approval Absen)
+                                </td>
+                                <td><input type="checkbox" name="permissions[approval-absensi][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi']['view']) && $userMatrixPermissions['approval-absensi']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi']['approve']) && $userMatrixPermissions['approval-absensi']['approve']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
                             {{-- Aktivitas Lain-lain --}}
                             <tr class="module-row" data-module="aktivitas-lainnya">
@@ -4049,6 +4154,71 @@
 
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            {{-- Role Template Feature --}}
+            <div class="rounded-xl shadow-lg p-6 mb-6 mt-4 border border-blue-200 relative" 
+                 style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white !important;">
+                <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white opacity-10 rounded-full pointer-events-none"></div>
+                <div class="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0 bg-white bg-opacity-20 p-3 rounded-lg backdrop-blur-sm">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-white tracking-wide" style="margin:0; color: white !important;">Terapkan Template Peran (Role Template)</h4>
+                            <p class="text-blue-100 text-sm mt-0.5" style="margin:0; color: #dbeafe !important; opacity: 0.9;">Pilih peran untuk mencentang otomatis set permission standar.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div class="min-w-[280px]">
+                            <style>
+                                #role_template_select + .choices .choices__list--dropdown {
+                                    background-color: white !important;
+                                    color: #374151 !important;
+                                    border: 1px solid #e5e7eb !important;
+                                    border-radius: 0.5rem !important;
+                                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+                                }
+                                #role_template_select + .choices .choices__list--dropdown .choices__item--selectable {
+                                    color: #374151 !important;
+                                }
+                                #role_template_select + .choices .choices__list--dropdown .choices__item--selectable.is-highlighted {
+                                    background-color: #f3f4f6 !important;
+                                    color: #111827 !important;
+                                }
+                                #role_template_select + .choices .choices__inner {
+                                    background-color: white !important;
+                                    color: #111827 !important;
+                                    border-radius: 0.5rem !important;
+                                    border: none !important;
+                                    min-height: 42px !important;
+                                    padding: 4px 8px !important;
+                                }
+                                #role_template_select + .choices .choices__list--single {
+                                    color: #111827 !important;
+                                    font-weight: 500 !important;
+                                }
+                            </style>
+                            <select id="role_template_select" class="block w-full text-gray-900 border-0 rounded-lg focus:ring-2 focus:ring-white">
+                                <option value="">-- Pilih Peran / Role Template --</option>
+                                @foreach($templates as $key => $template)
+                                    <option value="{{ $key }}">
+                                        {{ $template['label'] }} ({{ $template['description'] }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="button" id="apply_template_btn" 
+                                class="inline-flex items-center justify-center px-6 py-2.5 bg-white font-bold rounded-lg hover:bg-slate-50 active:scale-95 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                style="color: #1d4ed8 !important; border: none !important; min-width: 180px;">
+                            <span class="mr-2">⚡</span> Terapkan Peran
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -4390,6 +4560,9 @@
                 // Initialize copy permission feature
                 initializeCopyPermissions();
 
+                // Initialize role templates feature
+                initializeRoleTemplates();
+
                 // Initialize check all permissions
                 initializeCheckAllPermissions();
 
@@ -4574,6 +4747,103 @@
                         })
                         .finally(() => {
                             // Reset button state
+                            this.disabled = false;
+                            this.innerHTML = originalHTML;
+                        });
+                });
+            }
+
+            function initializeRoleTemplates() {
+                const applyBtn = document.getElementById('apply_template_btn');
+                const selectElement = document.getElementById('role_template_select');
+                
+                if (!applyBtn || !selectElement) return;
+
+                // Initialize Choices for this select if Choices is available
+                let templateChoices = null;
+                try {
+                    templateChoices = new Choices(selectElement, {
+                        searchEnabled: true,
+                        shouldSort: false,
+                        placeholder: true,
+                        placeholderValue: '-- Pilih Peran / Role Template --',
+                        itemSelectText: '',
+                    });
+                } catch (e) {
+                    console.error('Choices template initialization failed:', e);
+                }
+
+                const updateBtnState = () => {
+                    const value = selectElement.value;
+                    applyBtn.disabled = !value;
+                    if (!value) {
+                        applyBtn.classList.add('opacity-50');
+                    } else {
+                        applyBtn.classList.remove('opacity-50');
+                    }
+                };
+
+                selectElement.addEventListener('change', updateBtnState);
+                updateBtnState();
+
+                applyBtn.addEventListener('click', function() {
+                    const templateKey = selectElement.value;
+
+                    if (!templateKey) {
+                        showToast('Pilih template terlebih dahulu', 'warning');
+                        return;
+                    }
+
+                    if (!confirm('Apakah Anda yakin ingin menerapkan template peran ini? Ini akan menimpa pengaturan permission saat ini.')) {
+                        return;
+                    }
+
+                    const originalHTML = this.innerHTML;
+                    this.disabled = true;
+                    this.innerHTML = '<span class="animate-spin mr-2">⏳</span> Loading...';
+
+                    fetch(`/master/permission-templates/${templateKey}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const permissions = data.permissions;
+
+                                // Uncheck all permissions first
+                                document.querySelectorAll('.permission-checkbox').forEach(cb => {
+                                    cb.checked = false;
+                                    cb.indeterminate = false;
+                                });
+
+                                // Apply permissions
+                                Object.keys(permissions).forEach(module => {
+                                    if (permissions[module] && typeof permissions[module] === 'object') {
+                                        Object.keys(permissions[module]).forEach(action => {
+                                            const checkbox = document.querySelector(`input[name="permissions[${module}][${action}]"]`);
+                                            if (checkbox) {
+                                                checkbox.checked = true;
+                                            }
+                                        });
+                                    }
+                                });
+
+                                // Update all header checkboxes to reflect new state
+                                updateAllHeaderCheckboxes();
+                                
+                                if (typeof updateKaryawanMainPermission === 'function') {
+                                    updateKaryawanMainPermission();
+                                }
+
+                                showToast(`✅ Berhasil menerapkan template peran`, 'success');
+                                document.querySelector('.permission-matrix').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            } else {
+                                showToast('❌ Gagal mengambil data template: ' + (data.message || 'Unknown error'), 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showToast('❌ Terjadi kesalahan saat mengambil template', 'error');
+                        })
+                        .finally(() => {
                             this.disabled = false;
                             this.innerHTML = originalHTML;
                         });

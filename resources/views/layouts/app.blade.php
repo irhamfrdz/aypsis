@@ -426,6 +426,46 @@
                 </div>
                 @endif
 
+                {{-- Kelola Absensi Section --}}
+                @php
+                    $isAbsensiRoute = Request::is('absensi*') || Request::routeIs('absensi.*') || Request::routeIs('kelola-absensi.*');
+                    $hasAbsensiPermissions = $isAdmin || ($user && ($user->can('absensi-view') || $user->can('kelola-absensi-view') || $user->can('master-lokasi-absensi-view') || $user->can('master-jam-kerja-view') || $user->can('approval-absensi-view')));
+                @endphp
+
+                @if($hasAbsensiPermissions)
+                <div class="mt-4 mb-6">
+                    <button id="absensi-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-sm font-medium {{ $isAbsensiRoute ? 'bg-blue-50 text-blue-700' : '' }}">
+                        <span class="text-sm font-semibold">Kelola Absensi</span>
+                        <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isAbsensiRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="absensi-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isAbsensiRoute) style="display: block;" @endif>
+                        <a href="{{ Route::has('absensi.index') ? route('absensi.index') : '#' }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('absensi.index') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                            <span class="text-xs font-medium">Data Absensi</span>
+                        </a>
+                        <a href="{{ Route::has('absensi.rekap') ? route('absensi.rekap') : '#' }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('absensi.rekap') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                            <span class="text-xs font-medium">Rekap Absensi</span>
+                        </a>
+                        @if($user && $user->can('approval-absensi-view'))
+                            <a href="http://{{ request()->getHost() }}:5000/admin/approvals" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 text-gray-600 hover:shadow-sm">
+                                <span class="text-xs font-medium">📋 Persetujuan Absensi</span>
+                            </a>
+                        @endif
+                        @if($user && $user->can('master-lokasi-absensi-view'))
+                            <a href="{{ route('master.lokasi-absensi.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.lokasi-absensi.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">📍 Kelola Lokasi (Maps)</span>
+                            </a>
+                        @endif
+                        @if($user && $user->can('master-jam-kerja-view'))
+                            <a href="http://{{ request()->getHost() }}:5000/admin/working-hours" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 text-gray-600 hover:shadow-sm">
+                                <span class="text-xs font-medium">🕒 Jam Kerja (Shift)</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
                 <!-- Master Data Section -->
                 @php
                     $isMasterRoute = Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master-pricelist-labuh-tambat.*') || Request::routeIs('master-pricelist-freight.*') || Request::routeIs('master.item-kwitansi.*');
@@ -447,8 +487,8 @@
 
                         {{-- Master Umum Sub-Dropdown --}}
                         @php
-                            $isUmumRoute = Request::routeIs('master.cabang.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('klasifikasi-biaya.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master.lwbp-lama.*') || Request::routeIs('master.item-kwitansi.*');
-                            $hasUmumPermissions = $user && ($user->can('master-cabang-view') || $user->can('master-kode-nomor-view') || $user->can('master-nomor-terakhir-view') || $user->can('master-kegiatan-view') || $user->can('master-pelabuhan-view') || $user->can('master-klasifikasi-biaya-view') || $user->can('master-dokumen-perijinan-kapal-view') || $user->can('master-lwbp-lama-view') || $isAdmin);
+                            $isUmumRoute = Request::routeIs('master.cabang.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('klasifikasi-biaya.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master.lwbp-lama.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.mesin.*');
+                            $hasUmumPermissions = $user && ($user->can('master-cabang-view') || $user->can('master-kode-nomor-view') || $user->can('master-nomor-terakhir-view') || $user->can('master-kegiatan-view') || $user->can('master-pelabuhan-view') || $user->can('master-klasifikasi-biaya-view') || $user->can('master-dokumen-perijinan-kapal-view') || $user->can('master-lwbp-lama-view') || $user->can('mesin-view') || $isAdmin);
                         @endphp
 
                         @if($hasUmumPermissions)
@@ -460,6 +500,11 @@
                                 </svg>
                             </button>
                             <div id="master-umum-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isUmumRoute) style="display: block;" @endif>
+                                @if($user && $user->can('mesin-view'))
+                                    <a href="{{ route('master.mesin.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.mesin.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Kelola Mesin</span>
+                                    </a>
+                                @endif
                                 @if($user && $user->can('master-cabang-view'))
                                     <a href="{{ route('master.cabang.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.cabang.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master Cabang</span>
@@ -2646,6 +2691,7 @@
         setupDropdown('tagihan-kontainer-menu-toggle', 'tagihan-kontainer-menu-content');
         setupDropdown('report-menu-toggle', 'report-menu-content');
         setupDropdown('monitoring-menu-toggle', 'monitoring-menu-content');
+        setupDropdown('absensi-menu-toggle', 'absensi-menu-content');
 
         // Sidebar search functionality
         const sidebarSearch = document.getElementById('sidebar-search');

@@ -12,6 +12,7 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^2.2",
         "laravel/framework": "^11.9",
+        "laravel/sanctum": "^4.3",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
         "phpoffice/phpspreadsheet": "1.29"
@@ -72,7 +73,10 @@
             "php-http/discovery": true
         },
         "disable-tls": true,
-        "secure-http": false
+        "secure-http": false,
+        "audit": {
+            "block-insecure": false
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true

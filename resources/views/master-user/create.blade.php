@@ -406,6 +406,43 @@
                                 <td><input type="checkbox" name="permissions[user-approval][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
+                            {{-- Kelola Absensi (Akses Penuh) --}}
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Kelola Absensi (Akses Penuh)</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[kelola-absensi][view]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Data Absensi --}}
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Data & Rekap Absensi</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[absensi][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[absensi][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[absensi][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[absensi][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td>
+                                    <div class="flex flex-col items-center">
+                                        <input type="checkbox" name="permissions[absensi][rekap]" value="1" class="permission-checkbox">
+                                        <span class="text-[10px] text-gray-500 font-medium mt-1">Rekap</span>
+                                    </div>
+                                </td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Master Data --}}
                             <tr class="module-row" data-module="master">
                                 <td class="module-header">
@@ -500,6 +537,22 @@
                                 <td class="text-center text-gray-400">-</td>
                                 <td>-</td>
                                 <td>-</td>
+                            </tr>
+
+                            {{-- Kelola Mesin --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Kelola Mesin</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[mesin][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[mesin][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[mesin][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[mesin][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
                             </tr>
 
                             <tr class="submodule-row" data-parent="master">
@@ -690,6 +743,40 @@
                                  <td class="empty-cell"></td>
                                  <td class="empty-cell"></td>
                              </tr>
+
+                             {{-- Lokasi Absensi --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Lokasi Absensi</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-lokasi-absensi][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-lokasi-absensi][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-lokasi-absensi][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-lokasi-absensi][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-lokasi-absensi][approve]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Jam Kerja --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Jam Kerja</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-jam-kerja][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-jam-kerja][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-jam-kerja][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-jam-kerja][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
 
                              {{-- Master Gudang Ban --}}
                             <tr class="submodule-row" data-parent="master">

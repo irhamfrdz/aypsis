@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\AktivitasLainnyaController;
 use App\Http\Controllers\AssetDashboardController;
 use App\Http\Controllers\AsuransiTandaTerimaController;
@@ -30,6 +31,7 @@ use App\Http\Controllers\MasterPricelistKanisirBanController;
 use App\Http\Controllers\MasterPricelistObController;
 use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\MerkBanController;
+use App\Http\Controllers\MesinController;
 use App\Http\Controllers\MobilController;
 use App\Http\Controllers\NaikKapalController;
 use App\Http\Controllers\NamaStockBanController;
@@ -136,6 +138,9 @@ Route::post('recruitment', [App\Http\Controllers\PelamarKaryawanController::clas
 // Route untuk copy permission (di luar middleware auth agar bisa digunakan di form create)
 Route::get('master/user/{user}/permissions-for-copy', [UserController::class, 'getUserPermissionsForCopy'])
     ->name('master.user.permissions-for-copy');
+
+Route::get('master/permission-templates/{template}', [UserController::class, 'getTemplateMatrix'])
+    ->name('master.permission-templates.matrix');
 
 // Route untuk memperbaiki data nama kapal KM SUMBER ABADI - DELETED
 // Route::get('/fix-kapal-sumber-abadi', ...);
@@ -281,6 +286,11 @@ Route::middleware([
     // ═══════════════════════════════════════════════════════════════════════
 
     Route::prefix('master')->name('master.')->middleware(['auth'])->group(function () {
+        // Lokasi Absensi
+        Route::get('lokasi-absensi', function () {
+            return view('master-lokasi-absensi.index');
+        })->name('lokasi-absensi.index')->middleware('can:master-lokasi-absensi-view');
+
         // User Management - Separate routes to avoid middleware conflicts
         Route::get('user', [UserController::class, 'index'])
             ->name('user.index')
@@ -1458,6 +1468,56 @@ Route::middleware([
         Route::post('master/divisi/import', [DivisiController::class, 'import'])
             ->name('master.divisi.import')
             ->middleware('can:master-divisi-create');
+
+        // Master Mesin Management
+        Route::get('master/mesin', [MesinController::class, 'index'])
+            ->name('master.mesin.index')
+            ->middleware('can:mesin-view');
+
+        Route::get('master/mesin/create', [MesinController::class, 'create'])
+            ->name('master.mesin.create')
+            ->middleware('can:mesin-create');
+
+        Route::post('master/mesin', [MesinController::class, 'store'])
+            ->name('master.mesin.store')
+            ->middleware('can:mesin-create');
+
+        Route::get('master/mesin/{mesin}/edit', [MesinController::class, 'edit'])
+            ->name('master.mesin.edit')
+            ->middleware('can:mesin-update');
+
+        Route::put('master/mesin/{mesin}', [MesinController::class, 'update'])
+            ->name('master.mesin.update')
+            ->middleware('can:mesin-update');
+
+        Route::delete('master/mesin/{mesin}', [MesinController::class, 'destroy'])
+            ->name('master.mesin.destroy')
+            ->middleware('can:mesin-delete');
+
+        Route::post('master/mesin/test-connection-raw', [MesinController::class, 'testConnectionRaw'])
+            ->name('master.mesin.test-connection-raw')
+            ->middleware('can:mesin-create');
+
+        Route::post('master/mesin/{mesin}/test-connection', [MesinController::class, 'testConnection'])
+            ->name('master.mesin.test-connection')
+            ->middleware('can:mesin-update');
+
+        Route::post('master/mesin/{mesin}/sync-logs', [MesinController::class, 'syncLogs'])
+            ->name('master.mesin.sync-logs')
+            ->middleware('can:mesin-update');
+
+        // Kelola Absensi Management
+        Route::get('absensi', [AbsensiController::class, 'index'])
+            ->name('absensi.index')
+            ->middleware('can:absensi-view');
+
+        Route::get('absensi/rekap', [AbsensiController::class, 'rekap'])
+            ->name('absensi.rekap')
+            ->middleware('can:absensi-rekap');
+
+        Route::get('absensi/rekap/export', [AbsensiController::class, 'exportRekap'])
+            ->name('absensi.rekap.export')
+            ->middleware('can:absensi-rekap');
     });
 
     // Additional Master Data Routes with required middleware

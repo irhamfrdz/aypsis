@@ -104,7 +104,7 @@ class PembatalanSuratJalanController extends Controller
         }
 
         $regulerModels = [];
-        if (!empty($regulerIds)) {
+        if (! empty($regulerIds)) {
             $regulerModels = \App\Models\SuratJalan::with(['supirKaryawan', 'uangJalan'])
                 ->whereIn('id', $regulerIds)
                 ->get()
@@ -112,7 +112,7 @@ class PembatalanSuratJalanController extends Controller
         }
 
         $bongkaranModels = [];
-        if (!empty($bongkaranIds)) {
+        if (! empty($bongkaranIds)) {
             $bongkaranModels = \App\Models\SuratJalanBongkaran::with(['uangJalan'])
                 ->whereIn('id', $bongkaranIds)
                 ->get()

@@ -113,7 +113,10 @@ class UserController extends Controller
         // Convert user permissions to matrix format for the new permission matrix system
         $userMatrixPermissions = $this->convertPermissionsToMatrix($userSimplePermissions);
 
-        return view('master-user.edit', compact('user', 'permissions', 'userPermissions', 'userSimplePermissions', 'userMatrixPermissions', 'karyawans', 'users'));
+        // Mengambil template permission dari file konfigurasi
+        $templates = config('permission_templates', []);
+
+        return view('master-user.edit', compact('user', 'permissions', 'userPermissions', 'userSimplePermissions', 'userMatrixPermissions', 'karyawans', 'users', 'templates'));
     }
 
     /**
@@ -619,6 +622,28 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for approval-absensi permissions (dash notation)
+            if (strpos($permissionName, 'approval-absensi-') === 0) {
+                $module = 'approval-absensi';
+                $action = str_replace('approval-absensi-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (! isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'approve' => 'approve',
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+
+                continue; // Skip other patterns
+            }
+
             // OPERATIONAL MODULES: Handle operational management permissions (order-management, surat-jalan, etc.)
             // IMPORTANT: More specific (longer) prefixes MUST come before shorter ones.
             // e.g. 'tanda-terima-batam' before 'tanda-terima', otherwise strpos will
@@ -722,6 +747,9 @@ class UserController extends Controller
                 'master-buruh' => 'master-buruh',
                 'biaya-bensin' => 'biaya-bensin',
                 'pembelian-bbm-batam' => 'pembelian-bbm-batam',
+                'kelola-absensi' => 'kelola-absensi',
+                'absensi' => 'absensi',
+                'mesin' => 'mesin',
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
@@ -4817,6 +4845,23 @@ class UserController extends Controller
                         }
                     }
 
+                    // Handle approval-absensi permissions explicitly
+                    if ($module === 'approval-absensi' && in_array($action, ['view', 'approve'])) {
+                        $actionMap = [
+                            'view' => 'approval-absensi-view',
+                            'approve' => 'approval-absensi-approve',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // Handle BL (Bill of Lading) permissions explicitly
                     if ($module === 'bl' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export', 'approve'])) {
                         $actionMap = [
@@ -5197,6 +5242,30 @@ class UserController extends Controller
                 'username' => $user->username,
             ],
             'count' => count($permissions),
+        ]);
+    }
+
+    /**
+     * Get permission template's matrix representation for AJAX use.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getTemplateMatrix($templateKey)
+    {
+        $templates = config('permission_templates', []);
+
+        if (! isset($templates[$templateKey])) {
+            return response()->json(['error' => 'Template not found'], 404);
+        }
+
+        $templatePermissions = $templates[$templateKey]['permissions'];
+        $matrixPermissions = $this->convertPermissionsToMatrix($templatePermissions);
+
+        return response()->json([
+            'success' => true,
+            'template' => $templateKey,
+            'permissions' => $matrixPermissions,
+            'count' => count($templatePermissions),
         ]);
     }
 
