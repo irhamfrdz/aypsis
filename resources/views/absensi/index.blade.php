@@ -146,11 +146,35 @@
                                 <td class="px-6 py-4 whitespace-nowrap font-mono text-gray-600">
                                     {{ Carbon\Carbon::parse($absensi->tanggal)->format('d-m-Y') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-green-600 bg-green-50/20">
+                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-green-600 bg-green-50/20 group relative">
                                     {{ $absensi->waktu_masuk ? Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i:s') : '-' }}
+                                    @if($absensi->waktu_masuk)
+                                    <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam masuk ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="nik" value="{{ $absensi->nik }}">
+                                        <input type="hidden" name="tanggal" value="{{ $absensi->tanggal }}">
+                                        <input type="hidden" name="tipe" value="Masuk">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 bg-white rounded-full p-0.5 shadow-sm" title="Hapus Jam Masuk">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </form>
+                                    @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-red-600 bg-red-50/20">
+                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-red-600 bg-red-50/20 group relative">
                                     {{ $absensi->waktu_pulang ? Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i:s') : '-' }}
+                                    @if($absensi->waktu_pulang)
+                                    <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam pulang ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="nik" value="{{ $absensi->nik }}">
+                                        <input type="hidden" name="tanggal" value="{{ $absensi->tanggal }}">
+                                        <input type="hidden" name="tipe" value="Pulang">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 bg-white rounded-full p-0.5 shadow-sm" title="Hapus Jam Pulang">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </form>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-600">
                                     <div class="space-y-1 text-[11px]">

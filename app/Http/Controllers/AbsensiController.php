@@ -129,6 +129,25 @@ class AbsensiController extends Controller
     }
 
     /**
+     * Delete an attendance log by NIK, Date, and Type.
+     */
+    public function deleteLog(Request $request)
+    {
+        $request->validate([
+            'nik' => 'required',
+            'tanggal' => 'required|date',
+            'tipe' => 'required|in:Masuk,Pulang'
+        ]);
+
+        Absensi::where('nik', $request->nik)
+               ->whereDate('waktu', $request->tanggal)
+               ->where('tipe', $request->tipe)
+               ->delete();
+
+        return back()->with('success', "Data jam {$request->tipe} berhasil dihapus dari sistem.");
+    }
+
+    /**
      * Display rekapitulasi of attendance logs.
      */
     public function rekap(Request $request)
