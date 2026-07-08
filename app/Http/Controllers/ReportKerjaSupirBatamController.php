@@ -122,6 +122,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->no_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'uang_jalan' => $ritVal,
+                        'tujuan' => $sj->tujuan_pengiriman ?? '-',
                     ];
                 }
 
@@ -136,6 +137,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->nomor_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'uang_jalan' => $ritVal,
+                        'tujuan' => $sj->tujuan_pengiriman ?? '-',
                     ];
                 }
 
@@ -150,6 +152,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->nomor_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'uang_jalan' => $ritVal,
+                        'tujuan' => $sj->tujuan_pengiriman ?? '-',
                     ];
                 }
 
@@ -164,6 +167,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $langsir->no_kontainer ?? '-',
                         'supir' => $langsir->supir,
                         'uang_jalan' => $ritVal,
+                        'tujuan' => $langsir->ke ?? '-',
                     ];
                 }
 

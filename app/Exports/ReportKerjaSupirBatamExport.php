@@ -41,6 +41,7 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
                 'Tanggal',
                 'Supir',
                 'Tipe Pekerjaan',
+                'Tujuan',
                 'No. Dokumen',
                 'No. Kontainer',
                 'Uang Jalan / Biaya (Rp)',
@@ -59,6 +60,7 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
             $item['tanggal'],
             $item['supir'],
             $item['tipe'],
+            $item['tujuan'],
             $item['no_dokumen'],
             $item['no_kontainer'],
             (float) $item['uang_jalan'],
@@ -67,15 +69,15 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->mergeCells('A1:G1');
-        $sheet->mergeCells('A2:G2');
+        $sheet->mergeCells('A1:H1');
+        $sheet->mergeCells('A2:H2');
 
         $lastRow = $sheet->getHighestRow();
         
         // Add total row at the bottom
         $sheet->setCellValue('A' . ($lastRow + 1), 'TOTAL PENDAPATAN SUPIR');
-        $sheet->mergeCells('A' . ($lastRow + 1) . ':F' . ($lastRow + 1));
-        $sheet->setCellValue('G' . ($lastRow + 1), (float) $this->totalRit);
+        $sheet->mergeCells('A' . ($lastRow + 1) . ':G' . ($lastRow + 1));
+        $sheet->setCellValue('H' . ($lastRow + 1), (float) $this->totalRit);
         
         $lastRow = $sheet->getHighestRow();
 
@@ -92,14 +94,14 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
             $lastRow => [
                 'font' => ['bold' => true],
             ],
-            'A1:G'.$lastRow => [
+            'A1:H'.$lastRow => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                     ],
                 ],
             ],
-            'G5:G'.$lastRow => [
+            'H5:H'.$lastRow => [
                 'numberFormat' => [
                     'formatCode' => '#,##0'
                 ]
