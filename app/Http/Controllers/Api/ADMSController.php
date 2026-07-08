@@ -30,7 +30,6 @@ class ADMSController extends Controller
         $response .= "TransTimes=00:00;14:00\r\n";
         $response .= "TransInterval=1\r\n";
         $response .= "TransFlag=1111000000\r\n";
-        $response .= "TimeZone=74\r\n"; // Jakarta GMT+7
         $response .= "Realtime=1\r\n";
         $response .= "Encrypt=0\r\n";
 
