@@ -21,8 +21,8 @@ class ADMSController extends Controller
         
         // Response wajib agar mesin tahu server merespon dan siap menerima data
         $response = "GET OPTION FROM: {$sn}\n";
-        $response .= "Stamp=9999\n";
-        $response .= "OpStamp=9999\n";
+        $response .= "Stamp=0\n";
+        $response .= "OpStamp=0\n";
         $response .= "ErrorDelay=60\n";
         $response .= "Delay=30\n";
         $response .= "TransTimes=00:00;14:00\n";
