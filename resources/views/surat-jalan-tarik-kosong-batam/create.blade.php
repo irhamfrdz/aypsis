@@ -87,15 +87,6 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_surat_jalan') border-red-500 @enderror">
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kegiatan <span class="text-red-600">*</span></label>
-                    <select name="kegiatan" id="kegiatan" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('kegiatan') border-red-500 @enderror">
-                        <option value="">-- Pilih Kegiatan --</option>
-                        <option value="Tarik Kosong" {{ old('kegiatan') == 'Tarik Kosong' ? 'selected' : '' }}>Tarik Kosong</option>
-                        <option value="Antar Kosong" {{ old('kegiatan') == 'Antar Kosong' ? 'selected' : '' }}>Antar Kosong</option>
-                    </select>
-                </div>
                 <div class="relative">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
                     <input type="text"
@@ -217,6 +208,15 @@
                         <option value="20" {{ old('size') == '20' ? 'selected' : '' }}>20 FT</option>
                         <option value="40" {{ old('size') == '40' ? 'selected' : '' }}>40 FT</option>
                         <option value="45" {{ old('size') == '45' ? 'selected' : '' }}>45 FT</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">F / E</label>
+                    <select name="f_e"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="E" {{ old('f_e', 'E') == 'E' ? 'selected' : '' }}>Empty (E)</option>
+                        <option value="F" {{ old('f_e') == 'F' ? 'selected' : '' }}>Full (F)</option>
                     </select>
                 </div>
 
@@ -442,13 +442,14 @@
         // --- Auto-fill Uang Jalan ---
         const pricelistRings = @json($pricelistRings);
         const uangJalanInput = document.getElementById('uang_jalan');
+        const fESelect = document.querySelector('select[name="f_e"]');
 
         function updateUangJalan() {
             const selectedLocation = pickupSearch.value;
             const selectedSize = sizeSelect.value;
-            const selectedFE = 'E'; // Selalu E untuk tarik kosong
+            const selectedFE = fESelect.value; // F or E
 
-            if (!selectedLocation || !selectedSize) return;
+            if (!selectedLocation || !selectedSize || !selectedFE) return;
 
             const ringData = pricelistRings.find(r => r.name === selectedLocation);
             if (ringData) {
@@ -462,6 +463,7 @@
         }
 
         // Add listeners for Uang Jalan updates
+        fESelect.addEventListener('change', updateUangJalan);
         sizeSelect.addEventListener('change', updateUangJalan);
 
 

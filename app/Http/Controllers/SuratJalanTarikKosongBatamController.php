@@ -113,7 +113,6 @@ class SuratJalanTarikKosongBatamController extends Controller
         $validated = $request->validate([
             'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan',
             'tanggal_surat_jalan' => 'required|date',
-            'kegiatan' => 'required|string',
 
             'tujuan_pengambilan' => 'nullable|string',
             'tujuan_pengiriman' => 'nullable|string',
@@ -123,11 +122,10 @@ class SuratJalanTarikKosongBatamController extends Controller
             'kenek' => 'nullable|string',
             'no_kontainer' => 'nullable|string',
             'size' => 'nullable|string',
+            'f_e' => 'nullable|string',
             'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
         ]);
-
-        $validated['f_e'] = 'E'; // Khusus tarik kosong, selalu Empty (E)
 
         if ($request->filled('uang_jalan')) {
             $validated['uang_jalan'] = (float) str_replace(['.', ','], ['', '.'], $request->uang_jalan);
@@ -228,7 +226,6 @@ class SuratJalanTarikKosongBatamController extends Controller
         $validated = $request->validate([
             'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan,'.$id,
             'tanggal_surat_jalan' => 'required|date',
-            'kegiatan' => 'required|string',
 
             'tujuan_pengambilan' => 'nullable|string',
             'tujuan_pengiriman' => 'nullable|string',
@@ -238,11 +235,10 @@ class SuratJalanTarikKosongBatamController extends Controller
             'kenek' => 'nullable|string',
             'no_kontainer' => 'nullable|string',
             'size' => 'nullable|string',
+            'f_e' => 'nullable|string',
             'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
         ]);
-
-        $validated['f_e'] = 'E'; // Khusus tarik kosong, selalu Empty (E)
 
         if ($request->filled('uang_jalan')) {
             $validated['uang_jalan'] = (float) str_replace(['.', ','], ['', '.'], $request->uang_jalan);
