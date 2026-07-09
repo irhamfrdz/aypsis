@@ -11,7 +11,11 @@
         background-color: #eef2ff;
         border-left: 4px solid #4f46e5;
     }
+    .flatpickr-input[readonly] {
+        background-color: transparent;
+    }
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 @endpush
 
 @section('content')
@@ -65,7 +69,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Surat Jalan <span class="text-red-600">*</span></label>
-                    <input type="date"
+                    <input type="text"
                            name="tanggal_surat_jalan"
                            id="tanggal_surat_jalan"
                            value="{{ old('tanggal_surat_jalan', $item->tanggal_surat_jalan->format('Y-m-d')) }}"
@@ -293,8 +297,15 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        flatpickr("#tanggal_surat_jalan", {
+            altInput: true,
+            altFormat: "d/m/Y",
+            dateFormat: "Y-m-d",
+        });
+
         // Currency formatting
         const currencyInputs = document.querySelectorAll('.currency');
         currencyInputs.forEach(input => {
