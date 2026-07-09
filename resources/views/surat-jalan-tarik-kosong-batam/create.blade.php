@@ -394,6 +394,7 @@
                 pickupDropdown.classList.add('hidden');
                 pickupOptions.forEach(o => o.classList.remove('selected'));
                 this.classList.add('selected');
+                updateUangJalan();
             });
         });
 
@@ -441,14 +442,13 @@
         // --- Auto-fill Uang Jalan ---
         const pricelistRings = @json($pricelistRings);
         const uangJalanInput = document.getElementById('uang_jalan');
-        const fESelect = document.querySelector('select[name="f_e"]');
 
         function updateUangJalan() {
             const selectedLocation = pickupSearch.value;
             const selectedSize = sizeSelect.value;
-            const selectedFE = fESelect.value; // F or E
+            const selectedFE = 'E'; // Selalu E untuk tarik kosong
 
-            if (!selectedLocation || !selectedSize || !selectedFE) return;
+            if (!selectedLocation || !selectedSize) return;
 
             const ringData = pricelistRings.find(r => r.name === selectedLocation);
             if (ringData) {
@@ -462,19 +462,8 @@
         }
 
         // Add listeners for Uang Jalan updates
-        fESelect.addEventListener('change', updateUangJalan);
         sizeSelect.addEventListener('change', updateUangJalan);
-        
-        // Update updateUangJalan in pickupOptions listener
-        pickupOptions.forEach(opt => {
-            opt.addEventListener('click', function() {
-                pickupSearch.value = this.dataset.value;
-                pickupDropdown.classList.add('hidden');
-                pickupOptions.forEach(o => o.classList.remove('selected'));
-                this.classList.add('selected');
-                updateUangJalan(); // Add this
-            });
-        });
+
 
         // --- Auto-fill No. Plat based on Supir ---
         const supirSelect = document.querySelector('select[name="supir"]');

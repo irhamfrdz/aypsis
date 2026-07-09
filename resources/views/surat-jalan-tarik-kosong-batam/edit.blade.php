@@ -460,14 +460,13 @@
         // --- Auto-fill Uang Jalan ---
         const pricelistRings = @json($pricelistRings);
         const uangJalanInput = document.getElementById('uang_jalan');
-        const fESelect = document.querySelector('select[name="f_e"]');
 
         function updateUangJalan() {
             const selectedLocation = pickupSearch.value;
             const selectedSize = sizeSelect.value;
-            const selectedFE = fESelect.value; // F or E
+            const selectedFE = 'E'; // Selalu E untuk tarik kosong
 
-            if (!selectedLocation || !selectedSize || !selectedFE) return;
+            if (!selectedLocation || !selectedSize) return;
 
             const ringData = pricelistRings.find(r => r.name === selectedLocation);
             if (ringData) {
@@ -481,7 +480,6 @@
         }
 
         // Add listeners for Uang Jalan updates
-        fESelect.addEventListener('change', updateUangJalan);
         sizeSelect.addEventListener('change', updateUangJalan);
 
         // --- Auto-fill No. Plat based on Supir ---
