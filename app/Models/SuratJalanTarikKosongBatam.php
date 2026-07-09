@@ -12,7 +12,7 @@ class SuratJalanTarikKosongBatam extends Model
     protected $fillable = [
         'tanggal_surat_jalan',
         'no_surat_jalan',
-
+        'kegiatan',
         'tujuan_pengambilan',
         'tujuan_pengiriman',
         'supir',

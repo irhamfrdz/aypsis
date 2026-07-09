@@ -84,9 +84,15 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none @error('no_surat_jalan') border-red-500 @enderror">
                 </div>
 
-
-
-
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kegiatan <span class="text-red-600">*</span></label>
+                    <select name="kegiatan" id="kegiatan" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('kegiatan') border-red-500 @enderror">
+                        <option value="">-- Pilih Kegiatan --</option>
+                        <option value="Tarik Kosong" {{ old('kegiatan', $item->kegiatan) == 'Tarik Kosong' ? 'selected' : '' }}>Tarik Kosong</option>
+                        <option value="Antar Kosong" {{ old('kegiatan', $item->kegiatan) == 'Antar Kosong' ? 'selected' : '' }}>Antar Kosong</option>
+                    </select>
+                </div>
                 <div class="relative">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
                     @php

@@ -113,6 +113,7 @@ class SuratJalanTarikKosongBatamController extends Controller
         $validated = $request->validate([
             'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan',
             'tanggal_surat_jalan' => 'required|date',
+            'kegiatan' => 'required|string',
 
             'tujuan_pengambilan' => 'nullable|string',
             'tujuan_pengiriman' => 'nullable|string',
@@ -226,6 +227,7 @@ class SuratJalanTarikKosongBatamController extends Controller
         $validated = $request->validate([
             'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan,'.$id,
             'tanggal_surat_jalan' => 'required|date',
+            'kegiatan' => 'required|string',
 
             'tujuan_pengambilan' => 'nullable|string',
             'tujuan_pengiriman' => 'nullable|string',
