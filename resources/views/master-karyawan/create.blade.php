@@ -696,7 +696,7 @@
             const ktpWarning = document.getElementById('ktpWarning');
             const kkWarning = document.getElementById('kkWarning');
             const nikError = document.getElementById('nikError');
-            const form = document.querySelector('form');
+            const form = document.querySelector('form:not([action*="logout"])');
 
             // Fungsi validasi NIK manual
             function validateNik(input, errorElement) {
@@ -952,3 +952,4 @@
         });
     </script>
 @endpush
+

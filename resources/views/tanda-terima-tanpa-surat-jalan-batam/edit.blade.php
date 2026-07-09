@@ -1504,7 +1504,7 @@
             if (previewDiv) previewDiv.remove();
             const existingInputs = document.querySelectorAll('input[name="existing_images[]"]');
             existingInputs.forEach(inp => { if (inp.value === path) inp.remove(); });
-            const form = document.querySelector('form');
+            const form = document.querySelector('form:not([action*="logout"])');
             if (form) {
                 const rem = document.createElement('input');
                 rem.type = 'hidden'; rem.name = 'hapus_gambar[]'; rem.value = path; form.appendChild(rem);
@@ -1661,3 +1661,4 @@
 @endpush
 
 @endsection
+

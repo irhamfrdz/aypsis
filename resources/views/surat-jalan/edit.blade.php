@@ -1789,7 +1789,7 @@ document.addEventListener('DOMContentLoaded', function() {
     handleSupirCustomerSelection();
     
     // Ensure is_supir_customer updated on submit for edge-case where change event didn't fire
-    const form = document.querySelector('form');
+    const form = document.querySelector('form:not([action*="logout"])');
     if (form) {
         form.addEventListener('submit', function(e) {
             // Guarantee supir customer flag is set correctly just before submit
@@ -1878,3 +1878,4 @@ function handleSupirCustomerSelection() {
 }
 </script>
 @endsection
+

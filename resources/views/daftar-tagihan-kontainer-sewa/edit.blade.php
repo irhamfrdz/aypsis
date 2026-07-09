@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Form submission handler
-    const form = document.querySelector('form');
+    const form = document.querySelector('form:not([action*="logout"])');
     const submitButton = form.querySelector('button[type="submit"]');
 
     console.log('Form found:', form);
@@ -480,3 +480,4 @@ button:hover, .btn:hover {
 </style>
 @endpush
 @endsection
+

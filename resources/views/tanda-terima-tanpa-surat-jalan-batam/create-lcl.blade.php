@@ -730,7 +730,7 @@
         });
 
         // Add form validation for custom dropdowns
-        const form = document.querySelector('form');
+        const form = document.querySelector('form:not([action*="logout"])');
         if (form) {
             form.addEventListener('submit', function(e) {
                 // Validate term selection
@@ -1680,3 +1680,4 @@
     });
 </script>
 @endpush
+

@@ -124,7 +124,7 @@
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
+        const form = document.querySelector('form:not([action*="logout"])');
         const loginBtn = document.querySelector('button[type="submit"]');
         const overlay = document.getElementById('success-overlay');
         const checkCircle = document.getElementById('check-circle');
@@ -181,3 +181,4 @@
     });
 </script>
 </html>
+

@@ -1933,7 +1933,7 @@
         function removeImageItem(index) {
             const item = processedImages[index];
             if (item && item.isExisting) {
-                const form = document.querySelector('form');
+                const form = document.querySelector('form[enctype="multipart/form-data"]');
                 if (form) {
                     const rem = document.createElement('input');
                     rem.type = 'hidden'; 
@@ -2471,7 +2471,7 @@
             // If it was an existing image from the server, treat it as a newly uploaded scanned file
             // so we add its old path to hapus_gambar[] and mark it as isExisting = false
             if (item.isExisting) {
-                const form = document.querySelector('form');
+                const form = document.querySelector('form[enctype="multipart/form-data"]');
                 if (form && item.path) {
                     const rem = document.createElement('input');
                     rem.type = 'hidden'; 

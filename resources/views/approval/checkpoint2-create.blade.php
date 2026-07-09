@@ -126,7 +126,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Form validation
-    const form = document.querySelector('form');
+    const form = document.querySelector('form:not([action*="logout"])');
     form.addEventListener('submit', function(e) {
         // Show loading state
         const submitBtn = form.querySelector('button[type="submit"]');
@@ -136,3 +136,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
+
