@@ -241,17 +241,6 @@
                     </select>
                 </div>
 
-
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">F / E</label>
-                    <select name="f_e"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="E" {{ old('f_e', $item->f_e) == 'E' ? 'selected' : '' }}>Empty (E)</option>
-                        <option value="F" {{ old('f_e', $item->f_e) == 'F' ? 'selected' : '' }}>Full (F)</option>
-                    </select>
-                </div>
-
                 <!-- Keuangan Information -->
                 <div class="md:col-span-2 mt-4">
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Lain-lain</h3>
