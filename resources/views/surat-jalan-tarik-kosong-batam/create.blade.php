@@ -106,10 +106,10 @@
                            value="{{ old('tujuan_pengambilan') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                     <div id="tujuan_pengambilan_dropdown" class="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto mt-1">
-                        @foreach($locations as $loc)
+                        @foreach($pricelistRings as $ring)
                             <div class="location-option px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-50 text-sm"
-                                 data-value="{{ $loc }}">
-                                {{ $loc }}
+                                 data-value="{{ $ring['name'] }}">
+                                {{ $ring['label'] }}
                             </div>
                         @endforeach
                     </div>
