@@ -187,6 +187,9 @@
             @endif
 
             <!-- Table -->
+            @php
+                $showKapalVoyage = empty($selectedKapal) || Str::contains(strtolower($selectedKapal), 'semua');
+            @endphp
             <div class="relative">
                 @if(request('mode') == 'surat_jalan')
                     <!-- Surat Jalan Bongkaran Table -->
@@ -199,6 +202,10 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Urut</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Surat Jalan</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                @if($showKapalVoyage)
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voyage</th>
+                                @endif
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Plat</th>
@@ -253,6 +260,10 @@
                                         <span class="font-semibold text-gray-900">{{ $sj->nomor_surat_jalan ?: '-' }}</span>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-' }}</td>
+                                    @if($showKapalVoyage)
+                                        <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->manifest->nama_kapal ?? '-' }}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->manifest->no_voyage ?? '-' }}</td>
+                                    @endif
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->term ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->supir ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->no_plat ?: '-' }}</td>
@@ -267,7 +278,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="px-4 py-12 text-center">
+                                    <td colspan="{{ $showKapalVoyage ? 11 : 9 }}" class="px-4 py-12 text-center">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -292,6 +303,10 @@
 
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Urut</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor BL</th>
+                                @if($showKapalVoyage)
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voyage</th>
+                                @endif
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Seal</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
@@ -375,6 +390,10 @@
                                     <td class="px-4 py-3 text-sm">
                                         <span class="font-semibold text-gray-900">{{ $manifest->nomor_bl ?: '-' }}</span>
                                     </td>
+                                    @if($showKapalVoyage)
+                                        <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->nama_kapal ?: '-' }}</td>
+                                        <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->no_voyage ?: '-' }}</td>
+                                    @endif
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->nomor_kontainer ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->no_seal ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->size_kontainer ?: '-' }}</td>
@@ -387,7 +406,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10" class="px-4 py-12 text-center">
+                                    <td colspan="{{ $showKapalVoyage ? 13 : 11 }}" class="px-4 py-12 text-center">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
