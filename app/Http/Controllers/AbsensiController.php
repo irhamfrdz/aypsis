@@ -52,8 +52,8 @@ class AbsensiController extends Controller
         $endDate = $endDateObj->toDateString();
 
         $query->whereBetween('waktu', [
-            $startDateObj->startOfDay(),
-            $endDateObj->endOfDay(),
+            $startDateObj->copy()->setTime(6, 0, 0),
+            $endDateObj->copy()->addDays(1)->setTime(5, 59, 59),
         ]);
 
         // Filter by Search (Employee Name, NIK)
@@ -88,7 +88,7 @@ class AbsensiController extends Controller
         $query->selectRaw('
             karyawan_id,
             nik,
-            DATE(waktu) as tanggal,
+            DATE(DATE_SUB(waktu, INTERVAL 6 HOUR)) as tanggal,
             MIN(CASE WHEN LOWER(tipe) = "masuk" THEN waktu ELSE NULL END) as waktu_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang,
             MIN(CASE WHEN LOWER(tipe) = "masuk" THEN mesin_id ELSE NULL END) as mesin_id_masuk,
@@ -108,7 +108,7 @@ class AbsensiController extends Controller
             MIN(CASE WHEN LOWER(tipe) = "masuk" THEN keterangan ELSE NULL END) as keterangan_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN keterangan ELSE NULL END) as keterangan_pulang
         ')
-        ->groupBy('karyawan_id', 'nik', \DB::raw('DATE(waktu)'));
+        ->groupBy('karyawan_id', 'nik', \DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'));
 
         // Filter by Type (Masuk/Pulang) on aggregate having clause
         if ($request->filled('tipe')) {
@@ -193,7 +193,10 @@ class AbsensiController extends Controller
         }
 
         // Fetch all attendance records for this month to group in PHP (avoiding N+1 queries)
-        $attendance = Absensi::whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+        $attendance = Absensi::whereBetween('waktu', [
+                $startDate->copy()->setTime(6, 0, 0),
+                $endDate->copy()->addDays(1)->setTime(5, 59, 59)
+            ])
             ->get()
             ->groupBy('karyawan_id');
 
@@ -204,7 +207,7 @@ class AbsensiController extends Controller
 
             // Group logs by Date to count unique active days
             $activeDays = $logs->groupBy(function ($log) {
-                return Carbon::parse($log->waktu)->toDateString();
+                return Carbon::parse($log->waktu)->subHours(6)->toDateString();
             })->count();
 
             // Calculate absent days (Tidak Hadir)

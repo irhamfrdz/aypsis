@@ -55,7 +55,10 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->get();
 
         // Fetch all attendance logs for the month
-        $allLogs = Absensi::whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+        $allLogs = Absensi::whereBetween('waktu', [
+                $startDate->copy()->setTime(6, 0, 0),
+                $endDate->copy()->addDays(1)->setTime(5, 59, 59)
+            ])
             ->get()
             ->groupBy('karyawan_id');
 
@@ -90,9 +93,9 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
             $logsByDay = $logs->groupBy(function ($item) {
                 // Parse date index safely
                 if ($item->waktu instanceof Carbon) {
-                    return $item->waktu->day;
+                    return $item->waktu->copy()->subHours(6)->day;
                 }
-                return Carbon::parse($item->waktu)->day;
+                return Carbon::parse($item->waktu)->subHours(6)->day;
             });
 
             $dailyStatus = [];
