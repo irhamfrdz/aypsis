@@ -15,7 +15,7 @@
 
         <!-- Summary Table -->
         <tr>
-            <th colspan="2" style="background-color: #f3f4f6; font-weight: bold; border: 1px solid #000000;">RANGKUMAN STOCK & PEMAKAIAN</th>
+            <th colspan="2" style="background-color: #f3f4f6; font-weight: bold; border: 1px solid #000000;">RANGKUMAN STOCK &amp; PEMAKAIAN</th>
         </tr>
         <tr>
             <td style="background-color: #f3f4f6; font-weight: bold; border: 1px solid #000000;">Kategori / Lokasi</td>
