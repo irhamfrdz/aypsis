@@ -6062,6 +6062,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('stock-ban', [\App\Http\Controllers\StockBanController::class, 'index'])
         ->name('stock-ban.index')
         ->middleware('can:stock-ban-view');
+        
+    Route::get('stock-ban/export-opname', [\App\Http\Controllers\StockBanController::class, 'exportOpname'])
+        ->name('stock-ban.export-opname')
+        ->middleware('can:stock-ban-view');
     Route::get('stock-ban/create', [\App\Http\Controllers\StockBanController::class, 'create'])
         ->name('stock-ban.create')
         ->middleware('can:stock-ban-create');
