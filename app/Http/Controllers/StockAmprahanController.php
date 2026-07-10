@@ -637,9 +637,6 @@ class StockAmprahanController extends Controller
     public function bulkUsage(Request $request)
     {
         $request->validate([
-            'bulk_usage_penerima_id' => 'nullable|exists:karyawans,id',
-            'bulk_usage_tanggal' => 'nullable|date',
-            'bulk_usage_keterangan' => 'nullable|string',
             'bulk_usage_data' => 'required|string',
         ]);
 
@@ -703,7 +700,7 @@ class StockAmprahanController extends Controller
                 }
 
                 // Resolving Penerima
-                $penerimaId = $request->bulk_usage_penerima_id;
+                $penerimaId = null;
                 if (! empty($penerimaName)) {
                     $karyawanMatch = $karyawans->first(function ($k) use ($penerimaName) {
                         return strtolower(trim($k->nama_lengkap)) === strtolower(trim($penerimaName));
@@ -715,15 +712,14 @@ class StockAmprahanController extends Controller
 
                         continue;
                     }
-                }
-                if (empty($penerimaId)) {
-                    $errors[] = "Baris {$lineNum}: Penerima tidak boleh kosong (isi di kolom ke-3 atau di form atas)";
+                } else {
+                    $errors[] = "Baris {$lineNum}: Kolom Penerima (kolom ke-3) wajib diisi";
 
                     continue;
                 }
 
                 // Resolving Tanggal
-                $tanggalPengambilan = $request->bulk_usage_tanggal ?: date('Y-m-d');
+                $tanggalPengambilan = null;
                 if (! empty($tanggalCol)) {
                     if (strtotime($tanggalCol)) {
                         $tanggalPengambilan = date('Y-m-d', strtotime($tanggalCol));
@@ -732,12 +728,20 @@ class StockAmprahanController extends Controller
 
                         continue;
                     }
+                } else {
+                    $errors[] = "Baris {$lineNum}: Kolom Tanggal (kolom ke-4) wajib diisi";
+
+                    continue;
                 }
 
                 // Resolving Keterangan
-                $keteranganUmum = $request->bulk_usage_keterangan ?: '';
+                $keteranganUmum = '';
                 if (! empty($keteranganCol)) {
                     $keteranganUmum = trim($keteranganCol);
+                } else {
+                    $errors[] = "Baris {$lineNum}: Kolom Keterangan (kolom ke-5) wajib diisi";
+
+                    continue;
                 }
 
                 // Resolving Kendaraan
