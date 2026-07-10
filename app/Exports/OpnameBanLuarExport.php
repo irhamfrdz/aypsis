@@ -54,10 +54,7 @@ class OpnameBanLuarExport implements FromCollection, WithHeadings, WithMapping, 
                 'Kondisi',
                 'Lokasi',
                 'Status Sistem',
-                'Tanggal Masuk',
-                'Fisik Ada? (Y/T)',
-                'Kondisi Fisik Aktual',
-                'Keterangan / Catatan Opname'
+                'Tanggal Masuk'
             ]
         ];
     }
@@ -73,18 +70,15 @@ class OpnameBanLuarExport implements FromCollection, WithHeadings, WithMapping, 
             strtoupper($ban->kondisi ?? '-'),
             $ban->lokasi ?? '-',
             $ban->status ?? '-',
-            $ban->tanggal_masuk ? $ban->tanggal_masuk->format('d/m/Y') : '-',
-            '', // Fisik Ada?
-            '', // Kondisi Aktual
-            '', // Keterangan Opname
+            $ban->tanggal_masuk ? $ban->tanggal_masuk->format('d/m/Y') : '-'
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Merge cells for titles
-        $sheet->mergeCells('A1:L1');
-        $sheet->mergeCells('A2:L2');
+        $sheet->mergeCells('A1:I1');
+        $sheet->mergeCells('A2:I2');
 
         // Style the title
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
@@ -94,7 +88,7 @@ class OpnameBanLuarExport implements FromCollection, WithHeadings, WithMapping, 
         $sheet->getStyle('A2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         // Style the headers (row 4)
-        $sheet->getStyle('A4:L4')->applyFromArray([
+        $sheet->getStyle('A4:I4')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
@@ -110,7 +104,7 @@ class OpnameBanLuarExport implements FromCollection, WithHeadings, WithMapping, 
         // Style the rest of the table borders
         $highestRow = $sheet->getHighestRow();
         if ($highestRow > 4) {
-            $sheet->getStyle('A5:L' . $highestRow)->applyFromArray([
+            $sheet->getStyle('A5:I' . $highestRow)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
