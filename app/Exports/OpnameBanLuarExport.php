@@ -35,6 +35,10 @@ class OpnameBanLuarExport implements FromView, ShouldAutoSize, WithStyles, WithT
             ->whereIn('kondisi', ['asli', 'kanisir'])
             ->whereNotNull('tanggal_masuk')
             ->where('tanggal_masuk', '<=', $endDate)
+            ->where(function($query) use ($endDate) {
+                $query->whereNull('tanggal_kembali')
+                      ->orWhere('tanggal_kembali', '<=', $endDate);
+            })
             ->orderBy('lokasi')
             ->orderBy('kondisi')
             ->get();
