@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use DB;
+use Carbon\Carbon;
 
 class OpnameBanLuarExport implements FromView, ShouldAutoSize, WithStyles, WithTitle
 {
@@ -24,21 +25,51 @@ class OpnameBanLuarExport implements FromView, ShouldAutoSize, WithStyles, WithT
 
     public function view(): View
     {
+        $startDate = Carbon::createFromDate($this->tahun, $this->bulan, 1)->startOfMonth()->toDateString();
+        $endDate = Carbon::createFromDate($this->tahun, $this->bulan, 1)->endOfMonth()->toDateString();
+
+        // Snapshot Historis: Ban ada di gudang pada akhir bulan JIKA:
+        // 1. Masuk pada atau sebelum akhir bulan
+        // 2. Belum digunakan/dikirim/keluar, ATAU baru digunakan/dikirim/keluar SETELAH akhir bulan
         $stockBans = StockBan::with(['namaStockBan'])
-            ->whereIn('status', ['Stok', 'Rusak'])
+            ->whereNotNull('tanggal_masuk')
+            ->where('tanggal_masuk', '<=', $endDate)
+            ->where(function($query) use ($endDate) {
+                $query->whereNull('tanggal_keluar')
+                      ->orWhere('tanggal_keluar', '>', $endDate);
+            })
+            ->where(function($query) use ($endDate) {
+                $query->whereNull('tanggal_digunakan')
+                      ->orWhere('tanggal_digunakan', '>', $endDate);
+            })
+            ->where(function($query) use ($endDate) {
+                $query->whereNull('tanggal_kirim')
+                      ->orWhere('tanggal_kirim', '>', $endDate);
+            })
+            ->where(function($query) use ($endDate) {
+                $query->whereNull('tanggal_jual')
+                      ->orWhere('tanggal_jual', '>', $endDate);
+            })
             ->orderBy('lokasi')
             ->orderBy('kondisi')
             ->get();
             
-        $stokByLokasi = StockBan::whereIn('status', ['Stok', 'Rusak'])
-            ->select('lokasi', DB::raw('count(*) as total'))
-            ->groupBy('lokasi')
-            ->pluck('total', 'lokasi')
-            ->toArray();
+        // Rekap Stok dari koleksi snapshot di atas
+        $stokByLokasi = [];
+        foreach ($stockBans as $ban) {
+            $lokasi = $ban->lokasi ?: 'Tidak Diketahui';
+            if (!isset($stokByLokasi[$lokasi])) {
+                $stokByLokasi[$lokasi] = 0;
+            }
+            $stokByLokasi[$lokasi]++;
+        }
             
-        $terpakai = StockBan::where('status', 'Terpakai')->count();
-        $keBatam = StockBan::where('status', 'Dikirim Ke Batam')->count();
-        $kePinang = StockBan::where('status', 'Dikirim Ke Tanjung Pinang')->count();
+        // Yang terpakai dan dikirim SELAMA BULAN TERSEBUT
+        $terpakai = StockBan::whereBetween('tanggal_digunakan', [$startDate, $endDate])->count();
+        $keBatam = StockBan::whereBetween('tanggal_kirim', [$startDate, $endDate])
+                           ->where('status', 'Dikirim Ke Batam')->count();
+        $kePinang = StockBan::whereBetween('tanggal_kirim', [$startDate, $endDate])
+                            ->where('status', 'Dikirim Ke Tanjung Pinang')->count();
 
         return view('exports.opname-ban-luar', [
             'stockBans' => $stockBans,
