@@ -34,6 +34,7 @@ class OpnameBanLuarExport implements FromView, ShouldAutoSize, WithStyles, WithT
         $stockBans = StockBan::with(['namaStockBan'])
             ->whereNotNull('tanggal_masuk')
             ->where('tanggal_masuk', '<=', $endDate)
+            ->whereIn('kondisi', ['asli', 'kanisir'])
             ->where(function($query) use ($endDate) {
                 $query->whereNull('tanggal_keluar')
                       ->orWhere('tanggal_keluar', '>', $endDate);
