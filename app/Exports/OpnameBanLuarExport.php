@@ -28,29 +28,13 @@ class OpnameBanLuarExport implements FromView, ShouldAutoSize, WithStyles, WithT
         $startDate = Carbon::createFromDate($this->tahun, $this->bulan, 1)->startOfMonth()->toDateString();
         $endDate = Carbon::createFromDate($this->tahun, $this->bulan, 1)->endOfMonth()->toDateString();
 
-        // Snapshot Historis: Ban ada di gudang pada akhir bulan JIKA:
-        // 1. Masuk pada atau sebelum akhir bulan
-        // 2. Belum digunakan/dikirim/keluar, ATAU baru digunakan/dikirim/keluar SETELAH akhir bulan
+        // Opname hanya untuk ban yang STATUS-nya 'Stok', KONDISI-nya 'asli'/'kanisir',
+        // dan MASUK pada atau sebelum akhir bulan yang dipilih.
         $stockBans = StockBan::with(['namaStockBan'])
+            ->where('status', 'Stok')
+            ->whereIn('kondisi', ['asli', 'kanisir'])
             ->whereNotNull('tanggal_masuk')
             ->where('tanggal_masuk', '<=', $endDate)
-            ->whereIn('kondisi', ['asli', 'kanisir'])
-            ->where(function($query) use ($endDate) {
-                $query->whereNull('tanggal_keluar')
-                      ->orWhere('tanggal_keluar', '>', $endDate);
-            })
-            ->where(function($query) use ($endDate) {
-                $query->whereNull('tanggal_digunakan')
-                      ->orWhere('tanggal_digunakan', '>', $endDate);
-            })
-            ->where(function($query) use ($endDate) {
-                $query->whereNull('tanggal_kirim')
-                      ->orWhere('tanggal_kirim', '>', $endDate);
-            })
-            ->where(function($query) use ($endDate) {
-                $query->whereNull('tanggal_jual')
-                      ->orWhere('tanggal_jual', '>', $endDate);
-            })
             ->orderBy('lokasi')
             ->orderBy('kondisi')
             ->get();
