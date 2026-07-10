@@ -420,18 +420,6 @@
                         <p class="text-xs text-red-600 mt-1">Ready</p>
                     </div>
 
-                    <!-- Rusak Sudah Terjual -->
-                    @php
-                        $rusakTerjual = $stockBans->whereIn('kondisi', ['afkir', 'rusak'])->where('status', 'Dijual')->count();
-                    @endphp
-                    <div id="card-rusak-terjual" onclick="setCardFilter('rusak-terjual', false)" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-medium text-orange-600 uppercase">Rusak Terjual</span>
-                            <i class="fas fa-hand-holding-usd text-orange-400 text-lg"></i>
-                        </div>
-                        <div class="text-2xl font-bold text-orange-900">{{ $rusakTerjual }}</div>
-                        <p class="text-xs text-orange-600 mt-1">Laku</p>
-                    </div>
 
                     <!-- Ban Hilang -->
                     @php
@@ -1006,18 +994,6 @@
                         <p class="text-xs text-red-600 mt-1">Ready</p>
                     </div>
 
-                    <!-- Rusak Sudah Terjual -->
-                    @php
-                        $rusakTerjualBtm = $banBatamList->whereIn('kondisi', ['afkir', 'rusak'])->where('status', 'Dijual')->count();
-                    @endphp
-                    <div id="card-batam-rusak-terjual" onclick="setCardFilter('rusak-terjual', true)" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-medium text-orange-600 uppercase">Rusak Terjual</span>
-                            <i class="fas fa-hand-holding-usd text-orange-400 text-lg"></i>
-                        </div>
-                        <div class="text-2xl font-bold text-orange-900">{{ $rusakTerjualBtm }}</div>
-                        <p class="text-xs text-orange-600 mt-1">Laku</p>
-                    </div>
 
                     <!-- Ban Hilang Batam -->
                     @php
@@ -2787,7 +2763,6 @@
                 'garasi-batam': 'ring-orange-400',
                 'dikirim-tp': 'ring-teal-400',
                 'rusak-stok': 'ring-red-400',
-                'rusak-terjual': 'ring-orange-400',
                 'hilang': 'ring-gray-400'
             };
             activeCard.classList.add(colorMap[filterType]);
@@ -3130,7 +3105,6 @@
                     else if (currentCardFilter === 'dikembalikan') filterMatch = status === 'dikembalikan';
                     else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
                     else if (currentCardFilter === 'rusak-stok') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
-                    else if (currentCardFilter === 'rusak-terjual') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && status === 'dijual';
                     else if (currentCardFilter === 'hilang') filterMatch = status === 'hilang';
                 }
 
@@ -3183,7 +3157,6 @@
                     else if (currentCardFilter === 'dikembalikan') filterMatch = status === 'dikembalikan';
                     else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
                     else if (currentCardFilter === 'rusak-stok') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
-                    else if (currentCardFilter === 'rusak-terjual') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && status === 'dijual';
                     else if (currentCardFilter === 'hilang') filterMatch = status === 'hilang';
                 }
 
