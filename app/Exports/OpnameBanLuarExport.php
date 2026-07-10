@@ -32,6 +32,7 @@ class OpnameBanLuarExport implements FromView, ShouldAutoSize, WithStyles, WithT
         // dan MASUK pada atau sebelum akhir bulan yang dipilih.
         $stockBans = StockBan::with(['namaStockBan'])
             ->where('status', 'Stok')
+            ->where('lokasi', 'like', '%Ruko 10%')
             ->whereIn('kondisi', ['asli', 'kanisir'])
             ->whereNotNull('tanggal_masuk')
             ->where('tanggal_masuk', '<=', $endDate)
@@ -43,31 +44,16 @@ class OpnameBanLuarExport implements FromView, ShouldAutoSize, WithStyles, WithT
             ->orderBy('kondisi')
             ->get();
             
-        // Rekap Stok dari koleksi snapshot di atas
-        $stokByLokasi = [];
-        foreach ($stockBans as $ban) {
-            $lokasi = $ban->lokasi ?: 'Tidak Diketahui';
-            if (!isset($stokByLokasi[$lokasi])) {
-                $stokByLokasi[$lokasi] = 0;
-            }
-            $stokByLokasi[$lokasi]++;
-        }
-            
-        // Yang terpakai dan dikirim SELAMA BULAN TERSEBUT
-        $terpakai = StockBan::whereBetween('tanggal_digunakan', [$startDate, $endDate])->count();
-        $keBatam = StockBan::whereBetween('tanggal_kirim', [$startDate, $endDate])
-                           ->where('status', 'Dikirim Ke Batam')->count();
-        $kePinang = StockBan::whereBetween('tanggal_kirim', [$startDate, $endDate])
-                            ->where('status', 'Dikirim Ke Tanjung Pinang')->count();
+        // Rangkuman hanya menghitung Asli dan Kanisir
+        $totalAsli = $stockBans->where('kondisi', 'asli')->count();
+        $totalKanisir = $stockBans->where('kondisi', 'kanisir')->count();
 
         return view('exports.opname-ban-luar', [
             'stockBans' => $stockBans,
             'bulan' => $this->bulan,
             'tahun' => $this->tahun,
-            'stokByLokasi' => $stokByLokasi,
-            'terpakai' => $terpakai,
-            'keBatam' => $keBatam,
-            'kePinang' => $kePinang,
+            'totalAsli' => $totalAsli,
+            'totalKanisir' => $totalKanisir,
         ]);
     }
 

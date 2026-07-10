@@ -15,31 +15,20 @@
 
         <!-- Summary Table -->
         <tr>
-            <th colspan="2" style="background-color: #f3f4f6; font-weight: bold; border: 1px solid #000000;">RANGKUMAN STOCK &amp; PEMAKAIAN</th>
+            <th colspan="2" style="background-color: #f3f4f6; font-weight: bold; border: 1px solid #000000;">RANGKUMAN STOCK</th>
         </tr>
         <tr>
-            <td style="background-color: #f3f4f6; font-weight: bold; border: 1px solid #000000;">Kategori / Lokasi</td>
+            <td style="background-color: #f3f4f6; font-weight: bold; border: 1px solid #000000;">Kategori / Kondisi</td>
             <td style="background-color: #f3f4f6; font-weight: bold; border: 1px solid #000000; text-align: center;">Jumlah (Unit)</td>
         </tr>
         
-        @foreach($stokByLokasi as $lokasi => $total)
         <tr>
-            <td style="border: 1px solid #000000;">Stok di {{ $lokasi ?: 'Gudang Utama' }}</td>
-            <td style="border: 1px solid #000000; text-align: center;">{{ $total }}</td>
-        </tr>
-        @endforeach
-        
-        <tr>
-            <td style="border: 1px solid #000000;">Total Terpakai</td>
-            <td style="border: 1px solid #000000; text-align: center;">{{ $terpakai }}</td>
+            <td style="border: 1px solid #000000;">Total Ban Asli</td>
+            <td style="border: 1px solid #000000; text-align: center;">{{ $totalAsli }}</td>
         </tr>
         <tr>
-            <td style="border: 1px solid #000000;">Dikirim Ke Batam</td>
-            <td style="border: 1px solid #000000; text-align: center;">{{ $keBatam }}</td>
-        </tr>
-        <tr>
-            <td style="border: 1px solid #000000;">Dikirim Ke Tj. Pinang</td>
-            <td style="border: 1px solid #000000; text-align: center;">{{ $kePinang }}</td>
+            <td style="border: 1px solid #000000;">Total Ban Kanisir</td>
+            <td style="border: 1px solid #000000; text-align: center;">{{ $totalKanisir }}</td>
         </tr>
         
         <!-- Empty Row -->
