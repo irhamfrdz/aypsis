@@ -156,6 +156,9 @@
                             @if($gaji->biaya_bensin > 0)
                                 <div class="text-[10px] text-red-500 font-semibold mt-0.5">- Bensin: Rp {{ number_format($gaji->biaya_bensin, 0, ',', '.') }}</div>
                             @endif
+                            @if($gaji->uang_malam_libur > 0)
+                                <div class="text-[10px] text-green-500 font-semibold mt-0.5">+ Malam/Libur: Rp {{ number_format($gaji->uang_malam_libur, 0, ',', '.') }}</div>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if ($gaji->status_pembayaran === 'PAID')

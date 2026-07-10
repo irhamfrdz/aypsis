@@ -92,10 +92,16 @@
             RINCIAN GAJI
         </h4>
         <table class="w-full text-sm">
-            <tr class="hover:bg-gray-50">
-                <td class="py-2.5 text-gray-700">Total Gaji Pokok (Berdasarkan Pekerjaan Terpilih)</td>
-                <td class="py-2.5 text-right font-semibold text-gray-900">Rp {{ number_format($gaji->gaji_pokok, 0, ',', '.') }}</td>
+            <tr class="hover:bg-gray-50 text-indigo-800">
+                <td class="py-2.5">Total Gaji Pokok (Berdasarkan Surat Jalan)</td>
+                <td class="py-2.5 text-right font-semibold">Rp {{ number_format($gaji->gaji_pokok, 0, ',', '.') }}</td>
             </tr>
+            @if($gaji->uang_malam_libur > 0)
+            <tr class="hover:bg-gray-50 text-indigo-800">
+                <td class="py-2.5">Uang Berangkat Malam/Libur</td>
+                <td class="py-2.5 text-right font-semibold">Rp {{ number_format($gaji->uang_malam_libur, 0, ',', '.') }}</td>
+            </tr>
+            @endif
             <tr class="hover:bg-gray-50 text-red-600">
                 <td class="py-2.5">Potongan Biaya Bensin</td>
                 <td class="py-2.5 text-right font-semibold">Rp {{ number_format($gaji->biaya_bensin ?? 0, 0, ',', '.') }}</td>
