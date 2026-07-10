@@ -510,21 +510,21 @@
                             @csrf
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Penerima <span class="text-red-500">*</span></label>
-                                    <select name="bulk_usage_penerima_id" required class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 searchable-select">
-                                        <option value="">Pilih Karyawan...</option>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Penerima</label>
+                                    <select name="bulk_usage_penerima_id" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 searchable-select">
+                                        <option value="">Pilih Karyawan... (Opsional)</option>
                                         @foreach(\App\Models\Karyawan::orderBy('nama_lengkap')->get() as $k)
                                             <option value="{{ $k->id }}">{{ $k->nama_lengkap }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Tanggal Pengambilan <span class="text-red-500">*</span></label>
-                                    <input type="date" name="bulk_usage_tanggal" value="{{ date('Y-m-d') }}" required class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Tanggal Pengambilan</label>
+                                    <input type="date" name="bulk_usage_tanggal" value="{{ date('Y-m-d') }}" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Keterangan Umum <span class="text-red-500">*</span></label>
-                                    <input type="text" name="bulk_usage_keterangan" required placeholder="Contoh: Pemakaian bulanan" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Keterangan Umum</label>
+                                    <input type="text" name="bulk_usage_keterangan" placeholder="Contoh: Pemakaian bulanan" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
                                 </div>
                             </div>
 
@@ -532,15 +532,15 @@
                                 <i class="fas fa-exclamation-circle mt-0.5"></i>
                                 <div>
                                     <strong>Format Paste (Bisa langsung paste dari Excel):</strong><br>
-                                    <span class="font-mono text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-orange-200">ID Stock (atau Nama Barang) ; Jumlah Ambil</span><br>
-                                    <em class="text-xs opacity-75 mt-1 block">Pastikan ID atau nama barang persis sama dengan yang ada di sistem, dan stock mencukupi.</em>
+                                    <span class="font-mono text-[10px] sm:text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-orange-200 overflow-x-auto whitespace-nowrap max-w-full">ID/Nama Barang ; Jumlah Ambil ; Nama Penerima ; Tanggal (YYYY-MM-DD) ; Keterangan ; No.Pol Kendaraan ; No.Pol Truck ; No.KIR/Kode Buntut ; Nama Kapal ; Kode Alat Berat</span><br>
+                                    <em class="text-xs opacity-75 mt-1 block">Hanya ID/Nama dan Jumlah yang wajib. Kolom ke-3 dts bersifat opsional (jika kosong, akan memakai inputan di atas).</em>
                                 </div>
                             </div>
 
                             <label class="block text-sm font-bold text-gray-700 mb-2">Paste Data Di Sini <span class="text-red-500">*</span></label>
                             <textarea name="bulk_usage_data" id="bulk_data_usage" rows="8" required
-                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono whitespace-pre focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                placeholder="105 ; 2&#10;Oli Mesin SAE 40 ; 1"></textarea>
+                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono whitespace-pre focus:ring-2 focus:ring-orange-500 focus:border-orange-500 overflow-x-auto"
+                                placeholder="105 ; 2 ; Budi Santoso ; 2026-07-10 ; Ganti Oli ; BP 1234 XX ; ; ; ; &#10;Oli Mesin SAE 40 ; 1 ; ; ; ; ; ; ; ; Alat-001"></textarea>
 
                             <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
                                 <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
