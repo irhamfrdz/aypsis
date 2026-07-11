@@ -189,8 +189,8 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
     {
         $rows = [];
         
-        // Row 1: Empty
-        $rows[] = [];
+        // Row 1: Empty (use [''] instead of [] to prevent Laravel Excel from skipping it)
+        $rows[] = [''];
         
         // Row 2: Period Text (Centered over dates, will start at Column C index 2)
         $periodRow = ['', ''];
@@ -200,8 +200,8 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         }
         $rows[] = $periodRow;
         
-        // Row 3: Empty
-        $rows[] = [];
+        // Row 3: Empty (use [''] instead of [] to prevent Laravel Excel from skipping it)
+        $rows[] = [''];
         
         // Row 4: Header 1
         $header1 = ['Nama', 'No. ID'];
@@ -238,7 +238,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $rows[] = $row;
         }
         
-        $rows[] = [];
+        $rows[] = [''];
         $rows[] = ['Keterangan: Normal="", Absent="A", Format Jam="Masuk - Pulang"'];
         
         return $rows;
