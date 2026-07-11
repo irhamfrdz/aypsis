@@ -86,4 +86,31 @@ class AbsensiSyncController extends Controller
             'synced_count' => $syncedCount
         ]);
     }
+
+    /**
+     * Endpoint untuk menarik data absensi terbaru dari server online ke lokal (Jembatan)
+     */
+    public function pull(Request $request)
+    {
+        $secret = config('app.sync_secret', 'aypsis-sync-12345');
+        if ($request->header('X-Sync-Secret') !== $secret && $request->query('secret') !== $secret) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $date = $request->query('date', Carbon::today()->toDateString());
+        $nik = $request->query('nik');
+
+        $query = Absensi::whereDate('waktu', $date);
+        
+        if ($nik) {
+            $query->where('nik', $nik);
+        }
+
+        $logs = $query->orderBy('waktu', 'asc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $logs
+        ]);
+    }
 }

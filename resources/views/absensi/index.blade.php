@@ -121,6 +121,8 @@
                             <th class="px-6 py-3 text-left">Pekerjaan</th>
                             <th class="px-6 py-3 text-left">Tanggal</th>
                             <th class="px-6 py-3 text-center text-green-700 bg-green-50/50">Jam Masuk</th>
+                            <th class="px-6 py-3 text-center text-orange-700 bg-orange-50/50">Istirahat Keluar</th>
+                            <th class="px-6 py-3 text-center text-orange-700 bg-orange-50/50">Istirahat Masuk</th>
                             <th class="px-6 py-3 text-center text-red-700 bg-red-50/50">Jam Pulang</th>
                             <th class="px-6 py-3 text-left">Perangkat (IN / OUT)</th>
                             <th class="px-6 py-3 text-left">Detail Lokasi</th>
@@ -161,6 +163,12 @@
                                     </form>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-orange-600 bg-orange-50/20">
+                                    {{ $absensi->waktu_istirahat_keluar ? Carbon\Carbon::parse($absensi->waktu_istirahat_keluar)->format('H:i:s') : '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-orange-600 bg-orange-50/20">
+                                    {{ $absensi->waktu_istirahat_masuk ? Carbon\Carbon::parse($absensi->waktu_istirahat_masuk)->format('H:i:s') : '-' }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-red-600 bg-red-50/20 group relative">
                                     {{ $absensi->waktu_pulang ? Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i:s') : '-' }}
                                     @if($absensi->waktu_pulang)
@@ -191,14 +199,14 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         @if($absensi->foto_masuk)
-                                            <a href="http://localhost:5000{{ $absensi->foto_masuk }}" target="_blank" class="relative inline-block group" title="Foto Masuk">
-                                                <img src="http://localhost:5000{{ $absensi->foto_masuk }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
+                                            <a href="{{ request()->getScheme() }}://{{ request()->getHost() }}:8084{{ $absensi->foto_masuk }}" target="_blank" class="relative inline-block group" title="Foto Masuk">
+                                                <img src="{{ request()->getScheme() }}://{{ request()->getHost() }}:8084{{ $absensi->foto_masuk }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
                                                 <span class="absolute -bottom-1 -right-1 text-[8px] bg-green-600 text-white font-bold px-0.5 rounded shadow">IN</span>
                                             </a>
                                         @endif
                                         @if($absensi->foto_pulang)
-                                            <a href="http://localhost:5000{{ $absensi->foto_pulang }}" target="_blank" class="relative inline-block group" title="Foto Pulang">
-                                                <img src="http://localhost:5000{{ $absensi->foto_pulang }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
+                                            <a href="{{ request()->getScheme() }}://{{ request()->getHost() }}:8084{{ $absensi->foto_pulang }}" target="_blank" class="relative inline-block group" title="Foto Pulang">
+                                                <img src="{{ request()->getScheme() }}://{{ request()->getHost() }}:8084{{ $absensi->foto_pulang }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
                                                 <span class="absolute -bottom-1 -right-1 text-[8px] bg-red-600 text-white font-bold px-0.5 rounded shadow">OUT</span>
                                             </a>
                                         @endif

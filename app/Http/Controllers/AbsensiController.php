@@ -91,6 +91,8 @@ class AbsensiController extends Controller
             DATE(waktu) as tanggal,
             MIN(CASE WHEN LOWER(tipe) = "masuk" THEN waktu ELSE NULL END) as waktu_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang,
+            MAX(CASE WHEN LOWER(tipe) = "istirahat_keluar" THEN waktu ELSE NULL END) as waktu_istirahat_keluar,
+            MAX(CASE WHEN LOWER(tipe) = "istirahat_masuk" THEN waktu ELSE NULL END) as waktu_istirahat_masuk,
             MIN(CASE WHEN LOWER(tipe) = "masuk" THEN mesin_id ELSE NULL END) as mesin_id_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN mesin_id ELSE NULL END) as mesin_id_pulang,
             MIN(CASE WHEN LOWER(tipe) = "masuk" THEN device ELSE NULL END) as device_masuk,

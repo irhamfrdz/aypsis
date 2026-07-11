@@ -12,6 +12,9 @@ Route::post('/login', [ApiAuthController::class, 'login']);
 // Endpoint Push Absensi dari Mesin/Lokal
 Route::post('/absensi/push', [AbsensiSyncController::class, 'push']);
 
+// Endpoint Pull Absensi dari Server Online ke Lokal (Jembatan)
+Route::get('/absensi/pull', [AbsensiSyncController::class, 'pull']);
+
 // Protected routes (Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [ApiAuthController::class, 'logout']);

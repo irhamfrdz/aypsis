@@ -112,8 +112,8 @@ class SyncAttendanceLocal extends Command
             }
 
             // Method 2: Fallback to reading the local Solution desktop database file (.mdb)
-            if (!$syncedDirectly && $hasMdb) {
-                $this->info('Menggunakan metode fallback database lokal (.mdb)...');
+            if ($hasMdb) {
+                $this->info('Membaca database lokal (.mdb) untuk memastikan tidak ada data yang terlewat...');
                 try {
                     $conn = new \PDO("odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=$mdbPath;Uid=;Pwd=;");
                     $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);

@@ -59,6 +59,12 @@ class Kernel extends ConsoleKernel
             ->dailyAt('04:00')
             ->appendOutputTo(storage_path('logs/duplicate-validation.log'));
 
+        // Auto-sync attendance from fingerprint machines every 5 minutes
+        $schedule->command('attendance:sync-local')
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/attendance-sync.log'));
+
         // Recalculate grand_total for all tagihan every hour
         $schedule->command('tagihan:recalculate-grand-total --force')
             ->hourly()
