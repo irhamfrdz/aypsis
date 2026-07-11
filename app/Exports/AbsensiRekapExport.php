@@ -5,13 +5,17 @@ namespace App\Exports;
 use App\Models\Absensi;
 use App\Models\Karyawan;
 use Carbon\Carbon;
-use Illuminate\Contracts\View\View;
-use Maatwebsite\Excel\Concerns\FromView;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
+use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 
-class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
+class AbsensiRekapExport extends StringValueBinder implements FromArray, WithEvents, WithCustomValueBinder
 {
     protected $startDate;
     protected $endDate;
@@ -19,6 +23,11 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
     protected $pekerjaan;
     protected $divisi;
     protected $cabang;
+
+    protected $totalDays;
+    protected $dayHeaders;
+    protected $rekapData;
+    protected $periodText;
 
     public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null)
     {
@@ -28,19 +37,26 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
         $this->pekerjaan = $pekerjaan;
         $this->divisi = $divisi;
         $this->cabang = $cabang;
+
+        $this->prepareData();
     }
 
-    public function view(): View
+    protected function prepareData()
     {
-        // Prevent execution timeout
+        // Prevent execution timeout and memory exhaustion for massive exports
         set_time_limit(900);
+        ini_set('memory_limit', '-1');
 
         $startDate = Carbon::parse($this->startDate)->startOfDay();
         $endDate = Carbon::parse($this->endDate)->endOfDay();
         
-        $totalDays = $startDate->diffInDays($endDate) + 1;
+        $this->totalDays = $startDate->diffInDays($endDate) + 1;
 
-        // Get all employees
+        $this->periodText = $startDate->translatedFormat('d M Y') . ' - ' . $endDate->translatedFormat('d M Y');
+        if ($startDate->isSameMonth($endDate) && $startDate->isSameYear($endDate)) {
+            $this->periodText = $startDate->translatedFormat('d') . ' - ' . $endDate->translatedFormat('d M Y');
+        }
+
         $karyawansQuery = Karyawan::query();
         if (!empty($this->search)) {
             $search = $this->search;
@@ -60,7 +76,6 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
         }
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->get();
 
-        // Fetch all attendance logs for the date range efficiently using SQL grouping
         $allLogs = Absensi::whereBetween('waktu', [
                 $startDate->copy()->setTime(6, 0, 0),
                 $endDate->copy()->addDays(1)->setTime(5, 59, 59)
@@ -75,7 +90,7 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
             ->get()
             ->groupBy('karyawan_id');
 
-        $rekapData = [];
+        $this->rekapData = [];
         
         $dayMap = [
             'Sunday' => 'Min',
@@ -89,9 +104,9 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
         
         $daysData = [];
         $normalDays = 0;
-        $dayHeaders = [];
+        $this->dayHeaders = [];
         
-        for ($i = 0; $i < $totalDays; $i++) {
+        for ($i = 0; $i < $this->totalDays; $i++) {
             $date = $startDate->copy()->addDays($i);
             $dateString = $date->toDateString();
             $isWeekend = $date->isWeekend();
@@ -100,20 +115,20 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
             }
             $daysData[$dateString] = [
                 'isWeekend' => $isWeekend,
+                'dateString' => $dateString,
             ];
-            $dayHeaders[$dateString] = [
+            $this->dayHeaders[$dateString] = [
                 'date' => $date->format('d/m'),
-                'dayName' => $dayMap[$date->format('l')]
+                'dayName' => $dayMap[$date->format('l')],
+                'isWeekend' => $isWeekend
             ];
         }
 
-        // Performance Optimization: Cache base timestamps to avoid string conversion overhead
         $limitInTime = strtotime('08:00:00');
         $limitOutTime = strtotime('17:00:00');
 
         foreach ($karyawans as $karyawan) {
             $logs = $allLogs->get($karyawan->id, collect());
-            // Since SQL grouped it by tanggal, we can simply key by tanggal
             $logsByDay = $logs->keyBy('tanggal');
 
             $dailyStatus = [];
@@ -134,11 +149,9 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
                 } else {
                     $riilDays++;
                     
-                    // Directly extract 'H:i' from 'Y-m-d H:i:s' string avoiding Carbon instantiation
                     $inTimeStr = $log->waktu_masuk ? substr($log->waktu_masuk, 11, 5) : '-';
                     $outTimeStr = $log->waktu_pulang ? substr($log->waktu_pulang, 11, 5) : '-';
 
-                    // Calculate lateness
                     if ($inTimeStr !== '-' && $inTimeStr > '08:00') {
                         $diff = strtotime($inTimeStr.':00') - $limitInTime;
                         if ($diff > 0) {
@@ -146,7 +159,6 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
                         }
                     }
 
-                    // Calculate early departure
                     if ($outTimeStr !== '-' && $outTimeStr < '17:00') {
                         $diff = $limitOutTime - strtotime($outTimeStr.':00');
                         if ($diff > 0) {
@@ -160,7 +172,7 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
 
             $absenDays = max(0, $normalDays - $riilDays);
 
-            $rekapData[] = [
+            $this->rekapData[] = [
                 'karyawan' => $karyawan,
                 'dailyStatus' => $dailyStatus,
                 'normalDays' => $normalDays,
@@ -170,18 +182,52 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
                 'earlyMinutes' => $totalEarlyMinutes,
             ];
         }
+    }
 
-        $periodText = $startDate->translatedFormat('d M Y') . ' - ' . $endDate->translatedFormat('d M Y');
-        if ($startDate->isSameMonth($endDate) && $startDate->isSameYear($endDate)) {
-            $periodText = $startDate->translatedFormat('d') . ' - ' . $endDate->translatedFormat('d M Y');
+    public function array(): array
+    {
+        $rows = [];
+        
+        $rows[] = ['REKAPITULASI ABSENSI BULANAN'];
+        $rows[] = ['Periode: ' . $this->periodText];
+        $rows[] = [];
+        
+        $header1 = ['Nama', 'No. ID'];
+        foreach ($this->dayHeaders as $h) {
+            $header1[] = $h['date'];
         }
-
-        return view('exports.absensi-rekap', [
-            'monthName' => $periodText,
-            'daysInMonth' => $totalDays,
-            'dayHeaders' => $dayHeaders,
-            'rekapData' => $rekapData,
-        ]);
+        $header1 = array_merge($header1, ['Normal Hari', 'Absen Hari', 'Trlmbt Menit', 'Plg. Cpt Menit', 'Lmbr Menit', 'Jml. Ijin', 'D. Luar']);
+        $rows[] = $header1;
+        
+        $header2 = ['', ''];
+        foreach ($this->dayHeaders as $h) {
+            $header2[] = $h['dayName'];
+        }
+        $header2 = array_merge($header2, ['', '', '', '', '', '', '']);
+        $rows[] = $header2;
+        
+        foreach ($this->rekapData as $data) {
+            $row = [
+                 $data['karyawan']->nama_lengkap . ' (' . $data['karyawan']->nik . ')',
+                 $data['karyawan']->nik
+            ];
+            foreach ($this->dayHeaders as $date => $h) {
+                 $row[] = $data['dailyStatus'][$date];
+            }
+            $row[] = $data['normalDays'];
+            $row[] = $data['absenDays'];
+            $row[] = $data['lateMinutes'] ?: '';
+            $row[] = $data['earlyMinutes'] ?: '';
+            $row[] = '';
+            $row[] = '';
+            $row[] = '';
+            $rows[] = $row;
+        }
+        
+        $rows[] = [];
+        $rows[] = ['Keterangan: Normal="", Absent="A", Format Jam="Masuk - Pulang"'];
+        
+        return $rows;
     }
 
     public function registerEvents(): array
@@ -189,8 +235,58 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $sheet->getStyle('A1:Z1000')->getFont()->setName('Arial');
-                $sheet->getStyle('A1:Z1000')->getFont()->setSize(9);
+                $lastColIndex = 2 + $this->totalDays + 7;
+                $lastColLetter = Coordinate::stringFromColumnIndex($lastColIndex);
+                $totalRows = count($this->rekapData) + 5; 
+
+                // Style the used range font instead of getDefaultStyle which causes XfIndex corruption
+                $sheet->getStyle('A1:' . $lastColLetter . $totalRows)->getFont()->setName('Arial')->setSize(9);
+
+                $sheet->mergeCells('A1:' . $lastColLetter . '1');
+                $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                $sheet->mergeCells('A2:' . $lastColLetter . '2');
+                $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                $sheet->mergeCells('A4:A5');
+                $sheet->mergeCells('B4:B5');
+
+                $summaryStart = 3 + $this->totalDays;
+                for ($i = 0; $i < 7; $i++) {
+                    $col = Coordinate::stringFromColumnIndex($summaryStart + $i);
+                    $sheet->mergeCells($col . '4:' . $col . '5');
+                }
+
+                // Header styles
+                $headerStyle = [
+                    'font' => ['bold' => true],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['argb' => 'FFF3F4F6']
+                    ]
+                ];
+                $sheet->getStyle('A4:' . $lastColLetter . '5')->applyFromArray($headerStyle);
+                $sheet->getStyle('A4:' . $lastColLetter . '5')->getAlignment()->setWrapText(true);
+
+                $sheet->getColumnDimension('A')->setWidth(30);
+                $sheet->getColumnDimension('B')->setWidth(15);
+                for ($i = 1; $i <= $this->totalDays; $i++) {
+                    $col = Coordinate::stringFromColumnIndex(2 + $i);
+                    $sheet->getColumnDimension($col)->setWidth(12);
+                }
+                
+                // NO DATA STYLING (Borders, Alignment, Backgrounds) TEMPORARILY DISABLED TO PREVENT OOM
             },
         ];
     }
