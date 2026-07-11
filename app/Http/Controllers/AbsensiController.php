@@ -154,6 +154,10 @@ class AbsensiController extends Controller
      */
     public function rekap(Request $request)
     {
+        if ($request->has('export')) {
+            return $this->exportRekap($request);
+        }
+
         $month = $request->input('month', Carbon::now()->month);
         $year = $request->input('year', Carbon::now()->year);
 
