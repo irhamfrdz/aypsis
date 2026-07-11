@@ -80,7 +80,7 @@
                             </td>
                             <!-- Ton/M3 Amount -->
                             <td class="border border-gray-400 px-2 py-0.5 text-right font-medium w-16 text-gray-900">
-                                {{ $item['amount'] !== null ? number_format($item['amount'], 3, ',', '.') : '' }}
+                                {{ $item['amount'] !== null ? rtrim(rtrim(number_format($item['amount'], 3, ',', '.'), '0'), ',') : '' }}
                             </td>
                             <!-- Ton/M3 Unit -->
                             <td class="border border-gray-400 px-2 py-0.5 text-center text-gray-700 w-16 border-l-0">
@@ -102,7 +102,7 @@
                                 Jumlah
                             </td>
                             <td class="border border-gray-400 px-2 py-0.5 text-right text-gray-900">
-                                {{ number_format($totalAmount, 3, ',', '.') }}
+                                {{ rtrim(rtrim(number_format($totalAmount, 3, ',', '.'), '0'), ',') }}
                             </td>
                             <td class="border border-gray-400 px-2 py-0.5 text-center text-gray-700">
                                 Kgs/m3
