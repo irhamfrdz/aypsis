@@ -15,7 +15,7 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 
-class AbsensiRekapExport extends StringValueBinder implements FromArray, WithEvents, WithCustomValueBinder
+class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCustomValueBinder
 {
     protected $startDate;
     protected $endDate;
@@ -230,64 +230,4 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithEve
         return $rows;
     }
 
-    public function registerEvents(): array
-    {
-        return [
-            AfterSheet::class => function (AfterSheet $event) {
-                $sheet = $event->sheet->getDelegate();
-                $lastColIndex = 2 + $this->totalDays + 7;
-                $lastColLetter = Coordinate::stringFromColumnIndex($lastColIndex);
-                $totalRows = count($this->rekapData) + 5; 
-
-                // Style the used range font instead of getDefaultStyle which causes XfIndex corruption
-                $sheet->getStyle('A1:' . $lastColLetter . $totalRows)->getFont()->setName('Arial')->setSize(9);
-
-                $sheet->mergeCells('A1:' . $lastColLetter . '1');
-                $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
-                $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-                $sheet->mergeCells('A2:' . $lastColLetter . '2');
-                $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
-                $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-                $sheet->mergeCells('A4:A5');
-                $sheet->mergeCells('B4:B5');
-
-                $summaryStart = 3 + $this->totalDays;
-                for ($i = 0; $i < 7; $i++) {
-                    $col = Coordinate::stringFromColumnIndex($summaryStart + $i);
-                    $sheet->mergeCells($col . '4:' . $col . '5');
-                }
-
-                // Header styles
-                $headerStyle = [
-                    'font' => ['bold' => true],
-                    'alignment' => [
-                        'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical' => Alignment::VERTICAL_CENTER,
-                    ],
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => Border::BORDER_THIN,
-                        ],
-                    ],
-                    'fill' => [
-                        'fillType' => Fill::FILL_SOLID,
-                        'startColor' => ['argb' => 'FFF3F4F6']
-                    ]
-                ];
-                $sheet->getStyle('A4:' . $lastColLetter . '5')->applyFromArray($headerStyle);
-                $sheet->getStyle('A4:' . $lastColLetter . '5')->getAlignment()->setWrapText(true);
-
-                $sheet->getColumnDimension('A')->setWidth(30);
-                $sheet->getColumnDimension('B')->setWidth(15);
-                for ($i = 1; $i <= $this->totalDays; $i++) {
-                    $col = Coordinate::stringFromColumnIndex(2 + $i);
-                    $sheet->getColumnDimension($col)->setWidth(12);
-                }
-                
-                // NO DATA STYLING (Borders, Alignment, Backgrounds) TEMPORARILY DISABLED TO PREVENT OOM
-            },
-        ];
-    }
 }
