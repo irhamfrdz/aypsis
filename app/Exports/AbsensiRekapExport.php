@@ -189,10 +189,21 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
     {
         $rows = [];
         
-        $rows[] = ['REKAPITULASI ABSENSI BULANAN'];
-        $rows[] = ['Periode: ' . $this->periodText];
+        // Row 1: Empty
         $rows[] = [];
         
+        // Row 2: Period Text (Centered over dates, will start at Column C index 2)
+        $periodRow = ['', ''];
+        $periodRow[] = 'Periode: ' . $this->periodText;
+        for ($i = 1; $i < $this->totalDays; $i++) {
+            $periodRow[] = '';
+        }
+        $rows[] = $periodRow;
+        
+        // Row 3: Empty
+        $rows[] = [];
+        
+        // Row 4: Header 1
         $header1 = ['Nama', 'No. ID'];
         foreach ($this->dayHeaders as $h) {
             $header1[] = $h['date'];
@@ -200,6 +211,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         $header1 = array_merge($header1, ['Normal Hari', 'Absen Hari', 'Trlmbt Menit', 'Plg. Cpt Menit', 'Lmbr Menit', 'Jml. Ijin', 'D. Luar']);
         $rows[] = $header1;
         
+        // Row 5: Header 2
         $header2 = ['', ''];
         foreach ($this->dayHeaders as $h) {
             $header2[] = $h['dayName'];
@@ -207,6 +219,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         $header2 = array_merge($header2, ['', '', '', '', '', '', '']);
         $rows[] = $header2;
         
+        // Data Rows (Starting at row 6)
         foreach ($this->rekapData as $data) {
             $row = [
                  $data['karyawan']->nama_lengkap . ' (' . $data['karyawan']->nik . ')',
@@ -240,16 +253,29 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 $lastColLetter = Coordinate::stringFromColumnIndex($lastColIndex);
                 $totalRows = count($this->rekapData) + 5; 
 
-                // Title & Subtitle Merging
-                $sheet->mergeCells('A1:' . $lastColLetter . '1');
-                $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
-                $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                // Set Default Styles for the whole sheet (Bypasses range-styling memory bugs)
+                $defaultStyle = $sheet->getParent()->getDefaultStyle();
+                $defaultStyle->getFont()->setName('Arial')->setSize(9);
+                $defaultStyle->getBorders()->getLeft()->setBorderStyle(Border::BORDER_THIN);
+                $defaultStyle->getBorders()->getRight()->setBorderStyle(Border::BORDER_THIN);
+                $defaultStyle->getBorders()->getTop()->setBorderStyle(Border::BORDER_THIN);
+                $defaultStyle->getBorders()->getBottom()->setBorderStyle(Border::BORDER_THIN);
+                $defaultStyle->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $defaultStyle->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
 
-                $sheet->mergeCells('A2:' . $lastColLetter . '2');
-                $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
-                $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                // Row 1-3: Clear borders and styling (so it doesn't look boxed)
+                $sheet->getStyle('A1:' . $lastColLetter . '3')->getBorders()->getLeft()->setBorderStyle(Border::BORDER_NONE);
+                $sheet->getStyle('A1:' . $lastColLetter . '3')->getBorders()->getRight()->setBorderStyle(Border::BORDER_NONE);
+                $sheet->getStyle('A1:' . $lastColLetter . '3')->getBorders()->getTop()->setBorderStyle(Border::BORDER_NONE);
+                $sheet->getStyle('A1:' . $lastColLetter . '3')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_NONE);
 
-                // Merging header cells vertically
+                // Row 2: Merge and Center Period Text over the date columns
+                $startPeriodCol = 'C';
+                $endPeriodCol = Coordinate::stringFromColumnIndex(2 + $this->totalDays);
+                $sheet->mergeCells($startPeriodCol . '2:' . $endPeriodCol . '2');
+                $sheet->getStyle('C2')->getFont()->setBold(true);
+
+                // Merging header cells vertically (Row 4 & 5)
                 $sheet->mergeCells('A4:A5');
                 $sheet->mergeCells('B4:B5');
 
@@ -259,7 +285,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                     $sheet->mergeCells($col . '4:' . $col . '5');
                 }
 
-                // Style headers cell-by-cell to bypass range styling XfIndex corruption bug
+                // Style headers cell-by-cell (Row 4 & 5 only)
                 for ($row = 4; $row <= 5; $row++) {
                     for ($colIdx = 1; $colIdx <= $lastColIndex; $colIdx++) {
                         $col = Coordinate::stringFromColumnIndex($colIdx);
@@ -268,15 +294,11 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         $sheet->getStyle($cell)->getFill()
                               ->setFillType(Fill::FILL_SOLID)
                               ->getStartColor()->setARGB('FFF3F4F6');
-                        $sheet->getStyle($cell)->getAlignment()
-                              ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-                              ->setVertical(Alignment::VERTICAL_CENTER)
-                              ->setWrapText(true);
-                        $sheet->getStyle($cell)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                        $sheet->getStyle($cell)->getAlignment()->setWrapText(true);
                     }
                 }
 
-                // Column Widths
+                // Column widths & Alignments
                 $sheet->getColumnDimension('A')->setWidth(30);
                 $sheet->getColumnDimension('B')->setWidth(15);
                 for ($i = 1; $i <= $this->totalDays; $i++) {
@@ -287,8 +309,10 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 if (count($this->rekapData) > 0) {
                     $gridRange = 'C6:' . $lastColLetter . $totalRows;
 
+                    // Column A (Nama Karyawan): Left-align only
+                    $sheet->getStyle('A6:A' . $totalRows)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+
                     // 1. Weekend Rule using Excel Formula: OR(C$5="Sab", C$5="Min")
-                    // This dynamically colors the column if Row 5 (Day Name) is Sab or Min
                     $weekendRule = new Conditional();
                     $weekendRule->setConditionType(Conditional::CONDITION_EXPRESSION);
                     $weekendRule->addCondition('OR(C$5="Sab",C$5="Min")');
@@ -305,8 +329,20 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                                 ->setFillType(Fill::FILL_SOLID)
                                 ->getStartColor()->setARGB('FFFECACA'); // Light red
 
-                    // Apply both conditional styles in one go (costing ZERO PHP memory/style overhead!)
+                    // Apply conditional styles
                     $sheet->setConditionalStyles($gridRange, [$weekendRule, $absenceRule]);
+
+                    // Remove borders and formatting for the legend rows at the bottom
+                    $lastDataRow = $totalRows;
+                    $legendStart = $lastDataRow + 1;
+                    $legendEnd = $lastDataRow + 2;
+                    $sheet->getStyle('A' . $legendStart . ':' . $lastColLetter . $legendEnd)->getBorders()->getLeft()->setBorderStyle(Border::BORDER_NONE);
+                    $sheet->getStyle('A' . $legendStart . ':' . $lastColLetter . $legendEnd)->getBorders()->getRight()->setBorderStyle(Border::BORDER_NONE);
+                    $sheet->getStyle('A' . $legendStart . ':' . $lastColLetter . $legendEnd)->getBorders()->getTop()->setBorderStyle(Border::BORDER_NONE);
+                    $sheet->getStyle('A' . $legendStart . ':' . $lastColLetter . $legendEnd)->getBorders()->getBottom()->setBorderStyle(Border::BORDER_NONE);
+                    
+                    // Left-align legend text
+                    $sheet->getStyle('A' . $legendEnd)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
                 }
             },
         ];
