@@ -197,16 +197,17 @@
                         <form action="{{ route('absensi.rekap') }}" method="GET" id="modalExportForm">
                             <input type="hidden" name="export" value="1">
                             <input type="hidden" name="search" value="{{ request('search') }}">
+                            <input type="hidden" name="pekerjaan" value="{{ request('pekerjaan') }}">
                             <input type="hidden" name="divisi" value="{{ request('divisi') }}">
 
                             <div class="space-y-4">
                                 <div>
-                                    <label for="export_pekerjaan" class="block text-xs font-semibold text-gray-700 mb-1">Pekerjaan</label>
-                                    <select name="pekerjaan" id="export_pekerjaan"
+                                    <label for="export_cabang" class="block text-xs font-semibold text-gray-700 mb-1">Kantor Cabang</label>
+                                    <select name="cabang" id="export_cabang"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
-                                        <option value="">Semua Pekerjaan</option>
-                                        @foreach($pekerjaans as $pekerjaan)
-                                            <option value="{{ $pekerjaan }}" {{ request('pekerjaan') == $pekerjaan ? 'selected' : '' }}>{{ $pekerjaan }}</option>
+                                        <option value="">Semua Cabang</option>
+                                        @foreach($cabangs as $cabang)
+                                            <option value="{{ $cabang }}" {{ request('cabang') == $cabang ? 'selected' : '' }}>{{ $cabang }}</option>
                                         @endforeach
                                     </select>
                                 </div>

@@ -187,6 +187,7 @@ class AbsensiController extends Controller
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
         $pekerjaans = Karyawan::whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
         $divisis = Karyawan::whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
+        $cabangs = Karyawan::whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
 
         // Calculate normal workdays in the selected month (excluding weekends)
         $normalWorkdays = 0;
@@ -226,7 +227,7 @@ class AbsensiController extends Controller
             ];
         }
 
-        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'month', 'year'));
+        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'month', 'year'));
     }
 
     /**
@@ -239,11 +240,12 @@ class AbsensiController extends Controller
         $search = $request->input('search');
         $pekerjaan = $request->input('pekerjaan');
         $divisi = $request->input('divisi');
+        $cabang = $request->input('cabang');
 
         $fileName = 'rekap-absensi-' . $startDate . '-sd-' . $endDate . '.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi),
+            new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi, $cabang),
             $fileName
         );
     }

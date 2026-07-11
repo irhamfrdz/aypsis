@@ -18,14 +18,16 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
     protected $search;
     protected $pekerjaan;
     protected $divisi;
+    protected $cabang;
 
-    public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null)
+    public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->search = $search;
         $this->pekerjaan = $pekerjaan;
         $this->divisi = $divisi;
+        $this->cabang = $cabang;
     }
 
     public function view(): View
@@ -52,6 +54,9 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
         }
         if (!empty($this->divisi)) {
             $karyawansQuery->where('divisi', $this->divisi);
+        }
+        if (!empty($this->cabang)) {
+            $karyawansQuery->where('cabang', $this->cabang);
         }
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->get();
 
