@@ -104,8 +104,9 @@ class SuratJalanTarikKosongBatamController extends Controller
         $locations = $pricelistRings->pluck('name');
 
         $warehouses = \App\Models\Gudang::orderBy('nama_gudang')->pluck('nama_gudang');
+        $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
 
-        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings'));
+        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings', 'gudangs'));
     }
 
     public function store(Request $request)
@@ -125,6 +126,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             'f_e' => 'nullable|string',
             'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
+            'gudang_tujuan_id' => 'required|exists:gudangs,id',
         ]);
 
         if ($request->filled('uang_jalan')) {
@@ -137,6 +139,16 @@ class SuratJalanTarikKosongBatamController extends Controller
         $validated['lokasi'] = 'batam';
 
         SuratJalanTarikKosongBatam::create($validated);
+
+        if ($request->filled('no_kontainer') && $request->filled('gudang_tujuan_id')) {
+            $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $request->no_kontainer)
+                ->where('status', '!=', 'inactive')
+                ->first();
+            
+            if ($stockKontainer) {
+                $stockKontainer->update(['gudangs_id' => $request->gudang_tujuan_id]);
+            }
+        }
 
         return redirect()->route('surat-jalan-tarik-kosong-batam.index')->with('success', 'Surat Jalan Tarik Kosong Batam berhasil disimpan');
     }

@@ -161,6 +161,18 @@
                             </label>
                         </div>
 
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Gudang Tujuan <span class="text-red-500">*</span></label>
+                            <select name="gudang_tujuan_id" id="gudang_tujuan_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all uppercase">
+                                <option value="">Pilih Gudang Tujuan</option>
+                                @foreach($gudangs as $gudang)
+                                    <option value="{{ $gudang->id }}" {{ old('gudang_tujuan_id') == $gudang->id ? 'selected' : '' }}>
+                                        {{ $gudang->nama_gudang }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div class="relative supir-dropdown-container">
                             <label class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">Supir <span class="text-red-500">*</span></label>
                             <div class="relative">

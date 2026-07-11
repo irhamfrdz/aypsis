@@ -69,8 +69,9 @@ class LangsirBatamController extends Controller
         $all_kontainers = $kontainers->concat($stock_kontainers)->unique('no_kontainer')->sortBy('no_kontainer');
 
         $locations = ['SRIMAS', 'PELABUHAN', 'TPK/RTG'];
+        $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
 
-        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations'));
+        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations', 'gudangs'));
     }
 
     public function getContainerManifestHistory(Request $request)
@@ -121,6 +122,7 @@ class LangsirBatamController extends Controller
             'keterangan' => 'nullable|string',
             'status' => 'required|string',
             'ob_dalam_pelabuhan' => 'nullable|boolean',
+            'gudang_tujuan_id' => 'required|exists:gudangs,id',
         ]);
 
         $validated['input_by'] = Auth::id();
@@ -136,6 +138,16 @@ class LangsirBatamController extends Controller
         }
 
         $langsir = LangsirBatam::create($validated);
+
+        if ($request->filled('no_kontainer') && $request->filled('gudang_tujuan_id')) {
+            $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $request->no_kontainer)
+                ->where('status', '!=', 'inactive')
+                ->first();
+            
+            if ($stockKontainer) {
+                $stockKontainer->update(['gudangs_id' => $request->gudang_tujuan_id]);
+            }
+        }
 
         // Log to HistoryKontainer
         $tipeKontainer = 'kontainer';
