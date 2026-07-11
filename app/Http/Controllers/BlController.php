@@ -2629,6 +2629,19 @@ class BlController extends Controller
             }
         })->values();
 
+        // -----------------------------------------------------------------------
+        // Sort: Other Cargo first, then Forklift, then Containers
+        // -----------------------------------------------------------------------
+        $items = $items->sortBy(function ($item) {
+            $namaBarang = $item['nama_barang'] ?? '';
+            $isContainer = stripos($namaBarang, 'Container') !== false;
+            $isForklift = stripos($namaBarang, 'forklift') !== false;
+
+            if ($isContainer) return 3;
+            if ($isForklift) return 2;
+            return 1;
+        })->values();
+
         $totalAmount = $items->sum('amount');
 
         return view('bl.rekap_bongkaran', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'items', 'totalAmount'));
@@ -3104,8 +3117,19 @@ class BlController extends Controller
         })->values();
 
         // -----------------------------------------------------------------------
-        // 4. Cargo first, then containers
+        // 4. Cargo first (other cargo, then forklift), then containers
         // -----------------------------------------------------------------------
-        return $cargoRows->concat($containerRows);
+        $forklifts = collect();
+        $otherCargos = collect();
+
+        foreach ($cargoRows as $row) {
+            if (stripos($row['nama_barang'], 'forklift') !== false) {
+                $forklifts->push($row);
+            } else {
+                $otherCargos->push($row);
+            }
+        }
+
+        return $otherCargos->concat($forklifts)->concat($containerRows);
     }
 }
