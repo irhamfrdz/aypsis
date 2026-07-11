@@ -12,10 +12,11 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Style\Conditional;
 use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 
-class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCustomValueBinder
+class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCustomValueBinder, WithEvents
 {
     protected $startDate;
     protected $endDate;
@@ -230,4 +231,84 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         return $rows;
     }
 
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $lastColIndex = 2 + $this->totalDays + 7;
+                $lastColLetter = Coordinate::stringFromColumnIndex($lastColIndex);
+                $totalRows = count($this->rekapData) + 5; 
+
+                // Title & Subtitle Merging
+                $sheet->mergeCells('A1:' . $lastColLetter . '1');
+                $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+                $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                $sheet->mergeCells('A2:' . $lastColLetter . '2');
+                $sheet->getStyle('A2')->getFont()->setBold(true)->setSize(12);
+                $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+                // Merging header cells vertically
+                $sheet->mergeCells('A4:A5');
+                $sheet->mergeCells('B4:B5');
+
+                $summaryStart = 3 + $this->totalDays;
+                for ($i = 0; $i < 7; $i++) {
+                    $col = Coordinate::stringFromColumnIndex($summaryStart + $i);
+                    $sheet->mergeCells($col . '4:' . $col . '5');
+                }
+
+                // Style headers cell-by-cell to bypass range styling XfIndex corruption bug
+                for ($row = 4; $row <= 5; $row++) {
+                    for ($colIdx = 1; $colIdx <= $lastColIndex; $colIdx++) {
+                        $col = Coordinate::stringFromColumnIndex($colIdx);
+                        $cell = $col . $row;
+                        $sheet->getStyle($cell)->getFont()->setBold(true);
+                        $sheet->getStyle($cell)->getFill()
+                              ->setFillType(Fill::FILL_SOLID)
+                              ->getStartColor()->setARGB('FFF3F4F6');
+                        $sheet->getStyle($cell)->getAlignment()
+                              ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+                              ->setVertical(Alignment::VERTICAL_CENTER)
+                              ->setWrapText(true);
+                        $sheet->getStyle($cell)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+                    }
+                }
+
+                // Column Widths
+                $sheet->getColumnDimension('A')->setWidth(30);
+                $sheet->getColumnDimension('B')->setWidth(15);
+                for ($i = 1; $i <= $this->totalDays; $i++) {
+                    $col = Coordinate::stringFromColumnIndex(2 + $i);
+                    $sheet->getColumnDimension($col)->setWidth(12);
+                }
+
+                if (count($this->rekapData) > 0) {
+                    $gridRange = 'C6:' . $lastColLetter . $totalRows;
+
+                    // 1. Weekend Rule using Excel Formula: OR(C$5="Sab", C$5="Min")
+                    // This dynamically colors the column if Row 5 (Day Name) is Sab or Min
+                    $weekendRule = new Conditional();
+                    $weekendRule->setConditionType(Conditional::CONDITION_EXPRESSION);
+                    $weekendRule->addCondition('OR(C$5="Sab",C$5="Min")');
+                    $weekendRule->getStyle()->getFill()
+                                ->setFillType(Fill::FILL_SOLID)
+                                ->getStartColor()->setARGB('FFD1D5DB'); // Gray
+
+                    // 2. Absence Rule: cell value equals "A"
+                    $absenceRule = new Conditional();
+                    $absenceRule->setConditionType(Conditional::CONDITION_CELLIS);
+                    $absenceRule->setOperatorType(Conditional::OPERATOR_EQUAL);
+                    $absenceRule->addCondition('"A"');
+                    $absenceRule->getStyle()->getFill()
+                                ->setFillType(Fill::FILL_SOLID)
+                                ->getStartColor()->setARGB('FFFECACA'); // Light red
+
+                    // Apply both conditional styles in one go (costing ZERO PHP memory/style overhead!)
+                    $sheet->setConditionalStyles($gridRange, [$weekendRule, $absenceRule]);
+                }
+            },
+        ];
+    }
 }
