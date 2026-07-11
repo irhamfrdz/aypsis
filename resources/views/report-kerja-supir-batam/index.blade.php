@@ -92,6 +92,7 @@
                     <th scope="col" class="px-6 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
                     <th scope="col" class="px-6 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">Supir</th>
                     <th scope="col" class="px-6 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">Tipe</th>
+                    <th scope="col" class="px-6 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">Tujuan</th>
                     <th scope="col" class="px-6 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">No. Dokumen / No. Kontainer</th>
                     <th scope="col" class="px-6 py-3 text-right font-semibold text-gray-600 uppercase tracking-wider">Uang Jalan / Biaya</th>
                 </tr>
@@ -111,6 +112,9 @@
                                 {{ $item['tipe'] }}
                             </span>
                         </td>
+                        <td class="px-6 py-4 text-gray-800 text-sm">
+                            {{ $item['tujuan'] }}
+                        </td>
                         <td class="px-6 py-4 text-gray-600">
                             <div><span class="font-medium text-gray-800">{{ $item['no_dokumen'] }}</span></div>
                             <div class="text-xs text-gray-400 mt-0.5">Kontainer: {{ $item['no_kontainer'] }}</div>
@@ -121,7 +125,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                             <i class="fas fa-inbox text-3xl mb-3 text-gray-300"></i>
                             <p>Tidak ada data pekerjaan ditemukan pada rentang tanggal tersebut.</p>
                         </td>
@@ -130,7 +134,7 @@
             </tbody>
             <tfoot class="bg-gray-50 font-bold border-t border-gray-200">
                 <tr>
-                    <td colspan="5" class="px-6 py-4 text-right text-gray-800 uppercase tracking-wider text-xs">Total Pendapatan Supir:</td>
+                    <td colspan="6" class="px-6 py-4 text-right text-gray-800 uppercase tracking-wider text-xs">Total Pendapatan Supir:</td>
                     <td class="px-6 py-4 text-right text-indigo-700 text-base">Rp {{ number_format($totalRit, 0, ',', '.') }}</td>
                 </tr>
             </tfoot>

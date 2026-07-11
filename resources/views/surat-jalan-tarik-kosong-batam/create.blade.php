@@ -11,7 +11,11 @@
         background-color: #eef2ff;
         border-left: 4px solid #4f46e5;
     }
+    .flatpickr-input[readonly] {
+        background-color: transparent;
+    }
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 @endpush
 
 @section('content')
@@ -64,7 +68,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Surat Jalan <span class="text-red-600">*</span></label>
-                    <input type="date"
+                    <input type="text"
                            name="tanggal_surat_jalan"
                            id="tanggal_surat_jalan"
                            value="{{ old('tanggal_surat_jalan', date('Y-m-d')) }}"
@@ -83,9 +87,6 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_surat_jalan') border-red-500 @enderror">
                 </div>
 
-
-
-
                 <div class="relative">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
                     <input type="text"
@@ -96,10 +97,10 @@
                            value="{{ old('tujuan_pengambilan') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                     <div id="tujuan_pengambilan_dropdown" class="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto mt-1">
-                        @foreach($locations as $loc)
+                        @foreach($pricelistRings as $ring)
                             <div class="location-option px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-50 text-sm"
-                                 data-value="{{ $loc }}">
-                                {{ $loc }}
+                                 data-value="{{ $ring['name'] }}">
+                                {{ $ring['label'] }}
                             </div>
                         @endforeach
                     </div>
@@ -210,14 +211,24 @@
                     </select>
                 </div>
 
-
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">F / E</label>
                     <select name="f_e"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="E" {{ old('f_e', 'E') == 'E' ? 'selected' : '' }}>Empty (E)</option>
                         <option value="F" {{ old('f_e') == 'F' ? 'selected' : '' }}>Full (F)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Gudang Tujuan <span class="text-red-500">*</span></label>
+                    <select name="gudang_tujuan_id" id="gudang_tujuan_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Pilih Gudang Tujuan --</option>
+                        @foreach($gudangs as $gudang)
+                            <option value="{{ $gudang->id }}" {{ old('gudang_tujuan_id') == $gudang->id ? 'selected' : '' }}>
+                                {{ $gudang->nama_gudang }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -266,8 +277,16 @@
 </div>
 
 @push('scripts')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        flatpickr("#tanggal_surat_jalan", {
+            altInput: true,
+            altFormat: "d/m/Y",
+            dateFormat: "Y-m-d",
+        });
+
         // Currency formatting
         const currencyInputs = document.querySelectorAll('.currency');
         currencyInputs.forEach(input => {
@@ -387,6 +406,7 @@
                 pickupDropdown.classList.add('hidden');
                 pickupOptions.forEach(o => o.classList.remove('selected'));
                 this.classList.add('selected');
+                updateUangJalan();
             });
         });
 
@@ -457,17 +477,7 @@
         // Add listeners for Uang Jalan updates
         fESelect.addEventListener('change', updateUangJalan);
         sizeSelect.addEventListener('change', updateUangJalan);
-        
-        // Update updateUangJalan in pickupOptions listener
-        pickupOptions.forEach(opt => {
-            opt.addEventListener('click', function() {
-                pickupSearch.value = this.dataset.value;
-                pickupDropdown.classList.add('hidden');
-                pickupOptions.forEach(o => o.classList.remove('selected'));
-                this.classList.add('selected');
-                updateUangJalan(); // Add this
-            });
-        });
+
 
         // --- Auto-fill No. Plat based on Supir ---
         const supirSelect = document.querySelector('select[name="supir"]');

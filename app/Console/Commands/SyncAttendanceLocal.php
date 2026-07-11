@@ -16,7 +16,7 @@ class SyncAttendanceLocal extends Command
      *
      * @var string
      */
-    protected $signature = 'attendance:sync-local';
+    protected $signature = 'attendance:sync-local {--mesin= : ID Mesin spesifik untuk mengimpor data (opsional)}';
 
     /**
      * The console command description.
@@ -32,7 +32,14 @@ class SyncAttendanceLocal extends Command
     {
         $this->info('Memulai sinkronisasi absensi...');
 
-        $mesins = Mesin::where('status', 'Aktif')->get();
+        $mesinId = $this->option('mesin');
+        $query = Mesin::where('status', 'Aktif');
+        
+        if ($mesinId) {
+            $query->where('id', $mesinId);
+        }
+        
+        $mesins = $query->get();
         if ($mesins->isEmpty()) {
             $this->warn('Tidak ada mesin aktif yang terdaftar.');
             return 0;

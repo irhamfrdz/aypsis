@@ -1211,7 +1211,7 @@ function handleSupirCustomerSelection() {
 
 // Ensure is_supir_customer updated on submit for edge-case where change event didn't fire
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
+    const form = document.querySelector('form:not([action*="logout"])');
     if (form) {
         form.addEventListener('submit', function(e) {
             // Guarantee supir customer flag is set correctly just before submit
@@ -1250,7 +1250,7 @@ function preventReadonlyFocus() {
 // Handle form validation errors for readonly fields (excluding uang_jalan)
 function handleReadonlyValidationErrors() {
     // Override browser's default validation focusing
-    const form = document.querySelector('form');
+    const form = document.querySelector('form:not([action*="logout"])');
     if (form) {
         form.addEventListener('invalid', function(event) {
             const target = event.target;
@@ -1304,3 +1304,4 @@ document.addEventListener('DOMContentLoaded', function() {
 @endif
 </script>
 @endsection
+

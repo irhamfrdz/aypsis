@@ -153,7 +153,7 @@
             }
 
             // Handle form submission with validation
-            const form = document.querySelector('form');
+            const form = document.querySelector('form:not([action*="logout"])');
             form.addEventListener('submit', function(e) {
                 const namaBarang = document.getElementById('nama_barang').value.trim();
                 

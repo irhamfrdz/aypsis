@@ -484,14 +484,14 @@
                                 <i class="fas fa-info-circle mt-0.5"></i>
                                 <div>
                                     <strong>Format Paste (Bisa langsung paste dari Excel):</strong><br>
-                                    <span class="font-mono text-[10px] sm:text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-blue-200">No. Bukti ; Tanggal ; Tipe ; Vendor ; Lokasi ; Nama Barang ; Jml ; Satuan ; Harga ; Keterangan</span>
+                                    <span class="font-mono text-[10px] sm:text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-blue-200">No. Bukti ; Tanggal ; Tipe ; Tipe Barang ; Vendor ; Lokasi ; Nama Barang ; Jml ; Satuan ; Harga ; Keterangan</span>
                                 </div>
                             </div>
 
                             <label class="block text-sm font-bold text-gray-700 mb-2">Paste Data Di Sini <span class="text-red-500">*</span></label>
                             <textarea name="bulk_data" id="bulk_data_store" rows="8" required
                                 class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono whitespace-pre focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="INV-001 ; 2026-07-03 ; Pemakaian ; Toko Abadi ; BATAM ; Filter Solar ; 5 ; Pcs ; 85000 ; Untuk cadangan&#10;INV-001 ; 2026-07-03 ; Pemakaian ; Toko Abadi ; BATAM ; Oli Mesin ; 2 ; Galon ; 350000 ; "></textarea>
+                                placeholder="INV-001 ; 2026-07-03 ; Pemakaian ; Sparepart ; Toko Abadi ; BATAM ; Filter Solar ; 5 ; Pcs ; 85000 ; Untuk cadangan&#10;INV-001 ; 2026-07-03 ; Pemakaian ; Sparepart ; Toko Abadi ; BATAM ; Oli Mesin ; 2 ; Galon ; 350000 ; "></textarea>
 
                             <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
                                 <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
@@ -508,39 +508,19 @@
                     <div id="tab-content-usage" class="hidden">
                         <form action="{{ route('stock-amprahan.bulk-usage') }}" method="POST" id="bulkUsageForm">
                             @csrf
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Penerima <span class="text-red-500">*</span></label>
-                                    <select name="bulk_usage_penerima_id" required class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 searchable-select">
-                                        <option value="">Pilih Karyawan...</option>
-                                        @foreach(\App\Models\Karyawan::orderBy('nama_lengkap')->get() as $k)
-                                            <option value="{{ $k->id }}">{{ $k->nama_lengkap }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Tanggal Pengambilan <span class="text-red-500">*</span></label>
-                                    <input type="date" name="bulk_usage_tanggal" value="{{ date('Y-m-d') }}" required class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Keterangan Umum <span class="text-red-500">*</span></label>
-                                    <input type="text" name="bulk_usage_keterangan" required placeholder="Contoh: Pemakaian bulanan" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500">
-                                </div>
-                            </div>
-
                             <div class="mt-4 border border-orange-100 bg-orange-50 p-3 rounded-md text-sm text-orange-800 mb-3 flex items-start gap-3">
                                 <i class="fas fa-exclamation-circle mt-0.5"></i>
                                 <div>
                                     <strong>Format Paste (Bisa langsung paste dari Excel):</strong><br>
-                                    <span class="font-mono text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-orange-200">ID Stock (atau Nama Barang) ; Jumlah Ambil</span><br>
-                                    <em class="text-xs opacity-75 mt-1 block">Pastikan ID atau nama barang persis sama dengan yang ada di sistem, dan stock mencukupi.</em>
+                                    <span class="font-mono text-[10px] sm:text-xs bg-white px-2 py-1 rounded inline-block mt-1 border border-orange-200 overflow-x-auto whitespace-nowrap max-w-full">ID/Nama Barang ; Jumlah Ambil ; Nama Penerima ; Tanggal (YYYY-MM-DD) ; Keterangan ; No.Pol Kendaraan ; No.Pol Truck ; No.KIR/Kode Buntut ; Nama Kapal ; Kode Alat Berat</span><br>
+                                    <em class="text-xs opacity-75 mt-1 block">Kolom ke-1 sampai ke-5 wajib diisi. Kolom Kendaraan, Kapal, dll bersifat opsional.</em>
                                 </div>
                             </div>
 
                             <label class="block text-sm font-bold text-gray-700 mb-2">Paste Data Di Sini <span class="text-red-500">*</span></label>
                             <textarea name="bulk_usage_data" id="bulk_data_usage" rows="8" required
-                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono whitespace-pre focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                placeholder="105 ; 2&#10;Oli Mesin SAE 40 ; 1"></textarea>
+                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-mono whitespace-pre focus:ring-2 focus:ring-orange-500 focus:border-orange-500 overflow-x-auto"
+                                placeholder="105 ; 2 ; Budi Santoso ; 2026-07-10 ; Ganti Oli ; BP 1234 XX ; ; ; ; &#10;Oli Mesin SAE 40 ; 1 ; Joko ; 2026-07-10 ; Service ; ; ; ; ; Alat-001"></textarea>
 
                             <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
                                 <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">

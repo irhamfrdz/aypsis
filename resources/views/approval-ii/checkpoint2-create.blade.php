@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleSewaSection();
 
     // Form validation
-    const form = document.querySelector('form');
+    const form = document.querySelector('form:not([action*="logout"])');
     form.addEventListener('submit', function(e) {
         console.log('Form submit triggered');
 
@@ -217,3 +217,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
+

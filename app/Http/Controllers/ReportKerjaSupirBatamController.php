@@ -79,16 +79,23 @@ class ReportKerjaSupirBatamController extends Controller
             $start = \Carbon\Carbon::parse($startDate)->startOfDay();
             $end = \Carbon\Carbon::parse($endDate)->endOfDay();
 
-            // Kumpulkan nama panggilan supir yang dipilih atau semua supir batam
+            // Kumpulkan nama panggilan & nama lengkap supir yang dipilih atau semua supir batam
+            // (karena beberapa tabel menyimpan nama_panggilan, dan yang lain menyimpan nama_lengkap)
             $supirNames = [];
             if ($karyawanId) {
                 $karyawan = Karyawan::find($karyawanId);
                 if ($karyawan) {
                     $supirNames[] = $karyawan->nama_panggilan;
+                    $supirNames[] = $karyawan->nama_lengkap;
                 }
             } else {
-                $supirNames = $supirList->pluck('nama_panggilan')->filter()->toArray();
+                $supirNames = array_merge(
+                    $supirList->pluck('nama_panggilan')->filter()->toArray(),
+                    $supirList->pluck('nama_lengkap')->filter()->toArray()
+                );
             }
+            
+            $supirNames = array_unique($supirNames);
 
             if (!empty($supirNames)) {
                 // 1. Surat Jalan Batam (Regular)
@@ -122,6 +129,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->no_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'uang_jalan' => $ritVal,
+                        'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? $sj->tujuan_alamat ?? '-',
                     ];
                 }
 
@@ -136,6 +144,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->nomor_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'uang_jalan' => $ritVal,
+                        'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? $sj->tujuan_alamat ?? '-',
                     ];
                 }
 
@@ -150,6 +159,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->nomor_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'uang_jalan' => $ritVal,
+                        'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? '-',
                     ];
                 }
 
@@ -164,6 +174,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $langsir->no_kontainer ?? '-',
                         'supir' => $langsir->supir,
                         'uang_jalan' => $ritVal,
+                        'tujuan' => $langsir->ke ?? '-',
                     ];
                 }
 

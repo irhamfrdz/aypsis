@@ -183,6 +183,13 @@
                 </button>
             </div>
             
+            <!-- Button Export Opname -->
+            <button type="button" 
+                    onclick="openExportOpnameModal()"
+                    class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-2 whitespace-nowrap">
+                <i class="fas fa-file-excel"></i> Export Opname
+            </button>
+
             <!-- Button Input Harian -->
             <a href="{{ route('stock-ban.input-harian') }}" 
                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center gap-2 whitespace-nowrap">
@@ -328,7 +335,7 @@
                     
                     <!-- Ban Afkir -->
                     @php
-                        $banAfkir = $stockBans->whereIn('kondisi', ['afkir', 'rusak'])->whereIn('status', ['Stok', 'Rusak'])->count();
+                        $banAfkir = $stockBans->where('kondisi', 'afkir')->whereIn('status', ['Stok', 'Rusak'])->count();
                     @endphp
                     <div id="card-afkir" onclick="setCardFilter('afkir', false)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -409,7 +416,7 @@
                     </div>
 
                     @php
-                        $rusakStok = $stockBans->whereIn('kondisi', ['afkir', 'rusak'])->whereIn('status', ['Stok', 'Rusak'])->count();
+                        $rusakStok = $stockBans->where('kondisi', 'rusak')->whereIn('status', ['Stok', 'Rusak'])->count();
                     @endphp
                     <div id="card-rusak-stok" onclick="setCardFilter('rusak-stok', false)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -420,18 +427,6 @@
                         <p class="text-xs text-red-600 mt-1">Ready</p>
                     </div>
 
-                    <!-- Rusak Sudah Terjual -->
-                    @php
-                        $rusakTerjual = $stockBans->whereIn('kondisi', ['afkir', 'rusak'])->where('status', 'Dijual')->count();
-                    @endphp
-                    <div id="card-rusak-terjual" onclick="setCardFilter('rusak-terjual', false)" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-medium text-orange-600 uppercase">Rusak Terjual</span>
-                            <i class="fas fa-hand-holding-usd text-orange-400 text-lg"></i>
-                        </div>
-                        <div class="text-2xl font-bold text-orange-900">{{ $rusakTerjual }}</div>
-                        <p class="text-xs text-orange-600 mt-1">Laku</p>
-                    </div>
 
                     <!-- Ban Hilang -->
                     @php
@@ -911,9 +906,9 @@
                         <p class="text-xs text-yellow-600 mt-1">Remelted</p>
                     </div>
                     
-                    <!-- Ban Afkir -->
+                    <!-- Ban Afkir Batam -->
                     @php
-                        $banAfkirBtm = $banBatamList->whereIn('kondisi', ['afkir', 'rusak'])->whereIn('status', ['Stok', 'Rusak'])->count();
+                        $banAfkirBtm = $banBatamList->where('kondisi', 'afkir')->count();
                     @endphp
                     <div id="card-batam-afkir" onclick="setCardFilter('afkir', true)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -995,7 +990,7 @@
 
                     <!-- Rusak Belum Terjual -->
                     @php
-                        $rusakStokBtm = $banBatamList->whereIn('kondisi', ['afkir', 'rusak'])->where('status', 'Stok')->count();
+                        $rusakStokBtm = $banBatamList->where('kondisi', 'rusak')->where('status', 'Stok')->count();
                     @endphp
                     <div id="card-batam-rusak-stok" onclick="setCardFilter('rusak-stok', true)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -1006,18 +1001,6 @@
                         <p class="text-xs text-red-600 mt-1">Ready</p>
                     </div>
 
-                    <!-- Rusak Sudah Terjual -->
-                    @php
-                        $rusakTerjualBtm = $banBatamList->whereIn('kondisi', ['afkir', 'rusak'])->where('status', 'Dijual')->count();
-                    @endphp
-                    <div id="card-batam-rusak-terjual" onclick="setCardFilter('rusak-terjual', true)" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-medium text-orange-600 uppercase">Rusak Terjual</span>
-                            <i class="fas fa-hand-holding-usd text-orange-400 text-lg"></i>
-                        </div>
-                        <div class="text-2xl font-bold text-orange-900">{{ $rusakTerjualBtm }}</div>
-                        <p class="text-xs text-orange-600 mt-1">Laku</p>
-                    </div>
 
                     <!-- Ban Hilang Batam -->
                     @php
@@ -2787,7 +2770,6 @@
                 'garasi-batam': 'ring-orange-400',
                 'dikirim-tp': 'ring-teal-400',
                 'rusak-stok': 'ring-red-400',
-                'rusak-terjual': 'ring-orange-400',
                 'hilang': 'ring-gray-400'
             };
             activeCard.classList.add(colorMap[filterType]);
@@ -3119,7 +3101,7 @@
                         if (activeTab.id === 'tab-ban-luar') filterMatch = kondisi === 'kanisir' && lokasi.includes('ruko 10') && status === 'stok';
                         else filterMatch = kondisi === 'kanisir' && status === 'stok';
                     }
-                    else if (currentCardFilter === 'afkir') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
+                    else if (currentCardFilter === 'afkir') filterMatch = kondisi === 'afkir' && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'garasi-pluit') filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
                     else if (currentCardFilter === 'ruko-10') filterMatch = lokasi.includes('ruko 10') && status === 'stok';
                     else if (currentCardFilter === 'gudang-batam') filterMatch = lokasi.includes('gudang batam') && status === 'stok';
@@ -3129,8 +3111,7 @@
                     else if (currentCardFilter === 'dikirim-tp') filterMatch = status === 'dikirim ke tanjung pinang';
                     else if (currentCardFilter === 'dikembalikan') filterMatch = status === 'dikembalikan';
                     else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
-                    else if (currentCardFilter === 'rusak-stok') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
-                    else if (currentCardFilter === 'rusak-terjual') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && status === 'dijual';
+                    else if (currentCardFilter === 'rusak-stok') filterMatch = kondisi === 'rusak' && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'hilang') filterMatch = status === 'hilang';
                 }
 
@@ -3172,7 +3153,7 @@
                         if (activeTab.id === 'tab-ban-luar') filterMatch = kondisi === 'kanisir' && lokasi.includes('ruko 10') && status === 'stok';
                         else filterMatch = kondisi === 'kanisir' && status === 'stok';
                     }
-                    else if (currentCardFilter === 'afkir') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
+                    else if (currentCardFilter === 'afkir') filterMatch = kondisi === 'afkir' && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'garasi-pluit') filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
                     else if (currentCardFilter === 'ruko-10') filterMatch = lokasi.includes('ruko 10') && status === 'stok';
                     else if (currentCardFilter === 'gudang-batam') filterMatch = lokasi.includes('gudang batam') && status === 'stok';
@@ -3182,8 +3163,7 @@
                     else if (currentCardFilter === 'dikirim-tp') filterMatch = status === 'dikirim ke tanjung pinang';
                     else if (currentCardFilter === 'dikembalikan') filterMatch = status === 'dikembalikan';
                     else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
-                    else if (currentCardFilter === 'rusak-stok') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && (status === 'stok' || status === 'rusak');
-                    else if (currentCardFilter === 'rusak-terjual') filterMatch = (kondisi === 'afkir' || kondisi === 'rusak') && status === 'dijual';
+                    else if (currentCardFilter === 'rusak-stok') filterMatch = kondisi === 'rusak' && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'hilang') filterMatch = status === 'hilang';
                 }
 
@@ -3995,7 +3975,78 @@ function closeJualBanModal() {
     </div>
 </div>
 
+<!-- Modal Export Opname -->
+<div id="exportOpnameModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeExportOpnameModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form action="{{ route('stock-ban.export-opname') }}" method="GET">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                        Export Excel Opname Ban Luar
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="form-label-premium">Bulan</label>
+                                <select name="bulan" class="form-input-premium w-full" required>
+                                    @for($m=1; $m<=12; $m++)
+                                        <option value="{{ str_pad($m, 2, '0', STR_PAD_LEFT) }}" {{ date('m') == str_pad($m, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>
+                                            {{ date('F', mktime(0, 0, 0, $m, 1)) }}
+                                        </option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label-premium">Tahun</label>
+                                <select name="tahun" class="form-input-premium w-full" required>
+                                    @for($y=date('Y')-2; $y<=date('Y')+1; $y++)
+                                        <option value="{{ $y }}" {{ date('Y') == $y ? 'selected' : '' }}>
+                                            {{ $y }}
+                                        </option>
+                                    @endfor
+                                </select>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">
+                            Laporan ini akan mengunduh daftar seluruh Ban Luar (termasuk Batam) yang saat ini berstatus <b>Stok</b> dan <b>Rusak</b> (belum terpakai) untuk keperluan cek fisik opname.
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                    <button type="submit" onclick="closeExportOpnameModal()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        <i class="fas fa-download mr-2 mt-1"></i> Download Excel
+                    </button>
+                    <button type="button" onclick="closeExportOpnameModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
+    function openExportOpnameModal() {
+        const modal = document.getElementById('exportOpnameModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            if (modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+        }
+    }
+
+    function closeExportOpnameModal() {
+        const modal = document.getElementById('exportOpnameModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
     function openStockUsageModal(id, jenis, nama, qty) {
         console.log('openStockUsageModal called with:', {id, jenis, nama, qty});
         

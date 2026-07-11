@@ -19,6 +19,17 @@ class StockBanController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function exportOpname(Request $request)
+    {
+        $bulan = $request->input('bulan', date('m'));
+        $tahun = $request->input('tahun', date('Y'));
+        
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\OpnameBanLuarExport($bulan, $tahun), 'Opname_Ban_Luar_' . $bulan . '_' . $tahun . '.xlsx');
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
         $stockBans = StockBan::with('mobil')->latest()->get();

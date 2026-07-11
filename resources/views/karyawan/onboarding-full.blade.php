@@ -448,7 +448,7 @@
             const noHpError = document.getElementById('noHpError');
             const ktpWarning = document.getElementById('ktpWarning');
             const kkWarning = document.getElementById('kkWarning');
-            const form = document.querySelector('form');
+            const form = document.querySelector('form:not([action*="logout"])');
 
             // Fungsi validasi nomor identitas (KTP/KK) - harus tepat 16 digit
             function validateIdentityNumber(input, errorElement, fieldName) {
@@ -685,3 +685,4 @@
         }
     </style>
 @endpush
+

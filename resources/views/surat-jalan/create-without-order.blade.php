@@ -957,7 +957,7 @@ function createSearchableDropdown(config) {
 
 // Handle form submission for cargo type
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
+    const form = document.querySelector('form:not([action*="logout"])');
     if (form) {
         form.addEventListener('submit', function(e) {
             const tipeKontainer = document.querySelector('input[name="tipe_kontainer"]').value.toLowerCase();

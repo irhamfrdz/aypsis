@@ -1224,7 +1224,7 @@ function removeExistingImage(button, path) {
     });
     
     // Add to removal list
-    const form = document.querySelector('form');
+    const form = document.querySelector('form:not([action*="logout"])');
     if (form) {
         const removeInput = document.createElement('input');
         removeInput.type = 'hidden';
@@ -1602,3 +1602,4 @@ function removeExistingImage(button, path) {
 </script>
 @endpush
 @endsection
+

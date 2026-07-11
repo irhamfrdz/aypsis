@@ -89,6 +89,15 @@
                     </div>
                 </div>
                 <div>
+                    <label for="uang_malam_libur" class="block text-xs font-semibold text-gray-700 mb-1">Uang Berangkat Malam/Libur</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 text-sm">Rp</span>
+                        </div>
+                        <input type="number" name="uang_malam_libur" id="uang_malam_libur" value="{{ old('uang_malam_libur', (int)$gaji->uang_malam_libur) }}" min="0" class="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="0">
+                    </div>
+                </div>
+                <div>
                     <label for="biaya_bensin" class="block text-xs font-semibold text-gray-700 mb-1">Potongan Biaya Bensin <span class="text-xs font-normal text-indigo-500">(otomatis dari catatan pembelian)</span></label>
                     <div class="relative rounded-md shadow-sm">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -228,11 +237,13 @@
         // Salary calculator function
         function calculateSalary() {
             const gajiPokok = parseFloat(document.getElementById('gaji_pokok').value) || 0;
+            const uangMalamLibur = parseFloat(document.getElementById('uang_malam_libur').value) || 0;
             const biayaBensin = parseFloat(document.getElementById('biaya_bensin').value) || 0;
-            const totalGaji = Math.max(0, gajiPokok - biayaBensin);
+            const totalGaji = Math.max(0, gajiPokok + uangMalamLibur - biayaBensin);
             totalDisplay.textContent = 'Rp ' + totalGaji.toLocaleString('id-ID');
         }
 
+        document.getElementById('uang_malam_libur').addEventListener('input', calculateSalary);
         document.getElementById('biaya_bensin').addEventListener('input', calculateSalary);
 
         function renderBensinTable(bensinItems, totalBiayaBensin) {

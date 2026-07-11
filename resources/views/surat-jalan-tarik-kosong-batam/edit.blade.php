@@ -11,7 +11,11 @@
         background-color: #eef2ff;
         border-left: 4px solid #4f46e5;
     }
+    .flatpickr-input[readonly] {
+        background-color: transparent;
+    }
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 @endpush
 
 @section('content')
@@ -65,7 +69,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Surat Jalan <span class="text-red-600">*</span></label>
-                    <input type="date"
+                    <input type="text"
                            name="tanggal_surat_jalan"
                            id="tanggal_surat_jalan"
                            value="{{ old('tanggal_surat_jalan', $item->tanggal_surat_jalan->format('Y-m-d')) }}"
@@ -84,9 +88,6 @@
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none @error('no_surat_jalan') border-red-500 @enderror">
                 </div>
 
-
-
-
                 <div class="relative">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
                     @php
@@ -100,10 +101,10 @@
                            value="{{ $currentPickup }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                     <div id="tujuan_pengambilan_dropdown" class="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto mt-1">
-                        @foreach($locations as $loc)
-                            <div class="location-option px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-50 text-sm {{ $currentPickup == $loc ? 'selected' : '' }}"
-                                 data-value="{{ $loc }}">
-                                {{ $loc }}
+                        @foreach($pricelistRings as $ring)
+                            <div class="location-option px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-50 text-sm {{ $currentPickup == $ring['name'] ? 'selected' : '' }}"
+                                 data-value="{{ $ring['name'] }}">
+                                {{ $ring['label'] }}
                             </div>
                         @endforeach
                     </div>
@@ -231,8 +232,6 @@
                     </select>
                 </div>
 
-
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">F / E</label>
                     <select name="f_e"
@@ -287,8 +286,15 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        flatpickr("#tanggal_surat_jalan", {
+            altInput: true,
+            altFormat: "d/m/Y",
+            dateFormat: "Y-m-d",
+        });
+
         // Currency formatting
         const currencyInputs = document.querySelectorAll('.currency');
         currencyInputs.forEach(input => {

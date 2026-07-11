@@ -97,6 +97,7 @@ class GajiSupirBatamController extends Controller
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'gaji_pokok' => 'required|numeric|min:0',
+            'uang_malam_libur' => 'nullable|numeric|min:0',
             'biaya_bensin' => 'nullable|numeric|min:0',
             'status_pembayaran' => 'required|in:PENDING,PAID,CANCELLED',
             'tanggal_dibayar' => 'nullable|date',
@@ -118,6 +119,7 @@ class GajiSupirBatamController extends Controller
         }
 
         $data = $validated;
+        $data['uang_malam_libur'] = $validated['uang_malam_libur'] ?? 0;
         $data['biaya_bensin'] = $validated['biaya_bensin'] ?? 0;
 
         // Derive month and year from tanggal_mulai for fallback fields
@@ -125,7 +127,7 @@ class GajiSupirBatamController extends Controller
         $data['periode_bulan'] = (int) $startDateObj->format('n');
         $data['periode_tahun'] = (int) $startDateObj->format('Y');
         $data['periode_minggu'] = 1;
-        $data['total_gaji'] = $data['gaji_pokok'] - $data['biaya_bensin'];
+        $data['total_gaji'] = $data['gaji_pokok'] + $data['uang_malam_libur'] - $data['biaya_bensin'];
 
         if ($data['status_pembayaran'] === 'PAID' && empty($data['tanggal_dibayar'])) {
             $data['tanggal_dibayar'] = now()->format('Y-m-d');
@@ -275,6 +277,7 @@ class GajiSupirBatamController extends Controller
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'gaji_pokok' => 'required|numeric|min:0',
+            'uang_malam_libur' => 'nullable|numeric|min:0',
             'biaya_bensin' => 'nullable|numeric|min:0',
             'status_pembayaran' => 'required|in:PENDING,PAID,CANCELLED',
             'tanggal_dibayar' => 'nullable|date',
@@ -297,12 +300,13 @@ class GajiSupirBatamController extends Controller
         }
 
         $data = $validated;
+        $data['uang_malam_libur'] = $validated['uang_malam_libur'] ?? 0;
         $data['biaya_bensin'] = $validated['biaya_bensin'] ?? 0;
 
         $startDateObj = \Carbon\Carbon::parse($validated['tanggal_mulai']);
         $data['periode_bulan'] = (int) $startDateObj->format('n');
         $data['periode_tahun'] = (int) $startDateObj->format('Y');
-        $data['total_gaji'] = $data['gaji_pokok'] - $data['biaya_bensin'];
+        $data['total_gaji'] = $data['gaji_pokok'] + $data['uang_malam_libur'] - $data['biaya_bensin'];
 
         if ($data['status_pembayaran'] === 'PAID' && empty($data['tanggal_dibayar'])) {
             $data['tanggal_dibayar'] = now()->format('Y-m-d');

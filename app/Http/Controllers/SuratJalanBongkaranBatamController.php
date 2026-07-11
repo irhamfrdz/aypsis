@@ -128,26 +128,32 @@ class SuratJalanBongkaranBatamController extends Controller
 
             // Search in surat jalan bongkaran (ignore punctuation)
             if ($request->filled('search')) {
-                $search = $request->search;
-                // Remove all punctuation from search term
-                $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
+                // Split search by comma for multiple simultaneous searches (OR condition)
+                $searchTerms = array_filter(array_map('trim', explode(',', $request->search)));
 
-                $query->where(function ($q) use ($search, $searchClean) {
-                    // Normal search (with punctuation)
-                    $q->where('nomor_surat_jalan', 'like', "%{$search}%")
-                        ->orWhere('no_kontainer', 'like', "%{$search}%")
-                        ->orWhere('no_seal', 'like', "%{$search}%")
-                        ->orWhere('term', 'like', "%{$search}%")
-                        ->orWhere('jenis_barang', 'like', "%{$search}%")
-                        ->orWhere('supir', 'like', "%{$search}%")
-                        ->orWhere('no_plat', 'like', "%{$search}%")
-                        ->orWhere('tipe_kontainer', 'like', "%{$search}%")
-                        ->orWhere('jenis_pengiriman', 'like', "%{$search}%")
-                      // Search without punctuation
-                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_surat_jalan, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_plat, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
+                $query->where(function ($q) use ($searchTerms) {
+                    foreach ($searchTerms as $search) {
+                        // Remove all punctuation from search term
+                        $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
+                        
+                        $q->orWhere(function ($sq) use ($search, $searchClean) {
+                            // Normal search (with punctuation)
+                            $sq->where('nomor_surat_jalan', 'like', "%{$search}%")
+                                ->orWhere('no_kontainer', 'like', "%{$search}%")
+                                ->orWhere('no_seal', 'like', "%{$search}%")
+                                ->orWhere('term', 'like', "%{$search}%")
+                                ->orWhere('jenis_barang', 'like', "%{$search}%")
+                                ->orWhere('supir', 'like', "%{$search}%")
+                                ->orWhere('no_plat', 'like', "%{$search}%")
+                                ->orWhere('tipe_kontainer', 'like', "%{$search}%")
+                                ->orWhere('jenis_pengiriman', 'like', "%{$search}%")
+                                // Search without punctuation
+                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_surat_jalan, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_plat, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
+                        });
+                    }
                 });
             }
 
@@ -181,26 +187,32 @@ class SuratJalanBongkaranBatamController extends Controller
 
             // Search in Manifest data (ignore punctuation)
             if ($request->filled('search')) {
-                $search = $request->search;
-                // Remove all punctuation from search term
-                $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
+                // Split search by comma for multiple simultaneous searches (OR condition)
+                $searchTerms = array_filter(array_map('trim', explode(',', $request->search)));
 
-                $query->where(function ($q) use ($search, $searchClean) {
-                    // Normal search (with punctuation)
-                    $q->where('nomor_bl', 'like', "%{$search}%")
-                        ->orWhere('nomor_kontainer', 'like', "%{$search}%")
-                        ->orWhere('no_seal', 'like', "%{$search}%")
-                        ->orWhere('term', 'like', "%{$search}%")
-                        ->orWhere('nama_barang', 'like', "%{$search}%")
-                        ->orWhere('penerima', 'like', "%{$search}%")
-                        ->orWhere('tipe_kontainer', 'like', "%{$search}%")
-                        ->orWhereHas('suratJalanBongkaranBatam', function ($sq) use ($search) {
-                            $sq->where('nomor_surat_jalan', 'like', "%{$search}%");
-                        })
-                      // Search without punctuation
-                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_bl, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                        ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
+                $query->where(function ($q) use ($searchTerms) {
+                    foreach ($searchTerms as $search) {
+                        // Remove all punctuation from search term
+                        $searchClean = preg_replace('/[^\p{L}\p{N}\s]/u', '', $search);
+
+                        $q->orWhere(function ($sq) use ($search, $searchClean) {
+                            // Normal search (with punctuation)
+                            $sq->where('nomor_bl', 'like', "%{$search}%")
+                                ->orWhere('nomor_kontainer', 'like', "%{$search}%")
+                                ->orWhere('no_seal', 'like', "%{$search}%")
+                                ->orWhere('term', 'like', "%{$search}%")
+                                ->orWhere('nama_barang', 'like', "%{$search}%")
+                                ->orWhere('penerima', 'like', "%{$search}%")
+                                ->orWhere('tipe_kontainer', 'like', "%{$search}%")
+                                ->orWhereHas('suratJalanBongkaranBatam', function ($sqq) use ($search) {
+                                    $sqq->where('nomor_surat_jalan', 'like', "%{$search}%");
+                                })
+                                // Search without punctuation
+                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_bl, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
+                        });
+                    }
                 });
             }
 

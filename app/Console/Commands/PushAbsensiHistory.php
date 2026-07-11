@@ -29,7 +29,7 @@ class PushAbsensiHistory extends Command
     {
         $apiUrl = $this->option('url');
         $mesinId = $this->option('mesin');
-        $secret = config('app.sync_secret', 'aypsis-sync-12345');
+        $secret = env('API_SYNC_SECRET', 'aypsis-sync-12345');
 
         $mdbPath = env('MDB_PATH', 'C:\\Program Files (x86)\\Solution\\att2000.mdb');
         
@@ -49,10 +49,11 @@ class PushAbsensiHistory extends Command
                       INNER JOIN USERINFO u ON c.USERID = u.USERID
                       ORDER BY c.CHECKTIME DESC";
             $stmt = $conn->query($query);
-            $mdbLogs = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
             $logs = [];
-            foreach ($mdbLogs as $log) {
+            $chunks = [];
+            
+            while ($log = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 $checktype = strtoupper($log['CHECKTYPE']);
                 $type = (in_array($checktype, ['I', '0', 'MASUK'])) ? 'Masuk' : 'Pulang';
                 
@@ -61,19 +62,34 @@ class PushAbsensiHistory extends Command
                     'waktu' => Carbon::parse($log['CHECKTIME'])->format('Y-m-d H:i:s'),
                     'tipe' => $type
                 ];
+
+                if (count($logs) >= 500) {
+                    $chunks[] = $logs;
+                    $logs = [];
+                }
+            }
+            if (count($logs) > 0) {
+                $chunks[] = $logs;
             }
 
-            $total = count($logs);
-            $this->info("Ditemukan {$total} data riwayat absensi. Mengirim ke server...");
+            $total = 0;
+            foreach ($chunks as $c) {
+                $total += count($c);
+            }
+            
+            if ($total === 0) {
+                $this->info("Tidak ada data absensi di file MDB.");
+                return;
+            }
 
-            // Kirim per batch (misal 500 data sekali kirim) agar tidak timeout
-            $chunks = array_chunk($logs, 500);
+            $this->info("Ditemukan total {$total} baris absensi. Mulai mengirim ke server...");
+
             $berhasil = 0;
-
             $bar = $this->output->createProgressBar(count($chunks));
+            $bar->start();
 
             foreach ($chunks as $chunk) {
-                $response = Http::withHeaders([
+                $response = Http::timeout(60)->withHeaders([
                     'X-Sync-Secret' => $secret
                 ])->post($apiUrl, [
                     'mesin_id' => $mesinId,

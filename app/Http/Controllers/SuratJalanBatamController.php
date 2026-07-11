@@ -283,8 +283,9 @@ class SuratJalanBatamController extends Controller
         $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
 
         $allPenerimas = \App\Models\Penerima::orderBy('nama_penerima')->get();
+        $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
 
-        return view('surat-jalan-batam.create', compact('selectedOrder', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'jenisBarangs', 'defaultUangJalan', 'ukuranKontainers', 'daftarKontainers', 'pricelistRings', 'masterTujuanKirims', 'allPenerimas'));
+        return view('surat-jalan-batam.create', compact('selectedOrder', 'supirs', 'keneks', 'kranis', 'terms', 'masterKegiatans', 'jenisBarangs', 'defaultUangJalan', 'ukuranKontainers', 'daftarKontainers', 'pricelistRings', 'masterTujuanKirims', 'allPenerimas', 'gudangs'));
     }
 
     /**
@@ -324,6 +325,7 @@ class SuratJalanBatamController extends Controller
             'plastik' => 'nullable|integer',
             'terpal' => 'nullable|integer',
             'status' => 'required|in:draft,active,completed,cancelled',
+            'gudang_tujuan_id' => 'required|exists:gudangs,id',
         ]);
 
         if ($request->filled('uang_jalan')) {
@@ -336,6 +338,16 @@ class SuratJalanBatamController extends Controller
         $validated['input_date'] = now();
 
         $suratJalan = SuratJalanBatam::create($validated);
+
+        if ($request->filled('no_kontainer') && $request->filled('gudang_tujuan_id')) {
+            $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $request->no_kontainer)
+                ->where('status', '!=', 'inactive')
+                ->first();
+            
+            if ($stockKontainer) {
+                $stockKontainer->update(['gudangs_id' => $request->gudang_tujuan_id]);
+            }
+        }
 
         // Optional: Update order progress if linked
         if ($suratJalan->order_batam_id) {

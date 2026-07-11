@@ -29,6 +29,7 @@
                             <i class="fas fa-map-marker-alt mr-2 text-indigo-500"></i> RUTE PENGIRIMAN
                         </h3>
                         <div class="space-y-4">
+
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100">
                                     <span class="text-[10px] font-bold text-indigo-400 uppercase block mb-1">Dari (Pengambilan)</span>

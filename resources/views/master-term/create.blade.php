@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Handle form submission to notify parent window
-    const form = document.querySelector('form');
+    const form = document.querySelector('form:not([action*="logout"])');
     if (form) {
         form.addEventListener('submit', function() {
             // Notify parent window that a new term is being created
@@ -146,3 +146,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+
