@@ -148,7 +148,9 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                         $dailyStatus[$dateString] = 'A';
                     }
                 } else {
-                    $riilDays++;
+                    if (!$isWeekend) {
+                        $riilDays++;
+                    }
                     
                     $inTimeStr = $log->waktu_masuk ? substr($log->waktu_masuk, 11, 5) : '-';
                     $outTimeStr = $log->waktu_pulang ? substr($log->waktu_pulang, 11, 5) : '-';
