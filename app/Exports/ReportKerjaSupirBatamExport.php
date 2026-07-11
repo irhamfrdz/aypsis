@@ -39,6 +39,7 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
             [
                 'No',
                 'Tanggal',
+                'NIK',
                 'Supir',
                 'Tipe Pekerjaan',
                 'Tujuan',
@@ -58,6 +59,7 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
         return [
             $index,
             $item['tanggal'],
+            $item['nik'],
             $item['supir'],
             $item['tipe'],
             $item['tujuan'],
@@ -69,15 +71,15 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->mergeCells('A1:H1');
-        $sheet->mergeCells('A2:H2');
+        $sheet->mergeCells('A1:I1');
+        $sheet->mergeCells('A2:I2');
 
         $lastRow = $sheet->getHighestRow();
         
         // Add total row at the bottom
         $sheet->setCellValue('A' . ($lastRow + 1), 'TOTAL PENDAPATAN SUPIR');
-        $sheet->mergeCells('A' . ($lastRow + 1) . ':G' . ($lastRow + 1));
-        $sheet->setCellValue('H' . ($lastRow + 1), (float) $this->totalRit);
+        $sheet->mergeCells('A' . ($lastRow + 1) . ':H' . ($lastRow + 1));
+        $sheet->setCellValue('I' . ($lastRow + 1), (float) $this->totalRit);
         
         $lastRow = $sheet->getHighestRow();
 
@@ -94,14 +96,14 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
             $lastRow => [
                 'font' => ['bold' => true],
             ],
-            'A1:H'.$lastRow => [
+            'A1:I'.$lastRow => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                     ],
                 ],
             ],
-            'H5:H'.$lastRow => [
+            'I5:I'.$lastRow => [
                 'numberFormat' => [
                     'formatCode' => '#,##0'
                 ]

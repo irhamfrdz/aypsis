@@ -79,6 +79,17 @@ class ReportKerjaSupirBatamController extends Controller
             $start = \Carbon\Carbon::parse($startDate)->startOfDay();
             $end = \Carbon\Carbon::parse($endDate)->endOfDay();
 
+            // Create a lookup for NIK based on supir name
+            $nikLookup = [];
+            foreach ($supirList as $s) {
+                if ($s->nama_lengkap) {
+                    $nikLookup[$s->nama_lengkap] = $s->nik ?? '-';
+                }
+                if ($s->nama_panggilan) {
+                    $nikLookup[$s->nama_panggilan] = $s->nik ?? '-';
+                }
+            }
+
             // Kumpulkan nama panggilan & nama lengkap supir yang dipilih atau semua supir batam
             // (karena beberapa tabel menyimpan nama_panggilan, dan yang lain menyimpan nama_lengkap)
             $supirNames = [];
@@ -128,6 +139,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_dokumen' => $sj->no_surat_jalan,
                         'no_kontainer' => $sj->no_kontainer ?? '-',
                         'supir' => $sj->supir,
+                        'nik' => $nikLookup[$sj->supir] ?? '-',
                         'uang_jalan' => $ritVal,
                         'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? $sj->tujuan_alamat ?? '-',
                     ];
@@ -143,6 +155,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_dokumen' => $sj->nomor_surat_jalan,
                         'no_kontainer' => $sj->nomor_kontainer ?? '-',
                         'supir' => $sj->supir,
+                        'nik' => $nikLookup[$sj->supir] ?? '-',
                         'uang_jalan' => $ritVal,
                         'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? $sj->tujuan_alamat ?? '-',
                     ];
@@ -158,6 +171,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_dokumen' => $sj->no_surat_jalan,
                         'no_kontainer' => $sj->nomor_kontainer ?? '-',
                         'supir' => $sj->supir,
+                        'nik' => $nikLookup[$sj->supir] ?? '-',
                         'uang_jalan' => $ritVal,
                         'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? '-',
                     ];
@@ -173,6 +187,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_dokumen' => $langsir->no_transaksi,
                         'no_kontainer' => $langsir->no_kontainer ?? '-',
                         'supir' => $langsir->supir,
+                        'nik' => $nikLookup[$langsir->supir] ?? '-',
                         'uang_jalan' => $ritVal,
                         'tujuan' => $langsir->ke ?? '-',
                     ];
