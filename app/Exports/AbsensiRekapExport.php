@@ -13,16 +13,16 @@ use Maatwebsite\Excel\Events\AfterSheet;
 
 class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
 {
-    protected $month;
-    protected $year;
+    protected $startDate;
+    protected $endDate;
     protected $search;
     protected $pekerjaan;
     protected $divisi;
 
-    public function __construct($month, $year, $search = null, $pekerjaan = null, $divisi = null)
+    public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null)
     {
-        $this->month = $month;
-        $this->year = $year;
+        $this->startDate = $startDate;
+        $this->endDate = $endDate;
         $this->search = $search;
         $this->pekerjaan = $pekerjaan;
         $this->divisi = $divisi;
@@ -33,9 +33,10 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
         // Prevent execution timeout
         set_time_limit(900);
 
-        $startDate = Carbon::createFromDate($this->year, $this->month, 1)->startOfMonth();
-        $endDate = Carbon::createFromDate($this->year, $this->month, 1)->endOfMonth();
-        $daysInMonth = $startDate->daysInMonth;
+        $startDate = Carbon::parse($this->startDate)->startOfDay();
+        $endDate = Carbon::parse($this->endDate)->endOfDay();
+        
+        $totalDays = $startDate->diffInDays($endDate) + 1;
 
         // Get all employees
         $karyawansQuery = Karyawan::query();
@@ -54,33 +55,50 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
         }
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->get();
 
-        // Fetch all attendance logs for the month
+        // Fetch all attendance logs for the date range efficiently using SQL grouping
         $allLogs = Absensi::whereBetween('waktu', [
                 $startDate->copy()->setTime(6, 0, 0),
                 $endDate->copy()->addDays(1)->setTime(5, 59, 59)
             ])
+            ->selectRaw('
+                karyawan_id,
+                DATE(DATE_SUB(waktu, INTERVAL 6 HOUR)) as tanggal,
+                MIN(CASE WHEN LOWER(tipe) = "masuk" THEN waktu ELSE NULL END) as waktu_masuk,
+                MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang
+            ')
+            ->groupBy('karyawan_id', \Illuminate\Support\Facades\DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'))
             ->get()
             ->groupBy('karyawan_id');
 
         $rekapData = [];
         
-        // Pre-calculate weekend status and day names to avoid instantiating Carbon in loops
+        $dayMap = [
+            'Sunday' => 'Min',
+            'Monday' => 'Sen',
+            'Tuesday' => 'Sel',
+            'Wednesday' => 'Rab',
+            'Thursday' => 'Kam',
+            'Friday' => 'Jum',
+            'Saturday' => 'Sab',
+        ];
+        
         $daysData = [];
         $normalDays = 0;
         $dayHeaders = [];
         
-        for ($day = 1; $day <= $daysInMonth; $day++) {
-            $date = Carbon::createFromDate($this->year, $this->month, $day);
+        for ($i = 0; $i < $totalDays; $i++) {
+            $date = $startDate->copy()->addDays($i);
+            $dateString = $date->toDateString();
             $isWeekend = $date->isWeekend();
             if (!$isWeekend) {
                 $normalDays++;
             }
-            $daysData[$day] = [
+            $daysData[$dateString] = [
                 'isWeekend' => $isWeekend,
             ];
-            $dayHeaders[$day] = [
-                'date' => $day,
-                'dayName' => $date->minDayName
+            $dayHeaders[$dateString] = [
+                'date' => $date->format('d/m'),
+                'dayName' => $dayMap[$date->format('l')]
             ];
         }
 
@@ -90,66 +108,48 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
 
         foreach ($karyawans as $karyawan) {
             $logs = $allLogs->get($karyawan->id, collect());
-            $logsByDay = $logs->groupBy(function ($item) {
-                // Parse date index safely
-                if ($item->waktu instanceof Carbon) {
-                    return $item->waktu->copy()->subHours(6)->day;
-                }
-                return Carbon::parse($item->waktu)->subHours(6)->day;
-            });
+            // Since SQL grouped it by tanggal, we can simply key by tanggal
+            $logsByDay = $logs->keyBy('tanggal');
 
             $dailyStatus = [];
             $riilDays = 0;
             $totalLateMinutes = 0;
             $totalEarlyMinutes = 0;
 
-            for ($day = 1; $day <= $daysInMonth; $day++) {
-                $isWeekend = $daysData[$day]['isWeekend'];
-                $dayLogs = $logsByDay->get($day, collect());
+            foreach ($daysData as $dateString => $dayInfo) {
+                $isWeekend = $dayInfo['isWeekend'];
+                $log = $logsByDay->get($dateString);
 
-                if ($dayLogs->isEmpty()) {
+                if (!$log || (!$log->waktu_masuk && !$log->waktu_pulang)) {
                     if ($isWeekend) {
-                        $dailyStatus[$day] = '';
+                        $dailyStatus[$dateString] = '';
                     } else {
-                        $dailyStatus[$day] = 'A';
+                        $dailyStatus[$dateString] = 'A';
                     }
                 } else {
                     $riilDays++;
                     
-                    // Sort logs by time
-                    $sortedLogs = $dayLogs->sortBy('waktu');
-                    
-                    $firstLog = $sortedLogs->first();
-                    $lastLog = $sortedLogs->count() > 1 ? $sortedLogs->last() : null;
-
-                    $clockIn = $firstLog->waktu instanceof Carbon ? $firstLog->waktu : Carbon::parse($firstLog->waktu);
-                    $clockOut = $lastLog ? ($lastLog->waktu instanceof Carbon ? $lastLog->waktu : Carbon::parse($lastLog->waktu)) : null;
-
-                    $statusSymbol = '';
-                    $inTimeStr = $clockIn->format('H:i:s');
+                    // Directly extract 'H:i' from 'Y-m-d H:i:s' string avoiding Carbon instantiation
+                    $inTimeStr = $log->waktu_masuk ? substr($log->waktu_masuk, 11, 5) : '-';
+                    $outTimeStr = $log->waktu_pulang ? substr($log->waktu_pulang, 11, 5) : '-';
 
                     // Calculate lateness
-                    if ($inTimeStr > '08:00:00') {
-                        $statusSymbol = '<';
-                        $diff = strtotime($inTimeStr) - $limitInTime;
+                    if ($inTimeStr !== '-' && $inTimeStr > '08:00') {
+                        $diff = strtotime($inTimeStr.':00') - $limitInTime;
                         if ($diff > 0) {
                             $totalLateMinutes += round($diff / 60);
                         }
                     }
 
                     // Calculate early departure
-                    if ($clockOut) {
-                        $outTimeStr = $clockOut->format('H:i:s');
-                        if ($outTimeStr < '17:00:00') {
-                            $statusSymbol = $statusSymbol === '<' ? '< >' : '>';
-                            $diff = $limitOutTime - strtotime($outTimeStr);
-                            if ($diff > 0) {
-                                $totalEarlyMinutes += round($diff / 60);
-                            }
+                    if ($outTimeStr !== '-' && $outTimeStr < '17:00') {
+                        $diff = $limitOutTime - strtotime($outTimeStr.':00');
+                        if ($diff > 0) {
+                            $totalEarlyMinutes += round($diff / 60);
                         }
                     }
 
-                    $dailyStatus[$day] = $statusSymbol;
+                    $dailyStatus[$dateString] = $inTimeStr . ' - ' . $outTimeStr;
                 }
             }
 
@@ -166,9 +166,14 @@ class AbsensiRekapExport implements FromView, ShouldAutoSize, WithEvents
             ];
         }
 
+        $periodText = $startDate->translatedFormat('d M Y') . ' - ' . $endDate->translatedFormat('d M Y');
+        if ($startDate->isSameMonth($endDate) && $startDate->isSameYear($endDate)) {
+            $periodText = $startDate->translatedFormat('d') . ' - ' . $endDate->translatedFormat('d M Y');
+        }
+
         return view('exports.absensi-rekap', [
-            'monthName' => Carbon::createFromDate($this->year, $this->month, 1)->translatedFormat('F Y'),
-            'daysInMonth' => $daysInMonth,
+            'monthName' => $periodText,
+            'daysInMonth' => $totalDays,
             'dayHeaders' => $dayHeaders,
             'rekapData' => $rekapData,
         ]);

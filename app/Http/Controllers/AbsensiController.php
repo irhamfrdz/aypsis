@@ -234,16 +234,16 @@ class AbsensiController extends Controller
      */
     public function exportRekap(Request $request)
     {
-        $month = $request->input('month', Carbon::now()->month);
-        $year = $request->input('year', Carbon::now()->year);
+        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
+        $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
         $search = $request->input('search');
         $pekerjaan = $request->input('pekerjaan');
         $divisi = $request->input('divisi');
 
-        $fileName = 'rekap-absensi-' . $month . '-' . $year . '.xlsx';
+        $fileName = 'rekap-absensi-' . $startDate . '-sd-' . $endDate . '.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\AbsensiRekapExport($month, $year, $search, $pekerjaan, $divisi),
+            new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi),
             $fileName
         );
     }

@@ -2,12 +2,12 @@
     <thead>
         <!-- Title Header -->
         <tr>
-            <th colspan="{{ 2 + $daysInMonth + 8 }}" style="font-size: 14px; font-weight: bold; text-align: center;">
+            <th colspan="{{ 2 + $daysInMonth + 7 }}" style="font-size: 14px; font-weight: bold; text-align: center;">
                 REKAPITULASI ABSENSI BULANAN
             </th>
         </tr>
         <tr>
-            <th colspan="{{ 2 + $daysInMonth + 8 }}" style="font-size: 11px; font-weight: bold; text-align: center;">
+            <th colspan="{{ 2 + $daysInMonth + 7 }}" style="font-size: 11px; font-weight: bold; text-align: center;">
                 Periode: {{ $monthName }}
             </th>
         </tr>
@@ -21,7 +21,6 @@
                 <th style="background-color: #f3f4f6; font-weight: bold; border: 1px solid #000000; text-align: center;">{{ $h['date'] }}</th>
             @endforeach
             <th rowspan="2" style="background-color: #e0f2fe; font-weight: bold; border: 1px solid #000000; text-align: center; vertical-align: middle;">Normal Hari</th>
-            <th rowspan="2" style="background-color: #dcfce7; font-weight: bold; border: 1px solid #000000; text-align: center; vertical-align: middle;">Riil Hari</th>
             <th rowspan="2" style="background-color: #fee2e2; font-weight: bold; border: 1px solid #000000; text-align: center; vertical-align: middle;">Absen Hari</th>
             <th rowspan="2" style="background-color: #fef9c3; font-weight: bold; border: 1px solid #000000; text-align: center; vertical-align: middle;">Trlmbt Menit</th>
             <th rowspan="2" style="background-color: #fef9c3; font-weight: bold; border: 1px solid #000000; text-align: center; vertical-align: middle;">Plg. Cpt Menit</th>
@@ -67,9 +66,6 @@
                 <td style="border: 1px solid #000000; text-align: center; background-color: #f0f9ff;">
                     {{ $row['normalDays'] }}
                 </td>
-                <td style="border: 1px solid #000000; text-align: center; background-color: #f0fdf4;">
-                    {{ $row['riilDays'] }}
-                </td>
                 <td style="border: 1px solid #000000; text-align: center; background-color: #fef2f2;">
                     {{ $row['absenDays'] }}
                 </td>
@@ -98,7 +94,7 @@
     <tr></tr>
     <tr>
         <td colspan="5" style="font-size: 8px; color: #4b5563;">
-            Keterangan: Normal="", Absent="A", Late="<", Early=">"
+            Keterangan: Normal="", Absent="A", Format Jam="Masuk - Pulang"
         </td>
     </tr>
 </table>
