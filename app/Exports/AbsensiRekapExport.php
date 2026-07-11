@@ -57,7 +57,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $this->periodText = $startDate->translatedFormat('d') . ' - ' . $endDate->translatedFormat('d M Y');
         }
 
-        $karyawansQuery = Karyawan::query();
+        $karyawansQuery = Karyawan::query()->whereNull('tanggal_berhenti');
         if (!empty($this->search)) {
             $search = $this->search;
             $karyawansQuery->where(function ($q) use ($search) {
