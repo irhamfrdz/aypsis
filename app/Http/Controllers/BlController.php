@@ -3117,19 +3117,17 @@ class BlController extends Controller
         })->values();
 
         // -----------------------------------------------------------------------
-        // 4. Cargo first (other cargo, then forklift), then containers
+        // 4. Cargo first (sorted by BL ascending), then containers
         // -----------------------------------------------------------------------
-        $forklifts = collect();
-        $otherCargos = collect();
+        $cargoRows = $cargoRows->sortBy(function ($row) {
+            // Ambil angka dari nomor BL untuk pengurutan yang benar (agar 10 lebih besar dari 2)
+            $nomor = $row['nomor_bl'] ?? '';
+            if ($nomor === '-') return 999999; // Taruh yang tidak punya BL di akhir sebelum container
+            
+            preg_match('/\d+/', $nomor, $matches);
+            return isset($matches[0]) ? (int) $matches[0] : 999998; 
+        })->values();
 
-        foreach ($cargoRows as $row) {
-            if (stripos($row['nama_barang'], 'forklift') !== false) {
-                $forklifts->push($row);
-            } else {
-                $otherCargos->push($row);
-            }
-        }
-
-        return $otherCargos->concat($forklifts)->concat($containerRows);
+        return $cargoRows->concat($containerRows);
     }
 }
