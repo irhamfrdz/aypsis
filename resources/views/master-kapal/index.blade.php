@@ -3,6 +3,22 @@
 
 @section('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+.select2-container--default .select2-selection--single {
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    height: 38px;
+    padding: 0.25rem 0.5rem;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 28px;
+    color: #374151;
+}
+</style>
 @endsection
 
 @section('title', 'Master Kapal')
@@ -339,6 +355,7 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     // Auto-hide alerts after 5 seconds
     setTimeout(function() {
@@ -380,6 +397,9 @@
         
         // Reset and disable voyage select while loading
         const voyageSelect = document.getElementById('voyage');
+        if (typeof jQuery !== 'undefined' && jQuery('#voyage').hasClass('select2-hidden-accessible')) {
+            jQuery('#voyage').select2('destroy');
+        }
         voyageSelect.innerHTML = '<option value="">Memuat voyage...</option>';
         voyageSelect.disabled = true;
 
@@ -414,6 +434,16 @@
             manualOpt.textContent = '-- Input Manual --';
             voyageSelect.appendChild(manualOpt);
             voyageSelect.disabled = false;
+            
+            if (typeof jQuery !== 'undefined') {
+                jQuery('#voyage').select2({
+                    dropdownParent: jQuery('#printSpkbmModal'),
+                    width: '100%',
+                    placeholder: '-- Pilih Voyage --'
+                }).on('change', function() {
+                    onVoyageChange();
+                });
+            }
         })
         .catch(() => {
             voyageSelect.innerHTML = '<option value="">Gagal memuat voyage</option>';
