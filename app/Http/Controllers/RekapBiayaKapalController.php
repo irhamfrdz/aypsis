@@ -193,14 +193,17 @@ class RekapBiayaKapalController extends Controller
 
             $subtotal = $details->sum('subtotal');
             $adjustment = 0;
+            $nominal = 0;
+            $pph = 0;
+            $total = 0;
+
             $first = $details->first();
             if ($first) {
                 $adjustment = $first->adjustment ?? 0;
+                $nominal = $first->total_nominal ?? ($subtotal + $adjustment);
+                $pph = $first->pph ?? 0;
+                $total = $first->grand_total ?? ($nominal - $pph);
             }
-
-            $nominal = $subtotal + $adjustment;
-            $pph = $details->sum('pph');
-            $total = $details->sum('grand_total');
 
             $parentNominal = $item->nominal ?: 1;
             $ratio = $nominal / $parentNominal;
