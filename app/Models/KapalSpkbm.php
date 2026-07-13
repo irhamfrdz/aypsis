@@ -45,11 +45,11 @@ class KapalSpkbm extends Model
             ->orderByDesc('id')
             ->first();
 
-        $nextSeq = 1;
+        $nextSeq = 28;
         if ($lastRecord) {
             $parts = explode('/', $lastRecord->nomor_surat);
             if (count($parts) > 0 && is_numeric($parts[0])) {
-                $nextSeq = ((int) $parts[0]) + 1;
+                $nextSeq = max(28, ((int) $parts[0]) + 1);
             }
         }
 
