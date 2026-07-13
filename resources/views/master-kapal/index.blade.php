@@ -498,7 +498,7 @@
         }
 
         document.getElementById('rencana_bongkar').value = voyage.summary_bongkar || '';
-        document.getElementById('rencana_muat').value = voyage.summary_muat || '';
+        document.getElementById('rencana_muat').value = voyage.summary_muat || '- 13 Unit FCL (20ft)\n- 30 Unit  MTY (20ft)';
     }
 
     function closePrintSpkbmModal() {
@@ -614,7 +614,8 @@
                 <label for="rencana_muat" class="block text-sm font-medium text-gray-700">Rencana Muat <span class="text-red-500">*</span></label>
                 <textarea name="rencana_muat" id="rencana_muat" rows="2" required
                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          placeholder="Contoh:&#10;- 150 Box Container 20' isi Karet&#10;- 30 Box Container 40' isi Kayu"></textarea>
+                          placeholder="Contoh:&#10;- 150 Box Container 20' isi Karet&#10;- 30 Box Container 40' isi Kayu">- 13 Unit FCL (20ft)
+- 30 Unit  MTY (20ft)</textarea>
             </div>
 
             <!-- Footer / Buttons -->
