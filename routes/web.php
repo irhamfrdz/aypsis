@@ -13,6 +13,8 @@ use App\Http\Controllers\CabangController;
 use App\Http\Controllers\CheckpointController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DivisiController;
+use App\Http\Controllers\EmailController;
+use App\Http\Controllers\EmailAccountController;
 use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\KontainerController;
@@ -6505,5 +6507,27 @@ Route::middleware(['auth',
     Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/print', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'print'])
         ->name('pranota-perbaikan-kontainer.print')
         ->middleware('can:pranota-perbaikan-kontainer-print');
+
+    // Email Routes
+    Route::prefix('email')->name('email.')->group(function () {
+        // Settings
+        Route::get('/settings', [\App\Http\Controllers\EmailAccountController::class, 'settings'])->name('settings')->middleware('can:email-settings');
+        Route::post('/settings', [\App\Http\Controllers\EmailAccountController::class, 'store'])->name('settings.store')->middleware('can:email-settings');
+        Route::delete('/settings', [\App\Http\Controllers\EmailAccountController::class, 'destroy'])->name('settings.destroy')->middleware('can:email-settings');
+
+        Route::get('/inbox', [\App\Http\Controllers\EmailController::class, 'inbox'])->name('inbox')->middleware('can:email-view');
+        Route::get('/sent', [\App\Http\Controllers\EmailController::class, 'sent'])->name('sent')->middleware('can:email-view');
+        Route::get('/spam', [\App\Http\Controllers\EmailController::class, 'spam'])->name('spam')->middleware('can:email-view');
+        Route::get('/trash', [\App\Http\Controllers\EmailController::class, 'trash'])->name('trash')->middleware('can:email-view');
+        Route::get('/compose', [\App\Http\Controllers\EmailController::class, 'create'])->name('create')->middleware('can:email-create');
+        Route::post('/store', [\App\Http\Controllers\EmailController::class, 'store'])->name('store')->middleware('can:email-create');
+        Route::get('/{email}', [\App\Http\Controllers\EmailController::class, 'show'])->name('show')->middleware('can:email-view');
+        
+        // Actions
+        Route::patch('/{email}/trash', [\App\Http\Controllers\EmailController::class, 'moveToTrash'])->name('moveToTrash')->middleware('can:email-delete');
+        Route::patch('/{email}/spam', [\App\Http\Controllers\EmailController::class, 'markAsSpam'])->name('markAsSpam')->middleware('can:email-delete');
+        Route::patch('/{email}/restore', [\App\Http\Controllers\EmailController::class, 'restore'])->name('restore')->middleware('can:email-delete');
+        Route::delete('/{email}', [\App\Http\Controllers\EmailController::class, 'forceDelete'])->name('forceDelete')->middleware('can:email-delete');
+    });
 
 });

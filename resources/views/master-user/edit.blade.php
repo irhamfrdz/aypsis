@@ -4304,6 +4304,49 @@
                                 <td class="empty-cell text-center text-gray-400">-</td>
                             </tr>
 
+                            {{-- Email & Komunikasi --}}
+                            <tr class="module-row" data-module="email">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Email & Komunikasi</div>
+                                            <div class="text-xs text-gray-500">Akses fitur webmail IMAP/SMTP</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="header-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="header-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="header-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="header-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" data-permission="delete">
+                                </td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                            </tr>
+                            <tr class="submodule-row" data-parent="email">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Kelola Email & Pengaturan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[email][view]" value="1" class="permission-checkbox" @if(old('permissions.email.view') || (isset($userMatrixPermissions['email']['view']) && $userMatrixPermissions['email']['view']) || ($user && $user->can('email-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[email][create]" value="1" class="permission-checkbox" @if(old('permissions.email.create') || (isset($userMatrixPermissions['email']['create']) && $userMatrixPermissions['email']['create']) || ($user && $user->can('email-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[email][settings]" value="1" class="permission-checkbox" @if(old('permissions.email.settings') || (isset($userMatrixPermissions['email']['settings']) && $userMatrixPermissions['email']['settings']) || ($user && $user->can('email-settings'))) checked @endif title="Hak Akses Pengaturan Akun Email"></td>
+                                <td><input type="checkbox" name="permissions[email][delete]" value="1" class="permission-checkbox" @if(old('permissions.email.delete') || (isset($userMatrixPermissions['email']['delete']) && $userMatrixPermissions['email']['delete']) || ($user && $user->can('email-delete'))) checked @endif></td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                                <td class="empty-cell text-center text-gray-400">-</td>
+                            </tr>
+
                         </tbody>
                     </table>
                 </div>

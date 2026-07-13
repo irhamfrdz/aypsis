@@ -466,6 +466,37 @@
                 </div>
                 @endif
 
+                {{-- Kelola Email Section --}}
+                @php
+                    $isEmailRoute = Request::is('email*') || Request::routeIs('email.*');
+                    $hasEmailPermissions = $isAdmin || ($user && $user->can('email-view'));
+                @endphp
+
+                @if($hasEmailPermissions)
+                <div class="mt-4 mb-6">
+                    <button id="email-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-sm font-medium {{ $isEmailRoute ? 'bg-indigo-50 text-indigo-700' : '' }}">
+                        <span class="text-sm font-semibold">Kelola Email</span>
+                        <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isEmailRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="email-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isEmailRoute) style="display: block;" @endif>
+                        <a href="{{ Route::has('email.inbox') ? route('email.inbox') : url('email/inbox') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('email.inbox') || Request::is('email/inbox') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                            <span class="text-xs font-medium">📥 Email Masuk</span>
+                        </a>
+                        <a href="{{ Route::has('email.sent') ? route('email.sent') : url('email/sent') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('email.sent') || Request::is('email/sent') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                            <span class="text-xs font-medium">📤 Email Keluar</span>
+                        </a>
+                        <a href="{{ Route::has('email.spam') ? route('email.spam') : url('email/spam') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('email.spam') || Request::is('email/spam') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                            <span class="text-xs font-medium">⚠️ Spam</span>
+                        </a>
+                        <a href="{{ Route::has('email.trash') ? route('email.trash') : url('email/trash') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('email.trash') || Request::is('email/trash') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                            <span class="text-xs font-medium">🗑️ Terhapus</span>
+                        </a>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Master Data Section -->
                 @php
                     $isMasterRoute = Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master-pricelist-labuh-tambat.*') || Request::routeIs('master-pricelist-freight.*') || Request::routeIs('master.item-kwitansi.*');
@@ -2738,6 +2769,7 @@
         setupDropdown('report-menu-toggle', 'report-menu-content');
         setupDropdown('monitoring-menu-toggle', 'monitoring-menu-content');
         setupDropdown('absensi-menu-toggle', 'absensi-menu-content');
+        setupDropdown('email-menu-toggle', 'email-menu-content');
 
         // Sidebar search functionality
         const sidebarSearch = document.getElementById('sidebar-search');
