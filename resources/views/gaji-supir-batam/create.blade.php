@@ -105,7 +105,6 @@
                         <input type="number" name="biaya_bensin" id="biaya_bensin" value="{{ old('biaya_bensin', 0) }}" min="0" class="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 font-semibold" placeholder="0" readonly>
                     </div>
                 </div>
-                </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Potongan 5%</label>
                     <div class="mt-2 flex items-center">
