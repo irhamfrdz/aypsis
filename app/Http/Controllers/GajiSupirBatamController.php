@@ -483,12 +483,14 @@ class GajiSupirBatamController extends Controller
         $bensinItems = [];
         foreach ($bensinList as $b) {
             $biaya = is_numeric($b->biaya) ? (float) $b->biaya : 0;
-            $totalBiayaBensin += $biaya;
+            $biayaSupir = (float) $b->liter * 13800;
+            $totalBiayaBensin += $biayaSupir;
             $bensinItems[] = [
                 'id' => $b->id,
                 'tanggal' => \Carbon\Carbon::parse($b->tanggal)->format('d/m/Y'),
                 'liter' => (float) $b->liter,
                 'biaya' => $biaya,
+                'biaya_supir' => $biayaSupir,
                 'keterangan' => $b->keterangan ?? '-',
             ];
         }
