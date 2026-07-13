@@ -243,8 +243,7 @@
                 <tr>
                     <th style="width: 5%;">No</th>
                     <th style="width: 15%;" colspan="2">Jumlah Barang</th>
-                    <th style="width: 7%;">No. BL</th>
-                    <th style="width: 58%;">Nama Barang</th>
+                    <th style="width: 65%;">Nama Barang</th>
                     <th style="width: 15%;" colspan="2">Ton / M3</th>
                 </tr>
             </thead>
@@ -258,9 +257,6 @@
                     <td class="text-left" style="border-left: none;">
                         {{ $item['satuan'] }}
                     </td>
-                    <td class="text-center">
-                        {{ $item['nomor_bl'] ?? '-' }}
-                    </td>
                     <td style="font-weight: bold;" title="{{ $item['nama_barang'] }}">
                         {{ Str::limit($item['nama_barang'], 80) }}
                     </td>
@@ -273,12 +269,12 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center">Tidak ada data detail.</td>
+                    <td colspan="6" class="text-center">Tidak ada data detail.</td>
                 </tr>
                 @endforelse
                 @if($items->count() > 0)
                 <tr class="total-row">
-                    <td colspan="5" class="text-right">TOTAL</td>
+                    <td colspan="4" class="text-right">TOTAL</td>
                     <td class="text-right" style="border-right: none;">
                         {{ rtrim(rtrim(number_format($totalAmount, 3, ',', '.'), '0'), ',') }}
                     </td>
