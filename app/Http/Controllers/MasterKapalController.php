@@ -748,25 +748,31 @@ class MasterKapalController extends Controller
         if ($cargoItems->isNotEmpty()) {
             $totalCargoQty = 0;
             $distinctNames = collect();
+            $vehicleCounts = collect();
 
             foreach ($cargoItems as $item) {
                 $qty = $item->kuantitas ?: 1;
-                $totalCargoQty += $qty;
-
                 $name = trim($item->nama_barang ?? 'Cargo');
 
                 // Map/Simplify names based on rules to get nice category tags
                 $cleanName = '';
+                $isVehicle = false;
+                
                 if (stripos($name, 'mobil') !== false || stripos($name, 'toyota') !== false || stripos($name, 'fortuner') !== false) {
                     $cleanName = 'Mobil';
+                    $isVehicle = true;
+                } elseif (stripos($name, 'motor') !== false && !stripos($name, 'dinamo') && !stripos($name, 'listrik')) {
+                    $cleanName = 'Motor';
+                    $isVehicle = true;
+                } elseif (stripos($name, 'forklift') !== false) {
+                    $cleanName = 'Forklift';
+                    $isVehicle = true;
                 } elseif (stripos($name, 'saklar') !== false) {
                     $cleanName = 'Kotak Saklar';
                 } elseif (stripos($name, 'accessories') !== false || stripos($name, 'aksesoris') !== false) {
                     $cleanName = 'Aksesoris';
                 } elseif (stripos($name, 'pipa') !== false) {
                     $cleanName = 'Pipa';
-                } elseif (stripos($name, 'forklift') !== false) {
-                    $cleanName = 'Forklift';
                 } elseif (stripos($name, 'kds') !== false || stripos($name, 'ulir') !== false || stripos($name, 'besi') !== false) {
                     $cleanName = 'Besi Beton';
                 } else {
@@ -785,14 +791,26 @@ class MasterKapalController extends Controller
                     $cleanName = implode(' ', $kept) ?: 'Cargo';
                 }
 
-                $distinctNames->push($cleanName);
+                if ($isVehicle) {
+                    if (!$vehicleCounts->has($cleanName)) {
+                        $vehicleCounts[$cleanName] = 0;
+                    }
+                    $vehicleCounts[$cleanName] += $qty;
+                } else {
+                    $totalCargoQty += $qty;
+                    $distinctNames->push($cleanName);
+                }
             }
 
             $uniqueCargoNames = $distinctNames->unique()->filter()->values()->all();
             $cargoNamesStr = implode(', ', $uniqueCargoNames);
 
             if ($totalCargoQty > 0) {
-                $lines[] = "- {$totalCargoQty} Colly ({$cargoNamesStr})";
+                $lines[] = "- {$totalCargoQty} Colly" . ($cargoNamesStr ? " ({$cargoNamesStr})" : "");
+            }
+            
+            foreach ($vehicleCounts as $vehicleName => $vQty) {
+                $lines[] = "- {$vQty} Unit {$vehicleName}";
             }
         }
 
