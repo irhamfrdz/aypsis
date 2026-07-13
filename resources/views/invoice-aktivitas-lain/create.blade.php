@@ -3029,10 +3029,23 @@ console.log('Akun COAs data:', akunCoasData);
                            value="${existingData.pph || ''}">
                 </div>
                 
+                <!-- Adjustment -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Adjustment <small class="text-gray-500">(Opsional)</small>
+                    </label>
+                    <input type="number" 
+                           name="biaya_listrik[${index}][adjustment]" 
+                           class="bl-adjustment w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="0"
+                           step="0.01"
+                           value="${existingData.adjustment || ''}">
+                </div>
+                
                 <!-- Grand Total (Auto-calculated) -->
                 <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-700 mb-1">
-                        Grand Total <small class="text-gray-500">(DPP - PPH)</small>
+                        Grand Total <small class="text-gray-500">(DPP - PPH + Adjustment)</small>
                     </label>
                     <input type="number" 
                            name="biaya_listrik[${index}][grand_total]" 
@@ -3093,6 +3106,7 @@ console.log('Akun COAs data:', akunCoasData);
             const ppjuInput = entry.querySelector('.bl-ppju');
             const dppInput = entry.querySelector('.bl-dpp');
             const pphInput = entry.querySelector('.bl-pph');
+            const adjustmentInput = entry.querySelector('.bl-adjustment');
             const grandTotalInput = entry.querySelector('.bl-grand-total');
             
             function calculateWBP() {
@@ -3158,7 +3172,8 @@ console.log('Akun COAs data:', akunCoasData);
             function calculateGrandTotal() {
                 const dpp = parseFloat(dppInput.value) || 0;
                 const pph = parseFloat(pphInput.value) || 0;
-                const grandTotal = dpp - pph;
+                const adjustment = parseFloat(adjustmentInput.value) || 0;
+                const grandTotal = dpp - pph + adjustment;
                 grandTotalInput.value = grandTotal;
                 updateTotalFromBiayaListrik();
             }
@@ -3169,6 +3184,9 @@ console.log('Akun COAs data:', akunCoasData);
             lwbpTarifInput.addEventListener('input', calculateTarif1);
             wbpTarifInput.addEventListener('input', calculateTarif2);
             biayaBebanInput.addEventListener('input', calculatePPJU);
+            if (adjustmentInput) {
+                adjustmentInput.addEventListener('input', calculateGrandTotal);
+            }
         }
         
         function updateTotalFromBiayaListrik() {

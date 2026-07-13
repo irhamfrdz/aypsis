@@ -381,6 +381,7 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_listrik.*.ppju' => 'nullable|numeric',
             'biaya_listrik.*.dpp' => 'nullable|numeric',
             'biaya_listrik.*.pph' => 'nullable|numeric',
+            'biaya_listrik.*.adjustment' => 'nullable|numeric',
             'biaya_listrik.*.grand_total' => 'nullable|numeric',
             // Biaya Utilities fields
             'biaya_utilities_detail' => 'nullable|array',
@@ -873,7 +874,7 @@ class InvoiceAktivitasLainController extends Controller
         if (isset($inputs['biaya_listrik']) && is_array($inputs['biaya_listrik'])) {
             foreach ($inputs['biaya_listrik'] as &$item) {
                 foreach ($item as $key => $value) {
-                    if (is_string($value) && in_array($key, ['nominal_debit', 'nominal_kredit', 'lwbp_baru', 'lwbp_lama', 'lwbp', 'wbp', 'lwbp_tarif', 'wbp_tarif', 'tarif_1', 'tarif_2', 'biaya_beban', 'ppju', 'dpp', 'pph', 'grand_total'])) {
+                    if (is_string($value) && in_array($key, ['nominal_debit', 'nominal_kredit', 'lwbp_baru', 'lwbp_lama', 'lwbp', 'wbp', 'lwbp_tarif', 'wbp_tarif', 'tarif_1', 'tarif_2', 'biaya_beban', 'ppju', 'dpp', 'pph', 'adjustment', 'grand_total'])) {
                         $item[$key] = str_replace(['.', ','], '', $value);
                     }
                 }
@@ -996,6 +997,7 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_listrik.*.ppju' => 'nullable|numeric',
             'biaya_listrik.*.dpp' => 'nullable|numeric',
             'biaya_listrik.*.pph' => 'nullable|numeric',
+            'biaya_listrik.*.adjustment' => 'nullable|numeric',
             'biaya_listrik.*.grand_total' => 'nullable|numeric',
             // Utilities fields
             'biaya_utilities_detail' => 'nullable|array',

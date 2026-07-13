@@ -32,6 +32,7 @@ class InvoiceAktivitasLainListrik extends Model
         'ppju',
         'dpp',
         'pph',
+        'adjustment',
         'grand_total',
     ];
 
@@ -51,6 +52,7 @@ class InvoiceAktivitasLainListrik extends Model
         'ppju' => 'decimal:2',
         'dpp' => 'decimal:2',
         'pph' => 'decimal:2',
+        'adjustment' => 'decimal:2',
         'grand_total' => 'decimal:2',
     ];
 
