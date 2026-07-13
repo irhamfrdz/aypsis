@@ -106,6 +106,15 @@
                         <input type="number" name="biaya_bensin" id="biaya_bensin" value="{{ old('biaya_bensin', (int)$gaji->biaya_bensin) }}" min="0" class="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-50 font-semibold" placeholder="0" readonly>
                     </div>
                 </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Potongan 5%</label>
+                    <div class="mt-2 flex items-center">
+                        <input type="checkbox" name="is_potongan_5_persen" id="is_potongan_5_persen" value="1" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" {{ old('is_potongan_5_persen', $gaji->is_potongan_5_persen) ? 'checked' : '' }}>
+                        <label for="is_potongan_5_persen" class="ml-2 block text-sm text-gray-900">
+                            Potong 5% dari Gaji Bersih
+                        </label>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -240,12 +249,19 @@
             const gajiPokok = parseFloat(document.getElementById('gaji_pokok').value) || 0;
             const uangMalamLibur = parseFloat(document.getElementById('uang_malam_libur').value) || 0;
             const biayaBensin = parseFloat(document.getElementById('biaya_bensin').value) || 0;
-            const totalGaji = Math.max(0, gajiPokok + uangMalamLibur - biayaBensin);
+            const isPotongan = document.getElementById('is_potongan_5_persen').checked;
+            
+            let totalGaji = Math.max(0, gajiPokok + uangMalamLibur - biayaBensin);
+            if (isPotongan) {
+                totalGaji = totalGaji - (totalGaji * 0.05);
+            }
+            
             totalDisplay.textContent = 'Rp ' + totalGaji.toLocaleString('id-ID');
         }
 
         document.getElementById('uang_malam_libur').addEventListener('input', calculateSalary);
         document.getElementById('biaya_bensin').addEventListener('input', calculateSalary);
+        document.getElementById('is_potongan_5_persen').addEventListener('change', calculateSalary);
 
         function renderBensinTable(bensinItems, totalBiayaBensin) {
             const section = document.getElementById('bensin_breakdown_section');

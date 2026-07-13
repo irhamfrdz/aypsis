@@ -22,6 +22,8 @@ class GajiSupirBatam extends Model
         'gaji_pokok',
         'uang_malam_libur',
         'biaya_bensin',
+        'is_potongan_5_persen',
+        'nominal_potongan_5_persen',
         'total_gaji',
         'status_pembayaran',
         'tanggal_dibayar',
@@ -35,6 +37,8 @@ class GajiSupirBatam extends Model
         'gaji_pokok' => 'decimal:2',
         'uang_malam_libur' => 'decimal:2',
         'biaya_bensin' => 'decimal:2',
+        'is_potongan_5_persen' => 'boolean',
+        'nominal_potongan_5_persen' => 'decimal:2',
         'total_gaji' => 'decimal:2',
         'tanggal_dibayar' => 'date',
     ];

@@ -102,6 +102,7 @@ class GajiSupirBatamController extends Controller
             'status_pembayaran' => 'required|in:PENDING,PAID,CANCELLED',
             'tanggal_dibayar' => 'nullable|date',
             'keterangan' => 'nullable|string',
+            'is_potongan_5_persen' => 'nullable|boolean',
         ]);
 
         // Overlap validation
@@ -127,7 +128,17 @@ class GajiSupirBatamController extends Controller
         $data['periode_bulan'] = (int) $startDateObj->format('n');
         $data['periode_tahun'] = (int) $startDateObj->format('Y');
         $data['periode_minggu'] = 1;
-        $data['total_gaji'] = $data['gaji_pokok'] + $data['uang_malam_libur'] - $data['biaya_bensin'];
+
+        $data['is_potongan_5_persen'] = $request->has('is_potongan_5_persen') && $request->is_potongan_5_persen;
+        $subtotal = $data['gaji_pokok'] + $data['uang_malam_libur'] - $data['biaya_bensin'];
+
+        if ($data['is_potongan_5_persen']) {
+            $data['nominal_potongan_5_persen'] = $subtotal * 0.05;
+        } else {
+            $data['nominal_potongan_5_persen'] = 0;
+        }
+
+        $data['total_gaji'] = $subtotal - $data['nominal_potongan_5_persen'];
 
         if ($data['status_pembayaran'] === 'PAID' && empty($data['tanggal_dibayar'])) {
             $data['tanggal_dibayar'] = now()->format('Y-m-d');
@@ -282,6 +293,7 @@ class GajiSupirBatamController extends Controller
             'status_pembayaran' => 'required|in:PENDING,PAID,CANCELLED',
             'tanggal_dibayar' => 'nullable|date',
             'keterangan' => 'nullable|string',
+            'is_potongan_5_persen' => 'nullable|boolean',
         ]);
 
         // Overlap validation excluding self
@@ -306,7 +318,17 @@ class GajiSupirBatamController extends Controller
         $startDateObj = \Carbon\Carbon::parse($validated['tanggal_mulai']);
         $data['periode_bulan'] = (int) $startDateObj->format('n');
         $data['periode_tahun'] = (int) $startDateObj->format('Y');
-        $data['total_gaji'] = $data['gaji_pokok'] + $data['uang_malam_libur'] - $data['biaya_bensin'];
+
+        $data['is_potongan_5_persen'] = $request->has('is_potongan_5_persen') && $request->is_potongan_5_persen;
+        $subtotal = $data['gaji_pokok'] + $data['uang_malam_libur'] - $data['biaya_bensin'];
+
+        if ($data['is_potongan_5_persen']) {
+            $data['nominal_potongan_5_persen'] = $subtotal * 0.05;
+        } else {
+            $data['nominal_potongan_5_persen'] = 0;
+        }
+
+        $data['total_gaji'] = $subtotal - $data['nominal_potongan_5_persen'];
 
         if ($data['status_pembayaran'] === 'PAID' && empty($data['tanggal_dibayar'])) {
             $data['tanggal_dibayar'] = now()->format('Y-m-d');
