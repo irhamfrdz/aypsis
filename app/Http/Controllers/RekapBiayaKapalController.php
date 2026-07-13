@@ -65,7 +65,18 @@ class RekapBiayaKapalController extends Controller
         $parentShipsLower = array_map(fn ($s) => strtolower(trim($s)), $parentShips);
         $parentVoyagesLower = array_map(fn ($v) => strtolower(trim($v)), $parentVoyages);
 
-        return in_array($kapalLower, $parentShipsLower) && in_array($voyageLower, $parentVoyagesLower);
+        $indices = array_keys($parentShipsLower, $kapalLower);
+        if (!empty($indices)) {
+            foreach ($indices as $idx) {
+                if (isset($parentVoyagesLower[$idx])) {
+                    if ($parentVoyagesLower[$idx] === $voyageLower) return true;
+                } elseif (count($parentVoyagesLower) === 1) {
+                    if ($parentVoyagesLower[0] === $voyageLower) return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -322,12 +333,23 @@ class RekapBiayaKapalController extends Controller
             if (! $hasAnyDetails) {
                 $parentShips = is_array($record->nama_kapal) ? $record->nama_kapal : ($record->nama_kapal ? [$record->nama_kapal] : []);
                 $parentShipsLower = array_map(fn ($s) => strtolower(trim($s)), $parentShips);
-                if (in_array($selectedShipLower, $parentShipsLower)) {
+                $indices = array_keys($parentShipsLower, $selectedShipLower);
+                
+                if (!empty($indices)) {
                     $parentVoyages = is_array($record->no_voyage) ? $record->no_voyage : ($record->no_voyage ? [$record->no_voyage] : []);
-                    foreach ($parentVoyages as $voyage) {
-                        $trimmed = trim($voyage);
-                        if ($trimmed !== '') {
-                            $voyages[strtolower($trimmed)] = $trimmed;
+                    foreach ($indices as $idx) {
+                        $voyageToUse = null;
+                        if (isset($parentVoyages[$idx])) {
+                            $voyageToUse = $parentVoyages[$idx];
+                        } elseif (count($parentVoyages) === 1) {
+                            $voyageToUse = $parentVoyages[0];
+                        }
+                        
+                        if ($voyageToUse !== null) {
+                            $trimmed = trim($voyageToUse);
+                            if ($trimmed !== '') {
+                                $voyages[strtolower($trimmed)] = $trimmed;
+                            }
                         }
                     }
                 }
