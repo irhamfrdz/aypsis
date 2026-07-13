@@ -261,7 +261,7 @@
                         {{ Str::limit($item['nama_barang'], 80) }}
                     </td>
                     <td class="text-right" style="border-right: none; width: 75%;">
-                        {{ $item['amount'] !== null ? rtrim(rtrim(number_format($item['amount'], 3, ',', '.'), '0'), ',') : '' }}
+                        {{ $item['amount'] !== null ? number_format($item['amount'], 3, ',', '.') : '' }}
                     </td>
                     <td class="text-center" style="border-left: none; width: 25%;">
                         {{ $item['unit'] }}
@@ -276,7 +276,7 @@
                 <tr class="total-row">
                     <td colspan="4" class="text-right">TOTAL</td>
                     <td class="text-right" style="border-right: none;">
-                        {{ rtrim(rtrim(number_format($totalAmount, 3, ',', '.'), '0'), ',') }}
+                        {{ number_format($totalAmount, 3, ',', '.') }}
                     </td>
                     <td class="text-center" style="border-left: none;">
                         Kgs/m3
