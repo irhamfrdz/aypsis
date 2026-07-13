@@ -120,6 +120,7 @@
                             <th class="px-4 py-2 text-left font-semibold text-amber-700">Tanggal</th>
                             <th class="px-4 py-2 text-right font-semibold text-amber-700">Liter</th>
                             <th class="px-4 py-2 text-left font-semibold text-amber-700">Keterangan</th>
+                            <th class="px-4 py-2 text-right font-semibold text-amber-700">Biaya Supir</th>
                             <th class="px-4 py-2 text-right font-semibold text-amber-700">Biaya (Rp)</th>
                         </tr>
                     </thead>
@@ -127,7 +128,7 @@
                     </tbody>
                     <tfoot class="bg-amber-50 font-bold border-t border-amber-200">
                         <tr>
-                            <td colspan="3" class="px-4 py-2 text-right text-amber-800">Total Biaya Bensin:</td>
+                            <td colspan="4" class="px-4 py-2 text-right text-amber-800">Total Biaya Bensin:</td>
                             <td class="px-4 py-2 text-right text-amber-700" id="bensin_total_display">Rp 0</td>
                         </tr>
                     </tfoot>
@@ -257,11 +258,13 @@
 
             section.style.display = 'block';
             bensinItems.forEach(b => {
+                const biayaSupir = b.liter * 13800;
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="px-4 py-2 text-gray-600">${b.tanggal}</td>
                     <td class="px-4 py-2 text-right text-gray-600">${b.liter.toLocaleString('id-ID')} L</td>
                     <td class="px-4 py-2 text-gray-500">${b.keterangan}</td>
+                    <td class="px-4 py-2 text-right font-semibold text-amber-800">Rp ${biayaSupir.toLocaleString('id-ID')}</td>
                     <td class="px-4 py-2 text-right font-semibold text-amber-800">Rp ${b.biaya.toLocaleString('id-ID')}</td>
                 `;
                 tbody.appendChild(tr);
