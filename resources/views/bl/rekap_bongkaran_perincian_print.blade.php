@@ -221,7 +221,7 @@
                 <tr>
                     <td style="width: 15%;">Nama Kapal</td>
                     <td style="width: 35%;">: {{ $namaKapal }}</td>
-                    <td style="width: 15%;">Est Tiba</td>
+                    <td style="width: 20%;">{{ ucwords(strtolower($labelTanggal ?? 'Estimasi Tiba')) }}</td>
                     <td>: {{ $estTiba }}</td>
                 </tr>
                 <tr>

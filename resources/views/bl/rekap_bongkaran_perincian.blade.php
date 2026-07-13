@@ -47,7 +47,7 @@
             </div>
             <div class="space-y-2">
                 <div class="flex">
-                    <span class="font-bold text-gray-700 w-32 uppercase">Estimasi Tiba</span>
+                    <span class="font-bold text-gray-700 w-32 uppercase">{{ $labelTanggal ?? 'ESTIMASI TIBA' }}</span>
                     <span class="text-gray-900">: {{ $estTiba }}</span>
                 </div>
             </div>
