@@ -467,6 +467,8 @@
                 <input type="hidden" name="bl_id" id="modal_bl_id">
                 <input type="hidden" name="nama_kapal" id="modal_nama_kapal" value="{{ $selectedKapal }}">
                 <input type="hidden" name="no_voyage" id="modal_no_voyage" value="{{ $selectedVoyage }}">
+                <input type="hidden" name="current_filter_kapal" value="{{ $selectedKapal }}">
+                <input type="hidden" name="current_filter_voyage" value="{{ $selectedVoyage }}">
                 
                 <div class="max-h-[70vh] overflow-y-auto px-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1052,6 +1054,8 @@
                 <input type="hidden" name="bl_id" id="edit_modal_bl_id">
                 <input type="hidden" name="nama_kapal" id="edit_modal_nama_kapal" value="{{ $selectedKapal }}">
                 <input type="hidden" name="no_voyage" id="edit_modal_no_voyage" value="{{ $selectedVoyage }}">
+                <input type="hidden" name="current_filter_kapal" value="{{ $selectedKapal }}">
+                <input type="hidden" name="current_filter_voyage" value="{{ $selectedVoyage }}">
                 
                 <div class="max-h-[70vh] overflow-y-auto px-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

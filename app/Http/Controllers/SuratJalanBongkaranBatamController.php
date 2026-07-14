@@ -711,20 +711,23 @@ class SuratJalanBongkaranBatamController extends Controller
 
             DB::commit();
 
+            $redirectKapal = $request->has('current_filter_kapal') ? $request->current_filter_kapal : $request->nama_kapal;
+            $redirectVoyage = $request->has('current_filter_voyage') ? $request->current_filter_voyage : $request->no_voyage;
+
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Surat Jalan Bongkaran Batam berhasil dibuat.',
                     'redirect' => route('surat-jalan-bongkaran-batam.list', [
-                        'nama_kapal' => $request->nama_kapal,
-                        'no_voyage' => $request->no_voyage,
+                        'nama_kapal' => $redirectKapal,
+                        'no_voyage' => $redirectVoyage,
                     ]),
                 ]);
             }
 
             return redirect()->route('surat-jalan-bongkaran-batam.list', [
-                'nama_kapal' => $request->nama_kapal,
-                'no_voyage' => $request->no_voyage,
+                'nama_kapal' => $redirectKapal,
+                'no_voyage' => $redirectVoyage,
             ])->with('success', 'Surat Jalan Bongkaran Batam berhasil dibuat.');
 
         } catch (\Exception $e) {
@@ -1081,20 +1084,23 @@ class SuratJalanBongkaranBatamController extends Controller
 
             DB::commit();
 
+            $redirectKapal = $request->has('current_filter_kapal') ? $request->current_filter_kapal : $request->nama_kapal;
+            $redirectVoyage = $request->has('current_filter_voyage') ? $request->current_filter_voyage : $request->no_voyage;
+
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Surat Jalan Bongkaran Batam berhasil diperbarui.',
                     'redirect' => route('surat-jalan-bongkaran-batam.list', [
-                        'nama_kapal' => $request->nama_kapal,
-                        'no_voyage' => $request->no_voyage,
+                        'nama_kapal' => $redirectKapal,
+                        'no_voyage' => $redirectVoyage,
                     ]),
                 ]);
             }
 
             return redirect()->route('surat-jalan-bongkaran-batam.list', [
-                'nama_kapal' => $request->nama_kapal,
-                'no_voyage' => $request->no_voyage,
+                'nama_kapal' => $redirectKapal,
+                'no_voyage' => $redirectVoyage,
             ])->with('success', 'Surat Jalan Bongkaran Batam berhasil diperbarui.');
 
         } catch (\Exception $e) {
