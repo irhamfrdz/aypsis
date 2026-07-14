@@ -178,7 +178,21 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Nominal</label>
-                <p class="text-2xl font-bold text-green-600">{{ $biayaKapal->formatted_nominal }}</p>
+                @php
+                    $displayNominal = $biayaKapal->formatted_nominal;
+                    if (request()->has('kapal') && request()->has('voyage')) {
+                        try {
+                            $rekappCtrl = app(\App\Http\Controllers\RekapBiayaKapalController::class);
+                            $apportioned = $rekappCtrl->getApportionedCostForRecord($biayaKapal, request()->kapal, request()->voyage);
+                            if ($apportioned && isset($apportioned['nominal'])) {
+                                $displayNominal = 'Rp ' . number_format($apportioned['nominal'], 0, ',', '.');
+                            }
+                        } catch (\Exception $e) {
+                            // fallback to default if error
+                        }
+                    }
+                @endphp
+                <p class="text-2xl font-bold text-green-600">{{ $displayNominal }}</p>
             </div>
         </div>
 
@@ -243,6 +257,13 @@
                     $parts = explode('|', $key);
                     $kapal = $parts[0];
                     $voyage = $parts[1];
+
+                    if (request()->has('kapal') && request()->has('voyage')) {
+                        if (strtolower(trim($kapal)) !== strtolower(trim(request()->kapal)) || strtolower(trim($voyage)) !== strtolower(trim(request()->voyage))) {
+                            continue;
+                        }
+                    }
+
                     $barangItems = $biayaKapal->barangDetails->where('kapal', $kapal)->where('voyage', $voyage);
                     $tenagaKerjaItems = $biayaKapal->tenagaKerjaDetails->where('kapal', $kapal)->where('voyage', $voyage);
                     $firstBarang = $barangItems->first();
@@ -336,7 +357,9 @@
                     <div class="mt-4 flex justify-end">
                         <div class="bg-blue-600 px-4 py-2 rounded-lg shadow-md text-right">
                             <span class="text-xs font-semibold text-blue-100 uppercase">Total Nominal Kapal</span>
-                            <p class="text-xl font-black text-white">Rp {{ number_format($barangItems->sum('subtotal') + ($firstBarang->adjustment ?? 0) + $tenagaKerjaItems->sum('nominal'), 0, ',', '.') }}</p>
+                            <p class="text-xl font-black text-white">
+                                Rp {{ number_format($barangItems->count() > 0 ? ($barangItems->sum('subtotal') + ($firstBarang->adjustment ?? 0)) : $tenagaKerjaItems->sum('nominal'), 0, ',', '.') }}
+                            </p>
                         </div>
                     </div>
                 </div>

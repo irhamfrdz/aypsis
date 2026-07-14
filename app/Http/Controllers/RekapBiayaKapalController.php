@@ -133,7 +133,7 @@ class RekapBiayaKapalController extends Controller
     /**
      * Calculate apportioned nominal, ppn, pph, and total_biaya for a specific ship and voyage.
      */
-    private function getApportionedCostForRecord($item, $kapal, $voyage)
+    public function getApportionedCostForRecord($item, $kapal, $voyage)
     {
         $kapalLower = strtolower(trim($kapal));
         $voyageLower = strtolower(trim($voyage));
