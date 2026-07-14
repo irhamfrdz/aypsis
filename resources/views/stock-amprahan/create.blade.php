@@ -716,7 +716,12 @@ document.addEventListener('DOMContentLoaded', function() {
             searchVoyage.disabled = true;
 
             // Fetch voyages
-            fetch(`/master-kapal/${kapalId}/voyages`)
+            fetch(`/master-kapal/${kapalId}/voyages`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
                 .then(response => response.json())
                 .then(data => {
                     voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';

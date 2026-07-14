@@ -1873,8 +1873,7 @@ Route::middleware([
             ->middleware('can:master-kapal.view');
 
         Route::get('master-kapal/{master_kapal}/voyages', [\App\Http\Controllers\MasterKapalController::class, 'getVoyages'])
-            ->name('master-kapal.voyages')
-            ->middleware('can:master-kapal.view');
+            ->name('master-kapal.voyages');
 
         // 🚢 Master Kapal (Ship Master) Management with permissions
         Route::resource('master-kapal', \App\Http\Controllers\MasterKapalController::class)
