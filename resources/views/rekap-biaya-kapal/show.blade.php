@@ -125,6 +125,7 @@
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">No. Invoice</th>
                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Klasifikasi</th>
                             <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Total</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-20 no-print">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100">
@@ -146,10 +147,15 @@
                                 <td class="px-6 py-4 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
                                     Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
                                 </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap no-print">
+                                    <a href="{{ route('biaya-kapal.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Transaksi">
+                                        <i class="fas fa-eye text-xs"></i>
+                                    </a>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                     <i class="fas fa-ship text-gray-300 text-5xl mb-4 block"></i>
                                     <p class="font-semibold text-lg">Tidak ada data biaya kapal yang ditemukan</p>
                                     <p class="text-gray-400 text-sm mt-1">Silakan periksa kembali kapal dan nomor voyage yang Anda pilih.</p>
@@ -164,6 +170,7 @@
                                 <td class="px-6 py-4 text-right text-sm text-gray-900">
                                     Rp {{ number_format($summary['grand_total'], 0, ',', '.') }}
                                 </td>
+                                <td class="px-6 py-4 no-print"></td>
                             </tr>
                         </tfoot>
                     @endif
