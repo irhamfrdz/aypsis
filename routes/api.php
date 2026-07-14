@@ -94,3 +94,192 @@ Route::delete('/lokasi-absensi/{id}', function($id) {
         'message' => 'Lokasi absensi berhasil dihapus.'
     ]);
 });
+
+// Jam Kerja (Working Hours) API endpoints
+Route::get('/working-hours', function() {
+    return response()->json(DB::table('jam_kerjas')->orderBy('created_at', 'desc')->get());
+});
+
+Route::post('/working-hours', function(Request $request) {
+    $data = $request->validate([
+        'nama_shift' => 'required|string',
+        'jam_masuk' => 'required',
+        'jam_keluar' => 'required',
+        'toleransi_keterlambatan' => 'nullable|integer',
+        'is_active' => 'nullable'
+    ]);
+    
+    $isActive = isset($data['is_active']) ? ($data['is_active'] == 1 ? 1 : 0) : 1;
+    
+    $id = DB::table('jam_kerjas')->insertGetId([
+        'nama_shift' => $data['nama_shift'],
+        'jam_masuk' => $data['jam_masuk'],
+        'jam_keluar' => $data['jam_keluar'],
+        'toleransi_keterlambatan' => $data['toleransi_keterlambatan'] ?? 0,
+        'is_active' => $isActive,
+        'created_at' => now(),
+        'updated_at' => now()
+    ]);
+    
+    return response()->json([
+        'message' => 'Jam kerja berhasil ditambahkan.',
+        'id' => $id
+    ]);
+});
+
+Route::put('/working-hours/{id}', function(Request $request, $id) {
+    $data = $request->validate([
+        'nama_shift' => 'required|string',
+        'jam_masuk' => 'required',
+        'jam_keluar' => 'required',
+        'toleransi_keterlambatan' => 'nullable|integer',
+        'is_active' => 'nullable'
+    ]);
+    
+    $isActive = isset($data['is_active']) ? ($data['is_active'] == 1 ? 1 : 0) : 1;
+    
+    DB::table('jam_kerjas')->where('id', $id)->update([
+        'nama_shift' => $data['nama_shift'],
+        'jam_masuk' => $data['jam_masuk'],
+        'jam_keluar' => $data['jam_keluar'],
+        'toleransi_keterlambatan' => $data['toleransi_keterlambatan'] ?? 0,
+        'is_active' => $isActive,
+        'updated_at' => now()
+    ]);
+    
+    return response()->json([
+        'message' => 'Jam kerja berhasil diperbarui.'
+    ]);
+});
+
+Route::delete('/working-hours/{id}', function($id) {
+    DB::table('jam_kerjas')->where('id', $id)->delete();
+    return response()->json([
+        'message' => 'Jam kerja berhasil dihapus.'
+    ]);
+});
+
+// Hari Libur (Holidays) API endpoints
+Route::get('/holidays', function() {
+    return response()->json(DB::table('hari_liburs')->orderBy('tanggal', 'asc')->get());
+});
+
+Route::post('/holidays', function(Request $request) {
+    $data = $request->validate([
+        'tanggal' => 'required|date',
+        'keterangan' => 'required|string'
+    ]);
+    
+    $existing = DB::table('hari_liburs')->where('tanggal', $data['tanggal'])->first();
+    if ($existing) {
+        return response()->json(['error' => 'Tanggal tersebut sudah diatur sebagai hari libur'], 400);
+    }
+    
+    $id = DB::table('hari_liburs')->insertGetId([
+        'tanggal' => $data['tanggal'],
+        'keterangan' => $data['keterangan'],
+        'created_at' => now(),
+        'updated_at' => now()
+    ]);
+    
+    return response()->json([
+        'message' => 'Hari libur berhasil ditambahkan.',
+        'id' => $id
+    ]);
+});
+
+Route::put('/holidays/{id}', function(Request $request, $id) {
+    $data = $request->validate([
+        'tanggal' => 'required|date',
+        'keterangan' => 'required|string'
+    ]);
+    
+    $existing = DB::table('hari_liburs')->where('tanggal', $data['tanggal'])->where('id', '!=', $id)->first();
+    if ($existing) {
+        return response()->json(['error' => 'Tanggal tersebut sudah diatur sebagai hari libur'], 400);
+    }
+    
+    DB::table('hari_liburs')->where('id', $id)->update([
+        'tanggal' => $data['tanggal'],
+        'keterangan' => $data['keterangan'],
+        'updated_at' => now()
+    ]);
+    
+    return response()->json([
+        'message' => 'Hari libur berhasil diperbarui.'
+    ]);
+});
+
+Route::delete('/holidays/{id}', function($id) {
+    DB::table('hari_liburs')->where('id', $id)->delete();
+    return response()->json([
+        'message' => 'Hari libur berhasil dihapus.'
+    ]);
+});
+
+// Admin Approval API endpoints
+Route::get('/admin/pending-attendance', function() {
+    $rows = DB::table('absensis as a')
+        ->leftJoin('karyawans as k', function($join) {
+            $join->on('a.karyawan_id', '=', 'k.id')
+                 ->orOn('a.nik', '=', 'k.nik');
+        })
+        ->select('a.*', 'k.nama_lengkap', 'k.divisi', 'k.pekerjaan')
+        ->where('a.status', 'PERSETUJUAN')
+        ->orderBy('a.waktu', 'desc')
+        ->get();
+    return response()->json($rows);
+});
+
+Route::post('/attendance/approve', function(Request $request) {
+    $data = $request->validate(['attendance_id' => 'required|integer']);
+    
+    DB::table('absensis')->where('id', $data['attendance_id'])->update([
+        'status' => 'HADIR',
+        'updated_at' => now()
+    ]);
+    
+    return response()->json(['message' => 'Absensi berhasil disetujui, status berubah menjadi HADIR.']);
+});
+
+Route::post('/attendance/reject', function(Request $request) {
+    $data = $request->validate(['attendance_id' => 'required|integer']);
+    
+    DB::table('absensis')->where('id', $data['attendance_id'])->update([
+        'status' => 'DITOLAK',
+        'updated_at' => now()
+    ]);
+    
+    return response()->json(['message' => 'Absensi berhasil ditolak, status berubah menjadi DITOLAK.']);
+});
+
+Route::get('/admin/pending-permissions', function() {
+    $rows = DB::table('permohonan_izins')
+        ->where('status', 'PENDING')
+        ->orderBy('created_at', 'desc')
+        ->get();
+    return response()->json($rows);
+});
+
+Route::post('/admin/permissions/approve', function(Request $request) {
+    $data = $request->validate(['permission_id' => 'required|integer']);
+    
+    DB::table('permohonan_izins')->where('id', $data['permission_id'])->update([
+        'status' => 'APPROVED',
+        'updated_at' => now()
+    ]);
+    
+    return response()->json(['message' => 'Permohonan izin berhasil disetujui.']);
+});
+
+Route::post('/admin/permissions/reject', function(Request $request) {
+    $data = $request->validate(['permission_id' => 'required|integer']);
+    
+    DB::table('permohonan_izins')->where('id', $data['permission_id'])->update([
+        'status' => 'REJECTED',
+        'updated_at' => now()
+    ]);
+    
+    return response()->json(['message' => 'Permohonan izin ditolak.']);
+});
+
