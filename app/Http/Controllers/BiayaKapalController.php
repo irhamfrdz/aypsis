@@ -2406,7 +2406,7 @@ class BiayaKapalController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(BiayaKapal $biayaKapal)
+    public function show(\Illuminate\Http\Request $request, BiayaKapal $biayaKapal)
     {
         $biayaKapal->load([
             'klasifikasiBiaya',
@@ -2429,6 +2429,35 @@ class BiayaKapalController extends Controller
             'notaReturDetails',
             'tenagaKerjaDetails.buruh',
         ]);
+
+        $filterKapal = $request->query('kapal');
+        $filterVoyage = $request->query('voyage');
+
+        if ($filterKapal && $filterVoyage) {
+            $kapalLower = strtolower(trim($filterKapal));
+            $voyageLower = strtolower(trim($filterVoyage));
+
+            $relationsToFilter = [
+                'barangDetails', 'airDetails', 'tkbmDetails', 'operasionalDetails',
+                'truckingDetails', 'stuffingDetails', 'perlengkapanDetails',
+                'labuhTambatDetails', 'oppOptDetails', 'thcDetails', 'loloDetails',
+                'storageDetails', 'freightDetails', 'perijinanDetails', 'meratusDetails',
+                'demurrageDetails', 'notaReturDetails', 'tenagaKerjaDetails'
+            ];
+
+            foreach ($relationsToFilter as $rel) {
+                if ($biayaKapal->relationLoaded($rel)) {
+                    $filtered = $biayaKapal->{$rel}->filter(function($detail) use ($kapalLower, $voyageLower) {
+                        $dKapal = isset($detail->kapal) ? strtolower(trim($detail->kapal)) : '';
+                        $dVoyage = isset($detail->voyage) ? strtolower(trim($detail->voyage)) : '';
+                        // Special handling for labuhTambat which stores data a bit differently? Actually it uses kapal/voyage in DB.
+                        return $dKapal === $kapalLower && $dVoyage === $voyageLower;
+                    })->values();
+                    
+                    $biayaKapal->setRelation($rel, $filtered);
+                }
+            }
+        }
 
         // Resolve container details for trucking if needed
         $blDetails = collect();
