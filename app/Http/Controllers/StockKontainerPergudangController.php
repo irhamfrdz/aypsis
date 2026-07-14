@@ -109,18 +109,23 @@ class StockKontainerPergudangController extends Controller
         // Merge lists together
         $allContainers = $sewas->concat($stocks);
 
-        // Fetch entry dates from HistoryKontainer
+        // Fetch entry dates and details from HistoryKontainer
         $containerNumbers = $allContainers->pluck('nomor_seri_gabungan')->toArray();
         $gudangIdForHistory = ($id === 'none' || $id == '') ? null : $id;
 
-        $historySub = \App\Models\HistoryKontainer::whereIn('nomor_kontainer', $containerNumbers)
+        $latestHistories = \App\Models\HistoryKontainer::whereIn('nomor_kontainer', $containerNumbers)
             ->where('gudang_id', $gudangIdForHistory)
-            ->select('nomor_kontainer', DB::raw('MAX(tanggal_kegiatan) as tanggal_masuk'))
-            ->groupBy('nomor_kontainer')
-            ->pluck('tanggal_masuk', 'nomor_kontainer');
+            ->orderBy('tanggal_kegiatan', 'desc')
+            ->orderBy('id', 'desc')
+            ->get()
+            ->unique('nomor_kontainer')
+            ->keyBy('nomor_kontainer');
 
         foreach ($allContainers as $item) {
-            $item->tanggal_masuk = $historySub[$item->nomor_seri_gabungan] ?? null;
+            $history = $latestHistories->get($item->nomor_seri_gabungan);
+            $item->tanggal_masuk = $history ? $history->tanggal_kegiatan : null;
+            $item->jenis_kegiatan = $history ? $history->jenis_kegiatan : '-';
+            $item->keterangan_kegiatan = $history ? $history->keterangan : '-';
         }
 
         return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang', 'id', 'type'));

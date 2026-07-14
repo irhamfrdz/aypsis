@@ -138,6 +138,7 @@
                             <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Ukuran</th>
                             <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Tipe</th>
                             <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal Masuk</th>
+                            <th scope="col" class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Asal Transaksi</th>
                             <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
@@ -150,6 +151,22 @@
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-600">{{ $item->tipe_kontainer ?? '-' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-600">
                                 {{ $item->tanggal_masuk ? \Carbon\Carbon::parse($item->tanggal_masuk)->format('d/m/Y') : '-' }}
+                            </td>
+                            <td class="px-6 py-4 text-center text-sm">
+                                @if($item->keterangan_kegiatan && $item->keterangan_kegiatan !== '-')
+                                    @php
+                                        $cleanKet = str_ireplace('OB (Overbrengen)', 'OB', $item->keterangan_kegiatan);
+                                    @endphp
+                                    <div class="text-[11px] text-gray-700 max-w-[200px] mx-auto truncate" title="{{ $cleanKet }}">
+                                        {{ $cleanKet }}
+                                    </div>
+                                @elseif($item->jenis_kegiatan && $item->jenis_kegiatan !== '-')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-blue-100 text-blue-800">
+                                        {{ $item->jenis_kegiatan }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 @can('master-kontainer-view')
