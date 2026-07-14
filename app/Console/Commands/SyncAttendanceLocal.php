@@ -141,6 +141,11 @@ class SyncAttendanceLocal extends Command
                         }
                         $type = (in_array(strtoupper($log['CHECKTYPE']), ['I', '0', 'MASUK'])) ? 'Masuk' : 'Pulang';
                         $logTime = Carbon::parse($log['CHECKTIME'])->format('Y-m-d H:i:s');
+                        
+                        $hour = (int) Carbon::parse($log['CHECKTIME'])->format('H');
+                        if ($hour >= 4 && $hour < 12) {
+                            $type = 'Masuk';
+                        }
 
                         $key = $nik . '_' . $logTime . '_' . $type;
                         if (isset($existingLogs[$key])) {

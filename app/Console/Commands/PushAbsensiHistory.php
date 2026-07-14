@@ -57,9 +57,14 @@ class PushAbsensiHistory extends Command
                 $checktype = strtoupper($log['CHECKTYPE']);
                 $type = (in_array($checktype, ['I', '0', 'MASUK'])) ? 'Masuk' : 'Pulang';
                 
+                $logTime = Carbon::parse($log['CHECKTIME']);
+                if ($logTime->hour >= 4 && $logTime->hour < 12) {
+                    $type = 'Masuk';
+                }
+
                 $logs[] = [
                     'nik' => trim($log['Badgenumber']),
-                    'waktu' => Carbon::parse($log['CHECKTIME'])->format('Y-m-d H:i:s'),
+                    'waktu' => $logTime->format('Y-m-d H:i:s'),
                     'tipe' => $type
                 ];
 

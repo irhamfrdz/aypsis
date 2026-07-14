@@ -227,6 +227,11 @@ class ZkTecoService
                     // Map state: 0, 4, 5 typically check-in (Masuk); 1, 2 typically check-out (Pulang)
                     $type = ($state == 0 || $state == 4 || $state == 5) ? 'Masuk' : 'Pulang';
 
+                    $hour = (int) substr($timestamp, 11, 2);
+                    if ($hour >= 4 && $hour < 12) {
+                        $type = 'Masuk';
+                    }
+
                     $attendance[] = [
                         'pin' => $pin,
                         'timestamp' => $timestamp,
