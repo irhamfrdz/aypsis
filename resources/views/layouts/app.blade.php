@@ -448,7 +448,7 @@
                             <span class="text-xs font-medium">Rekap Absensi</span>
                         </a>
                         @if($user && $user->can('approval-absensi-view'))
-                            <a href="{{ request()->getScheme() }}://{{ request()->getHost() }}:8084/admin/approvals" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 text-gray-600 hover:shadow-sm">
+                            <a href="{{ route('master.persetujuan-absensi.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.persetujuan-absensi.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                                 <span class="text-xs font-medium">📋 Persetujuan Absensi</span>
                             </a>
                         @endif
@@ -458,7 +458,7 @@
                             </a>
                         @endif
                         @if($user && $user->can('master-jam-kerja-view'))
-                            <a href="http://{{ request()->getHost() }}:5000/admin/working-hours" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 text-gray-600 hover:shadow-sm">
+                            <a href="{{ route('master.jam-kerja.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.jam-kerja.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                                 <span class="text-xs font-medium">🕒 Jam Kerja (Shift)</span>
                             </a>
                         @endif

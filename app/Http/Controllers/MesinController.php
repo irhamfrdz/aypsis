@@ -222,8 +222,33 @@ class MesinController extends Controller
                 $conn = new \PDO("odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=$mdbPath;Uid=;Pwd=;");
                 $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-                // Fetch all historical logs
-                $query = "SELECT c.USERID, u.Badgenumber, c.CHECKTIME, c.CHECKTYPE 
+                // Fetch all machines from MDB to map MDB SENSORID / SN to IP Address
+                $macStmt = $conn->query("SELECT ID, IP, sn FROM Machines");
+                $mdbMachines = $macStmt->fetchAll(\PDO::FETCH_ASSOC);
+
+                // Build a lookup map: MDB Machine ID -> Laravel Mesin ID & MDB Machine SN -> Laravel Mesin ID
+                $laravelMesins = \App\Models\Mesin::all();
+                $machineMap = [];
+                $snMap = [];
+                foreach ($mdbMachines as $mm) {
+                    $ip = trim($mm['IP']);
+                    $sn = trim($mm['sn']);
+                    $mdbId = $mm['ID'];
+
+                    $matchedMesin = $laravelMesins->first(function ($m) use ($ip) {
+                        return trim($m->ip_address) === $ip;
+                    });
+
+                    if ($matchedMesin) {
+                        $machineMap[$mdbId] = $matchedMesin->id;
+                        if (!empty($sn)) {
+                            $snMap[$sn] = $matchedMesin->id;
+                        }
+                    }
+                }
+
+                // Fetch all historical logs with SENSORID and sn
+                $query = "SELECT c.USERID, u.Badgenumber, c.CHECKTIME, c.CHECKTYPE, c.SENSORID, c.sn 
                           FROM CHECKINOUT c 
                           INNER JOIN USERINFO u ON c.USERID = u.USERID";
                 $stmt = $conn->query($query);
@@ -249,6 +274,26 @@ class MesinController extends Controller
 
                 $syncedCount = 0;
                 foreach ($mdbLogs as $log) {
+                    $logSensorId = $log['SENSORID'] ?? null;
+                    $logSn = trim($log['sn'] ?? '');
+
+                    $resolvedMesinId = null;
+                    if (!empty($logSn) && isset($snMap[$logSn])) {
+                        $resolvedMesinId = $snMap[$logSn];
+                    } elseif (isset($machineMap[$logSensorId])) {
+                        $resolvedMesinId = $machineMap[$logSensorId];
+                    }
+
+                    // Fallback to the first machine in the list if cannot resolve
+                    if (!$resolvedMesinId) {
+                        $resolvedMesinId = $laravelMesins->first()->id ?? $mesin->id;
+                    }
+
+                    // Only sync logs belonging to the current machine being synced
+                    if ($resolvedMesinId != $mesin->id) {
+                        continue;
+                    }
+
                     $nik = trim($log['Badgenumber']);
                     if (is_numeric($nik)) {
                         $nik = str_pad($nik, 4, '0', STR_PAD_LEFT);
@@ -266,7 +311,7 @@ class MesinController extends Controller
                         'waktu' => $logTime,
                         'tipe' => $type,
                         'karyawan_id' => $employees[$nik] ?? null,
-                        'mesin_id' => $mesin->id,
+                        'mesin_id' => $resolvedMesinId,
                         'keterangan' => 'Sinkronisasi database lokal '.$mesin->nama_mesin,
                     ]);
 

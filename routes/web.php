@@ -312,6 +312,16 @@ Route::middleware([
             return view('master-lokasi-absensi.index');
         })->name('lokasi-absensi.index')->middleware('can:master-lokasi-absensi-view');
 
+        // Jam Kerja (Shift)
+        Route::get('jam-kerja', function () {
+            return view('master-jam-kerja.index');
+        })->name('jam-kerja.index')->middleware('can:master-jam-kerja-view');
+
+        // Persetujuan Absensi
+        Route::get('persetujuan-absensi', function () {
+            return view('master-persetujuan-absensi.index');
+        })->name('persetujuan-absensi.index')->middleware('can:approval-absensi-view');
+
         // User Management - Separate routes to avoid middleware conflicts
         Route::get('user', [UserController::class, 'index'])
             ->name('user.index')
