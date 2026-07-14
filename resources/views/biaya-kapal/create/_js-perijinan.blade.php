@@ -82,20 +82,9 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Tanggal -->
-                <div class="space-y-1">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal <span class="text-red-500">*</span></label>
-                    <input type="date" 
-                           name="perijinan_sections[${idx}][dari_tanggal]" 
-                           class="perijinan-dari-tanggal w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" required>
-                </div>
-
-                <div class="space-y-1">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Sampai Tanggal <span class="text-red-500">*</span></label>
-                    <input type="date" 
-                           name="perijinan_sections[${idx}][sampai_tanggal]" 
-                           class="perijinan-sampai-tanggal w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" required>
-                </div>
+                <!-- Hidden Date Fields -->
+                <input type="hidden" name="perijinan_sections[${idx}][dari_tanggal]" class="perijinan-dari-tanggal">
+                <input type="hidden" name="perijinan_sections[${idx}][sampai_tanggal]" class="perijinan-sampai-tanggal">
 
                 <!-- Row 2: Vendor & Lokasi -->
                 <div class="space-y-1">
@@ -223,16 +212,8 @@
                 display.classList.remove('hidden');
                 searchInput.classList.add('hidden');
                 
-                // Load voyages
-                window.loadVoyagesForPerijinanSection(idx, initialData.nama_kapal);
-            }
-            
-            if (initialData.no_voyage) {
-                // We need to wait for voyage options to load, or just set it
-                const voySel = section.querySelector('.perijinan-voyage-select');
-                voySel.innerHTML = `<option value="${initialData.no_voyage}">${initialData.no_voyage}</option>`;
-                voySel.value = initialData.no_voyage;
-                voySel.disabled = false;
+                // Load voyages and set initial
+                window.loadVoyagesForPerijinanSection(idx, initialData.nama_kapal, initialData.no_voyage);
             }
             
             section.querySelector(`[name="perijinan_sections[${idx}][dari_tanggal]"]`).value = initialData.dari_tanggal || '';
@@ -625,7 +606,7 @@
         }
     }
 
-    window.loadVoyagesForPerijinanSection = function(sectionIndex, kapalNama) {
+    window.loadVoyagesForPerijinanSection = function(sectionIndex, kapalNama, selectedVoyage = null) {
         const voyageSelect = document.getElementById(`perijinan_voyage_${sectionIndex}`);
         if (!voyageSelect) return;
 
@@ -657,6 +638,10 @@
                     voyageSelect.innerHTML = '<option value="">Tidak ada voyage tersedia</option>';
                 }
                 voyageSelect.disabled = false;
+
+                if (selectedVoyage) {
+                    voyageSelect.value = selectedVoyage;
+                }
             })
             .catch(() => {
                 voyageSelect.innerHTML = '<option value="">Gagal memuat voyage</option>';
