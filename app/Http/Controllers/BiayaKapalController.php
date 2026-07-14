@@ -4913,6 +4913,108 @@ class BiayaKapalController extends Controller
     }
 
     /**
+     * Get voyages by date range for AJAX request
+     */
+    public function getVoyagesByDateRange(Request $request)
+    {
+        try {
+            $dariTanggal = $request->input('dari_tanggal');
+            $sampaiTanggal = $request->input('sampai_tanggal');
+
+            if (!$dariTanggal || !$sampaiTanggal) {
+                return response()->json(['success' => false, 'message' => 'Tanggal harus diisi']);
+            }
+
+            // Get from naik_kapal
+            $naikKapalQuery = DB::table('naik_kapal')
+                ->whereNotNull('no_voyage')
+                ->where('no_voyage', '!=', '')
+                ->whereNotNull('nama_kapal')
+                ->where('nama_kapal', '!=', '')
+                ->whereRaw("DATE(COALESCE(tanggal_muat, created_at)) >= ?", [$dariTanggal])
+                ->whereRaw("DATE(COALESCE(tanggal_muat, created_at)) <= ?", [$sampaiTanggal])
+                ->select(
+                    'nama_kapal',
+                    'no_voyage',
+                    DB::raw('MIN(COALESCE(tanggal_muat, created_at)) as min_tanggal'),
+                    DB::raw('MAX(COALESCE(tanggal_muat, created_at)) as max_tanggal')
+                )
+                ->groupBy('nama_kapal', 'no_voyage')
+                ->get();
+
+            // Get from bls
+            $blsQuery = DB::table('bls')
+                ->whereNotNull('no_voyage')
+                ->where('no_voyage', '!=', '')
+                ->whereNotNull('nama_kapal')
+                ->where('nama_kapal', '!=', '')
+                ->whereRaw("DATE(COALESCE(tanggal_berangkat, created_at)) >= ?", [$dariTanggal])
+                ->whereRaw("DATE(COALESCE(tanggal_berangkat, created_at)) <= ?", [$sampaiTanggal])
+                ->select(
+                    'nama_kapal',
+                    'no_voyage',
+                    DB::raw('MIN(COALESCE(tanggal_berangkat, created_at)) as min_tanggal'),
+                    DB::raw('MAX(COALESCE(tanggal_berangkat, created_at)) as max_tanggal')
+                )
+                ->groupBy('nama_kapal', 'no_voyage')
+                ->get();
+
+            $voyagesMap = [];
+            foreach ($naikKapalQuery as $row) {
+                $key = trim($row->nama_kapal) . '|' . trim($row->no_voyage);
+                $voyagesMap[$key] = [
+                    'nama_kapal' => $row->nama_kapal,
+                    'no_voyage' => $row->no_voyage,
+                    'min_tanggal' => $row->min_tanggal,
+                    'max_tanggal' => $row->max_tanggal
+                ];
+            }
+
+            foreach ($blsQuery as $row) {
+                $key = trim($row->nama_kapal) . '|' . trim($row->no_voyage);
+                if (!isset($voyagesMap[$key])) {
+                    $voyagesMap[$key] = [
+                        'nama_kapal' => $row->nama_kapal,
+                        'no_voyage' => $row->no_voyage,
+                        'min_tanggal' => $row->min_tanggal,
+                        'max_tanggal' => $row->max_tanggal
+                    ];
+                } else {
+                    if ($row->min_tanggal < $voyagesMap[$key]['min_tanggal']) {
+                        $voyagesMap[$key]['min_tanggal'] = $row->min_tanggal;
+                    }
+                    if ($row->max_tanggal > $voyagesMap[$key]['max_tanggal']) {
+                        $voyagesMap[$key]['max_tanggal'] = $row->max_tanggal;
+                    }
+                }
+            }
+
+            // Format dates and prepare response
+            $results = [];
+            foreach ($voyagesMap as $key => $data) {
+                $results[] = [
+                    'nama_kapal' => $data['nama_kapal'],
+                    'no_voyage' => $data['no_voyage'],
+                    'min_tanggal' => $data['min_tanggal'] ? \Carbon\Carbon::parse($data['min_tanggal'])->format('Y-m-d') : null,
+                    'max_tanggal' => $data['max_tanggal'] ? \Carbon\Carbon::parse($data['max_tanggal'])->format('Y-m-d') : null,
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $results
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('getVoyagesByDateRange error', ['error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data voyage: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Get BL numbers by voyages for AJAX request
      */
     public function getBlsByVoyages(Request $request)

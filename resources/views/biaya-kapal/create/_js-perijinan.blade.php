@@ -670,3 +670,47 @@
     if (addPerijinanSectionBottomBtn) {
         addPerijinanSectionBottomBtn.addEventListener('click', () => addPerijinanSection());
     }
+
+    const generatePerijinanBtn = document.getElementById('generate_perijinan_by_date_btn');
+    if (generatePerijinanBtn) {
+        generatePerijinanBtn.addEventListener('click', function() {
+            const dariTanggal = document.getElementById('global_perijinan_dari_tanggal').value;
+            const sampaiTanggal = document.getElementById('global_perijinan_sampai_tanggal').value;
+
+            if (!dariTanggal || !sampaiTanggal) {
+                alert('Silakan isi Dari Tanggal dan Sampai Tanggal terlebih dahulu.');
+                return;
+            }
+
+            const btnOriginalHtml = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>';
+            this.disabled = true;
+
+            fetch(`{{ route('biaya-kapal.get-voyages-by-date') }}?dari_tanggal=${dariTanggal}&sampai_tanggal=${sampaiTanggal}`)
+                .then(res => res.json())
+                .then(data => {
+                    this.innerHTML = btnOriginalHtml;
+                    this.disabled = false;
+
+                    if (data.success && data.data && data.data.length > 0) {
+                        clearAllPerijinanSections();
+                        data.data.forEach(item => {
+                            addPerijinanSection({
+                                nama_kapal: item.nama_kapal,
+                                no_voyage: item.no_voyage,
+                                dari_tanggal: item.min_tanggal,
+                                sampai_tanggal: item.max_tanggal
+                            });
+                        });
+                    } else {
+                        alert('Tidak ditemukan kapal dan voyage aktif pada rentang tanggal tersebut.');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching voyages by date:', err);
+                    alert('Terjadi kesalahan saat memuat data. Silakan coba lagi.');
+                    this.innerHTML = btnOriginalHtml;
+                    this.disabled = false;
+                });
+        });
+    }
