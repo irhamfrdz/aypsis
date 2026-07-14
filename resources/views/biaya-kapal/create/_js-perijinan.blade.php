@@ -82,6 +82,21 @@
                     </div>
                 </div>
 
+                <!-- Row 2: Tanggal -->
+                <div class="space-y-1">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal <span class="text-red-500">*</span></label>
+                    <input type="date" 
+                           name="perijinan_sections[${idx}][dari_tanggal]" 
+                           class="perijinan-dari-tanggal w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" required>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Sampai Tanggal <span class="text-red-500">*</span></label>
+                    <input type="date" 
+                           name="perijinan_sections[${idx}][sampai_tanggal]" 
+                           class="perijinan-sampai-tanggal w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white shadow-sm" required>
+                </div>
+
                 <!-- Row 2: Vendor & Lokasi -->
                 <div class="space-y-1">
                     <label class="block text-xs font-medium text-gray-700 mb-1">Vendor</label>
@@ -220,6 +235,8 @@
                 voySel.disabled = false;
             }
             
+            section.querySelector(`[name="perijinan_sections[${idx}][dari_tanggal]"]`).value = initialData.dari_tanggal || '';
+            section.querySelector(`[name="perijinan_sections[${idx}][sampai_tanggal]"]`).value = initialData.sampai_tanggal || '';
             section.querySelector(`[name="perijinan_sections[${idx}][nomor_referensi]"]`).value = initialData.nomor_referensi || '';
             section.querySelector(`[name="perijinan_sections[${idx}][vendor]"]`).value = initialData.vendor || '';
             section.querySelector(`[name="perijinan_sections[${idx}][lokasi]"]`).value = initialData.lokasi || '';
@@ -292,6 +309,21 @@
                 this.classList.add('bg-indigo-100', 'text-indigo-600');
                 this.classList.remove('bg-indigo-600', 'text-white');
                 this.innerHTML = '<i class="fas fa-keyboard text-xs"></i>';
+            }
+        });
+
+        // Add event listener to voyage select to auto-populate dates
+        voyageSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && selectedOption.dataset.min && selectedOption.dataset.max) {
+                const dariTanggal = section.querySelector('.perijinan-dari-tanggal');
+                const sampaiTanggal = section.querySelector('.perijinan-sampai-tanggal');
+                if (dariTanggal && !dariTanggal.value) {
+                    dariTanggal.value = selectedOption.dataset.min;
+                }
+                if (sampaiTanggal && !sampaiTanggal.value) {
+                    sampaiTanggal.value = selectedOption.dataset.max;
+                }
             }
         });
     }
@@ -608,7 +640,14 @@
         fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalNama)}`)
             .then(r => r.json())
             .then(data => {
-                if (data.success && data.voyages && data.voyages.length > 0) {
+                if (data.success && data.voyages_detailed && data.voyages_detailed.length > 0) {
+                    let html = '<option value="">-- Pilih Voyage --</option>';
+                    data.voyages_detailed.forEach(v => {
+                        html += `<option value="${v.no_voyage}" data-min="${v.min_tanggal}" data-max="${v.max_tanggal}">${v.no_voyage}</option>`;
+                    });
+                    voyageSelect.innerHTML = html;
+                } else if (data.success && data.voyages && data.voyages.length > 0) {
+                    // Fallback if voyages_detailed is not available
                     let html = '<option value="">-- Pilih Voyage --</option>';
                     data.voyages.forEach(v => {
                         html += `<option value="${v}">${v}</option>`;

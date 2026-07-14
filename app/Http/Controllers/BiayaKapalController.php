@@ -827,6 +827,8 @@ class BiayaKapalController extends Controller
             'perijinan_sections' => 'nullable|array',
             'perijinan_sections.*.nama_kapal' => 'nullable|string|max:255',
             'perijinan_sections.*.no_voyage' => 'nullable|string|max:255',
+            'perijinan_sections.*.dari_tanggal' => 'nullable|date',
+            'perijinan_sections.*.sampai_tanggal' => 'nullable|date',
             'perijinan_sections.*.nomor_referensi' => 'nullable|string|max:255',
             'perijinan_sections.*.vendor' => 'nullable|string|max:255',
             'perijinan_sections.*.lokasi' => 'nullable|string|max:255',
@@ -2353,6 +2355,8 @@ class BiayaKapalController extends Controller
                         'biaya_kapal_id' => $biayaKapal->id,
                         'nama_kapal' => $section['nama_kapal'] ?? null,
                         'no_voyage' => $section['no_voyage'] ?? null,
+                        'dari_tanggal' => ! empty($section['dari_tanggal']) ? $section['dari_tanggal'] : null,
+                        'sampai_tanggal' => ! empty($section['sampai_tanggal']) ? $section['sampai_tanggal'] : null,
                         'nomor_referensi' => $section['nomor_referensi'] ?? null,
                         'vendor' => $section['vendor'] ?? null,
                         'lokasi' => $section['lokasi'] ?? null,
@@ -4627,6 +4631,8 @@ class BiayaKapalController extends Controller
                         'biaya_kapal_id' => $biayaKapal->id,
                         'nama_kapal' => $section['nama_kapal'] ?? null,
                         'no_voyage' => $section['no_voyage'] ?? null,
+                        'dari_tanggal' => ! empty($section['dari_tanggal']) ? $section['dari_tanggal'] : null,
+                        'sampai_tanggal' => ! empty($section['sampai_tanggal']) ? $section['sampai_tanggal'] : null,
                         'nomor_referensi' => $section['nomor_referensi'] ?? null,
                         'vendor' => $section['vendor'] ?? null,
                         'lokasi' => $section['lokasi'] ?? null,
@@ -4823,7 +4829,11 @@ class BiayaKapalController extends Controller
                 }
             });
 
-            $voyagesFromNaikKapalQuery->select('no_voyage', DB::raw('MIN(COALESCE(tanggal_muat, created_at)) as tanggal'));
+            $voyagesFromNaikKapalQuery->select(
+                'no_voyage', 
+                DB::raw('MIN(COALESCE(tanggal_muat, created_at)) as min_tanggal'),
+                DB::raw('MAX(COALESCE(tanggal_muat, created_at)) as max_tanggal')
+            );
             $voyagesFromNaikKapal = $voyagesFromNaikKapalQuery->groupBy('no_voyage')->get();
 
             // Use robust keyword matching for BLs query
@@ -4838,28 +4848,50 @@ class BiayaKapalController extends Controller
                 }
             });
 
-            $voyagesFromBlsQuery->select('no_voyage', DB::raw('MIN(COALESCE(tanggal_berangkat, created_at)) as tanggal'));
+            $voyagesFromBlsQuery->select(
+                'no_voyage', 
+                DB::raw('MIN(COALESCE(tanggal_berangkat, created_at)) as min_tanggal'),
+                DB::raw('MAX(COALESCE(tanggal_berangkat, created_at)) as max_tanggal')
+            );
             $voyagesFromBls = $voyagesFromBlsQuery->groupBy('no_voyage')->get();
 
             // Merge and get unique voyages with dates
             $voyageDates = [];
             foreach ($voyagesFromNaikKapal as $row) {
-                $voyageDates[$row->no_voyage] = $row->tanggal;
+                $voyageDates[$row->no_voyage] = [
+                    'min' => $row->min_tanggal,
+                    'max' => $row->max_tanggal
+                ];
             }
             foreach ($voyagesFromBls as $row) {
-                if (! isset($voyageDates[$row->no_voyage]) || $row->tanggal < $voyageDates[$row->no_voyage]) {
-                    $voyageDates[$row->no_voyage] = $row->tanggal;
+                if (! isset($voyageDates[$row->no_voyage])) {
+                    $voyageDates[$row->no_voyage] = [
+                        'min' => $row->min_tanggal,
+                        'max' => $row->max_tanggal
+                    ];
+                } else {
+                    if ($row->min_tanggal < $voyageDates[$row->no_voyage]['min']) {
+                        $voyageDates[$row->no_voyage]['min'] = $row->min_tanggal;
+                    }
+                    if ($row->max_tanggal > $voyageDates[$row->no_voyage]['max']) {
+                        $voyageDates[$row->no_voyage]['max'] = $row->max_tanggal;
+                    }
                 }
             }
             ksort($voyageDates);
 
             $voyages = array_keys($voyageDates);
             $voyagesDetailed = [];
-            foreach ($voyageDates as $no_voyage => $date) {
-                $formattedDate = $date ? \Carbon\Carbon::parse($date)->format('d/M/Y') : '-';
+            foreach ($voyageDates as $no_voyage => $dates) {
+                $formattedDate = $dates['min'] ? \Carbon\Carbon::parse($dates['min'])->format('d/M/Y') : '-';
+                $minTanggal = $dates['min'] ? \Carbon\Carbon::parse($dates['min'])->format('Y-m-d') : '';
+                $maxTanggal = $dates['max'] ? \Carbon\Carbon::parse($dates['max'])->format('Y-m-d') : '';
+                
                 $voyagesDetailed[] = [
                     'no_voyage' => $no_voyage,
                     'tanggal' => $formattedDate,
+                    'min_tanggal' => $minTanggal,
+                    'max_tanggal' => $maxTanggal,
                 ];
             }
 

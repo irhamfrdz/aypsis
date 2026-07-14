@@ -15,6 +15,8 @@ class BiayaKapalPerijinan extends Model
         'biaya_kapal_id',
         'nama_kapal',
         'no_voyage',
+        'dari_tanggal',
+        'sampai_tanggal',
         'nomor_referensi',
         'vendor',
         'lokasi',
