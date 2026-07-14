@@ -298,7 +298,19 @@ class RekapBiayaKapalController extends Controller
         }
         ksort($kapals);
 
-        return view('rekap-biaya-kapal.index', compact('kapals'));
+        // Get Master Kapal data for Pemilik (Owner) filtering
+        $masterKapals = \App\Models\MasterKapal::all();
+        $pemilikList = $masterKapals->pluck('pelayaran')->filter()->unique()->sort()->values();
+        
+        $kapalPemilikMap = [];
+        foreach ($masterKapals as $mk) {
+            if ($mk->nama_kapal) {
+                // Store mapped by lowercase name for robust matching
+                $kapalPemilikMap[strtolower(trim($mk->nama_kapal))] = $mk->pelayaran;
+            }
+        }
+
+        return view('rekap-biaya-kapal.index', compact('kapals', 'pemilikList', 'kapalPemilikMap'));
     }
 
     /**

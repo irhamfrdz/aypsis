@@ -32,6 +32,19 @@
         <div class="p-8">
             <form action="{{ route('rekap-biaya-kapal.show') }}" method="GET" id="rekapForm">
                 <div class="space-y-6">
+                    <!-- Pemilik Kapal Selection -->
+                    <div>
+                        <label for="pemilik_select" class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-building text-gray-400 mr-1"></i> Pilih Pemilik Kapal
+                        </label>
+                        <select name="pemilik" id="pemilik_select" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent select2">
+                            <option value="">-- Semua Pemilik --</option>
+                            @foreach($pemilikList as $pemilik)
+                                <option value="{{ $pemilik }}">{{ $pemilik }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <!-- Ship Selection -->
                     <div>
                         <label for="kapal_select" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -40,7 +53,7 @@
                         <select name="kapal" id="kapal_select" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent select2" required>
                             <option value="">-- Pilih Kapal --</option>
                             @foreach($kapals as $kapal)
-                                <option value="{{ $kapal }}">{{ $kapal }}</option>
+                                <option value="{{ $kapal }}" data-pemilik="{{ $kapalPemilikMap[strtolower(trim($kapal))] ?? '' }}">{{ $kapal }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -74,6 +87,12 @@
 <script>
     $(document).ready(function() {
         // Initialize Select2 with premium tailwind-aligned themes
+        $('#pemilik_select').select2({
+            placeholder: "-- Semua Pemilik --",
+            allowClear: true,
+            width: '100%'
+        });
+
         $('#kapal_select').select2({
             placeholder: "-- Pilih Kapal --",
             allowClear: true,
@@ -86,7 +105,36 @@
             width: '100%'
         });
 
+        // Store original options for filtering
+        const originalKapalOptions = $('#kapal_select option').clone();
+
         // AJAX Voyage Loader when Ship changes
+        $('#pemilik_select').on('change', function() {
+            const pemilik = $(this).val();
+            const $kapalSelect = $('#kapal_select');
+            const currentVal = $kapalSelect.val();
+
+            $kapalSelect.empty();
+
+            if (!pemilik) {
+                // Show all
+                $kapalSelect.append(originalKapalOptions.clone());
+            } else {
+                // Filter
+                $kapalSelect.append(originalKapalOptions.filter(function() {
+                    return $(this).val() === "" || $(this).data('pemilik') === pemilik;
+                }).clone());
+            }
+            
+            // Try to keep previous selection if it's still available
+            if ($kapalSelect.find('option[value="' + currentVal + '"]').length > 0) {
+                $kapalSelect.val(currentVal);
+            } else {
+                $kapalSelect.val(null);
+            }
+            $kapalSelect.trigger('change');
+        });
+
         $('#kapal_select').on('change', function() {
             const kapal = $(this).val();
             const $voyageSelect = $('#voyage_select');
@@ -135,6 +183,7 @@
 
         // Reset functionality
         $('#btnReset').on('click', function() {
+            $('#pemilik_select').val(null).trigger('change');
             $('#kapal_select').val(null).trigger('change');
             $('#voyage_select').val(null).trigger('change');
         });
