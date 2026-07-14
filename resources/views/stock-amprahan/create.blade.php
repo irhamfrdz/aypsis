@@ -721,7 +721,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
                     const oldVoyage = "{{ old('nomor_voyage') }}";
-                    data.forEach(voyage => {
+                    const voyageList = data.voyages || [];
+                    voyageList.forEach(voyage => {
                         const option = document.createElement('option');
                         option.value = voyage.no_voyage;
                         option.textContent = voyage.no_voyage;
