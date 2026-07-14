@@ -20,6 +20,7 @@ class StockAmprahanUsage extends Model
         'buntut_id',
         'chasis_batam_id',
         'kapal_id',
+        'nomor_voyage',
         'alat_berat_id',
         'kantor',
         'kilometer',
