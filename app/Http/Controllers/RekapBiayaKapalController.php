@@ -401,6 +401,26 @@ class RekapBiayaKapalController extends Controller
             $record->apportioned = $this->getApportionedCostForRecord($record, $kapal, $voyage);
         }
 
+        // Fetch Pranota OB
+        $pranotaObs = \App\Models\PranotaOb::where('nama_kapal', $kapal)
+            ->where('no_voyage', $voyage)
+            ->where('status', '!=', 'cancelled')
+            ->get();
+        foreach ($pranotaObs as $pranota) {
+            $totalBiaya = $pranota->calculateTotalAmount();
+            $pranota->apportioned = [
+                'nominal' => $totalBiaya,
+                'ppn' => 0,
+                'pph' => 0,
+                'total_biaya' => $totalBiaya,
+            ];
+            $pranota->is_pranota_ob = true;
+            $pranota->nomor_invoice = $pranota->nomor_pranota;
+            $pranota->tanggal = $pranota->tanggal_ob;
+            $pranota->jenis_biaya = 'Pranota OB';
+            $biayaKapals->push($pranota);
+        }
+
         // Calculate summaries based on apportioned costs
         $summary = [
             'total_nominal' => $biayaKapals->sum(fn ($item) => $item->apportioned['nominal']),
