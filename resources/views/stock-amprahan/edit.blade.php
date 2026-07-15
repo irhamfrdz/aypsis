@@ -416,6 +416,22 @@
                                     @enderror
                                 </div>
 
+                                {{-- Voyage --}}
+                                <div class="group" id="voyage_container" style="display: none;">
+                                    <label class="block text-sm font-bold text-gray-700 mb-2">Nomor Voyage</label>
+                                    <div class="dropdown-container-voyage relative">
+                                        <input type="text" id="search_voyage" placeholder="Cari voyage..." autocomplete="off"
+                                               class="block w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm">
+                                        <select name="nomor_voyage" id="nomor_voyage" style="display: none !important;">
+                                            <option value="">-- Pilih Voyage --</option>
+                                        </select>
+                                        <div id="dropdown_options_voyage" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden shadow-xl mt-1"></div>
+                                    </div>
+                                    @error('nomor_voyage')
+                                        <p class="mt-2 text-xs font-medium text-red-500"><i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}</p>
+                                    @enderror
+                                </div>
+
                                 {{-- Alat Berat --}}
                                 <div class="group">
                                     <label class="block text-sm font-bold text-gray-700 mb-2">Alat Berat</label>
@@ -667,6 +683,98 @@ document.addEventListener('DOMContentLoaded', function() {
         dropdownId: 'dropdown_options_kapal',
         containerClass: 'dropdown-container-kapal'
     });
+
+    // Initialize Voyage dropdown
+    createSearchableDropdown({
+        selectId: 'nomor_voyage',
+        searchId: 'search_voyage',
+        dropdownId: 'dropdown_options_voyage',
+        containerClass: 'dropdown-container-voyage'
+    });
+
+    const kapalSelect = document.getElementById('kapal_id');
+    const voyageContainer = document.getElementById('voyage_container');
+    const voyageSelect = document.getElementById('nomor_voyage');
+    const searchVoyage = document.getElementById('search_voyage');
+    const voyageOptionsContainer = document.getElementById('dropdown_options_voyage');
+
+    kapalSelect.addEventListener('change', function() {
+        const kapalId = this.value;
+        if (kapalId) {
+            voyageContainer.style.display = 'block';
+            searchVoyage.value = 'Loading...';
+            searchVoyage.disabled = true;
+
+            // Fetch voyages
+            fetch(`/master-kapal/${kapalId}/voyages`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
+                    const oldVoyage = "{{ old('nomor_voyage', $directUsage->nomor_voyage ?? '') }}";
+                    const voyageList = data.voyages || [];
+                    voyageList.forEach(voyage => {
+                        const option = document.createElement('option');
+                        option.value = voyage.no_voyage;
+                        option.textContent = voyage.no_voyage;
+                        if (oldVoyage === voyage.no_voyage) {
+                            option.selected = true;
+                        }
+                        voyageSelect.appendChild(option);
+                    });
+
+                    if (oldVoyage) {
+                        searchVoyage.value = oldVoyage;
+                    } else {
+                        searchVoyage.value = '';
+                        searchVoyage.placeholder = 'Cari voyage...';
+                    }
+                    searchVoyage.disabled = false;
+                    
+                    // Re-initialize dropdown options
+                    const originalOptions = Array.from(voyageSelect.options);
+                    voyageOptionsContainer.innerHTML = '';
+                    originalOptions.forEach(option => {
+                        const div = document.createElement('div');
+                        div.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                        div.textContent = option.text;
+                        div.setAttribute('data-value', option.value);
+
+                        div.addEventListener('click', function() {
+                            voyageSelect.value = this.getAttribute('data-value');
+                            if (this.getAttribute('data-value') === '') {
+                                searchVoyage.value = '';
+                                searchVoyage.placeholder = 'Cari voyage...';
+                            } else {
+                                searchVoyage.value = this.textContent;
+                            }
+                            voyageOptionsContainer.classList.add('hidden');
+                        });
+
+                        voyageOptionsContainer.appendChild(div);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching voyages:', error);
+                    searchVoyage.value = '';
+                    searchVoyage.disabled = false;
+                    searchVoyage.placeholder = 'Error loading voyages';
+                });
+        } else {
+            voyageContainer.style.display = 'none';
+            voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
+            searchVoyage.value = '';
+        }
+    });
+
+    // Check on load
+    if (kapalSelect.value) {
+        kapalSelect.dispatchEvent(new Event('change'));
+    }
 
     createSearchableDropdown({
         selectId: 'alat_berat_id',
