@@ -15,6 +15,56 @@ Route::post('/absensi/push', [AbsensiSyncController::class, 'push']);
 // Endpoint Pull Absensi dari Server Online ke Lokal (Jembatan)
 Route::get('/absensi/pull', [AbsensiSyncController::class, 'pull']);
 
+// Endpoint Notifikasi Absensi Baru dari Node.js
+Route::post('/absensi/notify', function (Request $request) {
+    $secret = $request->header('X-Sync-Secret') ?? $request->input('secret');
+    if ($secret !== config('app.sync_secret', 'aypsis-sync-12345')) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+    }
+
+    $data = $request->validate([
+        'absensi_id' => 'required|integer',
+    ]);
+
+    $absensi = \App\Models\Absensi::find($data['absensi_id']);
+    if (!$absensi) {
+        return response()->json(['success' => false, 'message' => 'Absensi not found'], 404);
+    }
+
+    // Kirim notifikasi hanya ke user 'adit' dan 'kiky'
+    $users = \App\Models\User::whereIn('username', ['adit', 'kiky'])->get();
+    
+    $karyawanNama = $absensi->karyawan 
+        ? $absensi->karyawan->nama_lengkap 
+        : 'Karyawan NIK: ' . $absensi->nik;
+    $waktuFormatted = $absensi->waktu instanceof \Carbon\Carbon 
+        ? $absensi->waktu->format('H:i:s') 
+        : \Carbon\Carbon::parse($absensi->waktu)->format('H:i:s');
+        
+    $title = "Absensi Baru: {$absensi->tipe}";
+    $body = "{$karyawanNama} telah melakukan absen {$absensi->tipe} pukul {$waktuFormatted}.";
+
+    foreach ($users as $user) {
+        // Notifikasi web/database
+        $user->notify(new \App\Notifications\AbsensiMasukNotification($absensi));
+        
+        // Notifikasi HP/Expo Push
+        if ($user->expo_push_token) {
+            \App\Services\ExpoNotificationService::send(
+                $user->expo_push_token,
+                $title,
+                $body,
+                ['absensi_id' => $absensi->id, 'nik' => $absensi->nik]
+            );
+        }
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Notifications dispatched successfully.'
+    ]);
+});
+
 // Protected routes (Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [ApiAuthController::class, 'logout']);
