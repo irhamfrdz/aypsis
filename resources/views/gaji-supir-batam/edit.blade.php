@@ -179,14 +179,14 @@
                     </thead>
                     <tbody id="waybill_breakdown_rows" class="divide-y divide-gray-200 bg-white">
                         <tr>
-                            <td colspan="5" class="px-4 py-6 text-center text-gray-500 font-medium">
+                            <td colspan="8" class="px-4 py-6 text-center text-gray-500 font-medium">
                                 <i class="fas fa-info-circle mr-2 text-indigo-500"></i> Silakan pilih Supir, Tanggal Mulai, dan Tanggal Selesai untuk memuat daftar surat jalan.
                             </td>
                         </tr>
                     </tbody>
                     <tfoot class="bg-gray-50 font-bold border-t border-gray-200">
                         <tr>
-                            <td colspan="4" class="px-4 py-2 text-right text-gray-700">Total Uang Jalan (Gaji Pokok):</td>
+                            <td colspan="7" class="px-4 py-2 text-right text-gray-700">Total Uang Jalan (Gaji Pokok):</td>
                             <td class="px-4 py-2 text-right text-indigo-600" id="waybill_total_display">Rp 0</td>
                         </tr>
                     </tfoot>
@@ -308,7 +308,7 @@
             const end = endInput.value;
 
             if (!supirId || !start || !end) {
-                breakdownRows.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-gray-500 font-medium"><i class="fas fa-info-circle mr-2 text-indigo-500"></i> Silakan pilih Supir, Tanggal Mulai, dan Tanggal Selesai untuk memuat daftar surat jalan.</td></tr>`;
+                breakdownRows.innerHTML = `<tr><td colspan="8" class="px-4 py-6 text-center text-gray-500 font-medium"><i class="fas fa-info-circle mr-2 text-indigo-500"></i> Silakan pilih Supir, Tanggal Mulai, dan Tanggal Selesai untuk memuat daftar surat jalan.</td></tr>`;
                 document.getElementById('gaji_pokok').value = 0;
                 breakdownTotal.textContent = 'Rp 0';
                 calculateSalary();
@@ -320,7 +320,7 @@
                 .then(data => {
                     breakdownRows.innerHTML = '';
                     if (data.waybills.length === 0) {
-                        breakdownRows.innerHTML = `<tr><td colspan="5" class="px-4 py-3 text-center text-gray-500">Tidak ada surat jalan yang ditemukan pada periode ini.</td></tr>`;
+                        breakdownRows.innerHTML = `<tr><td colspan="8" class="px-4 py-3 text-center text-gray-500">Tidak ada surat jalan yang ditemukan pada periode ini.</td></tr>`;
                     } else {
                         data.waybills.forEach(wb => {
                             const row = document.createElement('tr');
@@ -331,7 +331,7 @@
                                     <input type="checkbox" name="selected_waybills[]" value="${wb.id}" class="waybill-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" checked>
                                 </td>
                                 <td class="px-4 py-2.5 text-gray-800 font-medium">${wb.type}</td>
-                                <td class="px-4 py-2.5 text-gray-600 font-mono">${wb.no_surat_jalan}</td>
+                                <td class="px-4 py-2.5 text-gray-600 font-mono">${wb.no_surat_jalan}</td><td class="px-4 py-2.5 text-gray-600 font-mono">${wb.no_kontainer}</td><td class="px-4 py-2.5 text-gray-600">${wb.tujuan}</td><td class="px-4 py-2.5 text-center text-gray-600">${wb.ring}</td>
                                 <td class="px-4 py-2.5 text-gray-600">${wb.tanggal}</td>
                                 <td class="px-4 py-2.5 text-right font-semibold text-gray-800">Rp ${wb.rit.toLocaleString('id-ID')}</td>
                             `;

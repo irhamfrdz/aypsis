@@ -136,7 +136,7 @@
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="px-4 py-2.5 text-left font-semibold text-gray-600">Tipe</th>
-                        <th class="px-4 py-2.5 text-left font-semibold text-gray-600">No. Surat Jalan / No. Kontainer / No. Transaksi</th>
+                        <th class="px-4 py-2.5 text-left font-semibold text-gray-600">No. Surat Jalan</th><th class="px-4 py-2.5 text-left font-semibold text-gray-600">No. Kontainer</th><th class="px-4 py-2.5 text-left font-semibold text-gray-600">Tujuan Pengiriman</th><th class="px-4 py-2.5 text-center font-semibold text-gray-600">Ring</th>
                         <th class="px-4 py-2.5 text-left font-semibold text-gray-600">Tanggal</th>
                         <th class="px-4 py-2.5 text-right font-semibold text-gray-600">Uang Jalan</th>
                     </tr>
@@ -145,13 +145,13 @@
                     @forelse($waybills as $wb)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-2 text-gray-800 font-medium">{{ $wb['type'] }}</td>
-                            <td class="px-4 py-2 text-gray-600 font-mono">{{ $wb['no_surat_jalan'] }}</td>
+                            <td class="px-4 py-2 text-gray-600 font-mono">{{ $wb['no_surat_jalan'] }}</td><td class="px-4 py-2 text-gray-600 font-mono">{{ $wb['no_kontainer'] }}</td><td class="px-4 py-2 text-gray-600">{{ $wb['tujuan'] }}</td><td class="px-4 py-2 text-center text-gray-600">{{ $wb['ring'] }}</td>
                             <td class="px-4 py-2 text-gray-600">{{ $wb['tanggal'] }}</td>
                             <td class="px-4 py-2 text-right font-semibold text-gray-800">Rp {{ number_format($wb['rit'], 0, ',', '.') }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-4 py-4 text-center text-gray-500">Tidak ada surat jalan yang ditemukan pada periode ini.</td>
+                            <td colspan="7" class="px-4 py-4 text-center text-gray-500">Tidak ada surat jalan yang ditemukan pada periode ini.</td>
                         </tr>
                     @endforelse
                 </tbody>

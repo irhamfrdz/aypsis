@@ -121,7 +121,7 @@
             <tr>
                 <th class="text-center" style="width: 40px;">No.</th>
                 <th>Tipe</th>
-                <th>No. Surat Jalan / Kontainer</th>
+                <th>No. Surat Jalan</th><th>No. Kontainer</th><th>Tujuan Pengiriman</th><th>Ring</th>
                 <th>Tanggal</th>
                 <th class="text-right">Uang Jalan</th>
             </tr>
@@ -131,13 +131,13 @@
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td>{{ $wb['type'] }}</td>
-                    <td>{{ $wb['no_surat_jalan'] }}</td>
+                    <td>{{ $wb['no_surat_jalan'] }}</td><td>{{ $wb['no_kontainer'] }}</td><td>{{ $wb['tujuan'] }}</td><td class="text-center">{{ $wb['ring'] }}</td>
                     <td>{{ $wb['tanggal'] }}</td>
                     <td class="text-right">Rp {{ number_format($wb['rit'], 0, ',', '.') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center">Tidak ada surat jalan yang ditemukan pada periode ini.</td>
+                    <td colspan="7" class="text-center">Tidak ada surat jalan yang ditemukan pada periode ini.</td>
                 </tr>
             @endforelse
         </tbody>
