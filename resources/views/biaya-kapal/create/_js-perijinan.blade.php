@@ -28,9 +28,9 @@
         section.innerHTML = `
             <div class="flex items-center justify-between mb-4 border-b border-blue-100 pb-2">
                 <h4 class="text-md font-semibold text-gray-800 uppercase tracking-wider">Perijinan ${idx}</h4>
-                ${idx > 1 ? `<button type="button" onclick="removePerijinanSection(this)" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition flex items-center gap-1">
+                <button type="button" onclick="removePerijinanSection(this)" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-lg transition flex items-center gap-1">
                     <i class="fas fa-trash-alt"></i> <span>Hapus</span>
-                </button>` : ''}
+                </button>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
