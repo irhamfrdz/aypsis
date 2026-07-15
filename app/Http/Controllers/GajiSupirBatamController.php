@@ -210,7 +210,7 @@ class GajiSupirBatamController extends Controller
         foreach ($regularSJs as $sj) {
             $waybills[] = [
                 'type' => 'Regular',
-                'no_surat_jalan' => $sj->no_surat_jalan,
+                'no_surat_jalan' => $sj->no_surat_jalan . ($sj->no_kontainer ? ' / ' . $sj->no_kontainer : ''),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => is_numeric($sj->uang_jalan) ? (float) $sj->uang_jalan : 0,
             ];
@@ -218,7 +218,7 @@ class GajiSupirBatamController extends Controller
         foreach ($bongkaranSJs as $sj) {
             $waybills[] = [
                 'type' => 'Bongkaran',
-                'no_surat_jalan' => $sj->nomor_surat_jalan,
+                'no_surat_jalan' => $sj->nomor_surat_jalan . ($sj->no_kontainer ? ' / ' . $sj->no_kontainer : ''),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => is_numeric($sj->uang_jalan_nominal) ? (float) $sj->uang_jalan_nominal : 0,
             ];
@@ -226,7 +226,7 @@ class GajiSupirBatamController extends Controller
         foreach ($tarikKosongSJs as $sj) {
             $waybills[] = [
                 'type' => 'Tarik Kosong',
-                'no_surat_jalan' => $sj->no_surat_jalan,
+                'no_surat_jalan' => $sj->no_surat_jalan . ($sj->no_kontainer ? ' / ' . $sj->no_kontainer : ''),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => is_numeric($sj->uang_jalan) ? (float) $sj->uang_jalan : 0,
             ];
@@ -316,7 +316,7 @@ class GajiSupirBatamController extends Controller
         foreach ($regularSJs as $sj) {
             $waybills[] = [
                 'type' => 'Regular',
-                'no_surat_jalan' => $sj->no_surat_jalan,
+                'no_surat_jalan' => $sj->no_surat_jalan . ($sj->no_kontainer ? ' / ' . $sj->no_kontainer : ''),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => is_numeric($sj->uang_jalan) ? (float) $sj->uang_jalan : 0,
             ];
@@ -324,7 +324,7 @@ class GajiSupirBatamController extends Controller
         foreach ($bongkaranSJs as $sj) {
             $waybills[] = [
                 'type' => 'Bongkaran',
-                'no_surat_jalan' => $sj->nomor_surat_jalan,
+                'no_surat_jalan' => $sj->nomor_surat_jalan . ($sj->no_kontainer ? ' / ' . $sj->no_kontainer : ''),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => is_numeric($sj->uang_jalan_nominal) ? (float) $sj->uang_jalan_nominal : 0,
             ];
@@ -332,7 +332,7 @@ class GajiSupirBatamController extends Controller
         foreach ($tarikKosongSJs as $sj) {
             $waybills[] = [
                 'type' => 'Tarik Kosong',
-                'no_surat_jalan' => $sj->no_surat_jalan,
+                'no_surat_jalan' => $sj->no_surat_jalan . ($sj->no_kontainer ? ' / ' . $sj->no_kontainer : ''),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => is_numeric($sj->uang_jalan) ? (float) $sj->uang_jalan : 0,
             ];
@@ -535,7 +535,7 @@ class GajiSupirBatamController extends Controller
             $waybills[] = [
                 'id' => $sj->id,
                 'type' => 'Regular',
-                'no_surat_jalan' => $sj->no_surat_jalan,
+                'no_surat_jalan' => $sj->no_surat_jalan . ($sj->no_kontainer ? ' / ' . $sj->no_kontainer : ''),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => $ritVal,
             ];
@@ -547,7 +547,7 @@ class GajiSupirBatamController extends Controller
             $waybills[] = [
                 'id' => $sj->id,
                 'type' => 'Bongkaran',
-                'no_surat_jalan' => $sj->nomor_surat_jalan,
+                'no_surat_jalan' => $sj->nomor_surat_jalan . ($sj->no_kontainer ? ' / ' . $sj->no_kontainer : ''),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => $ritVal,
             ];
@@ -559,7 +559,7 @@ class GajiSupirBatamController extends Controller
             $waybills[] = [
                 'id' => $sj->id,
                 'type' => 'Tarik Kosong',
-                'no_surat_jalan' => $sj->no_surat_jalan,
+                'no_surat_jalan' => $sj->no_surat_jalan . ($sj->no_kontainer ? ' / ' . $sj->no_kontainer : ''),
                 'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
                 'rit' => $ritVal,
             ];
@@ -631,4 +631,5 @@ class GajiSupirBatamController extends Controller
         ]);
     }
 }
+
 
