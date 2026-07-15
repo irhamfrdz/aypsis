@@ -617,9 +617,9 @@
                             
                             <!-- Gudang Tujuan -->
                             <div>
-                                <label for="modal_gudang_tujuan" class="block text-sm font-medium text-gray-700 mb-1">Gudang Tujuan</label>
+                                <label for="modal_gudang_tujuan" class="block text-sm font-medium text-gray-700 mb-1">Gudang Tujuan <span class="text-red-500">*</span></label>
                                 <select name="gudang_tujuan" id="modal_gudang_tujuan"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                                     <option value="">Pilih gudang tujuan</option>
                                     @foreach($gudangs ?? [] as $gudang)
                                         <option value="{{ $gudang->id }}">
