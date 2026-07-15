@@ -5578,6 +5578,33 @@ class BiayaKapalController extends Controller
     /**
      * Export Biaya Buruh (KB024) to Excel.
      */
+    public function exportBuruhRange(Request $request)
+    {
+        $request->validate([
+            'tanggal_mulai' => 'required|date',
+            'tanggal_akhir' => 'required|date|after_or_equal:tanggal_mulai',
+        ]);
+
+        $biayaKapals = BiayaKapal::with([
+            'klasifikasiBiaya',
+            'barangDetails.pricelistBuruh',
+            'tenagaKerjaDetails.buruh',
+            'bank',
+        ])
+        ->where('jenis_biaya', 'KB024')
+        ->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_akhir])
+        ->orderBy('tanggal', 'asc')
+        ->get();
+
+        if ($biayaKapals->isEmpty()) {
+            return redirect()->back()->with('error', 'Tidak ada data Biaya Buruh pada rentang tanggal tersebut.');
+        }
+
+        $filename = 'biaya-buruh-range-'.$request->tanggal_mulai.'-sd-'.$request->tanggal_akhir.'.xlsx';
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\BiayaBuruhRangeExport($biayaKapals, $request->tanggal_mulai, $request->tanggal_akhir), $filename);
+    }
+
     public function exportBuruh($id)
     {
         $biayaKapal = BiayaKapal::with([
