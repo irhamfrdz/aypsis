@@ -259,6 +259,112 @@ class GajiSupirBatamController extends Controller
         return view('gaji-supir-batam.show', compact('gaji', 'waybills'));
     }
 
+    public function print($id)
+    {
+        $gaji = GajiSupirBatam::with('karyawan')->findOrFail($id);
+
+        $karyawan = $gaji->karyawan;
+        $namaPanggilan = $karyawan->nama_panggilan;
+
+        $startDate = $gaji->tanggal_mulai;
+        $endDate = $gaji->tanggal_selesai;
+
+        if (! $startDate || ! $endDate) {
+            $bulan = (int) $gaji->periode_bulan;
+            $tahun = (int) $gaji->periode_tahun;
+            $periodeMinggu = (int) ($gaji->periode_minggu ?? 1);
+
+            if ($periodeMinggu == 1) {
+                $startDate = \Carbon\Carbon::create($tahun, $bulan, 1)->startOfDay();
+                $endDate = \Carbon\Carbon::create($tahun, $bulan, 15)->endOfDay();
+            } else {
+                $startDate = \Carbon\Carbon::create($tahun, $bulan, 16)->startOfDay();
+                $endDate = \Carbon\Carbon::create($tahun, $bulan, 1)->endOfMonth()->endOfDay();
+            }
+        } else {
+            $startDate = \Carbon\Carbon::parse($startDate)->startOfDay();
+            $endDate = \Carbon\Carbon::parse($endDate)->endOfDay();
+        }
+
+        $regularSJs = \App\Models\SuratJalanBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->get();
+
+        $bongkaranSJs = \App\Models\SuratJalanBongkaranBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->get();
+
+        $tarikKosongSJs = \App\Models\SuratJalanTarikKosongBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal_surat_jalan', [$startDate, $endDate])
+            ->get();
+
+        $obList = \App\Models\TagihanOb::where('nama_supir', $namaPanggilan)
+            ->where('kegiatan', '!=', 'ANTAR GUDANG')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+
+        $obAntarGudangList = \App\Models\TagihanOb::where('nama_supir', $namaPanggilan)
+            ->where('kegiatan', 'ANTAR GUDANG')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->get();
+
+        $langsirBatamList = \App\Models\LangsirBatam::where('supir', $namaPanggilan)
+            ->whereBetween('tanggal', [$startDate->toDateString(), $endDate->toDateString()])
+            ->get();
+
+        $waybills = [];
+        foreach ($regularSJs as $sj) {
+            $waybills[] = [
+                'type' => 'Regular',
+                'no_surat_jalan' => $sj->no_surat_jalan,
+                'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
+                'rit' => is_numeric($sj->uang_jalan) ? (float) $sj->uang_jalan : 0,
+            ];
+        }
+        foreach ($bongkaranSJs as $sj) {
+            $waybills[] = [
+                'type' => 'Bongkaran',
+                'no_surat_jalan' => $sj->nomor_surat_jalan,
+                'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
+                'rit' => is_numeric($sj->uang_jalan_nominal) ? (float) $sj->uang_jalan_nominal : 0,
+            ];
+        }
+        foreach ($tarikKosongSJs as $sj) {
+            $waybills[] = [
+                'type' => 'Tarik Kosong',
+                'no_surat_jalan' => $sj->no_surat_jalan,
+                'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
+                'rit' => is_numeric($sj->uang_jalan) ? (float) $sj->uang_jalan : 0,
+            ];
+        }
+        foreach ($obList as $ob) {
+            $waybills[] = [
+                'type' => 'OB',
+                'no_surat_jalan' => $ob->nomor_kontainer.($ob->kapal ? ' ('.$ob->kapal.')' : ''),
+                'tanggal' => $ob->created_at->format('d/m/Y'),
+                'rit' => is_numeric($ob->biaya) ? (float) $ob->biaya : 0,
+            ];
+        }
+        foreach ($obAntarGudangList as $ob) {
+            $waybills[] = [
+                'type' => 'OB Antar Gudang',
+                'no_surat_jalan' => $ob->nomor_kontainer,
+                'tanggal' => $ob->created_at->format('d/m/Y'),
+                'rit' => is_numeric($ob->biaya) ? (float) $ob->biaya : 0,
+            ];
+        }
+        foreach ($langsirBatamList as $langsir) {
+            $waybills[] = [
+                'type' => 'Langsir Batam',
+                'no_surat_jalan' => $langsir->no_transaksi.($langsir->no_kontainer ? ' ('.$langsir->no_kontainer.')' : ''),
+                'tanggal' => $langsir->tanggal->format('d/m/Y'),
+                'rit' => is_numeric($langsir->biaya) ? (float) $langsir->biaya : 0,
+            ];
+        }
+
+        return view('gaji-supir-batam.print', compact('gaji', 'waybills'));
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
@@ -525,3 +631,4 @@ class GajiSupirBatamController extends Controller
         ]);
     }
 }
+

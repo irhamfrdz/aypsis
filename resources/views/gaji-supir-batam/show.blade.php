@@ -9,9 +9,9 @@
         <i class="fas fa-arrow-left mr-2"></i> Kembali ke Daftar
     </a>
     
-    <button onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+    <a href="{{ route('gaji-supir-batam.print', $gaji->id) }}" target="_blank" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
         <i class="fas fa-print mr-2"></i> Cetak Slip Gaji
-    </button>
+    </a>
 </div>
 
 <!-- Print Styles -->
