@@ -205,13 +205,11 @@
                                     @endcan
                                 @endif
 
-                                @can('gaji-supir-batam-view')
-                                    <a href="{{ route('gaji-supir-batam.print', $gaji->id) }}" target="_blank"
-                                       class="text-blue-600 hover:text-blue-900 p-1.5 rounded-full hover:bg-blue-50 transition-colors" 
-                                       title="Cetak">
-                                        <i class="fas fa-print"></i>
-                                    </a>
-                                @endcan
+                                <a href="{{ route('gaji-supir-batam.print', $gaji->id) }}" target="_blank"
+                                   class="text-blue-600 hover:text-blue-900 p-1.5 rounded-full hover:bg-blue-50 transition-colors" 
+                                   title="Cetak">
+                                    <i class="fas fa-print"></i>
+                                </a>
 
                                 @can('gaji-supir-batam-delete')
                                     <form action="{{ route('gaji-supir-batam.destroy', $gaji->id) }}" method="POST" class="inline">
