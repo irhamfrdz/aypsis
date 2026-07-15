@@ -263,6 +263,23 @@
                     
                 </div>
 
+                <!-- Gudang Tujuan -->
+                <div>
+                    <label for="gudang_tujuan" class="block text-sm font-medium text-gray-700 mb-1">Gudang Tujuan</label>
+                    <select name="gudang_tujuan" id="gudang_tujuan"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('gudang_tujuan') border-red-500 @enderror">
+                        <option value="">Pilih gudang tujuan</option>
+                        @foreach($gudangs ?? [] as $gudang)
+                            <option value="{{ $gudang->id }}" {{ (old('gudang_tujuan', $selectedGudangId ?? '') == $gudang->id) ? 'selected' : '' }}>
+                                {{ $gudang->nama_gudang }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('gudang_tujuan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Jenis Pengiriman -->
                 <div>
                     <label for="jenis_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Jenis Pengiriman</label>

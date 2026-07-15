@@ -244,8 +244,9 @@ class SuratJalanBongkaranBatamController extends Controller
             ->get();
 
         $terms = \App\Models\Term::orderBy('kode')->get();
+        $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
 
-        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage'));
+        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage', 'gudangs'));
     }
 
     public function penarikanIndex(Request $request)
@@ -679,6 +680,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'tagihan_ayp' => 'nullable|boolean',
                 'tagihan_atb' => 'nullable|boolean',
                 'tagihan_pb' => 'nullable|boolean',
+                'gudang_tujuan' => 'nullable|integer|exists:gudangs,id',
                 'keterangan' => 'nullable|string',
                 'uang_jalan_nominal' => 'nullable|numeric|min:0',
                 'f_e' => 'nullable|string|in:Full,Empty',
@@ -708,6 +710,16 @@ class SuratJalanBongkaranBatamController extends Controller
             DB::beginTransaction();
 
             $suratJalanBongkaran = SuratJalanBongkaranBatam::create($validatedData);
+            
+            // Update StockKontainer gudang if provided
+            if ($request->filled('gudang_tujuan') && !empty($validatedData['no_kontainer'])) {
+                $kontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $validatedData['no_kontainer'])
+                    ->latest()
+                    ->first();
+                if ($kontainer) {
+                    $kontainer->update(['gudangs_id' => $request->gudang_tujuan]);
+                }
+            }
 
             DB::commit();
 
@@ -996,6 +1008,17 @@ class SuratJalanBongkaranBatamController extends Controller
             ->get(['id', 'nama_panggilan', 'nama_lengkap']);
 
         $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('expedisi')->orderBy('ring')->get();
+        $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
+        
+        $selectedGudangId = null;
+        if (!empty($suratJalanBongkaran->no_kontainer)) {
+            $kontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $suratJalanBongkaran->no_kontainer)
+                ->latest()
+                ->first();
+            if ($kontainer) {
+                $selectedGudangId = $kontainer->gudangs_id;
+            }
+        }
 
         return view('surat-jalan-bongkaran-batam.edit', compact(
             'suratJalanBongkaran',
@@ -1004,6 +1027,8 @@ class SuratJalanBongkaranBatamController extends Controller
             'masterKegiatans',
             'tujuanKegiatanUtamas',
             'karyawanSupirs',
+            'gudangs',
+            'selectedGudangId',
             'karyawanKranis',
             'pricelistUangJalanBatams'
         ));
@@ -1053,6 +1078,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'tagihan_ayp' => 'nullable|boolean',
                 'tagihan_atb' => 'nullable|boolean',
                 'tagihan_pb' => 'nullable|boolean',
+                'gudang_tujuan' => 'nullable|integer|exists:gudangs,id',
                 'keterangan' => 'nullable|string',
                 'uang_jalan_nominal' => 'nullable|numeric|min:0',
                 'f_e' => 'nullable|string|in:Full,Empty',
@@ -1081,6 +1107,16 @@ class SuratJalanBongkaranBatamController extends Controller
             DB::beginTransaction();
 
             $suratJalanBongkaran->update($validatedData);
+            
+            // Update StockKontainer gudang if provided
+            if ($request->filled('gudang_tujuan') && !empty($validatedData['no_kontainer'])) {
+                $kontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $validatedData['no_kontainer'])
+                    ->latest()
+                    ->first();
+                if ($kontainer) {
+                    $kontainer->update(['gudangs_id' => $request->gudang_tujuan]);
+                }
+            }
 
             DB::commit();
 
