@@ -152,6 +152,10 @@
                                         <a href="{{ route('pranota-ob.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Pranota OB">
                                             <i class="fas fa-eye text-xs"></i>
                                         </a>
+                                    @elseif(isset($item->is_amprahan) && $item->is_amprahan)
+                                        <a href="{{ route('stock-amprahan.show', $item->stock_amprahan_id ?? $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Amprahan">
+                                            <i class="fas fa-eye text-xs"></i>
+                                        </a>
                                     @else
                                         <a href="{{ route('biaya-kapal.show', ['biayaKapal' => $item->id, 'kapal' => $kapal, 'voyage' => $voyage]) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Transaksi">
                                             <i class="fas fa-eye text-xs"></i>

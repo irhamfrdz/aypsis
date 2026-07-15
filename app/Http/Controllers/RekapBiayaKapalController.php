@@ -421,6 +421,30 @@ class RekapBiayaKapalController extends Controller
             $biayaKapals->push($pranota);
         }
 
+        // Fetch Pemakaian Stock Amprahan
+        $amprahanUsages = \App\Models\StockAmprahanUsage::with(['stockAmprahan'])
+            ->whereHas('kapal', function ($q) use ($kapal) {
+                $q->where('nama_kapal', $kapal);
+            })
+            ->where('nomor_voyage', $voyage)
+            ->get();
+            
+        foreach ($amprahanUsages as $usage) {
+            $totalBiaya = floatval($usage->jumlah) * floatval($usage->stockAmprahan->harga_satuan ?? 0);
+            $usage->apportioned = [
+                'nominal' => $totalBiaya,
+                'ppn' => 0,
+                'pph' => 0,
+                'total_biaya' => $totalBiaya,
+            ];
+            $usage->is_amprahan = true;
+            $usage->nomor_invoice = $usage->stockAmprahan->nomor_bukti ?? '-';
+            $usage->tanggal = $usage->tanggal_pengambilan;
+            $usage->jenis_biaya = 'Pemakaian Amprahan (' . ($usage->stockAmprahan->nama_barang ?? 'Barang') . ')';
+            
+            $biayaKapals->push($usage);
+        }
+
         // Calculate summaries based on apportioned costs
         $summary = [
             'total_nominal' => $biayaKapals->sum(fn ($item) => $item->apportioned['nominal']),
