@@ -147,7 +147,7 @@
     
     <script>
         // API Base URL mapping to Node.js backend port
-        const API_BASE_URL = "{{ request()->getScheme() }}://{{ request()->getHost() }}:8084";
+        const API_BASE_URL = "{{ request()->getScheme() }}://{{ request()->getHost() }}:8085";
 
         // Inisialisasi Map ke Indonesia (light mode / standard OpenStreetMap)
         const map = L.map('map', { zoomControl: false }).setView([-2.548926, 118.0148634], 5);

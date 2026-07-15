@@ -70,8 +70,30 @@ class Absensi extends Model
         static::created(function ($absensi) {
             // Kirim notifikasi hanya ke user 'adit' dan 'kiky'
             $users = \App\Models\User::whereIn('username', ['adit', 'kiky'])->get();
+            
+            $karyawanNama = $absensi->karyawan 
+                ? $absensi->karyawan->nama_lengkap 
+                : 'Karyawan NIK: ' . $absensi->nik;
+            $waktuFormatted = $absensi->waktu instanceof \Carbon\Carbon 
+                ? $absensi->waktu->format('H:i:s') 
+                : \Carbon\Carbon::parse($absensi->waktu)->format('H:i:s');
+                
+            $title = "Absensi Baru: {$absensi->tipe}";
+            $body = "{$karyawanNama} telah melakukan absen {$absensi->tipe} pukul {$waktuFormatted}.";
+
             foreach ($users as $user) {
+                // Notifikasi web/database
                 $user->notify(new \App\Notifications\AbsensiMasukNotification($absensi));
+                
+                // Notifikasi HP/Expo Push
+                if ($user->expo_push_token) {
+                    \App\Services\ExpoNotificationService::send(
+                        $user->expo_push_token,
+                        $title,
+                        $body,
+                        ['absensi_id' => $absensi->id, 'nik' => $absensi->nik]
+                    );
+                }
             }
         });
     }

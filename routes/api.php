@@ -22,6 +22,21 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::post('/attendance', [ApiAttendanceController::class, 'store']);
     Route::get('/attendance/history', [ApiAttendanceController::class, 'history']);
+    
+    Route::post('/user/push-token', function (Request $request) {
+        $data = $request->validate([
+            'token' => 'required|string',
+        ]);
+        
+        $request->user()->update([
+            'expo_push_token' => $data['token']
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Expo Push Token saved successfully.'
+        ]);
+    });
 });
 
 // Lokasi Absensi API endpoints (public/shared with Node.js port mapping)

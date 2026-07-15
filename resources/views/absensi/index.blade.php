@@ -199,14 +199,14 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         @if($absensi->foto_masuk)
-                                            <a href="{{ request()->getScheme() }}://{{ request()->getHost() }}:8084{{ $absensi->foto_masuk }}" target="_blank" class="relative inline-block group" title="Foto Masuk">
-                                                <img src="{{ request()->getScheme() }}://{{ request()->getHost() }}:8084{{ $absensi->foto_masuk }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
+                                            <a href="{{ request()->getScheme() }}://{{ request()->getHost() }}:8085{{ $absensi->foto_masuk }}" target="_blank" class="relative inline-block group" title="Foto Masuk">
+                                                <img src="{{ request()->getScheme() }}://{{ request()->getHost() }}:8085{{ $absensi->foto_masuk }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
                                                 <span class="absolute -bottom-1 -right-1 text-[8px] bg-green-600 text-white font-bold px-0.5 rounded shadow">IN</span>
                                             </a>
                                         @endif
                                         @if($absensi->foto_pulang)
-                                            <a href="{{ request()->getScheme() }}://{{ request()->getHost() }}:8084{{ $absensi->foto_pulang }}" target="_blank" class="relative inline-block group" title="Foto Pulang">
-                                                <img src="{{ request()->getScheme() }}://{{ request()->getHost() }}:8084{{ $absensi->foto_pulang }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
+                                            <a href="{{ request()->getScheme() }}://{{ request()->getHost() }}:8085{{ $absensi->foto_pulang }}" target="_blank" class="relative inline-block group" title="Foto Pulang">
+                                                <img src="{{ request()->getScheme() }}://{{ request()->getHost() }}:8085{{ $absensi->foto_pulang }}" class="w-8 h-8 object-cover rounded border border-gray-200 hover:scale-110 transition-transform duration-150">
                                                 <span class="absolute -bottom-1 -right-1 text-[8px] bg-red-600 text-white font-bold px-0.5 rounded shadow">OUT</span>
                                             </a>
                                         @endif

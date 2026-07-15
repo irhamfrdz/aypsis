@@ -93,7 +93,7 @@
 
 @push('scripts')
 <script>
-    const API_BASE_URL = "{{ request()->getScheme() }}://{{ request()->getHost() }}:8084";
+    const API_BASE_URL = "{{ request()->getScheme() }}://{{ request()->getHost() }}:8085";
     let activeTab = 'absen';
 
     function switchTab(tabType) {
