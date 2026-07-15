@@ -61,4 +61,18 @@ class Absensi extends Model
     {
         return $this->belongsTo(Mesin::class, 'mesin_id');
     }
+
+    /**
+     * Booted function to trigger notifications on created event.
+     */
+    protected static function booted()
+    {
+        static::created(function ($absensi) {
+            // Kirim notifikasi hanya ke user 'adit' dan 'kiky'
+            $users = \App\Models\User::whereIn('username', ['adit', 'kiky'])->get();
+            foreach ($users as $user) {
+                $user->notify(new \App\Notifications\AbsensiMasukNotification($absensi));
+            }
+        });
+    }
 }
