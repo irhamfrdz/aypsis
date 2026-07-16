@@ -238,10 +238,16 @@
                             <td>: {{ $biayaKapal->nama_vendor ?: $biayaKapal->umumDetails->first()->nama_vendor }}</td>
                         </tr>
                         @endif
-                        @if($biayaKapal->nomor_rekening)
+                        @if($biayaKapal->bank_id || ($biayaKapal->umumDetails->first() && $biayaKapal->umumDetails->first()->bank_id))
+                        <tr>
+                            <td>Bank</td>
+                            <td>: {{ $biayaKapal->bank->name ?? ($biayaKapal->umumDetails->first()->bank->name ?? '-') }}</td>
+                        </tr>
+                        @endif
+                        @if($biayaKapal->nomor_rekening || ($biayaKapal->umumDetails->first() && $biayaKapal->umumDetails->first()->nomor_rekening))
                         <tr>
                             <td>Nomor Rekening</td>
-                            <td>: {{ $biayaKapal->nomor_rekening }}</td>
+                            <td>: {{ $biayaKapal->nomor_rekening ?: $biayaKapal->umumDetails->first()->nomor_rekening }}</td>
                         </tr>
                         @endif
                     </table>
