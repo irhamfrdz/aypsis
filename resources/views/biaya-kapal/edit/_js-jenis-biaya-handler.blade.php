@@ -238,7 +238,7 @@
             calculateTotalFromAllTHCSections();
         }
         // Show fields for "Biaya Agen"
-        else if (selectedText === 'BIAYA AGEN') {
+        else if (selectedText.toLowerCase().includes('agen')) {
             // Show Biaya Air multi kapal wrapper
             if (airWrapper) airWrapper.classList.remove('hidden');
             initializeAirSections();

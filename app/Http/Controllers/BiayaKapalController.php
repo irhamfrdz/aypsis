@@ -2781,6 +2781,13 @@ class BiayaKapalController extends Controller
             return view('biaya-kapal.print-umum', compact('biayaKapal'));
         }
 
+        // Check if it's Biaya Agen (formerly Biaya Air) and use specific print template
+        if ($biayaKapal->klasifikasiBiaya &&
+            (stripos($biayaKapal->klasifikasiBiaya->nama, 'agen') !== false ||
+             stripos($biayaKapal->klasifikasiBiaya->nama, 'air') !== false)) {
+            return $this->printAir($biayaKapal);
+        }
+
         return view('biaya-kapal.print', compact('biayaKapal'));
     }
 
