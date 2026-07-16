@@ -401,8 +401,8 @@
                     'nama_vendor' => $um->nama_vendor,
                     'penerima' => $um->penerima,
                     'keterangan' => $um->keterangan,
-                    'nominal' => $um->nominal,
-                    'pph' => $um->pph
+                    'nominal' => $um->nominal ? number_format($um->nominal, 0, '', '') : 0,
+                    'pph' => $um->pph ? number_format($um->pph, 0, '', '') : 0
                 ];
             }
         }

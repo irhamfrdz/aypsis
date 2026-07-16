@@ -127,8 +127,12 @@
         // Trigger formatting to show initial subtotal correctly
         setTimeout(() => {
             const nominalInput = document.getElementById(`umum_jumlah_${idx}`);
+            const pphInput = document.getElementById(`umum_pph_${idx}`);
             if (nominalInput) {
                 formatUmumBiaya(nominalInput);
+            }
+            if (pphInput && pphInput.value && pphInput.value !== '0') {
+                formatUmumBiaya(pphInput);
             }
         }, 100);
     }
