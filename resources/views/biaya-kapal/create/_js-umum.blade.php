@@ -1,4 +1,4 @@
-<script>
+
     // ============= BIAYA UMUM LOGIC (MULTI-SECTION) =============
     const umumSectionsContainer = document.getElementById('umum_sections_container');
     const addUmumSectionBtn = document.getElementById('add_umum_section_btn');
@@ -169,4 +169,4 @@
     if (addUmumSectionBottomBtn) {
         addUmumSectionBottomBtn.addEventListener('click', () => addUmumSection());
     }
-</script>
+
