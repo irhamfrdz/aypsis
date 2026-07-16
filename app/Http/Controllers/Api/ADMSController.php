@@ -113,9 +113,9 @@ class ADMSController extends Controller
                 $state = isset($parts[3]) ? (int) $parts[3] : 0;
                 $type = (in_array($state, [0, 4, 5])) ? 'Masuk' : 'Pulang';
 
-                // Cegah duplikasi
+                // Cegah duplikasi berdasarkan NIK, tanggal, dan tipe absen (Hanya izinkan satu log 'Masuk' dan satu log 'Pulang' per hari)
                 $exists = Absensi::where('nik', $nik)
-                                 ->where('waktu', $logTime)
+                                 ->whereDate('waktu', Carbon::parse($logTime)->toDateString())
                                  ->where('tipe', $type)
                                  ->exists();
 
