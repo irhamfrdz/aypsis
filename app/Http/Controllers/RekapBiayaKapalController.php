@@ -445,6 +445,35 @@ class RekapBiayaKapalController extends Controller
             $biayaKapals->push($usage);
         }
 
+        // Fetch Uang Jalan (Muat dan Bongkar)
+        $uangJalans = \App\Models\UangJalan::where(function($query) use ($kapal, $voyage) {
+            $query->whereHas('suratJalan.prospeks', function($q) use ($kapal, $voyage) {
+                $q->where('nama_kapal', $kapal)->where('no_voyage', $voyage);
+            })
+            ->orWhereHas('suratJalanBongkaran', function($q) use ($kapal, $voyage) {
+                $q->where('nama_kapal', $kapal)->where('no_voyage', $voyage);
+            })
+            ->orWhereHas('suratJalanBongkaranBatam', function($q) use ($kapal, $voyage) {
+                $q->where('nama_kapal', $kapal)->where('no_voyage', $voyage);
+            });
+        })->where('status', '!=', 'dibatalkan')->get();
+
+        foreach ($uangJalans as $uj) {
+            $totalBiaya = floatval($uj->jumlah_total ?? 0);
+            $uj->apportioned = [
+                'nominal' => $totalBiaya,
+                'ppn' => 0,
+                'pph' => 0,
+                'total_biaya' => $totalBiaya,
+            ];
+            $uj->is_uang_jalan = true;
+            $uj->nomor_invoice = $uj->nomor_uang_jalan ?? '-';
+            $uj->tanggal = $uj->tanggal_uang_jalan;
+            $uj->jenis_biaya = 'Uang Jalan';
+            
+            $biayaKapals->push($uj);
+        }
+
         // Calculate summaries based on apportioned costs
         $summary = [
             'total_nominal' => $biayaKapals->sum(fn ($item) => $item->apportioned['nominal']),
