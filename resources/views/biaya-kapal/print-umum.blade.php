@@ -226,16 +226,16 @@
                 </div>
                 <div style="flex: 1;">
                     <table class="info-table">
-                        @if($biayaKapal->penerima)
+                        @if($biayaKapal->penerima || ($biayaKapal->umumDetails->first() && $biayaKapal->umumDetails->first()->penerima))
                         <tr>
                             <td style="width: 35%;">Penerima</td>
-                            <td>: {{ $biayaKapal->penerima }}</td>
+                            <td>: {{ $biayaKapal->penerima ?: $biayaKapal->umumDetails->first()->penerima }}</td>
                         </tr>
                         @endif
-                        @if($biayaKapal->nama_vendor)
+                        @if($biayaKapal->nama_vendor || ($biayaKapal->umumDetails->first() && $biayaKapal->umumDetails->first()->nama_vendor))
                         <tr>
                             <td>Nama Vendor</td>
-                            <td>: {{ $biayaKapal->nama_vendor }}</td>
+                            <td>: {{ $biayaKapal->nama_vendor ?: $biayaKapal->umumDetails->first()->nama_vendor }}</td>
                         </tr>
                         @endif
                         @if($biayaKapal->nomor_rekening)
@@ -256,12 +256,10 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: 15%;">Nama Kapal</th>
-                        <th style="width: 15%;">No. Voyage</th>
-                        <th style="width: 15%;">Vendor</th>
-                        <th style="width: 15%;">Penerima</th>
-                        <th style="width: 20%;">Keterangan</th>
-                        <th style="width: 15%;">Nominal</th>
+                        <th style="width: 25%;">Nama Kapal</th>
+                        <th style="width: 20%;">No. Voyage</th>
+                        <th style="width: 30%;">Keterangan</th>
+                        <th style="width: 20%;">Nominal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -276,19 +274,17 @@
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td>{{ $detail->kapal ?? '-' }}</td>
                             <td class="text-center">{{ $detail->voyage ?? '-' }}</td>
-                            <td>{{ $detail->nama_vendor ?? '-' }}</td>
-                            <td>{{ $detail->penerima ?? '-' }}</td>
                             <td>{{ $detail->keterangan ?? '-' }}</td>
                             <td class="text-right">Rp {{ number_format($detail->nominal, 0, ',', '.') }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center">Tidak ada data detail umum</td>
+                            <td colspan="5" class="text-center">Tidak ada data detail umum</td>
                         </tr>
                     @endforelse
                     
                     <tr class="total-row">
-                        <td colspan="6" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
