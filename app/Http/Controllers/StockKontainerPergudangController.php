@@ -152,6 +152,18 @@ class StockKontainerPergudangController extends Controller
         return Excel::download(new \App\Exports\LaporanPersediaanKontainerExport, $fileName);
     }
 
+    public function exportLaporanBulan(Request $request)
+    {
+        $request->validate([
+            'bulan' => 'required|date_format:Y-m'
+        ]);
+
+        $bulan = $request->bulan; // format: "2026-07"
+        $fileName = 'Stock_Pergudang_'.$bulan.'_'.date('Ymd_His').'.xlsx';
+
+        return Excel::download(new \App\Exports\LaporanStockPerBulanExport($bulan), $fileName);
+    }
+
     public function downloadTemplate()
     {
         $headers = ['Nomor Kontainer'];

@@ -16,13 +16,20 @@
             </div>
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 sm:mb-3 px-4">Stock Kontainer per Gudang</h1>
             <p class="text-sm sm:text-base lg:text-lg text-gray-600 px-4">Ringkasan ketersediaan kontainer dan stock di masing-masing gudang</p>
-            <div class="mt-5 flex justify-center">
-                <a href="{{ route('master.kontainer.stock-pergudang.export-all') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 duration-200">
+            <div class="mt-5 flex justify-center gap-4">
+                <a href="{{ route('kontainer.stock-pergudang.export-all') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 duration-200">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     Export Laporan Bulanan (Excel)
                 </a>
+
+                <button type="button" onclick="openExportBulanModal()" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Export per Bulan
+                </button>
             </div>
         </div>
 
@@ -103,4 +110,59 @@
 
     </div>
 </div>
+
+<!-- Modal Export Bulan -->
+<div id="export_bulan_modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true" onclick="closeExportBulanModal()"></div>
+
+        <!-- Modal panel -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div class="sm:flex sm:items-start">
+                <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-indigo-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                    <i class="text-indigo-600 fas fa-calendar-alt"></i>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">
+                        Export Stock per Bulan
+                    </h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500 mb-4">
+                            Pilih bulan dan tahun untuk mengunduh rekapitulasi Excel stok kontainer.
+                        </p>
+                        
+                        <form action="{{ route('kontainer.stock-pergudang.export-bulan') }}" method="POST" id="export_bulan_form">
+                            @csrf
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Bulan & Tahun</label>
+                                <input type="month" name="bulan" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="document.getElementById('export_bulan_form').submit(); closeExportBulanModal();" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    Export Excel
+                </button>
+                <button type="button" onclick="closeExportBulanModal()" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openExportBulanModal() {
+        document.getElementById('export_bulan_modal').classList.remove('hidden');
+    }
+    
+    function closeExportBulanModal() {
+        document.getElementById('export_bulan_modal').classList.add('hidden');
+    }
+</script>
+
 @endsection
