@@ -230,8 +230,8 @@
             // Recalculate based on THC section totals
             calculateTotalFromAllTHCSections();
         }
-        // Show fields for "Biaya Air"
-        else if (selectedText.toLowerCase().includes('air')) {
+        // Show fields for "Biaya Agen"
+        else if (selectedText === 'BIAYA AGEN') {
             // Show Biaya Air multi kapal wrapper
             if (airWrapper) airWrapper.classList.remove('hidden');
             initializeAirSections();

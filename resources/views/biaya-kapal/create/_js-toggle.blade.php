@@ -235,8 +235,8 @@
             dpInput.value = '0';
             sisaPembayaranInput.value = '0';
         }
-        // Show fields for "Biaya Air"
-        else if (selectedText.toLowerCase().includes('air')) {
+        // Show fields for "Biaya Agen"
+        else if (selectedText === 'BIAYA AGEN') {
             // Show Biaya Air multi kapal wrapper
             if (airWrapper) airWrapper.classList.remove('hidden');
             initializeAirSections();

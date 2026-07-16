@@ -2694,7 +2694,7 @@ class BiayaKapalController extends Controller
 
         // Check if it's Biaya Air and use specific print template
         if ($biayaKapal->klasifikasiBiaya &&
-            stripos($biayaKapal->klasifikasiBiaya->nama, 'air') !== false) {
+            stripos($biayaKapal->klasifikasiBiaya->nama, 'agen') !== false) {
             return view('biaya-kapal.print-air', compact('biayaKapal'));
         }
 

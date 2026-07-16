@@ -49,7 +49,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width={{ $currentPaper['width'] }}, initial-scale=1.0">
-    <title>Invoice Biaya Air - {{ $biayaKapal->nomor_invoice }}</title>
+    <title>Invoice Biaya Agen - {{ $biayaKapal->nomor_invoice }}</title>
     <style>
         * {
             margin: 0;
@@ -396,7 +396,7 @@
             <div style="font-size: 8px;">
                 @php
                     $keterangan = $biayaKapal->keterangan ?? '';
-                    if (stripos($keterangan, 'Detail Biaya Air:') !== false) $keterangan = explode('Detail Biaya Air:', $keterangan)[0];
+                    if (stripos($keterangan, 'Detail Biaya Agen:') !== false) $keterangan = explode('Detail Biaya Agen:', $keterangan)[0];
                     if (stripos($keterangan, 'Detail Barang Buruh:') !== false) $keterangan = explode('Detail Barang Buruh:', $keterangan)[0];
                     if (stripos($keterangan, 'Detail Biaya TKBM:') !== false) $keterangan = explode('Detail Biaya TKBM:', $keterangan)[0];
                 @endphp

@@ -459,7 +459,7 @@
 
     @if($biayaKapal->airDetails->count() > 0)
     <div class="mt-8">
-        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Biaya Air</h3>
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Detail Biaya Agen</h3>
         <div class="space-y-6">
             @php
                 $groupedAir = $biayaKapal->airDetails->groupBy(function($item) {
@@ -501,7 +501,7 @@
                     </div>
                     
                     <div class="mt-4">
-                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Item Biaya Air</span>
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Item Biaya Agen</span>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
                                 <thead class="bg-gray-100">

@@ -387,8 +387,8 @@
             </tr>
             @php
                 $keterangan = $biayaKapal->keterangan ?? '';
-                if (stripos($keterangan, 'Detail Biaya Air:') !== false) {
-                    $keterangan = explode('Detail Biaya Air:', $keterangan)[0];
+                if (stripos($keterangan, 'Detail Biaya Agen:') !== false) {
+                    $keterangan = explode('Detail Biaya Agen:', $keterangan)[0];
                 }
                 if (stripos($keterangan, 'Detail Barang Buruh:') !== false) {
                     $keterangan = explode('Detail Barang Buruh:', $keterangan)[0];
@@ -505,8 +505,8 @@
 
             @php
                 $keterangan = $biayaKapal->keterangan ?? '';
-                if (stripos($keterangan, 'Detail Biaya Air:') !== false) {
-                    $keterangan = explode('Detail Biaya Air:', $keterangan)[0];
+                if (stripos($keterangan, 'Detail Biaya Agen:') !== false) {
+                    $keterangan = explode('Detail Biaya Agen:', $keterangan)[0];
                 }
                 if (stripos($keterangan, 'Detail Barang Buruh:') !== false) {
                     $keterangan = explode('Detail Barang Buruh:', $keterangan)[0];
