@@ -400,6 +400,8 @@
                     'voyage' => $um->voyage,
                     'nama_vendor' => $um->nama_vendor,
                     'penerima' => $um->penerima,
+                    'nomor_rekening' => $um->nomor_rekening,
+                    'bank_id' => $um->bank_id,
                     'keterangan' => $um->keterangan,
                     'nominal' => $um->nominal ? number_format($um->nominal, 0, '', '') : 0,
                     'pph' => $um->pph ? number_format($um->pph, 0, '', '') : 0

@@ -14,6 +14,8 @@ class BiayaKapalUmum extends Model
         'voyage',
         'nama_vendor',
         'penerima',
+        'nomor_rekening',
+        'bank_id',
         'keterangan',
         'nominal',
         'pph',
@@ -30,5 +32,13 @@ class BiayaKapalUmum extends Model
     public function biayaKapal()
     {
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');
+    }
+
+    /**
+     * Relationship: belongs to Bank
+     */
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class, 'bank_id');
     }
 }

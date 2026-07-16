@@ -24,6 +24,8 @@
         let selectedVoyage = initialData ? initialData.voyage : '';
         let namaVendor = initialData ? initialData.nama_vendor : '';
         let penerima = initialData ? initialData.penerima : '';
+        let nomorRekening = initialData ? initialData.nomor_rekening : '';
+        let bankId = initialData ? initialData.bank_id : '';
         let keterangan = initialData ? initialData.keterangan : '';
         let nominal = initialData ? initialData.nominal : 0;
         let pph = initialData ? initialData.pph : 0;
@@ -35,6 +37,11 @@
                 kapalOptions += `<option value="${kapal.nama_kapal}" ${selected}>${kapal.nama_kapal}</option>`;
             });
         }
+        
+        let bankOptions = '<option value="">-- Pilih Bank --</option>';
+        @foreach($banks as $bank)
+            bankOptions += `<option value="{{ $bank->id }}" ${bankId == '{{ $bank->id }}' ? 'selected' : ''}>{{ $bank->name }}</option>`;
+        @endforeach
 
         const section = document.createElement('div');
         section.className = 'umum-section mb-5 p-4 border-2 border-indigo-200 rounded-lg bg-indigo-50';
@@ -79,6 +86,20 @@
                            name="umum_sections[${idx}][penerima]"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                            placeholder="Masukkan nama penerima..." value="${penerima}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Rekening</label>
+                    <input type="text"
+                           name="umum_sections[${idx}][nomor_rekening]"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                           placeholder="Masukkan nomor rekening..." value="${nomorRekening}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Bank</label>
+                    <select name="umum_sections[${idx}][bank_id]"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        ${bankOptions}
+                    </select>
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
