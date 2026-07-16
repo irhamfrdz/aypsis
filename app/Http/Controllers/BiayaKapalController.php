@@ -2773,6 +2773,14 @@ class BiayaKapalController extends Controller
             return view('biaya-kapal.print-perijinan', compact('biayaKapal'));
         }
 
+        // Check if it's Biaya Umum and use specific print template
+        if ($biayaKapal->klasifikasiBiaya &&
+            stripos($biayaKapal->klasifikasiBiaya->nama, 'umum') !== false) {
+            $biayaKapal->load(['umumDetails']);
+
+            return view('biaya-kapal.print-umum', compact('biayaKapal'));
+        }
+
         return view('biaya-kapal.print', compact('biayaKapal'));
     }
 
