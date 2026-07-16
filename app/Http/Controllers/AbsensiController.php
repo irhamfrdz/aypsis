@@ -230,7 +230,7 @@ class AbsensiController extends Controller
             // Group logs by Date to get unique check-in dates
             $presentDates = $logs->groupBy(function ($log) {
                 return Carbon::parse($log->waktu)->subHours(6)->toDateString();
-            })->keySet()->toArray();
+            })->keys()->toArray();
 
             $hadir = 0;
             $sakit = 0;
