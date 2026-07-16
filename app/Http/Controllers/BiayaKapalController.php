@@ -502,6 +502,17 @@ class BiayaKapalController extends Controller
                     $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
                 }
             }
+        }
+            unset($section);
+        }
+
+        // Biaya Umum Sections Cleaning
+        if (isset($data['umum_sections']) && is_array($data['umum_sections'])) {
+            foreach ($data['umum_sections'] as &$section) {
+                if (isset($section['nominal']) && is_string($section['nominal'])) {
+                    $section['nominal'] = str_replace(',', '.', str_replace('.', '', $section['nominal']));
+                }
+            }
             unset($section);
         }
 
@@ -822,6 +833,15 @@ class BiayaKapalController extends Controller
             'perlengkapan_sections.*.no_voyage' => 'nullable|string|max:255',
             'perlengkapan_sections.*.keterangan' => 'nullable|string',
             'perlengkapan_sections.*.jumlah_biaya' => 'nullable|numeric|min:0',
+
+            // Biaya Umum sections
+            'umum_sections' => 'nullable|array',
+            'umum_sections.*.kapal' => 'nullable|string|max:255',
+            'umum_sections.*.voyage' => 'nullable|string|max:255',
+            'umum_sections.*.nama_vendor' => 'nullable|string|max:255',
+            'umum_sections.*.penerima' => 'nullable|string|max:255',
+            'umum_sections.*.keterangan' => 'nullable|string',
+            'umum_sections.*.nominal' => 'nullable|numeric|min:0',
 
             // Perijinan sections
             'perijinan_sections' => 'nullable|array',
@@ -1755,6 +1775,35 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for Tanto from section totals
                 $totalTanto = BiayaKapalTanto::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
                 $biayaKapal->update(['nominal' => $totalTanto]);
+            }
+
+            // BIAYA UMUM SECTIONS: Store Biaya Umum details
+            if ($request->has('umum_sections') && ! empty($request->umum_sections)) {
+                $totalUmum = 0;
+                foreach ($request->umum_sections as $sectionIndex => $section) {
+                    if (empty($section['nominal']) && empty($section['keterangan']) && empty($section['nama_vendor'])) {
+                        continue;
+                    }
+
+                    $nominalRaw = $section['nominal'] ?? 0;
+                    $nominal = floatval(str_replace(',', '.', str_replace('.', '', (string) $nominalRaw)));
+                    
+                    \App\Models\BiayaKapalUmum::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal' => $section['kapal'] ?? null,
+                        'voyage' => $section['voyage'] ?? null,
+                        'nama_vendor' => $section['nama_vendor'] ?? null,
+                        'penerima' => $section['penerima'] ?? null,
+                        'keterangan' => $section['keterangan'] ?? null,
+                        'nominal' => $nominal,
+                    ]);
+                    
+                    $totalUmum += $nominal;
+                }
+
+                if ($totalUmum > 0) {
+                    $biayaKapal->update(['nominal' => $totalUmum]);
+                }
             }
 
             // Store barang details - Handle both old and new structure
@@ -3118,6 +3167,16 @@ class BiayaKapalController extends Controller
             unset($section);
         }
 
+        // Biaya Umum Sections
+        if (isset($data['umum_sections']) && is_array($data['umum_sections'])) {
+            foreach ($data['umum_sections'] as &$section) {
+                if (isset($section['nominal'])) {
+                    $section['nominal'] = str_replace(',', '.', str_replace('.', '', $section['nominal']));
+                }
+            }
+            unset($section);
+        }
+
         // Kapal Sections (Buruh)
         if (isset($data['kapal_sections']) && is_array($data['kapal_sections'])) {
             foreach ($data['kapal_sections'] as &$section) {
@@ -3428,6 +3487,15 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.tenaga_kerja' => 'nullable|array',
             'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'required|exists:buruhs,id',
             'kapal_sections.*.tenaga_kerja.*.nominal' => 'required|numeric|min:0',
+
+            // Biaya Umum sections
+            'umum_sections' => 'nullable|array',
+            'umum_sections.*.kapal' => 'nullable|string|max:255',
+            'umum_sections.*.voyage' => 'nullable|string|max:255',
+            'umum_sections.*.nama_vendor' => 'nullable|string|max:255',
+            'umum_sections.*.penerima' => 'nullable|string|max:255',
+            'umum_sections.*.keterangan' => 'nullable|string',
+            'umum_sections.*.nominal' => 'nullable|numeric|min:0',
 
             // Air sections validation
             'air' => 'nullable|array',
@@ -4612,6 +4680,36 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for Tanto from section totals
                 $totalTanto = BiayaKapalTanto::where('biaya_kapal_id', $biayaKapal->id)->sum('grand_total');
                 $biayaKapal->update(['nominal' => $totalTanto]);
+            }
+
+            // UMUM UPDATE
+            if ($request->has('umum_sections')) {
+                \App\Models\BiayaKapalUmum::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                $totalUmum = 0;
+                if (! empty($request->umum_sections)) {
+                    foreach ($request->umum_sections as $section) {
+                        if (empty($section['nominal']) && empty($section['keterangan']) && empty($section['nama_vendor'])) {
+                            continue;
+                        }
+
+                        $nominalRaw = $section['nominal'] ?? 0;
+                        $nominal = floatval(str_replace(',', '.', str_replace('.', '', (string) $nominalRaw)));
+                        
+                        \App\Models\BiayaKapalUmum::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal' => $section['kapal'] ?? null,
+                            'voyage' => $section['voyage'] ?? null,
+                            'nama_vendor' => $section['nama_vendor'] ?? null,
+                            'penerima' => $section['penerima'] ?? null,
+                            'keterangan' => $section['keterangan'] ?? null,
+                            'nominal' => $nominal,
+                        ]);
+                        $totalUmum += $nominal;
+                    }
+                }
+                if ($totalUmum > 0 || (isset($jenisBiayaName) && stripos($jenisBiayaName, 'umum') !== false)) {
+                    $biayaKapal->update(['nominal' => $totalUmum]);
+                }
             }
 
             // PERIJINAN UPDATE

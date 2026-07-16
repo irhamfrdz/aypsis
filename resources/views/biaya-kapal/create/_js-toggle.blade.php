@@ -1518,5 +1518,9 @@
             clearAllTemasSections();
             if (tantoWrapper) tantoWrapper.classList.add('hidden');
             clearAllTantoSections();
+            if (document.getElementById('umum_wrapper')) {
+                document.getElementById('umum_wrapper').classList.add('hidden');
+                clearAllUmumSections();
+            }
         }
     });
