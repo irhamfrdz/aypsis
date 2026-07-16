@@ -507,7 +507,7 @@
         document.body.style.overflow = 'auto';
     }
 
-    document.getElementById('printSpkbmModal').addEventListener('click', function(e) {
+    document.getElementById('printSpkbmModal').addEventListener('mousedown', function(e) {
         if (e.target === this) {
             closePrintSpkbmModal();
         }
