@@ -90,11 +90,23 @@
                                placeholder="0"
                                oninput="formatUmumBiaya(this)" required>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Masukkan nominal tanpa titik atau koma</p>
                 </div>
-                <div class="flex items-end">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">PPh</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">Rp</span>
+                        <input type="text"
+                               name="umum_sections[${idx}][pph]"
+                               id="umum_pph_${idx}"
+                               value="0"
+                               class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 umum-pph-input"
+                               placeholder="0"
+                               oninput="formatUmumBiaya(this)">
+                    </div>
+                </div>
+                <div class="flex items-end md:col-span-2">
                     <div class="w-full bg-indigo-100 border border-indigo-200 rounded-lg px-4 py-3">
-                        <p class="text-xs text-indigo-700 font-medium mb-1">Subtotal</p>
+                        <p class="text-xs text-indigo-700 font-medium mb-1">Subtotal (Nominal - PPh)</p>
                         <p class="text-lg font-bold text-indigo-800" id="umum_subtotal_${idx}">Rp 0</p>
                     </div>
                 </div>
@@ -113,15 +125,28 @@
         let value = input.value.replace(/\D/g, '');
         if (value) {
             value = parseInt(value).toLocaleString('id-ID');
+        } else {
+            value = '0';
         }
         input.value = value;
 
         const section = input.closest('.umum-section');
         if (section) {
             const idx = section.getAttribute('data-section-index');
+            const nominalInput = document.getElementById(`umum_jumlah_${idx}`);
+            const pphInput = document.getElementById(`umum_pph_${idx}`);
             const subtotalEl = document.getElementById(`umum_subtotal_${idx}`);
-            const numVal = parseInt(input.value.replace(/\./g, '') || 0);
-            if (subtotalEl) subtotalEl.textContent = 'Rp ' + numVal.toLocaleString('id-ID');
+            
+            const nominalVal = parseInt((nominalInput.value || '0').replace(/\./g, ''));
+            const pphVal = parseInt((pphInput.value || '0').replace(/\./g, ''));
+            const subtotal = nominalVal - pphVal;
+            
+            if (subtotalEl) subtotalEl.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+            
+            // Re-calculate global total if needed
+            if (typeof calculateTotalFromAllUmumSections === 'function') {
+                calculateTotalFromAllUmumSections();
+            }
         }
     };
 

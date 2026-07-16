@@ -511,6 +511,9 @@ class BiayaKapalController extends Controller
                 if (isset($section['nominal']) && is_string($section['nominal'])) {
                     $section['nominal'] = str_replace(',', '.', str_replace('.', '', $section['nominal']));
                 }
+                if (isset($section['pph']) && is_string($section['pph'])) {
+                    $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                }
             }
             unset($section);
         }
@@ -841,6 +844,7 @@ class BiayaKapalController extends Controller
             'umum_sections.*.penerima' => 'nullable|string|max:255',
             'umum_sections.*.keterangan' => 'nullable|string',
             'umum_sections.*.nominal' => 'nullable|numeric|min:0',
+            'umum_sections.*.pph' => 'nullable|numeric|min:0',
 
             // Perijinan sections
             'perijinan_sections' => 'nullable|array',
@@ -1787,6 +1791,9 @@ class BiayaKapalController extends Controller
                     $nominalRaw = $section['nominal'] ?? 0;
                     $nominal = floatval(str_replace(',', '.', str_replace('.', '', (string) $nominalRaw)));
                     
+                    $pphRaw = $section['pph'] ?? 0;
+                    $pph = floatval(str_replace(',', '.', str_replace('.', '', (string) $pphRaw)));
+                    
                     \App\Models\BiayaKapalUmum::create([
                         'biaya_kapal_id' => $biayaKapal->id,
                         'kapal' => $section['kapal'] ?? null,
@@ -1795,9 +1802,10 @@ class BiayaKapalController extends Controller
                         'penerima' => $section['penerima'] ?? null,
                         'keterangan' => $section['keterangan'] ?? null,
                         'nominal' => $nominal,
+                        'pph' => $pph,
                     ]);
                     
-                    $totalUmum += $nominal;
+                    $totalUmum += ($nominal - $pph);
                 }
 
                 if ($totalUmum > 0) {
@@ -3172,6 +3180,9 @@ class BiayaKapalController extends Controller
                 if (isset($section['nominal'])) {
                     $section['nominal'] = str_replace(',', '.', str_replace('.', '', $section['nominal']));
                 }
+                if (isset($section['pph'])) {
+                    $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                }
             }
             unset($section);
         }
@@ -3495,6 +3506,7 @@ class BiayaKapalController extends Controller
             'umum_sections.*.penerima' => 'nullable|string|max:255',
             'umum_sections.*.keterangan' => 'nullable|string',
             'umum_sections.*.nominal' => 'nullable|numeric|min:0',
+            'umum_sections.*.pph' => 'nullable|numeric|min:0',
 
             // Air sections validation
             'air' => 'nullable|array',
@@ -4694,6 +4706,9 @@ class BiayaKapalController extends Controller
                         $nominalRaw = $section['nominal'] ?? 0;
                         $nominal = floatval(str_replace(',', '.', str_replace('.', '', (string) $nominalRaw)));
                         
+                        $pphRaw = $section['pph'] ?? 0;
+                        $pph = floatval(str_replace(',', '.', str_replace('.', '', (string) $pphRaw)));
+                        
                         \App\Models\BiayaKapalUmum::create([
                             'biaya_kapal_id' => $biayaKapal->id,
                             'kapal' => $section['kapal'] ?? null,
@@ -4702,8 +4717,9 @@ class BiayaKapalController extends Controller
                             'penerima' => $section['penerima'] ?? null,
                             'keterangan' => $section['keterangan'] ?? null,
                             'nominal' => $nominal,
+                            'pph' => $pph,
                         ]);
-                        $totalUmum += $nominal;
+                        $totalUmum += ($nominal - $pph);
                     }
                 }
                 if ($totalUmum > 0 || (isset($jenisBiayaName) && stripos($jenisBiayaName, 'umum') !== false)) {

@@ -16,10 +16,12 @@ class BiayaKapalUmum extends Model
         'penerima',
         'keterangan',
         'nominal',
+        'pph',
     ];
 
     protected $casts = [
         'nominal' => 'decimal:2',
+        'pph' => 'decimal:2',
     ];
 
     /**
