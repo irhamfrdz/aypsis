@@ -11,7 +11,15 @@
                 <h1 class="text-2xl font-bold text-gray-900">Biaya Kapal</h1>
                 <p class="text-gray-600 mt-1">Kelola data biaya operasional kapal</p>
             </div>
-            <div>
+            <div class="flex items-center space-x-2">
+                @can('biaya-kapal-view')
+                <button type="button" onclick="openExportModal()"
+                   class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
+                    <i class="fas fa-file-excel mr-2"></i>
+                    Export Biaya Buruh
+                </button>
+                @endcan
+
                 @can('biaya-kapal-create')
                 <a href="{{ route('biaya-kapal.create') }}" 
                    class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
