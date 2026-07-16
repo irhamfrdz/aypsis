@@ -115,12 +115,15 @@
                             <th class="px-6 py-3 text-left">Nama Lengkap</th>
                              <th class="px-6 py-3 text-left">Pekerjaan</th>
                             <th class="px-6 py-3 text-center">Hadir</th>
+                            <th class="px-6 py-3 text-center">Sakit</th>
+                            <th class="px-6 py-3 text-center">Izin / Cuti</th>
+                            <th class="px-6 py-3 text-center">Alpha</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 text-xs text-gray-900">
                         @forelse($karyawans as $index => $karyawan)
                             @php
-                                $stats = $rekapData[$karyawan->id] ?? ['total_masuk' => 0, 'total_pulang' => 0, 'active_days' => 0];
+                                $stats = $rekapData[$karyawan->id] ?? ['total_masuk' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0];
                             @endphp
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
                                 <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-500">
@@ -140,10 +143,25 @@
                                         {{ $stats['total_masuk'] }} Hari
                                     </span>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $stats['sakit'] > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500' }}">
+                                        {{ $stats['sakit'] }} Hari
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $stats['izin'] > 0 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500' }}">
+                                        {{ $stats['izin'] }} Hari
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $stats['alpha'] > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-500' }}">
+                                        {{ $stats['alpha'] }} Hari
+                                    </span>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-10 text-center">
+                                <td colspan="8" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>

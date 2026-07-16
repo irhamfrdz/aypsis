@@ -207,23 +207,70 @@ class AbsensiController extends Controller
             ->get()
             ->groupBy('karyawan_id');
 
+        // Fetch all approved permissions/leaves in the selected month
+        $permissions = \Illuminate\Support\Facades\DB::table('permohonan_izins')
+            ->where('status', 'APPROVED')
+            ->where(function($q) use ($startDate, $endDate) {
+                $q->whereBetween('tanggal_mulai', [$startDate->toDateString(), $endDate->toDateString()])
+                  ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
+                  ->orWhere(function($sub) use ($startDate, $endDate) {
+                      $sub->where('tanggal_mulai', '<=', $startDate->toDateString())
+                          ->where('tanggal_selesai', '>=', $endDate->toDateString());
+                  });
+            })
+            ->get()
+            ->groupBy('karyawan_id');
+
         // Calculate rekap statistics for each employee
         $rekapData = [];
         foreach ($karyawans as $karyawan) {
             $logs = $attendance->get($karyawan->id, collect());
+            $karyawanPermissions = $permissions->get($karyawan->id, collect());
 
-            // Group logs by Date to count unique active days
-            $activeDays = $logs->groupBy(function ($log) {
+            // Group logs by Date to get unique check-in dates
+            $presentDates = $logs->groupBy(function ($log) {
                 return Carbon::parse($log->waktu)->subHours(6)->toDateString();
-            })->count();
+            })->keySet()->toArray();
 
-            // Calculate absent days (Tidak Hadir)
-            $tidakHadir = max(0, $normalWorkdays - $activeDays);
+            $hadir = 0;
+            $sakit = 0;
+            $izin = 0;
+            $alpha = 0;
+
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $date = Carbon::createFromDate($year, $month, $d);
+                if ($date->isWeekend()) {
+                    continue; // Skip weekends
+                }
+
+                $dateStr = $date->toDateString();
+
+                if (in_array($dateStr, $presentDates)) {
+                    $hadir++;
+                } else {
+                    // Check if they had an approved permission on this day
+                    $matchedPerm = $karyawanPermissions->first(function($perm) use ($dateStr) {
+                        return $dateStr >= $perm->tanggal_mulai && $dateStr <= $perm->tanggal_selesai;
+                    });
+
+                    if ($matchedPerm) {
+                        $jenis = strtolower($matchedPerm->jenis_izin);
+                        if ($jenis === 'sakit') {
+                            $sakit++;
+                        } else {
+                            $izin++;
+                        }
+                    } else {
+                        $alpha++;
+                    }
+                }
+            }
 
             $rekapData[$karyawan->id] = [
-                'total_masuk' => $activeDays, // Hadir = Unique active days
-                'total_pulang' => $tidakHadir, // Tidak Hadir = Absent days
-                'active_days' => $activeDays,
+                'total_masuk' => $hadir,
+                'sakit' => $sakit,
+                'izin' => $izin,
+                'alpha' => $alpha,
             ];
         }
 
