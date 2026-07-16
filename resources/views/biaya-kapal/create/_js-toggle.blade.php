@@ -1434,6 +1434,78 @@
             clearAllMeratusSections();
             if (temasWrapper) temasWrapper.classList.add('hidden');
             clearAllTemasSections();
+            if (tantoWrapper) tantoWrapper.classList.add('hidden');
+            clearAllTantoSections();
+        } else if (selectedText === 'BIAYA UMUM') {
+            // Show only Biaya Umum multi-section
+            if (document.getElementById('umum_wrapper')) {
+                document.getElementById('umum_wrapper').classList.remove('hidden');
+                if (typeof initializeUmumSections === 'function') {
+                    initializeUmumSections();
+                }
+            }
+
+            // Hide standard fields
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            if(namaVendorWrapper) {
+                namaVendorWrapper.classList.add('hidden');
+                const vendorInput = document.getElementById('nama_vendor');
+                if (vendorInput) vendorInput.value = '';
+            }
+            if(nomorRekeningWrapper) {
+                nomorRekeningWrapper.classList.add('hidden');
+                const rekInput = document.getElementById('nomor_rekening');
+                if (rekInput) rekInput.value = '';
+            }
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+
+            if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaInput) {
+                penerimaInput.removeAttribute('required');
+                penerimaInput.value = '';
+            }
+
+            // Hide everything else
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+            operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            vendorWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
+            if (stuffingWrapper) stuffingWrapper.classList.add('hidden');
+            clearAllStuffingSections();
+            if (thcWrapper) thcWrapper.classList.add('hidden');
+            clearAllTHCSections();
+            if (storageWrapper) storageWrapper.classList.add('hidden');
+            clearAllStorageSections();
+            if (demurrageWrapper) demurrageWrapper.classList.add('hidden');
+            clearAllDemurrageSections();
+            if (perlengkapanWrapper) perlengkapanWrapper.classList.add('hidden');
+            clearAllPerlengkapanSections();
+            if (meratusWrapper) meratusWrapper.classList.add('hidden');
+            clearAllMeratusSections();
+            if (temasWrapper) temasWrapper.classList.add('hidden');
+            clearAllTemasSections();
+            if (tantoWrapper) tantoWrapper.classList.add('hidden');
+            clearAllTantoSections();
         } else {
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
