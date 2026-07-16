@@ -299,4 +299,9 @@ class BiayaKapal extends Model
     {
         return $this->belongsTo(Bank::class, 'bank_id');
     }
+
+    public function umumDetails()
+    {
+        return $this->hasMany(BiayaKapalUmum::class, 'biaya_kapal_id');
+    }
 }

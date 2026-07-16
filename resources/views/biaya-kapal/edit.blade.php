@@ -57,6 +57,9 @@
 {{-- Biaya Nota Retur --}}
 @include('biaya-kapal.create._section-nota-retur')
 
+{{-- Biaya Umum --}}
+@include('biaya-kapal.create._section-umum')
+
 
 {{-- ===== FORM FIELDS EXTRA ===== --}}
 @include('biaya-kapal.edit._form-fields-extra')
@@ -91,6 +94,7 @@
 @include('biaya-kapal.edit._js-temas')
 @include('biaya-kapal.edit._js-tanto')
 @include('biaya-kapal.create._js-nota-retur')
+@include('biaya-kapal.edit._js-umum-sections')
 
 {{-- Init must be last after all functions are defined --}}
 @include('biaya-kapal.edit._js-edit-init')

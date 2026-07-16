@@ -3015,6 +3015,8 @@ class BiayaKapalController extends Controller
             'meratusDetails',
             'temasDetails',
             'tantoDetails',
+            'umumDetails',
+            'notaReturDetails',
         ]);
 
         // Get list of ships for dropdown

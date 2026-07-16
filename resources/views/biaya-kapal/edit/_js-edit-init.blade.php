@@ -392,6 +392,20 @@
                 ];
             }
         }
+        $editUmumSections = [];
+        if($biayaKapal->umumDetails && $biayaKapal->umumDetails->count() > 0) {
+            foreach($biayaKapal->umumDetails as $um) {
+                $editUmumSections[] = [
+                    'kapal' => $um->kapal,
+                    'voyage' => $um->voyage,
+                    'nama_vendor' => $um->nama_vendor,
+                    'penerima' => $um->penerima,
+                    'keterangan' => $um->keterangan,
+                    'nominal' => $um->nominal,
+                    'pph' => $um->pph
+                ];
+            }
+        }
     @endphp
 
     var existingKapalSections = @json($editKapalSections);
@@ -406,6 +420,7 @@
     var existingTemasSections = @json($editTemasSections);
     var existingTantoSections = @json($editTantoSections);
     var existingNotaReturSections = @json($editNotaReturSections);
+    var existingUmumSections = @json($editUmumSections);
 
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(initializeEditMode, 500);
@@ -880,6 +895,14 @@
             if (typeof clearAllNotaReturSections === 'function') clearAllNotaReturSections();
             existingNotaReturSections.forEach(myData => {
                 if (typeof addNotaReturSection === 'function') addNotaReturSection(myData);
+            });
+        }
+        
+        // 14. UMUM SECTIONS
+        if (existingUmumSections && existingUmumSections.length > 0) {
+            if (typeof clearAllUmumSections === 'function') clearAllUmumSections();
+            existingUmumSections.forEach(myData => {
+                if (typeof addUmumSection === 'function') addUmumSection(myData);
             });
         }
     }
