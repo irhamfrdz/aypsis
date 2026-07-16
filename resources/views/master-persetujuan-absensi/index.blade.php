@@ -51,10 +51,10 @@
 </div>
 
 <!-- List Container -->
-<div id="attendance-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div id="attendance-list" class="grid grid-cols-1 gap-6 max-w-2xl mx-auto">
     <!-- Loading Skeletons -->
     <div class="bg-white p-6 rounded-lg border border-gray-200 flex gap-4 animate-pulse">
-        <div class="w-24 h-32 bg-gray-200 rounded-lg"></div>
+        <div style="width: 112px; height: 144px;" class="bg-gray-200 rounded-lg flex-shrink-0"></div>
         <div class="flex-1 space-y-3">
             <div class="h-4 bg-gray-200 rounded w-1/3"></div>
             <div class="h-6 bg-gray-200 rounded w-3/4"></div>
@@ -63,7 +63,7 @@
         </div>
     </div>
     <div class="bg-white p-6 rounded-lg border border-gray-200 flex gap-4 animate-pulse">
-        <div class="w-24 h-32 bg-gray-200 rounded-lg"></div>
+        <div style="width: 112px; height: 144px;" class="bg-gray-200 rounded-lg flex-shrink-0"></div>
         <div class="flex-1 space-y-3">
             <div class="h-4 bg-gray-200 rounded w-1/3"></div>
             <div class="h-6 bg-gray-200 rounded w-3/4"></div>
@@ -131,8 +131,8 @@
         const countBadge = document.getElementById('pending-count-badge');
         
         container.innerHTML = `
-            <div class="col-span-1 md:col-span-2 bg-white p-6 rounded-lg border border-gray-200 flex gap-4 animate-pulse">
-                <div class="w-24 h-32 bg-gray-200 rounded-lg"></div>
+            <div class="bg-white p-6 rounded-lg border border-gray-200 flex gap-4 animate-pulse">
+                <div style="width: 112px; height: 144px;" class="bg-gray-200 rounded-lg flex-shrink-0"></div>
                 <div class="flex-1 space-y-3">
                     <div class="h-4 bg-gray-200 rounded w-1/3"></div>
                     <div class="h-6 bg-gray-200 rounded w-3/4"></div>
@@ -173,9 +173,9 @@
                 return `
                     <div class="bg-white p-5 rounded-lg border border-gray-200 flex flex-col sm:flex-row gap-5 card-animate" id="card-${item.id}">
                         <!-- Selfie Preview -->
-                        <div class="w-full sm:w-28 h-36 bg-gray-50 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 flex items-center justify-center relative shadow-inner animate-fade-in">
+                        <div style="width: 112px; height: 144px;" class="bg-gray-50 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 flex items-center justify-center relative shadow-inner animate-fade-in">
                             ${item.foto 
-                                ? `<img src="${item.foto.startsWith('http') || item.foto.startsWith('data:image') ? item.foto : API_BASE_URL + item.foto}" class="w-full h-full object-cover animate-fade-in" alt="Selfie Karyawan" />`
+                                ? `<img src="${item.foto.startsWith('http') || item.foto.startsWith('data:image') ? item.foto : API_BASE_URL + item.foto}" style="width: 100%; height: 100%; object-fit: cover;" class="animate-fade-in" alt="Selfie Karyawan" />`
                                 : `<span class="text-4xl text-gray-300">👤</span>`
                             }
                         </div>
@@ -236,8 +236,8 @@
         const countBadge = document.getElementById('pending-count-badge');
         
         container.innerHTML = `
-            <div class="col-span-1 md:col-span-2 bg-white p-6 rounded-lg border border-gray-200 flex gap-4 animate-pulse">
-                <div class="w-24 h-32 bg-gray-200 rounded-lg"></div>
+            <div class="bg-white p-6 rounded-lg border border-gray-200 flex gap-4 animate-pulse">
+                <div style="width: 112px; height: 144px;" class="bg-gray-200 rounded-lg flex-shrink-0"></div>
                 <div class="flex-1 space-y-3">
                     <div class="h-4 bg-gray-200 rounded w-1/3"></div>
                     <div class="h-6 bg-gray-200 rounded w-3/4"></div>
@@ -282,8 +282,8 @@
                         <!-- Attachment Photo Preview -->
                         ${item.lampiran 
                             ? `
-                            <div class="w-full sm:w-28 h-36 bg-gray-50 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 flex items-center justify-center relative shadow-inner animate-fade-in">
-                                <img src="${item.lampiran.startsWith('http') || item.lampiran.startsWith('data:image') ? item.lampiran : API_BASE_URL + item.lampiran}" class="w-full h-full object-cover animate-fade-in" alt="Lampiran Izin Karyawan" onclick="window.open(this.src, '_blank')" style="cursor: zoom-in;" />
+                            <div style="width: 112px; height: 144px;" class="bg-gray-50 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 flex items-center justify-center relative shadow-inner animate-fade-in">
+                                <img src="${item.lampiran.startsWith('http') || item.lampiran.startsWith('data:image') ? item.lampiran : API_BASE_URL + item.lampiran}" style="width: 100%; height: 100%; object-fit: cover;" class="animate-fade-in" alt="Lampiran Izin Karyawan" onclick="window.open(this.src, '_blank')" style="cursor: zoom-in;" />
                             </div>
                             `
                             : ''
