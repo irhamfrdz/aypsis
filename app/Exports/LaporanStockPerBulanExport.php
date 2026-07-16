@@ -79,6 +79,9 @@ class LaporanStockPerBulanExport implements WithMultipleSheets
 
             $containerHist = $histories->get($c->no);
             $gudangId = null;
+            $tanggalMasuk = null;
+            $asalTransaksi = '-';
+            
             if ($containerHist) {
                 foreach ($containerHist as $h) {
                     $hDate = Carbon::parse($h->tanggal_kegiatan);
@@ -86,12 +89,26 @@ class LaporanStockPerBulanExport implements WithMultipleSheets
                         break;
                     }
                     $gudangId = $h->gudang_id;
+                    $tanggalMasuk = $h->tanggal_kegiatan;
+                    
+                    if ($h->keterangan && $h->keterangan !== '-') {
+                        $asalTransaksi = str_ireplace('OB (Overbrengen)', 'OB', $h->keterangan);
+                    } elseif ($h->jenis_kegiatan && $h->jenis_kegiatan !== '-') {
+                        $asalTransaksi = $h->jenis_kegiatan;
+                    } else {
+                        $asalTransaksi = '-';
+                    }
                 }
             }
 
             if ($gudangId === null) {
                 $gudangId = $c->gudang_id;
+                $tanggalMasuk = $c->tanggal_masuk;
+                $asalTransaksi = '-';
             }
+            
+            $c->tanggal_masuk_computed = $tanggalMasuk;
+            $c->asal_transaksi_computed = $asalTransaksi;
 
             if ($gudangId && isset($gudangs[$gudangId])) {
                 $containersByGudang[$gudangId]->push($c);
@@ -148,7 +165,7 @@ class GudangStockBulanSheet implements FromCollection, ShouldAutoSize, WithHeadi
     {
         return [
             ['Data Stock Kontainer Gudang: ' . $this->title],
-            ['No', 'Nomor Kontainer', 'Ukuran', 'Tipe', 'Kategori']
+            ['No', 'Nomor Kontainer', 'Ukuran', 'Tipe', 'Tanggal Masuk', 'Asal Transaksi', 'Kategori']
         ];
     }
 
@@ -159,13 +176,15 @@ class GudangStockBulanSheet implements FromCollection, ShouldAutoSize, WithHeadi
             $row->no ?? '-',
             $row->ukuran ?? '-',
             $row->tipe ?? '-',
+            $row->tanggal_masuk_computed ? Carbon::parse($row->tanggal_masuk_computed)->format('d/m/Y') : '-',
+            $row->asal_transaksi_computed ?? '-',
             $row->kategori ?? '-'
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->mergeCells('A1:E1');
+        $sheet->mergeCells('A1:G1');
         
         return [
             1 => ['font' => ['bold' => true, 'size' => 14]],
