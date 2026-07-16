@@ -502,7 +502,6 @@ class BiayaKapalController extends Controller
                     $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
                 }
             }
-        }
             unset($section);
         }
 
