@@ -104,7 +104,7 @@ class LaporanStockPerBulanExport implements WithMultipleSheets
         
         foreach ($gudangs as $g) {
             if ($containersByGudang[$g->id]->count() > 0) {
-                $title = substr(str_replace(['*', ':', '?', '[', ']', '/', '\\'], '', $g->nama), 0, 31); // Max 31 chars for sheet title
+                $title = substr(str_replace(['*', ':', '?', '[', ']', '/', '\\'], '', $g->nama_gudang), 0, 31); // Max 31 chars for sheet title
                 $sheets[] = new GudangStockBulanSheet($title, $containersByGudang[$g->id]);
             }
         }
