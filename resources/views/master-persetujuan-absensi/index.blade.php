@@ -31,7 +31,7 @@
 <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <div>
         <h1 class="text-xl font-bold text-gray-900 leading-tight flex items-center gap-2">
-            🔔 Permintaan Persetujuan <span id="pending-count-badge" class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full border border-amber-200 font-bold">0</span>
+            Permintaan Persetujuan <span id="pending-count-badge" class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full border border-amber-200 font-bold">0</span>
         </h1>
         <p class="text-xs text-gray-500 mt-1">Daftar karyawan yang melakukan absensi di luar radius kantor dan membutuhkan verifikasi.</p>
     </div>
@@ -76,7 +76,6 @@
 <!-- Empty State -->
 <div id="empty-state" class="hidden text-center py-20 flex flex-col items-center justify-center bg-white rounded-lg border border-gray-200 shadow-sm">
     <div class="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-3xl mb-4 shadow-sm">
-        🎉
     </div>
     <h3 class="text-sm font-bold text-gray-900">Semua Bersih!</h3>
     <p class="text-xs text-gray-500 mt-1 max-w-xs">Tidak ada permintaan persetujuan absensi yang tertunda saat ini. Karyawan tertib melakukan absensi.</p>
@@ -281,12 +280,14 @@
                 return `
                     <div class="bg-white p-5 rounded-lg border border-gray-200 flex flex-col sm:flex-row gap-5 card-animate" id="card-${item.id}">
                         <!-- Attachment Photo Preview -->
-                        <div class="w-full sm:w-28 h-36 bg-gray-50 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 flex items-center justify-center relative shadow-inner animate-fade-in">
-                            ${item.lampiran 
-                                ? `<img src="${item.lampiran.startsWith('http') || item.lampiran.startsWith('data:image') ? item.lampiran : API_BASE_URL + item.lampiran}" class="w-full h-full object-cover animate-fade-in" alt="Lampiran Izin Karyawan" onclick="window.open(this.src, '_blank')" style="cursor: zoom-in;" />`
-                                : `<span class="text-4xl text-gray-300"><i class="fa-solid fa-file-invoice"></i></span>`
-                            }
-                        </div>
+                        ${item.lampiran 
+                            ? `
+                            <div class="w-full sm:w-28 h-36 bg-gray-50 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 flex items-center justify-center relative shadow-inner animate-fade-in">
+                                <img src="${item.lampiran.startsWith('http') || item.lampiran.startsWith('data:image') ? item.lampiran : API_BASE_URL + item.lampiran}" class="w-full h-full object-cover animate-fade-in" alt="Lampiran Izin Karyawan" onclick="window.open(this.src, '_blank')" style="cursor: zoom-in;" />
+                            </div>
+                            `
+                            : ''
+                        }
 
                         <!-- Details -->
                         <div class="flex-1 flex flex-col justify-between">
@@ -305,6 +306,10 @@
                                         Tanggal: <span class="font-semibold text-gray-800">${dateRange}</span>
                                     </div>
                                     ${item.waktu ? `<div><span class="text-gray-400 font-medium"><i class="fa-solid fa-clock mr-1.5"></i></span>Waktu: <span class="font-semibold text-gray-800">${item.waktu}</span></div>` : ''}
+                                    <div>
+                                        <span class="text-gray-400 font-medium"><i class="fa-solid fa-paperclip mr-1.5"></i></span>
+                                        Lampiran: <span class="font-semibold ${item.lampiran ? 'text-emerald-600' : 'text-gray-500'}">${item.lampiran ? 'Ada (Klik foto)' : 'Tidak ada'}</span>
+                                    </div>
                                 </div>
 
                                 <!-- Reason -->
