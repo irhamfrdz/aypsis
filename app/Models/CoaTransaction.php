@@ -19,6 +19,7 @@ class CoaTransaction extends Model
         'debit',
         'kredit',
         'saldo',
+        'nomor_accurate',
         'created_by',
     ];
 
