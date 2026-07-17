@@ -159,7 +159,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
             $suratJalans = $query->select('surat_jalan_bongkaran_batams.*')
                 ->leftJoin('manifests', 'surat_jalan_bongkaran_batams.manifest_id', '=', 'manifests.id')
-                ->orderByRaw('CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')
+                ->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')
                 ->paginate(25);
             $manifests = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Manifest mode
         } else {
@@ -219,7 +219,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 });
             }
 
-            $manifests = $query->orderByRaw('CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')->paginate(25);
+            $manifests = $query->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')->paginate(25);
             $suratJalans = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Surat Jalan mode
         }
 
