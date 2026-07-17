@@ -267,7 +267,18 @@
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->term ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->supir ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->no_plat ?: '-' }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->no_kontainer ?: '-' }}</td>
+                                    @php
+                                        $noKontainer = $sj->no_kontainer ?? '';
+                                        $cleanNo = str_replace([' ', '-'], '', $noKontainer);
+                                        $isFreeuse = false;
+                                        if ($cleanNo) {
+                                            $isFreeuse = \App\Models\Kontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
+                                                ->whereRaw("UPPER(REPLACE(kepemilikan, ' ', '')) = 'FREEUSE'")->exists() 
+                                                || \App\Models\StockKontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
+                                                ->whereRaw("UPPER(REPLACE(kepemilikan, ' ', '')) = 'FREEUSE'")->exists();
+                                        }
+                                    @endphp
+                                    <td class="px-4 py-3 text-sm {{ $isFreeuse ? 'font-bold text-gray-900' : 'text-gray-900' }}">{{ $sj->no_kontainer ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">
                                         {{ $sj->jenis_pengiriman ?: ($sj->tipe_kontainer ?: ($sj->manifest->tipe_kontainer ?? '-')) }}
                                     </td>
@@ -394,7 +405,18 @@
                                         <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->nama_kapal ?: '-' }}</td>
                                         <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->no_voyage ?: '-' }}</td>
                                     @endif
-                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->nomor_kontainer ?: '-' }}</td>
+                                    @php
+                                        $noKontainer = $manifest->nomor_kontainer ?? '';
+                                        $cleanNo = str_replace([' ', '-'], '', $noKontainer);
+                                        $isFreeuse = false;
+                                        if ($cleanNo) {
+                                            $isFreeuse = \App\Models\Kontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
+                                                ->whereRaw("UPPER(REPLACE(kepemilikan, ' ', '')) = 'FREEUSE'")->exists() 
+                                                || \App\Models\StockKontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
+                                                ->whereRaw("UPPER(REPLACE(kepemilikan, ' ', '')) = 'FREEUSE'")->exists();
+                                        }
+                                    @endphp
+                                    <td class="px-4 py-3 text-sm {{ $isFreeuse ? 'font-bold text-gray-900' : 'text-gray-900' }}">{{ $manifest->nomor_kontainer ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->no_seal ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->size_kontainer ?: '-' }}</td>
                                     <td class="px-4 py-3 text-sm text-gray-900">{{ $manifest->tipe_kontainer ?: '-' }}</td>
