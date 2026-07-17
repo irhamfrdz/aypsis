@@ -144,9 +144,9 @@
             font-weight: bold;
         }
 
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .font-bold { font-weight: bold; }
+        .text-center { text-align: center !important; }
+        .text-right { text-align: right !important; }
+        .font-bold { font-weight: bold !important; }
 
         .total-row td {
             background-color: #f0f0f0 !important;
