@@ -135,7 +135,8 @@ class PembayaranPranotaObAntarGudangController extends Controller
                     $request->tanggal_kas,
                     $request->nomor_pembayaran,
                     'Pembayaran Pranota OB Antar Gudang',
-                    $journalKeterangan
+                    $journalKeterangan,
+                    $request->nomor_accurate
                 );
             } else {
                 // DEBIT: Debit Cash/Bank (Akun Bank), Credit Expense (Akun Biaya)
@@ -145,7 +146,8 @@ class PembayaranPranotaObAntarGudangController extends Controller
                     $request->tanggal_kas,
                     $request->nomor_pembayaran,
                     'Pembayaran Pranota OB Antar Gudang',
-                    $journalKeterangan
+                    $journalKeterangan,
+                    $request->nomor_accurate
                 );
             }
 
@@ -246,7 +248,8 @@ class PembayaranPranotaObAntarGudangController extends Controller
                     $request->tanggal_kas,
                     $pembayaran->nomor_pembayaran,
                     'Pembayaran Pranota OB Antar Gudang',
-                    $journalKeterangan
+                    $journalKeterangan,
+                    $pembayaran->nomor_accurate
                 );
             } else {
                 $this->coaTransactionService->recordDoubleEntry(
@@ -255,7 +258,8 @@ class PembayaranPranotaObAntarGudangController extends Controller
                     $request->tanggal_kas,
                     $pembayaran->nomor_pembayaran,
                     'Pembayaran Pranota OB Antar Gudang',
-                    $journalKeterangan
+                    $journalKeterangan,
+                    $pembayaran->nomor_accurate
                 );
             }
 

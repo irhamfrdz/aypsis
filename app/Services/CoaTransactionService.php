@@ -27,7 +27,8 @@ class CoaTransactionService
         string $tanggalTransaksi,
         string $nomorReferensi,
         string $jenisTransaksi,
-        ?string $keterangan = null
+        ?string $keterangan = null,
+        ?string $nomorAccurate = null
     ): ?CoaTransaction {
         $coa = Coa::where('nama_akun', $namaAkun)->first();
 
@@ -50,6 +51,7 @@ class CoaTransactionService
             'debit' => $debit,
             'kredit' => $kredit,
             'saldo' => $saldoBaru,
+            'nomor_accurate' => $nomorAccurate,
             'created_by' => Auth::id(),
         ]);
 
@@ -72,7 +74,8 @@ class CoaTransactionService
         string $tanggalTransaksi,
         string $nomorReferensi,
         string $jenisTransaksi,
-        ?string $keterangan = null
+        ?string $keterangan = null,
+        ?string $nomorAccurate = null
     ): bool {
         DB::beginTransaction();
 
@@ -85,7 +88,8 @@ class CoaTransactionService
                 $tanggalTransaksi,
                 $nomorReferensi,
                 $jenisTransaksi,
-                $keterangan
+                $keterangan,
+                $nomorAccurate
             );
 
             // Catat transaksi kredit
@@ -96,7 +100,8 @@ class CoaTransactionService
                 $tanggalTransaksi,
                 $nomorReferensi,
                 $jenisTransaksi,
-                $keterangan
+                $keterangan,
+                $nomorAccurate
             );
 
             DB::commit();
