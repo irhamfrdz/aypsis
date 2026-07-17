@@ -1,46 +1,46 @@
 <!DOCTYPE html>
 <html lang="id">
 @php
-    $paperSize = request('paper_size', 'Half-A4');
+    $paperSize = request('paper_size', 'Half-Folio');
     $paperMap = [
         'Folio' => [
             'size' => '215.9mm 330.2mm',
             'width' => '215.9mm',
             'height' => '330.2mm',
             'containerWidth' => '215.9mm',
-            'fontSize' => '15px', 
-            'headerH1' => '24px', 
-            'tableFont' => '13px', 
+            'fontSize' => '13px',
+            'headerH1' => '20px',
+            'tableFont' => '11px',
         ],
         'Half-Folio' => [
-            'size' => '215.9mm 165.1mm',
-            'width' => '215.9mm',
-            'height' => '165.1mm',
-            'containerWidth' => '215.9mm',
-            'fontSize' => '14px', 
-            'headerH1' => '22px', 
-            'tableFont' => '12px', 
+            'size' => '165.1mm 215.9mm',
+            'width' => '165.1mm',
+            'height' => '215.9mm',
+            'containerWidth' => '165.1mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '8px',
         ],
         'A4' => [
             'size' => 'A4',
             'width' => '210mm',
             'height' => '297mm',
             'containerWidth' => '210mm',
-            'fontSize' => '15px', 
-            'headerH1' => '24px', 
-            'tableFont' => '13px', 
+            'fontSize' => '13px',
+            'headerH1' => '20px',
+            'tableFont' => '11px',
         ],
         'Half-A4' => [
-            'size' => '210mm 148.5mm',
-            'width' => '210mm',
-            'height' => '148.5mm',
-            'containerWidth' => '210mm',
-            'fontSize' => '13px',
-            'headerH1' => '18px',
-            'tableFont' => '11px',
+            'size' => '148.5mm 210mm',
+            'width' => '148.5mm',
+            'height' => '210mm',
+            'containerWidth' => '148.5mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '8px',
         ]
     ];
-    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
+    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-Folio'];
 @endphp
 <head>
     <meta charset="UTF-8">
@@ -54,18 +54,16 @@
         }
 
         @page {
-            size: {{ $currentPaper['size'] }} portrait;
-            margin: 10mm;
+            size: {{ $currentPaper['size'] }};
+            margin: 5mm;
         }
 
         html, body {
             width: {{ $currentPaper['width'] }};
-            height: {{ $currentPaper['height'] }};
             font-family: Arial, sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
-            font-weight: bold;
             line-height: 1.2;
-            color: #333;
+            color: #000;
             background: white;
             margin: 0;
             padding: 0;
@@ -73,18 +71,17 @@
 
         .container {
             width: 100%;
-            max-width: calc({{ $currentPaper['containerWidth'] }} - 20mm);
-            padding: 0 10mm;
+            max-width: calc({{ $currentPaper['containerWidth'] }} - 10mm);
+            padding: 0 5mm;
             margin: 0 auto;
             box-sizing: border-box;
-            min-height: calc({{ $currentPaper['height'] }} - 20mm);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
             border-bottom: 2px solid #333;
-            padding-bottom: 8px;
+            padding-bottom: 2px;
         }
 
         .header h1 {
@@ -96,7 +93,7 @@
 
         .info-section {
             margin-bottom: 12px;
-            font-size: 9px;
+            font-size: {{ $currentPaper['fontSize'] }};
         }
 
         .info-table {
@@ -106,86 +103,81 @@
         }
 
         .info-table td {
-            padding: 4px 8px;
+            padding: 2px 4px;
             font-size: {{ $currentPaper['tableFont'] }};
             vertical-align: top;
-        }
-
-        .info-table td:first-child {
             font-weight: bold;
         }
 
-        .table {
+        .section-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: {{ $currentPaper['tableFont'] }};
+        }
+
+        .custom-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12mm;
+            margin-bottom: 5mm;
             table-layout: fixed;
         }
 
-        .table th,
-        .table td {
+        .custom-table th, 
+        .custom-table td {
             border: 1px solid #333;
-            padding: 2mm 3mm;
+            padding: 1px 4px;
             text-align: left;
             vertical-align: middle;
         }
 
-        .table th {
+        .custom-table th {
             background-color: #f8f9fa;
             color: #333;
             font-weight: bold;
             font-size: {{ $currentPaper['tableFont'] }};
             text-align: center;
-            border: 2px solid #333;
+            border: 1.5px solid #333;
         }
 
-        .table td {
+        .custom-table td {
             font-size: {{ $currentPaper['tableFont'] }};
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .total-row td {
-            background-color: #e9ecef !important;
-            font-weight: bold !important;
-            border: 2px solid #333 !important;
-        }
-
-        .footer {
-            margin-top: 30px;
-            padding-top: 15px;
-        }
-        
-        .signatures {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-top: 25px;
-        }
-        
-        .signature-box {
-            text-align: center;
-            font-size: 11px;
-        }
-        
-        .signature-line {
-            margin-top: 85px;
-            border-top: 1px solid #333;
-            padding-top: 5px;
             font-weight: bold;
         }
 
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+
+        .total-row td {
+            background-color: #f0f0f0 !important;
+            font-weight: bold !important;
+            border: 1.5px solid #333 !important;
+        }
+
+        .keterangan-box {
+            border: 1.5px solid #333;
+            padding: 4px;
+            margin-top: 10px;
+            min-height: 40px;
+        }
+
+        .footer {
+            margin-top: 10px;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        .signature-table td {
+            width: 33.33%;
+            padding: 5px;
+        }
+
         @media print {
-            .no-print {
-                display: none !important;
-            }
-            
+            .no-print { display: none !important; }
             * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
@@ -257,8 +249,8 @@
 
         <!-- Detail Biaya Umum -->
         <div style="margin-bottom: 12px;">
-            <strong style="font-size: {{ $currentPaper['tableFont'] }};">Detail Biaya Umum:</strong>
-            <table class="table" style="margin-top: 6px; margin-bottom: 0;">
+            <div class="section-header">Detail Biaya Umum:</div>
+            <table class="custom-table" style="margin-top: 6px; margin-bottom: 0;">
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
@@ -303,36 +295,35 @@
         </div>
 
         <!-- Keterangan -->
-        <div style="margin-bottom: 12px; border: 2px solid #333; padding: 8px; min-height: 40px;">
+        <div class="keterangan-box">
             <strong>Keterangan:</strong><br>
             {{ $biayaKapal->keterangan }}
         </div>
 
         <!-- Signature Section -->
         <div class="footer">
-            <div class="signatures">
-                <div class="signature-box">
-                    <div>Dibuat Oleh</div>
-                    <div class="signature-line">
-                        {{ $biayaKapal->creator->name ?? '-' }}
-                    </div>
-                </div>
-                
-                <div class="signature-box">
-                    <div>Diperiksa Oleh</div>
-                    <div class="signature-line">
-                        &nbsp;
-                    </div>
-                </div>
-                
-                <div class="signature-box">
-                    <div>Disetujui Oleh</div>
-                    <div class="signature-line">
-                        {{ $biayaKapal->approver->name ?? '-' }}
-                    </div>
-                </div>
-            </div>
-            
+            <table class="signature-table">
+                <tr>
+                    <td>
+                        <div>Dibuat Oleh</div>
+                        <div style="margin-top: 50px; border-bottom: 1px solid #333; display: inline-block; width: 80%;">
+                            {{ $biayaKapal->creator->name ?? '-' }}
+                        </div>
+                    </td>
+                    <td>
+                        <div>Diperiksa Oleh</div>
+                        <div style="margin-top: 50px; border-bottom: 1px solid #333; display: inline-block; width: 80%;">
+                            &nbsp;
+                        </div>
+                    </td>
+                    <td>
+                        <div>Disetujui Oleh</div>
+                        <div style="margin-top: 50px; border-bottom: 1px solid #333; display: inline-block; width: 80%;">
+                            {{ $biayaKapal->approver->name ?? '-' }}
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>
