@@ -255,11 +255,11 @@
                     <tr>
                         <th style="width: 5%;">No</th>
                         <th style="width: 15%;">Nama Kapal</th>
-                        <th style="width: 15%;">No. Voyage</th>
-                        <th style="width: 20%;">Keterangan</th>
-                        <th style="width: 15%;">Nominal</th>
-                        <th style="width: 15%;">PPh</th>
-                        <th style="width: 15%;">Subtotal</th>
+                        <th style="width: 10%;">No. Voyage</th>
+                        <th style="width: 30%;">Keterangan</th>
+                        <th style="width: 14%;">Nominal</th>
+                        <th style="width: 13%;">PPh</th>
+                        <th style="width: 13%;">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -297,31 +297,28 @@
         <!-- Keterangan -->
         <div class="keterangan-box">
             <strong>Keterangan:</strong><br>
-            {{ $biayaKapal->keterangan }}
+            <div>
+                {!! nl2br(e(trim($biayaKapal->keterangan ?? ''))) !!}
+            </div>
         </div>
 
         <!-- Signature Section -->
-        <div class="footer">
+        <div class="footer" style="margin-top: 20px;">
             <table class="signature-table">
                 <tr>
-                    <td>
-                        <div>Dibuat Oleh</div>
-                        <div style="margin-top: 50px; border-bottom: 1px solid #333; display: inline-block; width: 80%;">
-                            {{ $biayaKapal->creator->name ?? '-' }}
-                        </div>
-                    </td>
-                    <td>
-                        <div>Diperiksa Oleh</div>
-                        <div style="margin-top: 50px; border-bottom: 1px solid #333; display: inline-block; width: 80%;">
-                            &nbsp;
-                        </div>
-                    </td>
-                    <td>
-                        <div>Disetujui Oleh</div>
-                        <div style="margin-top: 50px; border-bottom: 1px solid #333; display: inline-block; width: 80%;">
-                            {{ $biayaKapal->approver->name ?? '-' }}
-                        </div>
-                    </td>
+                    <td><strong>Dibuat Oleh:</strong></td>
+                    <td><strong>Diperiksa Oleh:</strong></td>
+                    <td><strong>Disetujui Oleh:</strong></td>
+                </tr>
+                <tr>
+                    <td style="height: 60px;"></td>
+                    <td style="height: 60px;"></td>
+                    <td style="height: 60px;"></td>
+                </tr>
+                <tr>
+                    <td>( {{ $biayaKapal->creator->name ?? '__________' }} )</td>
+                    <td>( __________ )</td>
+                    <td>( {{ $biayaKapal->approver->name ?? '__________' }} )</td>
                 </tr>
             </table>
         </div>
