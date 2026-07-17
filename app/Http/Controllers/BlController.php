@@ -3177,20 +3177,18 @@ class BlController extends Controller
         //    Items with no BL number are kept as individual rows.
         // -----------------------------------------------------------------------
         $cargoRows = $cargoItems->groupBy(function ($item) {
-            $nomor = trim($item->nomor_bl ?? '');
-            if ($nomor === '' || $nomor === '-') {
-                // No BL: use a unique key so it is never merged with others
-                return 'no_bl|'.$item->id;
+            $pengirim = trim($item->pengirim ?? '');
+            $penerima = trim($item->penerima ?? '');
+            
+            if ($pengirim === '' && $penerima === '') {
+                return 'nama|' . trim($item->nama_barang ?: 'Cargo');
             }
-            // Extract the prefix: everything before the first "-"
-            $prefix = preg_match('/^([^\-]+)/', $nomor, $m) ? trim($m[1]) : $nomor;
-
-            return 'bl|'.strtoupper($prefix);
+            return 'pengirim|' . $pengirim . '|' . $penerima;
         })->map(function ($group, $key) {
-            // Sum kuantitas across all sub-BL rows
+            // Sum kuantitas across all grouped rows
             $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
 
-            // Collect distinct nama_barang values and build a short summary
+            // Collect distinct nama_barang values
             $distinctNames = $group->pluck('nama_barang')
                 ->filter()
                 ->map(fn ($n) => trim($n))
@@ -3198,36 +3196,16 @@ class BlController extends Controller
                 ->values();
 
             if ($distinctNames->count() > 1) {
-                // Extract first 3-4 meaningful words from each distinct name,
-                // collect the unique words, and join them.
-                $keywords = $distinctNames->map(function ($name) {
-                    // Take leading words (stop at numeric-heavy tokens)
-                    $words = preg_split('/[\s,]+/', $name);
-                    $kept = [];
-                    foreach ($words as $w) {
-                        if (is_numeric($w) || strlen($w) <= 1) {
-                            break;
-                        }
-                        $kept[] = $w;
-                        if (count($kept) >= 3) {
-                            break;
-                        }
-                    }
-
-                    return implode(' ', $kept);
-                })->unique()->filter()->values();
-
-                $namaBarang = $keywords->implode(', ');
+                $namaBarang = $distinctNames->implode(', ');
+                if (strlen($namaBarang) > 150) {
+                    $namaBarang = substr($namaBarang, 0, 147) . '...';
+                }
             } else {
                 $namaBarang = $distinctNames->first() ?? 'Cargo';
             }
 
-            // Determine nomor BL to display (the prefix)
-            if (str_starts_with($key, 'bl|')) {
-                $nomorBl = substr($key, 3); // remove "bl|"
-            } else {
-                $nomorBl = trim($group->first()->nomor_bl ?? '-');
-            }
+            // Determine nomor BL to display (using the first item's BL if grouped by pengirim)
+            $nomorBl = trim($group->first()->nomor_bl ?? '-');
 
             // Sum tonnage / volume
             $totalVolume = $group->sum('volume_perincian');
