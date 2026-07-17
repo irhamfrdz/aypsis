@@ -262,10 +262,12 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: 25%;">Nama Kapal</th>
-                        <th style="width: 20%;">No. Voyage</th>
-                        <th style="width: 30%;">Keterangan</th>
-                        <th style="width: 20%;">Nominal</th>
+                        <th style="width: 15%;">Nama Kapal</th>
+                        <th style="width: 15%;">No. Voyage</th>
+                        <th style="width: 20%;">Keterangan</th>
+                        <th style="width: 15%;">Nominal</th>
+                        <th style="width: 15%;">PPh</th>
+                        <th style="width: 15%;">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -274,7 +276,8 @@
                     @endphp
                     @forelse($biayaKapal->umumDetails as $index => $detail)
                         @php
-                            $grandTotal += $detail->nominal;
+                            $subtotal = $detail->nominal - $detail->pph;
+                            $grandTotal += $subtotal;
                         @endphp
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
@@ -282,15 +285,17 @@
                             <td class="text-center">{{ $detail->voyage ?? '-' }}</td>
                             <td>{{ $detail->keterangan ?? '-' }}</td>
                             <td class="text-right">Rp {{ number_format($detail->nominal, 0, ',', '.') }}</td>
+                            <td class="text-right">Rp {{ number_format($detail->pph, 0, ',', '.') }}</td>
+                            <td class="text-right">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">Tidak ada data detail umum</td>
+                            <td colspan="7" class="text-center">Tidak ada data detail umum</td>
                         </tr>
                     @endforelse
                     
                     <tr class="total-row">
-                        <td colspan="4" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
+                        <td colspan="6" class="text-right"><strong>TOTAL PEMBAYARAN</strong></td>
                         <td class="text-right"><strong>Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong></td>
                     </tr>
                 </tbody>
