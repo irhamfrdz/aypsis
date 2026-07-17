@@ -259,7 +259,10 @@
         
         <!-- Pelabuhan Tujuan (posisi top 15cm, left 1cm) - Data dari Manifest (manifest.pelabuhan_tujuan) -->
         <div class="pelabuhan-abs">
-            {{ $printData->pelabuhan_tujuan ? strtoupper($printData->pelabuhan_tujuan) : ($printData->tujuan_pengiriman ? strtoupper($printData->tujuan_pengiriman) : '') }}
+            @php
+                $pelabuhanTujuan = $printData->pelabuhan_tujuan ? strtoupper($printData->pelabuhan_tujuan) : ($printData->tujuan_pengiriman ? strtoupper($printData->tujuan_pengiriman) : '');
+            @endphp
+            {{ trim($pelabuhanTujuan) === 'ON BOARD' ? '' : $pelabuhanTujuan }}
         </div>
     </div>
     

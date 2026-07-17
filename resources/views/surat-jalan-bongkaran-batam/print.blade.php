@@ -339,7 +339,10 @@
         
         <!-- TUJUAN KIRIM dengan posisi absolut -->
         <div class="tujuan-kirim">
-            {{ $suratJalanBongkaran->tujuan_pengiriman ? strtoupper($suratJalanBongkaran->tujuan_pengiriman) : '' }}
+            @php
+                $tujuanKirim = $suratJalanBongkaran->tujuan_pengiriman ? strtoupper($suratJalanBongkaran->tujuan_pengiriman) : '';
+            @endphp
+            {{ trim($tujuanKirim) === 'ON BOARD' ? '' : $tujuanKirim }}
         </div>
         
         <!-- SESI 3: TABEL BARANG (3 Kolom) -->
