@@ -273,9 +273,12 @@
                                         $isFreeuse = false;
                                         if ($cleanNo) {
                                             $isFreeuse = \App\Models\Kontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
-                                                ->whereRaw("UPPER(REPLACE(keterangan, ' ', '')) = 'FREEUSE'")->exists() 
+                                                ->where(function($q) {
+                                                    $q->where('keterangan', 'LIKE', '%FREE%USE%')
+                                                      ->orWhere('vendor', 'LIKE', '%FREE%USE%');
+                                                })->exists() 
                                                 || \App\Models\StockKontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
-                                                ->whereRaw("UPPER(REPLACE(keterangan, ' ', '')) = 'FREEUSE'")->exists();
+                                                ->where('keterangan', 'LIKE', '%FREE%USE%')->exists();
                                         }
                                     @endphp
                                     <td class="px-4 py-3 text-sm {{ $isFreeuse ? 'font-bold text-gray-900' : 'text-gray-900' }}">{{ $sj->no_kontainer ?: '-' }}</td>
@@ -411,9 +414,12 @@
                                         $isFreeuse = false;
                                         if ($cleanNo) {
                                             $isFreeuse = \App\Models\Kontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
-                                                ->whereRaw("UPPER(REPLACE(keterangan, ' ', '')) = 'FREEUSE'")->exists() 
+                                                ->where(function($q) {
+                                                    $q->where('keterangan', 'LIKE', '%FREE%USE%')
+                                                      ->orWhere('vendor', 'LIKE', '%FREE%USE%');
+                                                })->exists() 
                                                 || \App\Models\StockKontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
-                                                ->whereRaw("UPPER(REPLACE(keterangan, ' ', '')) = 'FREEUSE'")->exists();
+                                                ->where('keterangan', 'LIKE', '%FREE%USE%')->exists();
                                         }
                                     @endphp
                                     <td class="px-4 py-3 text-sm {{ $isFreeuse ? 'font-bold text-gray-900' : 'text-gray-900' }}">{{ $manifest->nomor_kontainer ?: '-' }}</td>
