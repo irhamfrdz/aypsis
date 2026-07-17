@@ -471,11 +471,19 @@ class ManifestController extends Controller
         $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
         $noVoyage = trim($noVoyage);
 
-        // Get all manifests for this voyage, ordered by ID (creation order)
+        // Get all manifests for this voyage
         $manifests = Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $noVoyage)
-            ->orderBy('id', 'asc')
             ->get();
+
+        // Sort naturally by nomor_bl, then by id
+        $manifests = $manifests->sort(function ($a, $b) {
+            $cmp = strnatcasecmp($a->nomor_bl ?? '', $b->nomor_bl ?? '');
+            if ($cmp === 0) {
+                return $a->id <=> $b->id;
+            }
+            return $cmp;
+        })->values();
 
         $fclCounter = 1;
         $lclCounter = 1;
