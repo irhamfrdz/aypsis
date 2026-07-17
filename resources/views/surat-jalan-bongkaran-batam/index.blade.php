@@ -273,9 +273,9 @@
                                         $isFreeuse = false;
                                         if ($cleanNo) {
                                             $isFreeuse = \App\Models\Kontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
-                                                ->whereRaw("UPPER(REPLACE(kepemilikan, ' ', '')) = 'FREEUSE'")->exists() 
+                                                ->whereRaw("UPPER(REPLACE(keterangan, ' ', '')) = 'FREEUSE'")->exists() 
                                                 || \App\Models\StockKontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
-                                                ->whereRaw("UPPER(REPLACE(kepemilikan, ' ', '')) = 'FREEUSE'")->exists();
+                                                ->whereRaw("UPPER(REPLACE(keterangan, ' ', '')) = 'FREEUSE'")->exists();
                                         }
                                     @endphp
                                     <td class="px-4 py-3 text-sm {{ $isFreeuse ? 'font-bold text-gray-900' : 'text-gray-900' }}">{{ $sj->no_kontainer ?: '-' }}</td>
@@ -411,9 +411,9 @@
                                         $isFreeuse = false;
                                         if ($cleanNo) {
                                             $isFreeuse = \App\Models\Kontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
-                                                ->whereRaw("UPPER(REPLACE(kepemilikan, ' ', '')) = 'FREEUSE'")->exists() 
+                                                ->whereRaw("UPPER(REPLACE(keterangan, ' ', '')) = 'FREEUSE'")->exists() 
                                                 || \App\Models\StockKontainer::where(\DB::raw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '')"), $cleanNo)
-                                                ->whereRaw("UPPER(REPLACE(kepemilikan, ' ', '')) = 'FREEUSE'")->exists();
+                                                ->whereRaw("UPPER(REPLACE(keterangan, ' ', '')) = 'FREEUSE'")->exists();
                                         }
                                     @endphp
                                     <td class="px-4 py-3 text-sm {{ $isFreeuse ? 'font-bold text-gray-900' : 'text-gray-900' }}">{{ $manifest->nomor_kontainer ?: '-' }}</td>
