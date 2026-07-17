@@ -157,7 +157,10 @@ class SuratJalanBongkaranBatamController extends Controller
                 });
             }
 
-            $suratJalans = $query->orderBy('created_at', 'desc')->paginate(25);
+            $suratJalans = $query->select('surat_jalan_bongkaran_batams.*')
+                ->leftJoin('manifests', 'surat_jalan_bongkaran_batams.manifest_id', '=', 'manifests.id')
+                ->orderByRaw('CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')
+                ->paginate(25);
             $manifests = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Manifest mode
         } else {
             // Show Manifest data - default mode
@@ -216,7 +219,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 });
             }
 
-            $manifests = $query->orderBy('manifests.created_at', 'desc')->paginate(25);
+            $manifests = $query->orderByRaw('CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')->paginate(25);
             $suratJalans = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Surat Jalan mode
         }
 
