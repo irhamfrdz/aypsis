@@ -1479,7 +1479,7 @@ class PranotaUangRitKenekController extends Controller
 
         // Set title
         $sheet->setCellValue('A1', 'DETAIL SURAT JALAN - PRANOTA UANG RIT KENEK');
-        $sheet->mergeCells('A1:L1');
+        $sheet->mergeCells('A1:M1');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
         $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
@@ -1493,7 +1493,7 @@ class PranotaUangRitKenekController extends Controller
 
         // Headers
         $row = 7;
-        $headers = ['No', 'No Surat Jalan', 'Tanggal', 'Kegiatan', 'Supir', 'Kenek', 'No Plat', 'Pengirim', 'Penerima', 'Jenis Barang', 'Tipe Kontainer', 'Rit'];
+        $headers = ['No', 'No Surat Jalan', 'Tanggal', 'Kegiatan', 'Supir', 'Kenek', 'NIK Kenek', 'No Plat', 'Pengirim', 'Penerima', 'Jenis Barang', 'Tipe Kontainer', 'Rit'];
         $col = 'A';
         foreach ($headers as $header) {
             $sheet->setCellValue($col.$row, $header);
@@ -1512,7 +1512,7 @@ class PranotaUangRitKenekController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A'.$row.':L'.$row)->applyFromArray($headerStyle);
+        $sheet->getStyle('A'.$row.':M'.$row)->applyFromArray($headerStyle);
 
         // Set column widths
         $sheet->getColumnDimension('A')->setWidth(5);   // No
@@ -1521,12 +1521,13 @@ class PranotaUangRitKenekController extends Controller
         $sheet->getColumnDimension('D')->setWidth(10);  // Kegiatan
         $sheet->getColumnDimension('E')->setWidth(20);  // Supir
         $sheet->getColumnDimension('F')->setWidth(20);  // Kenek
-        $sheet->getColumnDimension('G')->setWidth(12);  // No Plat
-        $sheet->getColumnDimension('H')->setWidth(25);  // Pengirim
-        $sheet->getColumnDimension('I')->setWidth(25);  // Penerima
-        $sheet->getColumnDimension('J')->setWidth(20);  // Jenis Barang
-        $sheet->getColumnDimension('K')->setWidth(15);  // Tipe Kontainer
-        $sheet->getColumnDimension('L')->setWidth(8);   // Rit
+        $sheet->getColumnDimension('G')->setWidth(20);  // NIK Kenek
+        $sheet->getColumnDimension('H')->setWidth(12);  // No Plat
+        $sheet->getColumnDimension('I')->setWidth(25);  // Pengirim
+        $sheet->getColumnDimension('J')->setWidth(25);  // Penerima
+        $sheet->getColumnDimension('K')->setWidth(20);  // Jenis Barang
+        $sheet->getColumnDimension('L')->setWidth(15);  // Tipe Kontainer
+        $sheet->getColumnDimension('M')->setWidth(8);   // Rit
 
         // Fill data
         $row++;
@@ -1541,13 +1542,14 @@ class PranotaUangRitKenekController extends Controller
             $sheet->setCellValue('D'.$row, ucfirst($sj->kegiatan ?? '-'));
             $sheet->setCellValue('E'.$row, $sj->supir ?? '-');
             $sheet->setCellValue('F'.$row, $sj->kenek ?? '-');
-            $sheet->setCellValue('G'.$row, $sj->no_plat ?? '-');
-            $sheet->setCellValue('H'.$row, $sj->pengirim ?? '-');
-            $sheet->setCellValue('I'.$row, $sj->penerima ?? '-');
-            $sheet->setCellValue('J'.$row, $sj->jenis_barang ?? '-');
-            $sheet->setCellValue('K'.$row, $sj->tipe_kontainer ?? '-');
+            $sheet->setCellValue('G'.$row, $sj->kenek_nik ?? '-');
+            $sheet->setCellValue('H'.$row, $sj->no_plat ?? '-');
+            $sheet->setCellValue('I'.$row, $sj->pengirim ?? '-');
+            $sheet->setCellValue('J'.$row, $sj->penerima ?? '-');
+            $sheet->setCellValue('K'.$row, $sj->jenis_barang ?? '-');
+            $sheet->setCellValue('L'.$row, $sj->tipe_kontainer ?? '-');
             $ritLabel = $sj->rit === 'menggunakan_rit' ? 'Ya' : ($sj->rit === 'tidak_menggunakan_rit' ? 'Tidak' : $sj->rit);
-            $sheet->setCellValue('L'.$row, $ritLabel);
+            $sheet->setCellValue('M'.$row, $ritLabel);
 
             $totalRit += $sj->rit === 'menggunakan_rit' ? 1 : 0;
 
@@ -1555,10 +1557,10 @@ class PranotaUangRitKenekController extends Controller
             $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle('C'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle('D'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('L'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('M'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
             // Add border
-            $sheet->getStyle('A'.$row.':L'.$row)->applyFromArray([
+            $sheet->getStyle('A'.$row.':M'.$row)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -1579,12 +1581,13 @@ class PranotaUangRitKenekController extends Controller
             $sheet->setCellValue('D'.$row, 'Bongkar');
             $sheet->setCellValue('E'.$row, $sj->supir ?? '-');
             $sheet->setCellValue('F'.$row, $sj->kenek ?? '-');
-            $sheet->setCellValue('G'.$row, $sj->no_plat ?? '-');
-            $sheet->setCellValue('H'.$row, $sj->pengirim ?? '-');
-            $sheet->setCellValue('I'.$row, $sj->penerima ?? '-');
-            $sheet->setCellValue('J'.$row, $sj->jenis_barang ?? '-');
-            $sheet->setCellValue('K'.$row, $sj->tipe_kontainer ?? '-');
-            $sheet->setCellValue('L'.$row, $sj->rit === 'menggunakan_rit' ? 'Ya' : 'Tidak');
+            $sheet->setCellValue('G'.$row, $sj->kenek_nik ?? '-');
+            $sheet->setCellValue('H'.$row, $sj->no_plat ?? '-');
+            $sheet->setCellValue('I'.$row, $sj->pengirim ?? '-');
+            $sheet->setCellValue('J'.$row, $sj->penerima ?? '-');
+            $sheet->setCellValue('K'.$row, $sj->jenis_barang ?? '-');
+            $sheet->setCellValue('L'.$row, $sj->tipe_kontainer ?? '-');
+            $sheet->setCellValue('M'.$row, $sj->rit === 'menggunakan_rit' ? 'Ya' : 'Tidak');
 
             $totalRit += $sj->rit === 'menggunakan_rit' ? 1 : 0;
 
@@ -1592,10 +1595,10 @@ class PranotaUangRitKenekController extends Controller
             $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle('C'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             $sheet->getStyle('D'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('L'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('M'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
             // Add border
-            $sheet->getStyle('A'.$row.':L'.$row)->applyFromArray([
+            $sheet->getStyle('A'.$row.':M'.$row)->applyFromArray([
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -1610,16 +1613,16 @@ class PranotaUangRitKenekController extends Controller
 
         // Total row
         $sheet->setCellValue('A'.$row, 'TOTAL');
-        $sheet->mergeCells('A'.$row.':K'.$row);
-        $sheet->setCellValue('L'.$row, $totalRit);
+        $sheet->mergeCells('A'.$row.':L'.$row);
+        $sheet->setCellValue('M'.$row, $totalRit);
 
-        $sheet->getStyle('A'.$row.':L'.$row)->getFont()->setBold(true);
-        $sheet->getStyle('A'.$row.':L'.$row)->getFill()
+        $sheet->getStyle('A'.$row.':M'.$row)->getFont()->setBold(true);
+        $sheet->getStyle('A'.$row.':M'.$row)->getFill()
             ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setRGB('F5F5F5');
         $sheet->getStyle('A'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('L'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A'.$row.':L'.$row)->applyFromArray([
+        $sheet->getStyle('M'.$row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A'.$row.':M'.$row)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
