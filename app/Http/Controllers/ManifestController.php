@@ -108,7 +108,10 @@ class ManifestController extends Controller
             $query->where('size_kontainer', $request->size_kontainer);
         }
 
-        $manifests = $query->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')->orderBy('created_at', 'desc')->paginate(20);
+        $manifests = $query->orderByRaw("FIELD(UPPER(tipe_kontainer), 'FCL', 'LCL', 'CARGO') ASC")
+                           ->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(20);
 
         // Store selection in session
         session([
@@ -162,7 +165,10 @@ class ManifestController extends Controller
             $query->where('size_kontainer', $request->size_kontainer);
         }
 
-        $manifests = $query->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')->orderBy('created_at', 'desc')->get();
+        $manifests = $query->orderByRaw("FIELD(UPPER(tipe_kontainer), 'FCL', 'LCL', 'CARGO') ASC")
+                           ->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')
+                           ->orderBy('created_at', 'desc')
+                           ->get();
 
         $filename = 'Manifest_'.str_replace(' ', '_', $namaKapal).'_'.str_replace('/', '-', $noVoyage).'.xlsx';
 
