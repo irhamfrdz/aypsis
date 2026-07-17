@@ -2578,7 +2578,16 @@ class BlController extends Controller
         $items = $bls->groupBy(function ($item) {
             $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
             if ($isCargo) {
-                return 'cargo|'.($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package');
+                $pengirim = trim($item->pengirim ?? '');
+                $penerima = trim($item->penerima ?? '');
+                $satuan = trim($item->satuan ?? 'Package');
+                
+                if ($pengirim === '' && $penerima === '') {
+                    $groupKey = 'nama|' . trim($item->nama_barang ?: 'Cargo');
+                } else {
+                    $groupKey = 'pengirim|' . $pengirim . '|' . $penerima;
+                }
+                return 'cargo|' . $groupKey . '|' . $satuan;
             } else {
                 $barangUpper = strtoupper($item->nama_barang ?? '');
                 $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
@@ -2593,14 +2602,27 @@ class BlController extends Controller
                 return 'container|'.$size.'|'.$status;
             }
         })->map(function ($group, $key) {
-            $first = $group->first();
             $parts = explode('|', $key);
             $type = $parts[0];
 
             if ($type === 'cargo') {
-                $namaBarang = $parts[1];
-                $satuan = $parts[2];
+                $satuan = $group->first()->satuan ?: 'Package';
                 $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
+
+                $distinctNames = $group->pluck('nama_barang')
+                    ->filter()
+                    ->map(fn ($n) => trim($n))
+                    ->unique()
+                    ->values();
+
+                if ($distinctNames->count() > 1) {
+                    $namaBarang = $distinctNames->implode(', ');
+                    if (strlen($namaBarang) > 150) {
+                        $namaBarang = substr($namaBarang, 0, 147) . '...';
+                    }
+                } else {
+                    $namaBarang = $distinctNames->first() ?: 'Cargo';
+                }
 
                 $totalVolume = $group->sum('volume');
                 $totalTonnage = $group->sum('tonnage');
@@ -2751,7 +2773,16 @@ class BlController extends Controller
         $items = $bls->groupBy(function ($item) {
             $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
             if ($isCargo) {
-                return 'cargo|'.($item->nama_barang ?: 'Cargo').'|'.($item->satuan ?: 'Package');
+                $pengirim = trim($item->pengirim ?? '');
+                $penerima = trim($item->penerima ?? '');
+                $satuan = trim($item->satuan ?? 'Package');
+                
+                if ($pengirim === '' && $penerima === '') {
+                    $groupKey = 'nama|' . trim($item->nama_barang ?: 'Cargo');
+                } else {
+                    $groupKey = 'pengirim|' . $pengirim . '|' . $penerima;
+                }
+                return 'cargo|' . $groupKey . '|' . $satuan;
             } else {
                 $barangUpper = strtoupper($item->nama_barang ?? '');
                 $isEmpty = str_contains($barangUpper, 'EMPTY') || ($item->tipe_kontainer == 'FCL' && (empty($item->nomor_kontainer) || str_starts_with($item->nomor_kontainer, 'CARGO-')));
@@ -2770,9 +2801,23 @@ class BlController extends Controller
             $type = $parts[0];
 
             if ($type === 'cargo') {
-                $namaBarang = $parts[1];
-                $satuan = $parts[2];
+                $satuan = $group->first()->satuan ?: 'Package';
                 $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
+
+                $distinctNames = $group->pluck('nama_barang')
+                    ->filter()
+                    ->map(fn ($n) => trim($n))
+                    ->unique()
+                    ->values();
+
+                if ($distinctNames->count() > 1) {
+                    $namaBarang = $distinctNames->implode(', ');
+                    if (strlen($namaBarang) > 150) {
+                        $namaBarang = substr($namaBarang, 0, 147) . '...';
+                    }
+                } else {
+                    $namaBarang = $distinctNames->first() ?: 'Cargo';
+                }
 
                 $totalVolume = $group->sum('volume');
                 $totalTonnage = $group->sum('tonnage');
