@@ -50,10 +50,34 @@
                                 <p class="mt-1 text-base font-semibold text-blue-600">{{ $pembayaran->nomor_pembayaran }}</p>
                             </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-500">Tanggal Pembayaran</label>
+                            <div id="tanggal-display-container">
+                                <label class="block text-sm font-medium text-gray-500">
+                                    Tanggal Pembayaran
+                                    @can('pembayaran-ob-edit')
+                                    <button type="button" onclick="document.getElementById('tanggal-form-container').style.display='block'; document.getElementById('tanggal-display-container').style.display='none';" class="ml-2 text-blue-500 hover:text-blue-700 text-xs">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    @endcan
+                                </label>
                                 <p class="mt-1 text-base text-gray-900">{{ \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d F Y') }}</p>
                             </div>
+
+                            @can('pembayaran-ob-edit')
+                            <div id="tanggal-form-container" style="display: none;">
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Edit Tanggal Pembayaran</label>
+                                <form action="{{ route('pembayaran-ob.update-tanggal', $pembayaran->id) }}" method="POST" class="flex items-center space-x-2">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="date" name="tanggal_pembayaran" value="{{ \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('Y-m-d') }}" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md py-1.5 px-3 border" required>
+                                    <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap">
+                                        <i class="fas fa-check mr-1"></i> Simpan
+                                    </button>
+                                    <button type="button" onclick="document.getElementById('tanggal-form-container').style.display='none'; document.getElementById('tanggal-display-container').style.display='block';" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 whitespace-nowrap">
+                                        Batal
+                                    </button>
+                                </form>
+                            </div>
+                            @endcan
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-500">Kegiatan</label>

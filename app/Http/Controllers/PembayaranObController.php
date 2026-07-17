@@ -598,6 +598,36 @@ class PembayaranObController extends Controller
     }
 
     /**
+     * Update the date of the specified resource.
+     */
+    public function updateTanggal(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'tanggal_pembayaran' => 'required|date',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $pembayaran = PembayaranOb::findOrFail($id);
+            $pembayaran->tanggal_pembayaran = $validated['tanggal_pembayaran'];
+            $pembayaran->save();
+
+            // Update associated CoaTransaction dates as well
+            \App\Models\CoaTransaction::where('nomor_referensi', $pembayaran->nomor_pembayaran)
+                ->update(['tanggal_transaksi' => $validated['tanggal_pembayaran']]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Tanggal pembayaran berhasil diupdate.');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Gagal mengupdate tanggal: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)

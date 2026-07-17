@@ -109,86 +109,177 @@
         </div>
     </div>
 
-    <!-- Detailed Cost Table -->
-    <div class="space-y-6">
-        <h2 class="text-xl font-extrabold text-gray-800 flex items-center border-b border-gray-200 pb-4 mb-4">
-            <i class="fas fa-list-ol text-blue-600 mr-2"></i> Rincian Biaya Kapal
+    <!-- Detailed Cost Table (Grouped into Accordions) -->
+    <div class="space-y-4 mb-8">
+        <h2 class="text-xl font-extrabold text-gray-800 flex items-center border-b border-gray-200 pb-4 mb-4 mt-8">
+            <i class="fas fa-layer-group text-blue-600 mr-2"></i> Rincian Biaya Berdasarkan Kategori
         </h2>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-sm">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Tanggal</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">No. Invoice</th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Klasifikasi</th>
-                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Total</th>
-                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-20 no-print">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                        @php $no = 1; @endphp
-                        @forelse($biayaKapals as $item)
-                            <tr class="hover:bg-gray-50/50 transition-colors">
-                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
-                                    {{ $no++ }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
-                                    {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/M/Y') : '-' }}
-                                </td>
-                                <td class="px-6 py-4 text-xs font-semibold text-gray-800">
-                                    {{ $item->nomor_invoice }}
-                                </td>
-                                <td class="px-6 py-4 text-xs text-gray-700">
-                                    {{ $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain' }}
-                                </td>
-                                <td class="px-6 py-4 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
-                                    Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
-                                </td>
-                                <td class="px-6 py-4 text-center whitespace-nowrap no-print">
-                                    @if(isset($item->is_pranota_ob) && $item->is_pranota_ob)
-                                        <a href="{{ route('pranota-ob.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Pranota OB">
-                                            <i class="fas fa-eye text-xs"></i>
-                                        </a>
-                                    @elseif(isset($item->is_amprahan) && $item->is_amprahan)
-                                        <a href="{{ route('stock-amprahan.show', $item->stock_amprahan_id ?? $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Amprahan">
-                                            <i class="fas fa-eye text-xs"></i>
-                                        </a>
-                                    @else
-                                        <a href="{{ route('biaya-kapal.show', ['biayaKapal' => $item->id, 'kapal' => $kapal, 'voyage' => $voyage]) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Transaksi">
-                                            <i class="fas fa-eye text-xs"></i>
-                                        </a>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                                    <i class="fas fa-ship text-gray-300 text-5xl mb-4 block"></i>
-                                    <p class="font-semibold text-lg">Tidak ada data biaya kapal yang ditemukan</p>
-                                    <p class="text-gray-400 text-sm mt-1">Silakan periksa kembali kapal dan nomor voyage yang Anda pilih.</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                    @if($biayaKapals->count() > 0)
-                        <tfoot class="bg-gray-50 font-bold">
-                            <tr>
-                                <td colspan="4" class="px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wider">Total Akhir</td>
-                                <td class="px-6 py-4 text-right text-sm text-gray-900">
-                                    Rp {{ number_format($summary['grand_total'], 0, ',', '.') }}
-                                </td>
-                                <td class="px-6 py-4 no-print"></td>
-                            </tr>
-                        </tfoot>
-                    @endif
-                </table>
+        @php
+            $categorized = [
+                'Biaya Kapal & Pranota' => [
+                    'icon' => 'fa-ship',
+                    'bg' => 'bg-blue-100',
+                    'text' => 'text-blue-600',
+                    'items' => $biayaKapals->filter(fn($i) => !isset($i->is_uang_jalan) && !isset($i->is_amprahan)),
+                ],
+                'Uang Jalan' => [
+                    'icon' => 'fa-truck',
+                    'bg' => 'bg-emerald-100',
+                    'text' => 'text-emerald-600',
+                    'items' => $biayaKapals->filter(fn($i) => isset($i->is_uang_jalan) && $i->is_uang_jalan),
+                ],
+                'Pemakaian Amprahan' => [
+                    'icon' => 'fa-box-open',
+                    'bg' => 'bg-amber-100',
+                    'text' => 'text-amber-600',
+                    'items' => $biayaKapals->filter(fn($i) => isset($i->is_amprahan) && $i->is_amprahan),
+                ],
+            ];
+        @endphp
+
+        @foreach($categorized as $catName => $catData)
+            @php
+                $catItems = $catData['items'];
+                if($catItems->count() == 0) continue;
+                
+                $catTotal = $catItems->sum(fn($i) => $i->apportioned['total_biaya']);
+                $accordionId = Str::slug($catName);
+            @endphp
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid">
+                <!-- Accordion Header -->
+                <button type="button" 
+                        class="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none toggle-accordion"
+                        data-target="#accordion-{{ $accordionId }}">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-xl {{ $catData['bg'] }} {{ $catData['text'] }} flex items-center justify-center mr-4">
+                            <i class="fas {{ $catData['icon'] }} text-lg"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-bold text-gray-800 text-base">{{ $catName }}</h3>
+                            <p class="text-xs text-gray-500 font-medium">{{ $catItems->count() }} Transaksi</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="font-bold text-gray-900 mr-4 tracking-tight">Rp {{ number_format($catTotal, 0, ',', '.') }}</span>
+                        <div class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm icon-chevron-container transition-colors">
+                            <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 icon-chevron text-xs"></i>
+                        </div>
+                    </div>
+                </button>
+                
+                <!-- Accordion Body (Table) -->
+                <div id="accordion-{{ $accordionId }}" class="accordion-body" style="display: none;">
+                    <div class="border-t border-gray-200 overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-white">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Tanggal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">No. Invoice</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Klasifikasi</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Total</th>
+                                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-20 no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100">
+                                @php $no = 1; @endphp
+                                @foreach($catItems as $item)
+                                    <tr class="hover:bg-gray-50/50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-medium">
+                                            {{ $no++ }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
+                                            {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/M/Y') : '-' }}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-xs font-bold text-gray-800">{{ $item->nomor_invoice }}</div>
+                                            @if(isset($item->is_uang_jalan) && $item->is_uang_jalan)
+                                                @php
+                                                    $noKontainer = $item->suratJalan->no_kontainer ?? $item->suratJalanBongkaran->no_kontainer ?? $item->suratJalanBongkaranBatam->no_kontainer ?? null;
+                                                @endphp
+                                                @if($noKontainer)
+                                                    <div class="text-xs text-gray-500 mt-1 font-normal flex items-center">
+                                                        <i class="fas fa-box text-gray-400 mr-1"></i> {{ $noKontainer }}
+                                                    </div>
+                                                @endif
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 text-xs text-gray-700">
+                                            {{ $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain' }}
+                                        </td>
+                                        <td class="px-6 py-4 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
+                                            Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-6 py-4 text-center whitespace-nowrap no-print">
+                                            @if(isset($item->is_pranota_ob) && $item->is_pranota_ob)
+                                                <a href="{{ route('pranota-ob.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Pranota OB">
+                                                    <i class="fas fa-eye text-xs"></i>
+                                                </a>
+                                            @elseif(isset($item->is_amprahan) && $item->is_amprahan)
+                                                <a href="{{ route('stock-amprahan.show', $item->stock_amprahan_id ?? $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Amprahan">
+                                                    <i class="fas fa-eye text-xs"></i>
+                                                </a>
+                                            @else
+                                                <a href="{{ route('biaya-kapal.show', ['biayaKapal' => $item->id, 'kapal' => $kapal, 'voyage' => $voyage]) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Transaksi">
+                                                    <i class="fas fa-eye text-xs"></i>
+                                                </a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="bg-gray-50/80 font-bold border-t border-gray-200">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $catName }}</td>
+                                    <td class="px-6 py-4 text-right text-sm text-gray-900">
+                                        Rp {{ number_format($catTotal, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 no-print"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
             </div>
-        </div>
+        @endforeach
+
+        @if($biayaKapals->count() === 0)
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid p-12 text-center text-gray-500">
+                <i class="fas fa-ship text-gray-300 text-5xl mb-4 block"></i>
+                <p class="font-semibold text-lg">Tidak ada data biaya yang ditemukan</p>
+                <p class="text-gray-400 text-sm mt-1">Silakan periksa kembali kapal dan nomor voyage yang Anda pilih.</p>
+            </div>
+        @endif
     </div>
 </div>
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $('.toggle-accordion').on('click', function() {
+            const target = $(this).data('target');
+            const $body = $(target);
+            const $icon = $(this).find('.icon-chevron');
+            const $iconContainer = $(this).find('.icon-chevron-container');
+            
+            // Toggle slide
+            $body.slideToggle(300);
+            
+            // Toggle styles for opened state
+            $icon.toggleClass('rotate-180');
+            $iconContainer.toggleClass('bg-blue-50 border-blue-200');
+            $(this).toggleClass('bg-gray-100');
+        });
+        
+        // Open the first one by default
+        setTimeout(() => {
+            $('.toggle-accordion').first().trigger('click');
+        }, 100);
+    });
+</script>
+@endpush
 
 @push('styles')
 <style>

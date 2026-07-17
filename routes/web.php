@@ -5642,6 +5642,8 @@ Route::prefix('pembayaran-ob')->name('pembayaran-ob.')->middleware(['auth'])->gr
         ->middleware('can:pembayaran-ob-edit');
     Route::put('/{id}', [PembayaranObController::class, 'update'])->name('update')
         ->middleware('can:pembayaran-ob-edit');
+    Route::patch('/{id}/tanggal', [PembayaranObController::class, 'updateTanggal'])->name('update-tanggal')
+        ->middleware('can:pembayaran-ob-edit');
     Route::delete('/{id}', [PembayaranObController::class, 'destroy'])->name('destroy')
         ->middleware('can:pembayaran-ob-delete');
     Route::post('/{id}/approve', [PembayaranObController::class, 'approve'])->name('approve')
