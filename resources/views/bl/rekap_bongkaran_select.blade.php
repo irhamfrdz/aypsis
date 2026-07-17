@@ -55,15 +55,40 @@
                     </div>
                 </div>
 
-                <!-- Estimasi Tiba (Opsional) -->
-                <div>
-                    <label for="estimasi_tiba" class="block text-sm font-semibold text-gray-700 mb-2">Estimasi Tiba (Opsional)</label>
-                    <p class="text-xs text-gray-500 mb-2">Isi kolom ini jika Anda ingin mengupdate atau memasukkan Estimasi Tiba secara manual. Jika dikosongkan akan menggunakan data yang sudah ada.</p>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                            <i class="fas fa-calendar-alt"></i>
+                <!-- Jenis Tanggal & Input -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Estimasi Tiba -->
+                    <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-200">
+                        <div class="flex items-center mb-3">
+                            <input type="radio" id="jenis_estimasi" name="jenis_tanggal" value="estimasi_tiba" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" checked>
+                            <label for="jenis_estimasi" class="ml-2 block text-sm font-semibold text-gray-700">
+                                Gunakan Estimasi Tiba
+                            </label>
                         </div>
-                        <input type="date" id="estimasi_tiba" name="estimasi_tiba" class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800 bg-gray-50/50 hover:bg-gray-50/100 transition duration-150">
+                        <p class="text-xs text-gray-500 mb-3">Isi kolom ini jika ingin mengupdate tanggal Estimasi Tiba secara manual.</p>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <input type="date" id="estimasi_tiba" name="estimasi_tiba" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-800 bg-white">
+                        </div>
+                    </div>
+
+                    <!-- Tanggal Berangkat -->
+                    <div class="bg-gray-50/50 p-4 rounded-xl border border-gray-200">
+                        <div class="flex items-center mb-3">
+                            <input type="radio" id="jenis_berangkat" name="jenis_tanggal" value="tanggal_berangkat" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                            <label for="jenis_berangkat" class="ml-2 block text-sm font-semibold text-gray-700">
+                                Gunakan Tanggal Berangkat
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3">Isi kolom ini jika ingin mengupdate Tanggal Berangkat secara manual.</p>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <input type="date" id="tanggal_berangkat" name="tanggal_berangkat" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-800 bg-white">
+                        </div>
                     </div>
                 </div>
             </div>
