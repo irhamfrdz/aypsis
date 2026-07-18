@@ -35,9 +35,8 @@ class PranotaPerbaikanKontainerController extends Controller
                     ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
-
-        $pranotaPerbaikanKontainers = $query->paginate(15)->appends($request->query());
-
+        $perPage = $request->input('per_page', 15);
+        $pranotaPerbaikanKontainers = $query->paginate($perPage)->appends($request->query());
         return view('pranota-perbaikan-kontainer.index', compact('pranotaPerbaikanKontainers'));
     }
 

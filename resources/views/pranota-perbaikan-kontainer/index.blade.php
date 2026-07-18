@@ -34,7 +34,7 @@
     <!-- Filters Section -->
     <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-6">
         <form action="{{ route('pranota-perbaikan-kontainer.index') }}" method="GET" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 <!-- Search Input -->
                 <div>
                     <label for="search" class="block text-xs font-semibold text-gray-500 mb-1">Cari</label>
@@ -76,6 +76,18 @@
                     <input type="date" name="tanggal_sampai" id="tanggal_sampai" 
                            value="{{ request('tanggal_sampai') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+                </div>
+                
+                <!-- Per Page -->
+                <div>
+                    <label for="per_page" class="block text-xs font-semibold text-gray-500 mb-1">Baris per Halaman</label>
+                    <select name="per_page" id="per_page" onchange="this.form.submit()"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 focus:outline-none">
+                        <option value="15" {{ request('per_page') == 15 ? 'selected' : '' }}>15</option>
+                        <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
+                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                    </select>
                 </div>
             </div>
 
