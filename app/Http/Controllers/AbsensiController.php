@@ -288,11 +288,12 @@ class AbsensiController extends Controller
         $pekerjaan = $request->input('pekerjaan');
         $divisi = $request->input('divisi');
         $cabang = $request->input('cabang');
+        $tempat = $request->input('tempat');
 
         $fileName = 'rekap-absensi-' . $startDate . '-sd-' . $endDate . '.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi, $cabang),
+            new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi, $cabang, $tempat),
             $fileName
         );
     }

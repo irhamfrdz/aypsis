@@ -24,13 +24,14 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
     protected $pekerjaan;
     protected $divisi;
     protected $cabang;
+    protected $tempat;
 
     protected $totalDays;
     protected $dayHeaders;
     protected $rekapData;
     protected $periodText;
 
-    public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null)
+    public function __construct($startDate, $endDate, $search = null, $pekerjaan = null, $divisi = null, $cabang = null, $tempat = null)
     {
         $this->startDate = $startDate;
         $this->endDate = $endDate;
@@ -38,6 +39,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         $this->pekerjaan = $pekerjaan;
         $this->divisi = $divisi;
         $this->cabang = $cabang;
+        $this->tempat = $tempat;
 
         $this->prepareData();
     }
@@ -74,6 +76,16 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         }
         if (!empty($this->cabang)) {
             $karyawansQuery->where('cabang', $this->cabang);
+        }
+        if (!empty($this->tempat)) {
+            if ($this->tempat === 'KANTOR') {
+                $karyawansQuery->whereIn('divisi', ['ADMINISTRASI', 'LAPANGAN'])
+                               ->whereNotIn('nik', ['0846', '0974', '0884']);
+            } elseif ($this->tempat === 'PELABUHAN 1') {
+                $karyawansQuery->whereIn('divisi', ['SUPIR', 'KRANI', 'SATPAM']);
+            } else {
+                $karyawansQuery->where('divisi', $this->tempat);
+            }
         }
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->get();
 
