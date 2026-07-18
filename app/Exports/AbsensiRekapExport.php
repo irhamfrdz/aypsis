@@ -81,6 +81,8 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             if ($this->tempat === 'KANTOR') {
                 $karyawansQuery->whereIn('divisi', ['ADMINISTRASI', 'LAPANGAN'])
                                ->whereNotIn('nik', ['0846', '0974', '0884']);
+            } elseif ($this->tempat === 'PELABUHAN 1') {
+                $karyawansQuery->whereIn('divisi', ['SUPIR', 'KRANI', 'SATPAM']);
             } else {
                 $karyawansQuery->where('divisi', $this->tempat);
             }
