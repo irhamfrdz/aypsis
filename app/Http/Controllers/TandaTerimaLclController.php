@@ -1810,7 +1810,7 @@ class TandaTerimaLclController extends Controller
                 'nomor_kontainer' => \Illuminate\Support\Str::limit($request->nomor_kontainer, 255, ''),
                 'no_seal' => \Illuminate\Support\Str::limit($request->nomor_seal, 255, ''),
                 'ukuran' => $firstPivot->size_kontainer ? (strpos($firstPivot->size_kontainer, '20') !== false ? '20' : '40') : null,
-                'tipe' => $request->has('is_booking') ? 'FCL' : $firstPivot->tipe_kontainer,
+                'tipe' => $request->has('is_booking') ? 'FCL Booking' : $firstPivot->tipe_kontainer,
                 'pt_pengirim' => $ptPengirimList ?: null,
                 'barang' => $barangList ?: 'LCL',
                 'total_volume' => $totalVolume,
@@ -2729,13 +2729,13 @@ class TandaTerimaLclController extends Controller
 
             $successCount = 0;
 
-            if ($prospek && $prospek->tipe === 'FCL') {
+            if ($prospek && in_array($prospek->tipe, ['FCL', 'FCL Booking'])) {
                 $tandaTerimaPertama = $pivotRecords->first()->tandaTerima;
 
                 $manifest = new \App\Models\Manifest;
                 $manifest->nomor_kontainer = $nomorKontainer;
                 $manifest->no_seal = $nomorSeal;
-                $manifest->tipe_kontainer = 'FCL';
+                $manifest->tipe_kontainer = $prospek->tipe;
                 $manifest->size_kontainer = $pivotRecords->first()->size_kontainer;
                 $manifest->nama_kapal = $namaKapal;
                 $manifest->no_voyage = $noVoyage;
