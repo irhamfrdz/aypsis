@@ -4043,6 +4043,49 @@ class ObController extends Controller
                         $manifest->alamat_penerima = $manifestDataForLater['prospek_alamat_penerima'];
                         $manifest->alamat_pengiriman = $manifestDataForLater['prospek_alamat_pengiriman'];
                         $manifest->contact_person = $manifestDataForLater['prospek_contact_person'];
+
+                        // Check if this FCL is actually a Booking from LCL
+                        $pivotRecords = \App\Models\TandaTerimaLclKontainerPivot::where('nomor_kontainer', $manifestDataForLater['nomor_kontainer'])
+                            ->where('nomor_seal', $manifestDataForLater['no_seal'])
+                            ->with('tandaTerima.items')
+                            ->get();
+
+                        if ($pivotRecords->count() > 0) {
+                            $tandaTerimaPertama = $pivotRecords->first()->tandaTerima;
+                            
+                            $manifest->nomor_tanda_terima = $pivotRecords->map(function ($p) {
+                                return $p->tandaTerima ? $p->tandaTerima->nomor_tanda_terima : null;
+                            })->filter()->implode(', ');
+                            
+                            $namaBarangItems = collect();
+                            $satuans = collect();
+                            
+                            foreach ($pivotRecords as $pivot) {
+                                if ($tt = $pivot->tandaTerima) {
+                                    $namaBarangItems->push($tt->items->pluck('nama_barang')->filter()->implode(', '));
+                                    $satuans = $satuans->merge($tt->items->pluck('satuan')->filter());
+                                }
+                            }
+                            
+                            $manifest->nama_barang = $namaBarangItems->filter()->implode(', ') ?: $manifestDataForLater['jenis_barang'];
+                            
+                            $uniqueSatuan = $satuans->unique();
+                            if ($uniqueSatuan->count() === 1) {
+                                $manifest->satuan = $uniqueSatuan->first();
+                            } elseif ($uniqueSatuan->count() > 1) {
+                                $manifest->satuan = 'PKGS';
+                            }
+                            
+                            if ($tandaTerimaPertama) {
+                                $manifest->pengirim = $tandaTerimaPertama->nama_pengirim;
+                                $manifest->penerima = $tandaTerimaPertama->nama_penerima;
+                                $manifest->alamat_pengirim = $tandaTerimaPertama->alamat_pengirim;
+                                $manifest->alamat_penerima = $tandaTerimaPertama->alamat_penerima;
+                                $manifest->alamat_pengiriman = $tandaTerimaPertama->alamat_penerima;
+                                $manifest->contact_person = $tandaTerimaPertama->contact_person;
+                                $manifest->penerimaan = $tandaTerimaPertama->tanggal_tanda_terima;
+                            }
+                        }
                     }
 
                     $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();

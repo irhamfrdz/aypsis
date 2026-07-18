@@ -123,7 +123,6 @@ class TandaTerimaLclController extends Controller
     {
         $request->validate([
             'nomor_tanda_terima' => 'nullable|string|max:255|unique:tanda_terimas_lcl,nomor_tanda_terima',
-            'is_booking' => 'nullable|boolean',
             'tanggal_tanda_terima' => 'required|date',
             'no_surat_jalan_customer' => 'nullable|string|max:255',
             'surat_jalan_pabrik' => 'nullable|string|max:255',
@@ -1805,17 +1804,13 @@ class TandaTerimaLclController extends Controller
                 $barangList = substr($barangList, 0, 1997).'...';
             }
 
-            $isBooking = $pivotRecords->contains(function ($pivot) {
-                return $pivot->tandaTerima && $pivot->tandaTerima->is_booking;
-            });
-
             // Insert ke tabel prospek
             $prospek = Prospek::create([
                 'tanggal' => $request->tanggal_seal,
                 'nomor_kontainer' => \Illuminate\Support\Str::limit($request->nomor_kontainer, 255, ''),
                 'no_seal' => \Illuminate\Support\Str::limit($request->nomor_seal, 255, ''),
                 'ukuran' => $firstPivot->size_kontainer ? (strpos($firstPivot->size_kontainer, '20') !== false ? '20' : '40') : null,
-                'tipe' => $isBooking ? 'FCL' : $firstPivot->tipe_kontainer,
+                'tipe' => $request->has('is_booking') ? 'FCL' : $firstPivot->tipe_kontainer,
                 'pt_pengirim' => $ptPengirimList ?: null,
                 'barang' => $barangList ?: 'LCL',
                 'total_volume' => $totalVolume,
@@ -2732,16 +2727,10 @@ class TandaTerimaLclController extends Controller
                     ->with('error', "Data stuffing untuk kontainer {$nomorKontainer} dengan seal {$nomorSeal} tidak ditemukan.");
             }
 
-            $isBooking = $pivotRecords->contains(function ($pivot) {
-                return $pivot->tandaTerima && $pivot->tandaTerima->is_booking;
-            });
-
             $successCount = 0;
 
-            if ($isBooking) {
-                $tandaTerimaPertama = $pivotRecords->first(function ($pivot) {
-                    return $pivot->tandaTerima && $pivot->tandaTerima->is_booking;
-                })->tandaTerima ?? $pivotRecords->first()->tandaTerima;
+            if ($prospek && $prospek->tipe === 'FCL') {
+                $tandaTerimaPertama = $pivotRecords->first()->tandaTerima;
 
                 $manifest = new \App\Models\Manifest;
                 $manifest->nomor_kontainer = $nomorKontainer;
@@ -2755,12 +2744,12 @@ class TandaTerimaLclController extends Controller
                     return $p->tandaTerima ? $p->tandaTerima->nomor_tanda_terima : null;
                 })->filter()->implode(', ');
 
-                $manifest->pengirim = $tandaTerimaPertama->nama_pengirim;
-                $manifest->penerima = $tandaTerimaPertama->nama_penerima;
-                $manifest->alamat_pengirim = $tandaTerimaPertama->alamat_pengirim;
-                $manifest->alamat_penerima = $tandaTerimaPertama->alamat_penerima;
-                $manifest->alamat_pengiriman = $tandaTerimaPertama->alamat_penerima;
-                $manifest->contact_person = $tandaTerimaPertama->contact_person;
+                $manifest->pengirim = $tandaTerimaPertama ? $tandaTerimaPertama->nama_pengirim : null;
+                $manifest->penerima = $tandaTerimaPertama ? $tandaTerimaPertama->nama_penerima : null;
+                $manifest->alamat_pengirim = $tandaTerimaPertama ? $tandaTerimaPertama->alamat_pengirim : null;
+                $manifest->alamat_penerima = $tandaTerimaPertama ? $tandaTerimaPertama->alamat_penerima : null;
+                $manifest->alamat_pengiriman = $tandaTerimaPertama ? $tandaTerimaPertama->alamat_penerima : null;
+                $manifest->contact_person = $tandaTerimaPertama ? $tandaTerimaPertama->contact_person : null;
 
                 $totalVolume = 0;
                 $totalTonnage = 0;
@@ -2793,12 +2782,9 @@ class TandaTerimaLclController extends Controller
                 $manifest->pelabuhan_muat = $prospek->pelabuhan_asal ?? null;
                 $manifest->pelabuhan_bongkar = $prospek->tujuan_pengiriman ?? null;
                 $manifest->tanggal_berangkat = $prospek->tanggal_muat ?? now();
-                $manifest->penerimaan = $tandaTerimaPertama->tanggal_tanda_terima;
-                $manifest->term = $tandaTerimaPertama->term ? ($tandaTerimaPertama->term instanceof \App\Models\Term ? $tandaTerimaPertama->term->kode : $tandaTerimaPertama->term) : null;
-
-                if ($prospek) {
-                    $manifest->prospek_id = $prospek->id;
-                }
+                $manifest->penerimaan = $tandaTerimaPertama ? $tandaTerimaPertama->tanggal_tanda_terima : null;
+                $manifest->term = ($tandaTerimaPertama && $tandaTerimaPertama->term) ? ($tandaTerimaPertama->term instanceof \App\Models\Term ? $tandaTerimaPertama->term->kode : $tandaTerimaPertama->term) : null;
+                $manifest->prospek_id = $prospek->id;
 
                 $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
                 if ($lastManifest && $lastManifest->nomor_bl) {

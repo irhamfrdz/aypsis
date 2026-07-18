@@ -701,6 +701,17 @@
                     <p class="text-xs text-gray-500 mt-1">Lokasi kontainer akan diupdate ke gudang ini</p>
                 </div>
 
+                <div class="mb-4">
+                    <div class="flex items-center">
+                        <input id="seal_is_booking" name="is_booking" type="checkbox" value="1"
+                               class="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded">
+                        <label for="seal_is_booking" class="ml-2 block text-sm text-gray-900 font-medium">
+                            Tandai sebagai Booking
+                        </label>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 ml-6">Jika dicentang, kontainer ini akan diperlakukan sebagai FCL.</p>
+                </div>
+
                 <div class="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4">
                     <p class="text-xs text-amber-800">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
