@@ -1469,44 +1469,51 @@ class TandaTerimaLclController extends Controller
             }
         }
 
-        $groupedByContainer = $groupedQuery->get()
-            ->groupBy(function ($item) {
-                // Group by container number and seal status
-                // Sealed containers are grouped separately from unsealed ones with same number
-                return $item->nomor_kontainer.'|'.($item->nomor_seal ?? 'unsealed');
-            })
-            ->map(function ($items) {
-                // Fetch Prospek status
-                $firstItem = $items->first();
-                $nomorKontainer = $firstItem->nomor_kontainer;
-                $nomorSeal = $firstItem->nomor_seal;
+        $groupedPivotData = $groupedQuery->get()->groupBy(function ($item) {
+            // Group by container number and seal status
+            // Sealed containers are grouped separately from unsealed ones with same number
+            return $item->nomor_kontainer.'|'.($item->nomor_seal ?? 'unsealed');
+        });
 
-                $prospek = \App\Models\Prospek::where('nomor_kontainer', $nomorKontainer)
-                    ->when($nomorSeal, function ($q) use ($nomorSeal) {
-                        return $q->where('no_seal', $nomorSeal);
-                    })
-                    ->when(! $nomorSeal, function ($q) {
-                        // If current group is unsealed, do not match with old 'shipped' prospeks
-                        return $q->where('status', '!=', 'sudah_muat');
-                    })
-                    ->latest()
-                    ->first();
+        // Pre-load Prospeks to prevent N+1 query in the loop
+        $uniqueContainerNumbers = $groupedPivotData->flatMap(function($items) {
+            return $items->pluck('nomor_kontainer');
+        })->unique()->filter()->toArray();
 
-                return [
-                    'nomor_kontainer' => $items->first()->nomor_kontainer,
-                    'size_kontainer' => $items->first()->size_kontainer,
-                    'tipe_kontainer' => $items->first()->tipe_kontainer,
-                    'total_lcl' => $items->count(),
-                    'total_volume' => $items->sum(function ($item) {
-                        return $item->tandaTerima ? $item->tandaTerima->items->sum('meter_kubik') : 0;
-                    }),
-                    'total_berat' => $items->sum(function ($item) {
-                        return $item->tandaTerima ? $item->tandaTerima->items->sum('tonase') : 0;
-                    }),
-                    'items' => $items, // Add the actual pivot items
-                    'prospek' => $prospek, // Pass the whole prospek object
-                ];
+        $allProspeks = \App\Models\Prospek::whereIn('nomor_kontainer', $uniqueContainerNumbers)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $groupedByContainer = $groupedPivotData->map(function ($items) use ($allProspeks) {
+            // Fetch Prospek status
+            $firstItem = $items->first();
+            $nomorKontainer = $firstItem->nomor_kontainer;
+            $nomorSeal = $firstItem->nomor_seal;
+
+            $prospek = $allProspeks->first(function ($p) use ($nomorKontainer, $nomorSeal) {
+                if ($p->nomor_kontainer !== $nomorKontainer) return false;
+                if ($nomorSeal) {
+                    return $p->no_seal === $nomorSeal;
+                } else {
+                    return $p->status !== 'sudah_muat';
+                }
             });
+
+            return [
+                'nomor_kontainer' => $firstItem->nomor_kontainer,
+                'size_kontainer' => $firstItem->size_kontainer,
+                'tipe_kontainer' => $firstItem->tipe_kontainer,
+                'total_lcl' => $items->count(),
+                'total_volume' => $items->sum(function ($item) {
+                    return $item->tandaTerima ? $item->tandaTerima->items->sum('meter_kubik') : 0;
+                }),
+                'total_berat' => $items->sum(function ($item) {
+                    return $item->tandaTerima ? $item->tandaTerima->items->sum('tonase') : 0;
+                }),
+                'items' => $items, // Add the actual pivot items
+                'prospek' => $prospek, // Pass the whole prospek object
+            ];
+        });
 
         // Get available containers for new stuffing (include all containers, sealed or not)
         // Containers can be reused - if sealed, new stuffing will create new batch
@@ -1514,6 +1521,7 @@ class TandaTerimaLclController extends Controller
         $stockKontainers = StockKontainer::active()->get();
 
         $availableKontainers = collect();
+        $existingNomor = [];
 
         // Merge all kontainers (don't exclude sealed ones - they can be reused)
         foreach ($kontainers as $k) {
@@ -1523,17 +1531,18 @@ class TandaTerimaLclController extends Controller
                     'ukuran' => $k->ukuran ?? $k->size ?? null,
                     'source' => 'kontainer',
                 ]);
+                $existingNomor[$k->nomor_kontainer] = true;
             }
         }
 
         foreach ($stockKontainers as $s) {
-            if ($s->nomor_kontainer
-                && ! $availableKontainers->contains('nomor_kontainer', $s->nomor_kontainer)) {
+            if ($s->nomor_kontainer && !isset($existingNomor[$s->nomor_kontainer])) {
                 $availableKontainers->push([
                     'nomor_kontainer' => $s->nomor_kontainer,
                     'ukuran' => $s->ukuran ?? null,
                     'source' => 'stock',
                 ]);
+                $existingNomor[$s->nomor_kontainer] = true;
             }
         }
 
