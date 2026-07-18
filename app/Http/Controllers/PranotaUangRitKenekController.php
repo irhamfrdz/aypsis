@@ -927,28 +927,30 @@ class PranotaUangRitKenekController extends Controller
         $request->validate([
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string',
-            'supir_details' => 'sometimes|array',
-            'supir_details.*.hutang' => 'nullable|numeric|min:0',
-            'supir_details.*.tabungan' => 'nullable|numeric|min:0',
-            'supir_details.*.bpjs' => 'nullable|numeric|min:0',
+            'kenek_details' => 'sometimes|array',
+            'kenek_details.*.hutang' => 'nullable|numeric|min:0',
+            'kenek_details.*.tabungan' => 'nullable|numeric|min:0',
+            'kenek_details.*.bpjs' => 'nullable|numeric|min:0',
+            'kenek_details.*.kenek_nama' => 'required|string',
         ]);
 
         DB::beginTransaction();
         try {
-            // Update supir details
-            $supirDetails = $request->input('supir_details', []);
+            // Update kenek details
+            $kenekDetails = $request->input('kenek_details', []);
             $totalHutangKeseluruhan = 0.0;
             $totalTabunganKeseluruhan = 0.0;
             $totalBpjsKeseluruhan = 0.0;
 
-            foreach ($supirDetails as $supirNama => $details) {
+            foreach ($kenekDetails as $key => $details) {
                 $hutang = floatval($details['hutang'] ?? 0);
                 $tabungan = floatval($details['tabungan'] ?? 0);
                 $bpjs = floatval($details['bpjs'] ?? 0);
+                $kenekNama = $details['kenek_nama'];
 
-                // Update detail per supir
+                // Update detail per kenek
                 PranotaUangRitKenekDetail::where('no_pranota', $pranotaUangRitKenek->no_pranota)
-                    ->where('kenek_nama', $supirNama)
+                    ->where('kenek_nama', $kenekNama)
                     ->update([
                         'hutang' => $hutang,
                         'tabungan' => $tabungan,
