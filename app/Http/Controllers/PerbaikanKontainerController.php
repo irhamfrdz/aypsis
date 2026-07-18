@@ -47,7 +47,8 @@ class PerbaikanKontainerController extends Controller
             $query->where('status_pranota', $statusPranota);
         }
 
-        $perbaikanKontainers = $query->orderBy('created_at', 'desc')->paginate(15);
+        $perPage = $request->input('per_page', 15);
+        $perbaikanKontainers = $query->orderBy('created_at', 'desc')->paginate($perPage)->appends($request->query());
         $bengkels = VendorBengkel::all();
 
         return view('perbaikan-kontainer.index', compact('perbaikanKontainers', 'bengkels'));
