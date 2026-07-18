@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\PranotaPerbaikanKontainer;
+use App\Models\PerbaikanKontainer;
 use Illuminate\Http\Request;
+use App\Exports\PranotaPerbaikanKontainerSingleExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PranotaPerbaikanKontainerController extends Controller
 {
@@ -59,6 +62,17 @@ class PranotaPerbaikanKontainerController extends Controller
         $printType = $request->query('type');
 
         return view('pranota-perbaikan-kontainer.print', compact('pranota', 'printType'));
+    }
+
+    /**
+     * Download the specified pranota perbaikan kontainer as Excel.
+     */
+    public function excel($id, Request $request)
+    {
+        $printType = $request->query('type');
+        $fileName = 'pranota_perbaikan_' . $id . ($printType ? '_' . $printType : '') . '.xlsx';
+        
+        return Excel::download(new PranotaPerbaikanKontainerSingleExport($id, $printType), $fileName);
     }
 
     /**

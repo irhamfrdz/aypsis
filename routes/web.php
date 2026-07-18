@@ -6531,6 +6531,10 @@ Route::middleware(['auth',
         ->name('pranota-perbaikan-kontainer.print')
         ->middleware('can:pranota-perbaikan-kontainer-print');
 
+    Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/excel', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'excel'])
+        ->name('pranota-perbaikan-kontainer.excel')
+        ->middleware('can:pranota-perbaikan-kontainer-print');
+
     // Email Routes
     Route::prefix('email')->name('email.')->group(function () {
         // Settings

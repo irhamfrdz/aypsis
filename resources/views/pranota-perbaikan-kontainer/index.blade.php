@@ -188,6 +188,11 @@
                                     title="Cetak Khusus Perbaikan Kontainer Saja">
                                      <i class="fas fa-tools text-base"></i>
                                  </a>
+                                 <a href="{{ route('pranota-perbaikan-kontainer.excel', $pranota->id) }}" 
+                                    class="text-emerald-600 hover:text-emerald-900 inline-flex items-center p-1" 
+                                    title="Download Excel">
+                                     <i class="fas fa-file-excel text-base"></i>
+                                 </a>
                                  @endcan
                                 @can('pranota-perbaikan-kontainer-delete')
                                 <form action="{{ route('pranota-perbaikan-kontainer.destroy', $pranota->id) }}" 
