@@ -216,7 +216,6 @@
                             <input type="hidden" name="export" value="1">
                             <input type="hidden" name="search" value="{{ request('search') }}">
                             <input type="hidden" name="pekerjaan" value="{{ request('pekerjaan') }}">
-                            <input type="hidden" name="divisi" value="{{ request('divisi') }}">
 
                             <div class="space-y-4">
                                 <div>
@@ -226,6 +225,16 @@
                                         <option value="">Semua Cabang</option>
                                         @foreach($cabangs as $cabang)
                                             <option value="{{ $cabang }}" {{ request('cabang') == $cabang ? 'selected' : '' }}>{{ $cabang }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="export_divisi" class="block text-xs font-semibold text-gray-700 mb-1">Divisi</label>
+                                    <select name="divisi" id="export_divisi"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
+                                        <option value="">Semua Divisi</option>
+                                        @foreach($divisis as $divisi)
+                                            <option value="{{ $divisi }}" {{ request('divisi') == $divisi ? 'selected' : '' }}>{{ $divisi }}</option>
                                         @endforeach
                                     </select>
                                 </div>
