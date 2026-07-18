@@ -203,19 +203,22 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
     {
         $rows = [];
         
+        $tempatText = 'Tempat: ' . ($this->tempat ?: 'Semua Tempat');
+        $pekerjaanText = 'Pekerjaan: ' . ($this->pekerjaan ?: 'Semua Pekerjaan');
+
         // Row 1: Empty (use [''] instead of [] to prevent Laravel Excel from skipping it)
         $rows[] = [''];
         
         // Row 2: Period Text (Centered over dates, will start at Column C index 2)
-        $periodRow = ['', ''];
+        $periodRow = [$tempatText, ''];
         $periodRow[] = 'Periode: ' . $this->periodText;
         for ($i = 1; $i < $this->totalDays; $i++) {
             $periodRow[] = '';
         }
         $rows[] = $periodRow;
         
-        // Row 3: Empty (use [''] instead of [] to prevent Laravel Excel from skipping it)
-        $rows[] = [''];
+        // Row 3: Pekerjaan Info
+        $rows[] = [$pekerjaanText, ''];
         
         // Row 4: Header 1
         $header1 = ['Nama', 'No. ID'];
@@ -282,6 +285,10 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 $sheet->getStyle('A1:' . $lastColLetter . '3')->getBorders()->getRight()->setBorderStyle(Border::BORDER_NONE);
                 $sheet->getStyle('A1:' . $lastColLetter . '3')->getBorders()->getTop()->setBorderStyle(Border::BORDER_NONE);
                 $sheet->getStyle('A1:' . $lastColLetter . '3')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_NONE);
+
+                // Filter Info (A2 and A3)
+                $sheet->getStyle('A2:A3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                $sheet->getStyle('A2:A3')->getFont()->setBold(true);
 
                 // Row 2: Merge and Center Period Text over the date columns
                 $startPeriodCol = 'C';

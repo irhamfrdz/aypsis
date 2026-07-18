@@ -35,6 +35,18 @@ class Absensi extends Model
         'detail_lokasi',
         'foto',
         'status',
+        'attendance_uuid',
+        'gps_accuracy',
+        'payload_integrity',
+        'device_time',
+        'server_time',
+        'sync_time',
+        'server_received_at',
+        'server_processed_at',
+        'timezone',
+        'device_id',
+        'app_version',
+        'os_version',
     ];
 
     /**
@@ -44,6 +56,11 @@ class Absensi extends Model
      */
     protected $casts = [
         'waktu' => 'datetime',
+        'device_time' => 'datetime',
+        'server_time' => 'datetime',
+        'sync_time' => 'datetime',
+        'server_received_at' => 'datetime',
+        'server_processed_at' => 'datetime',
     ];
 
     /**

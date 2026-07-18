@@ -148,7 +148,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap font-mono text-gray-600">
                                     {{ Carbon\Carbon::parse($absensi->tanggal)->format('d-m-Y') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-green-600 bg-green-50/20 group relative">
+                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-green-600 bg-green-50/20 group relative" title="Diterima Server: {{ $absensi->server_received_masuk ? Carbon\Carbon::parse($absensi->server_received_masuk)->format('H:i:s') : '-' }}&#10;Diproses Server: {{ $absensi->server_processed_masuk ? Carbon\Carbon::parse($absensi->server_processed_masuk)->format('H:i:s') : '-' }}">
                                     {{ $absensi->waktu_masuk ? Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i:s') : '-' }}
                                     @if($absensi->waktu_masuk)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam masuk ini?')">
@@ -169,7 +169,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-orange-600 bg-orange-50/20">
                                     {{ $absensi->waktu_istirahat_masuk ? Carbon\Carbon::parse($absensi->waktu_istirahat_masuk)->format('H:i:s') : '-' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-red-600 bg-red-50/20 group relative">
+                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-red-600 bg-red-50/20 group relative" title="Diterima Server: {{ $absensi->server_received_pulang ? Carbon\Carbon::parse($absensi->server_received_pulang)->format('H:i:s') : '-' }}&#10;Diproses Server: {{ $absensi->server_processed_pulang ? Carbon\Carbon::parse($absensi->server_processed_pulang)->format('H:i:s') : '-' }}">
                                     {{ $absensi->waktu_pulang ? Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i:s') : '-' }}
                                     @if($absensi->waktu_pulang)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam pulang ini?')">
