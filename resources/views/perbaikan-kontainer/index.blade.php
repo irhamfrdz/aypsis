@@ -395,11 +395,13 @@
                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-3 text-left font-bold text-gray-500 uppercase">No</th>
+                                    <th class="px-4 py-3 text-left font-bold text-gray-500 uppercase">NO</th>
                                     <th class="px-4 py-3 text-left font-bold text-gray-500 uppercase">No. Perbaikan</th>
                                     <th class="px-4 py-3 text-left font-bold text-gray-500 uppercase">No. Kontainer</th>
                                     <th class="px-4 py-3 text-left font-bold text-gray-500 uppercase">Bengkel</th>
-                                    <th class="px-4 py-3 text-right font-bold text-gray-500 uppercase">Biaya</th>
+                                    <th class="px-4 py-3 text-right font-bold text-gray-500 uppercase">Biaya Perbaikan</th>
+                                    <th class="px-4 py-3 text-right font-bold text-gray-500 uppercase">Biaya Cat</th>
+                                    <th class="px-4 py-3 text-right font-bold text-gray-500 uppercase">Total Biaya</th>
                                 </tr>
                             </thead>
                             <tbody id="pranota-items" class="bg-white divide-y divide-gray-100"></tbody>
@@ -543,6 +545,8 @@
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-gray-700">${no_kontainer}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-gray-700">${bengkel}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-right text-gray-700">Rp ${(biayaRiil > 0 ? biayaRiil : estimasi).toLocaleString('id-ID')}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-right text-gray-700">Rp ${biayaCat.toLocaleString('id-ID')}</td>
                 <td class="px-4 py-3 whitespace-nowrap text-right font-semibold text-indigo-600">Rp ${biaya.toLocaleString('id-ID')}</td>
             `;
             tbody.appendChild(row);
