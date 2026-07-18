@@ -413,8 +413,16 @@
                             <span>Total item dipilih:</span>
                             <span id="total-count-display" class="font-bold text-gray-900">0</span>
                         </div>
-                        <div class="flex justify-between text-lg font-bold text-gray-900">
-                            <span>Total Biaya:</span>
+                        <div class="flex justify-between text-sm font-medium text-gray-600">
+                            <span>Total Biaya Perbaikan:</span>
+                            <span id="total-biaya-perbaikan-display" class="font-bold text-gray-900">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-sm font-medium text-gray-600">
+                            <span>Total Biaya Cat:</span>
+                            <span id="total-biaya-cat-display" class="font-bold text-gray-900">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between text-lg font-bold text-gray-900 mt-2 border-t border-gray-100 pt-2">
+                            <span>Total Biaya Gabungan:</span>
                             <span id="total-biaya-display" class="text-indigo-600">Rp 0</span>
                         </div>
                     </div>
@@ -515,6 +523,8 @@
 
         const checked = getSelectedCheckboxes();
         let totalBiaya = 0;
+        let totalBiayaPerbaikan = 0;
+        let totalBiayaCat = 0;
         let count = 0;
         const bengkels = new Set();
 
@@ -533,7 +543,11 @@
             const vendorCat = cb.dataset.vendorCat;
             const jenisCat = cb.dataset.jenisCat;
 
-            const biaya = (biayaRiil > 0 ? biayaRiil : estimasi) + biayaCat;
+            const biayaPerbaikan = (biayaRiil > 0 ? biayaRiil : estimasi);
+            const biaya = biayaPerbaikan + biayaCat;
+            
+            totalBiayaPerbaikan += biayaPerbaikan;
+            totalBiayaCat += biayaCat;
             totalBiaya += biaya;
 
             const row = document.createElement('tr');
@@ -557,6 +571,8 @@
         document.getElementById('total-count-display').textContent = count;
         const totalDisplay = document.getElementById('total-biaya-display');
         totalDisplay.dataset.original = totalBiaya;
+        totalDisplay.dataset.originalPerbaikan = totalBiayaPerbaikan;
+        totalDisplay.dataset.originalCat = totalBiayaCat;
         updateTotalBiayaDisplay();
         document.getElementById('pranotaModal').classList.remove('hidden');
         generateNomorPranota();
@@ -569,7 +585,13 @@
     function updateTotalBiayaDisplay() {
         const display = document.getElementById('total-biaya-display');
         const original = parseFloat(display.dataset.original || 0);
+        const originalPerbaikan = parseFloat(display.dataset.originalPerbaikan || 0);
+        const originalCat = parseFloat(display.dataset.originalCat || 0);
         const adj = parseFloat(document.getElementById('adjustment').value || 0);
+        
+        document.getElementById('total-biaya-perbaikan-display').textContent = `Rp ${originalPerbaikan.toLocaleString('id-ID')}`;
+        document.getElementById('total-biaya-cat-display').textContent = `Rp ${originalCat.toLocaleString('id-ID')}`;
+        
         const total = original + adj;
         display.textContent = `Rp ${total.toLocaleString('id-ID')}`;
     }
