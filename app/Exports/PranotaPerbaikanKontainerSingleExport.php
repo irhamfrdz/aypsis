@@ -69,8 +69,10 @@ class PranotaPerbaikanKontainerSingleExport implements FromCollection, ShouldAut
                     'UKURAN & TIPE' => ($item['ukuran'] ?? '') . 'FT ' . ($item['tipe'] ?? ''),
                     'BENGKEL/VENDOR' => $bengkelVendor,
                     'KETERANGAN' => $keterangan,
-                    'ESTIMASI' => $this->printType !== 'cat' ? $estimasi : null,
-                    'REALISASI' => $this->printType !== 'cat' ? $biayaRiil : null,
+                    'ESTIMASI PERBAIKAN' => $this->printType !== 'cat' ? $estimasi : null,
+                    'REALISASI PERBAIKAN' => $this->printType !== 'cat' ? $biayaRiil : null,
+                    'BIAYA PERBAIKAN' => $this->printType !== 'cat' ? $biayaPerbaikanOnly : null,
+                    'BIAYA CAT' => $this->printType !== 'perbaikan' ? $biayaCat : null,
                     'TOTAL BIAYA' => $biayaTerpakai,
                 ]);
             }
@@ -88,8 +90,10 @@ class PranotaPerbaikanKontainerSingleExport implements FromCollection, ShouldAut
             'UKURAN & TIPE',
             'BENGKEL/VENDOR',
             'KETERANGAN',
-            'ESTIMASI',
-            'REALISASI',
+            'ESTIMASI PERBAIKAN',
+            'REALISASI PERBAIKAN',
+            'BIAYA PERBAIKAN',
+            'BIAYA CAT',
             'TOTAL BIAYA',
         ];
     }
@@ -100,6 +104,8 @@ class PranotaPerbaikanKontainerSingleExport implements FromCollection, ShouldAut
             'H' => '#,##0',
             'I' => '#,##0',
             'J' => '#,##0',
+            'K' => '#,##0',
+            'L' => '#,##0',
         ];
     }
 
@@ -108,8 +114,8 @@ class PranotaPerbaikanKontainerSingleExport implements FromCollection, ShouldAut
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $sheet->getStyle('A1:J1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('A1:J1')->getFont()->setBold(true);
+                $sheet->getStyle('A1:L1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A1:L1')->getFont()->setBold(true);
             },
         ];
     }
