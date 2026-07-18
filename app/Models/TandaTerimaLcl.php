@@ -18,7 +18,6 @@ class TandaTerimaLcl extends Model
 
     protected $fillable = [
         'nomor_tanda_terima',
-        'is_booking',
         'tanggal_tanda_terima',
         'no_surat_jalan_customer',
         'surat_jalan_pabrik',
@@ -64,7 +63,6 @@ class TandaTerimaLcl extends Model
     ];
 
     protected $casts = [
-        'is_booking' => 'boolean',
         'tanggal_tanda_terima' => 'date',
         'tanggal_surat_jalan_pabrik' => 'date',
         'gambar_surat_jalan' => 'array',
