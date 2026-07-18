@@ -123,6 +123,7 @@ class TandaTerimaLclController extends Controller
     {
         $request->validate([
             'nomor_tanda_terima' => 'nullable|string|max:255|unique:tanda_terimas_lcl,nomor_tanda_terima',
+            'is_booking' => 'nullable|boolean',
             'tanggal_tanda_terima' => 'required|date',
             'no_surat_jalan_customer' => 'nullable|string|max:255',
             'surat_jalan_pabrik' => 'nullable|string|max:255',
@@ -184,6 +185,7 @@ class TandaTerimaLclController extends Controller
             // Create main LCL record
             $tandaTerima = TandaTerimaLcl::create([
                 'nomor_tanda_terima' => $request->nomor_tanda_terima,
+                'is_booking' => $request->has('is_booking') ? true : false,
                 'tanggal_tanda_terima' => $request->tanggal_tanda_terima,
                 'no_surat_jalan_customer' => $request->no_surat_jalan_customer,
                 'surat_jalan_pabrik' => $request->surat_jalan_pabrik,
@@ -381,6 +383,7 @@ class TandaTerimaLclController extends Controller
 
         $request->validate([
             'nomor_tanda_terima' => 'nullable|string|max:255|unique:tanda_terima_lcl,nomor_tanda_terima,'.$id,
+            'is_booking' => 'nullable|boolean',
             'tanggal_tanda_terima' => 'required|date',
             'no_surat_jalan_customer' => 'nullable|string|max:255',
             'surat_jalan_pabrik' => 'nullable|string|max:255',
@@ -473,6 +476,7 @@ class TandaTerimaLclController extends Controller
             // Update main record (without nama_barang - it's now handled in items)
             $tandaTerima->update([
                 'nomor_tanda_terima' => $request->nomor_tanda_terima,
+                'is_booking' => $request->has('is_booking') ? true : false,
                 'tanggal_tanda_terima' => $request->tanggal_tanda_terima,
                 'no_surat_jalan_customer' => $request->no_surat_jalan_customer,
                 'surat_jalan_pabrik' => $request->surat_jalan_pabrik,
@@ -1801,13 +1805,17 @@ class TandaTerimaLclController extends Controller
                 $barangList = substr($barangList, 0, 1997).'...';
             }
 
+            $isBooking = $pivotRecords->contains(function ($pivot) {
+                return $pivot->tandaTerima && $pivot->tandaTerima->is_booking;
+            });
+
             // Insert ke tabel prospek
             $prospek = Prospek::create([
                 'tanggal' => $request->tanggal_seal,
                 'nomor_kontainer' => \Illuminate\Support\Str::limit($request->nomor_kontainer, 255, ''),
                 'no_seal' => \Illuminate\Support\Str::limit($request->nomor_seal, 255, ''),
                 'ukuran' => $firstPivot->size_kontainer ? (strpos($firstPivot->size_kontainer, '20') !== false ? '20' : '40') : null,
-                'tipe' => $firstPivot->tipe_kontainer,
+                'tipe' => $isBooking ? 'FCL' : $firstPivot->tipe_kontainer,
                 'pt_pengirim' => $ptPengirimList ?: null,
                 'barang' => $barangList ?: 'LCL',
                 'total_volume' => $totalVolume,
@@ -2724,54 +2732,74 @@ class TandaTerimaLclController extends Controller
                     ->with('error', "Data stuffing untuk kontainer {$nomorKontainer} dengan seal {$nomorSeal} tidak ditemukan.");
             }
 
+            $isBooking = $pivotRecords->contains(function ($pivot) {
+                return $pivot->tandaTerima && $pivot->tandaTerima->is_booking;
+            });
+
             $successCount = 0;
 
-            foreach ($pivotRecords as $pivot) {
-                $tandaTerima = $pivot->tandaTerima;
-                if (! $tandaTerima) {
-                    continue;
-                }
+            if ($isBooking) {
+                $tandaTerimaPertama = $pivotRecords->first(function ($pivot) {
+                    return $pivot->tandaTerima && $pivot->tandaTerima->is_booking;
+                })->tandaTerima ?? $pivotRecords->first()->tandaTerima;
 
-                // Create new Manifest
                 $manifest = new \App\Models\Manifest;
                 $manifest->nomor_kontainer = $nomorKontainer;
                 $manifest->no_seal = $nomorSeal;
-                $manifest->tipe_kontainer = 'LCL';
-                $manifest->size_kontainer = $pivot->size_kontainer;
+                $manifest->tipe_kontainer = 'FCL';
+                $manifest->size_kontainer = $pivotRecords->first()->size_kontainer;
                 $manifest->nama_kapal = $namaKapal;
                 $manifest->no_voyage = $noVoyage;
-                $manifest->nomor_tanda_terima = $tandaTerima->nomor_tanda_terima;
-                $manifest->pengirim = $tandaTerima->nama_pengirim;
-                $manifest->penerima = $tandaTerima->nama_penerima;
-                $manifest->alamat_pengirim = $tandaTerima->alamat_pengirim;
-                $manifest->alamat_penerima = $tandaTerima->alamat_penerima;
-                $manifest->alamat_pengiriman = $tandaTerima->alamat_penerima;
-                $manifest->contact_person = $tandaTerima->contact_person;
 
-                $namaBarangItems = $tandaTerima->items->pluck('nama_barang')->filter()->implode(', ');
-                $manifest->nama_barang = $namaBarangItems ?: ($prospek->barang ?? 'LCL');
-                $manifest->volume = $tandaTerima->items->sum('meter_kubik');
-                $manifest->tonnage = $tandaTerima->items->sum('tonase');
-                $manifest->kuantitas = $tandaTerima->total_koli;
+                $manifest->nomor_tanda_terima = $pivotRecords->map(function ($p) {
+                    return $p->tandaTerima ? $p->tandaTerima->nomor_tanda_terima : null;
+                })->filter()->implode(', ');
 
-                $units = $tandaTerima->items->pluck('satuan')->unique()->filter();
-                if ($units->count() === 1) {
-                    $manifest->satuan = $units->first();
-                } elseif ($units->count() > 1) {
+                $manifest->pengirim = $tandaTerimaPertama->nama_pengirim;
+                $manifest->penerima = $tandaTerimaPertama->nama_penerima;
+                $manifest->alamat_pengirim = $tandaTerimaPertama->alamat_pengirim;
+                $manifest->alamat_penerima = $tandaTerimaPertama->alamat_penerima;
+                $manifest->alamat_pengiriman = $tandaTerimaPertama->alamat_penerima;
+                $manifest->contact_person = $tandaTerimaPertama->contact_person;
+
+                $totalVolume = 0;
+                $totalTonnage = 0;
+                $totalKoli = 0;
+                $namaBarangItems = collect();
+                $satuans = collect();
+
+                foreach ($pivotRecords as $pivot) {
+                    if ($tt = $pivot->tandaTerima) {
+                        $totalVolume += $tt->items->sum('meter_kubik');
+                        $totalTonnage += $tt->items->sum('tonase');
+                        $totalKoli += $tt->total_koli;
+                        $namaBarangItems->push($tt->items->pluck('nama_barang')->filter()->implode(', '));
+                        $satuans = $satuans->merge($tt->items->pluck('satuan')->filter());
+                    }
+                }
+
+                $manifest->nama_barang = $namaBarangItems->filter()->implode(', ') ?: ($prospek->barang ?? 'LCL');
+                $manifest->volume = $totalVolume;
+                $manifest->tonnage = $totalTonnage;
+                $manifest->kuantitas = $totalKoli;
+
+                $uniqueSatuan = $satuans->unique();
+                if ($uniqueSatuan->count() === 1) {
+                    $manifest->satuan = $uniqueSatuan->first();
+                } elseif ($uniqueSatuan->count() > 1) {
                     $manifest->satuan = 'PKGS';
                 }
 
                 $manifest->pelabuhan_muat = $prospek->pelabuhan_asal ?? null;
                 $manifest->pelabuhan_bongkar = $prospek->tujuan_pengiriman ?? null;
                 $manifest->tanggal_berangkat = $prospek->tanggal_muat ?? now();
-                $manifest->penerimaan = $tandaTerima->tanggal_tanda_terima;
-                $manifest->term = $tandaTerima->term ? ($tandaTerima->term instanceof \App\Models\Term ? $tandaTerima->term->kode : $tandaTerima->term) : null;
+                $manifest->penerimaan = $tandaTerimaPertama->tanggal_tanda_terima;
+                $manifest->term = $tandaTerimaPertama->term ? ($tandaTerimaPertama->term instanceof \App\Models\Term ? $tandaTerimaPertama->term->kode : $tandaTerimaPertama->term) : null;
 
                 if ($prospek) {
                     $manifest->prospek_id = $prospek->id;
                 }
 
-                // Generate nomor BL (following standard pattern in app)
                 $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
                 if ($lastManifest && $lastManifest->nomor_bl) {
                     preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
@@ -2785,6 +2813,67 @@ class TandaTerimaLclController extends Controller
                 $manifest->updated_by = Auth::id();
                 $manifest->save();
                 $successCount++;
+            } else {
+                foreach ($pivotRecords as $pivot) {
+                    $tandaTerima = $pivot->tandaTerima;
+                    if (! $tandaTerima) {
+                        continue;
+                    }
+
+                    // Create new Manifest
+                    $manifest = new \App\Models\Manifest;
+                    $manifest->nomor_kontainer = $nomorKontainer;
+                    $manifest->no_seal = $nomorSeal;
+                    $manifest->tipe_kontainer = 'LCL';
+                    $manifest->size_kontainer = $pivot->size_kontainer;
+                    $manifest->nama_kapal = $namaKapal;
+                    $manifest->no_voyage = $noVoyage;
+                    $manifest->nomor_tanda_terima = $tandaTerima->nomor_tanda_terima;
+                    $manifest->pengirim = $tandaTerima->nama_pengirim;
+                    $manifest->penerima = $tandaTerima->nama_penerima;
+                    $manifest->alamat_pengirim = $tandaTerima->alamat_pengirim;
+                    $manifest->alamat_penerima = $tandaTerima->alamat_penerima;
+                    $manifest->alamat_pengiriman = $tandaTerima->alamat_penerima;
+                    $manifest->contact_person = $tandaTerima->contact_person;
+
+                    $namaBarangItems = $tandaTerima->items->pluck('nama_barang')->filter()->implode(', ');
+                    $manifest->nama_barang = $namaBarangItems ?: ($prospek->barang ?? 'LCL');
+                    $manifest->volume = $tandaTerima->items->sum('meter_kubik');
+                    $manifest->tonnage = $tandaTerima->items->sum('tonase');
+                    $manifest->kuantitas = $tandaTerima->total_koli;
+
+                    $units = $tandaTerima->items->pluck('satuan')->unique()->filter();
+                    if ($units->count() === 1) {
+                        $manifest->satuan = $units->first();
+                    } elseif ($units->count() > 1) {
+                        $manifest->satuan = 'PKGS';
+                    }
+
+                    $manifest->pelabuhan_muat = $prospek->pelabuhan_asal ?? null;
+                    $manifest->pelabuhan_bongkar = $prospek->tujuan_pengiriman ?? null;
+                    $manifest->tanggal_berangkat = $prospek->tanggal_muat ?? now();
+                    $manifest->penerimaan = $tandaTerima->tanggal_tanda_terima;
+                    $manifest->term = $tandaTerima->term ? ($tandaTerima->term instanceof \App\Models\Term ? $tandaTerima->term->kode : $tandaTerima->term) : null;
+
+                    if ($prospek) {
+                        $manifest->prospek_id = $prospek->id;
+                    }
+
+                    // Generate nomor BL (following standard pattern in app)
+                    $lastManifest = \App\Models\Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
+                    if ($lastManifest && $lastManifest->nomor_bl) {
+                        preg_match('/\d+/', $lastManifest->nomor_bl, $matches);
+                        $lastNumber = isset($matches[0]) ? intval($matches[0]) : 0;
+                        $manifest->nomor_bl = 'MNF-'.str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                    } else {
+                        $manifest->nomor_bl = 'MNF-000001';
+                    }
+
+                    $manifest->created_by = Auth::id();
+                    $manifest->updated_by = Auth::id();
+                    $manifest->save();
+                    $successCount++;
+                }
             }
 
             // Run auto-update nomor urut for this voyage if ship/voyage info exists

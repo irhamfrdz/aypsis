@@ -226,6 +226,16 @@
                             @enderror
                         </div>
 
+                        <!-- Is Booking -->
+                        <div class="flex items-center h-full pt-6">
+                            <input id="is_booking" name="is_booking" type="checkbox" value="1"
+                                   class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                   {{ old('is_booking', $tandaTerima->is_booking) ? 'checked' : '' }}>
+                            <label for="is_booking" class="ml-2 block text-sm text-gray-900 font-medium">
+                                Tandai sebagai Booking
+                            </label>
+                        </div>
+
                         <!-- Term -->
                         <div>
                             <label for="termSearch" class="block text-sm font-medium text-gray-700 mb-1">
