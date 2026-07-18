@@ -266,6 +266,10 @@
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 tracking-wide uppercase">
                                             Sudah Pranota
                                         </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 tracking-wide uppercase">
+                                            Belum Pranota
+                                        </span>
                                     @endif
                                 </div>
                             </td>
