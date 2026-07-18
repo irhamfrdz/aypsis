@@ -1894,6 +1894,7 @@ class TandaTerimaLclController extends Controller
         try {
             $request->validate([
                 'nomor_kontainer' => 'required|string|max:255',
+                'nomor_seal' => 'required|string|max:255',
                 'alasan_unseal' => 'required|string|min:5',
             ], [
                 'nomor_kontainer.required' => 'Nomor kontainer wajib diisi',
@@ -1909,23 +1910,24 @@ class TandaTerimaLclController extends Controller
 
         DB::beginTransaction();
         try {
-            // Cek apakah kontainer ini sudah di-seal
+            // Cek apakah kontainer ini sudah di-seal dengan nomor seal spesifik
             $existingSeal = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
-                ->whereNotNull('nomor_seal')
+                ->where('nomor_seal', $request->nomor_seal)
                 ->first();
 
             if (! $existingSeal) {
                 DB::rollBack();
 
                 return redirect()->back()
-                    ->with('error', "Kontainer {$request->nomor_kontainer} belum di-seal atau sudah dilepas sealnya.");
+                    ->with('error', "Kontainer {$request->nomor_kontainer} dengan seal {$request->nomor_seal} belum di-seal atau sudah dilepas sealnya.");
             }
 
             $oldSealNumber = $existingSeal->nomor_seal;
             $oldSealDate = $existingSeal->tanggal_seal;
 
-            // Hapus seal dari pivot records
+            // Hapus seal dari pivot records HANYA untuk seal batch ini
             $updated = TandaTerimaLclKontainerPivot::where('nomor_kontainer', $request->nomor_kontainer)
+                ->where('nomor_seal', $request->nomor_seal)
                 ->update([
                     'nomor_seal' => null,
                     'tanggal_seal' => null,

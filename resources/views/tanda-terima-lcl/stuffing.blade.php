@@ -343,7 +343,7 @@
                                             Detail
                                         </a>
                                         @if($hasSealed)
-                                            <button type="button" onclick="showUnsealModal('{{ $container['nomor_kontainer'] }}', event)" 
+                                            <button type="button" onclick="showUnsealModal('{{ $container['nomor_kontainer'] }}', '{{ $firstPivot->nomor_seal }}', event)" 
                                                     style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #dc2626; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
                                                     onmouseover="this.style.backgroundColor='#b91c1c'" 
                                                     onmouseout="this.style.backgroundColor='#dc2626'"
@@ -761,6 +761,7 @@
             <form id="unsealForm" method="POST" action="{{ route('tanda-terima-lcl.unseal') }}">
                 @csrf
                 <input type="hidden" name="nomor_kontainer" id="unseal_nomor_kontainer">
+                <input type="hidden" name="nomor_seal" id="unseal_nomor_seal">
                 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -1190,10 +1191,11 @@ function closeSealModal() {
     document.getElementById('sealForm').reset();
 }
 
-function showUnsealModal(nomorKontainer, event) {
+function showUnsealModal(nomorKontainer, nomorSeal, event) {
     event.stopPropagation(); // Prevent toggle container
     document.getElementById('unseal_nomor_kontainer').value = nomorKontainer;
-    document.getElementById('unseal_container_display').textContent = nomorKontainer;
+    document.getElementById('unseal_nomor_seal').value = nomorSeal;
+    document.getElementById('unseal_container_display').textContent = nomorKontainer + ' (Seal: ' + nomorSeal + ')';
     document.getElementById('unsealModal').classList.remove('hidden');
 }
 
