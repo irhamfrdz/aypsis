@@ -229,13 +229,14 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="export_divisi" class="block text-xs font-semibold text-gray-700 mb-1">Divisi</label>
-                                    <select name="divisi" id="export_divisi"
+                                    <label for="export_tempat" class="block text-xs font-semibold text-gray-700 mb-1">Filter Tempat</label>
+                                    <select name="tempat" id="export_tempat"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
-                                        <option value="">Semua Divisi</option>
-                                        @foreach($divisis as $divisi)
-                                            <option value="{{ $divisi }}" {{ request('divisi') == $divisi ? 'selected' : '' }}>{{ $divisi }}</option>
-                                        @endforeach
+                                        <option value="">Semua Tempat</option>
+                                        <option value="KANTOR" {{ request('tempat') == 'KANTOR' ? 'selected' : '' }}>KANTOR</option>
+                                        <option value="PELABUHAN" {{ request('tempat') == 'PELABUHAN' ? 'selected' : '' }}>PELABUHAN</option>
+                                        <option value="PELABUHAN 1" {{ request('tempat') == 'PELABUHAN 1' ? 'selected' : '' }}>PELABUHAN 1</option>
+                                        <option value="GARASI" {{ request('tempat') == 'GARASI' ? 'selected' : '' }}>GARASI</option>
                                     </select>
                                 </div>
                                 <div>
