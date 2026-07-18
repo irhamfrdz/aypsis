@@ -1461,12 +1461,12 @@ class TandaTerimaLclController extends Controller
         }
 
         // Apply seal status filter before grouping
-        if ($request->filled('seal_status')) {
-            if ($request->seal_status === 'sealed') {
-                $groupedQuery->whereNotNull('nomor_seal');
-            } elseif ($request->seal_status === 'unsealed') {
-                $groupedQuery->whereNull('nomor_seal');
-            }
+        $sealStatus = $request->query('seal_status', 'unsealed');
+        
+        if ($sealStatus === 'sealed') {
+            $groupedQuery->whereNotNull('nomor_seal');
+        } elseif ($sealStatus === 'unsealed') {
+            $groupedQuery->whereNull('nomor_seal');
         }
 
         $groupedPivotData = $groupedQuery->get()->groupBy(function ($item) {
