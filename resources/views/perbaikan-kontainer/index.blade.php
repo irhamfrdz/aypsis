@@ -198,7 +198,7 @@
                                        data-biaya-cat="{{ $perbaikan->biaya_cat }}"
                                        data-vendor-cat="{{ $perbaikan->vendor_cat }}"
                                        data-jenis-cat="{{ $perbaikan->jenis_cat }}"
-                                       @if($perbaikan->status_pranota === 'Sudah') disabled @endif
+                                       data-status-pranota="{{ $perbaikan->status_pranota }}"
                                        onchange="updateBulkActions()">
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
@@ -606,8 +606,21 @@
             return;
         }
 
+        const checkedBoxes = getSelectedCheckboxes();
+        let hasSudahPranota = false;
+        checkedBoxes.forEach(cb => {
+            if (cb.dataset.statusPranota === 'Sudah') {
+                hasSudahPranota = true;
+            }
+        });
+
+        if (hasSudahPranota) {
+            alert('Transaksi sudah masuk pranota');
+            return;
+        }
+
         const items = [];
-        getSelectedCheckboxes().forEach(cb => {
+        checkedBoxes.forEach(cb => {
             items.push({
                 id: cb.value,
                 no_perbaikan: cb.dataset.noPerbaikan,
