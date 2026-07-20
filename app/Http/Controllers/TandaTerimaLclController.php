@@ -1461,7 +1461,7 @@ class TandaTerimaLclController extends Controller
         }
 
         // Apply seal status filter before grouping
-        $sealStatus = $request->query('seal_status', 'unsealed');
+        $sealStatus = $request->query('seal_status', '');
         
         if ($sealStatus === 'sealed') {
             $groupedQuery->whereNotNull('nomor_seal');

@@ -143,9 +143,9 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Status Seal</label>
                             <select name="seal_status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="" {{ request('seal_status', 'unsealed') === '' ? 'selected' : '' }}>Semua Status</option>
-                                <option value="sealed" {{ request('seal_status', 'unsealed') == 'sealed' ? 'selected' : '' }}>Sudah Di-Seal</option>
-                                <option value="unsealed" {{ request('seal_status', 'unsealed') == 'unsealed' ? 'selected' : '' }}>Belum Di-Seal</option>
+                                <option value="" {{ request('seal_status', '') === '' ? 'selected' : '' }}>Semua Status</option>
+                                <option value="sealed" {{ request('seal_status', '') == 'sealed' ? 'selected' : '' }}>Sudah Di-Seal</option>
+                                <option value="unsealed" {{ request('seal_status', '') == 'unsealed' ? 'selected' : '' }}>Belum Di-Seal</option>
                             </select>
                         </div>
                         <div class="flex items-end gap-2">
