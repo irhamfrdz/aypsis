@@ -104,6 +104,7 @@ class DashboardController extends Controller
         // Ambil semua supir Jakarta untuk melihat siapa yang tidak kerja
         $supirJakarta = DB::table('karyawans')
             ->where('karyawans.divisi', 'LIKE', '%SUPIR%')
+            ->whereIn('karyawans.pekerjaan', ['SUPIR TRUCK', 'SUPIR TRAILER'])
             ->where('karyawans.cabang', 'LIKE', '%JAKARTA%')
             ->where('karyawans.status', 'active')
             ->leftJoin('surat_jalans', function($join) {
