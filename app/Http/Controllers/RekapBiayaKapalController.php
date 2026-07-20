@@ -542,8 +542,8 @@ class RekapBiayaKapalController extends Controller
             $biayaKapals->push($virtualObMuat);
         }
 
-        // OB Bongkar (Manifest)
-        $obBongkars = \App\Models\Manifest::where('nama_kapal', $kapal)
+        // OB Bongkar (Bl)
+        $obBongkars = \App\Models\Bl::where('nama_kapal', $kapal)
             ->where('no_voyage', $voyage)
             ->where('sudah_ob', true)
             ->get();
