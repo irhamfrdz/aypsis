@@ -121,7 +121,7 @@
                     'icon' => 'fa-ship',
                     'bg' => 'bg-blue-100',
                     'text' => 'text-blue-600',
-                    'items' => $biayaKapals->filter(fn($i) => !isset($i->is_uang_jalan) && !isset($i->is_amprahan)),
+                    'items' => $biayaKapals->filter(fn($i) => !isset($i->is_uang_jalan) && !isset($i->is_amprahan) && !isset($i->is_tagihan_vendor)),
                 ],
                 'Uang Jalan' => [
                     'icon' => 'fa-truck',
@@ -134,6 +134,12 @@
                     'bg' => 'bg-amber-100',
                     'text' => 'text-amber-600',
                     'items' => $biayaKapals->filter(fn($i) => isset($i->is_amprahan) && $i->is_amprahan),
+                ],
+                'Tagihan Vendor Supir' => [
+                    'icon' => 'fa-file-invoice-dollar',
+                    'bg' => 'bg-purple-100',
+                    'text' => 'text-purple-600',
+                    'items' => $biayaKapals->filter(fn($i) => isset($i->is_tagihan_vendor) && $i->is_tagihan_vendor),
                 ],
             ];
         @endphp

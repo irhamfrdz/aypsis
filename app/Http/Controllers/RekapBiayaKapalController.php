@@ -474,6 +474,32 @@ class RekapBiayaKapalController extends Controller
             $biayaKapals->push($uj);
         }
 
+        // Fetch Tagihan Vendor Supir (Pranota Invoice Vendor Supir details)
+        $tagihanVendors = \App\Models\TagihanSupirVendor::with(['vendor', 'suratJalan.prospeks'])
+            ->whereHas('suratJalan.prospeks', function($q) use ($kapal, $voyage) {
+                $q->where('nama_kapal', $kapal)->where('no_voyage', $voyage);
+            })
+            ->where(function($q) {
+                $q->where('status_pembayaran', '!=', 'dibatalkan')->orWhereNull('status_pembayaran');
+            })
+            ->get();
+
+        foreach ($tagihanVendors as $tagihan) {
+            $totalBiaya = floatval($tagihan->nominal ?? 0) + floatval($tagihan->uang_muat ?? 0) + floatval($tagihan->adjustment ?? 0);
+            $tagihan->apportioned = [
+                'nominal' => $totalBiaya,
+                'ppn' => 0,
+                'pph' => 0,
+                'total_biaya' => $totalBiaya,
+            ];
+            $tagihan->is_tagihan_vendor = true;
+            $tagihan->nomor_invoice = $tagihan->suratJalan->no_sj ?? '-';
+            $tagihan->tanggal = $tagihan->suratJalan->tanggal_surat_jalan ?? $tagihan->created_at;
+            $tagihan->jenis_biaya = 'Tagihan Vendor Supir (' . ($tagihan->vendor->nama_vendor ?? 'Vendor') . ')';
+            
+            $biayaKapals->push($tagihan);
+        }
+
         // Calculate summaries based on apportioned costs
         $summary = [
             'total_nominal' => $biayaKapals->sum(fn ($item) => $item->apportioned['nominal']),
