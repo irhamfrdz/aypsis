@@ -493,7 +493,7 @@ class RekapBiayaKapalController extends Controller
                 'total_biaya' => $totalBiaya,
             ];
             $tagihan->is_tagihan_vendor = true;
-            $tagihan->nomor_invoice = $tagihan->suratJalan->no_sj ?? '-';
+            $tagihan->nomor_invoice = $tagihan->suratJalan->no_surat_jalan ?? '-';
             $tagihan->tanggal = $tagihan->suratJalan->tanggal_surat_jalan ?? $tagihan->created_at;
             $tagihan->jenis_biaya = 'Tagihan Vendor Supir (' . ($tagihan->vendor->nama_vendor ?? 'Vendor') . ')';
             

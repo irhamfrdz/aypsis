@@ -201,7 +201,7 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="text-xs font-bold text-gray-800">{{ $item->nomor_invoice }}</div>
-                                            @if(isset($item->is_uang_jalan) && $item->is_uang_jalan)
+                                            @if((isset($item->is_uang_jalan) && $item->is_uang_jalan) || (isset($item->is_tagihan_vendor) && $item->is_tagihan_vendor))
                                                 @php
                                                     $noKontainer = $item->suratJalan->no_kontainer ?? $item->suratJalanBongkaran->no_kontainer ?? $item->suratJalanBongkaranBatam->no_kontainer ?? null;
                                                 @endphp
