@@ -514,14 +514,25 @@ class RekapBiayaKapalController extends Controller
         };
 
         // OB Muat (NaikKapal)
-        $obMuats = \App\Models\NaikKapal::where('nama_kapal', $kapal)
+        $obMuats = \App\Models\NaikKapal::with('supir')->where('nama_kapal', $kapal)
             ->where('no_voyage', $voyage)
             ->where('sudah_ob', true)
             ->get();
             
         $totalObMuat = 0;
+        $countObMuat = 0;
         foreach ($obMuats as $muat) {
-            $totalObMuat += $lookupPriceOb($muat->size_kontainer ?? $muat->ukuran_kontainer, $muat->jenis_barang);
+            $supirName = trim($muat->supir->nama ?? '');
+            $cleanSupir = preg_replace('/[^a-z0-9]/i', '', $supirName);
+            
+            $isTl = $muat->is_tl || 
+                    (strtolower($supirName) === 'tl') || 
+                    (empty($cleanSupir) || strtolower($cleanSupir) === 'perusahaan');
+                    
+            if (!$isTl) {
+                $totalObMuat += $lookupPriceOb($muat->size_kontainer ?? $muat->ukuran_kontainer, $muat->jenis_barang);
+                $countObMuat++;
+            }
         }
 
         if ($totalObMuat > 0) {
@@ -535,7 +546,7 @@ class RekapBiayaKapalController extends Controller
             $virtualObMuat->is_ob_muat = true;
             $virtualObMuat->nomor_invoice = '-';
             $virtualObMuat->tanggal = $obMuats->min('tanggal_ob') ?? null;
-            $virtualObMuat->jenis_biaya = 'Biaya OB Muat (' . $obMuats->count() . ' Kontainer)';
+            $virtualObMuat->jenis_biaya = 'Biaya OB Muat (' . $countObMuat . ' Kontainer)';
             $virtualObMuat->klasifikasiBiaya = (object)['nama' => 'Biaya OB Muat'];
             $virtualObMuat->id = 0; // fallback ID for views
             
@@ -543,14 +554,25 @@ class RekapBiayaKapalController extends Controller
         }
 
         // OB Bongkar (Bl)
-        $obBongkars = \App\Models\Bl::where('nama_kapal', $kapal)
+        $obBongkars = \App\Models\Bl::with('supir')->where('nama_kapal', $kapal)
             ->where('no_voyage', $voyage)
             ->where('sudah_ob', true)
             ->get();
             
         $totalObBongkar = 0;
+        $countObBongkar = 0;
         foreach ($obBongkars as $bongkar) {
-            $totalObBongkar += $lookupPriceOb($bongkar->size_kontainer ?? $bongkar->tipe_kontainer, $bongkar->nama_barang);
+            $supirName = trim($bongkar->supir->nama ?? $bongkar->supir_ob ?? '');
+            $cleanSupir = preg_replace('/[^a-z0-9]/i', '', $supirName);
+            
+            $isTl = $bongkar->sudah_tl || 
+                    (strtolower($supirName) === 'tl') || 
+                    (empty($cleanSupir) || strtolower($cleanSupir) === 'perusahaan');
+                    
+            if (!$isTl) {
+                $totalObBongkar += $lookupPriceOb($bongkar->size_kontainer ?? $bongkar->tipe_kontainer, $bongkar->nama_barang);
+                $countObBongkar++;
+            }
         }
 
         if ($totalObBongkar > 0) {
@@ -564,7 +586,7 @@ class RekapBiayaKapalController extends Controller
             $virtualObBongkar->is_ob_bongkar = true;
             $virtualObBongkar->nomor_invoice = '-';
             $virtualObBongkar->tanggal = $obBongkars->min('tanggal_ob') ?? null;
-            $virtualObBongkar->jenis_biaya = 'Biaya OB Bongkar (' . $obBongkars->count() . ' Kontainer)';
+            $virtualObBongkar->jenis_biaya = 'Biaya OB Bongkar (' . $countObBongkar . ' Kontainer)';
             $virtualObBongkar->klasifikasiBiaya = (object)['nama' => 'Biaya OB Bongkar'];
             $virtualObBongkar->id = 0; // fallback ID for views
             
