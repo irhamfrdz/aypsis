@@ -255,6 +255,84 @@
         </div>
     </div>
 
+    <!-- Rekap Kerja Supir (Jakarta) -->
+    @if(isset($rekapKerjaSupirJakarta) && $rekapKerjaSupirJakarta->count() > 0)
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-8">
+        <div class="bg-blue-50 px-4 py-3 border-b border-blue-200 flex justify-between items-center">
+            <div>
+                <h3 class="text-base font-semibold text-blue-800 flex items-center">
+                    <i class="fas fa-truck mr-2 text-blue-600"></i>
+                    Rekap Kerja Supir (Cabang Jakarta)
+                </h3>
+                <p class="text-xs text-blue-600">Memonitor supir yang bekerja berdasarkan waktu terakhir mendapatkan Surat Jalan</p>
+            </div>
+        </div>
+        
+        <div class="p-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                @foreach($rekapKerjaSupirJakarta as $data)
+                @php
+                    $hariIni = now()->startOfDay();
+                    $lamaTidakKerja = 0;
+                    $isIdle = false;
+                    $isVeryIdle = false;
+                    
+                    if ($data->terakhir_surat_jalan) {
+                        $tanggalTerakhir = \Carbon\Carbon::parse($data->terakhir_surat_jalan)->startOfDay();
+                        $lamaTidakKerja = $tanggalTerakhir->diffInDays($hariIni);
+                        $isIdle = $lamaTidakKerja >= 3 && $lamaTidakKerja < 7;
+                        $isVeryIdle = $lamaTidakKerja >= 7;
+                    } else {
+                        $isVeryIdle = true; // Belum pernah dapat SJ
+                    }
+                    
+                    if ($isVeryIdle) {
+                        $cardClass = 'bg-red-50 border-red-200 hover:border-red-400 hover:shadow-sm';
+                        $supirClass = 'text-red-700';
+                        $statusClass = 'text-red-900';
+                        $labelClass = 'text-red-600';
+                    } elseif ($isIdle) {
+                        $cardClass = 'bg-orange-50 border-orange-200 hover:border-orange-400 hover:shadow-sm';
+                        $supirClass = 'text-orange-700';
+                        $statusClass = 'text-orange-900';
+                        $labelClass = 'text-orange-600';
+                    } else {
+                        $cardClass = 'bg-gray-50 border-gray-200 hover:border-blue-300 hover:shadow-sm';
+                        $supirClass = 'text-gray-600 group-hover:text-blue-700';
+                        $statusClass = 'text-gray-800 group-hover:text-blue-900';
+                        $labelClass = 'text-gray-500 group-hover:text-blue-600';
+                    }
+                @endphp
+                <div class="{{ $cardClass }} rounded-lg p-3 border flex flex-col items-center justify-center text-center transition-all duration-200 group relative">
+                    <div class="flex items-center justify-center gap-1 mb-1">
+                        <span class="text-xs {{ $supirClass }} font-semibold uppercase tracking-wider truncate w-full" title="{{ $data->nama_lengkap }}">
+                            {{ $data->nama_panggilan ?: 'Tanpa Nama' }}
+                        </span>
+                        @if($isVeryIdle)
+                            <i class="fas fa-exclamation-triangle text-red-500 text-[10px]" title="Lebih dari 7 hari atau belum pernah"></i>
+                        @endif
+                    </div>
+                    <span class="text-xl font-bold {{ $statusClass }}">
+                        @if($data->terakhir_surat_jalan)
+                            {{ $lamaTidakKerja }} <span class="text-[11px] font-normal">Hari</span>
+                        @else
+                            <span class="text-sm">Belum Ada</span>
+                        @endif
+                    </span>
+                    <span class="text-[10px] {{ $labelClass }} mt-1 block">
+                        @if($data->terakhir_surat_jalan)
+                            Terakhir SJ: {{ \Carbon\Carbon::parse($data->terakhir_surat_jalan)->format('d/m/Y') }}
+                        @else
+                            Tidak Ada SJ
+                        @endif
+                    </span>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Rekap Supir Tanpa Tanda Terima -->
     @if($rekapSupirBelumTandaTerima->count() > 0)
     <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-8">

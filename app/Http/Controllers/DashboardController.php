@@ -102,8 +102,27 @@ class DashboardController extends Controller
             ->orderBy('total', 'desc')
             ->get();
 
+        // Rekap Kerja Supir Jakarta (Berapa lama tidak dapat surat jalan)
+        $rekapKerjaSupirJakarta = DB::table('karyawans')
+            ->where('karyawans.divisi', 'LIKE', '%SUPIR%')
+            ->where('karyawans.cabang', 'LIKE', '%JAKARTA%')
+            ->where('karyawans.status', 'active')
+            ->leftJoin('surat_jalans', function($join) {
+                $join->on('karyawans.nama_panggilan', '=', 'surat_jalans.supir')
+                     ->whereNotIn('surat_jalans.status', ['cancelled', 'draft']);
+            })
+            ->select(
+                'karyawans.nama_panggilan',
+                'karyawans.nama_lengkap',
+                DB::raw('MAX(surat_jalans.tanggal_surat_jalan) as terakhir_surat_jalan'),
+                DB::raw('COUNT(surat_jalans.id) as total_surat_jalan')
+            )
+            ->groupBy('karyawans.id', 'karyawans.nama_panggilan', 'karyawans.nama_lengkap')
+            ->orderByRaw('MAX(surat_jalans.tanggal_surat_jalan) ASC') // NULL (belum pernah) akan muncul paling atas
+            ->get();
+
         // Mengirim semua data ke view 'dashboard'
-        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon', 'suratJalanBelumTandaTerima', 'rekapSupirBelumTandaTerima'));
+        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon', 'suratJalanBelumTandaTerima', 'rekapSupirBelumTandaTerima', 'rekapKerjaSupirJakarta'));
     }
 
     /**
