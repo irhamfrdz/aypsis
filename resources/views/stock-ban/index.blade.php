@@ -649,13 +649,22 @@
                                                 <i class="fas fa-undo"></i>
                                             </button>
                                         @elseif($ban->status == 'Sedang Dimasak')
-                                            <button type="button" 
-                                                class="btn-return-masak-modal text-teal-600 hover:text-teal-900"
-                                                data-id="{{ $ban->id }}"
-                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
-                                                title="Selesai Masak (Kembali ke Gudang)">
-                                                <i class="fas fa-check-circle"></i>
-                                            </button>
+                                            <div class="flex items-center gap-3 justify-end">
+                                                <button type="button" 
+                                                    class="btn-return-masak-modal text-teal-600 hover:text-teal-900"
+                                                    data-id="{{ $ban->id }}"
+                                                    data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                    title="Selesai Masak (Kembali ke Gudang)">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                                <form action="{{ route('stock-ban.batal-masak', $ban->id) }}" method="POST" class="inline-block m-0 p-0" onsubmit="return confirm('Yakin ingin membatalkan proses masak (Undo)?')">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <button type="submit" class="text-red-500 hover:text-red-700 mt-1" title="Batal Masak (Undo)">
+                                                        <i class="fas fa-times-circle"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         @elseif($ban->status == 'Dikembalikan' || $ban->status == 'Rusak')
                                             <button type="button" 
                                                 class="btn-restore-stock-modal text-green-600 hover:text-green-900"
@@ -789,6 +798,13 @@
                                     <button type="button" class="btn-return-modal w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-mobil="{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}" title="Kembalikan ke Gudang"><i class="fas fa-undo text-xs"></i></button>
                                 @elseif($ban->status == 'Sedang Dimasak')
                                     <button type="button" class="btn-return-masak-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Selesai Masak"><i class="fas fa-check-circle text-xs"></i></button>
+                                    <form action="{{ route('stock-ban.batal-masak', $ban->id) }}" method="POST" class="inline-block m-0 p-0" onsubmit="return confirm('Yakin ingin membatalkan proses masak (Undo)?')">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600" title="Batal Masak (Undo)">
+                                            <i class="fas fa-times-circle text-xs"></i>
+                                        </button>
+                                    </form>
                                 @elseif($ban->status == 'Dikembalikan' || $ban->status == 'Rusak')
                                     <button type="button" class="btn-restore-stock-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jadikan Stok Kembali"><i class="fas fa-undo text-xs"></i></button>
                                 @endif
@@ -1198,13 +1214,22 @@
                                                 <i class="fas fa-undo"></i>
                                             </button>
                                         @elseif($ban->status == 'Sedang Dimasak')
-                                            <button type="button" 
-                                                class="btn-return-masak-modal text-teal-600 hover:text-teal-900"
-                                                data-id="{{ $ban->id }}"
-                                                data-seri="{{ $ban->nomor_seri ?? '-' }}"
-                                                title="Selesai Masak (Kembali ke Gudang)">
-                                                <i class="fas fa-check-circle"></i>
-                                            </button>
+                                            <div class="flex items-center gap-3 justify-end">
+                                                <button type="button" 
+                                                    class="btn-return-masak-modal text-teal-600 hover:text-teal-900"
+                                                    data-id="{{ $ban->id }}"
+                                                    data-seri="{{ $ban->nomor_seri ?? '-' }}"
+                                                    title="Selesai Masak (Kembali ke Gudang)">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                                <form action="{{ route('stock-ban.batal-masak', $ban->id) }}" method="POST" class="inline-block m-0 p-0" onsubmit="return confirm('Yakin ingin membatalkan proses masak (Undo)?')">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <button type="submit" class="text-red-500 hover:text-red-700 mt-1" title="Batal Masak (Undo)">
+                                                        <i class="fas fa-times-circle"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         @elseif($ban->status == 'Dikembalikan' || $ban->status == 'Rusak')
                                             <button type="button" 
                                                 class="btn-restore-stock-modal text-green-600 hover:text-green-900"
@@ -1334,6 +1359,13 @@
                                     <button type="button" class="btn-return-modal w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" data-mobil="{{ $ban->mobil ? $ban->mobil->nomor_polisi : '-' }}" data-type="batam" title="Kembalikan ke Gudang"><i class="fas fa-undo text-xs"></i></button>
                                 @elseif($ban->status == 'Sedang Dimasak')
                                     <button type="button" class="btn-return-masak-modal w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-teal-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Selesai Masak"><i class="fas fa-check-circle text-xs"></i></button>
+                                    <form action="{{ route('stock-ban.batal-masak', $ban->id) }}" method="POST" class="inline-block m-0 p-0" onsubmit="return confirm('Yakin ingin membatalkan proses masak (Undo)?')">
+                                        @csrf
+                                        @method('PUT')
+                                        <button type="submit" class="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600" title="Batal Masak (Undo)">
+                                            <i class="fas fa-times-circle text-xs"></i>
+                                        </button>
+                                    </form>
                                 @elseif($ban->status == 'Dikembalikan' || $ban->status == 'Rusak')
                                     <button type="button" class="btn-restore-stock-modal w-8 h-8 flex items-center justify-center rounded-lg bg-green-50 text-green-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jadikan Stok Kembali"><i class="fas fa-undo text-xs"></i></button>
                                 @endif

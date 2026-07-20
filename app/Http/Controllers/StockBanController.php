@@ -801,6 +801,67 @@ class StockBanController extends Controller
     }
 
     /**
+     * Cancel masak ban process (undo).
+     */
+    public function batalMasak(Request $request, $id)
+    {
+        $stockBan = StockBan::findOrFail($id);
+
+        if ($stockBan->status !== 'Sedang Dimasak') {
+            return redirect()->back()->with('error', 'Gagal: Ban ini tidak sedang dimasak.');
+        }
+
+        DB::transaction(function () use ($stockBan) {
+            // Revert basic info
+            $stockBan->status = 'Stok';
+            $stockBan->jumlah_masak = max(0, $stockBan->jumlah_masak - 1);
+            if ($stockBan->jumlah_masak == 0) {
+                $stockBan->status_masak = 'belum';
+            }
+            
+            // Clean up keterangan if it contains [Masak Kanisir]
+            if ($stockBan->keterangan) {
+                $lines = explode("\n", $stockBan->keterangan);
+                $newLines = [];
+                foreach ($lines as $line) {
+                    if (strpos($line, '[Masak Kanisir]') === false) {
+                        $newLines[] = $line;
+                    }
+                }
+                $stockBan->keterangan = implode("\n", $newLines);
+            }
+
+            // Find if it has an associated invoice item
+            if ($stockBan->nomor_bukti) {
+                $invoice = \App\Models\InvoiceKanisirBan::where('nomor_invoice', $stockBan->nomor_bukti)->first();
+                if ($invoice) {
+                    $item = \App\Models\InvoiceKanisirBanItem::where('invoice_kanisir_ban_id', $invoice->id)
+                        ->where('stock_ban_id', $stockBan->id)
+                        ->first();
+                    
+                    if ($item) {
+                        $item->delete();
+                        // Recalculate invoice
+                        $invoice->jumlah_ban = $invoice->items()->count();
+                        if ($invoice->jumlah_ban == 0) {
+                            $invoice->delete();
+                        } else {
+                            $invoice->total_biaya = $invoice->items()->sum('harga');
+                            $invoice->save();
+                        }
+                    }
+                }
+                $stockBan->nomor_bukti = null;
+                $stockBan->nomor_faktur = null; 
+            }
+
+            $stockBan->save();
+        });
+
+        return redirect()->back()->with('success', 'Proses masak ban berhasil dibatalkan dan ban kembali menjadi Stok.');
+    }
+
+    /**
      * Return ban to shop/vendor.
      */
     public function returnToShop(Request $request, $id)
