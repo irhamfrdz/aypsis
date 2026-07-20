@@ -722,7 +722,37 @@ class SuratJalanBongkaranBatamController extends Controller
                     ->latest()
                     ->first();
                 if ($kontainer) {
+                    $oldGudangId = $kontainer->gudangs_id;
                     $kontainer->update(['gudangs_id' => $request->gudang_tujuan]);
+
+                    if ($oldGudangId != $request->gudang_tujuan) {
+                        $now = now();
+                        $userId = Auth::id();
+                        $gudang = \App\Models\Gudang::find($request->gudang_tujuan);
+                        $gudangName = $gudang ? $gudang->nama_gudang : '-';
+                        
+                        if ($oldGudangId) {
+                            \App\Models\HistoryKontainer::create([
+                                'nomor_kontainer' => $validatedData['no_kontainer'],
+                                'tipe_kontainer' => 'bongkaran',
+                                'jenis_kegiatan' => 'Keluar',
+                                'tanggal_kegiatan' => $now,
+                                'gudang_id' => $oldGudangId,
+                                'keterangan' => 'Pindah ke gudang '.$gudangName.' (SJ Bongkaran Batam: ' . $validatedData['nomor_surat_jalan'] . ')',
+                                'created_by' => $userId,
+                            ]);
+                        }
+                        
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $validatedData['no_kontainer'],
+                            'tipe_kontainer' => 'bongkaran',
+                            'jenis_kegiatan' => 'Masuk',
+                            'tanggal_kegiatan' => $now,
+                            'gudang_id' => $request->gudang_tujuan,
+                            'keterangan' => 'Masuk dari SJ Bongkaran Batam: ' . $validatedData['nomor_surat_jalan'],
+                            'created_by' => $userId,
+                        ]);
+                    }
                 }
             }
 
@@ -1119,7 +1149,37 @@ class SuratJalanBongkaranBatamController extends Controller
                     ->latest()
                     ->first();
                 if ($kontainer) {
+                    $oldGudangId = $kontainer->gudangs_id;
                     $kontainer->update(['gudangs_id' => $request->gudang_tujuan]);
+
+                    if ($oldGudangId != $request->gudang_tujuan) {
+                        $now = now();
+                        $userId = Auth::id();
+                        $gudang = \App\Models\Gudang::find($request->gudang_tujuan);
+                        $gudangName = $gudang ? $gudang->nama_gudang : '-';
+                        
+                        if ($oldGudangId) {
+                            \App\Models\HistoryKontainer::create([
+                                'nomor_kontainer' => $validatedData['no_kontainer'],
+                                'tipe_kontainer' => 'bongkaran',
+                                'jenis_kegiatan' => 'Keluar',
+                                'tanggal_kegiatan' => $now,
+                                'gudang_id' => $oldGudangId,
+                                'keterangan' => 'Pindah ke gudang '.$gudangName.' (Edit SJ Bongkaran Batam: ' . $validatedData['nomor_surat_jalan'] . ')',
+                                'created_by' => $userId,
+                            ]);
+                        }
+                        
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $validatedData['no_kontainer'],
+                            'tipe_kontainer' => 'bongkaran',
+                            'jenis_kegiatan' => 'Masuk',
+                            'tanggal_kegiatan' => $now,
+                            'gudang_id' => $request->gudang_tujuan,
+                            'keterangan' => 'Masuk dari Edit SJ Bongkaran Batam: ' . $validatedData['nomor_surat_jalan'],
+                            'created_by' => $userId,
+                        ]);
+                    }
                 }
             }
 
