@@ -107,6 +107,7 @@ class DashboardController extends Controller
             ->whereIn('karyawans.pekerjaan', ['SUPIR TRUCK', 'SUPIR TRAILER'])
             ->where('karyawans.cabang', 'LIKE', '%JAKARTA%')
             ->where('karyawans.status', 'active')
+            ->whereNull('karyawans.tanggal_berhenti')
             ->leftJoin('surat_jalans', function($join) {
                 $join->on('karyawans.nama_panggilan', '=', 'surat_jalans.supir')
                      ->whereNotIn('surat_jalans.status', ['cancelled', 'draft']);
