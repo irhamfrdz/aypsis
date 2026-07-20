@@ -200,6 +200,19 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
         return view('pembayaran-pranota-invoice-vendor-supir.show', compact('pembayaran'));
     }
 
+    public function updateAccurate(Request $request, $pembayaran)
+    {
+        $request->validate([
+            'nomor_accurate' => 'nullable|string|max:255',
+        ]);
+
+        $pembayaran = PembayaranPranotaVendorSupir::findOrFail($pembayaran);
+        $pembayaran->nomor_accurate = $request->nomor_accurate;
+        $pembayaran->save();
+
+        return redirect()->back()->with('success', 'Nomor Accurate berhasil diperbarui');
+    }
+
     public function syncToCoa(PembayaranPranotaVendorSupir $pembayaran)
     {
         DB::beginTransaction();

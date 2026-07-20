@@ -3835,6 +3835,9 @@ Route::middleware([
         Route::post('pembayaran-pranota-invoice-vendor-supir/{pembayaran}/sync-to-coa', [\App\Http\Controllers\PembayaranPranotaInvoiceVendorSupirController::class, 'syncToCoa'])
             ->name('pembayaran-pranota-invoice-vendor-supir.sync-to-coa')
             ->middleware('can:pembayaran-pranota-invoice-vendor-supir-create');
+        Route::put('pembayaran-pranota-invoice-vendor-supir/{pembayaran}/update-accurate', [\App\Http\Controllers\PembayaranPranotaInvoiceVendorSupirController::class, 'updateAccurate'])
+            ->name('pembayaran-pranota-invoice-vendor-supir.update-accurate')
+            ->middleware('can:pembayaran-pranota-invoice-vendor-supir-create');
 
         // Debug route untuk surat jalan
         Route::get('/debug-surat-jalan', function () {

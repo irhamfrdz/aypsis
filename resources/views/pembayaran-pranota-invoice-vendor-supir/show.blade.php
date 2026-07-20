@@ -27,12 +27,24 @@
                         <div class="text-xs text-gray-500 uppercase font-semibold">No. Pembayaran</div>
                         <div class="mt-1 text-sm font-medium text-gray-900">{{ $pembayaran->nomor_pembayaran }}</div>
                     </div>
-                    @if($pembayaran->nomor_accurate)
                     <div>
-                        <div class="text-xs text-gray-500 uppercase font-semibold">No. Accurate</div>
-                        <div class="mt-1 text-sm font-medium text-gray-900">{{ $pembayaran->nomor_accurate }}</div>
+                        <div class="text-xs text-gray-500 uppercase font-semibold flex items-center justify-between">
+                            <span>No. Accurate</span>
+                            <button type="button" onclick="document.getElementById('display-accurate').classList.add('hidden'); document.getElementById('edit-accurate-form').classList.remove('hidden');" class="text-blue-500 hover:text-blue-700 p-1" title="Edit No Accurate">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                        <div id="display-accurate" class="mt-1 text-sm font-medium text-gray-900">
+                            {{ $pembayaran->nomor_accurate ?? '-' }}
+                        </div>
+                        <form id="edit-accurate-form" action="{{ route('pembayaran-pranota-invoice-vendor-supir.update-accurate', $pembayaran->id) }}" method="POST" class="hidden mt-1 flex items-center gap-2">
+                            @csrf
+                            @method('PUT')
+                            <input type="text" name="nomor_accurate" value="{{ $pembayaran->nomor_accurate }}" placeholder="No. Accurate" class="px-2 py-1 border border-gray-300 rounded text-sm w-full focus:ring-blue-500 focus:border-blue-500">
+                            <button type="submit" class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm" title="Simpan"><i class="fas fa-save"></i></button>
+                            <button type="button" onclick="document.getElementById('edit-accurate-form').classList.add('hidden'); document.getElementById('display-accurate').classList.remove('hidden');" class="px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm" title="Batal"><i class="fas fa-times"></i></button>
+                        </form>
                     </div>
-                    @endif
                     <div>
                         <div class="text-xs text-gray-500 uppercase font-semibold">Tanggal Bayar</div>
                         <div class="mt-1 text-sm font-medium text-gray-900">{{ $pembayaran->tanggal_pembayaran->format('d F Y') }}</div>
