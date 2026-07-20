@@ -93,17 +93,16 @@ class DashboardController extends Controller
             ->appends(request()->all());
 
         // Rekap jumlah surat jalan per supir yang belum ada tanda terima
-        $rekapSupirBelumTandaTerima = \App\Models\SuratJalan::doesntHave('tandaTerima')
+        $pendingTandaTerima = \App\Models\SuratJalan::doesntHave('tandaTerima')
             ->leftJoin('uang_jalans', 'surat_jalans.id', '=', 'uang_jalans.surat_jalan_id')
             ->whereNotIn('surat_jalans.status', ['cancelled', 'draft'])
             ->where('surat_jalans.status_pembayaran_uang_jalan', 'dibayar')
             ->select('surat_jalans.supir', DB::raw('count(*) as total'), DB::raw('MIN(uang_jalans.tanggal_uang_jalan) as oldest_uang_jalan'))
             ->groupBy('surat_jalans.supir')
-            ->orderBy('total', 'desc')
             ->get();
 
-        // Rekap Kerja Supir Jakarta (Berapa lama tidak dapat surat jalan)
-        $rekapKerjaSupirJakarta = DB::table('karyawans')
+        // Ambil semua supir Jakarta untuk melihat siapa yang tidak kerja
+        $supirJakarta = DB::table('karyawans')
             ->where('karyawans.divisi', 'LIKE', '%SUPIR%')
             ->where('karyawans.cabang', 'LIKE', '%JAKARTA%')
             ->where('karyawans.status', 'active')
@@ -114,15 +113,63 @@ class DashboardController extends Controller
             ->select(
                 'karyawans.nama_panggilan',
                 'karyawans.nama_lengkap',
-                DB::raw('MAX(surat_jalans.tanggal_surat_jalan) as terakhir_surat_jalan'),
-                DB::raw('COUNT(surat_jalans.id) as total_surat_jalan')
+                DB::raw('MAX(surat_jalans.tanggal_surat_jalan) as terakhir_surat_jalan')
             )
             ->groupBy('karyawans.id', 'karyawans.nama_panggilan', 'karyawans.nama_lengkap')
-            ->orderByRaw('MAX(surat_jalans.tanggal_surat_jalan) ASC') // NULL (belum pernah) akan muncul paling atas
-            ->get();
+            ->get()
+            ->keyBy('nama_panggilan');
+
+        $rekapSupirBelumTandaTerima = collect();
+
+        // 1. Masukkan semua supir Jakarta
+        foreach ($supirJakarta as $nama => $data) {
+            $pending = $pendingTandaTerima->firstWhere('supir', $nama);
+            $rekapSupirBelumTandaTerima->push((object)[
+                'supir' => $nama,
+                'nama_lengkap' => $data->nama_lengkap,
+                'total' => $pending ? $pending->total : 0,
+                'oldest_uang_jalan' => $pending ? $pending->oldest_uang_jalan : null,
+                'terakhir_surat_jalan' => $data->terakhir_surat_jalan,
+                'is_jakarta' => true
+            ]);
+        }
+
+        // 2. Masukkan supir lain (non-Jakarta) yang punya pending tanda terima
+        foreach ($pendingTandaTerima as $pending) {
+            if (!isset($supirJakarta[$pending->supir])) {
+                $lastSj = \App\Models\SuratJalan::where('supir', $pending->supir)
+                    ->whereNotIn('status', ['cancelled', 'draft'])
+                    ->max('tanggal_surat_jalan');
+                    
+                $rekapSupirBelumTandaTerima->push((object)[
+                    'supir' => $pending->supir,
+                    'nama_lengkap' => $pending->supir,
+                    'total' => $pending->total,
+                    'oldest_uang_jalan' => $pending->oldest_uang_jalan,
+                    'terakhir_surat_jalan' => $lastSj,
+                    'is_jakarta' => false
+                ]);
+            }
+        }
+
+        // Sorting: Yang punya pending SJ paling banyak di atas, lalu yang paling lama nganggur
+        $rekapSupirBelumTandaTerima = $rekapSupirBelumTandaTerima->sortByDesc(function ($item) {
+            // Prioritas 1: Jumlah pending (desc)
+            // Prioritas 2: Jika 0, maka urutkan berdasarkan paling lama tidak SJ
+            $score = $item->total * 100000;
+            if ($item->total == 0) {
+                if (!$item->terakhir_surat_jalan) {
+                    $score = 99999; // Belum pernah dapat SJ, taruh di atas yang nol
+                } else {
+                    $days = \Carbon\Carbon::parse($item->terakhir_surat_jalan)->startOfDay()->diffInDays(now()->startOfDay());
+                    $score = $days; // Semakin lama tidak SJ, semakin atas
+                }
+            }
+            return $score;
+        })->values();
 
         // Mengirim semua data ke view 'dashboard'
-        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon', 'suratJalanBelumTandaTerima', 'rekapSupirBelumTandaTerima', 'rekapKerjaSupirJakarta'));
+        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon', 'suratJalanBelumTandaTerima', 'rekapSupirBelumTandaTerima'));
     }
 
     /**

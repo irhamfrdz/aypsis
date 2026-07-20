@@ -333,16 +333,16 @@
     </div>
     @endif
 
-    <!-- Rekap Supir Tanpa Tanda Terima -->
+    <!-- Rekap Supir Tanpa Tanda Terima & Rekap Kerja -->
     @if($rekapSupirBelumTandaTerima->count() > 0)
     <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-8">
         <div class="bg-indigo-50 px-4 py-3 border-b border-indigo-200 flex justify-between items-center">
             <div>
                 <h3 class="text-base font-semibold text-indigo-800 flex items-center">
-                    <i class="fas fa-users mr-1 text-indigo-600"></i>
-                    Rekap Supir Tanpa Tanda Terima
+                    <i class="fas fa-users mr-2 text-indigo-600"></i>
+                    Rekap Supir Tanpa Tanda Terima & Status Kerja
                 </h3>
-                <p class="text-xs text-indigo-600">Total {{ $rekapSupirBelumTandaTerima->sum('total') }} surat jalan belum ada tanda terima (Status Pembayaran: Dibayar)</p>
+                <p class="text-xs text-indigo-600">Total {{ $rekapSupirBelumTandaTerima->sum('total') }} surat jalan belum ada tanda terima. Status warna juga menandakan berapa lama supir tidak mendapat Surat Jalan.</p>
             </div>
             @if(request('supir'))
                 <a href="{{ route('dashboard', request()->except(['supir', 'page'])) }}" class="text-xs bg-white text-indigo-600 px-2 py-1 rounded border border-indigo-200 hover:bg-indigo-50 transition-colors">
@@ -363,30 +363,70 @@
                         $hasOverdue = $tanggalUj->diffInDays($hariIni) > 3 && $tanggalUj->isBefore($hariIni);
                     }
                     
+                    // Logic for work status
+                    $hariIni = now()->startOfDay();
+                    $lamaTidakKerja = 0;
+                    $isIdle = false;
+                    $isVeryIdle = false;
+                    
+                    if ($data->terakhir_surat_jalan) {
+                        $tanggalTerakhir = \Carbon\Carbon::parse($data->terakhir_surat_jalan)->startOfDay();
+                        $lamaTidakKerja = $tanggalTerakhir->diffInDays($hariIni);
+                        $isIdle = $lamaTidakKerja >= 3 && $lamaTidakKerja < 7;
+                        $isVeryIdle = $lamaTidakKerja >= 7;
+                    } else {
+                        $isVeryIdle = true; // Belum pernah dapat SJ
+                    }
+                    
                     if ($isActive) {
                         $cardClass = $hasOverdue ? 'bg-red-100 border-red-500 ring-1 ring-red-500' : 'bg-indigo-100 border-indigo-500 ring-1 ring-indigo-500';
                     } else {
-                        $cardClass = $hasOverdue ? 'bg-red-50 border-red-200 hover:border-red-400 hover:shadow-sm' : 'bg-gray-50 border-gray-200 hover:border-indigo-300 hover:shadow-sm';
+                        if ($isVeryIdle) {
+                            $cardClass = 'bg-red-50 border-red-200 hover:border-red-400 hover:shadow-sm';
+                        } elseif ($isIdle) {
+                            $cardClass = 'bg-orange-50 border-orange-200 hover:border-orange-400 hover:shadow-sm';
+                        } else {
+                            $cardClass = 'bg-gray-50 border-gray-200 hover:border-indigo-300 hover:shadow-sm';
+                        }
                     }
                     
-                    $supirClass = $isActive ? ($hasOverdue ? 'text-red-700' : 'text-indigo-700') : ($hasOverdue ? 'text-red-600 group-hover:text-red-700' : 'text-gray-500 group-hover:text-indigo-600');
-                    $totalClass = $isActive ? ($hasOverdue ? 'text-red-900' : 'text-indigo-900') : ($hasOverdue ? 'text-red-800 group-hover:text-red-900' : 'text-gray-800 group-hover:text-indigo-800');
-                    $labelClass = $isActive ? ($hasOverdue ? 'text-red-600' : 'text-indigo-600') : ($hasOverdue ? 'text-red-500 group-hover:text-red-600' : 'text-gray-400 group-hover:text-indigo-500');
+                    $supirClass = $isActive ? ($hasOverdue ? 'text-red-700' : 'text-indigo-700') : ($isVeryIdle ? 'text-red-600' : ($isIdle ? 'text-orange-600' : 'text-gray-600'));
+                    $totalClass = $isActive ? ($hasOverdue ? 'text-red-900' : 'text-indigo-900') : ($isVeryIdle ? 'text-red-800' : ($isIdle ? 'text-orange-800' : 'text-gray-800'));
+                    $labelClass = $isActive ? ($hasOverdue ? 'text-red-600' : 'text-indigo-600') : ($isVeryIdle ? 'text-red-500' : ($isIdle ? 'text-orange-500' : 'text-gray-500'));
                 @endphp
                 <a href="{{ route('dashboard', array_merge(request()->except('page'), ['supir' => $isActive ? null : $data->supir])) }}" 
                    class="{{ $cardClass }} rounded-lg p-3 border flex flex-col items-center justify-center text-center transition-all duration-200 cursor-pointer group relative">
                     <div class="flex items-center justify-center gap-1 mb-1">
-                        <span class="text-xs {{ $supirClass }} font-medium uppercase tracking-wider">
+                        <span class="text-xs {{ $supirClass }} font-semibold uppercase tracking-wider truncate max-w-[100px]" title="{{ $data->nama_lengkap ?? $data->supir }}">
                             {{ $data->supir ?: 'Tanpa Nama' }}
                         </span>
                         @if($hasOverdue)
-                            <i class="fas fa-exclamation-triangle text-red-500 text-[10px]" title="Ada yang lebih dari 3 hari"></i>
+                            <i class="fas fa-exclamation-triangle text-red-500 text-[10px]" title="Ada SJ tertunda > 3 hari"></i>
                         @endif
                     </div>
-                    <span class="text-2xl font-bold {{ $totalClass }}">
-                        {{ $data->total }}
-                    </span>
-                    <span class="text-[10px] {{ $labelClass }}">Surat Jalan</span>
+                    
+                    @if($data->total > 0)
+                        <span class="text-2xl font-bold {{ $totalClass }}">
+                            {{ $data->total }}
+                        </span>
+                        <span class="text-[10px] {{ $labelClass }}">Surat Jalan Tertunda</span>
+                    @else
+                        <span class="text-2xl font-bold text-green-600">
+                            <i class="fas fa-check-circle"></i>
+                        </span>
+                        <span class="text-[10px] text-green-600">Semua SJ Selesai</span>
+                    @endif
+                    
+                    <div class="mt-2 pt-2 border-t {{ $isVeryIdle ? 'border-red-200' : ($isIdle ? 'border-orange-200' : 'border-gray-200') }} w-full">
+                        <span class="text-[10px] font-medium {{ $isVeryIdle ? 'text-red-600' : ($isIdle ? 'text-orange-600' : 'text-gray-500') }} block leading-tight">
+                            @if($data->terakhir_surat_jalan)
+                                {{ $lamaTidakKerja }} Hari Tidak SJ<br>
+                                <span class="text-[9px] opacity-75">Trx: {{ \Carbon\Carbon::parse($data->terakhir_surat_jalan)->format('d/m/Y') }}</span>
+                            @else
+                                Belum Pernah SJ
+                            @endif
+                        </span>
+                    </div>
                 </a>
                 @endforeach
             </div>
