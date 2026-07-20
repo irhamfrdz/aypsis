@@ -504,8 +504,14 @@ class RekapBiayaKapalController extends Controller
         $priceListOb = \App\Models\MasterPricelistOb::all();
         $lookupPriceOb = function ($size, $jenisBarang) use ($priceListOb) {
             $s = (strpos(strtolower($size), '40') !== false) ? '40ft' : '20ft';
-            $jb = strtolower(trim($jenisBarang));
-            $st = ($jb === 'kosong' || $jb === 'empty') ? 'empty' : 'full';
+            $jb = strtolower(trim($jenisBarang ?? ''));
+            
+            $st = 'full';
+            if (empty($jb) || $jb === '') {
+                $st = 'empty';
+            } elseif (str_contains($jb, 'empty') || str_contains($jb, 'mt') || str_contains($jb, 'mty') || str_contains($jb, 'kosong')) {
+                $st = 'empty';
+            }
             
             $pl = $priceListOb->first(function ($item) use ($s, $st) {
                 return strtolower(trim($item->size_kontainer)) === $s && strtolower(trim($item->status_kontainer)) === $st;
