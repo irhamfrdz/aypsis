@@ -522,7 +522,7 @@ class RekapBiayaKapalController extends Controller
         $totalObMuat = 0;
         $countObMuat = 0;
         foreach ($obMuats as $muat) {
-            $supirName = trim($muat->supir->nama ?? '');
+            $supirName = trim($muat->supir->nama_panggilan ?? $muat->supir->nama_lengkap ?? '');
             $cleanSupir = preg_replace('/[^a-z0-9]/i', '', $supirName);
             
             $isTl = $muat->is_tl || 
@@ -562,7 +562,7 @@ class RekapBiayaKapalController extends Controller
         $totalObBongkar = 0;
         $countObBongkar = 0;
         foreach ($obBongkars as $bongkar) {
-            $supirName = trim($bongkar->supir->nama ?? $bongkar->supir_ob ?? '');
+            $supirName = trim($bongkar->supir->nama_panggilan ?? $bongkar->supir->nama_lengkap ?? $bongkar->supir_ob ?? '');
             $cleanSupir = preg_replace('/[^a-z0-9]/i', '', $supirName);
             
             $isTl = $bongkar->sudah_tl || 
