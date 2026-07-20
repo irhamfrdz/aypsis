@@ -216,7 +216,7 @@
                                             {{ $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain' }}
                                         </td>
                                         <td class="px-6 py-4 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
-                                            Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
+                                            Rp {{ number_format($item->display_total ?? $item->apportioned['total_biaya'], 0, ',', '.') }}
                                         </td>
                                         <td class="px-6 py-4 text-center whitespace-nowrap no-print">
                                             @if(isset($item->is_pranota_ob) && $item->is_pranota_ob)

@@ -409,15 +409,16 @@ class RekapBiayaKapalController extends Controller
         foreach ($pranotaObs as $pranota) {
             $totalBiaya = $pranota->calculateTotalAmount();
             $pranota->apportioned = [
-                'nominal' => $totalBiaya,
+                'nominal' => 0,
                 'ppn' => 0,
                 'pph' => 0,
-                'total_biaya' => $totalBiaya,
+                'total_biaya' => 0,
             ];
+            $pranota->display_total = $totalBiaya;
             $pranota->is_pranota_ob = true;
             $pranota->nomor_invoice = $pranota->nomor_pranota;
             $pranota->tanggal = $pranota->tanggal_ob;
-            $pranota->jenis_biaya = 'Pranota OB';
+            $pranota->jenis_biaya = 'Pranota OB (Info)';
             $biayaKapals->push($pranota);
         }
 
