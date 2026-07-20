@@ -861,9 +861,29 @@ class ProspekController extends Controller
 
             $suratJalan = $prospek->suratJalan;
 
+            $nomorKontainerBaru = $suratJalan->no_kontainer;
+            $noSuratJalanBaru = $suratJalan->no_surat_jalan;
+
+            // Handle sinkronisasi jika prospek ini adalah hasil pecahan kontainer
+            if (($suratJalan->jumlah_kontainer ?? 1) > 1 || preg_match('/-(\d+)$/', $prospek->no_surat_jalan)) {
+                $kontainerArray = array_map('trim', explode(',', $suratJalan->no_kontainer ?? ''));
+                
+                // Cari index berdasarkan suffix no_surat_jalan (misal JB1000-1 -> index 0)
+                if (preg_match('/-(\d+)$/', $prospek->no_surat_jalan, $matches)) {
+                    $index = intval($matches[1]) - 1;
+                    if (isset($kontainerArray[$index])) {
+                        $nomorKontainerBaru = $kontainerArray[$index];
+                    } else {
+                        // Jika tidak ketemu di array baru, pertahankan yang lama
+                        $nomorKontainerBaru = $prospek->nomor_kontainer;
+                    }
+                    $noSuratJalanBaru = $suratJalan->no_surat_jalan . '-' . ($index + 1);
+                }
+            }
+
             // Update data prospek dari surat jalan
-            $prospek->no_surat_jalan = $suratJalan->no_surat_jalan;
-            $prospek->nomor_kontainer = $suratJalan->no_kontainer;
+            $prospek->no_surat_jalan = $noSuratJalanBaru;
+            $prospek->nomor_kontainer = $nomorKontainerBaru;
             $prospek->nama_supir = $suratJalan->supir;
             $prospek->barang = $suratJalan->jenis_barang;
             $prospek->pt_pengirim = $suratJalan->pengirim;
