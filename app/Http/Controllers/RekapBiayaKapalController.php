@@ -500,6 +500,77 @@ class RekapBiayaKapalController extends Controller
             $biayaKapals->push($tagihan);
         }
 
+        // Fetch Biaya OB Bongkar & Muat directly from OB Menu Data
+        $priceListOb = \App\Models\MasterPricelistOb::all();
+        $lookupPriceOb = function ($size, $jenisBarang) use ($priceListOb) {
+            $s = (strpos(strtolower($size), '40') !== false) ? '40ft' : '20ft';
+            $jb = strtolower(trim($jenisBarang));
+            $st = ($jb === 'kosong' || $jb === 'empty') ? 'empty' : 'full';
+            
+            $pl = $priceListOb->first(function ($item) use ($s, $st) {
+                return strtolower(trim($item->size_kontainer)) === $s && strtolower(trim($item->status_kontainer)) === $st;
+            });
+            return $pl ? floatval($pl->biaya) : 0;
+        };
+
+        // OB Muat (NaikKapal)
+        $obMuats = \App\Models\NaikKapal::where('nama_kapal', $kapal)
+            ->where('no_voyage', $voyage)
+            ->where('sudah_ob', true)
+            ->get();
+            
+        $totalObMuat = 0;
+        foreach ($obMuats as $muat) {
+            $totalObMuat += $lookupPriceOb($muat->size_kontainer ?? $muat->ukuran_kontainer, $muat->jenis_barang);
+        }
+
+        if ($totalObMuat > 0) {
+            $virtualObMuat = new \stdClass();
+            $virtualObMuat->apportioned = [
+                'nominal' => $totalObMuat,
+                'ppn' => 0,
+                'pph' => 0,
+                'total_biaya' => $totalObMuat,
+            ];
+            $virtualObMuat->is_ob_muat = true;
+            $virtualObMuat->nomor_invoice = '-';
+            $virtualObMuat->tanggal = $obMuats->min('tanggal_ob') ?? null;
+            $virtualObMuat->jenis_biaya = 'Biaya OB Muat (' . $obMuats->count() . ' Kontainer)';
+            $virtualObMuat->klasifikasiBiaya = (object)['nama' => 'Biaya OB Muat'];
+            $virtualObMuat->id = 0; // fallback ID for views
+            
+            $biayaKapals->push($virtualObMuat);
+        }
+
+        // OB Bongkar (Manifest)
+        $obBongkars = \App\Models\Manifest::where('nama_kapal', $kapal)
+            ->where('no_voyage', $voyage)
+            ->where('sudah_ob', true)
+            ->get();
+            
+        $totalObBongkar = 0;
+        foreach ($obBongkars as $bongkar) {
+            $totalObBongkar += $lookupPriceOb($bongkar->size_kontainer ?? $bongkar->tipe_kontainer, $bongkar->nama_barang);
+        }
+
+        if ($totalObBongkar > 0) {
+            $virtualObBongkar = new \stdClass();
+            $virtualObBongkar->apportioned = [
+                'nominal' => $totalObBongkar,
+                'ppn' => 0,
+                'pph' => 0,
+                'total_biaya' => $totalObBongkar,
+            ];
+            $virtualObBongkar->is_ob_bongkar = true;
+            $virtualObBongkar->nomor_invoice = '-';
+            $virtualObBongkar->tanggal = $obBongkars->min('tanggal_ob') ?? null;
+            $virtualObBongkar->jenis_biaya = 'Biaya OB Bongkar (' . $obBongkars->count() . ' Kontainer)';
+            $virtualObBongkar->klasifikasiBiaya = (object)['nama' => 'Biaya OB Bongkar'];
+            $virtualObBongkar->id = 0; // fallback ID for views
+            
+            $biayaKapals->push($virtualObBongkar);
+        }
+
         // Calculate summaries based on apportioned costs
         $summary = [
             'total_nominal' => $biayaKapals->sum(fn ($item) => $item->apportioned['nominal']),
