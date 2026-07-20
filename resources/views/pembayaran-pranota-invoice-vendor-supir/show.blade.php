@@ -27,6 +27,12 @@
                         <div class="text-xs text-gray-500 uppercase font-semibold">No. Pembayaran</div>
                         <div class="mt-1 text-sm font-medium text-gray-900">{{ $pembayaran->nomor_pembayaran }}</div>
                     </div>
+                    @if($pembayaran->nomor_accurate)
+                    <div>
+                        <div class="text-xs text-gray-500 uppercase font-semibold">No. Accurate</div>
+                        <div class="mt-1 text-sm font-medium text-gray-900">{{ $pembayaran->nomor_accurate }}</div>
+                    </div>
+                    @endif
                     <div>
                         <div class="text-xs text-gray-500 uppercase font-semibold">Tanggal Bayar</div>
                         <div class="mt-1 text-sm font-medium text-gray-900">{{ $pembayaran->tanggal_pembayaran->format('d F Y') }}</div>
