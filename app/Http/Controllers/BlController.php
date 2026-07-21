@@ -2579,13 +2579,12 @@ class BlController extends Controller
             $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
             if ($isCargo) {
                 $pengirim = trim($item->pengirim ?? '');
-                $penerima = trim($item->penerima ?? '');
                 $satuan = trim($item->satuan ?? 'Package');
                 
-                if ($pengirim === '' && $penerima === '') {
+                if ($pengirim === '') {
                     $groupKey = 'nama|' . trim($item->nama_barang ?: 'Cargo');
                 } else {
-                    $groupKey = 'pengirim|' . $pengirim . '|' . $penerima;
+                    $groupKey = 'pengirim|' . $pengirim;
                 }
                 return 'cargo|' . $groupKey . '|' . $satuan;
             } else {
@@ -2774,13 +2773,12 @@ class BlController extends Controller
             $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
             if ($isCargo) {
                 $pengirim = trim($item->pengirim ?? '');
-                $penerima = trim($item->penerima ?? '');
                 $satuan = trim($item->satuan ?? 'Package');
                 
-                if ($pengirim === '' && $penerima === '') {
+                if ($pengirim === '') {
                     $groupKey = 'nama|' . trim($item->nama_barang ?: 'Cargo');
                 } else {
-                    $groupKey = 'pengirim|' . $pengirim . '|' . $penerima;
+                    $groupKey = 'pengirim|' . $pengirim;
                 }
                 return 'cargo|' . $groupKey . '|' . $satuan;
             } else {
@@ -3178,12 +3176,11 @@ class BlController extends Controller
         // -----------------------------------------------------------------------
         $cargoRows = $cargoItems->groupBy(function ($item) {
             $pengirim = trim($item->pengirim ?? '');
-            $penerima = trim($item->penerima ?? '');
             
-            if ($pengirim === '' && $penerima === '') {
+            if ($pengirim === '') {
                 return 'nama|' . trim($item->nama_barang ?: 'Cargo');
             }
-            return 'pengirim|' . $pengirim . '|' . $penerima;
+            return 'pengirim|' . $pengirim;
         })->map(function ($group, $key) {
             // Sum kuantitas across all grouped rows
             $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
