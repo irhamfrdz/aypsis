@@ -2578,11 +2578,15 @@ class BlController extends Controller
         $items = $bls->groupBy(function ($item) {
             $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
             if ($isCargo) {
-                $pengirim = trim($item->pengirim ?? '');
-                $satuan = trim($item->satuan ?? 'Package');
+                // Standarisasi pengirim untuk grouping (huruf besar semua, hapus spasi berlebih)
+                $pengirimRaw = $item->pengirim ?? '';
+                $pengirim = strtoupper(trim(preg_replace('/\s+/', ' ', $pengirimRaw)));
+                
+                $satuan = strtolower(trim($item->satuan ?? 'Package'));
                 
                 if ($pengirim === '') {
-                    $groupKey = 'nama|' . trim($item->nama_barang ?: 'Cargo');
+                    $namaBarang = strtoupper(trim(preg_replace('/\s+/', ' ', $item->nama_barang ?: 'Cargo')));
+                    $groupKey = 'nama|' . $namaBarang;
                 } else {
                     $groupKey = 'pengirim|' . $pengirim;
                 }
@@ -2772,11 +2776,15 @@ class BlController extends Controller
         $items = $bls->groupBy(function ($item) {
             $isCargo = ($item->tipe_kontainer === 'CARGO' || empty($item->size_kontainer));
             if ($isCargo) {
-                $pengirim = trim($item->pengirim ?? '');
-                $satuan = trim($item->satuan ?? 'Package');
+                // Standarisasi pengirim untuk grouping (huruf besar semua, hapus spasi berlebih)
+                $pengirimRaw = $item->pengirim ?? '';
+                $pengirim = strtoupper(trim(preg_replace('/\s+/', ' ', $pengirimRaw)));
+                
+                $satuan = strtolower(trim($item->satuan ?? 'Package'));
                 
                 if ($pengirim === '') {
-                    $groupKey = 'nama|' . trim($item->nama_barang ?: 'Cargo');
+                    $namaBarang = strtoupper(trim(preg_replace('/\s+/', ' ', $item->nama_barang ?: 'Cargo')));
+                    $groupKey = 'nama|' . $namaBarang;
                 } else {
                     $groupKey = 'pengirim|' . $pengirim;
                 }
@@ -3175,10 +3183,13 @@ class BlController extends Controller
         //    Items with no BL number are kept as individual rows.
         // -----------------------------------------------------------------------
         $cargoRows = $cargoItems->groupBy(function ($item) {
-            $pengirim = trim($item->pengirim ?? '');
+            // Standarisasi pengirim untuk grouping (huruf besar semua, hapus spasi berlebih)
+            $pengirimRaw = $item->pengirim ?? '';
+            $pengirim = strtoupper(trim(preg_replace('/\s+/', ' ', $pengirimRaw)));
             
             if ($pengirim === '') {
-                return 'nama|' . trim($item->nama_barang ?: 'Cargo');
+                $namaBarang = strtoupper(trim(preg_replace('/\s+/', ' ', $item->nama_barang ?: 'Cargo')));
+                return 'nama|' . $namaBarang;
             }
             return 'pengirim|' . $pengirim;
         })->map(function ($group, $key) {
