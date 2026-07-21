@@ -416,6 +416,12 @@ class SupirDashboardController extends Controller
                 $blData['pengirim'] = $prospek->pt_pengirim;
             }
 
+            // Mencegah error SQL Data too long for column (batas VARCHAR 255)
+            if (!empty($blData['pengirim'])) $blData['pengirim'] = \Illuminate\Support\Str::limit($blData['pengirim'], 250, '...');
+            if (!empty($blData['penerima'])) $blData['penerima'] = \Illuminate\Support\Str::limit($blData['penerima'], 250, '...');
+            if (!empty($blData['nama_barang'])) $blData['nama_barang'] = \Illuminate\Support\Str::limit($blData['nama_barang'], 250, '...');
+            if (!empty($blData['alamat_pengiriman'])) $blData['alamat_pengiriman'] = \Illuminate\Support\Str::limit($blData['alamat_pengiriman'], 250, '...');
+
             $bl = \App\Models\Bl::create($blData);
 
             \DB::commit();

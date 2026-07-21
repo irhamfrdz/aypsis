@@ -376,7 +376,10 @@ class ManifestController extends Controller
             return response()->json(['success' => false, 'message' => 'Data kapal dan voyage tidak valid'], 400);
         }
 
-        $count = $this->processAutoUpdateNomorUrut($namaKapal, $noVoyage);
+        $count = 0;
+        \DB::transaction(function () use ($namaKapal, $noVoyage, &$count) {
+            $count = $this->processAutoUpdateNomorUrut($namaKapal, $noVoyage);
+        });
 
         return response()->json([
             'success' => true,
@@ -410,26 +413,28 @@ class ManifestController extends Controller
             ->get();
 
         $updatedCount = 0;
-        foreach ($manifests as $manifest) {
-            $cleanNomor = str_replace([' ', '-'], '', $manifest->nomor_kontainer);
-            $foundUkuran = null;
+        \DB::transaction(function () use ($manifests, &$updatedCount) {
+            foreach ($manifests as $manifest) {
+                $cleanNomor = str_replace([' ', '-'], '', $manifest->nomor_kontainer);
+                $foundUkuran = null;
 
-            $kontainer = \App\Models\Kontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
-            if ($kontainer && ! empty($kontainer->ukuran)) {
-                $foundUkuran = $kontainer->ukuran;
-            } else {
-                $stockKontainer = \App\Models\StockKontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
-                if ($stockKontainer && ! empty($stockKontainer->ukuran)) {
-                    $foundUkuran = $stockKontainer->ukuran;
+                $kontainer = \App\Models\Kontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
+                if ($kontainer && ! empty($kontainer->ukuran)) {
+                    $foundUkuran = $kontainer->ukuran;
+                } else {
+                    $stockKontainer = \App\Models\StockKontainer::whereRaw("REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', '') = ?", [$cleanNomor])->first();
+                    if ($stockKontainer && ! empty($stockKontainer->ukuran)) {
+                        $foundUkuran = $stockKontainer->ukuran;
+                    }
+                }
+
+                if ($foundUkuran) {
+                    $manifest->size_kontainer = $foundUkuran;
+                    $manifest->save();
+                    $updatedCount++;
                 }
             }
-
-            if ($foundUkuran) {
-                $manifest->size_kontainer = $foundUkuran;
-                $manifest->save();
-                $updatedCount++;
-            }
-        }
+        });
 
         return response()->json([
             'success' => true,
@@ -442,6 +447,9 @@ class ManifestController extends Controller
      */
     public function autoUpdateNomorUrutAll(Request $request)
     {
+        // Mencegah timeout jika data manifest sangat banyak
+        set_time_limit(0);
+
         // Get all unique combinations of ship and voyage
         $voyages = Manifest::select('nama_kapal', 'no_voyage')
             ->whereNotNull('nama_kapal')
@@ -452,9 +460,13 @@ class ManifestController extends Controller
             ->get();
 
         $totalUpdated = 0;
-        foreach ($voyages as $v) {
-            $totalUpdated += $this->processAutoUpdateNomorUrut($v->nama_kapal, $v->no_voyage);
-        }
+
+        // Menggunakan DB transaction agar proses UPDATE tidak dicommit satu-satu (mempercepat query)
+        \DB::transaction(function () use ($voyages, &$totalUpdated) {
+            foreach ($voyages as $v) {
+                $totalUpdated += $this->processAutoUpdateNomorUrut($v->nama_kapal, $v->no_voyage);
+            }
+        });
 
         return response()->json([
             'success' => true,
