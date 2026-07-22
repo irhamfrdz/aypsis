@@ -242,7 +242,7 @@
                         <select name="penempatan" id="penempatan" class="{{ $selectClasses }}">
                             <option value="">-- Pilih Penempatan --</option>
                             <option value="JAKARTA PELABHUHAN" {{ old('penempatan') == 'JAKARTA PELABHUHAN' ? 'selected' : '' }}>JAKARTA PELABHUHAN</option>
-                            <option value="JAKARTA PELABUHAN 'romawi 1'" {{ old('penempatan') == "JAKARTA PELABUHAN 'romawi 1'" ? 'selected' : '' }}>JAKARTA PELABUHAN 'romawi 1'</option>
+                            <option value="JAKARTA PELABUHAN 1" {{ old('penempatan') == "JAKARTA PELABUHAN 1" ? 'selected' : '' }}>JAKARTA PELABUHAN 1</option>
                             <option value="JAKARTA KRANI" {{ old('penempatan') == 'JAKARTA KRANI' ? 'selected' : '' }}>JAKARTA KRANI</option>
                             <option value="KANTOR JAKARTA" {{ old('penempatan') == 'KANTOR JAKARTA' ? 'selected' : '' }}>KANTOR JAKARTA</option>
                             <option value="GARASAI JAKARTA" {{ old('penempatan') == 'GARASAI JAKARTA' ? 'selected' : '' }}>GARASAI JAKARTA</option>
