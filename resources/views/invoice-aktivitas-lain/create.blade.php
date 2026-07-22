@@ -2861,11 +2861,9 @@ console.log('Akun COAs data:', akunCoasData);
                         <option value="kredit">Kredit</option>
                     </select>
                 </div>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4">
+                
                 <!-- Pilih Bank -->
-                <div>
+                <div class="md:col-span-1">
                     <label class="block text-xs font-medium text-gray-700 mb-1">
                         Bank <small class="text-gray-500">(Opsional)</small>
                     </label>
@@ -2877,7 +2875,7 @@ console.log('Akun COAs data:', akunCoasData);
                 </div>
                 
                 <!-- Virtual Account -->
-                <div>
+                <div class="md:col-span-2">
                     <label class="block text-xs font-medium text-gray-700 mb-1">
                         Virtual Account <small class="text-gray-500">(Opsional)</small>
                     </label>
