@@ -45,17 +45,26 @@ class GpsTrackingController extends Controller
             $gpsData = $this->gpsService->getLatestLocation($mobil->imei_gps);
             
             // Jika request API berhasil dan mengembalikan koordinat
-            if ($gpsData && isset($gpsData['success']) && $gpsData['success']) {
+            if ($gpsData && isset($gpsData['status']) && $gpsData['status']) {
+                $payload = $gpsData['message']['data'] ?? [];
+                
+                $statusText = 'Berhenti';
+                if (($payload['speed'] ?? 0) > 0) {
+                    $statusText = 'Berjalan';
+                } elseif (isset($payload['acc']) && $payload['acc'] == 'ON') {
+                    $statusText = 'Mesin Menyala';
+                }
+
                 $locations[] = [
                     'mobil_id' => $mobil->id,
                     'nomor_polisi' => $mobil->nomor_polisi,
                     'merek' => $mobil->merek,
                     'jenis' => $mobil->jenis,
-                    'lat' => $gpsData['data']['lat'] ?? null,
-                    'lng' => $gpsData['data']['lng'] ?? null,
-                    'speed' => $gpsData['data']['speed'] ?? 0,
-                    'status' => $gpsData['data']['status'] ?? 'Unknown',
-                    'last_update' => $gpsData['data']['last_update'] ?? now()->format('Y-m-d H:i:s'),
+                    'lat' => $payload['latitude'] ?? null,
+                    'lng' => $payload['longitude'] ?? null,
+                    'speed' => $payload['speed'] ?? 0,
+                    'status' => $statusText,
+                    'last_update' => $payload['last_update'] ?? now()->format('Y-m-d H:i:s'),
                 ];
             }
         }

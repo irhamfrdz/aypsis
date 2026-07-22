@@ -1,1 +1,1 @@
-<?php require "vendor/autoload.php"; $app = require_once "bootstrap/app.php"; $app->make("Illuminate\Contracts\Console\Kernel")->bootstrap(); Cache::forget("gps_id_token"); $s = new App\Services\GpsIdService(); var_dump($s->getLatestLocation("B9871UEM"));
+<?php require "vendor/autoload.php"; $app = require_once "bootstrap/app.php"; $app->make("Illuminate\Contracts\Console\Kernel")->bootstrap(); Cache::forget("gps_id_token"); $s = new App\Services\GpsIdService(); var_dump($s->getLatestLocation("358899051811753"));
