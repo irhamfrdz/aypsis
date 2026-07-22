@@ -332,6 +332,18 @@
                     <span class="text-xs font-medium menu-text">Dashboard</span>
                 </a>
 
+                <!-- Live Tracking GPS -->
+                @php
+                    $isLiveTracking = Request::routeIs('gps-tracking.*');
+                @endphp
+                <a href="{{ route('gps-tracking.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isLiveTracking ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
+                    <svg class="w-4 h-4 mr-2 {{ $isLiveTracking ? 'text-indigo-700' : 'text-gray-500 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span class="text-xs font-medium menu-text">Live Tracking (GPS)</span>
+                </a>
+
                 <!-- Dashboard Asuransi Asset -->
                 <a href="{{ route('dashboard.asset-insurance') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isAssetDashboard ? 'bg-yellow-100 text-yellow-700 font-bold' : 'text-gray-700 hover:bg-yellow-100 hover:text-yellow-700' }}">
                     <svg class="w-4 h-4 mr-2 {{ $isAssetDashboard ? 'text-yellow-700' : 'text-gray-500 group-hover:text-yellow-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">

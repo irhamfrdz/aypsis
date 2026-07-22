@@ -251,6 +251,15 @@
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
+                
+                <!-- IMEI GPS -->
+                <div>
+                    <label for="imei_gps" class="block text-sm font-medium text-gray-700">IMEI GPS <small class="text-gray-500">(Opsional)</small></label>
+                    <input type="text" name="imei_gps" id="imei_gps" value="{{ old('imei_gps') }}" class="{{ $inputClasses }}" placeholder="Masukkan IMEI GPS">
+                    @error('imei_gps')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
 
                 <!-- Catatan -->
                 <div class="md:col-span-2">

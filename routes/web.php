@@ -5021,6 +5021,12 @@ Route::middleware(['auth'])->group(function () {
 
 // Authenticated routes group (continued)
 Route::middleware(['auth'])->group(function () {
+    // GPS Tracking Routes
+    Route::prefix('gps-tracking')->name('gps-tracking.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\GpsTrackingController::class, 'index'])->name('index');
+        Route::get('/latest-locations', [\App\Http\Controllers\GpsTrackingController::class, 'getLatestLocations'])->name('latest-locations');
+    });
+
     // Tagihan CAT routes
     Route::post('tagihan-cat/bulk-delete', [TagihanCatController::class, 'bulkDelete'])
         ->name('tagihan-cat.bulk-delete')

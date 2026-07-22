@@ -45,6 +45,7 @@ class Mobil extends Model
         'warna_plat',
         'catatan',
         'karyawan_id',
+        'imei_gps',
     ];
 
     /**

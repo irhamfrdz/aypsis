@@ -144,6 +144,7 @@ class MobilController extends Controller
             'warna_plat' => 'nullable|string|max:20',
             'catatan' => 'nullable|string|max:500',
             'karyawan_id' => 'nullable|exists:karyawans,id',
+            'imei_gps' => 'nullable|string|max:50|unique:mobils,imei_gps',
         ]);
 
         $mobil = Mobil::create($validated);
@@ -279,6 +280,7 @@ class MobilController extends Controller
             'warna_plat' => 'nullable|string|max:20',
             'catatan' => 'nullable|string|max:500',
             'karyawan_id' => 'nullable|exists:karyawans,id',
+            'imei_gps' => 'nullable|string|max:50|unique:mobils,imei_gps,'.$id,
         ]);
 
         // Jika karyawan lama ada, hapus nomor plat dari karyawan lama
