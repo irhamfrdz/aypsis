@@ -83,7 +83,17 @@ class ADMSController extends Controller
         $mesin = \App\Models\Mesin::where('kode_mesin', $sn)
                     ->orWhere('keterangan', 'like', "%{$sn}%")
                     ->first();
-        $mesinId = $mesin ? $mesin->id : (\App\Models\Mesin::first()->id ?? null);
+                    
+        if (!$mesin) {
+            $mesin = \App\Models\Mesin::create([
+                'kode_mesin' => $sn,
+                'nama_mesin' => 'Mesin Baru ' . $sn,
+                'status' => 'Aktif',
+                'keterangan' => 'Auto-register dari ADMS',
+            ]);
+        }
+        
+        $mesinId = $mesin->id;
         
         foreach ($lines as $line) {
             $line = trim($line);
