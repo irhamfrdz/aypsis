@@ -14,9 +14,9 @@ class GpsIdService
 
     public function __construct()
     {
-        $this->baseUrl = env('GPS_ID_BASE_URL', 'https://portal.gps.id/backend/seen/public');
-        $this->username = env('GPS_ID_USERNAME', '');
-        $this->password = env('GPS_ID_PASSWORD', '');
+        $this->baseUrl = 'https://portal.gps.id/backend/seen/public';
+        $this->username = 'alexindo';
+        $this->password = 'Alexindo';
     }
 
     /**
