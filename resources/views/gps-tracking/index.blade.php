@@ -2,7 +2,7 @@
 
 @section('title', 'Live Tracking Armada')
 
-@push('styles')
+@section('content')
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
@@ -12,10 +12,10 @@
     .leaflet-popup-content {
         margin: 10px;
     }
+    #map {
+        min-height: 600px; /* Ensure a minimum height */
+    }
 </style>
-@endpush
-
-@section('content')
 <div class="px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
     <!-- Header -->
     <div class="md:flex md:items-center md:justify-between mb-6">
