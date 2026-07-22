@@ -29,31 +29,43 @@ class GpsIdService
             return null;
         }
 
-        return Cache::remember('gps_id_token', 1380, function () {
-            try {
-                $response = Http::post("{$this->baseUrl}/login", [
-                    'username' => $this->username,
-                    'password' => $this->password,
-                ]);
+        if (Cache::has('gps_id_token')) {
+            $cached = Cache::get('gps_id_token');
+            return $cached === 'FAILED' ? null : $cached;
+        }
 
-                $json = $response->json();
+        try {
+            $response = Http::post("{$this->baseUrl}/login", [
+                'username' => $this->username,
+                'password' => $this->password,
+            ]);
 
-                if ($response->successful()) {
-                    if (isset($json['token'])) {
-                        return $json['token'];
-                    }
-                    if (isset($json['data']['token'])) {
-                        return $json['data']['token'];
-                    }
+            $json = $response->json();
+
+            if ($response->successful()) {
+                $token = null;
+                if (isset($json['token'])) {
+                    $token = $json['token'];
+                } elseif (isset($json['data']['token'])) {
+                    $token = $json['data']['token'];
                 }
 
-                Log::error('GPS.id Login Failed: ' . $response->body());
-                return null;
-            } catch (\Exception $e) {
-                Log::error('GPS.id Login Error: ' . $e->getMessage());
-                return null;
+                if ($token) {
+                    // Cache selama 23 jam (23 * 3600 detik = 82800)
+                    Cache::put('gps_id_token', $token, 82800);
+                    return $token;
+                }
             }
-        });
+
+            Log::error('GPS.id Login Failed: ' . $response->body());
+            // Jika gagal (termasuk too many requests), blokir hit ke API selama 10 menit
+            Cache::put('gps_id_token', 'FAILED', 600);
+            return null;
+        } catch (\Exception $e) {
+            Log::error('GPS.id Login Error: ' . $e->getMessage());
+            Cache::put('gps_id_token', 'FAILED', 600);
+            return null;
+        }
     }
 
     /**
