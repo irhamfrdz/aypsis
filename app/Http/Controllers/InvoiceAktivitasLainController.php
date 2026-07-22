@@ -173,7 +173,9 @@ class InvoiceAktivitasLainController extends Controller
         // Get alat berat for utilities
         $alatBerats = \App\Models\AlatBerat::where('status', 'active')->orderBy('nama')->get();
 
-        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas', 'latestLwbpValue', 'alatBerats'));
+        $banks = \App\Models\Bank::all();
+
+        return view('invoice-aktivitas-lain.create', compact('karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas', 'latestLwbpValue', 'alatBerats', 'banks'));
     }
 
     /**
@@ -364,6 +366,8 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_listrik' => 'nullable|array',
             'biaya_listrik.*.referensi' => 'nullable|string|max:255',
             'biaya_listrik.*.penerima' => 'nullable|string|max:255',
+            'biaya_listrik.*.bank_id' => 'nullable|exists:banks,id',
+            'biaya_listrik.*.virtual_account' => 'nullable|string|max:255',
             'biaya_listrik.*.tanggal' => 'nullable|date',
             'biaya_listrik.*.akun_coa_id' => 'nullable|exists:akun_coa,id',
             'biaya_listrik.*.tipe_transaksi' => 'nullable|in:debit,kredit',
@@ -826,7 +830,9 @@ class InvoiceAktivitasLainController extends Controller
         // Get alat berat for utilities
         $alatBerats = \App\Models\AlatBerat::where('status', 'active')->orderBy('nama')->get();
 
-        return view('invoice-aktivitas-lain.edit', compact('invoice', 'karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas', 'latestLwbpValue', 'alatBerats'));
+        $banks = \App\Models\Bank::all();
+
+        return view('invoice-aktivitas-lain.edit', compact('invoice', 'karyawans', 'mobils', 'voyages', 'suratJalans', 'bls', 'klasifikasiBiayas', 'pricelistBuruh', 'pricelistBiayaDokumen', 'penerimaList', 'akunCoas', 'latestLwbpValue', 'alatBerats', 'banks'));
     }
 
     /**
@@ -980,6 +986,8 @@ class InvoiceAktivitasLainController extends Controller
             'biaya_listrik' => 'nullable|array',
             'biaya_listrik.*.referensi' => 'nullable|string|max:255',
             'biaya_listrik.*.penerima' => 'nullable|string|max:255',
+            'biaya_listrik.*.bank_id' => 'nullable|exists:banks,id',
+            'biaya_listrik.*.virtual_account' => 'nullable|string|max:255',
             'biaya_listrik.*.tanggal' => 'nullable|date',
             'biaya_listrik.*.akun_coa_id' => 'nullable|exists:akun_coa,id',
             'biaya_listrik.*.tipe_transaksi' => 'nullable|in:debit,kredit',

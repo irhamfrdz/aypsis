@@ -15,6 +15,8 @@ class InvoiceAktivitasLainListrik extends Model
         'invoice_aktivitas_lain_id',
         'referensi',
         'penerima',
+        'bank_id',
+        'virtual_account',
         'tanggal',
         'akun_coa_id',
         'tipe_transaksi',
@@ -67,5 +69,10 @@ class InvoiceAktivitasLainListrik extends Model
     public function invoiceAktivitasLain()
     {
         return $this->belongsTo(InvoiceAktivitasLain::class, 'invoice_aktivitas_lain_id');
+    }
+
+    public function bank()
+    {
+        return $this->belongsTo(\App\Models\Bank::class, 'bank_id');
     }
 }

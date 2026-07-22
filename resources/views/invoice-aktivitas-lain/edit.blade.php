@@ -1206,6 +1206,7 @@ const pricelistBuruhData = @json($pricelistBuruh);
 const pricelistBiayaDokumenData = @json($pricelistBiayaDokumen);
 const blsData = @json($bls);
 const akunCoasData = @json($akunCoas);
+const banksData = @json($banks ?? []);
 const alatBeratsData = @json($alatBerats);
 
 // Debug: Check for duplicates
@@ -2792,6 +2793,32 @@ console.log('Akun COAs data:', akunCoasData);
                         <option value="debit" ${existingData.tipe_transaksi === 'debit' ? 'selected' : ''}>Debit</option>
                         <option value="kredit" ${existingData.tipe_transaksi === 'kredit' ? 'selected' : ''}>Kredit</option>
                     </select>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Pilih Bank -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Bank <small class="text-gray-500">(Opsional)</small>
+                    </label>
+                    <select name="biaya_listrik[${index}][bank_id]" 
+                            class="bl-bank w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Bank</option>
+                        ${banksData.map(bank => `<option value="${bank.id}" ${existingData.bank_id == bank.id ? 'selected' : ''}>${bank.name}</option>`).join('')}
+                    </select>
+                </div>
+                
+                <!-- Virtual Account -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                        Virtual Account <small class="text-gray-500">(Opsional)</small>
+                    </label>
+                    <input type="text" 
+                           name="biaya_listrik[${index}][virtual_account]" 
+                           class="bl-virtual-account w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Masukkan Virtual Account"
+                           value="${existingData.virtual_account || ''}">
                 </div>
                 
                 <!-- LWBP Baru -->
