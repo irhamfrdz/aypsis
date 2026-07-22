@@ -244,6 +244,7 @@
         @php
             $totalDPP = 0;
             $totalPPH = 0;
+            $totalAdjustment = 0;
             $totalGrandTotal = 0;
         @endphp
 
@@ -251,13 +252,13 @@
         <div class="section-header">Detail Biaya Listrik:</div>
         <table class="custom-table">
             <thead>
-                <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 15%;">Tanggal</th>
-                    <th style="width: 30%;">Referensi</th>
-                    <th style="width: 16%;">DPP</th>
-                    <th style="width: 16%;">PPH</th>
-                    <th style="width: 18%;">Total</th>
+                    <th style="width: 13%;">Tanggal</th>
+                    <th style="width: 24%;">Referensi</th>
+                    <th style="width: 14%;">DPP</th>
+                    <th style="width: 14%;">PPH</th>
+                    <th style="width: 14%;">Adjustment</th>
+                    <th style="width: 16%;">Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -268,11 +269,13 @@
                         <td>{{ $biayaListrik->referensi ?? '-' }}</td>
                         <td class="text-right">Rp {{ number_format($biayaListrik->dpp, 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format($biayaListrik->pph, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format($biayaListrik->adjustment ?? 0, 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format($biayaListrik->grand_total, 0, ',', '.') }}</td>
                     </tr>
                     @php
                         $totalDPP += $biayaListrik->dpp;
                         $totalPPH += $biayaListrik->pph;
+                        $totalAdjustment += $biayaListrik->adjustment ?? 0;
                         $totalGrandTotal += $biayaListrik->grand_total;
                     @endphp
                 @endforeach
@@ -281,23 +284,24 @@
                     <td colspan="3" class="text-right">{{ ($invoice->biaya_materai > 0 || $invoice->biaya_adjustment != 0) ? 'SUBTOTAL LISTRIK' : 'TOTAL KESELURUHAN' }}</td>
                     <td class="text-right">Rp {{ number_format($totalDPP, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($totalAdjustment, 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($totalGrandTotal, 0, ',', '.') }}</td>
                 </tr>
                 @if($invoice->biaya_materai > 0)
                 <tr class="total-row">
-                    <td colspan="5" class="text-right">Biaya Materai</td>
+                    <td colspan="6" class="text-right">Biaya Materai</td>
                     <td class="text-right">Rp {{ number_format($invoice->biaya_materai, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 @if($invoice->biaya_adjustment != 0)
                 <tr class="total-row">
-                    <td colspan="5" class="text-right">Biaya Adjustment</td>
+                    <td colspan="6" class="text-right">Biaya Adjustment</td>
                     <td class="text-right">Rp {{ number_format($invoice->biaya_adjustment, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 @if($invoice->biaya_materai > 0 || $invoice->biaya_adjustment != 0)
                 <tr class="total-row">
-                    <td colspan="5" class="text-right" style="font-size: 1.1em;">GRAND TOTAL</td>
+                    <td colspan="6" class="text-right" style="font-size: 1.1em;">GRAND TOTAL</td>
                     <td class="text-right" style="font-size: 1.1em;">Rp {{ number_format($totalGrandTotal + $invoice->biaya_materai + $invoice->biaya_adjustment, 0, ',', '.') }}</td>
                 </tr>
                 @endif
