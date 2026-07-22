@@ -2,6 +2,19 @@
 
 @section('title', 'Live Tracking Armada')
 
+@push('styles')
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+    .leaflet-popup-content-wrapper {
+        border-radius: 8px;
+    }
+    .leaflet-popup-content {
+        margin: 10px;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
     <!-- Header -->
@@ -20,29 +33,16 @@
         </div>
     </div>
 
-    @if(empty($googleMapsApiKey))
-    <div class="rounded-md bg-yellow-50 p-4 mb-6 border border-yellow-200 shadow-sm">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
-            </div>
-            <div class="ml-3">
-                <h3 class="text-sm font-medium text-yellow-800">Google Maps API Key Belum Dikonfigurasi</h3>
-                <div class="mt-2 text-sm text-yellow-700">
-                    <p>Silakan tambahkan <code class="font-bold bg-yellow-100 px-1 py-0.5 rounded">GOOGLE_MAPS_API_KEY=KODE_API_ANDA</code> pada file <strong>.env</strong> Anda untuk dapat memuat Peta Google Maps.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
     <div class="flex flex-col lg:flex-row gap-6">
         <!-- Sidebar Daftar Truk -->
         <div class="w-full lg:w-1/3 xl:w-1/4">
             <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl overflow-hidden flex flex-col h-[600px]">
-                <div class="px-4 py-5 sm:px-6 border-b border-gray-100 bg-gray-50/50">
-                    <h3 class="text-base font-semibold leading-6 text-gray-900">Daftar Armada Aktif</h3>
-                    <p class="mt-1 max-w-2xl text-sm text-gray-500">Truk dengan IMEI terdaftar</p>
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-base font-semibold leading-6 text-gray-900">Daftar Armada Aktif</h3>
+                        <p class="mt-1 max-w-2xl text-sm text-gray-500">Truk dengan IMEI terdaftar</p>
+                    </div>
+                    <span class="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">{{ $mobils->count() }} Truk</span>
                 </div>
                 <div class="flex-1 overflow-y-auto">
                     <ul role="list" class="divide-y divide-gray-100" id="truck-list">
@@ -72,7 +72,7 @@
 
         <!-- Area Peta -->
         <div class="w-full lg:w-2/3 xl:w-3/4">
-            <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl overflow-hidden h-[600px] relative">
+            <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl overflow-hidden h-[600px] relative z-0">
                 <div id="map" class="w-full h-full"></div>
             </div>
         </div>
@@ -81,28 +81,27 @@
 @endsection
 
 @push('scripts')
-@if(!empty($googleMapsApiKey))
-<script src="https://maps.googleapis.com/maps/api/js?key={{ $googleMapsApiKey }}&callback=initMap" async defer></script>
-@endif
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script>
     let map;
     let markers = {};
-    let infoWindows = {};
-    const defaultCenter = { lat: 1.1301, lng: 104.0529 }; // Batam
+    const defaultCenter = [1.1301, 104.0529]; // Batam Default Coordinate
+
+    $(document).ready(function() {
+        initMap();
+    });
 
     function initMap() {
-        if (typeof google === 'undefined') {
-            document.getElementById('map').innerHTML = '<div class="d-flex justify-content-center align-items-center h-100 bg-light"><p class="text-muted">Google Maps tidak dapat dimuat. Periksa API Key Anda.</p></div>';
-            return;
-        }
+        // Initialize map
+        map = L.map('map').setView(defaultCenter, 11);
 
-        map = new google.maps.Map(document.getElementById('map'), {
-            center: defaultCenter,
-            zoom: 11,
-            mapTypeId: 'roadmap',
-            streetViewControl: false,
-        });
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
 
         // Initial fetch
         fetchLatestLocations();
@@ -111,10 +110,20 @@
         setInterval(fetchLatestLocations, 30000);
     }
 
-    function fetchLatestLocations() {
-        if (typeof google === 'undefined') return;
+    // Custom Icon marker based on status
+    function getIcon(color) {
+        return L.icon({
+            iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+    }
 
-        $('#last-update-time').html('<i class="fas fa-spinner fa-spin"></i> Memperbarui...');
+    function fetchLatestLocations() {
+        $('#last-update-time').html('<i class="fas fa-spinner fa-spin mr-1"></i> Memperbarui...');
 
         $.ajax({
             url: '{{ route('gps-tracking.latest-locations') }}',
@@ -124,93 +133,79 @@
                     updateMapMarkers(response.data);
                     
                     const now = new Date();
-                    $('#last-update-time').html('Terakhir diperbarui: ' + now.toLocaleTimeString());
+                    $('#last-update-time').html('<i class="fas fa-clock mr-1"></i> Diperbarui: ' + now.toLocaleTimeString());
+                } else {
+                    $('#last-update-time').html('<span class="text-red-500"><i class="fas fa-exclamation-circle mr-1"></i> Tidak ada data</span>');
                 }
             },
             error: function() {
-                $('#last-update-time').html('<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Gagal mengambil data</span>');
+                $('#last-update-time').html('<span class="text-red-500"><i class="fas fa-exclamation-circle mr-1"></i> Gagal mengambil data</span>');
             }
         });
     }
 
     function updateMapMarkers(locations) {
-        let bounds = new google.maps.LatLngBounds();
+        let bounds = [];
         let hasValidLocations = false;
 
         locations.forEach(function(loc) {
             if(loc.lat && loc.lng) {
-                const position = { lat: parseFloat(loc.lat), lng: parseFloat(loc.lng) };
-                bounds.extend(position);
+                const position = [parseFloat(loc.lat), parseFloat(loc.lng)];
+                bounds.push(position);
                 hasValidLocations = true;
 
-                // Tentukan warna ikon berdasarkan status
+                // Tentukan warna ikon berdasarkan status/kecepatan
                 let iconColor = 'blue';
                 if(loc.status && loc.status.toLowerCase().includes('stop')) iconColor = 'red';
                 else if (loc.speed > 0) iconColor = 'green';
 
-                const iconUrl = `http://maps.google.com/mapfiles/ms/icons/${iconColor}-dot.png`;
-
                 if(markers[loc.mobil_id]) {
                     // Update posisi marker yang sudah ada
-                    markers[loc.mobil_id].setPosition(position);
-                    markers[loc.mobil_id].setIcon(iconUrl);
+                    markers[loc.mobil_id].setLatLng(position);
+                    markers[loc.mobil_id].setIcon(getIcon(iconColor));
                 } else {
                     // Buat marker baru
-                    markers[loc.mobil_id] = new google.maps.Marker({
-                        position: position,
-                        map: map,
-                        title: loc.nomor_polisi,
-                        icon: iconUrl
-                    });
-
-                    // Buat InfoWindow
-                    infoWindows[loc.mobil_id] = new google.maps.InfoWindow({
-                        content: generateInfoWindowContent(loc)
-                    });
-
-                    // Event Listener klik marker
-                    markers[loc.mobil_id].addListener('click', function() {
-                        // Tutup semua infowindow
-                        Object.values(infoWindows).forEach(iw => iw.close());
-                        // Buka yang ini
-                        infoWindows[loc.mobil_id].open(map, markers[loc.mobil_id]);
-                    });
+                    markers[loc.mobil_id] = L.marker(position, {icon: getIcon(iconColor)}).addTo(map);
                 }
 
-                // Update InfoWindow content
-                infoWindows[loc.mobil_id].setContent(generateInfoWindowContent(loc));
+                // Update InfoWindow (Popup) content
+                markers[loc.mobil_id].bindPopup(generateInfoWindowContent(loc));
 
                 // Update UI Sidebar
                 $(`#speed-${loc.mobil_id}`).text(`${loc.speed} km/h`);
                 
                 let statusHtml = '';
                 if(loc.speed > 0) {
-                    statusHtml = `<i class="fas fa-circle text-success" style="font-size: 8px;"></i> Berjalan`;
+                    statusHtml = `<i class="fas fa-circle text-green-500 text-[8px] mr-1"></i> Berjalan`;
                 } else {
-                    statusHtml = `<i class="fas fa-circle text-danger" style="font-size: 8px;"></i> Berhenti`;
+                    statusHtml = `<i class="fas fa-circle text-red-500 text-[8px] mr-1"></i> Berhenti`;
                 }
                 $(`#status-${loc.mobil_id}`).html(statusHtml);
             }
         });
-
-        // Sesuaikan zoom agar semua truk terlihat (hanya jika baru pertama kali atau ada request)
-        // if(hasValidLocations && Object.keys(markers).length <= locations.length) {
-        //     map.fitBounds(bounds);
-        // }
     }
 
     function generateInfoWindowContent(loc) {
         return `
-            <div style="min-width: 200px; padding: 5px;">
-                <h6 style="margin-top: 0; margin-bottom: 5px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                    <i class="fas fa-truck"></i> ${loc.nomor_polisi}
+            <div class="min-w-[200px]">
+                <h6 class="font-bold text-sm border-b pb-2 mb-2 flex items-center">
+                    <i class="fas fa-truck text-indigo-600 mr-2"></i> ${loc.nomor_polisi}
                 </h6>
-                <div style="font-size: 13px; line-height: 1.5;">
-                    <div><strong>Armada:</strong> ${loc.merek} - ${loc.jenis}</div>
-                    <div><strong>Status:</strong> ${loc.status}</div>
-                    <div><strong>Kecepatan:</strong> ${loc.speed} km/h</div>
-                    <div style="color: #777; font-size: 11px; margin-top: 5px;">
-                        <i class="far fa-clock"></i> Update: ${loc.last_update}
+                <div class="text-xs space-y-1">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Armada:</span>
+                        <span class="font-medium">${loc.merek} - ${loc.jenis}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Status:</span>
+                        <span class="font-medium ${loc.speed > 0 ? 'text-green-600' : 'text-red-600'}">${loc.status}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Kecepatan:</span>
+                        <span class="font-medium">${loc.speed} km/h</span>
+                    </div>
+                    <div class="mt-3 pt-2 border-t border-gray-100 text-gray-400 flex items-center">
+                        <i class="far fa-clock mr-1"></i> Update: ${loc.last_update}
                     </div>
                 </div>
             </div>
@@ -218,17 +213,16 @@
     }
 
     function focusOnTruck(mobilId) {
-        if(markers[mobilId] && typeof google !== 'undefined') {
-            map.panTo(markers[mobilId].getPosition());
-            map.setZoom(15);
+        if(markers[mobilId]) {
+            // Center map to marker
+            map.setView(markers[mobilId].getLatLng(), 15);
             
-            // Buka infowindow
-            Object.values(infoWindows).forEach(iw => iw.close());
-            infoWindows[mobilId].open(map, markers[mobilId]);
+            // Open popup
+            markers[mobilId].openPopup();
             
             // Highlight list
-            $('.truck-item').removeClass('bg-light');
-            $(`[data-id="${mobilId}"]`).addClass('bg-light');
+            $('.truck-item').removeClass('bg-indigo-50 border-l-4 border-indigo-500');
+            $(`[data-id="${mobilId}"]`).addClass('bg-indigo-50 border-l-4 border-indigo-500');
         } else {
             alert('Lokasi armada ini belum diketahui atau belum diperbarui.');
         }

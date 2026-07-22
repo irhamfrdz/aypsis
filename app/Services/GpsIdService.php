@@ -4,45 +4,84 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class GpsIdService
 {
     protected $baseUrl;
-    protected $token;
+    protected $username;
+    protected $password;
 
     public function __construct()
     {
         $this->baseUrl = env('GPS_ID_BASE_URL', 'https://portal.gps.id/backend/seen/public');
-        $this->token = env('GPS_ID_TOKEN', '');
+        $this->username = env('GPS_ID_USERNAME', '');
+        $this->password = env('GPS_ID_PASSWORD', '');
+    }
+
+    /**
+     * Dapatkan token otentikasi.
+     * Token berlaku 24 jam, jadi kita cache selama 23 jam (1380 menit) untuk amannya.
+     */
+    protected function getToken()
+    {
+        if (empty($this->username) || empty($this->password)) {
+            return null;
+        }
+
+        return Cache::remember('gps_id_token', 1380, function () {
+            try {
+                $response = Http::post("{$this->baseUrl}/login", [
+                    'username' => $this->username,
+                    'password' => $this->password,
+                ]);
+
+                if ($response->successful() && isset($response['token'])) {
+                    return $response['token']; // Asumsi response memiliki key 'token'
+                }
+                
+                // Coba struktur data lain jika format response berbeda
+                if ($response->successful() && isset($response['data']['token'])) {
+                    return $response['data']['token'];
+                }
+
+                Log::error('GPS.id Login Failed: ' . $response->body());
+                return null;
+            } catch (\Exception $e) {
+                Log::error('GPS.id Login Error: ' . $e->getMessage());
+                return null;
+            }
+        });
     }
 
     /**
      * Get the latest location and status for a given IMEI.
-     * Based on the API reference provided.
      */
     public function getLatestLocation($imei)
     {
-        if (empty($this->token)) {
-            Log::warning('GPS.id Token is not set in .env');
+        $token = $this->getToken();
+
+        if (empty($token)) {
+            Log::warning('GPS.id Username/Password is not set in .env or login failed');
             return $this->mockLocationData($imei); // Fallback to mock data for testing UI
         }
 
         try {
-            // As per screenshot, there is a GET /command/log/{imei}
-            // but usually to get latest location there's a dedicated endpoint like /get-data or similar
-            // Assuming there's a generic endpoint to fetch current device state, or we fetch the log for today
             $date = date('Y-m-d');
             
             $response = Http::withHeaders([
-                'Authorization' => $this->token,
+                'Authorization' => "Bearer {$token}", // Terkadang butuh prefix Bearer, jika tidak, hapus 'Bearer '
                 'Accept' => 'application/json',
             ])->get("{$this->baseUrl}/command/log/{$imei}", [
                 'date' => $date
             ]);
 
+            // Jika token invalid (misal 401), hapus cache agar request selanjutnya minta token baru
+            if ($response->status() === 401) {
+                Cache::forget('gps_id_token');
+            }
+
             if ($response->successful()) {
-                // The actual structure depends on GPS.id response format
-                // This is a placeholder structure
                 return $response->json();
             }
 
@@ -60,8 +99,6 @@ class GpsIdService
      */
     private function mockLocationData($imei)
     {
-        // Return a mock coordinate somewhere in Jakarta (or Batam, since they use SuratJalanBongkaranBatam)
-        // Let's use a coordinate in Batam: 1.1301, 104.0529
         return [
             'success' => true,
             'data' => [
@@ -75,3 +112,4 @@ class GpsIdService
         ];
     }
 }
+
