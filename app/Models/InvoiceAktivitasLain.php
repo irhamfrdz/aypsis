@@ -57,12 +57,12 @@ class InvoiceAktivitasLain extends Model
     protected $casts = [
         'tanggal_invoice' => 'date',
         'tanggal_invoice_vendor' => 'date',
-        'subtotal' => 'decimal:2',
-        'total' => 'decimal:2',
-        'pph' => 'decimal:2',
-        'grand_total' => 'decimal:2',
-        'biaya_materai' => 'decimal:2',
-        'biaya_adjustment' => 'decimal:2',
+        'subtotal' => 'float',
+        'total' => 'float',
+        'pph' => 'float',
+        'grand_total' => 'float',
+        'biaya_materai' => 'float',
+        'biaya_adjustment' => 'float',
         'approved_at' => 'datetime',
     ];
 
