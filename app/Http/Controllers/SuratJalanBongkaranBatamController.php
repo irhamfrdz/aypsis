@@ -1346,6 +1346,17 @@ class SuratJalanBongkaranBatamController extends Controller
                 return response()->json(['error' => 'Surat Jalan not found'], 404);
             }
 
+            // Fetch gudang_tujuan from StockKontainer
+            $gudangTujuanId = '';
+            if (!empty($suratJalan->no_kontainer)) {
+                $kontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $suratJalan->no_kontainer)
+                    ->latest()
+                    ->first();
+                if ($kontainer) {
+                    $gudangTujuanId = $kontainer->gudangs_id ?? '';
+                }
+            }
+
             return response()->json([
                 'id' => $suratJalan->id,
                 'bl_id' => $suratJalan->bl_id,
@@ -1363,6 +1374,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'tujuan_alamat' => $suratJalan->tujuan_alamat ?? '',
                 'tujuan_pengambilan' => $suratJalan->tujuan_pengambilan ?? '',
                 'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? '',
+                'gudang_tujuan' => $gudangTujuanId,
                 'jenis_pengiriman' => $suratJalan->jenis_pengiriman ?? '',
                 'tanggal_ambil_barang' => $suratJalan->tanggal_ambil_barang && is_object($suratJalan->tanggal_ambil_barang) ? $suratJalan->tanggal_ambil_barang->format('Y-m-d') : $suratJalan->tanggal_ambil_barang,
                 'supir' => $suratJalan->supir ?? '',

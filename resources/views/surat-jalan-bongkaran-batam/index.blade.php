@@ -1215,6 +1215,20 @@
                                 </select>
                             </div>
                             
+                            <!-- Gudang Tujuan -->
+                            <div>
+                                <label for="edit_modal_gudang_tujuan" class="block text-sm font-medium text-gray-700 mb-1">Gudang Tujuan <span class="text-red-500">*</span></label>
+                                <select name="gudang_tujuan" id="edit_modal_gudang_tujuan"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                    <option value="">Pilih gudang tujuan</option>
+                                    @foreach($gudangs ?? [] as $gudang)
+                                        <option value="{{ $gudang->id }}">
+                                            {{ $gudang->nama_gudang }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <!-- Ring -->
                             <div>
                                 <label for="edit_modal_ring" class="block text-sm font-medium text-gray-700 mb-1">Ring</label>
@@ -2301,6 +2315,9 @@ function openEditModal(suratJalanId) {
                 document.getElementById('edit_modal_jenis_barang').value = data.jenis_barang || '';
                 document.getElementById('edit_modal_tujuan_alamat').value = data.tujuan_alamat || '';
                 document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan || '';
+                if (document.getElementById('edit_modal_gudang_tujuan')) {
+                    document.getElementById('edit_modal_gudang_tujuan').value = data.gudang_tujuan || '';
+                }
                 document.getElementById('edit_modal_jenis_pengiriman').value = data.jenis_pengiriman || '';
                 document.getElementById('edit_modal_tanggal_ambil_barang').value = data.tanggal_ambil_barang || '';
                 
