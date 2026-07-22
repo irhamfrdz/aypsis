@@ -87,7 +87,7 @@
 <script>
     let map;
     let markers = {};
-    const defaultCenter = [1.1301, 104.0529]; // Batam Default Coordinate
+    const defaultCenter = [-6.2088, 106.8456]; // Jakarta Default Coordinate
 
     $(document).ready(function() {
         initMap();

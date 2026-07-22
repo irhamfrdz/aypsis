@@ -103,8 +103,8 @@ class GpsIdService
             'success' => true,
             'data' => [
                 'imei' => $imei,
-                'lat' => 1.130100 + (rand(-50, 50) / 10000),
-                'lng' => 104.052900 + (rand(-50, 50) / 10000),
+                'lat' => -6.208800 + (rand(-50, 50) / 10000), // Jakarta
+                'lng' => 106.845600 + (rand(-50, 50) / 10000), // Jakarta
                 'speed' => rand(0, 60),
                 'status' => 'Moving',
                 'last_update' => now()->format('Y-m-d H:i:s')
