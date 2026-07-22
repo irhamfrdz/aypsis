@@ -83,14 +83,10 @@ class GpsIdService
         }
 
         try {
-            $date = date('Y-m-d');
-            
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$token}", // Terkadang butuh prefix Bearer, jika tidak, hapus 'Bearer '
+                'Authorization' => "Bearer {$token}",
                 'Accept' => 'application/json',
-            ])->get("{$this->baseUrl}/command/log/{$imei}", [
-                'date' => $date
-            ]);
+            ])->get("{$this->baseUrl}/vehicle/detail/{$imei}");
 
             // Jika token invalid (misal 401), hapus cache agar request selanjutnya minta token baru
             if ($response->status() === 401) {
