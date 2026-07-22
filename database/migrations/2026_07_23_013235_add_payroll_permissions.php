@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        DB::table('permissions')->insert([
+            ['name' => 'payroll-view', 'description' => 'View Payroll', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'payroll-create', 'description' => 'Buat Payroll', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'payroll-edit', 'description' => 'Edit Payroll', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'payroll-delete', 'description' => 'Hapus Payroll', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        DB::table('permissions')
+            ->whereIn('name', ['payroll-view', 'payroll-create', 'payroll-edit', 'payroll-delete'])
+            ->delete();
+    }
+};
