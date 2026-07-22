@@ -3,55 +3,66 @@
 @section('title', 'Live Tracking Armada')
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0">
-                    <i class="fas fa-map-marked-alt text-primary mr-2"></i> Live Tracking Armada (GPS.id)
-                </h2>
-                <div>
-                    <span id="last-update-time" class="text-muted mr-3">Menunggu pembaruan...</span>
-                    <button class="btn btn-sm btn-outline-primary" onclick="fetchLatestLocations()">
-                        <i class="fas fa-sync-alt"></i> Refresh Sekarang
-                    </button>
-                </div>
-            </div>
+<div class="px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="md:flex md:items-center md:justify-between mb-6">
+        <div class="min-w-0 flex-1">
+            <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight flex items-center">
+                <i class="fas fa-map-marked-alt text-indigo-600 mr-3"></i> 
+                Live Tracking Armada (GPS.id)
+            </h2>
+        </div>
+        <div class="mt-4 flex md:ml-4 md:mt-0 items-center space-x-4">
+            <span id="last-update-time" class="text-sm text-gray-500 font-medium">Menunggu pembaruan...</span>
+            <button onclick="fetchLatestLocations()" type="button" class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all">
+                <i class="fas fa-sync-alt mr-2 text-gray-500"></i> Refresh Sekarang
+            </button>
         </div>
     </div>
 
     @if(empty($googleMapsApiKey))
-    <div class="alert alert-warning">
-        <h5><i class="fas fa-exclamation-triangle"></i> Google Maps API Key Belum Dikonfigurasi</h5>
-        <p>Silakan tambahkan <code>GOOGLE_MAPS_API_KEY=KODE_API_ANDA</code> pada file <strong>.env</strong> Anda untuk dapat memuat Peta Google Maps.</p>
+    <div class="rounded-md bg-yellow-50 p-4 mb-6 border border-yellow-200 shadow-sm">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-yellow-800">Google Maps API Key Belum Dikonfigurasi</h3>
+                <div class="mt-2 text-sm text-yellow-700">
+                    <p>Silakan tambahkan <code class="font-bold bg-yellow-100 px-1 py-0.5 rounded">GOOGLE_MAPS_API_KEY=KODE_API_ANDA</code> pada file <strong>.env</strong> Anda untuk dapat memuat Peta Google Maps.</p>
+                </div>
+            </div>
+        </div>
     </div>
     @endif
 
-    <div class="row">
+    <div class="flex flex-col lg:flex-row gap-6">
         <!-- Sidebar Daftar Truk -->
-        <div class="col-md-3 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-                    <h5 class="mb-0">Daftar Armada Aktif</h5>
-                    <p class="text-muted small">Truk dengan IMEI terdaftar</p>
+        <div class="w-full lg:w-1/3 xl:w-1/4">
+            <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl overflow-hidden flex flex-col h-[600px]">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-100 bg-gray-50/50">
+                    <h3 class="text-base font-semibold leading-6 text-gray-900">Daftar Armada Aktif</h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">Truk dengan IMEI terdaftar</p>
                 </div>
-                <div class="card-body p-0" style="max-height: 600px; overflow-y: auto;">
-                    <ul class="list-group list-group-flush" id="truck-list">
+                <div class="flex-1 overflow-y-auto">
+                    <ul role="list" class="divide-y divide-gray-100" id="truck-list">
                         @forelse($mobils as $mobil)
-                        <li class="list-group-item list-group-item-action truck-item" data-id="{{ $mobil->id }}" onclick="focusOnTruck({{ $mobil->id }})" style="cursor: pointer;">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1 font-weight-bold">{{ $mobil->nomor_polisi }}</h6>
-                                <small class="text-muted truck-speed" id="speed-{{ $mobil->id }}">- km/h</small>
+                        <li class="relative flex justify-between gap-x-6 px-4 py-4 hover:bg-gray-50 transition-colors cursor-pointer truck-item group" data-id="{{ $mobil->id }}" onclick="focusOnTruck({{ $mobil->id }})">
+                            <div class="min-w-0 flex-auto">
+                                <p class="text-sm font-semibold leading-6 text-gray-900 group-hover:text-indigo-600 transition-colors">{{ $mobil->nomor_polisi }}</p>
+                                <p class="mt-1 truncate text-xs leading-5 text-gray-500">{{ $mobil->merek }} - {{ $mobil->jenis }}</p>
                             </div>
-                            <p class="mb-1 small">{{ $mobil->merek }} - {{ $mobil->jenis }}</p>
-                            <small class="truck-status text-secondary" id="status-{{ $mobil->id }}">
-                                <i class="fas fa-circle" style="font-size: 8px;"></i> Mencari sinyal...
-                            </small>
+                            <div class="shrink-0 flex flex-col items-end">
+                                <p class="text-sm leading-6 text-gray-900 font-medium truck-speed" id="speed-{{ $mobil->id }}">- km/h</p>
+                                <p class="mt-1 text-xs leading-5 text-gray-500 truck-status flex items-center" id="status-{{ $mobil->id }}">
+                                    <i class="fas fa-circle text-[8px] mr-1 text-gray-400"></i> Mencari sinyal...
+                                </p>
+                            </div>
                         </li>
                         @empty
-                        <li class="list-group-item text-center text-muted">
-                            <p class="mb-0 mt-3"><i class="fas fa-truck-slash fa-2x mb-2"></i></p>
-                            <p>Belum ada armada yang didaftarkan IMEI GPS.</p>
+                        <li class="px-4 py-12 text-center">
+                            <i class="fas fa-truck-slash text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-sm text-gray-500">Belum ada armada yang didaftarkan IMEI GPS.</p>
                         </li>
                         @endforelse
                     </ul>
@@ -60,11 +71,9 @@
         </div>
 
         <!-- Area Peta -->
-        <div class="col-md-9 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-body p-1">
-                    <div id="map" style="width: 100%; height: 600px; border-radius: 4px;"></div>
-                </div>
+        <div class="w-full lg:w-2/3 xl:w-3/4">
+            <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl overflow-hidden h-[600px] relative">
+                <div id="map" class="w-full h-full"></div>
             </div>
         </div>
     </div>
