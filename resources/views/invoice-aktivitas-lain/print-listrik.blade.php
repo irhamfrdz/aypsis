@@ -238,6 +238,31 @@
                         {{ $penerima ?? '-' }}
                     </td>
                 </tr>
+                <tr>
+                    <td>Bank</td>
+                    <td>: 
+                        @php
+                            $bankName = '-';
+                            if (isset($biayaListrikEntries) && $biayaListrikEntries->isNotEmpty()) {
+                                $firstEntry = $biayaListrikEntries->first();
+                                if ($firstEntry->bank) {
+                                    $bankName = $firstEntry->bank->name;
+                                }
+                            }
+                        @endphp
+                        {{ $bankName }}
+                    </td>
+                    <td>Virtual Account</td>
+                    <td>: 
+                        @php
+                            $va = '-';
+                            if (isset($biayaListrikEntries) && $biayaListrikEntries->isNotEmpty()) {
+                                $va = $biayaListrikEntries->first()->virtual_account ?? '-';
+                            }
+                        @endphp
+                        {{ $va }}
+                    </td>
+                </tr>
             </table>
         </div>
 
