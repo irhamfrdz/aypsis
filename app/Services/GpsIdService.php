@@ -36,13 +36,15 @@ class GpsIdService
                     'password' => $this->password,
                 ]);
 
-                if ($response->successful() && isset($response['token'])) {
-                    return $response['token']; // Asumsi response memiliki key 'token'
-                }
-                
-                // Coba struktur data lain jika format response berbeda
-                if ($response->successful() && isset($response['data']['token'])) {
-                    return $response['data']['token'];
+                $json = $response->json();
+
+                if ($response->successful()) {
+                    if (isset($json['token'])) {
+                        return $json['token'];
+                    }
+                    if (isset($json['data']['token'])) {
+                        return $json['data']['token'];
+                    }
                 }
 
                 Log::error('GPS.id Login Failed: ' . $response->body());
