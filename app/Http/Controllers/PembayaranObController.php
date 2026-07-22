@@ -641,11 +641,40 @@ class PembayaranObController extends Controller
                     ->with('error', 'Anda tidak memiliki izin untuk menghapus pembayaran DP OB.');
             }
 
+            DB::beginTransaction();
+
             // Store nomor for success message
             $nomorPembayaran = $pembayaran->nomor_pembayaran;
 
+            // Reverse old journal transactions and their COA balance updates
+            $oldTransactions = \App\Models\CoaTransaction::where('nomor_referensi', $pembayaran->nomor_pembayaran)->get();
+            foreach ($oldTransactions as $trans) {
+                $akun = \App\Models\Coa::find($trans->coa_id);
+                if ($akun && isset($akun->posisi_normal)) {
+                    if ($akun->posisi_normal === 'debit') {
+                        $akun->saldo_sekarang = $akun->saldo_sekarang - $trans->debit + $trans->kredit;
+                    } else {
+                        $akun->saldo_sekarang = $akun->saldo_sekarang + $trans->debit - $trans->kredit;
+                    }
+                    $akun->save();
+                }
+                $trans->delete();
+            }
+
+            // Restore Uang Muka status if used
+            if ($pembayaran->pembayaran_uang_muka_id) {
+                $uangMuka = \App\Models\PembayaranUangMuka::find($pembayaran->pembayaran_uang_muka_id);
+                if ($uangMuka && method_exists($uangMuka, 'markAsBelumTerpakai')) {
+                    $uangMuka->markAsBelumTerpakai();
+                } elseif ($uangMuka) {
+                    $uangMuka->update(['status' => 'uang_muka_belum_terpakai']);
+                }
+            }
+
             // Delete the pembayaran
             $pembayaran->delete();
+
+            DB::commit();
 
             return redirect()->route('pembayaran-ob.index')
                 ->with('success', "Pembayaran DP OB {$nomorPembayaran} berhasil dihapus.");
@@ -654,6 +683,7 @@ class PembayaranObController extends Controller
             return redirect()->route('pembayaran-ob.index')
                 ->with('error', 'Data pembayaran DP OB tidak ditemukan.');
         } catch (\Exception $e) {
+            DB::rollback();
             \Log::error('Error deleting Pembayaran OB: '.$e->getMessage());
 
             return redirect()->route('pembayaran-ob.index')
