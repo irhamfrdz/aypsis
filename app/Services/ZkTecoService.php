@@ -224,12 +224,15 @@ class ZkTecoService
                         $state = ord(substr($record, 24, 1));
                     }
 
-                    // Map state: 0, 4, 5 typically check-in (Masuk); 1, 2 typically check-out (Pulang)
-                    $type = ($state == 0 || $state == 4 || $state == 5) ? 'Masuk' : 'Pulang';
-
-                    $hour = (int) substr($timestamp, 11, 2);
-                    if ($hour >= 4 && $hour < 12) {
+                    // Map state to corresponding types
+                    if ($state == 0) {
                         $type = 'Masuk';
+                    } elseif ($state == 4) {
+                        $type = 'lembur_masuk';
+                    } elseif ($state == 5) {
+                        $type = 'lembur_pulang';
+                    } else {
+                        $type = 'Pulang';
                     }
 
                     $attendance[] = [

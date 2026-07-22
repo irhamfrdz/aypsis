@@ -93,6 +93,8 @@ class AbsensiController extends Controller
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang,
             MAX(CASE WHEN LOWER(tipe) = "istirahat_keluar" THEN waktu ELSE NULL END) as waktu_istirahat_keluar,
             MAX(CASE WHEN LOWER(tipe) = "istirahat_masuk" THEN waktu ELSE NULL END) as waktu_istirahat_masuk,
+            MIN(CASE WHEN LOWER(tipe) = "lembur_masuk" THEN waktu ELSE NULL END) as waktu_lembur_masuk,
+            MAX(CASE WHEN LOWER(tipe) = "lembur_pulang" THEN waktu ELSE NULL END) as waktu_lembur_pulang,
             MIN(CASE WHEN LOWER(tipe) = "masuk" THEN mesin_id ELSE NULL END) as mesin_id_masuk,
             MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN mesin_id ELSE NULL END) as mesin_id_pulang,
             MIN(CASE WHEN LOWER(tipe) = "masuk" THEN device ELSE NULL END) as device_masuk,
@@ -188,6 +190,7 @@ class AbsensiController extends Controller
         $pekerjaans = Karyawan::whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
         $divisis = Karyawan::whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
         $cabangs = Karyawan::whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
+        $penempatans = Karyawan::whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
 
         // Calculate normal workdays in the selected month (excluding weekends)
         $normalWorkdays = 0;
@@ -274,7 +277,7 @@ class AbsensiController extends Controller
             ];
         }
 
-        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'month', 'year'));
+        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'month', 'year'));
     }
 
     /**

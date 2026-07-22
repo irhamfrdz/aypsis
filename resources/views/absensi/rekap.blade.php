@@ -218,25 +218,15 @@
                             <input type="hidden" name="pekerjaan" value="{{ request('pekerjaan') }}">
 
                             <div class="space-y-4">
-                                <div>
-                                    <label for="export_cabang" class="block text-xs font-semibold text-gray-700 mb-1">Kantor Cabang</label>
-                                    <select name="cabang" id="export_cabang"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
-                                        <option value="">Semua Cabang</option>
-                                        @foreach($cabangs as $cabang)
-                                            <option value="{{ $cabang }}" {{ request('cabang') == $cabang ? 'selected' : '' }}>{{ $cabang }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+
                                 <div>
                                     <label for="export_tempat" class="block text-xs font-semibold text-gray-700 mb-1">Filter Tempat</label>
                                     <select name="tempat" id="export_tempat"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
                                         <option value="">Semua Tempat</option>
-                                        <option value="KANTOR" {{ request('tempat') == 'KANTOR' ? 'selected' : '' }}>KANTOR</option>
-                                        <option value="PELABUHAN" {{ request('tempat') == 'PELABUHAN' ? 'selected' : '' }}>PELABUHAN</option>
-                                        <option value="PELABUHAN 1" {{ request('tempat') == 'PELABUHAN 1' ? 'selected' : '' }}>PELABUHAN 1</option>
-                                        <option value="GARASI" {{ request('tempat') == 'GARASI' ? 'selected' : '' }}>GARASI</option>
+                                        @foreach($penempatans as $penempatan)
+                                            <option value="{{ $penempatan }}" {{ request('tempat') == $penempatan ? 'selected' : '' }}>{{ strtoupper($penempatan) }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div>

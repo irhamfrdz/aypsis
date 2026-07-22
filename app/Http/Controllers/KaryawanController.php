@@ -134,7 +134,7 @@ class KaryawanController extends Controller
                     ->orWhere('tempat_lahir', 'LIKE', "%{$search}%")
                     ->orWhere('agama', 'LIKE', "%{$search}%")
                     ->orWhere('divisi', 'LIKE', "%{$search}%")
-                    ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('pekerjaan', 'penempatan', 'LIKE', "%{$search}%")
                     ->orWhere('status_pajak', 'LIKE', "%{$search}%")
                     ->orWhere('nama_bank', 'LIKE', "%{$search}%")
                     ->orWhere('bank_cabang', 'LIKE', "%{$search}%")
@@ -152,7 +152,7 @@ class KaryawanController extends Controller
         // Handle sorting
         $sortField = $request->get('sort', 'nama_lengkap');
         $sortDirection = $request->get('direction', 'asc');
-        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'catatan_pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti', 'cabang'];
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'penempatan', 'catatan_pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti', 'cabang'];
 
         if (! in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
@@ -218,7 +218,7 @@ class KaryawanController extends Controller
         // Query builder untuk karyawan ABK
         $query = Karyawan::where(function ($q) {
             $q->where('divisi', 'ABK')
-                ->orWhere('pekerjaan', 'ABK');
+                ->orWhere('pekerjaan', 'penempatan', 'ABK');
         });
 
         // Precompute counts for header summary (filtered for ABK)
@@ -339,7 +339,7 @@ class KaryawanController extends Controller
         $isTemplate = $request->query('template', false);
 
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         $fileName = $isTemplate ? 'template_import_karyawan.csv' : 'karyawans_export_'.date('Ymd_His').'.csv';
@@ -425,7 +425,7 @@ class KaryawanController extends Controller
         \Illuminate\Support\Facades\DB::reconnect();
 
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         $fileName = 'karyawans_excel_export_'.date('Ymd_His').'.csv';
@@ -525,7 +525,7 @@ class KaryawanController extends Controller
     {
         // Generate template manually to ensure proper formatting
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         $sampleData = [
@@ -653,7 +653,7 @@ class KaryawanController extends Controller
     public function downloadExcelTemplate()
     {
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         $instructionData = [
@@ -737,7 +737,7 @@ class KaryawanController extends Controller
     public function downloadSimpleExcelTemplate()
     {
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         // Create simple Excel-compatible CSV file with headers only
@@ -782,7 +782,7 @@ class KaryawanController extends Controller
         \Illuminate\Support\Facades\DB::reconnect();
 
         $columns = [
-            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
+            'nik', 'nama_panggilan', 'nama_lengkap', 'plat', 'email', 'ktp', 'kk', 'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap', 'tempat_lahir', 'tanggal_lahir', 'no_hp', 'jenis_kelamin', 'status_perkawinan', 'agama', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak', 'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'cabang', 'nik_supervisor', 'supervisor',
         ];
 
         $fileName = 'karyawans_excel_indonesia_'.date('Ymd_His').'.csv';
@@ -916,6 +916,7 @@ class KaryawanController extends Controller
             'agama' => 'nullable|string|max:255',
             'divisi' => 'nullable|string|max:255',
             'pekerjaan' => 'nullable|string|max:255',
+            'penempatan' => 'nullable|string|max:255',
             'tanggal_masuk' => 'required|date',
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
@@ -1110,6 +1111,7 @@ class KaryawanController extends Controller
             'agama' => 'nullable|string|max:255',
             'divisi' => 'nullable|string|max:255',
             'pekerjaan' => 'nullable|string|max:255',
+            'penempatan' => 'nullable|string|max:255',
             'tanggal_masuk' => 'required|date',
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
@@ -1413,7 +1415,7 @@ class KaryawanController extends Controller
                     ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
                     ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
                     ->orWhere('divisi', 'LIKE', "%{$search}%")
-                    ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('pekerjaan', 'penempatan', 'LIKE', "%{$search}%")
                     ->orWhere('no_hp', 'LIKE', "%{$search}%")
                     ->orWhere('email', 'LIKE', "%{$search}%")
                     ->orWhere('jkn', 'LIKE', "%{$search}%")
@@ -1426,7 +1428,7 @@ class KaryawanController extends Controller
         $sortField = $request->get('sort', 'nama_lengkap');
         $sortDirection = $request->get('direction', 'asc');
 
-        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'penempatan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
         if (! in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
         }
@@ -1489,7 +1491,7 @@ class KaryawanController extends Controller
                     ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
                     ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
                     ->orWhere('divisi', 'LIKE', "%{$search}%")
-                    ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
+                    ->orWhere('pekerjaan', 'penempatan', 'LIKE', "%{$search}%")
                     ->orWhere('no_hp', 'LIKE', "%{$search}%")
                     ->orWhere('email', 'LIKE', "%{$search}%")
                     ->orWhere('jkn', 'LIKE', "%{$search}%")
@@ -1502,7 +1504,7 @@ class KaryawanController extends Controller
         $sortField = $request->get('sort', 'nama_lengkap');
         $sortDirection = $request->get('direction', 'asc');
 
-        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'penempatan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
         if (! in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
         }
@@ -1731,7 +1733,7 @@ class KaryawanController extends Controller
                 // Map only fillable attributes (best-effort) — case-insensitive keys
                 $allowed = [
                     'nik', 'nama_lengkap', 'nama_panggilan', 'email', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'agama', 'status_perkawinan', 'no_hp',
-                    'ktp', 'kk', 'divisi', 'pekerjaan', 'tanggal_masuk', 'tanggal_berhenti', 'nik_supervisor', 'supervisor', 'cabang', 'plat',
+                    'ktp', 'kk', 'divisi', 'pekerjaan', 'penempatan', 'tanggal_masuk', 'tanggal_berhenti', 'nik_supervisor', 'supervisor', 'cabang', 'plat',
                     'alamat', 'rt_rw', 'kelurahan', 'kecamatan', 'kabupaten', 'provinsi', 'kode_pos', 'alamat_lengkap',
                     'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'status_pajak', 'jkn', 'no_ketenagakerjaan', 'no_sim', 'sim_berlaku_mulai', 'sim_berlaku_sampai', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan',
                 ];

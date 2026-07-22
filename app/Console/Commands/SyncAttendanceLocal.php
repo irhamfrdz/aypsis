@@ -87,7 +87,13 @@ class SyncAttendanceLocal extends Command
                                     $nik = str_pad($nik, 4, '0', STR_PAD_LEFT);
                                 }
                                 $type = $log['type'];
-                                $logTime = Carbon::parse($log['timestamp'])->format('Y-m-d H:i:s');
+                                $logTimeObj = Carbon::parse($log['timestamp']);
+                                
+                                // Fix timezone offset for Mesin Pelabuhan (ID: 2) which is on UTC
+                                if ($mesin->id == 2) {
+                                    $logTimeObj->addHours(7);
+                                }
+                                $logTime = $logTimeObj->format('Y-m-d H:i:s');
 
                                 $key = $nik . '_' . $logTime . '_' . $type;
                                 if (isset($existingLogs[$key])) {
@@ -170,9 +176,9 @@ class SyncAttendanceLocal extends Command
                             $resolvedMesinId = $machineMap[$logSensorId];
                         }
 
-                        // Fallback to the first machine in the list if cannot resolve
+                        // If we cannot resolve it, skip safely instead of attributing it to the first machine
                         if (!$resolvedMesinId) {
-                            $resolvedMesinId = $laravelMesins->first()->id ?? $mesin->id;
+                            continue;
                         }
 
                         // Only sync logs belonging to the current machine in this iteration
@@ -184,13 +190,26 @@ class SyncAttendanceLocal extends Command
                         if (is_numeric($nik)) {
                             $nik = str_pad($nik, 4, '0', STR_PAD_LEFT);
                         }
-                        $type = (in_array(strtoupper($log['CHECKTYPE']), ['I', '0', 'MASUK'])) ? 'Masuk' : 'Pulang';
-                        $logTime = Carbon::parse($log['CHECKTIME'])->format('Y-m-d H:i:s');
-                        
-                        $hour = (int) Carbon::parse($log['CHECKTIME'])->format('H');
-                        if ($hour >= 4 && $hour < 12) {
+
+                        $checkType = strtoupper($log['CHECKTYPE']);
+                        if (in_array($checkType, ['I', '0', 'MASUK'])) {
                             $type = 'Masuk';
+                        } elseif ($checkType == '4') {
+                            $type = 'lembur_masuk';
+                        } elseif ($checkType == '5') {
+                            $type = 'lembur_pulang';
+                        } else {
+                            $type = 'Pulang';
                         }
+
+                        $logTimeObj = Carbon::parse($log['CHECKTIME']);
+                        
+                        // Fix timezone offset for Mesin Pelabuhan (ID: 2) which is on UTC
+                        if ($mesin->id == 2) {
+                            $logTimeObj->addHours(7);
+                        }
+                        
+                        $logTime = $logTimeObj->format('Y-m-d H:i:s');
 
                         $key = $nik . '_' . $logTime . '_' . $type;
                         if (isset($existingLogs[$key])) {

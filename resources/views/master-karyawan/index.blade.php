@@ -389,6 +389,23 @@
                         </th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
+                                <span>PENEMPATAN</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'penempatan', 'direction' => 'asc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'penempatan' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'penempatan', 'direction' => 'desc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'penempatan' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
                                 <span>NO HP</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_hp', 'direction' => 'asc'])) }}"
@@ -485,6 +502,13 @@
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 @if($karyawan->pekerjaan && $karyawan->pekerjaan !== '0')
                                     {{ strtoupper($karyawan->pekerjaan) }}
+                                @endif
+                            </td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
+                                @if($karyawan->penempatan)
+                                    {{ strtoupper($karyawan->penempatan) }}
+                                @else
+                                    -
                                 @endif
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->no_hp) }}</td>
@@ -628,6 +652,10 @@
                         <div>
                             <span class="block text-gray-400 mb-0.5">Pekerjaan</span>
                             <span class="font-medium">{{ $karyawan->pekerjaan && $karyawan->pekerjaan !== '0' ? strtoupper($karyawan->pekerjaan) : '-' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-gray-400 mb-0.5">Penempatan</span>
+                            <span class="font-medium">{{ $karyawan->penempatan ? strtoupper($karyawan->penempatan) : '-' }}</span>
                         </div>
                         <div>
                             <span class="block text-gray-400 mb-0.5">Kantor Cabang</span>

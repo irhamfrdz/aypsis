@@ -214,6 +214,20 @@
                 </div>
 
                 <div>
+                    <label for="penempatan" class="{{ $labelClasses }}">Penempatan</label>
+                    <select name="penempatan" id="penempatan" class="{{ $selectClasses }}">
+                        <option value="">-- Pilih Penempatan --</option>
+                        <option value="JAKARTA PELABHUHAN" {{ old('penempatan', $karyawan->penempatan ?? '') == 'JAKARTA PELABHUHAN' ? 'selected' : '' }}>JAKARTA PELABHUHAN</option>
+                        <option value="JAKARTA PELABUHAN 'romawi 1'" {{ old('penempatan', $karyawan->penempatan ?? '') == "JAKARTA PELABUHAN 'romawi 1'" ? 'selected' : '' }}>JAKARTA PELABUHAN 'romawi 1'</option>
+                        <option value="JAKARTA KRANI" {{ old('penempatan', $karyawan->penempatan ?? '') == 'JAKARTA KRANI' ? 'selected' : '' }}>JAKARTA KRANI</option>
+                        <option value="KANTOR JAKARTA" {{ old('penempatan', $karyawan->penempatan ?? '') == 'KANTOR JAKARTA' ? 'selected' : '' }}>KANTOR JAKARTA</option>
+                        <option value="GARASAI JAKARTA" {{ old('penempatan', $karyawan->penempatan ?? '') == 'GARASAI JAKARTA' ? 'selected' : '' }}>GARASAI JAKARTA</option>
+                        <option value="KANTOR BATAM" {{ old('penempatan', $karyawan->penempatan ?? '') == 'KANTOR BATAM' ? 'selected' : '' }}>KANTOR BATAM</option>
+                        <option value="GARASI BATAM" {{ old('penempatan', $karyawan->penempatan ?? '') == 'GARASI BATAM' ? 'selected' : '' }}>GARASI BATAM</option>
+                    </select>
+                </div>
+
+                <div>
                     <label for="tanggal_masuk" class="{{ $labelClasses }}">Tanggal Masuk <span class="text-red-500">*</span></label>
                     <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="{{ $inputClasses }}" value="{{ old('tanggal_masuk', $karyawan->tanggal_masuk ? (\is_object($karyawan->tanggal_masuk) ? $karyawan->tanggal_masuk->format('Y-m-d') : $karyawan->tanggal_masuk) : '') }}" required>
                 </div>

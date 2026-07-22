@@ -124,6 +124,8 @@
                             <th class="px-6 py-3 text-center text-orange-700 bg-orange-50/50">Istirahat Keluar</th>
                             <th class="px-6 py-3 text-center text-orange-700 bg-orange-50/50">Istirahat Masuk</th>
                             <th class="px-6 py-3 text-center text-red-700 bg-red-50/50">Jam Pulang</th>
+                            <th class="px-6 py-3 text-center text-purple-700 bg-purple-50/50">Lembur Masuk</th>
+                            <th class="px-6 py-3 text-center text-purple-700 bg-purple-50/50">Lembur Pulang</th>
                             <th class="px-6 py-3 text-left">Perangkat (IN / OUT)</th>
                             <th class="px-6 py-3 text-left">Detail Lokasi</th>
                             <th class="px-6 py-3 text-center">Foto</th>
@@ -184,6 +186,36 @@
                                     </form>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-purple-600 bg-purple-50/20 group relative">
+                                    {{ $absensi->waktu_lembur_masuk ? Carbon\Carbon::parse($absensi->waktu_lembur_masuk)->format('H:i:s') : '-' }}
+                                    @if($absensi->waktu_lembur_masuk)
+                                    <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam lembur masuk ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="nik" value="{{ $absensi->nik }}">
+                                        <input type="hidden" name="tanggal" value="{{ $absensi->tanggal }}">
+                                        <input type="hidden" name="tipe" value="lembur_masuk">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 bg-white rounded-full p-0.5 shadow-sm" title="Hapus Jam Lembur Masuk">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </form>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center font-mono font-bold text-purple-600 bg-purple-50/20 group relative">
+                                    {{ $absensi->waktu_lembur_pulang ? Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('H:i:s') : '-' }}
+                                    @if($absensi->waktu_lembur_pulang)
+                                    <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam lembur pulang ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="nik" value="{{ $absensi->nik }}">
+                                        <input type="hidden" name="tanggal" value="{{ $absensi->tanggal }}">
+                                        <input type="hidden" name="tipe" value="lembur_pulang">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 bg-white rounded-full p-0.5 shadow-sm" title="Hapus Jam Lembur Pulang">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
+                                    </form>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-600">
                                     <div class="space-y-1 text-[11px]">
                                         <div><span class="text-[9px] font-extrabold uppercase text-green-600 bg-green-100/80 px-1 py-0.5 rounded mr-1">IN</span>{{ $absensi->mesin_id_masuk && $mesins->get($absensi->mesin_id_masuk) ? $mesins->get($absensi->mesin_id_masuk)->nama_mesin : ($absensi->device_masuk ?: '-') }}</div>
@@ -224,7 +256,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="px-6 py-10 text-center">
+                                <td colspan="13" class="px-6 py-10 text-center">
                                             <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
