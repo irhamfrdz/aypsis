@@ -171,6 +171,17 @@ return [
                 'report-kerja-supir-batam-view' => 'View Report Kerja Supir Batam',
             ],
         ],
+        'payroll' => [
+            'name' => 'Payroll',
+            'description' => 'Menu Payroll Karyawan',
+            'required' => true,
+            'sub_modules' => [
+                'payroll-view' => 'View Payroll',
+                'payroll-create' => 'Buat Payroll',
+                'payroll-edit' => 'Edit Payroll',
+                'payroll-delete' => 'Hapus Payroll',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
@@ -221,5 +232,8 @@ return [
 
         // Report Kerja Supir Batam - butuh report-kerja-supir-batam-view
         'report-kerja-supir-batam' => ['report-kerja-supir-batam-view'],
+
+        // Payroll
+        'payroll' => ['payroll-view'],
     ],
 ];

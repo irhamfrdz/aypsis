@@ -20,7 +20,7 @@ class Karyawan extends Model
         'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak',
         'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'status_jkn', 'no_ketenagakerjaan', 'status_bp_jamsostek', 'cabang_bpjs', 'no_sim',
         'sim_berlaku_mulai', 'sim_berlaku_sampai',
-        'cabang', 'nik_supervisor', 'supervisor', 'verification_status', 'verified_by', 'verified_at',
+        'cabang', 'nik_supervisor', 'supervisor', 'verification_status', 'verified_by', 'verified_at', 'nominal_uang_makan',
     ];
 
     protected $dates = [
@@ -126,6 +126,11 @@ class Karyawan extends Model
     public function saldoUtang()
     {
         return $this->hasOne(SaldoUtangSupir::class, 'karyawan_id');
+    }
+
+    public function absensi()
+    {
+        return $this->hasMany(Absensi::class, 'karyawan_id', 'id');
     }
 
     public function riwayatUtang()

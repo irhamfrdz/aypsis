@@ -509,6 +509,33 @@
                 </div>
                 @endif
 
+                <!-- Payroll Section -->
+                @php
+                    $isPayrollRoute = Request::routeIs('payroll.*');
+                    $showPayrollSection = $user && ($user->can('payroll-view') || $isAdmin);
+                @endphp
+
+                @if($showPayrollSection)
+                <div class="mt-4 mb-2">
+                    <button id="payroll-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group text-sm font-medium {{ $isPayrollRoute ? 'bg-green-50 text-green-700 font-semibold shadow-sm' : '' }}">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 {{ $isPayrollRoute ? 'text-green-600' : 'text-gray-400 group-hover:text-green-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="text-sm font-semibold">Payroll</span>
+                        </div>
+                        <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isPayrollRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="payroll-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isPayrollRoute) style="display: block;" @endif>
+                        <a href="{{ route('payroll.uang-makan') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('payroll.uang-makan') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                            <span class="text-xs font-medium">Uang Makan Mingguan</span>
+                        </a>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Master Data Section -->
                 @php
                     $isMasterRoute = Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.pricelist-gate-in.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master-pricelist-labuh-tambat.*') || Request::routeIs('master-pricelist-freight.*') || Request::routeIs('master.item-kwitansi.*');
@@ -2782,6 +2809,7 @@
         setupDropdown('monitoring-menu-toggle', 'monitoring-menu-content');
         setupDropdown('absensi-menu-toggle', 'absensi-menu-content');
         setupDropdown('email-menu-toggle', 'email-menu-content');
+        setupDropdown('payroll-menu-toggle', 'payroll-menu-content');
 
         // Sidebar search functionality
         const sidebarSearch = document.getElementById('sidebar-search');

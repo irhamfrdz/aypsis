@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Edit Pengguna')
 @section('page_title', 'Edit Pengguna')
@@ -3505,6 +3505,50 @@
                             </tr>
 
                             {{-- Pembayaran --}}
+                            <tr class="module-row" data-module="payroll">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Payroll</div>
+                                            <div class="text-xs text-gray-500">Modul pengelolaan payroll dan uang makan</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="payroll-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="payroll-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="payroll-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="payroll-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">-</td>
+                                <td class="text-center text-gray-500 text-sm py-3">-</td>
+                                <td class="text-center text-gray-500 text-sm py-3">-</td>
+                            </tr>
+
+                            {{-- Payroll Sub-modules --}}
+                            <tr class="submodule-row" data-parent="payroll">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Payroll Mingguan & Bulanan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[payroll][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['payroll']['view']) && $userMatrixPermissions['payroll']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[payroll][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['payroll']['create']) && $userMatrixPermissions['payroll']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[payroll][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['payroll']['update']) && $userMatrixPermissions['payroll']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[payroll][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['payroll']['delete']) && $userMatrixPermissions['payroll']['delete']) checked @endif></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                            </tr>
+
                             <tr class="module-row" data-module="pembayaran">
                                 <td class="module-header">
                                     <div class="flex items-center">
@@ -4095,259 +4139,6 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
-                            {{-- Pembayaran --}}
-                            <tr class="module-row" data-module="pembayaran">
-                                <td class="module-header">
-                                    <div class="flex items-center">
-                                        <span class="expand-icon text-lg mr-2">▶</span>
-                                        <div>
-                                            <div class="font-semibold">Pembayaran</div>
-                                            <div class="text-xs text-gray-500">Modul pengelolaan pembayaran uang muka dan OB</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="view">
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="create">
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="update">
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="delete">
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="approve">
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="print">
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="export">
-                                </td>
-                            </tr>
-
-                            {{-- Pembayaran Sub-modules --}}
-                            <tr class="submodule-row" data-parent="pembayaran">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─</span>
-                                        <span>Pembayaran Uang Muka</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-uang-muka']['view']) && $userMatrixPermissions['pembayaran-uang-muka']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-uang-muka']['create']) && $userMatrixPermissions['pembayaran-uang-muka']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-uang-muka']['update']) && $userMatrixPermissions['pembayaran-uang-muka']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-uang-muka']['delete']) && $userMatrixPermissions['pembayaran-uang-muka']['delete']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-uang-muka']['approve']) && $userMatrixPermissions['pembayaran-uang-muka']['approve']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-uang-muka']['print']) && $userMatrixPermissions['pembayaran-uang-muka']['print']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-uang-muka']['export']) && $userMatrixPermissions['pembayaran-uang-muka']['export']) checked @endif></td>
-                            </tr>
-
-                            <tr class="submodule-row" data-parent="pembayaran">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─</span>
-                                        <span>Realisasi Uang Muka</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['realisasi-uang-muka']['view']) && $userMatrixPermissions['realisasi-uang-muka']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['realisasi-uang-muka']['create']) && $userMatrixPermissions['realisasi-uang-muka']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['realisasi-uang-muka']['update']) && $userMatrixPermissions['realisasi-uang-muka']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['realisasi-uang-muka']['delete']) && $userMatrixPermissions['realisasi-uang-muka']['delete']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['realisasi-uang-muka']['approve']) && $userMatrixPermissions['realisasi-uang-muka']['approve']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['realisasi-uang-muka']['print']) && $userMatrixPermissions['realisasi-uang-muka']['print']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['realisasi-uang-muka']['export']) && $userMatrixPermissions['realisasi-uang-muka']['export']) checked @endif></td>
-                            </tr>
-
-                            <tr class="submodule-row" data-parent="pembayaran">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─</span>
-                                        <span>Pembayaran OB</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[pembayaran-ob][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-ob']['view']) && $userMatrixPermissions['pembayaran-ob']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-ob][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-ob']['create']) && $userMatrixPermissions['pembayaran-ob']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-ob][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-ob']['update']) && $userMatrixPermissions['pembayaran-ob']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-ob][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-ob']['delete']) && $userMatrixPermissions['pembayaran-ob']['delete']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-ob][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-ob']['approve']) && $userMatrixPermissions['pembayaran-ob']['approve']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-ob][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-ob']['print']) && $userMatrixPermissions['pembayaran-ob']['print']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-ob][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-ob']['export']) && $userMatrixPermissions['pembayaran-ob']['export']) checked @endif></td>
-                            </tr>
-
-                            {{-- Audit Log --}}
-                            <tr class="module-row" data-module="audit-log">
-                                <td class="module-header">
-                                    <div class="flex items-center">
-                                        <span class="expand-icon text-lg mr-2">▶</span>
-                                        <div>
-                                            <div class="font-semibold flex items-center">
-                                                <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                                </svg>
-                                                Audit Log
-                                            </div>
-                                            <div class="text-xs text-gray-500">Pengelolaan log aktivitas sistem</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="audit-log-header-checkbox permission-checkbox" data-permission="view">
-                                </td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="audit-log-header-checkbox permission-checkbox" data-permission="export">
-                                </td>
-                            </tr>
-
-                            <tr class="submodule-row" data-parent="audit-log">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <svg class="w-3 h-3 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                        </svg>
-                                        <span>Lihat Log Aktivitas</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[audit-log][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['audit-log']['view']) && $userMatrixPermissions['audit-log']['view']) checked @endif></td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                            </tr>
-
-                            <tr class="submodule-row" data-parent="audit-log">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <svg class="w-3 h-3 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <span>Export Log ke CSV</span>
-                                    </div>
-                                </td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td><input type="checkbox" name="permissions[audit-log][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['audit-log']['export']) && $userMatrixPermissions['audit-log']['export']) checked @endif></td>
-                            </tr>
-
-                            {{-- Manifest - Single Row --}}
-                            <tr>
-                                <td class="text-left font-medium">
-                                    <div class="flex items-center">
-                                        <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <span>Manifest</span>
-                                    </div>
-                                    <div class="text-xs text-gray-500 ml-6">Pengelolaan data manifest pengiriman kontainer</div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[manifest][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['manifest']['view']) && $userMatrixPermissions['manifest']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[manifest][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['manifest']['create']) && $userMatrixPermissions['manifest']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[manifest][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['manifest']['update']) && $userMatrixPermissions['manifest']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[manifest][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['manifest']['delete']) && $userMatrixPermissions['manifest']['delete']) checked @endif></td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                            </tr>
-
-                            {{-- BL (Bill of Lading) - Single Row --}}
-                            <tr>
-                                <td class="text-left font-medium">
-                                    <div class="flex items-center">
-                                        <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <span>BL (Bill of Lading)</span>
-                                    </div>
-                                    <div class="text-xs text-gray-500 ml-6">Pengelolaan dokumen Bill of Lading</div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[bl][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['view']) && $userMatrixPermissions['bl']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[bl][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['create']) && $userMatrixPermissions['bl']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[bl][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['update']) && $userMatrixPermissions['bl']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[bl][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['delete']) && $userMatrixPermissions['bl']['delete']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[bl][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['approve']) && $userMatrixPermissions['bl']['approve']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[bl][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['print']) && $userMatrixPermissions['bl']['print']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[bl][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['export']) && $userMatrixPermissions['bl']['export']) checked @endif></td>
-                            </tr>
-
-                            {{-- OB (Ocean Bunker) - Single Row --}}
-                            <tr>
-                                <td class="text-left font-medium">
-                                    <div class="flex items-center">
-                                        <svg class="w-4 h-4 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
-                                        </svg>
-                                        <span>OB (Ocean Bunker)</span>
-                                    </div>
-                                    <div class="text-xs text-gray-500 ml-6">Pengelolaan Ocean Bunker - pilih kapal dan voyage</div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[ob][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['ob']['view']) && $userMatrixPermissions['ob']['view']) checked @endif></td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                            </tr>
-
-                            {{-- Email & Komunikasi --}}
-                            <tr class="module-row" data-module="email">
-                                <td class="module-header">
-                                    <div class="flex items-center">
-                                        <span class="expand-icon text-lg mr-2">▶</span>
-                                        <div>
-                                            <div class="font-semibold">Email & Komunikasi</div>
-                                            <div class="text-xs text-gray-500">Akses fitur webmail IMAP/SMTP</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="header-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" data-permission="view">
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="header-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" data-permission="create">
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="header-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" data-permission="update">
-                                </td>
-                                <td class="text-center text-gray-500 text-sm py-3">
-                                    <input type="checkbox" class="header-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500" data-permission="delete">
-                                </td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                            </tr>
-                            <tr class="submodule-row" data-parent="email">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─</span>
-                                        <span>Kelola Email & Pengaturan</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[email][view]" value="1" class="permission-checkbox" @if(old('permissions.email.view') || (isset($userMatrixPermissions['email']['view']) && $userMatrixPermissions['email']['view']) || ($user && $user->can('email-view'))) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[email][create]" value="1" class="permission-checkbox" @if(old('permissions.email.create') || (isset($userMatrixPermissions['email']['create']) && $userMatrixPermissions['email']['create']) || ($user && $user->can('email-create'))) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[email][settings]" value="1" class="permission-checkbox" @if(old('permissions.email.settings') || (isset($userMatrixPermissions['email']['settings']) && $userMatrixPermissions['email']['settings']) || ($user && $user->can('email-settings'))) checked @endif title="Hak Akses Pengaturan Akun Email"></td>
-                                <td><input type="checkbox" name="permissions[email][delete]" value="1" class="permission-checkbox" @if(old('permissions.email.delete') || (isset($userMatrixPermissions['email']['delete']) && $userMatrixPermissions['email']['delete']) || ($user && $user->can('email-delete'))) checked @endif></td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                                <td class="empty-cell text-center text-gray-400">-</td>
-                            </tr>
-
-                        </tbody>
                     </table>
                 </div>
             </div>
@@ -4832,6 +4623,9 @@
 
                 // Initialize check all pembayaran permissions
                 initializeCheckAllPembayaran();
+
+                // Initialize check all payroll permissions
+                initializeCheckAllPayroll();
 
                 // Initialize check all aktivitas permissions
                 initializeCheckAllAktivitas();
@@ -5348,6 +5142,58 @@
 
                         headerCheckbox.checked = allChecked;
                         headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            function initializeCheckAllPayroll() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.payroll-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in payroll sub-modules
+                        const payrollCheckboxes = document.querySelectorAll(`[data-parent="payroll"] input[name*="[${permission}]"]`);
+                        payrollCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`Semua izin ${permission} Payroll telah dicentang`, 'success');
+                        } else {
+                            showToast(`Semua izin ${permission} Payroll telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="payroll"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updatePayrollHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updatePayrollHeaderCheckboxes();
+            }
+
+            function updatePayrollHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckboxes = document.querySelectorAll(`.payroll-header-checkbox[data-permission="${permission}"]`);
+                    const subCheckboxes = document.querySelectorAll(`[data-parent="payroll"] input[name*="[${permission}]"]`);
+
+                    if (subCheckboxes.length > 0) {
+                        const allChecked = Array.from(subCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(subCheckboxes).some(cb => cb.checked);
+
+                        headerCheckboxes.forEach(function(headerCheckbox) {
+                            headerCheckbox.checked = allChecked;
+                            headerCheckbox.indeterminate = someChecked && !allChecked;
+                        });
                     }
                 });
             }

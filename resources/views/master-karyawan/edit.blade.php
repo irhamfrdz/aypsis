@@ -228,6 +228,11 @@
                 </div>
 
                 <div>
+                    <label for="nominal_uang_makan" class="{{ $labelClasses }}">Nominal Uang Makan (Rp/Hari)</label>
+                    <input type="number" name="nominal_uang_makan" id="nominal_uang_makan" class="{{ $inputClasses }}" value="{{ old('nominal_uang_makan', $karyawan->nominal_uang_makan ?? 50000) }}">
+                </div>
+
+                <div>
                     <label for="tanggal_masuk" class="{{ $labelClasses }}">Tanggal Masuk <span class="text-red-500">*</span></label>
                     <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="{{ $inputClasses }}" value="{{ old('tanggal_masuk', $karyawan->tanggal_masuk ? (\is_object($karyawan->tanggal_masuk) ? $karyawan->tanggal_masuk->format('Y-m-d') : $karyawan->tanggal_masuk) : '') }}" required>
                 </div>

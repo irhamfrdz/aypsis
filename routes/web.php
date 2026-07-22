@@ -6569,5 +6569,9 @@ Route::middleware(['auth',
         Route::delete('/{email}', [\App\Http\Controllers\EmailController::class, 'forceDelete'])->name('forceDelete')->middleware('can:email-delete');
     });
 
+    // Payroll
+    Route::get('/payroll', [\App\Http\Controllers\PayrollController::class, 'index'])->name('payroll.index')->middleware('can:payroll-view');
+    Route::get('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'uangMakan'])->name('payroll.uang-makan')->middleware('can:payroll-view');
+    Route::post('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'storeUangMakan'])->name('payroll.uang-makan.store')->middleware('can:payroll-view');
 });
 

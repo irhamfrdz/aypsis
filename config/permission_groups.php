@@ -49,4 +49,9 @@ return [
         'label' => 'Biaya',
         'prefixes' => ['biaya-'],
     ],
+
+    'payroll' => [
+        'label' => 'Payroll',
+        'prefixes' => ['payroll-'],
+    ],
 ];
