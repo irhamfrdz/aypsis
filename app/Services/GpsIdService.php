@@ -48,6 +48,8 @@ class GpsIdService
                     $token = $json['token'];
                 } elseif (isset($json['data']['token'])) {
                     $token = $json['data']['token'];
+                } elseif (isset($json['message']['data']['token'])) {
+                    $token = $json['message']['data']['token'];
                 }
 
                 if ($token) {
