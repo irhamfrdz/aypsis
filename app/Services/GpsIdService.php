@@ -63,7 +63,7 @@ class GpsIdService
 
         if (empty($token)) {
             Log::warning('GPS.id Username/Password is not set in .env or login failed');
-            return $this->mockLocationData($imei); // Fallback to mock data for testing UI
+            return null;
         }
 
         try {
@@ -92,24 +92,6 @@ class GpsIdService
             Log::error("GPS.id Connection Error: " . $e->getMessage());
             return null;
         }
-    }
-
-    /**
-     * Generate mock data to test the Google Maps UI before real API is active.
-     */
-    private function mockLocationData($imei)
-    {
-        return [
-            'success' => true,
-            'data' => [
-                'imei' => $imei,
-                'lat' => -6.208800 + (rand(-50, 50) / 10000), // Jakarta
-                'lng' => 106.845600 + (rand(-50, 50) / 10000), // Jakarta
-                'speed' => rand(0, 60),
-                'status' => 'Moving',
-                'last_update' => now()->format('Y-m-d H:i:s')
-            ]
-        ];
     }
 }
 
