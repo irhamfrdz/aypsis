@@ -134,6 +134,12 @@
                     'text' => 'text-amber-600',
                     'items' => $usages->filter(fn($i) => isset($i->is_amprahan) && $i->is_amprahan),
                 ],
+                'Pemakaian Ban' => [
+                    'icon' => 'fa-circle-notch',
+                    'bg' => 'bg-blue-100',
+                    'text' => 'text-blue-600',
+                    'items' => $usages->filter(fn($i) => isset($i->is_ban) && $i->is_ban),
+                ],
             ];
         @endphp
 
@@ -205,9 +211,16 @@
                                             Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
                                         </td>
                                         <td class="px-6 py-4 text-center whitespace-nowrap no-print">
-                                            <a href="{{ route('stock-amprahan.show', $item->stock_amprahan_id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Amprahan">
-                                                <i class="fas fa-eye text-xs"></i>
-                                            </a>
+                                            @if(isset($item->is_amprahan) && $item->is_amprahan)
+                                                <a href="{{ route('stock-amprahan.show', $item->stock_amprahan_id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Amprahan">
+                                                    <i class="fas fa-eye text-xs"></i>
+                                                </a>
+                                            @endif
+                                            @if(isset($item->is_ban) && $item->is_ban)
+                                                <a href="{{ route('stock-ban.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Ban">
+                                                    <i class="fas fa-eye text-xs"></i>
+                                                </a>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach

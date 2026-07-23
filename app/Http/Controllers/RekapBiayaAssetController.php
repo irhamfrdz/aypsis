@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Mobil;
 use App\Models\AlatBerat;
 use App\Models\StockAmprahanUsage;
+use App\Models\StockBan;
 use Illuminate\Http\Request;
 
 class RekapBiayaAssetController extends Controller
@@ -93,6 +94,67 @@ class RekapBiayaAssetController extends Controller
 
             $totalNominal += $total;
         }
+
+        // Fetch Pemakaian Ban
+        $banQuery = StockBan::with(['namaStockBan']);
+        
+        if ($type === 'mobil') {
+            $banQuery->where('mobil_id', $id);
+        } else {
+            $banQuery->where('alat_berat_id', $id);
+        }
+
+        if ($bulan) {
+            $banQuery->where(function($q) use ($bulan) {
+                // Check both tanggal_digunakan and tanggal_keluar since both are used to indicate usage date
+                $q->whereMonth('tanggal_digunakan', $bulan)
+                  ->orWhere(function($q2) use ($bulan) {
+                      $q2->whereNull('tanggal_digunakan')->whereMonth('tanggal_keluar', $bulan);
+                  });
+            });
+        }
+        if ($tahun) {
+            $banQuery->where(function($q) use ($tahun) {
+                $q->whereYear('tanggal_digunakan', $tahun)
+                  ->orWhere(function($q2) use ($tahun) {
+                      $q2->whereNull('tanggal_digunakan')->whereYear('tanggal_keluar', $tahun);
+                  });
+            });
+        }
+
+        $bans = $banQuery->get();
+
+        foreach ($bans as $ban) {
+            $total = floatval($ban->harga_beli ?? 0);
+            
+            $ban->apportioned = [
+                'nominal' => $total,
+                'ppn' => 0,
+                'pph' => 0,
+                'total_biaya' => $total,
+            ];
+            $ban->is_amprahan = false;
+            $ban->is_ban = true;
+            $ban->nomor_invoice = $ban->nomor_bukti ?? '-';
+            $ban->tanggal = $ban->tanggal_digunakan ?? $ban->tanggal_keluar;
+            $ban->jenis_biaya = 'Pemakaian Ban (' . ($ban->namaStockBan->nama ?? 'Ban') . ' - ' . ($ban->nomor_seri ?? '-') . ')';
+            $ban->klasifikasiBiaya = (object)['nama' => 'Stock Ban'];
+            
+            // To match view expectation
+            $ban->jumlah = 1;
+            
+            // Need to mock relationship for view if it expects it
+            $ban->stockAmprahan = (object)[
+                'nama_barang' => ($ban->namaStockBan->nama ?? 'Ban') . ' (' . ($ban->nomor_seri ?? '-') . ')',
+                'harga_satuan' => $total
+            ];
+
+            $totalNominal += $total;
+            $usages->push($ban);
+        }
+
+        // Sort combined usages by date descending
+        $usages = $usages->sortByDesc('tanggal')->values();
 
         $summary = [
             'total_nominal' => $totalNominal,
