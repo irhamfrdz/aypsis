@@ -1,0 +1,304 @@
+@extends('layouts.app')
+
+@section('title', 'Rekap Biaya Asset: ' . $assetName)
+
+@section('content')
+<div class="container mx-auto px-4 py-8 printable-area">
+    <!-- Action Header (Hidden on Print) -->
+    <div class="flex items-center justify-between mb-8 no-print">
+        <a href="{{ route('rekap-biaya-asset.index') }}" 
+           class="inline-flex items-center px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border border-gray-200 shadow-sm transition duration-200 text-sm">
+            <i class="fas fa-arrow-left mr-2"></i> Kembali ke Pemilihan
+        </a>
+        <div class="flex gap-2">
+            <button onclick="window.print()" 
+                    class="inline-flex items-center px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition duration-200 text-sm">
+                <i class="fas fa-print mr-2"></i> Cetak Laporan
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <div class="bg-gradient-to-r from-slate-800 to-teal-900 rounded-2xl shadow-xl border-none p-8 mb-8 text-white relative overflow-hidden">
+        <div class="absolute inset-0 bg-pattern opacity-10 pointer-events-none"></div>
+        <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="bg-emerald-500/30 text-emerald-200 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Rekapitulasi Biaya</span>
+                <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
+                    {{ $type === 'mobil' ? 'Mobil/Truk' : 'Alat Berat' }}
+                </span>
+            </div>
+            <h1 class="text-3xl font-extrabold tracking-tight">Asset: {{ $assetName }}</h1>
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 text-slate-200 text-sm">
+                @if($bulan && $tahun)
+                    <span class="flex items-center"><i class="fas fa-calendar mr-2 text-emerald-400"></i> Periode: <strong>{{ date("F", mktime(0, 0, 0, $bulan, 1)) }} {{ $tahun }}</strong></span>
+                @elseif($bulan)
+                    <span class="flex items-center"><i class="fas fa-calendar mr-2 text-emerald-400"></i> Bulan: <strong>{{ date("F", mktime(0, 0, 0, $bulan, 1)) }}</strong></span>
+                @elseif($tahun)
+                    <span class="flex items-center"><i class="fas fa-calendar mr-2 text-emerald-400"></i> Tahun: <strong>{{ $tahun }}</strong></span>
+                @else
+                    <span class="flex items-center"><i class="fas fa-calendar mr-2 text-emerald-400"></i> Periode: <strong>Semua Waktu</strong></span>
+                @endif
+                <span class="flex items-center"><i class="fas fa-clock mr-2 text-emerald-400"></i> Tanggal Cetak: <strong>{{ \Carbon\Carbon::now()->format('d F Y H:i') }}</strong></span>
+                <span class="flex items-center"><i class="fas fa-file-invoice mr-2 text-emerald-400"></i> Total Records: <strong>{{ $usages->count() }}</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <!-- Total Nominal -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total Nominal</span>
+                <span class="text-2xl font-extrabold text-gray-800 block mt-1">Rp {{ number_format($summary['total_nominal'], 0, ',', '.') }}</span>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-xl text-blue-600">
+                <i class="fas fa-money-bill-wave text-xl"></i>
+            </div>
+        </div>
+
+        <!-- Total PPN -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total PPN</span>
+                <span class="text-2xl font-extrabold text-emerald-600 block mt-1">Rp {{ number_format($summary['total_ppn'], 0, ',', '.') }}</span>
+            </div>
+            <div class="bg-emerald-50 p-4 rounded-xl text-emerald-600">
+                <i class="fas fa-calculator text-xl"></i>
+            </div>
+        </div>
+
+        <!-- Total PPH -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+            <div>
+                <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total PPh</span>
+                <span class="text-2xl font-extrabold text-rose-600 block mt-1">Rp {{ number_format($summary['total_pph'], 0, ',', '.') }}</span>
+            </div>
+            <div class="bg-rose-50 p-4 rounded-xl text-rose-600">
+                <i class="fas fa-percentage text-xl"></i>
+            </div>
+        </div>
+
+        <!-- Grand Total -->
+        <div class="bg-emerald-600 rounded-2xl shadow-md p-6 flex items-center justify-between hover:shadow-lg transition-all text-white">
+            <div>
+                <span class="text-xs font-bold text-emerald-200 uppercase tracking-wider block">Grand Total Biaya</span>
+                <span class="text-2xl font-black block mt-1">Rp {{ number_format($summary['grand_total'], 0, ',', '.') }}</span>
+            </div>
+            <div class="bg-white/10 p-4 rounded-xl text-white">
+                <i class="fas fa-coins text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual Breakdown / Progress Bars -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
+        <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center">
+            <i class="fas fa-chart-pie text-emerald-600 mr-2"></i> Proporsi Biaya Berdasarkan Klasifikasi
+        </h2>
+        <div class="space-y-4">
+            @php
+                $maxGroupTotal = $grouped->map(fn($items) => $items->sum(fn($i) => $i->apportioned['total_biaya']))->max() ?: 1;
+            @endphp
+            @foreach($grouped as $category => $items)
+                @php
+                    $groupTotal = $items->sum(fn($i) => $i->apportioned['total_biaya']);
+                    $percentageOfMax = ($groupTotal / $maxGroupTotal) * 100;
+                    $percentageOfGrand = $summary['grand_total'] > 0 ? ($groupTotal / $summary['grand_total']) * 100 : 0;
+                @endphp
+                <div>
+                    <div class="flex justify-between text-sm font-semibold text-gray-700 mb-1">
+                        <span>{{ $category }}</span>
+                        <span>Rp {{ number_format($groupTotal, 0, ',', '.') }} <span class="text-xs font-normal text-gray-400">({{ number_format($percentageOfGrand, 1) }}%)</span></span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-3">
+                        <div class="bg-emerald-500 h-3 rounded-full transition-all duration-500" style="width: {{ $percentageOfMax }}%"></div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    <!-- Detailed Cost Table (Grouped into Accordions) -->
+    <div class="space-y-4 mb-8">
+        <h2 class="text-xl font-extrabold text-gray-800 flex items-center border-b border-gray-200 pb-4 mb-4 mt-8">
+            <i class="fas fa-layer-group text-emerald-600 mr-2"></i> Rincian Biaya Berdasarkan Kategori
+        </h2>
+
+        @php
+            $categorized = [
+                'Pemakaian Amprahan' => [
+                    'icon' => 'fa-box-open',
+                    'bg' => 'bg-amber-100',
+                    'text' => 'text-amber-600',
+                    'items' => $usages->filter(fn($i) => isset($i->is_amprahan) && $i->is_amprahan),
+                ],
+            ];
+        @endphp
+
+        @foreach($categorized as $catName => $catData)
+            @php
+                $catItems = $catData['items'];
+                if($catItems->count() == 0) continue;
+                
+                $catTotal = $catItems->sum(fn($i) => $i->apportioned['total_biaya']);
+                $accordionId = Str::slug($catName);
+            @endphp
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid">
+                <!-- Accordion Header -->
+                <button type="button" 
+                        class="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none toggle-accordion"
+                        data-target="#accordion-{{ $accordionId }}">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-xl {{ $catData['bg'] }} {{ $catData['text'] }} flex items-center justify-center mr-4">
+                            <i class="fas {{ $catData['icon'] }} text-lg"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-bold text-gray-800 text-base">{{ $catName }}</h3>
+                            <p class="text-xs text-gray-500 font-medium">{{ $catItems->count() }} Transaksi</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="font-bold text-gray-900 mr-4 tracking-tight">Rp {{ number_format($catTotal, 0, ',', '.') }}</span>
+                        <div class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm icon-chevron-container transition-colors">
+                            <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 icon-chevron text-xs"></i>
+                        </div>
+                    </div>
+                </button>
+                
+                <!-- Accordion Body (Table) -->
+                <div id="accordion-{{ $accordionId }}" class="accordion-body" style="display: none;">
+                    <div class="border-t border-gray-200 overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-white">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Tanggal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">No. Bukti / Barang</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Qty x Harga</th>
+                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Total</th>
+                                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-20 no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100">
+                                @php $no = 1; @endphp
+                                @foreach($catItems as $item)
+                                    <tr class="hover:bg-gray-50/50 transition-colors">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-medium">
+                                            {{ $no++ }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
+                                            {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/M/Y') : '-' }}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-xs font-bold text-gray-800">{{ $item->nomor_invoice }}</div>
+                                            <div class="text-xs text-gray-500 mt-1 font-normal flex items-center">
+                                                <i class="fas fa-box text-gray-400 mr-1"></i> {{ $item->stockAmprahan->nama_barang ?? 'Barang' }}
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-xs text-gray-700">
+                                            {{ $item->jumlah }} x Rp {{ number_format($item->stockAmprahan->harga_satuan ?? 0, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-6 py-4 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
+                                            Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-6 py-4 text-center whitespace-nowrap no-print">
+                                            <a href="{{ route('stock-amprahan.show', $item->stock_amprahan_id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Amprahan">
+                                                <i class="fas fa-eye text-xs"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot class="bg-gray-50/80 font-bold border-t border-gray-200">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $catName }}</td>
+                                    <td class="px-6 py-4 text-right text-sm text-gray-900">
+                                        Rp {{ number_format($catTotal, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 no-print"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+
+        @if($usages->count() === 0)
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid p-12 text-center text-gray-500">
+                <i class="fas fa-truck-moving text-gray-300 text-5xl mb-4 block"></i>
+                <p class="font-semibold text-lg">Tidak ada data biaya yang ditemukan</p>
+                <p class="text-gray-400 text-sm mt-1">Belum ada pemakaian Amprahan untuk asset ini pada periode yang dipilih.</p>
+            </div>
+        @endif
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $('.toggle-accordion').on('click', function() {
+            const target = $(this).data('target');
+            const $body = $(target);
+            const $icon = $(this).find('.icon-chevron');
+            const $iconContainer = $(this).find('.icon-chevron-container');
+            
+            // Toggle slide
+            $body.slideToggle(300);
+            
+            // Toggle styles for opened state
+            $icon.toggleClass('rotate-180');
+            $iconContainer.toggleClass('bg-emerald-50 border-emerald-200');
+            $(this).toggleClass('bg-gray-100');
+        });
+        
+        // Open the first one by default
+        setTimeout(() => {
+            $('.toggle-accordion').first().trigger('click');
+        }, 100);
+    });
+</script>
+@endpush
+
+@push('styles')
+<style>
+    /* Styling khusus cetak (print) agar output PDF/Print rapi dan indah */
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        body {
+            background: #fff !important;
+            color: #000 !important;
+            font-size: 12px !important;
+        }
+        .container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        /* Keep background colors and colors during printing */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .page-break-inside-avoid {
+            page-break-inside: avoid !important;
+        }
+        header, #sidebar, #mobile-menu-button {
+            display: none !important;
+        }
+        .lg\:ml-64 {
+            margin-left: 0 !important;
+        }
+        .p-6 {
+            padding: 0 !important;
+        }
+    }
+</style>
+@endpush
+@endsection
