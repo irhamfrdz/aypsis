@@ -6038,6 +6038,14 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ->name('bl.import')
         ->middleware('can:bl-create');
 
+        Route::get('bl/rekap-bongkaran-kontainer/select', [\App\Http\Controllers\BlController::class, 'rekapBongkaranKontainerSelect'])->name('bl.rekap-bongkaran-kontainer.select')
+        ->middleware('can:bl-view');
+
+    Route::get('bl/rekap-bongkaran-kontainer', [\App\Http\Controllers\BlController::class, 'rekapBongkaranKontainer'])->name('bl.rekap-bongkaran-kontainer')
+        ->middleware('can:bl-view');
+
+    Route::get('bl/rekap-bongkaran-kontainer/print', [\App\Http\Controllers\BlController::class, 'rekapBongkaranKontainerPrint'])->name('bl.rekap-bongkaran-kontainer.print')
+        ->middleware('can:bl-view');
     Route::get('bl/rekap-bongkaran/select', [\App\Http\Controllers\BlController::class, 'rekapBongkaranSelect'])->name('bl.rekap-bongkaran.select')
         ->middleware('can:bl-view');
 
