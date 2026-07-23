@@ -44,6 +44,12 @@
                     </div>
                     <span class="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">{{ $mobils->count() }} Truk</span>
                 </div>
+                <!-- Filter Buttons -->
+                <div class="px-4 py-3 border-b border-gray-100 bg-white flex space-x-2">
+                    <button type="button" onclick="setFilter('all')" id="filter-all" class="filter-btn flex-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-indigo-600 text-white shadow-sm ring-1 ring-inset ring-indigo-600 transition-all">Semua</button>
+                    <button type="button" onclick="setFilter('berjalan')" id="filter-berjalan" class="filter-btn flex-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all">Berjalan</button>
+                    <button type="button" onclick="setFilter('berhenti')" id="filter-berhenti" class="filter-btn flex-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all">Berhenti</button>
+                </div>
                 <div class="flex-1 overflow-y-auto">
                     <ul role="list" class="divide-y divide-gray-100" id="truck-list">
                         @forelse($mobils as $mobil)
@@ -90,6 +96,7 @@
 <script>
     let map;
     let markers = {};
+    let currentFilter = 'all'; // all, berjalan, berhenti
     const defaultCenter = [-6.2088, 106.8456]; // Jakarta Default Coordinate
 
     $(document).ready(function() {
@@ -177,13 +184,32 @@
                 // Update UI Sidebar
                 $(`#speed-${loc.mobil_id}`).text(`${loc.speed} km/h`);
                 
+                let isBerjalan = loc.speed > 0;
                 let statusHtml = '';
-                if(loc.speed > 0) {
+                if(isBerjalan) {
                     statusHtml = `<i class="fas fa-circle text-green-500 text-[8px] mr-1"></i> Berjalan`;
                 } else {
                     statusHtml = `<i class="fas fa-circle text-red-500 text-[8px] mr-1"></i> Berhenti`;
                 }
                 $(`#status-${loc.mobil_id}`).html(statusHtml);
+
+                // Terapkan filter yang aktif saat ini
+                let show = false;
+                if (currentFilter === 'all') show = true;
+                else if (currentFilter === 'berjalan' && isBerjalan) show = true;
+                else if (currentFilter === 'berhenti' && !isBerjalan) show = true;
+
+                if (show) {
+                    $(`.truck-item[data-id="${loc.mobil_id}"]`).show();
+                    if (!map.hasLayer(markers[loc.mobil_id])) {
+                        markers[loc.mobil_id].addTo(map);
+                    }
+                } else {
+                    $(`.truck-item[data-id="${loc.mobil_id}"]`).hide();
+                    if (map.hasLayer(markers[loc.mobil_id])) {
+                        map.removeLayer(markers[loc.mobil_id]);
+                    }
+                }
             }
         });
     }
@@ -221,6 +247,11 @@
 
     function focusOnTruck(mobilId) {
         if(markers[mobilId]) {
+            // Jika marker sedang disembunyikan oleh filter, ubah filter ke 'all' dulu
+            if (!map.hasLayer(markers[mobilId])) {
+                setFilter('all');
+            }
+
             // Center map to marker
             map.setView(markers[mobilId].getLatLng(), 15);
             
@@ -233,6 +264,41 @@
         } else {
             alert('Lokasi armada ini belum diketahui atau belum diperbarui.');
         }
+    }
+
+    function setFilter(filter) {
+        currentFilter = filter;
+        
+        // Update styling tombol
+        $('.filter-btn').removeClass('bg-indigo-600 text-white ring-indigo-600').addClass('bg-white text-gray-700 ring-gray-300');
+        $(`#filter-${filter}`).removeClass('bg-white text-gray-700 ring-gray-300').addClass('bg-indigo-600 text-white ring-indigo-600');
+
+        // Terapkan filter ke DOM list dan Map
+        $('.truck-item').each(function() {
+            let id = $(this).data('id');
+            let statusText = $(`#status-${id}`).text().toLowerCase();
+            
+            let isBerjalan = statusText.includes('berjalan');
+            let isBerhenti = statusText.includes('berhenti');
+            // Jika masih 'mencari sinyal', kita anggap berhenti (atau bisa di handle khusus, kita ikuti isBerjalan saja)
+            
+            let show = false;
+            if (currentFilter === 'all') show = true;
+            else if (currentFilter === 'berjalan' && isBerjalan) show = true;
+            else if (currentFilter === 'berhenti' && !isBerjalan) show = true;
+
+            if (show) {
+                $(this).show();
+                if (markers[id] && !map.hasLayer(markers[id])) {
+                    markers[id].addTo(map);
+                }
+            } else {
+                $(this).hide();
+                if (markers[id] && map.hasLayer(markers[id])) {
+                    map.removeLayer(markers[id]);
+                }
+            }
+        });
     }
 </script>
 @endpush
