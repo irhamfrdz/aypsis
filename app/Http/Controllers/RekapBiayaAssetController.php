@@ -95,41 +95,45 @@ class RekapBiayaAssetController extends Controller
             $totalNominal += $total;
         }
 
-        // Helper for processing ban
-        $processedBanUsages = [];
-        $processBan = function($banModel, $tanggal, $nomorBukti, $nomorSeri) use ($usages, &$processedBanUsages, $bulan, $tahun) {
-            $tanggal = $tanggal ?: date('Y-m-d');
-            
-            if ($bulan && \Carbon\Carbon::parse($tanggal)->format('n') != $bulan) return;
-            if ($tahun && \Carbon\Carbon::parse($tanggal)->format('Y') != $tahun) return;
+        // Fetch CURRENT Pemakaian Ban
+        $banQuery = StockBan::with(['namaStockBan']);
+        
+        if ($type === 'mobil') {
+            $banQuery->where('mobil_id', $id);
+        } else {
+            $banQuery->where('alat_berat_id', $id);
+        }
 
-            $uniqueKey = $banModel->id . '_' . $tanggal;
-            if (isset($processedBanUsages[$uniqueKey])) return;
-            $processedBanUsages[$uniqueKey] = true;
+        $currentBans = $banQuery->get();
+        $currentBanKeys = []; // To avoid putting current bans into history
+
+        foreach ($currentBans as $banModel) {
+            $tanggal = $banModel->tanggal_digunakan ?? $banModel->tanggal_keluar ?: date('Y-m-d');
+            
+            if ($bulan && \Carbon\Carbon::parse($tanggal)->format('n') != $bulan) continue;
+            if ($tahun && \Carbon\Carbon::parse($tanggal)->format('Y') != $tahun) continue;
+
+            $currentBanKeys[$banModel->id . '_' . $tanggal] = true;
 
             $ban = clone $banModel;
-            $total = 0; 
-            
             $ban->apportioned = [
-                'nominal' => $total,
-                'ppn' => 0,
-                'pph' => 0,
-                'total_biaya' => $total,
+                'nominal' => 0, 'ppn' => 0, 'pph' => 0, 'total_biaya' => 0,
             ];
             $ban->is_amprahan = false;
+            $ban->is_ban_current = true;
             $ban->is_ban = true;
-            $ban->nomor_invoice = $nomorBukti ?? $ban->nomor_bukti ?? '-';
+            $ban->nomor_invoice = $banModel->nomor_bukti ?? '-';
             $ban->tanggal = $tanggal;
-            $ban->jenis_biaya = 'Pemakaian Ban (' . ($ban->namaStockBan->nama ?? 'Ban') . ' - ' . ($nomorSeri ?? $ban->nomor_seri ?? '-') . ')';
+            $ban->jenis_biaya = 'Pemakaian Ban (' . ($ban->namaStockBan->nama ?? 'Ban') . ' - ' . ($ban->nomor_seri ?? '-') . ')';
             $ban->klasifikasiBiaya = (object)['nama' => 'Stock Ban'];
             $ban->jumlah = 1;
             $ban->stockAmprahan = (object)[
-                'nama_barang' => ($ban->namaStockBan->nama ?? 'Ban') . ' (' . ($nomorSeri ?? $ban->nomor_seri ?? '-') . ')',
+                'nama_barang' => ($ban->namaStockBan->nama ?? 'Ban') . ' (' . ($ban->nomor_seri ?? '-') . ')',
                 'harga_satuan' => 0
             ];
 
             $usages->push($ban);
-        };
+        }
 
         // Fetch HISTORICAL Pemakaian Ban from AuditLog
         $field = $type === 'mobil' ? 'mobil_id' : 'alat_berat_id';
@@ -143,6 +147,8 @@ class RekapBiayaAssetController extends Controller
         $banIds = $audits->pluck('auditable_id')->unique();
         $bansModel = StockBan::with(['namaStockBan'])->whereIn('id', $banIds)->get()->keyBy('id');
 
+        $processedHistories = [];
+
         foreach ($audits as $audit) {
             $newVals = is_string($audit->new_values) ? json_decode($audit->new_values, true) : $audit->new_values;
             $oldVals = is_string($audit->old_values) ? json_decode($audit->old_values, true) : $audit->old_values;
@@ -154,23 +160,39 @@ class RekapBiayaAssetController extends Controller
             if (!$banModel) continue;
 
             $tanggal = $newVals['tanggal_digunakan'] ?? $newVals['tanggal_keluar'] ?? $audit->created_at->format('Y-m-d');
-            $processBan($banModel, $tanggal, $newVals['nomor_bukti'] ?? null, $newVals['nomor_seri'] ?? null);
+            
+            if ($bulan && \Carbon\Carbon::parse($tanggal)->format('n') != $bulan) continue;
+            if ($tahun && \Carbon\Carbon::parse($tanggal)->format('Y') != $tahun) continue;
+
+            // Skip if this is the current active assignment
+            if (isset($currentBanKeys[$banModel->id . '_' . $tanggal])) continue;
+
+            // Avoid duplicate historical logs for same day if any
+            $histKey = $banModel->id . '_' . $tanggal;
+            if (isset($processedHistories[$histKey])) continue;
+            $processedHistories[$histKey] = true;
+
+            $ban = clone $banModel;
+            $ban->apportioned = [
+                'nominal' => 0, 'ppn' => 0, 'pph' => 0, 'total_biaya' => 0,
+            ];
+            $ban->is_amprahan = false;
+            $ban->is_ban_history = true;
+            $ban->is_ban = true;
+            $ban->nomor_invoice = $newVals['nomor_bukti'] ?? $banModel->nomor_bukti ?? '-';
+            $ban->tanggal = $tanggal;
+            $ban->jenis_biaya = 'Pemakaian Ban (' . ($ban->namaStockBan->nama ?? 'Ban') . ' - ' . ($newVals['nomor_seri'] ?? $banModel->nomor_seri ?? '-') . ')';
+            $ban->klasifikasiBiaya = (object)['nama' => 'Stock Ban'];
+            $ban->jumlah = 1;
+            $ban->stockAmprahan = (object)[
+                'nama_barang' => ($ban->namaStockBan->nama ?? 'Ban') . ' (' . ($newVals['nomor_seri'] ?? $banModel->nomor_seri ?? '-') . ')',
+                'harga_satuan' => 0
+            ];
+
+            $usages->push($ban);
         }
 
-        // Fetch CURRENT Pemakaian Ban (in case not in audit log)
-        $banQuery = StockBan::with(['namaStockBan']);
-        
-        if ($type === 'mobil') {
-            $banQuery->where('mobil_id', $id);
-        } else {
-            $banQuery->where('alat_berat_id', $id);
-        }
 
-        $currentBans = $banQuery->get();
-        foreach ($currentBans as $banModel) {
-            $tanggal = $banModel->tanggal_digunakan ?? $banModel->tanggal_keluar;
-            $processBan($banModel, $tanggal, $banModel->nomor_bukti, $banModel->nomor_seri);
-        }
 
         // Sort combined usages by date descending
         $usages = $usages->sortByDesc('tanggal')->values();

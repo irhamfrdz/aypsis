@@ -134,11 +134,17 @@
                     'text' => 'text-amber-600',
                     'items' => $usages->filter(fn($i) => isset($i->is_amprahan) && $i->is_amprahan),
                 ],
-                'Pemakaian Ban' => [
+                'Pemakaian Ban (Aktif)' => [
                     'icon' => 'fa-circle-notch',
                     'bg' => 'bg-blue-100',
                     'text' => 'text-blue-600',
-                    'items' => $usages->filter(fn($i) => isset($i->is_ban) && $i->is_ban),
+                    'items' => $usages->filter(fn($i) => isset($i->is_ban_current) && $i->is_ban_current),
+                ],
+                'Riwayat Pemakaian Ban' => [
+                    'icon' => 'fa-history',
+                    'bg' => 'bg-gray-100',
+                    'text' => 'text-gray-600',
+                    'items' => $usages->filter(fn($i) => isset($i->is_ban_history) && $i->is_ban_history),
                 ],
             ];
         @endphp
@@ -167,7 +173,7 @@
                         </div>
                     </div>
                     <div class="flex items-center">
-                        @if($catName !== 'Pemakaian Ban')
+                        @if($catName !== 'Pemakaian Ban (Aktif)' && $catName !== 'Riwayat Pemakaian Ban')
                             <span class="font-bold text-gray-900 mr-4 tracking-tight">Rp {{ number_format($catTotal, 0, ',', '.') }}</span>
                         @endif
                         <div class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm icon-chevron-container transition-colors">
@@ -235,7 +241,7 @@
                                     </tr>
                                 @endforeach
                             </tbody>
-                            @if($catName !== 'Pemakaian Ban')
+                            @if($catName !== 'Pemakaian Ban (Aktif)' && $catName !== 'Riwayat Pemakaian Ban')
                             <tfoot class="bg-gray-50/80 font-bold border-t border-gray-200">
                                 <tr>
                                     <td colspan="4" class="px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $catName }}</td>
