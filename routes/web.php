@@ -2037,6 +2037,10 @@ Route::middleware([
         Route::get('rekap-biaya-asset/show', [\App\Http\Controllers\RekapBiayaAssetController::class, 'show'])
             ->name('rekap-biaya-asset.show')
             ->middleware('can:rekap-biaya-asset-view');
+            
+        Route::get('rekap-pemakaian-barang', [\App\Http\Controllers\RekapPemakaianBarangController::class, 'index'])
+            ->name('rekap-pemakaian-barang.index')
+            ->middleware('can:rekap-pemakaian-barang-view');
 
         // 🏢 Master Gudang (Warehouse Master) Management with permissions
         // Import & Template routes (must be before resource routes)
