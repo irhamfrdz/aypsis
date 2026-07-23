@@ -95,37 +95,20 @@ class RekapBiayaAssetController extends Controller
             $totalNominal += $total;
         }
 
-        // Fetch Pemakaian Ban
-        $banQuery = StockBan::with(['namaStockBan']);
-        
-        if ($type === 'mobil') {
-            $banQuery->where('mobil_id', $id);
-        } else {
-            $banQuery->where('alat_berat_id', $id);
-        }
+        // Helper for processing ban
+        $processedBanUsages = [];
+        $processBan = function($banModel, $tanggal, $nomorBukti, $nomorSeri) use ($usages, &$processedBanUsages, $bulan, $tahun) {
+            $tanggal = $tanggal ?: date('Y-m-d');
+            
+            if ($bulan && \Carbon\Carbon::parse($tanggal)->format('n') != $bulan) return;
+            if ($tahun && \Carbon\Carbon::parse($tanggal)->format('Y') != $tahun) return;
 
-        if ($bulan) {
-            $banQuery->where(function($q) use ($bulan) {
-                // Check both tanggal_digunakan and tanggal_keluar since both are used to indicate usage date
-                $q->whereMonth('tanggal_digunakan', $bulan)
-                  ->orWhere(function($q2) use ($bulan) {
-                      $q2->whereNull('tanggal_digunakan')->whereMonth('tanggal_keluar', $bulan);
-                  });
-            });
-        }
-        if ($tahun) {
-            $banQuery->where(function($q) use ($tahun) {
-                $q->whereYear('tanggal_digunakan', $tahun)
-                  ->orWhere(function($q2) use ($tahun) {
-                      $q2->whereNull('tanggal_digunakan')->whereYear('tanggal_keluar', $tahun);
-                  });
-            });
-        }
+            $uniqueKey = $banModel->id . '_' . $tanggal;
+            if (isset($processedBanUsages[$uniqueKey])) return;
+            $processedBanUsages[$uniqueKey] = true;
 
-        $bans = $banQuery->get();
-
-        foreach ($bans as $ban) {
-            $total = 0; // Pemakaian Ban does not add to cost in this view
+            $ban = clone $banModel;
+            $total = 0; 
             
             $ban->apportioned = [
                 'nominal' => $total,
@@ -135,22 +118,58 @@ class RekapBiayaAssetController extends Controller
             ];
             $ban->is_amprahan = false;
             $ban->is_ban = true;
-            $ban->nomor_invoice = $ban->nomor_bukti ?? '-';
-            $ban->tanggal = $ban->tanggal_digunakan ?? $ban->tanggal_keluar;
-            $ban->jenis_biaya = 'Pemakaian Ban (' . ($ban->namaStockBan->nama ?? 'Ban') . ' - ' . ($ban->nomor_seri ?? '-') . ')';
+            $ban->nomor_invoice = $nomorBukti ?? $ban->nomor_bukti ?? '-';
+            $ban->tanggal = $tanggal;
+            $ban->jenis_biaya = 'Pemakaian Ban (' . ($ban->namaStockBan->nama ?? 'Ban') . ' - ' . ($nomorSeri ?? $ban->nomor_seri ?? '-') . ')';
             $ban->klasifikasiBiaya = (object)['nama' => 'Stock Ban'];
-            
-            // To match view expectation
             $ban->jumlah = 1;
-            
-            // Need to mock relationship for view if it expects it
             $ban->stockAmprahan = (object)[
-                'nama_barang' => ($ban->namaStockBan->nama ?? 'Ban') . ' (' . ($ban->nomor_seri ?? '-') . ')',
-                'harga_satuan' => $total
+                'nama_barang' => ($ban->namaStockBan->nama ?? 'Ban') . ' (' . ($nomorSeri ?? $ban->nomor_seri ?? '-') . ')',
+                'harga_satuan' => 0
             ];
 
-            $totalNominal += $total;
             $usages->push($ban);
+        };
+
+        // Fetch HISTORICAL Pemakaian Ban from AuditLog
+        $field = $type === 'mobil' ? 'mobil_id' : 'alat_berat_id';
+        $audits = \App\Models\AuditLog::where('auditable_type', \App\Models\StockBan::class)
+            ->where('action', 'updated')
+            ->where(function($q) use ($id, $field) {
+                $q->whereJsonContains("new_values->$field", (int)$id)
+                  ->orWhereJsonContains("new_values->$field", (string)$id);
+            })->get();
+
+        $banIds = $audits->pluck('auditable_id')->unique();
+        $bansModel = StockBan::with(['namaStockBan'])->whereIn('id', $banIds)->get()->keyBy('id');
+
+        foreach ($audits as $audit) {
+            $newVals = is_string($audit->new_values) ? json_decode($audit->new_values, true) : $audit->new_values;
+            $oldVals = is_string($audit->old_values) ? json_decode($audit->old_values, true) : $audit->old_values;
+            
+            $oldId = $oldVals[$field] ?? null;
+            if ($oldId == $id) continue;
+
+            $banModel = $bansModel->get($audit->auditable_id);
+            if (!$banModel) continue;
+
+            $tanggal = $newVals['tanggal_digunakan'] ?? $newVals['tanggal_keluar'] ?? $audit->created_at->format('Y-m-d');
+            $processBan($banModel, $tanggal, $newVals['nomor_bukti'] ?? null, $newVals['nomor_seri'] ?? null);
+        }
+
+        // Fetch CURRENT Pemakaian Ban (in case not in audit log)
+        $banQuery = StockBan::with(['namaStockBan']);
+        
+        if ($type === 'mobil') {
+            $banQuery->where('mobil_id', $id);
+        } else {
+            $banQuery->where('alat_berat_id', $id);
+        }
+
+        $currentBans = $banQuery->get();
+        foreach ($currentBans as $banModel) {
+            $tanggal = $banModel->tanggal_digunakan ?? $banModel->tanggal_keluar;
+            $processBan($banModel, $tanggal, $banModel->nomor_bukti, $banModel->nomor_seri);
         }
 
         // Sort combined usages by date descending
