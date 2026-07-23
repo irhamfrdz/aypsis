@@ -33,20 +33,6 @@ class BlController extends Controller
     {
         $user = Auth::user();
 
-        // Check permission (you may want to adjust this based on your permission system)
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            // Check specific permissions if needed
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-view')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk melihat data BL');
-            }
-        }
-
         // Log filter parameters untuk debugging
         \Log::info('BL Index Filter Parameters:', [
             'nama_kapal' => $request->get('nama_kapal'),
@@ -157,19 +143,6 @@ class BlController extends Controller
     {
         $user = Auth::user();
 
-        // Check permission
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-view')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk membuat BL');
-            }
-        }
-
         // Get ships from master data
         $masterKapals = MasterKapal::orderBy('nama_kapal')->get();
 
@@ -215,19 +188,6 @@ class BlController extends Controller
     {
         $user = Auth::user();
 
-        // Check permission
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-create')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk membuat BL');
-            }
-        }
-
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
 
@@ -244,19 +204,6 @@ class BlController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-
-        // Check permission
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-create')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk membuat BL');
-            }
-        }
 
         // Validate input
         $request->validate([
@@ -301,19 +248,6 @@ class BlController extends Controller
     public function show(Bl $bl)
     {
         $user = Auth::user();
-
-        // Check permission
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-view')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk melihat detail BL');
-            }
-        }
 
         $bl->load('prospek');
 
@@ -1777,19 +1711,6 @@ class BlController extends Controller
     {
         $user = Auth::user();
 
-        // Check permission
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-view')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk export data BL');
-            }
-        }
-
         $query = Bl::with(['prospek.suratJalan']);
 
         // Filter berdasarkan search (Matched with index logic)
@@ -2352,19 +2273,6 @@ class BlController extends Controller
     {
         $user = Auth::user();
 
-        // Check permission
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-edit')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk mengedit data BL');
-            }
-        }
-
         return view('bl.edit', compact('bl'));
     }
 
@@ -2374,19 +2282,6 @@ class BlController extends Controller
     public function update(Request $request, Bl $bl)
     {
         $user = Auth::user();
-
-        // Check permission
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-edit')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk mengupdate data BL');
-            }
-        }
 
         $validated = $request->validate([
             'nomor_bl' => 'nullable|string|max:255',
@@ -2459,19 +2354,6 @@ class BlController extends Controller
     {
         $user = Auth::user();
 
-        // Check permission (same as bl-view)
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-view')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk melihat Rekap Bongkaran');
-            }
-        }
-
         // Get ships from master data
         $masterKapals = MasterKapal::orderBy('nama_kapal')->get();
 
@@ -2484,19 +2366,6 @@ class BlController extends Controller
     public function rekapBongkaran(Request $request)
     {
         $user = Auth::user();
-
-        // Check permission
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-view')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk melihat Rekap Bongkaran');
-            }
-        }
 
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
@@ -2701,19 +2570,6 @@ class BlController extends Controller
     {
         $user = Auth::user();
 
-        // Check permission
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-view')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk melihat Rekap Bongkaran');
-            }
-        }
-
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
         $estimasiTibaInput = $request->get('estimasi_tiba');
@@ -2886,19 +2742,6 @@ class BlController extends Controller
     {
         $user = Auth::user();
 
-        // Check permission (same as bl-view)
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-view')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk melihat Rekap Bongkaran Perincian');
-            }
-        }
-
         // Get ships from master data
         $masterKapals = MasterKapal::orderBy('nama_kapal')->get();
 
@@ -2911,19 +2754,6 @@ class BlController extends Controller
     public function rekapBongkaranPerincian(Request $request)
     {
         $user = Auth::user();
-
-        // Check permission
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-view')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk melihat Rekap Bongkaran Perincian');
-            }
-        }
 
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
@@ -3015,19 +2845,6 @@ class BlController extends Controller
     public function rekapBongkaranPerincianPrint(Request $request)
     {
         $user = Auth::user();
-
-        // Check permission
-        if (! in_array($user->role, ['admin', 'user_admin'])) {
-            $hasPermission = DB::table('user_permissions')
-                ->join('permissions', 'user_permissions.permission_id', '=', 'permissions.id')
-                ->where('user_permissions.user_id', $user->id)
-                ->where('permissions.name', 'bl-view')
-                ->exists();
-
-            if (! $hasPermission) {
-                abort(403, 'Tidak memiliki akses untuk melihat Rekap Bongkaran Perincian');
-            }
-        }
 
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
