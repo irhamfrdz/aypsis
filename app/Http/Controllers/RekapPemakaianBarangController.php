@@ -35,7 +35,7 @@ class RekapPemakaianBarangController extends Controller
 
         $results = collect();
 
-        if ($namaBarang && $startDate && $endDate) {
+        if ($namaBarang) {
             $isAmprahan = in_array($namaBarang, $amprahanItems);
             $isBan = in_array($namaBarang, $banItems);
             
@@ -44,7 +44,9 @@ class RekapPemakaianBarangController extends Controller
                     ->whereHas('stockAmprahan', function($q) use ($namaBarang) {
                         $q->where('nama_barang', $namaBarang);
                     })
-                    ->whereBetween('tanggal_pengambilan', [$startDate, $endDate])
+                    ->when($startDate && $endDate, function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('tanggal_pengambilan', [$startDate, $endDate]);
+                    })
                     ->get();
                     
                 foreach ($amprahanUsages as $usage) {
@@ -71,13 +73,20 @@ class RekapPemakaianBarangController extends Controller
                     ->whereHas('namaStockBan', function($q) use ($namaBarang) {
                         $q->where('nama', $namaBarang);
                     })
-                    ->where(function($q) use ($startDate, $endDate) {
-                        $q->whereBetween('tanggal_digunakan', [$startDate, $endDate])
-                          ->orWhere(function($subQ) use ($startDate, $endDate) {
-                              $subQ->whereNull('tanggal_digunakan')
-                                   ->whereBetween('updated_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-                                   ->where('status', 'Terpakai');
-                          });
+                    ->when($startDate && $endDate, function($q) use ($startDate, $endDate) {
+                        $q->where(function($q2) use ($startDate, $endDate) {
+                            $q2->whereBetween('tanggal_digunakan', [$startDate, $endDate])
+                               ->orWhere(function($subQ) use ($startDate, $endDate) {
+                                   $subQ->whereNull('tanggal_digunakan')
+                                        ->whereBetween('updated_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                                        ->where('status', 'Terpakai');
+                               });
+                        });
+                    }, function($q) {
+                        $q->where(function($q2) {
+                            $q2->whereNotNull('tanggal_digunakan')
+                               ->orWhere('status', 'Terpakai');
+                        });
                     })
                     ->get();
                     

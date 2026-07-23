@@ -29,14 +29,14 @@
 
             <!-- Start Date -->
             <div>
-                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal <span class="text-red-500">*</span></label>
-                <input type="date" name="start_date" id="start_date" value="{{ $startDate }}" class="form-input-premium w-full" required>
+                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                <input type="date" name="start_date" id="start_date" value="{{ $startDate }}" class="form-input-premium w-full">
             </div>
 
             <!-- End Date -->
             <div>
-                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal <span class="text-red-500">*</span></label>
-                <input type="date" name="end_date" id="end_date" value="{{ $endDate }}" class="form-input-premium w-full" required>
+                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                <input type="date" name="end_date" id="end_date" value="{{ $endDate }}" class="form-input-premium w-full">
             </div>
 
             <div class="col-span-1 md:col-span-4 flex justify-end mt-2 gap-2">
@@ -56,7 +56,7 @@
             <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                 <div>
                     <h3 class="font-bold text-gray-800">Hasil Pencarian: <span class="text-indigo-600">{{ $namaBarang }}</span></h3>
-                    <p class="text-xs text-gray-500 mt-1">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d M Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</p>
+                    <p class="text-xs text-gray-500 mt-1">Periode: {{ $startDate && $endDate ? \Carbon\Carbon::parse($startDate)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($endDate)->format('d M Y') : 'Semua Waktu' }}</p>
                 </div>
                 <div class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full border border-indigo-200">
                     Total: {{ $results->count() }} Data
@@ -109,7 +109,7 @@
                                 <td colspan="7" class="px-6 py-8 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
-                                        <p class="text-gray-500 font-medium">Tidak ada data pemakaian untuk barang dan periode ini.</p>
+                                        <p class="text-gray-500 font-medium">Tidak ada data pemakaian untuk kriteria ini.</p>
                                     </div>
                                 </td>
                             </tr>
