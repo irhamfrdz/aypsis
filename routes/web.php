@@ -2029,6 +2029,10 @@ Route::middleware([
         Route::get('rekap-biaya-kapal/get-voyages', [\App\Http\Controllers\RekapBiayaKapalController::class, 'getVoyages'])
             ->name('rekap-biaya-kapal.get-voyages')
             ->middleware('can:biaya-kapal-view');
+            
+        Route::get('rekap-biaya-asset', function() {
+            return "Halaman Rekap Biaya Asset (Under Construction)";
+        })->name('rekap-biaya-asset.index');
 
         // 🏢 Master Gudang (Warehouse Master) Management with permissions
         // Import & Template routes (must be before resource routes)
