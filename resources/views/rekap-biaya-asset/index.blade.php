@@ -53,7 +53,7 @@
                         <select name="asset_id_mobil" id="mobil_select" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent select2">
                             <option value="">-- Pilih Mobil --</option>
                             @foreach($mobils as $mobil)
-                                <option value="{{ $mobil->id }}">{{ $mobil->nomor_polisi ?? 'Truk '.$mobil->id }}</option>
+                                <option value="{{ $mobil->id }}">{{ $mobil->nomor_polisi ?? $mobil->no_kir ?? 'Truk '.$mobil->id }}</option>
                             @endforeach
                         </select>
                     </div>

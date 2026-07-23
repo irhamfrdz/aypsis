@@ -56,7 +56,7 @@ class RekapBiayaAssetController extends Controller
                   ->orWhere('buntut_id', $id);
             });
             $mobil = Mobil::find($id);
-            $assetName = $mobil ? ($mobil->nomor_polisi ?? 'Truk ' . $id) : 'Unknown';
+            $assetName = $mobil ? ($mobil->nomor_polisi ?? $mobil->no_kir ?? 'Truk ' . $id) : 'Unknown';
         } else {
             // alat berat
             $query->where('alat_berat_id', $id);
