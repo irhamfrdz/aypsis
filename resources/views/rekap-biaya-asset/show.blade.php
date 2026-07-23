@@ -191,7 +191,7 @@
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
                                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">Nomor Ban</th>
-                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Merk</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Merk & Ukuran</th>
                                         <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Qty</th>
                                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Tanggal Pakai</th>
                                         <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-20 no-print">Aksi</th>
@@ -217,9 +217,11 @@
                                             </td>
                                             <td class="px-6 py-4">
                                                 <div class="text-xs font-bold text-gray-800">{{ $item->display_nomor_seri ?? '-' }}</div>
+                                                <div class="text-[10px] text-gray-500 mt-0.5 uppercase tracking-wide">{{ $item->namaStockBan->nama ?? 'BAN LUAR' }}</div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <div class="text-xs text-gray-600 font-medium">{{ $item->display_merk ?? 'Ban' }}</div>
+                                                <div class="text-xs text-gray-800 font-bold uppercase">{{ $item->display_merk ?? '-' }}</div>
+                                                <div class="text-[11px] text-gray-500 mt-0.5">{{ $item->display_ukuran ?? '' }}</div>
                                             </td>
                                             <td class="px-6 py-4 text-center text-xs text-gray-700">
                                                 {{ $item->jumlah }} Pcs
