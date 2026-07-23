@@ -58,7 +58,7 @@
                     <h3 class="font-bold text-gray-800">Hasil Pencarian: <span class="text-indigo-600">{{ $namaBarang }}</span></h3>
                     <p class="text-xs text-gray-500 mt-1">Periode: {{ $startDate && $endDate ? \Carbon\Carbon::parse($startDate)->format('d M Y') . ' - ' . \Carbon\Carbon::parse($endDate)->format('d M Y') : 'Semua Waktu' }}</p>
                 </div>
-                <div class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full border border-indigo-200">
+                <div class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full border border-indigo-200" id="total-data-badge">
                     Total: {{ $results->count() }} Data
                 </div>
             </div>
@@ -85,16 +85,20 @@
                 <h4 class="font-semibold text-gray-700 mb-3"><i class="fas fa-chart-pie text-indigo-500 mr-2"></i>Rekap Per Unit / Tujuan</h4>
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
                     @foreach($rekapUnit as $name => $data)
-                    <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 shadow-sm hover:shadow-md transition text-center">
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 shadow-sm hover:shadow-md hover:bg-indigo-100 transition text-center cursor-pointer unit-card" onclick="filterByUnit('{{ addslashes($name) }}', this)">
                         <div class="font-bold text-indigo-900 text-sm mb-1 truncate" title="{{ $name }}">{{ $name }}</div>
-                        <div class="text-xs font-medium text-indigo-600 bg-indigo-100 rounded-full px-2 py-0.5 inline-block">{{ $data['count'] }} {{ $data['satuan'] }}</div>
+                        <div class="text-xs font-medium text-indigo-600 bg-indigo-200/50 rounded-full px-2 py-0.5 inline-block">{{ $data['count'] }} {{ $data['satuan'] }}</div>
                     </div>
                     @endforeach
                 </div>
             </div>
             @endif
             
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto" id="table-container" style="{{ count($rekapUnit) > 0 ? 'display: none;' : '' }}">
+                <div class="px-4 py-2 bg-indigo-50 border-b border-indigo-100 text-sm text-indigo-800 font-medium flex justify-between items-center" id="active-filter-banner" style="display: none;">
+                    <span>Menampilkan data untuk: <span id="active-unit-name" class="font-bold"></span></span>
+                    <button type="button" onclick="showAllData()" class="text-xs bg-white text-indigo-600 px-2 py-1 rounded border border-indigo-200 hover:bg-indigo-50">Tampilkan Semua</button>
+                </div>
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -109,7 +113,7 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-100">
                         @forelse($results as $idx => $row)
-                            <tr class="hover:bg-indigo-50/30 transition-colors">
+                            <tr class="hover:bg-indigo-50/30 transition-colors result-row" data-unit="{{ $row->unit }}">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $idx + 1 }}
                                 </td>
@@ -164,6 +168,42 @@
             width: '100%'
         });
     });
+
+    function filterByUnit(unitName, cardElement) {
+        // Highlight active card
+        $('.unit-card').removeClass('ring-2 ring-indigo-500 bg-indigo-100').addClass('bg-indigo-50');
+        $(cardElement).removeClass('bg-indigo-50').addClass('ring-2 ring-indigo-500 bg-indigo-100');
+        
+        // Show table container
+        $('#table-container').show();
+        $('#active-filter-banner').show();
+        $('#active-unit-name').text(unitName);
+        
+        // Filter rows
+        let visibleCount = 0;
+        $('.result-row').each(function() {
+            if ($(this).data('unit') == unitName) {
+                $(this).show();
+                visibleCount++;
+            } else {
+                $(this).hide();
+            }
+        });
+        
+        // Update badge
+        $('#total-data-badge').text('Total: ' + visibleCount + ' Data (Filtered)');
+    }
+    
+    function showAllData() {
+        $('.unit-card').removeClass('ring-2 ring-indigo-500 bg-indigo-100').addClass('bg-indigo-50');
+        $('#active-filter-banner').hide();
+        $('.result-row').show();
+        $('#total-data-badge').text('Total: {{ $results->count() ?? 0 }} Data');
+        
+        @if(count($rekapUnit ?? []) > 0)
+            $('#table-container').hide();
+        @endif
+    }
 </script>
 <style>
     .select2-container--default .select2-selection--single {
