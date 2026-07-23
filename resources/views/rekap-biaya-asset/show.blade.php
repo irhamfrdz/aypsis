@@ -19,7 +19,7 @@
     </div>
 
     <!-- Main Header -->
-    <div class="bg-gradient-to-r from-slate-800 to-teal-900 rounded-2xl shadow-xl border-none p-8 mb-8 text-white relative overflow-hidden">
+    <div class="bg-gradient-to-r from-slate-800 to-teal-900 rounded-2xl shadow-xl border-none p-6 mb-8 text-white relative overflow-hidden">
         <div class="absolute inset-0 bg-pattern opacity-10 pointer-events-none"></div>
         <div class="relative z-10">
             <div class="flex items-center gap-3 mb-2">
@@ -28,7 +28,7 @@
                     {{ $type === 'mobil' ? 'Mobil/Truk' : 'Alat Berat' }}
                 </span>
             </div>
-            <h1 class="text-3xl font-extrabold tracking-tight">Asset: {{ $assetName }}</h1>
+            <h1 class="text-2xl font-bold tracking-tight">Asset: {{ $assetName }}</h1>
             <div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4 text-slate-200 text-sm">
                 @if($bulan && $tahun)
                     <span class="flex items-center"><i class="fas fa-calendar mr-2 text-emerald-400"></i> Periode: <strong>{{ date("F", mktime(0, 0, 0, $bulan, 1)) }} {{ $tahun }}</strong></span>
@@ -48,53 +48,53 @@
     <!-- Summary Metrics -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <!-- Total Nominal -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center justify-between hover:shadow-md transition-shadow">
             <div>
                 <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total Nominal</span>
-                <span class="text-2xl font-extrabold text-gray-800 block mt-1">Rp {{ number_format($summary['total_nominal'], 0, ',', '.') }}</span>
+                <span class="text-xl font-bold text-gray-800 block mt-1">Rp {{ number_format($summary['total_nominal'], 0, ',', '.') }}</span>
             </div>
-            <div class="bg-blue-50 p-4 rounded-xl text-blue-600">
-                <i class="fas fa-money-bill-wave text-xl"></i>
+            <div class="bg-blue-50 p-3 rounded-xl text-blue-600">
+                <i class="fas fa-money-bill-wave text-lg"></i>
             </div>
         </div>
 
         <!-- Total PPN -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center justify-between hover:shadow-md transition-shadow">
             <div>
                 <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total PPN</span>
-                <span class="text-2xl font-extrabold text-emerald-600 block mt-1">Rp {{ number_format($summary['total_ppn'], 0, ',', '.') }}</span>
+                <span class="text-xl font-bold text-emerald-600 block mt-1">Rp {{ number_format($summary['total_ppn'], 0, ',', '.') }}</span>
             </div>
-            <div class="bg-emerald-50 p-4 rounded-xl text-emerald-600">
-                <i class="fas fa-calculator text-xl"></i>
+            <div class="bg-emerald-50 p-3 rounded-xl text-emerald-600">
+                <i class="fas fa-calculator text-lg"></i>
             </div>
         </div>
 
         <!-- Total PPH -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md transition-shadow">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center justify-between hover:shadow-md transition-shadow">
             <div>
                 <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total PPh</span>
-                <span class="text-2xl font-extrabold text-rose-600 block mt-1">Rp {{ number_format($summary['total_pph'], 0, ',', '.') }}</span>
+                <span class="text-xl font-bold text-rose-600 block mt-1">Rp {{ number_format($summary['total_pph'], 0, ',', '.') }}</span>
             </div>
-            <div class="bg-rose-50 p-4 rounded-xl text-rose-600">
-                <i class="fas fa-percentage text-xl"></i>
+            <div class="bg-rose-50 p-3 rounded-xl text-rose-600">
+                <i class="fas fa-percentage text-lg"></i>
             </div>
         </div>
 
         <!-- Grand Total -->
-        <div class="bg-emerald-600 rounded-2xl shadow-md p-6 flex items-center justify-between hover:shadow-lg transition-all text-white">
+        <div class="bg-emerald-600 rounded-2xl shadow-md p-5 flex items-center justify-between hover:shadow-lg transition-all text-white">
             <div>
                 <span class="text-xs font-bold text-emerald-200 uppercase tracking-wider block">Grand Total Biaya</span>
-                <span class="text-2xl font-black block mt-1">Rp {{ number_format($summary['grand_total'], 0, ',', '.') }}</span>
+                <span class="text-xl font-bold block mt-1">Rp {{ number_format($summary['grand_total'], 0, ',', '.') }}</span>
             </div>
-            <div class="bg-white/10 p-4 rounded-xl text-white">
-                <i class="fas fa-coins text-xl"></i>
+            <div class="bg-white/10 p-3 rounded-xl text-white">
+                <i class="fas fa-coins text-lg"></i>
             </div>
         </div>
     </div>
 
     <!-- Visual Breakdown / Progress Bars -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
-        <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+        <h2 class="text-md font-bold text-gray-800 mb-5 flex items-center">
             <i class="fas fa-chart-pie text-emerald-600 mr-2"></i> Proporsi Biaya Berdasarkan Klasifikasi
         </h2>
         <div class="space-y-4">
@@ -122,7 +122,7 @@
 
     <!-- Detailed Cost Table (Grouped into Accordions) -->
     <div class="space-y-4 mb-8">
-        <h2 class="text-xl font-extrabold text-gray-800 flex items-center border-b border-gray-200 pb-4 mb-4 mt-8">
+        <h2 class="text-lg font-bold text-gray-800 flex items-center border-b border-gray-200 pb-3 mb-4 mt-6">
             <i class="fas fa-layer-group text-emerald-600 mr-2"></i> Rincian Biaya Berdasarkan Kategori
         </h2>
 
