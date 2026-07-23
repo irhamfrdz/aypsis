@@ -119,14 +119,29 @@ class ADMSController extends Controller
                     continue; // Skip format tanggal salah
                 }
                 
-                // Index ke-3 biasanya state (0=Masuk, 1=Pulang, dll)
+                // Index ke-3 biasanya state (0=Masuk, 1=Pulang, 2=Break Out, 3=Break In, 4=OT In, 5=OT Out)
                 $state = isset($parts[3]) ? (int) $parts[3] : 0;
-                $type = (in_array($state, [0, 4, 5])) ? 'Masuk' : 'Pulang';
+                
+                if ($state == 0) {
+                    $type = 'Masuk';
+                } elseif ($state == 1) {
+                    $type = 'Pulang';
+                } elseif ($state == 2) {
+                    $type = 'istirahat_keluar';
+                } elseif ($state == 3) {
+                    $type = 'istirahat_masuk';
+                } elseif ($state == 4) {
+                    $type = 'lembur_masuk';
+                } elseif ($state == 5) {
+                    $type = 'lembur_pulang';
+                } else {
+                    $type = 'Pulang';
+                }
 
-                // Cegah duplikasi berdasarkan NIK, tanggal, dan tipe absen (Hanya izinkan satu log 'Masuk' dan satu log 'Pulang' per hari)
+                // Cegah duplikasi log yang sama persis (berdasarkan NIK dan waktu spesifik)
+                // Hal ini memastikan semua tarikan punch (meskipun user lupa ganti state) tetap tersimpan
                 $exists = Absensi::where('nik', $nik)
-                                 ->whereDate('waktu', Carbon::parse($logTime)->toDateString())
-                                 ->where('tipe', $type)
+                                 ->where('waktu', $logTime)
                                  ->exists();
 
                 if (!$exists) {
