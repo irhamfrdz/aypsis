@@ -127,6 +127,8 @@ class RekapBiayaAssetController extends Controller
             $ban->jenis_biaya = 'Pemakaian Ban (' . ($ban->namaStockBan->nama ?? 'Ban') . ' - ' . ($ban->nomor_seri ?? '-') . ')';
             $ban->klasifikasiBiaya = (object)['nama' => 'Stock Ban'];
             $ban->jumlah = 1;
+            $ban->display_nomor_seri = $ban->nomor_seri ?? '-';
+            $ban->display_merk = $ban->namaStockBan->nama ?? 'Ban';
             $ban->stockAmprahan = (object)[
                 'nama_barang' => ($ban->namaStockBan->nama ?? 'Ban') . ' (' . ($ban->nomor_seri ?? '-') . ')',
                 'harga_satuan' => 0
@@ -184,6 +186,8 @@ class RekapBiayaAssetController extends Controller
             $ban->jenis_biaya = 'Pemakaian Ban (' . ($ban->namaStockBan->nama ?? 'Ban') . ' - ' . ($newVals['nomor_seri'] ?? $banModel->nomor_seri ?? '-') . ')';
             $ban->klasifikasiBiaya = (object)['nama' => 'Stock Ban'];
             $ban->jumlah = 1;
+            $ban->display_nomor_seri = $newVals['nomor_seri'] ?? $banModel->nomor_seri ?? '-';
+            $ban->display_merk = $ban->namaStockBan->nama ?? 'Ban';
             $ban->stockAmprahan = (object)[
                 'nama_barang' => ($ban->namaStockBan->nama ?? 'Ban') . ' (' . ($newVals['nomor_seri'] ?? $banModel->nomor_seri ?? '-') . ')',
                 'harga_satuan' => 0

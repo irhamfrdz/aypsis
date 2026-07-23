@@ -187,57 +187,78 @@
                     <div class="border-t border-gray-200 overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                             <thead class="bg-white">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Tanggal</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">No. Bukti / Barang</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Qty x Harga</th>
-                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Total</th>
-                                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-20 no-print">Aksi</th>
-                                </tr>
+                                @if(isset($catItems->first()->is_ban) && $catItems->first()->is_ban)
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">Nomor Ban</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Merk</th>
+                                        <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Qty</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Tanggal Pakai</th>
+                                        <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-20 no-print">Aksi</th>
+                                    </tr>
+                                @else
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Tanggal</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">No. Bukti / Barang</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Qty x Harga</th>
+                                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Total</th>
+                                        <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-20 no-print">Aksi</th>
+                                    </tr>
+                                @endif
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-100">
                                 @php $no = 1; @endphp
                                 @foreach($catItems as $item)
                                     <tr class="hover:bg-gray-50/50 transition-colors">
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-medium">
-                                            {{ $no++ }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
-                                            {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/M/Y') : '-' }}
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="text-xs font-bold text-gray-800">{{ $item->nomor_invoice }}</div>
-                                            <div class="text-xs text-gray-500 mt-1 font-normal flex items-center">
-                                                <i class="fas fa-box text-gray-400 mr-1"></i> {{ $item->stockAmprahan->nama_barang ?? 'Barang' }}
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-xs text-gray-700">
-                                            @if(isset($item->is_ban) && $item->is_ban)
+                                        @if(isset($item->is_ban) && $item->is_ban)
+                                            <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-medium">
+                                                {{ $no++ }}
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="text-xs font-bold text-gray-800">{{ $item->display_nomor_seri ?? '-' }}</div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="text-xs text-gray-600 font-medium">{{ $item->display_merk ?? 'Ban' }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 text-center text-xs text-gray-700">
                                                 {{ $item->jumlah }} Pcs
-                                            @else
-                                                {{ $item->jumlah }} x Rp {{ number_format($item->stockAmprahan->harga_satuan ?? 0, 0, ',', '.') }}
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
-                                            @if(isset($item->is_ban) && $item->is_ban)
-                                                -
-                                            @else
-                                                Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 text-center whitespace-nowrap no-print">
-                                            @if(isset($item->is_amprahan) && $item->is_amprahan)
-                                                <a href="{{ route('stock-amprahan.show', $item->stock_amprahan_id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Amprahan">
-                                                    <i class="fas fa-eye text-xs"></i>
-                                                </a>
-                                            @endif
-                                            @if(isset($item->is_ban) && $item->is_ban)
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
+                                                {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/M/Y') : '-' }}
+                                            </td>
+                                            <td class="px-6 py-4 text-center whitespace-nowrap no-print">
                                                 <a href="{{ route('stock-ban.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Ban">
                                                     <i class="fas fa-eye text-xs"></i>
                                                 </a>
-                                            @endif
-                                        </td>
+                                            </td>
+                                        @else
+                                            <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-medium">
+                                                {{ $no++ }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
+                                                {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/M/Y') : '-' }}
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="text-xs font-bold text-gray-800">{{ $item->nomor_invoice }}</div>
+                                                <div class="text-xs text-gray-500 mt-1 font-normal flex items-center">
+                                                    <i class="fas fa-box text-gray-400 mr-1"></i> {{ $item->stockAmprahan->nama_barang ?? 'Barang' }}
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 text-xs text-gray-700">
+                                                {{ $item->jumlah }} x Rp {{ number_format($item->stockAmprahan->harga_satuan ?? 0, 0, ',', '.') }}
+                                            </td>
+                                            <td class="px-6 py-4 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
+                                                Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
+                                            </td>
+                                            <td class="px-6 py-4 text-center whitespace-nowrap no-print">
+                                                @if(isset($item->is_amprahan) && $item->is_amprahan)
+                                                    <a href="{{ route('stock-amprahan.show', $item->stock_amprahan_id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Amprahan">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </a>
+                                                @endif
+                                            </td>
+                                        @endif
                                     </tr>
                                 @endforeach
                             </tbody>
