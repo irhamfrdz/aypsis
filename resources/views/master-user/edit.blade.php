@@ -3264,6 +3264,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- BL (Bill of Lading) --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>BL (Bill of Lading)</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[bl][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['view']) && $userMatrixPermissions['bl']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[bl][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['create']) && $userMatrixPermissions['bl']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[bl][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['update']) && $userMatrixPermissions['bl']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[bl][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['delete']) && $userMatrixPermissions['bl']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[bl][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['print']) && $userMatrixPermissions['bl']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[bl][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['export']) && $userMatrixPermissions['bl']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Daftar Tagihan Kontainer Sewa --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">
