@@ -167,7 +167,9 @@
                         </div>
                     </div>
                     <div class="flex items-center">
-                        <span class="font-bold text-gray-900 mr-4 tracking-tight">Rp {{ number_format($catTotal, 0, ',', '.') }}</span>
+                        @if($catName !== 'Pemakaian Ban')
+                            <span class="font-bold text-gray-900 mr-4 tracking-tight">Rp {{ number_format($catTotal, 0, ',', '.') }}</span>
+                        @endif
                         <div class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm icon-chevron-container transition-colors">
                             <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 icon-chevron text-xs"></i>
                         </div>
@@ -205,10 +207,18 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 text-xs text-gray-700">
-                                            {{ $item->jumlah }} x Rp {{ number_format($item->stockAmprahan->harga_satuan ?? 0, 0, ',', '.') }}
+                                            @if(isset($item->is_ban) && $item->is_ban)
+                                                {{ $item->jumlah }} Pcs
+                                            @else
+                                                {{ $item->jumlah }} x Rp {{ number_format($item->stockAmprahan->harga_satuan ?? 0, 0, ',', '.') }}
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
-                                            Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
+                                            @if(isset($item->is_ban) && $item->is_ban)
+                                                -
+                                            @else
+                                                Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 text-center whitespace-nowrap no-print">
                                             @if(isset($item->is_amprahan) && $item->is_amprahan)
@@ -225,6 +235,7 @@
                                     </tr>
                                 @endforeach
                             </tbody>
+                            @if($catName !== 'Pemakaian Ban')
                             <tfoot class="bg-gray-50/80 font-bold border-t border-gray-200">
                                 <tr>
                                     <td colspan="4" class="px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $catName }}</td>
@@ -234,6 +245,7 @@
                                     <td class="px-6 py-4 no-print"></td>
                                 </tr>
                             </tfoot>
+                            @endif
                         </table>
                     </div>
                 </div>

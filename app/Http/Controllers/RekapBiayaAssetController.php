@@ -125,7 +125,7 @@ class RekapBiayaAssetController extends Controller
         $bans = $banQuery->get();
 
         foreach ($bans as $ban) {
-            $total = floatval($ban->harga_beli ?? 0);
+            $total = 0; // Pemakaian Ban does not add to cost in this view
             
             $ban->apportioned = [
                 'nominal' => $total,
@@ -163,8 +163,10 @@ class RekapBiayaAssetController extends Controller
             'grand_total' => $totalNominal,
         ];
 
-        // Group by classification/jenis_biaya
-        $grouped = $usages->groupBy(function ($item) {
+        // Group by classification/jenis_biaya (excluding Ban)
+        $grouped = $usages->filter(function ($item) {
+            return !isset($item->is_ban) || !$item->is_ban;
+        })->groupBy(function ($item) {
             return $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain';
         });
 
