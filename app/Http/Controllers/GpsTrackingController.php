@@ -20,8 +20,9 @@ class GpsTrackingController extends Controller
      */
     public function index()
     {
-        // Ambil semua mobil yang sudah didaftarkan IMEI GPS-nya
-        $mobils = Mobil::whereNotNull('imei_gps')
+        // Ambil semua mobil yang sudah didaftarkan IMEI GPS-nya beserta data supir
+        $mobils = Mobil::with('karyawan')
+            ->whereNotNull('imei_gps')
             ->where('imei_gps', '!=', '')
             ->get();
 
@@ -35,7 +36,8 @@ class GpsTrackingController extends Controller
      */
     public function getLatestLocations()
     {
-        $mobils = Mobil::whereNotNull('imei_gps')
+        $mobils = Mobil::with('karyawan')
+            ->whereNotNull('imei_gps')
             ->where('imei_gps', '!=', '')
             ->get();
 
@@ -63,6 +65,7 @@ class GpsTrackingController extends Controller
                     'nomor_polisi' => $mobil->nomor_polisi,
                     'merek' => $mobil->merek,
                     'jenis' => $mobil->jenis,
+                    'supir' => $mobil->karyawan ? ($mobil->karyawan->nama_panggilan ?? $mobil->karyawan->nama_lengkap) : 'Tidak Ada Supir',
                     'lat' => $payload['latitude'] ?? null,
                     'lng' => $payload['longitude'] ?? null,
                     'speed' => $payload['speed'] ?? 0,

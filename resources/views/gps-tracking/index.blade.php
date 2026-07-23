@@ -50,7 +50,10 @@
                         <li class="relative flex justify-between gap-x-6 px-4 py-4 hover:bg-gray-50 transition-colors cursor-pointer truck-item group" data-id="{{ $mobil->id }}" onclick="focusOnTruck({{ $mobil->id }})">
                             <div class="min-w-0 flex-auto">
                                 <p class="text-sm font-semibold leading-6 text-gray-900 group-hover:text-indigo-600 transition-colors">{{ $mobil->nomor_polisi }}</p>
-                                <p class="mt-1 truncate text-xs leading-5 text-gray-500">{{ $mobil->merek }} - {{ $mobil->jenis }}</p>
+                                <p class="mt-1 truncate text-xs leading-5 text-gray-500 font-medium">
+                                    <i class="fas fa-user-tie text-gray-400 mr-1"></i> {{ $mobil->karyawan ? ($mobil->karyawan->nama_panggilan ?? $mobil->karyawan->nama_lengkap) : 'Tidak Ada Supir' }}
+                                </p>
+                                <p class="truncate text-[10px] leading-4 text-gray-400 mt-0.5">{{ $mobil->merek }} - {{ $mobil->jenis }}</p>
                             </div>
                             <div class="shrink-0 flex flex-col items-end">
                                 <p class="text-sm leading-6 text-gray-900 font-medium truck-speed" id="speed-{{ $mobil->id }}">- km/h</p>
@@ -192,9 +195,13 @@
                     <i class="fas fa-truck text-indigo-600 mr-2"></i> ${loc.nomor_polisi}
                 </h6>
                 <div class="text-xs space-y-1">
-                    <div class="flex justify-between">
-                        <span class="text-gray-500">Armada:</span>
-                        <span class="font-medium">${loc.merek} - ${loc.jenis}</span>
+                    <div class="flex justify-between gap-2">
+                        <span class="text-gray-500 shrink-0">Armada:</span>
+                        <span class="font-medium truncate" title="${loc.merek} - ${loc.jenis}">${loc.merek} - ${loc.jenis}</span>
+                    </div>
+                    <div class="flex justify-between gap-2">
+                        <span class="text-gray-500 shrink-0">Supir:</span>
+                        <span class="font-medium truncate" title="${loc.supir}">${loc.supir}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-500">Status:</span>
