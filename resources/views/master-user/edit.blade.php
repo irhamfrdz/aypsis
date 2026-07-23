@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Edit Pengguna')
 @section('page_title', 'Edit Pengguna')
@@ -2424,6 +2424,23 @@
                                 <td><input type="checkbox" name="permissions[biaya-kapal][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['approve']) && $userMatrixPermissions['biaya-kapal']['approve']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[biaya-kapal][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['print']) && $userMatrixPermissions['biaya-kapal']['print']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[biaya-kapal][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['biaya-kapal']['export']) && $userMatrixPermissions['biaya-kapal']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- Rekap Biaya Asset --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Rekap Biaya Asset</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[rekap-biaya-asset][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['rekap-biaya-asset']['view']) && $userMatrixPermissions['rekap-biaya-asset']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
                             </tr>
 
                             {{-- Master Dokumen Perijinan Kapal --}}
