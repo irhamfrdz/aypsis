@@ -40,7 +40,7 @@ class RekapPemakaianBarangController extends Controller
             $isBan = in_array($namaBarang, $banItems);
             
             if ($isAmprahan) {
-                $amprahanUsages = StockAmprahanUsage::with(['stockAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'alatBerat'])
+                $amprahanUsages = StockAmprahanUsage::with(['stockAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'alatBerat', 'kapal', 'chasisBatam'])
                     ->whereHas('stockAmprahan', function($q) use ($namaBarang) {
                         $q->where('nama_barang', $namaBarang);
                     })
@@ -55,11 +55,19 @@ class RekapPemakaianBarangController extends Controller
                     elseif ($usage->truck) $unitName = $usage->truck->nomor_polisi;
                     elseif ($usage->buntut) $unitName = $usage->buntut->nomor_polisi;
                     elseif ($usage->alatBerat) $unitName = $usage->alatBerat->nama;
+                    elseif ($usage->kapal) $unitName = $usage->kapal->nama_kapal;
+                    elseif ($usage->chasisBatam) $unitName = $usage->chasisBatam->kode;
+                    elseif ($usage->kantor) $unitName = $usage->kantor;
+                    
+                    $penerimaName = '-';
+                    if ($usage->penerima) {
+                        $penerimaName = $usage->penerima->nama_lengkap ?? $usage->penerima->nama_panggilan ?? '-';
+                    }
                     
                     $results->push((object)[
                         'tanggal' => Carbon::parse($usage->tanggal_pengambilan)->format('Y-m-d'),
                         'nama_barang' => $usage->stockAmprahan->nama_barang ?? '-',
-                        'penerima' => $usage->penerima->nama ?? '-',
+                        'penerima' => $penerimaName,
                         'unit' => $unitName,
                         'qty' => floatval($usage->jumlah) . ' ' . ($usage->stockAmprahan->satuan ?? ''),
                         'keterangan' => $usage->keterangan,
@@ -69,7 +77,7 @@ class RekapPemakaianBarangController extends Controller
             }
             
             if ($isBan) {
-                $banUsages = StockBan::with(['namaStockBan', 'penerima', 'mobil', 'alatBerat'])
+                $banUsages = StockBan::with(['namaStockBan', 'penerima', 'mobil', 'alatBerat', 'kapal'])
                     ->whereHas('namaStockBan', function($q) use ($namaBarang) {
                         $q->where('nama', $namaBarang);
                     })
@@ -94,13 +102,19 @@ class RekapPemakaianBarangController extends Controller
                     $unitName = '-';
                     if ($ban->mobil) $unitName = $ban->mobil->nomor_polisi;
                     elseif ($ban->alatBerat) $unitName = $ban->alatBerat->nama;
+                    elseif ($ban->kapal) $unitName = $ban->kapal->nama_kapal;
+                    
+                    $penerimaName = '-';
+                    if ($ban->penerima) {
+                        $penerimaName = $ban->penerima->nama_lengkap ?? $ban->penerima->nama_panggilan ?? '-';
+                    }
                     
                     $tgl = $ban->tanggal_digunakan ? Carbon::parse($ban->tanggal_digunakan)->format('Y-m-d') : $ban->updated_at->format('Y-m-d');
                     
                     $results->push((object)[
                         'tanggal' => $tgl,
                         'nama_barang' => 'Ban: ' . ($ban->namaStockBan->nama ?? 'Unknown') . ' (' . ($ban->merk ?? '-') . ')',
-                        'penerima' => $ban->penerima->nama ?? '-',
+                        'penerima' => $penerimaName,
                         'unit' => $unitName,
                         'qty' => '1 Pcs',
                         'keterangan' => ($ban->keterangan ? $ban->keterangan . ' | ' : '') . 'No Seri: ' . ($ban->nomor_seri ?? '-'),
