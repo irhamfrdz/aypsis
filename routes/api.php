@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\ApiAuthController;
 use App\Http\Controllers\Api\ApiAttendanceController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 use App\Http\Controllers\Api\AbsensiSyncController;
 
@@ -90,7 +91,6 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // Lokasi Absensi API endpoints (public/shared with Node.js port mapping)
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 Route::get('/lokasi-absensi', function() {

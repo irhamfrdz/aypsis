@@ -194,6 +194,12 @@ class SyncAttendanceLocal extends Command
                         $checkType = strtoupper($log['CHECKTYPE']);
                         if (in_array($checkType, ['I', '0', 'MASUK'])) {
                             $type = 'Masuk';
+                        } elseif (in_array($checkType, ['O', '1', 'PULANG'])) {
+                            $type = 'Pulang';
+                        } elseif ($checkType == '2' || $checkType == 'B') { // Usually '2' or 'B' for Break Out
+                            $type = 'istirahat_keluar';
+                        } elseif ($checkType == '3' || $checkType == 'b') { // Usually '3' or 'b' for Break In
+                            $type = 'istirahat_masuk';
                         } elseif ($checkType == '4') {
                             $type = 'lembur_masuk';
                         } elseif ($checkType == '5') {

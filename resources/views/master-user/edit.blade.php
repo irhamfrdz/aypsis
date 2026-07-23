@@ -3632,6 +3632,22 @@
                                 <td class="text-center text-gray-400">-</td>
                             </tr>
 
+                            <tr class="submodule-row" data-parent="payroll">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Uang Karyawan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[payroll-uang-karyawan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['payroll-uang-karyawan']['view']) && $userMatrixPermissions['payroll-uang-karyawan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[payroll-uang-karyawan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['payroll-uang-karyawan']['create']) && $userMatrixPermissions['payroll-uang-karyawan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[payroll-uang-karyawan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['payroll-uang-karyawan']['update']) && $userMatrixPermissions['payroll-uang-karyawan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[payroll-uang-karyawan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['payroll-uang-karyawan']['delete']) && $userMatrixPermissions['payroll-uang-karyawan']['delete']) checked @endif></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                            </tr>
+
                             <tr class="module-row" data-module="pembayaran">
                                 <td class="module-header">
                                     <div class="flex items-center">

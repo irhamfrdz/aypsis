@@ -512,7 +512,7 @@
                 <!-- Payroll Section -->
                 @php
                     $isPayrollRoute = Request::routeIs('payroll.*');
-                    $showPayrollSection = $user && ($user->can('payroll-view') || $isAdmin);
+                    $showPayrollSection = $user && ($user->can('payroll-view') || $user->can('payroll-uang-karyawan-view') || $isAdmin);
                 @endphp
 
                 @if($showPayrollSection)
@@ -529,9 +529,17 @@
                         </svg>
                     </button>
                     <div id="payroll-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isPayrollRoute) style="display: block;" @endif>
+                        @if($user->can('payroll-view') || $isAdmin)
                         <a href="{{ route('payroll.uang-makan') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('payroll.uang-makan') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                             <span class="text-xs font-medium">Uang Makan Mingguan</span>
                         </a>
+                        @endif
+
+                        @if($user->can('payroll-uang-karyawan-view') || $isAdmin)
+                        <a href="#" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 text-gray-600 hover:shadow-sm">
+                            <span class="text-xs font-medium">Data Uang Karyawan</span>
+                        </a>
+                        @endif
                     </div>
                 </div>
                 @endif

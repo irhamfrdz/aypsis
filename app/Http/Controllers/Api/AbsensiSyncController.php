@@ -27,7 +27,7 @@ class AbsensiSyncController extends Controller
             'logs' => 'required|array',
             'logs.*.nik' => 'required|string',
             'logs.*.waktu' => 'required|date_format:Y-m-d H:i:s',
-            'logs.*.tipe' => 'required|string|in:Masuk,Pulang'
+            'logs.*.tipe' => 'required|string|in:Masuk,Pulang,istirahat_keluar,istirahat_masuk,lembur_masuk,lembur_pulang'
         ]);
 
         $mesinId = $request->mesin_id;

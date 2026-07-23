@@ -55,6 +55,8 @@ class ApiAuthController extends Controller
                     'name' => $user->name, // getNameAttribute accessor
                     'role' => $user->karyawan->divisi ?? 'Karyawan',
                     'karyawan' => $user->karyawan,
+                    'karyawan_id' => $user->karyawan->id ?? null,
+                    'nik' => $user->karyawan->nik ?? null,
                 ],
             ],
         ]);
@@ -75,6 +77,8 @@ class ApiAuthController extends Controller
                 'name' => $user->name,
                 'role' => $user->karyawan->divisi ?? 'Karyawan',
                 'karyawan' => $user->karyawan,
+                'karyawan_id' => $user->karyawan->id ?? null,
+                'nik' => $user->karyawan->nik ?? null,
             ],
         ]);
     }

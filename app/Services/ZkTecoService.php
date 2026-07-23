@@ -227,6 +227,12 @@ class ZkTecoService
                     // Map state to corresponding types
                     if ($state == 0) {
                         $type = 'Masuk';
+                    } elseif ($state == 1) {
+                        $type = 'Pulang';
+                    } elseif ($state == 2) {
+                        $type = 'istirahat_keluar';
+                    } elseif ($state == 3) {
+                        $type = 'istirahat_masuk';
                     } elseif ($state == 4) {
                         $type = 'lembur_masuk';
                     } elseif ($state == 5) {

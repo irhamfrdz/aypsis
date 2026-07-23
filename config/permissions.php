@@ -180,6 +180,10 @@ return [
                 'payroll-create' => 'Buat Payroll',
                 'payroll-edit' => 'Edit Payroll',
                 'payroll-delete' => 'Hapus Payroll',
+                'payroll-uang-karyawan-view' => 'View Data Uang Karyawan',
+                'payroll-uang-karyawan-create' => 'Buat Data Uang Karyawan',
+                'payroll-uang-karyawan-update' => 'Edit Data Uang Karyawan',
+                'payroll-uang-karyawan-delete' => 'Hapus Data Uang Karyawan',
             ],
         ],
     ],
@@ -235,5 +239,6 @@ return [
 
         // Payroll
         'payroll' => ['payroll-view'],
+        'payroll-uang-karyawan' => ['payroll-uang-karyawan-view'],
     ],
 ];
