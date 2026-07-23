@@ -70,6 +70,8 @@ class RekapPemakaianBarangController extends Controller
                         'penerima' => $penerimaName,
                         'unit' => $unitName,
                         'qty' => floatval($usage->jumlah) . ' ' . ($usage->stockAmprahan->satuan ?? ''),
+                        'raw_qty' => floatval($usage->jumlah),
+                        'satuan' => $usage->stockAmprahan->satuan ?? '',
                         'keterangan' => $usage->keterangan,
                         'sumber' => 'Amprahan'
                     ]);
@@ -117,6 +119,8 @@ class RekapPemakaianBarangController extends Controller
                         'penerima' => $penerimaName,
                         'unit' => $unitName,
                         'qty' => '1 Pcs',
+                        'raw_qty' => 1,
+                        'satuan' => 'Pcs',
                         'keterangan' => ($ban->keterangan ? $ban->keterangan . ' | ' : '') . 'No Seri: ' . ($ban->nomor_seri ?? '-'),
                         'sumber' => 'Stock Ban'
                     ]);

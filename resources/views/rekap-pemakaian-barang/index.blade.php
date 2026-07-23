@@ -63,6 +63,37 @@
                 </div>
             </div>
             
+            @php
+                $rekapUnit = [];
+                foreach($results as $row) {
+                    $u = $row->unit;
+                    if ($u === '-' || empty($u)) continue;
+                    
+                    if(!isset($rekapUnit[$u])) {
+                        $rekapUnit[$u] = [
+                            'count' => 0,
+                            'satuan' => $row->satuan ?? ''
+                        ];
+                    }
+                    $rekapUnit[$u]['count'] += $row->raw_qty;
+                }
+                ksort($rekapUnit);
+            @endphp
+            
+            @if(count($rekapUnit) > 0)
+            <div class="p-4 border-b border-gray-100 bg-white">
+                <h4 class="font-semibold text-gray-700 mb-3"><i class="fas fa-chart-pie text-indigo-500 mr-2"></i>Rekap Per Unit / Tujuan</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    @foreach($rekapUnit as $name => $data)
+                    <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 shadow-sm hover:shadow-md transition text-center">
+                        <div class="font-bold text-indigo-900 text-sm mb-1 truncate" title="{{ $name }}">{{ $name }}</div>
+                        <div class="text-xs font-medium text-indigo-600 bg-indigo-100 rounded-full px-2 py-0.5 inline-block">{{ $data['count'] }} {{ $data['satuan'] }}</div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+            
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
