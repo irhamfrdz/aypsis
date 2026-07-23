@@ -225,11 +225,88 @@
         <div id="tab-ban-luar" class="tab-content active p-4">
             <!-- Rekap Statistik Ban Luar -->
             <div class="mb-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <i class="fas fa-chart-bar text-blue-600"></i>
-                    Rekap Ban Luar
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-blue-600"></i>
+                        Rekap Ban Luar
+                    </h3>
+                    <div class="flex bg-gray-100 p-1 rounded-lg mt-2 md:mt-0">
+                        <button type="button" onclick="toggleCardView('status')" id="btn-view-status" class="px-4 py-1.5 text-sm font-medium rounded-md bg-white text-gray-800 shadow-sm transition-all focus:outline-none">Status Ban</button>
+                        <button type="button" onclick="toggleCardView('unit')" id="btn-view-unit" class="px-4 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all focus:outline-none">Per Unit (Kendaraan)</button>
+                    </div>
+                </div>
+
+                @php
+                    $banPerMobil = [];
+                    $banPerBuntut = [];
+                    $banPerAlatBerat = [];
+                    
+                    foreach($stockBans->where('status', 'Terpakai') as $ban) {
+                        if ($ban->alat_berat_id && $ban->alatBerat) {
+                            $name = $ban->alatBerat->nama;
+                            if(!isset($banPerAlatBerat[$name])) $banPerAlatBerat[$name] = 0;
+                            $banPerAlatBerat[$name]++;
+                        } elseif ($ban->mobil_id && $ban->mobil) {
+                            $jenis = strtoupper($ban->mobil->jenis ?? '');
+                            $name = $ban->mobil->nomor_polisi ?? 'Unknown';
+                            if (strpos($jenis, 'BUNTUT') !== false) {
+                                if(!isset($banPerBuntut[$name])) $banPerBuntut[$name] = 0;
+                                $banPerBuntut[$name]++;
+                            } else {
+                                if(!isset($banPerMobil[$name])) $banPerMobil[$name] = 0;
+                                $banPerMobil[$name]++;
+                            }
+                        }
+                    }
+                    ksort($banPerMobil);
+                    ksort($banPerBuntut);
+                    ksort($banPerAlatBerat);
+                @endphp
+
+                <!-- View: By Unit (Kendaraan) -->
+                <div id="cards-unit" class="hidden">
+                    <!-- Section Mobil -->
+                    @if(count($banPerMobil) > 0)
+                    <h4 class="font-semibold text-gray-700 mt-2 mb-3"><i class="fas fa-truck text-indigo-500 mr-2"></i>Mobil / Truk</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
+                        @foreach($banPerMobil as $name => $count)
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 shadow-sm hover:shadow-md transition text-center cursor-pointer" onclick="filterByUnit('{{ $name }}')">
+                            <div class="font-bold text-indigo-900 text-sm mb-1">{{ $name }}</div>
+                            <div class="text-xs font-medium text-indigo-600 bg-indigo-100 rounded-full px-2 py-0.5 inline-block">{{ $count }} Ban</div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    <!-- Section Buntut -->
+                    @if(count($banPerBuntut) > 0)
+                    <h4 class="font-semibold text-gray-700 mb-3"><i class="fas fa-trailer text-orange-500 mr-2"></i>Buntut / Trailer</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
+                        @foreach($banPerBuntut as $name => $count)
+                        <div class="bg-orange-50 border border-orange-100 rounded-lg p-3 shadow-sm hover:shadow-md transition text-center cursor-pointer" onclick="filterByUnit('{{ $name }}')">
+                            <div class="font-bold text-orange-900 text-sm mb-1">{{ $name }}</div>
+                            <div class="text-xs font-medium text-orange-600 bg-orange-100 rounded-full px-2 py-0.5 inline-block">{{ $count }} Ban</div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    <!-- Section Alat Berat -->
+                    @if(count($banPerAlatBerat) > 0)
+                    <h4 class="font-semibold text-gray-700 mb-3"><i class="fas fa-tractor text-amber-500 mr-2"></i>Alat Berat</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
+                        @foreach($banPerAlatBerat as $name => $count)
+                        <div class="bg-amber-50 border border-amber-100 rounded-lg p-3 shadow-sm hover:shadow-md transition text-center cursor-pointer" onclick="filterByUnit('{{ $name }}')">
+                            <div class="font-bold text-amber-900 text-sm mb-1">{{ $name }}</div>
+                            <div class="text-xs font-medium text-amber-600 bg-amber-100 rounded-full px-2 py-0.5 inline-block">{{ $count }} Ban</div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+
+                <!-- View: By Status -->
+                <div id="cards-status" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     <!-- Total Ban -->
                     <div id="card-total" onclick="setCardFilter('total', false)" class="cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter active-filter ring-2 ring-blue-400">
                         <div class="flex items-center justify-between mb-2">
@@ -4183,6 +4260,45 @@ function closeJualBanModal() {
         // If not found (maybe name is different), show alert
         if (found === 0) {
             console.warn('No items found for filter:', upperName);
+        }
+    }
+
+    function toggleCardView(view) {
+        const btnStatus = document.getElementById('btn-view-status');
+        const btnUnit = document.getElementById('btn-view-unit');
+        const cardsStatus = document.getElementById('cards-status');
+        const cardsUnit = document.getElementById('cards-unit');
+
+        if (view === 'status') {
+            cardsStatus.classList.remove('hidden');
+            cardsUnit.classList.add('hidden');
+            
+            btnStatus.classList.replace('text-gray-500', 'text-gray-800');
+            btnStatus.classList.replace('hover:text-gray-700', 'shadow-sm');
+            btnStatus.classList.add('bg-white');
+            
+            btnUnit.classList.replace('text-gray-800', 'text-gray-500');
+            btnUnit.classList.replace('shadow-sm', 'hover:text-gray-700');
+            btnUnit.classList.remove('bg-white');
+        } else {
+            cardsUnit.classList.remove('hidden');
+            cardsStatus.classList.add('hidden');
+            
+            btnUnit.classList.replace('text-gray-500', 'text-gray-800');
+            btnUnit.classList.replace('hover:text-gray-700', 'shadow-sm');
+            btnUnit.classList.add('bg-white');
+            
+            btnStatus.classList.replace('text-gray-800', 'text-gray-500');
+            btnStatus.classList.replace('shadow-sm', 'hover:text-gray-700');
+            btnStatus.classList.remove('bg-white');
+        }
+    }
+
+    function filterByUnit(name) {
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            searchInput.value = name;
+            searchInput.dispatchEvent(new Event('input', { bubbles: true }));
         }
     }
 </script>

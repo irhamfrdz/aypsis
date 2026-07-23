@@ -32,8 +32,8 @@ class StockBanController extends Controller
      */
     public function index()
     {
-        $stockBans = StockBan::with('mobil')->latest()->get();
-        $stockBanLuarBatams = \App\Models\StockBanLuarBatam::with('mobil')->latest()->get();
+        $stockBans = StockBan::with(['mobil', 'alatBerat'])->latest()->get();
+        $stockBanLuarBatams = \App\Models\StockBanLuarBatam::with(['mobil', 'alatBerat'])->latest()->get();
         // Separate Ban Dalam, Ban Perut, and Lock Kontainer
         $stockBanDalamsOriginal = \App\Models\StockBanDalam::with('namaStockBan')->latest()->get();
         $stockBanDalams = $stockBanDalamsOriginal->filter(function ($item) {
