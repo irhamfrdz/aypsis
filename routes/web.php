@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\AbsensiImportController;
 use App\Http\Controllers\AktivitasLainnyaController;
 use App\Http\Controllers\AssetDashboardController;
 use App\Http\Controllers\AsuransiTandaTerimaController;
@@ -1562,6 +1563,11 @@ Route::middleware([
         Route::get('absensi', [AbsensiController::class, 'index'])
             ->name('absensi.index')
             ->middleware('can:absensi-view');
+
+        Route::post('absensi/import', [AbsensiImportController::class, 'import'])
+            ->name('absensi.import')
+            ->middleware('can:absensi-view'); // Gunakan permission yang ada
+
 
         Route::delete('absensi/delete-log', [AbsensiController::class, 'deleteLog'])
             ->name('absensi.delete_log')
