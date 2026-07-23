@@ -88,6 +88,7 @@ class ADMSController extends Controller
             $mesin = \App\Models\Mesin::create([
                 'kode_mesin' => $sn,
                 'nama_mesin' => 'Mesin Baru ' . $sn,
+                'tipe_mesin' => 'ADMS',
                 'status' => 'Aktif',
                 'keterangan' => 'Auto-register dari ADMS',
             ]);
