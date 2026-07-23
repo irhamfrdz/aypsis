@@ -3281,6 +3281,23 @@
                                 <td><input type="checkbox" name="permissions[bl][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['bl']['export']) && $userMatrixPermissions['bl']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Manifest --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Manifest</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[manifest][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['manifest']['view']) && $userMatrixPermissions['manifest']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[manifest][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['manifest']['create']) && $userMatrixPermissions['manifest']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[manifest][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['manifest']['update']) && $userMatrixPermissions['manifest']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[manifest][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['manifest']['delete']) && $userMatrixPermissions['manifest']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Daftar Tagihan Kontainer Sewa --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">
