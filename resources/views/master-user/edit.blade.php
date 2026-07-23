@@ -2443,6 +2443,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Rekap Pemakaian Barang --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Rekap Pemakaian Barang</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[rekap-pemakaian-barang][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['rekap-pemakaian-barang']['view']) && $userMatrixPermissions['rekap-pemakaian-barang']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Master Dokumen Perijinan Kapal --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">
