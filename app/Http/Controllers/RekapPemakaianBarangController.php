@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\StockAmprahan;
 use App\Models\StockAmprahanUsage;
 use App\Models\StockBan;
-use App\Models\MasterNamaStockBan;
+use App\Models\NamaStockBan;
 use Carbon\Carbon;
 
 class RekapPemakaianBarangController extends Controller
@@ -24,7 +24,7 @@ class RekapPemakaianBarangController extends Controller
                             ->pluck('nama_barang')
                             ->toArray();
                             
-        $banItems = MasterNamaStockBan::select('nama')
+        $banItems = NamaStockBan::select('nama')
                             ->distinct()
                             ->pluck('nama')
                             ->toArray();
