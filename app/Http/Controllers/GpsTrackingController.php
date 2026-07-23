@@ -39,10 +39,13 @@ class GpsTrackingController extends Controller
             ->where('imei_gps', '!=', '')
             ->get();
 
+        $imeis = $mobils->pluck('imei_gps')->filter()->toArray();
+        $bulkGpsData = !empty($imeis) ? $this->gpsService->getLatestLocationsBulk($imeis) : [];
+
         $locations = [];
 
         foreach ($mobils as $mobil) {
-            $gpsData = $this->gpsService->getLatestLocation($mobil->imei_gps);
+            $gpsData = $bulkGpsData[$mobil->imei_gps] ?? null;
             
             // Jika request API berhasil dan mengembalikan koordinat
             if ($gpsData && isset($gpsData['status']) && $gpsData['status']) {

@@ -105,5 +105,52 @@ class GpsIdService
             return null;
         }
     }
-}
 
+    /**
+     * Get the latest location and status for multiple IMEIs concurrently.
+     */
+    public function getLatestLocationsBulk(array $imeis)
+    {
+        $token = $this->getToken();
+
+        if (empty($token)) {
+            Log::warning('GPS.id Username/Password is not set in .env or login failed');
+            return [];
+        }
+
+        try {
+            $responses = Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($imeis, $token) {
+                foreach ($imeis as $imei) {
+                    $pool->as($imei)->withHeaders([
+                        'Authorization' => "Bearer {$token}",
+                        'Accept' => 'application/json',
+                    ])->get("{$this->baseUrl}/vehicle/detail/{$imei}");
+                }
+            });
+
+            $results = [];
+            foreach ($responses as $imei => $response) {
+                if ($response instanceof \Illuminate\Http\Client\Response) {
+                    if ($response->status() === 401) {
+                        Cache::forget('gps_id_token');
+                    }
+                    
+                    if ($response->successful()) {
+                        $results[$imei] = $response->json();
+                    } else {
+                        Log::error("GPS.id API Error for IMEI {$imei}: " . $response->body());
+                        $results[$imei] = null;
+                    }
+                } else {
+                    $results[$imei] = null;
+                }
+            }
+
+            return $results;
+
+        } catch (\Exception $e) {
+            Log::error("GPS.id Connection Error Bulk: " . $e->getMessage());
+            return [];
+        }
+    }
+}
