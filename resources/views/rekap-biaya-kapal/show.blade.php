@@ -184,6 +184,11 @@
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Tanggal</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">No. Invoice</th>
+                                    @if($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir')
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Pengirim</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                                    @endif
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Klasifikasi</th>
                                     <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Total</th>
                                     <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-20 no-print">Aksi</th>
@@ -201,12 +206,16 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="text-xs font-bold text-gray-800">{{ $item->nomor_invoice }}</div>
-                                            @if((isset($item->is_uang_jalan) && $item->is_uang_jalan) || (isset($item->is_tagihan_vendor) && $item->is_tagihan_vendor))
-                                                @php
+                                        </td>
+                                        @if($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir')
+                                            @php
+                                                $noKontainer = null;
+                                                $noSuratJalan = null;
+                                                $pengirim = null;
+                                                if ((isset($item->is_uang_jalan) && $item->is_uang_jalan) || (isset($item->is_tagihan_vendor) && $item->is_tagihan_vendor)) {
                                                     $sj = $item->suratJalan ?? $item->suratJalanBongkaran ?? $item->suratJalanBongkaranBatam ?? null;
                                                     $noKontainer = $sj->no_kontainer ?? null;
                                                     $noSuratJalan = $sj->no_surat_jalan ?? $sj->nomor_surat_jalan ?? null;
-                                                    $pengirim = null;
                                                     if ($sj) {
                                                         if (method_exists($sj, 'pengirimRelation') && $sj->pengirimRelation) {
                                                             $pengirim = $sj->pengirimRelation->nama_pengirim;
@@ -214,24 +223,18 @@
                                                             $pengirim = is_object($sj->pengirim) ? ($sj->pengirim->nama_pengirim ?? (string)$sj->pengirim) : $sj->pengirim;
                                                         }
                                                     }
-                                                @endphp
-                                                @if($noSuratJalan)
-                                                    <div class="text-xs text-indigo-600 mt-1 font-medium flex items-center" title="No. Surat Jalan">
-                                                        <i class="fas fa-file-invoice mr-1.5 w-3 text-center"></i> {{ $noSuratJalan }}
-                                                    </div>
-                                                @endif
-                                                @if($pengirim)
-                                                    <div class="text-xs text-gray-600 mt-1 font-medium flex items-center" title="Pengirim">
-                                                        <i class="fas fa-building text-gray-400 mr-1.5 w-3 text-center"></i> {{ $pengirim }}
-                                                    </div>
-                                                @endif
-                                                @if($noKontainer)
-                                                    <div class="text-xs text-gray-500 mt-1 font-normal flex items-center" title="No. Kontainer">
-                                                        <i class="fas fa-box text-gray-400 mr-1.5 w-3 text-center"></i> {{ $noKontainer }}
-                                                    </div>
-                                                @endif
-                                            @endif
-                                        </td>
+                                                }
+                                            @endphp
+                                            <td class="px-6 py-4 text-xs font-medium text-indigo-600 whitespace-nowrap">
+                                                {{ $noSuratJalan ?: '-' }}
+                                            </td>
+                                            <td class="px-6 py-4 text-xs text-gray-700">
+                                                {{ $pengirim ?: '-' }}
+                                            </td>
+                                            <td class="px-6 py-4 text-xs text-gray-600 whitespace-nowrap">
+                                                {{ $noKontainer ?: '-' }}
+                                            </td>
+                                        @endif
                                         <td class="px-6 py-4 text-xs text-gray-700">
                                             {{ $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain' }}
                                         </td>
@@ -262,7 +265,7 @@
                             </tbody>
                             <tfoot class="bg-gray-50/80 font-bold border-t border-gray-200">
                                 <tr>
-                                    <td colspan="4" class="px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $catName }}</td>
+                                    <td colspan="{{ ($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir') ? 7 : 4 }}" class="px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $catName }}</td>
                                     <td class="px-6 py-4 text-right text-sm text-gray-900">
                                         Rp {{ number_format($catTotal, 0, ',', '.') }}
                                     </td>
