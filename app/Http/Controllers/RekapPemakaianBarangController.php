@@ -51,13 +51,24 @@ class RekapPemakaianBarangController extends Controller
                     
                 foreach ($amprahanUsages as $usage) {
                     $unitName = '-';
-                    if ($usage->kendaraan) $unitName = $usage->kendaraan->nomor_polisi;
-                    elseif ($usage->truck) $unitName = $usage->truck->nomor_polisi;
-                    elseif ($usage->buntut) $unitName = $usage->buntut->nomor_polisi;
-                    elseif ($usage->alatBerat) $unitName = $usage->alatBerat->nama;
-                    elseif ($usage->kapal) $unitName = $usage->kapal->nama_kapal;
-                    elseif ($usage->chasisBatam) $unitName = $usage->chasisBatam->kode;
-                    elseif ($usage->kantor) $unitName = $usage->kantor;
+                    if ($usage->kendaraan) {
+                        $nopol = trim($usage->kendaraan->nomor_polisi);
+                        $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->kendaraan->no_kir) ?: '-');
+                    } elseif ($usage->truck) {
+                        $nopol = trim($usage->truck->nomor_polisi);
+                        $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->truck->no_kir) ?: '-');
+                    } elseif ($usage->buntut) {
+                        $nopol = trim($usage->buntut->nomor_polisi);
+                        $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($usage->buntut->no_kir) ?: '-');
+                    } elseif ($usage->alatBerat) {
+                        $unitName = $usage->alatBerat->nama;
+                    } elseif ($usage->kapal) {
+                        $unitName = $usage->kapal->nama_kapal;
+                    } elseif ($usage->chasisBatam) {
+                        $unitName = $usage->chasisBatam->kode;
+                    } elseif ($usage->kantor) {
+                        $unitName = $usage->kantor;
+                    }
                     
                     $penerimaName = '-';
                     if ($usage->penerima) {
@@ -102,9 +113,14 @@ class RekapPemakaianBarangController extends Controller
                     
                 foreach ($banUsages as $ban) {
                     $unitName = '-';
-                    if ($ban->mobil) $unitName = $ban->mobil->nomor_polisi;
-                    elseif ($ban->alatBerat) $unitName = $ban->alatBerat->nama;
-                    elseif ($ban->kapal) $unitName = $ban->kapal->nama_kapal;
+                    if ($ban->mobil) {
+                        $nopol = trim($ban->mobil->nomor_polisi);
+                        $unitName = (!empty($nopol) && $nopol !== '-') ? $nopol : (trim($ban->mobil->no_kir) ?: '-');
+                    } elseif ($ban->alatBerat) {
+                        $unitName = $ban->alatBerat->nama;
+                    } elseif ($ban->kapal) {
+                        $unitName = $ban->kapal->nama_kapal;
+                    }
                     
                     $penerimaName = '-';
                     if ($ban->penerima) {
