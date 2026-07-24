@@ -120,21 +120,23 @@ class ADMSController extends Controller
                     continue; // Skip format tanggal salah
                 }
                 
-                // Deteksi otomatis tipe absen berdasarkan jam (Abaikan tombol mesin)
-                $time = Carbon::parse($logTime)->format('H:i');
+                // Index ke-2 biasanya state (0=Masuk, 1=Pulang, 2=Break Out, 3=Break In, 4=OT In, 5=OT Out)
+                $state = isset($parts[2]) ? (int) $parts[2] : 0;
                 
-                if ($time >= '00:00' && $time <= '11:30') {
+                if ($state == 0) {
                     $type = 'Masuk';
-                } elseif ($time > '11:30' && $time <= '12:30') {
-                    $type = 'istirahat_keluar';
-                } elseif ($time > '12:30' && $time <= '13:30') {
-                    $type = 'istirahat_masuk';
-                } elseif ($time > '13:30' && $time <= '17:30') {
+                } elseif ($state == 1) {
                     $type = 'Pulang';
-                } elseif ($time > '17:30' && $time <= '20:00') {
+                } elseif ($state == 2) {
+                    $type = 'istirahat_keluar';
+                } elseif ($state == 3) {
+                    $type = 'istirahat_masuk';
+                } elseif ($state == 4) {
                     $type = 'lembur_masuk';
-                } else {
+                } elseif ($state == 5) {
                     $type = 'lembur_pulang';
+                } else {
+                    $type = 'Pulang';
                 }
 
                 // Cegah duplikasi log yang sama persis (berdasarkan NIK dan waktu spesifik)
