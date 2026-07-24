@@ -203,11 +203,31 @@
                                             <div class="text-xs font-bold text-gray-800">{{ $item->nomor_invoice }}</div>
                                             @if((isset($item->is_uang_jalan) && $item->is_uang_jalan) || (isset($item->is_tagihan_vendor) && $item->is_tagihan_vendor))
                                                 @php
-                                                    $noKontainer = $item->suratJalan->no_kontainer ?? $item->suratJalanBongkaran->no_kontainer ?? $item->suratJalanBongkaranBatam->no_kontainer ?? null;
+                                                    $sj = $item->suratJalan ?? $item->suratJalanBongkaran ?? $item->suratJalanBongkaranBatam ?? null;
+                                                    $noKontainer = $sj->no_kontainer ?? null;
+                                                    $noSuratJalan = $sj->no_surat_jalan ?? $sj->nomor_surat_jalan ?? null;
+                                                    $pengirim = null;
+                                                    if ($sj) {
+                                                        if (method_exists($sj, 'pengirimRelation') && $sj->pengirimRelation) {
+                                                            $pengirim = $sj->pengirimRelation->nama_pengirim;
+                                                        } elseif (isset($sj->pengirim)) {
+                                                            $pengirim = is_object($sj->pengirim) ? ($sj->pengirim->nama_pengirim ?? (string)$sj->pengirim) : $sj->pengirim;
+                                                        }
+                                                    }
                                                 @endphp
+                                                @if($noSuratJalan)
+                                                    <div class="text-xs text-indigo-600 mt-1 font-medium flex items-center" title="No. Surat Jalan">
+                                                        <i class="fas fa-file-invoice mr-1.5 w-3 text-center"></i> {{ $noSuratJalan }}
+                                                    </div>
+                                                @endif
+                                                @if($pengirim)
+                                                    <div class="text-xs text-gray-600 mt-1 font-medium flex items-center" title="Pengirim">
+                                                        <i class="fas fa-building text-gray-400 mr-1.5 w-3 text-center"></i> {{ $pengirim }}
+                                                    </div>
+                                                @endif
                                                 @if($noKontainer)
-                                                    <div class="text-xs text-gray-500 mt-1 font-normal flex items-center">
-                                                        <i class="fas fa-box text-gray-400 mr-1"></i> {{ $noKontainer }}
+                                                    <div class="text-xs text-gray-500 mt-1 font-normal flex items-center" title="No. Kontainer">
+                                                        <i class="fas fa-box text-gray-400 mr-1.5 w-3 text-center"></i> {{ $noKontainer }}
                                                     </div>
                                                 @endif
                                             @endif
