@@ -120,8 +120,8 @@ class ADMSController extends Controller
                     continue; // Skip format tanggal salah
                 }
                 
-                // Index ke-2 biasanya state (0=Masuk, 1=Pulang, 2=Break Out, 3=Break In, 4=OT In, 5=OT Out)
-                $state = isset($parts[2]) ? (int) $parts[2] : 0;
+                // Index ke-3 biasanya state (0=Masuk, 1=Pulang, 2=Break Out, 3=Break In, 4=OT In, 5=OT Out)
+                $state = isset($parts[3]) ? (int) $parts[3] : 0;
                 
                 if ($state == 0) {
                     $type = 'Masuk';
