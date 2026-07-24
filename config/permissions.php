@@ -46,6 +46,7 @@ return [
                 'master-permission' => 'Manajemen Permission',
                 'master-mobil' => 'Manajemen Mobil',
                 'master-chasis-batam' => 'Manajemen Chasis Batam',
+                'master-tunjangan' => 'Manajemen Tunjangan',
             ],
         ],
         'user-approval' => [

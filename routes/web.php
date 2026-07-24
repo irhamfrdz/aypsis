@@ -6599,5 +6599,10 @@ Route::middleware(['auth',
     Route::get('/payroll', [\App\Http\Controllers\PayrollController::class, 'index'])->name('payroll.index')->middleware('can:payroll-view');
     Route::get('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'uangMakan'])->name('payroll.uang-makan')->middleware('can:payroll-view');
     Route::post('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'storeUangMakan'])->name('payroll.uang-makan.store')->middleware('can:payroll-view');
+    
+    // Master Tunjangan
+    Route::resource('master/tunjangan', \App\Http\Controllers\MasterTunjanganController::class)
+        ->names('master.tunjangan')
+        ->middleware('can:master-tunjangan');
 });
 
