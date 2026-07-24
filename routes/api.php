@@ -72,7 +72,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [ApiAuthController::class, 'me']);
     
     Route::post('/attendance', [ApiAttendanceController::class, 'store']);
+    Route::post('/attendance/record', [ApiAttendanceController::class, 'store']);
     Route::get('/attendance/history', [ApiAttendanceController::class, 'history']);
+    Route::get('/attendance/today', [ApiAttendanceController::class, 'today']);
+    Route::get('/attendance/locations', function() {
+        return response()->json(\Illuminate\Support\Facades\DB::table('lokasi_absensis')->orderBy('created_at', 'desc')->get());
+    });
+    
+    Route::post('/attendance/detect-face', function(Request $request) {
+        return response()->json(['success' => true, 'hasFace' => true]);
+    });
     
     Route::post('/user/push-token', function (Request $request) {
         $data = $request->validate([
