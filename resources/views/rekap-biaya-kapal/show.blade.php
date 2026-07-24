@@ -183,7 +183,6 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Tanggal</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">No. Invoice</th>
                                     @if($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir')
                                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Pengirim</th>
@@ -203,9 +202,6 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
                                             {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/M/Y') : '-' }}
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="text-xs font-bold text-gray-800">{{ $item->nomor_invoice }}</div>
                                         </td>
                                         @if($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir')
                                             @php
@@ -265,7 +261,7 @@
                             </tbody>
                             <tfoot class="bg-gray-50/80 font-bold border-t border-gray-200">
                                 <tr>
-                                    <td colspan="{{ ($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir') ? 7 : 4 }}" class="px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $catName }}</td>
+                                    <td colspan="{{ ($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir') ? 6 : 3 }}" class="px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $catName }}</td>
                                     <td class="px-6 py-4 text-right text-sm text-gray-900">
                                         Rp {{ number_format($catTotal, 0, ',', '.') }}
                                     </td>
