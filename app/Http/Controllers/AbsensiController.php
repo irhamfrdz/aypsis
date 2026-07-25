@@ -340,6 +340,10 @@ class AbsensiController extends Controller
             });
         }
 
+        if ($request->filled('mesin_id')) {
+            $query->where('mesin_id', $request->mesin_id);
+        }
+
         $absensis = $query->orderBy('waktu', 'asc')->get();
 
         $content = "";
