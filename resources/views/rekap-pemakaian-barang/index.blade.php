@@ -18,9 +18,9 @@
         <form method="GET" action="{{ route('rekap-pemakaian-barang.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <!-- Select Barang -->
             <div class="col-span-1 md:col-span-2">
-                <label for="nama_barang" class="block text-sm font-medium text-gray-700 mb-1">Pilih Barang <span class="text-red-500">*</span></label>
+                <label for="nama_barang" class="block text-sm font-medium text-gray-700 mb-1">Pilih Tipe Barang <span class="text-red-500">*</span></label>
                 <select name="nama_barang" id="nama_barang" class="select2 form-input-premium w-full" required>
-                    <option value="" disabled {{ empty($namaBarang) ? 'selected' : '' }}>-- Ketik untuk mencari barang --</option>
+                    <option value="" disabled {{ empty($namaBarang) ? 'selected' : '' }}>-- Ketik untuk mencari tipe barang --</option>
                     @foreach($allBarang as $barang)
                         <option value="{{ $barang }}" {{ $namaBarang === $barang ? 'selected' : '' }}>{{ $barang }}</option>
                     @endforeach
