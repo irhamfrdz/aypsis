@@ -360,7 +360,7 @@ class AbsensiController extends Controller
             $content .= "{$paddedPin}\t{$waktu}\t1\t{$status}\t15\t0\r\n";
         }
 
-        $fileName = 'attlog_' . date('Ymd_His') . '.dat';
+        $fileName = '1_attlog.dat';
         return response($content)
             ->header('Content-Type', 'text/plain')
             ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
