@@ -17,13 +17,14 @@ class RekapPemakaianBarangController extends Controller
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
-        // Fetch distinct type_barang for Amprahan
-        $amprahanItems = StockAmprahan::select('type_barang')
+        // Fetch distinct type barang from master for Amprahan
+        $amprahanItems = StockAmprahan::with('masterNamaBarangAmprahan')
                             ->whereHas('usages')
-                            ->whereNotNull('type_barang')
-                            ->where('type_barang', '!=', '')
-                            ->distinct()
-                            ->pluck('type_barang')
+                            ->whereNotNull('master_nama_barang_amprahan_id')
+                            ->get()
+                            ->pluck('masterNamaBarangAmprahan.nama_barang')
+                            ->filter()
+                            ->unique()
                             ->toArray();
                             
         $banItems = NamaStockBan::select('nama')
@@ -44,7 +45,9 @@ class RekapPemakaianBarangController extends Controller
             if ($isAmprahan) {
                 $amprahanUsages = StockAmprahanUsage::with(['stockAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'alatBerat', 'kapal', 'chasisBatam'])
                     ->whereHas('stockAmprahan', function($q) use ($namaBarang) {
-                        $q->where('type_barang', $namaBarang);
+                        $q->whereHas('masterNamaBarangAmprahan', function($q2) use ($namaBarang) {
+                            $q2->where('nama_barang', $namaBarang);
+                        });
                     })
                     ->when($startDate && $endDate, function($q) use ($startDate, $endDate) {
                         $q->whereBetween('tanggal_pengambilan', [$startDate, $endDate]);
