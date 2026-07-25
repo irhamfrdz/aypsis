@@ -385,6 +385,19 @@ class RekapBiayaKapalController extends Controller
             }
         }
         
+        // Urutkan berdasarkan tahun (2 digit terakhir) secara descending, lalu secara alfabetikal descending
+        usort($otherItems, function($a, $b) {
+            $yearA = preg_match('/(\d{2})$/', trim($a), $matchesA) ? (int)$matchesA[1] : 0;
+            $yearB = preg_match('/(\d{2})$/', trim($b), $matchesB) ? (int)$matchesB[1] : 0;
+            
+            if ($yearA !== $yearB) {
+                return $yearB <=> $yearA;
+            }
+            
+            // Jika tahun sama (atau tidak memiliki format tahun 2 digit di akhir), urutkan secara descending seperti semula
+            return strcmp(strtolower(trim($b)), strtolower(trim($a)));
+        });
+        
         $finalVoyages = array_merge($otherItems, $dockItems);
 
         return response()->json($finalVoyages);
