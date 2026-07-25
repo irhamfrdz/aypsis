@@ -349,6 +349,7 @@ class AbsensiController extends Controller
         $content = "";
         foreach ($absensis as $absensi) {
             $pin = $absensi->nik ?: ($absensi->karyawan_id ?: '0');
+            $pin = ltrim($pin, '0') ?: '0';
             $paddedPin = str_pad($pin, 9, ' ', STR_PAD_LEFT);
             $waktu = Carbon::parse($absensi->waktu)->format('Y-m-d H:i:s');
             
