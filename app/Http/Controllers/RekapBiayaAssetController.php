@@ -19,7 +19,7 @@ class RekapBiayaAssetController extends Controller
         $mobils = Mobil::orderBy('nomor_polisi')->get();
         
         // Get all alat berat
-        $alatBerats = AlatBerat::where('status', 'aktif')
+        $alatBerats = AlatBerat::whereIn('status', ['aktif', 'active'])
                         ->orWhereNull('status')
                         ->orderBy('nama')
                         ->get();
