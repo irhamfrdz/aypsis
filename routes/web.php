@@ -1568,6 +1568,9 @@ Route::middleware([
             ->name('absensi.import')
             ->middleware('can:absensi-view'); // Gunakan permission yang ada
 
+        Route::get('absensi/export-dat', [AbsensiController::class, 'exportDat'])
+            ->name('absensi.export_dat')
+            ->middleware('can:absensi-view');
 
         Route::delete('absensi/delete-log', [AbsensiController::class, 'deleteLog'])
             ->name('absensi.delete_log')

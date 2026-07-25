@@ -300,4 +300,65 @@ class AbsensiController extends Controller
             $fileName
         );
     }
+    public function exportDat(Request $request)
+    {
+        $defaultStart = Carbon::now()->startOfMonth()->toDateString();
+        $defaultEnd = Carbon::now()->endOfMonth()->toDateString();
+
+        $startDateObj = $this->parseDateSafe($request->input('start_date'), $defaultStart);
+        $endDateObj = $this->parseDateSafe($request->input('end_date'), $defaultEnd);
+
+        $query = Absensi::with(['karyawan']);
+
+        $query->whereBetween('waktu', [
+            $startDateObj->copy()->setTime(6, 0, 0),
+            $endDateObj->copy()->addDays(1)->setTime(5, 59, 59),
+        ]);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nik', 'like', "%{$search}%")
+                    ->orWhereHas('karyawan', function ($kQ) use ($search) {
+                        $kQ->where('nama_lengkap', 'like', "%{$search}%")
+                            ->orWhere('nama_panggilan', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('pekerjaan')) {
+            $pekerjaan = $request->pekerjaan;
+            $query->whereHas('karyawan', function ($kQ) use ($pekerjaan) {
+                $kQ->where('pekerjaan', $pekerjaan);
+            });
+        }
+
+        if ($request->filled('divisi')) {
+            $divisi = $request->divisi;
+            $query->whereHas('karyawan', function ($kQ) use ($divisi) {
+                $kQ->where('divisi', $divisi);
+            });
+        }
+
+        $absensis = $query->orderBy('waktu', 'asc')->get();
+
+        $content = "";
+        foreach ($absensis as $absensi) {
+            $pin = $absensi->nik ?: ($absensi->karyawan_id ?: '0');
+            $paddedPin = str_pad($pin, 9, ' ', STR_PAD_LEFT);
+            $waktu = Carbon::parse($absensi->waktu)->format('Y-m-d H:i:s');
+            
+            $status = '255';
+            $tipeLower = strtolower($absensi->tipe);
+            if (str_contains($tipeLower, 'masuk')) $status = '0';
+            elseif (str_contains($tipeLower, 'pulang') || str_contains($tipeLower, 'keluar')) $status = '1';
+
+            $content .= "{$paddedPin}\t{$waktu}\t1\t{$status}\t15\t0\r\n";
+        }
+
+        $fileName = 'attlog_' . date('Ymd_His') . '.dat';
+        return response($content)
+            ->header('Content-Type', 'text/plain')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    }
 }
