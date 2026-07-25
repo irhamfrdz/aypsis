@@ -66,7 +66,12 @@
                         <select name="asset_id_alat_berat" id="alat_berat_select" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent select2">
                             <option value="">-- Pilih Alat Berat --</option>
                             @foreach($alatBerats as $ab)
-                                <option value="{{ $ab->id }}">{{ $ab->nama ?? 'Alat Berat '.$ab->id }}</option>
+                                <option value="{{ $ab->id }}">
+                                    {{ $ab->nama ?? 'Alat Berat '.$ab->id }}
+                                    @if($ab->merk || $ab->warna || $ab->lokasi)
+                                        - {{ implode(' | ', array_filter([$ab->merk, $ab->warna, $ab->lokasi])) }}
+                                    @endif
+                                </option>
                             @endforeach
                         </select>
                     </div>
