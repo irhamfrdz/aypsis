@@ -386,10 +386,9 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Sumber Mesin (Opsional)</label>
-                                    <select name="mesin_id" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                        <option value="">Semua Mesin</option>
+                                    <select name="mesin_id[]" multiple class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm select2" data-placeholder="Semua Mesin">
                                         @foreach($mesins as $mesin)
-                                            <option value="{{ $mesin->id }}" {{ request('mesin_id') == $mesin->id ? 'selected' : '' }}>{{ $mesin->nama_mesin }}</option>
+                                            <option value="{{ $mesin->id }}" {{ (is_array(request('mesin_id')) && in_array($mesin->id, request('mesin_id'))) ? 'selected' : '' }}>{{ $mesin->nama_mesin }}</option>
                                         @endforeach
                                     </select>
                                 </div>
