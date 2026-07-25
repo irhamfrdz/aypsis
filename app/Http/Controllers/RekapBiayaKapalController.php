@@ -372,7 +372,22 @@ class RekapBiayaKapalController extends Controller
         }
         krsort($voyages);
 
-        return response()->json(array_values($voyages));
+        $voyageList = array_values($voyages);
+        
+        // Pindahkan "DOCK" ke paling bawah
+        $dockItems = [];
+        $otherItems = [];
+        foreach ($voyageList as $v) {
+            if (strtolower(trim($v)) === 'dock') {
+                $dockItems[] = $v;
+            } else {
+                $otherItems[] = $v;
+            }
+        }
+        
+        $finalVoyages = array_merge($otherItems, $dockItems);
+
+        return response()->json($finalVoyages);
     }
 
     /**
