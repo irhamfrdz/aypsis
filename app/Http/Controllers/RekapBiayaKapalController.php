@@ -370,7 +370,7 @@ class RekapBiayaKapalController extends Controller
                 }
             }
         }
-        ksort($voyages);
+        krsort($voyages);
 
         return response()->json(array_values($voyages));
     }
