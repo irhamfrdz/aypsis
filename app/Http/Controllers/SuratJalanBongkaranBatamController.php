@@ -103,26 +103,26 @@ class SuratJalanBongkaranBatamController extends Controller
         if ($mode === 'surat_jalan') {
             // Show Surat Jalan Bongkaran data
             $query = SuratJalanBongkaranBatam::query()
-                ->where('lokasi', 'batam');
+                ->where('surat_jalan_bongkaran_batams.lokasi', 'batam');
 
             // Filter by selected kapal and voyage if provided
             if ($selectedKapal) {
                 $kapalClean = strtolower(str_replace('.', '', $selectedKapal));
                 $query->where(function ($q) use ($selectedKapal, $kapalClean) {
-                    $q->where('nama_kapal', $selectedKapal)
-                        ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
+                    $q->where('surat_jalan_bongkaran_batams.nama_kapal', $selectedKapal)
+                        ->orWhereRaw("LOWER(REPLACE(surat_jalan_bongkaran_batams.nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
                 });
             }
             if ($selectedVoyage) {
-                $query->where('no_voyage', $selectedVoyage);
+                $query->where('surat_jalan_bongkaran_batams.no_voyage', $selectedVoyage);
             }
 
             // Filter by types (FCL, LCL, Cargo)
             if ($request->filled('types')) {
                 $types = (array) $request->types;
                 $query->where(function ($q) use ($types) {
-                    $q->whereIn('jenis_pengiriman', $types)
-                        ->orWhereIn('tipe_kontainer', $types);
+                    $q->whereIn('surat_jalan_bongkaran_batams.jenis_pengiriman', $types)
+                        ->orWhereIn('surat_jalan_bongkaran_batams.tipe_kontainer', $types);
                 });
             }
 
@@ -138,20 +138,20 @@ class SuratJalanBongkaranBatamController extends Controller
                         
                         $q->orWhere(function ($sq) use ($search, $searchClean) {
                             // Normal search (with punctuation)
-                            $sq->where('nomor_surat_jalan', 'like', "%{$search}%")
-                                ->orWhere('no_kontainer', 'like', "%{$search}%")
-                                ->orWhere('no_seal', 'like', "%{$search}%")
-                                ->orWhere('term', 'like', "%{$search}%")
-                                ->orWhere('jenis_barang', 'like', "%{$search}%")
-                                ->orWhere('supir', 'like', "%{$search}%")
-                                ->orWhere('no_plat', 'like', "%{$search}%")
-                                ->orWhere('tipe_kontainer', 'like', "%{$search}%")
-                                ->orWhere('jenis_pengiriman', 'like', "%{$search}%")
+                            $sq->where('surat_jalan_bongkaran_batams.nomor_surat_jalan', 'like', "%{$search}%")
+                                ->orWhere('surat_jalan_bongkaran_batams.no_kontainer', 'like', "%{$search}%")
+                                ->orWhere('surat_jalan_bongkaran_batams.no_seal', 'like', "%{$search}%")
+                                ->orWhere('surat_jalan_bongkaran_batams.term', 'like', "%{$search}%")
+                                ->orWhere('surat_jalan_bongkaran_batams.jenis_barang', 'like', "%{$search}%")
+                                ->orWhere('surat_jalan_bongkaran_batams.supir', 'like', "%{$search}%")
+                                ->orWhere('surat_jalan_bongkaran_batams.no_plat', 'like', "%{$search}%")
+                                ->orWhere('surat_jalan_bongkaran_batams.tipe_kontainer', 'like', "%{$search}%")
+                                ->orWhere('surat_jalan_bongkaran_batams.jenis_pengiriman', 'like', "%{$search}%")
                                 // Search without punctuation
-                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(nomor_surat_jalan, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
-                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_plat, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
+                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(surat_jalan_bongkaran_batams.nomor_surat_jalan, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(surat_jalan_bongkaran_batams.no_kontainer, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(surat_jalan_bongkaran_batams.no_seal, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"])
+                                ->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(surat_jalan_bongkaran_batams.no_plat, '-', ''), '.', ''), ',', ''), '/', ''), ' ', ''), '(', ''), ')', '') LIKE ?", ["%{$searchClean}%"]);
                         });
                     }
                 });
