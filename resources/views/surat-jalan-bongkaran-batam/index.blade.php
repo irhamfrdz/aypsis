@@ -2388,7 +2388,19 @@ function openEditModal(suratJalanId) {
                 updateDestinationOptions('edit');
                 // Restore selection after update because updateDestinationOptions clears it
                 if (data.tujuan_pengambilan) {
-                    document.getElementById('edit_modal_tujuan_pengambilan').value = data.tujuan_pengambilan;
+                    const editTujuanSelect = document.getElementById('edit_modal_tujuan_pengambilan');
+                    const targetVal = data.tujuan_pengambilan.toLowerCase().trim();
+                    let matched = false;
+                    for (let i = 0; i < editTujuanSelect.options.length; i++) {
+                        if (editTujuanSelect.options[i].value.toLowerCase().trim() === targetVal) {
+                            editTujuanSelect.selectedIndex = i;
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (!matched) {
+                        editTujuanSelect.value = data.tujuan_pengambilan;
+                    }
                 }
 
                 // Add listener for lokasi change in edit modal
