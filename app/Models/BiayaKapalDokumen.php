@@ -23,4 +23,17 @@ class BiayaKapalDokumen extends Model
     {
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');
     }
+
+    public function setNomorBlAttribute($value)
+    {
+        $this->attributes['nomor_bl'] = is_array($value) ? implode(', ', $value) : $value;
+    }
+
+    public function getNomorBlArrayAttribute()
+    {
+        if (empty($this->nomor_bl)) {
+            return [];
+        }
+        return array_map('trim', explode(',', $this->nomor_bl));
+    }
 }

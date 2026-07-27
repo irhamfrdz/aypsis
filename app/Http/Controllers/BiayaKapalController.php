@@ -773,7 +773,7 @@ class BiayaKapalController extends Controller
             'dokumen_sections.*.kapal' => 'nullable|string|max:255',
             'dokumen_sections.*.voyage' => 'nullable|string|max:255',
             'dokumen_sections.*.vendor_id' => 'nullable|exists:pricelist_biaya_dokumen,id',
-            'dokumen_sections.*.nomor_bl' => 'nullable|string|max:255',
+            'dokumen_sections.*.nomor_bl' => 'nullable',
             'dokumen_sections.*.nominal' => 'nullable|numeric|min:0',
             'dokumen_sections.*.pph' => 'nullable|numeric|min:0',
             'dokumen_sections.*.total_biaya' => 'nullable|numeric|min:0',

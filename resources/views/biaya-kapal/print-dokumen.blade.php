@@ -408,9 +408,29 @@
 
         <!-- Daftar Kontainer -->
         @php
-            $noBls = is_array($biayaKapal->no_bl) ? $biayaKapal->no_bl : ($biayaKapal->no_bl ? [$biayaKapal->no_bl] : []);
+            $containers = collect();
+            if ($biayaKapal->dokumens && $biayaKapal->dokumens->count() > 0) {
+                foreach ($biayaKapal->dokumens as $dokumen) {
+                    if ($dokumen->nomor_bl) {
+                        $blNumbers = $dokumen->nomorBlArray;
+                        $bls = \DB::table('bls')
+                                  ->whereIn('nomor_bl', $blNumbers)
+                                  ->where('no_voyage', $dokumen->voyage)
+                                  ->get();
+                        foreach($bls as $bl) {
+                            $containers->push($bl);
+                        }
+                    }
+                }
+            } else {
+                $noBls = is_array($biayaKapal->no_bl) ? $biayaKapal->no_bl : ($biayaKapal->no_bl ? [$biayaKapal->no_bl] : []);
+                if (count($noBls) > 0) {
+                    $containers = \DB::table('bls')->whereIn('id', $noBls)->get();
+                }
+            }
+            $containers = $containers->unique('id')->values();
         @endphp
-        @if(count($noBls) > 0)
+        @if($containers->count() > 0)
         <div class="section-title">DAFTAR KONTAINER</div>
         <table class="container-table">
             <thead>
@@ -422,14 +442,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($noBls as $index => $blId)
-                    @php
-                        // Ambil data BL dari database untuk mendapatkan kontainer, seal, voyage, dan kapal
-                        $bl = \DB::table('bls')
-                            ->where('id', $blId)
-                            ->first();
-                    @endphp
-                    @if($bl)
+                @foreach($containers as $index => $bl)
                     <tr>
                         <td style="text-align: center;">{{ $index + 1 }}</td>
                         <td>
@@ -437,17 +450,19 @@
                             @if($bl->no_seal)
                             <br><small style="color: #666;">Seal: {{ $bl->no_seal }}</small>
                             @endif
+                            @if($bl->nomor_bl)
+                            <br><small style="color: #666;">BL: {{ $bl->nomor_bl }}</small>
+                            @endif
                         </td>
                         <td>{{ $bl->no_voyage }}</td>
                         <td>{{ $bl->nama_kapal }}</td>
                     </tr>
-                    @endif
                 @endforeach
             </tbody>
             <tfoot>
                 <tr>
                     <td colspan="4" style="text-align: right; font-weight: bold; background-color: #e9ecef;">
-                        Total Kontainer: {{ count($noBls) }} unit
+                        Total Kontainer: {{ $containers->count() }} unit
                     </td>
                 </tr>
             </tfoot>
@@ -457,7 +472,7 @@
         <!-- Summary Box -->
         <div class="summary-box">
             @php
-                $jumlahKontainer = count($noBls);
+                $jumlahKontainer = $containers->count();
                 $tarifPerKontainer = $jumlahKontainer > 0 ? ($biayaKapal->nominal / $jumlahKontainer) : $biayaKapal->nominal;
             @endphp
             @if($jumlahKontainer > 0)

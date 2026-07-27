@@ -102,10 +102,9 @@ function addDokumenSection() {
             <div>
                 <label class="block text-xs font-medium text-gray-700 mb-1">Nomor BL</label>
                 <div class="flex gap-2">
-                    <select name="dokumen_sections[${sectionIndex}][nomor_bl]" class="dokumen-bl-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500" disabled>
-                        <option value="">-- Pilih Voyage Terlebih Dahulu --</option>
+                    <select name="dokumen_sections[${sectionIndex}][nomor_bl][]" class="dokumen-bl-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500" multiple="multiple" disabled>
                     </select>
-                    <input type="text" name="dokumen_sections[${sectionIndex}][nomor_bl]" class="dokumen-bl-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 hidden" disabled placeholder="Ketik No. BL">
+                    <input type="text" name="dokumen_sections[${sectionIndex}][nomor_bl]" class="dokumen-bl-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 hidden" disabled placeholder="Ketik No. BL (pisahkan dengan koma)">
                     <button type="button" class="dokumen-bl-manual-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
                         <i class="fas fa-keyboard"></i>
                     </button>
@@ -210,7 +209,7 @@ function addDokumenSection() {
             })
             .then(res => res.json())
             .then(data => {
-                let options = '<option value="">-- Pilih BL --</option>';
+                let options = '';
                 if(data.success && data.bls) {
                     const uniqueBls = new Set();
                     Object.values(data.bls).forEach(bl => {
@@ -236,9 +235,6 @@ function addDokumenSection() {
     voyageManualBtn.addEventListener('click', function() {
         if (voyageSelect.classList.contains('hidden')) {
             voyageSelect.classList.remove('hidden');
-            if (jQuery(voyageSelect).data('select2')) {
-                jQuery(voyageSelect).next('.select2-container').show();
-            }
             voyageInput.classList.add('hidden');
             voyageSelect.disabled = false;
             voyageInput.disabled = true;
@@ -246,9 +242,6 @@ function addDokumenSection() {
             voyageInput.removeAttribute('required');
         } else {
             voyageSelect.classList.add('hidden');
-            if (jQuery(voyageSelect).data('select2')) {
-                jQuery(voyageSelect).next('.select2-container').hide();
-            }
             voyageInput.classList.remove('hidden');
             voyageSelect.disabled = true;
             voyageInput.disabled = false;
@@ -260,9 +253,6 @@ function addDokumenSection() {
     blManualBtn.addEventListener('click', function() {
         if (blSelect.classList.contains('hidden')) {
             blSelect.classList.remove('hidden');
-            if (jQuery(blSelect).data('select2')) {
-                jQuery(blSelect).next('.select2-container').show();
-            }
             blInput.classList.add('hidden');
             
             blSelect.disabled = (voyageSelect.value === '' && voyageInput.classList.contains('hidden'));
@@ -271,13 +261,10 @@ function addDokumenSection() {
             blManualBtn.innerHTML = '<i class="fas fa-keyboard"></i>';
             blManualBtn.title = 'Input Manual';
             
-            blSelect.setAttribute('name', `dokumen_sections[${sectionIndex}][nomor_bl]`);
+            blSelect.setAttribute('name', `dokumen_sections[${sectionIndex}][nomor_bl][]`);
             blInput.removeAttribute('name');
         } else {
             blSelect.classList.add('hidden');
-            if (jQuery(blSelect).data('select2')) {
-                jQuery(blSelect).next('.select2-container').hide();
-            }
             blInput.classList.remove('hidden');
             
             blSelect.disabled = true;
