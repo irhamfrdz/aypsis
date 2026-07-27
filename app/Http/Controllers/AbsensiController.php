@@ -275,6 +275,62 @@ class AbsensiController extends Controller
     }
 
     /**
+     * Get attendance data for a specific employee and date (for AJAX).
+     */
+    public function getData(Request $request)
+    {
+        $request->validate([
+            'nik' => 'required',
+            'tanggal' => 'required|date',
+        ]);
+
+        $nik = $request->nik;
+        $tanggal = Carbon::parse($request->tanggal)->toDateString();
+
+        $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
+        $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
+
+        $absensis = Absensi::where('nik', $nik)
+            ->whereBetween('waktu', [$startDateObj, $endDateObj])
+            ->get();
+
+        $data = [
+            'waktu_masuk' => '',
+            'waktu_pulang' => '',
+            'waktu_istirahat_keluar' => '',
+            'waktu_istirahat_masuk' => '',
+            'waktu_lembur_masuk' => '',
+            'waktu_lembur_pulang' => '',
+        ];
+
+        foreach ($absensis as $absensi) {
+            $time = Carbon::parse($absensi->waktu)->format('H:i');
+            switch ($absensi->tipe) {
+                case 'Masuk':
+                    $data['waktu_masuk'] = $time;
+                    break;
+                case 'Pulang':
+                    $data['waktu_pulang'] = $time;
+                    break;
+                case 'Istirahat_Keluar':
+                    $data['waktu_istirahat_keluar'] = $time;
+                    break;
+                case 'Istirahat_Masuk':
+                    $data['waktu_istirahat_masuk'] = $time;
+                    break;
+                case 'Lembur_Masuk':
+                    $data['waktu_lembur_masuk'] = $time;
+                    break;
+                case 'Lembur_Pulang':
+                    $data['waktu_lembur_pulang'] = $time;
+                    break;
+            }
+        }
+
+        return response()->json($data);
+    }
+
+    /**
      * Delete an attendance log by NIK, Date, and Type.
      */
     public function deleteLog(Request $request)

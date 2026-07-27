@@ -454,7 +454,7 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Karyawan</label>
-                            <select name="nik" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm select2" required style="width: 100%">
+                            <select name="nik" id="create_nik" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm select2" required style="width: 100%">
                                 <option value="">Pilih Karyawan</option>
                                 @foreach($karyawanList as $karyawan)
                                     <option value="{{ $karyawan->nik }}">{{ $karyawan->nik }} - {{ $karyawan->nama_lengkap }}</option>
@@ -463,32 +463,32 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Tanggal</label>
-                            <input type="date" name="tanggal" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            <input type="date" name="tanggal" id="create_tanggal" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Jam Masuk</label>
-                                <input type="time" name="waktu_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <input type="time" name="waktu_masuk" id="create_waktu_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Jam Pulang</label>
-                                <input type="time" name="waktu_pulang" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <input type="time" name="waktu_pulang" id="create_waktu_pulang" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Istirahat Keluar</label>
-                                <input type="time" name="waktu_istirahat_keluar" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <input type="time" name="waktu_istirahat_keluar" id="create_waktu_istirahat_keluar" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Istirahat Masuk</label>
-                                <input type="time" name="waktu_istirahat_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <input type="time" name="waktu_istirahat_masuk" id="create_waktu_istirahat_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Lembur Masuk</label>
-                                <input type="time" name="waktu_lembur_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <input type="time" name="waktu_lembur_masuk" id="create_waktu_lembur_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Lembur Pulang</label>
-                                <input type="time" name="waktu_lembur_pulang" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <input type="time" name="waktu_lembur_pulang" id="create_waktu_lembur_pulang" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             </div>
                         </div>
                     </div>
@@ -564,6 +564,42 @@
 </div>
 
 <script>
+    function fetchAbsensiData() {
+        const nik = document.getElementById('create_nik').value;
+        const tanggal = document.getElementById('create_tanggal').value;
+
+        if (nik && tanggal) {
+            fetch(`{{ route('absensi.get_data') }}?nik=${nik}&tanggal=${tanggal}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('create_waktu_masuk').value = data.waktu_masuk || '';
+                    document.getElementById('create_waktu_pulang').value = data.waktu_pulang || '';
+                    document.getElementById('create_waktu_istirahat_keluar').value = data.waktu_istirahat_keluar || '';
+                    document.getElementById('create_waktu_istirahat_masuk').value = data.waktu_istirahat_masuk || '';
+                    document.getElementById('create_waktu_lembur_masuk').value = data.waktu_lembur_masuk || '';
+                    document.getElementById('create_waktu_lembur_pulang').value = data.waktu_lembur_pulang || '';
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        } else {
+            // Clear inputs if nik or tanggal is missing
+            document.getElementById('create_waktu_masuk').value = '';
+            document.getElementById('create_waktu_pulang').value = '';
+            document.getElementById('create_waktu_istirahat_keluar').value = '';
+            document.getElementById('create_waktu_istirahat_masuk').value = '';
+            document.getElementById('create_waktu_lembur_masuk').value = '';
+            document.getElementById('create_waktu_lembur_pulang').value = '';
+        }
+    }
+
+    document.getElementById('create_tanggal').addEventListener('change', fetchAbsensiData);
+    
+    // Also attach to select2 change event if used
+    $(document).ready(function() {
+        $('#create_nik').on('change', function() {
+            fetchAbsensiData();
+        });
+    });
+
     function openEditModal(nik, tanggal, masuk, isOut, isIn, pulang, lemburIn, lemburOut) {
         document.getElementById('edit_nik').value = nik;
         document.getElementById('edit_tanggal').value = tanggal;

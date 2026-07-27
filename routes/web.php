@@ -1588,6 +1588,10 @@ Route::middleware([
             ->name('absensi.destroy_day')
             ->middleware('can:absensi-delete');
 
+        Route::get('absensi/get-data', [AbsensiController::class, 'getData'])
+            ->name('absensi.get_data')
+            ->middleware('can:absensi-view');
+
         Route::get('absensi/rekap', [AbsensiController::class, 'rekap'])
             ->name('absensi.rekap')
             ->middleware('can:absensi-rekap');
