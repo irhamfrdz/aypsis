@@ -166,8 +166,8 @@ class AbsensiController extends Controller
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
         $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
 
-        // Get all employees
-        $karyawansQuery = Karyawan::query();
+        // Get all active employees (exclude those who have resigned)
+        $karyawansQuery = Karyawan::whereNull('tanggal_berhenti');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -187,10 +187,10 @@ class AbsensiController extends Controller
         }
 
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
-        $pekerjaans = Karyawan::whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
-        $divisis = Karyawan::whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
-        $cabangs = Karyawan::whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
-        $penempatans = Karyawan::whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
+        $pekerjaans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
+        $divisis = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
+        $cabangs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
+        $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
 
         // Calculate normal workdays in the selected month (excluding weekends)
         $normalWorkdays = 0;
