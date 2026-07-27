@@ -145,8 +145,8 @@ class AbsensiController extends Controller
 
         $nik = $request->nik;
         $tanggal = Carbon::parse($request->tanggal)->toDateString();
-        $karyawan = Karyawan::where('nik', $nik)->first();
         
+        $karyawan = Karyawan::where('nik', $nik)->first();
         $karyawan_id = $karyawan ? $karyawan->id : null;
 
         $times = [
@@ -159,25 +159,44 @@ class AbsensiController extends Controller
         ];
 
         foreach ($times as $tipe => $time) {
+            $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
+            $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
+
+            $existingLog = Absensi::where('nik', $nik)
+                ->where('tipe', $tipe)
+                ->whereBetween('waktu', [$startDateObj, $endDateObj])
+                ->first();
+
             if (!empty($time)) {
                 $waktu = Carbon::parse($tanggal . ' ' . $time);
-                // Adjust waktu logic if necessary based on night shifts, but for manual input we assume it's exact time on that date
                 if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
-                    $waktu->addDay(); // If clock out is early morning, it belongs to the next day calendar-wise, but same work day.
+                    $waktu->addDay(); 
                 }
 
-                Absensi::create([
-                    'karyawan_id' => $karyawan_id,
-                    'nik' => $nik,
-                    'waktu' => $waktu,
-                    'tipe' => $tipe,
-                    'status' => 'Manual',
-                    'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
-                ]);
+                if ($existingLog) {
+                    $existingLog->update([
+                        'waktu' => $waktu,
+                        'status' => 'Manual',
+                        'keterangan' => 'Diedit secara manual (via Tambah)'
+                    ]);
+                } else {
+                    Absensi::create([
+                        'karyawan_id' => $karyawan_id,
+                        'nik' => $nik,
+                        'waktu' => $waktu,
+                        'tipe' => $tipe,
+                        'status' => 'Manual',
+                        'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
+                    ]);
+                }
+            } else {
+                if ($existingLog) {
+                    $existingLog->delete();
+                }
             }
         }
 
-        return back()->with('success', 'Data absensi manual berhasil ditambahkan.');
+        return back()->with('success', 'Data absensi manual berhasil disimpan.');
     }
 
     /**

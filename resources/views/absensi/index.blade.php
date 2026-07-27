@@ -564,13 +564,28 @@
 </div>
 
 <script>
+    function toggleInputsState(disabled) {
+        const inputs = [
+            'create_waktu_masuk', 'create_waktu_pulang',
+            'create_waktu_istirahat_keluar', 'create_waktu_istirahat_masuk',
+            'create_waktu_lembur_masuk', 'create_waktu_lembur_pulang'
+        ];
+        inputs.forEach(id => {
+            document.getElementById(id).disabled = disabled;
+        });
+    }
+
     function fetchAbsensiData() {
         const nik = document.getElementById('create_nik').value;
         const tanggal = document.getElementById('create_tanggal').value;
 
         if (nik && tanggal) {
+            toggleInputsState(true);
             fetch(`{{ route('absensi.get_data') }}?nik=${nik}&tanggal=${tanggal}`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
                 .then(data => {
                     document.getElementById('create_waktu_masuk').value = data.waktu_masuk || '';
                     document.getElementById('create_waktu_pulang').value = data.waktu_pulang || '';
@@ -578,17 +593,25 @@
                     document.getElementById('create_waktu_istirahat_masuk').value = data.waktu_istirahat_masuk || '';
                     document.getElementById('create_waktu_lembur_masuk').value = data.waktu_lembur_masuk || '';
                     document.getElementById('create_waktu_lembur_pulang').value = data.waktu_lembur_pulang || '';
+                    toggleInputsState(false);
                 })
-                .catch(error => console.error('Error fetching data:', error));
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    clearAbsensiInputs();
+                    toggleInputsState(false);
+                });
         } else {
-            // Clear inputs if nik or tanggal is missing
-            document.getElementById('create_waktu_masuk').value = '';
-            document.getElementById('create_waktu_pulang').value = '';
-            document.getElementById('create_waktu_istirahat_keluar').value = '';
-            document.getElementById('create_waktu_istirahat_masuk').value = '';
-            document.getElementById('create_waktu_lembur_masuk').value = '';
-            document.getElementById('create_waktu_lembur_pulang').value = '';
+            clearAbsensiInputs();
         }
+    }
+
+    function clearAbsensiInputs() {
+        document.getElementById('create_waktu_masuk').value = '';
+        document.getElementById('create_waktu_pulang').value = '';
+        document.getElementById('create_waktu_istirahat_keluar').value = '';
+        document.getElementById('create_waktu_istirahat_masuk').value = '';
+        document.getElementById('create_waktu_lembur_masuk').value = '';
+        document.getElementById('create_waktu_lembur_pulang').value = '';
     }
 
     document.getElementById('create_tanggal').addEventListener('change', fetchAbsensiData);
