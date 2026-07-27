@@ -872,6 +872,12 @@ class SuratJalanBongkaranBatamController extends Controller
                         }
                     }
 
+                    if (empty($manifest)) {
+                        $containerName = empty($noKontainerOrBl) ? 'kosong' : $noKontainerOrBl;
+                        $errors[] = "Baris {$rowNumber}: Nomor Kontainer/BL '{$containerName}' tidak ditemukan pada kapal {$namaKapal} dan voyage {$noVoyage}.";
+                        continue;
+                    }
+
                     // If manifest is found, autofill missing fields
                     $finalNoKontainer = $manifest ? $manifest->nomor_kontainer : $noKontainerOrBl;
                     $finalNoSeal = $manifest ? $manifest->no_seal : null;
