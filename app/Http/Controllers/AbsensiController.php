@@ -486,8 +486,16 @@ class AbsensiController extends Controller
                         $waktuMasuk = Carbon::parse($masukLog->waktu);
                         $jamMasukNormal = Carbon::parse($dateStr . ' 08:00:00');
                         if ($waktuMasuk->gt($jamMasukNormal->copy()->addMinutes(5))) {
-                            $terlambatKali++;
-                            $terlambatMenit += $jamMasukNormal->diffInMinutes($waktuMasuk);
+                            // Check for approved datang_terlambat permission
+                            $hasLatePermission = $karyawanPermissions->contains(function($perm) use ($dateStr) {
+                                return strtolower($perm->jenis_izin) === 'datang_terlambat' && 
+                                       $dateStr >= $perm->tanggal_mulai && $dateStr <= $perm->tanggal_selesai;
+                            });
+                            
+                            if (!$hasLatePermission) {
+                                $terlambatKali++;
+                                $terlambatMenit += $jamMasukNormal->diffInMinutes($waktuMasuk);
+                            }
                         }
                     }
 
@@ -499,8 +507,16 @@ class AbsensiController extends Controller
                         // if clock out is next day (e.g. 02:00 AM), it's not early leave. 
                         // But if it's same day before 17:00
                         if ($waktuPulang->lt($jamPulangNormal) && $waktuPulang->format('Y-m-d') == $dateStr) {
-                            $pulangCepatKali++;
-                            $pulangCepatMenit += $waktuPulang->diffInMinutes($jamPulangNormal);
+                            // Check for approved pulang_cepat permission
+                            $hasEarlyPermission = $karyawanPermissions->contains(function($perm) use ($dateStr) {
+                                return strtolower($perm->jenis_izin) === 'pulang_cepat' && 
+                                       $dateStr >= $perm->tanggal_mulai && $dateStr <= $perm->tanggal_selesai;
+                            });
+                            
+                            if (!$hasEarlyPermission) {
+                                $pulangCepatKali++;
+                                $pulangCepatMenit += $waktuPulang->diffInMinutes($jamPulangNormal);
+                            }
                         }
                     }
 

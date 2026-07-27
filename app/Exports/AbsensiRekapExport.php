@@ -203,14 +203,30 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                     if ($inTimeStr !== '-' && $inTimeStr > '08:05') { // 5 menit toleransi
                         $diff = strtotime($inTimeStr.':00') - strtotime('08:00:00');
                         if ($diff > 0) {
-                            $totalLateMinutes += round($diff / 60);
+                            // Check for approved datang_terlambat permission
+                            $hasLatePermission = $karyawanPermissions->contains(function($perm) use ($dateString) {
+                                return strtolower($perm->jenis_izin) === 'datang_terlambat' && 
+                                       $dateString >= $perm->tanggal_mulai && $dateString <= $perm->tanggal_selesai;
+                            });
+
+                            if (!$hasLatePermission) {
+                                $totalLateMinutes += round($diff / 60);
+                            }
                         }
                     }
 
                     if ($outTimeStr !== '-' && $outTimeStr < '17:00') {
                         $diff = strtotime('17:00:00') - strtotime($outTimeStr.':00');
                         if ($diff > 0) {
-                            $totalEarlyMinutes += round($diff / 60);
+                            // Check for approved pulang_cepat permission
+                            $hasEarlyPermission = $karyawanPermissions->contains(function($perm) use ($dateString) {
+                                return strtolower($perm->jenis_izin) === 'pulang_cepat' && 
+                                       $dateString >= $perm->tanggal_mulai && $dateString <= $perm->tanggal_selesai;
+                            });
+
+                            if (!$hasEarlyPermission) {
+                                $totalEarlyMinutes += round($diff / 60);
+                            }
                         }
                     }
 
