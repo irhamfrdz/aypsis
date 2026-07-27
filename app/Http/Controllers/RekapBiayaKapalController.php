@@ -27,6 +27,7 @@ class RekapBiayaKapalController extends Controller
         'demurrageDetails',
         'tenagaKerjaDetails',
         'operasionalDetails',
+        'dokumens',
     ];
 
     /**
@@ -252,6 +253,7 @@ class RekapBiayaKapalController extends Controller
                 'tantoDetails',
                 'demurrageDetails',
                 'operasionalDetails',
+                'dokumens',
             ];
 
             foreach ($relations as $rel) {
