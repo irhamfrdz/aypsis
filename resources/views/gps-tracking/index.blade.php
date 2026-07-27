@@ -50,6 +50,15 @@
                     <button type="button" onclick="setFilter('berjalan')" id="filter-berjalan" class="filter-btn flex-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all">Berjalan</button>
                     <button type="button" onclick="setFilter('berhenti')" id="filter-berhenti" class="filter-btn flex-1 px-3 py-1.5 text-xs font-semibold rounded-md bg-white text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all">Berhenti</button>
                 </div>
+                <!-- Search Box -->
+                <div class="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="fas fa-search text-gray-400 text-sm"></i>
+                        </div>
+                        <input type="text" id="search-truck" onkeyup="applyFilters()" class="block w-full rounded-md border-0 py-1.5 pl-9 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all" placeholder="Cari nopol atau supir...">
+                    </div>
+                </div>
                 <div class="flex-1 overflow-y-auto">
                     <ul role="list" class="divide-y divide-gray-100" id="truck-list">
                         @forelse($mobils as $mobil)
@@ -193,25 +202,12 @@
                 }
                 $(`#status-${loc.mobil_id}`).html(statusHtml);
 
-                // Terapkan filter yang aktif saat ini
-                let show = false;
-                if (currentFilter === 'all') show = true;
-                else if (currentFilter === 'berjalan' && isBerjalan) show = true;
-                else if (currentFilter === 'berhenti' && !isBerjalan) show = true;
-
-                if (show) {
-                    $(`.truck-item[data-id="${loc.mobil_id}"]`).show();
-                    if (!map.hasLayer(markers[loc.mobil_id])) {
-                        markers[loc.mobil_id].addTo(map);
-                    }
-                } else {
-                    $(`.truck-item[data-id="${loc.mobil_id}"]`).hide();
-                    if (map.hasLayer(markers[loc.mobil_id])) {
-                        map.removeLayer(markers[loc.mobil_id]);
-                    }
-                }
+                // Info popup is already updated, logic for filter moved to applyFilters()
             }
         });
+        
+        // Panggil applyFilters() sekali setelah semua marker terupdate
+        applyFilters();
     }
 
     function generateInfoWindowContent(loc) {
@@ -273,19 +269,35 @@
         $('.filter-btn').removeClass('bg-indigo-600 text-white ring-indigo-600').addClass('bg-white text-gray-700 ring-gray-300');
         $(`#filter-${filter}`).removeClass('bg-white text-gray-700 ring-gray-300').addClass('bg-indigo-600 text-white ring-indigo-600');
 
-        // Terapkan filter ke DOM list dan Map
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const searchQuery = ($('#search-truck').val() || '').toLowerCase();
+
+        // Terapkan filter gabungan ke DOM list dan Map
         $('.truck-item').each(function() {
             let id = $(this).data('id');
             let statusText = $(`#status-${id}`).text().toLowerCase();
+            let nopolText = $(this).find('p.font-semibold').text().toLowerCase();
+            let supirText = $(this).find('p.text-xs.font-medium').text().toLowerCase();
             
             let isBerjalan = statusText.includes('berjalan');
             let isBerhenti = statusText.includes('berhenti');
-            // Jika masih 'mencari sinyal', kita anggap berhenti (atau bisa di handle khusus, kita ikuti isBerjalan saja)
             
-            let show = false;
-            if (currentFilter === 'all') show = true;
-            else if (currentFilter === 'berjalan' && isBerjalan) show = true;
-            else if (currentFilter === 'berhenti' && !isBerjalan) show = true;
+            // Check status filter
+            let passStatus = false;
+            if (currentFilter === 'all') passStatus = true;
+            else if (currentFilter === 'berjalan' && isBerjalan) passStatus = true;
+            else if (currentFilter === 'berhenti' && !isBerjalan) passStatus = true;
+
+            // Check search filter
+            let passSearch = true;
+            if (searchQuery.trim() !== '') {
+                passSearch = nopolText.includes(searchQuery) || supirText.includes(searchQuery);
+            }
+
+            let show = passStatus && passSearch;
 
             if (show) {
                 $(this).show();
