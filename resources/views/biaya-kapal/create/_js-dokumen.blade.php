@@ -236,6 +236,9 @@ function addDokumenSection() {
     voyageManualBtn.addEventListener('click', function() {
         if (voyageSelect.classList.contains('hidden')) {
             voyageSelect.classList.remove('hidden');
+            if (jQuery(voyageSelect).data('select2')) {
+                jQuery(voyageSelect).next('.select2-container').show();
+            }
             voyageInput.classList.add('hidden');
             voyageSelect.disabled = false;
             voyageInput.disabled = true;
@@ -243,6 +246,9 @@ function addDokumenSection() {
             voyageInput.removeAttribute('required');
         } else {
             voyageSelect.classList.add('hidden');
+            if (jQuery(voyageSelect).data('select2')) {
+                jQuery(voyageSelect).next('.select2-container').hide();
+            }
             voyageInput.classList.remove('hidden');
             voyageSelect.disabled = true;
             voyageInput.disabled = false;
@@ -254,6 +260,9 @@ function addDokumenSection() {
     blManualBtn.addEventListener('click', function() {
         if (blSelect.classList.contains('hidden')) {
             blSelect.classList.remove('hidden');
+            if (jQuery(blSelect).data('select2')) {
+                jQuery(blSelect).next('.select2-container').show();
+            }
             blInput.classList.add('hidden');
             
             blSelect.disabled = (voyageSelect.value === '' && voyageInput.classList.contains('hidden'));
@@ -266,6 +275,9 @@ function addDokumenSection() {
             blInput.removeAttribute('name');
         } else {
             blSelect.classList.add('hidden');
+            if (jQuery(blSelect).data('select2')) {
+                jQuery(blSelect).next('.select2-container').hide();
+            }
             blInput.classList.remove('hidden');
             
             blSelect.disabled = true;
