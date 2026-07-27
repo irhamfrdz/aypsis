@@ -3301,13 +3301,26 @@ class BiayaKapalController extends Controller
             unset($section);
         }
 
-        // Air Sections Cleaning
+        // Air Sections Cleaning (smart detection: only strip dots that are thousand separators)
         if (isset($data['air']) && is_array($data['air'])) {
             foreach ($data['air'] as &$section) {
                 $numericAir = ['kuantitas', 'harga', 'jasa_air', 'sub_total', 'pph', 'grand_total', 'sub_total_value', 'pph_value', 'grand_total_value'];
                 foreach ($numericAir as $f) {
-                    if (isset($section[$f])) {
-                        $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                    if (isset($section[$f]) && is_string($section[$f])) {
+                        if (str_contains($section[$f], ',') && ! str_contains($section[$f], '.')) {
+                            // Only comma, no dot: comma is decimal separator (e.g. "25,5")
+                            $section[$f] = str_replace(',', '.', $section[$f]);
+                        } elseif (str_contains($section[$f], '.') && str_contains($section[$f], ',')) {
+                            // Both dot and comma: dot is thousands, comma is decimal (e.g. "1.275.000,50")
+                            $section[$f] = str_replace(',', '.', str_replace('.', '', $section[$f]));
+                        } elseif (str_contains($section[$f], '.') && ! str_contains($section[$f], ',')) {
+                            // Only dot: check if it's a thousands separator or decimal point
+                            if (preg_match('/\.\d{3}($|\.)/', $section[$f]) || substr_count($section[$f], '.') > 1) {
+                                // Dot followed by exactly 3 digits or multiple dots = thousands separator
+                                $section[$f] = str_replace('.', '', $section[$f]);
+                            }
+                            // Otherwise keep as-is (e.g. "100000.00" = decimal)
+                        }
                     }
                 }
             }
