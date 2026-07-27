@@ -2807,6 +2807,17 @@ function parseBulkData() {
 
         bulkParsedRows.push(row);
 
+        // Fungsi bantuan untuk format tanggal Excel di preview
+        let displayTanggal = row.tanggal_surat_jalan || '<span class="text-gray-400 italic">hari ini</span>';
+        if (row.tanggal_surat_jalan && !isNaN(row.tanggal_surat_jalan) && parseInt(row.tanggal_surat_jalan) > 10000) {
+            const serial = parseInt(row.tanggal_surat_jalan);
+            const jsDate = new Date(Math.round((serial - 25569) * 86400 * 1000));
+            const y = jsDate.getFullYear();
+            const m = String(jsDate.getMonth() + 1).padStart(2, '0');
+            const d = String(jsDate.getDate()).padStart(2, '0');
+            displayTanggal = `${d}/${m}/${y}`;
+        }
+
         // Build preview row
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-gray-50';
@@ -2814,7 +2825,7 @@ function parseBulkData() {
         const cellValues = [
             bulkParsedRows.length,
             row.nomor_surat_jalan,
-            row.tanggal_surat_jalan || '<span class="text-gray-400 italic">hari ini</span>',
+            displayTanggal,
             row.no_kontainer || '-',
             row.supir || '-',
             row.no_plat || '-',
