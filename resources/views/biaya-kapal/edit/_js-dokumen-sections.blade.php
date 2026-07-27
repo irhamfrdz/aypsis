@@ -234,9 +234,13 @@ function addDokumenSection(existingData = null) {
             .then(data => {
                 let options = '<option value="">-- Pilih BL --</option>';
                 if(data.success && data.bls) {
-                    data.bls.forEach(bl => {
-                        const selected = (initialBl === bl.no_bl) ? 'selected' : '';
-                        options += `<option value="${bl.no_bl}" ${selected}>BL: ${bl.no_bl}</option>`;
+                    const uniqueBls = new Set();
+                    Object.values(data.bls).forEach(bl => {
+                        if (bl.nomor_bl && !uniqueBls.has(bl.nomor_bl)) {
+                            uniqueBls.add(bl.nomor_bl);
+                            const selected = (initialBl === bl.nomor_bl) ? 'selected' : '';
+                            options += `<option value="${bl.nomor_bl}" ${selected}>BL: ${bl.nomor_bl}</option>`;
+                        }
                     });
                 }
                 blSelect.innerHTML = options;

@@ -212,8 +212,12 @@ function addDokumenSection() {
             .then(data => {
                 let options = '<option value="">-- Pilih BL --</option>';
                 if(data.success && data.bls) {
-                    data.bls.forEach(bl => {
-                        options += `<option value="${bl.no_bl}">BL: ${bl.no_bl}</option>`;
+                    const uniqueBls = new Set();
+                    Object.values(data.bls).forEach(bl => {
+                        if (bl.nomor_bl && !uniqueBls.has(bl.nomor_bl)) {
+                            uniqueBls.add(bl.nomor_bl);
+                            options += `<option value="${bl.nomor_bl}">BL: ${bl.nomor_bl}</option>`;
+                        }
                     });
                 }
                 blSelect.innerHTML = options;
