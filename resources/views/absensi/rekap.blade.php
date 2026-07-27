@@ -49,28 +49,20 @@
                         </select>
                     </div>
 
-                    <!-- Bulan -->
+                    <!-- Dari Tanggal -->
                     <div>
-                        <label for="month" class="block text-xs font-semibold text-gray-700 mb-1">Bulan</label>
-                        <select name="month" id="month"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                            @for($m = 1; $m <= 12; $m++)
-                                <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
-                                    {{ Carbon\Carbon::create(null, $m, 1)->translatedFormat('F') }}
-                                </option>
-                            @endfor
-                        </select>
+                        <label for="start_date" class="block text-xs font-semibold text-gray-700 mb-1">Dari Tanggal</label>
+                        <input type="date" name="start_date" id="start_date" required
+                               value="{{ $startDateStr }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                     </div>
 
-                    <!-- Tahun -->
+                    <!-- Sampai Tanggal -->
                     <div>
-                        <label for="year" class="block text-xs font-semibold text-gray-700 mb-1">Tahun</label>
-                        <select name="year" id="year"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                            @for($y = Carbon\Carbon::now()->year - 2; $y <= Carbon\Carbon::now()->year + 1; $y++)
-                                <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
-                            @endfor
-                        </select>
+                        <label for="end_date" class="block text-xs font-semibold text-gray-700 mb-1">Sampai Tanggal</label>
+                        <input type="date" name="end_date" id="end_date" required
+                               value="{{ $endDateStr }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                     </div>
 
                     <!-- Action Buttons -->
@@ -93,7 +85,8 @@
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
                 <div>
                     <h3 class="text-sm font-bold text-gray-900">
-                        Periode: {{ Carbon\Carbon::create($year, $month, 1)->translatedFormat('F Y') }}
+                        Periode: {{ Carbon\Carbon::parse($startDateStr)->translatedFormat('d M Y') }} - {{ Carbon\Carbon::parse($endDateStr)->translatedFormat('d M Y') }}
+                        <span class="ml-2 text-xs font-normal text-gray-500">({{ $normalWorkdays }} Hari Kerja)</span>
                     </h3>
                 </div>
                 <div>
@@ -113,8 +106,11 @@
                             <th class="px-6 py-3 text-left">No</th>
                             <th class="px-6 py-3 text-left">NIK</th>
                             <th class="px-6 py-3 text-left">Nama Lengkap</th>
-                             <th class="px-6 py-3 text-left">Pekerjaan</th>
+                            <th class="px-6 py-3 text-left">Pekerjaan</th>
                             <th class="px-6 py-3 text-center">Hadir</th>
+                            <th class="px-6 py-3 text-center">Terlambat</th>
+                            <th class="px-6 py-3 text-center">Pulang Cpt</th>
+                            <th class="px-6 py-3 text-center">Lembur</th>
                             <th class="px-6 py-3 text-center">Sakit</th>
                             <th class="px-6 py-3 text-center">Izin / Cuti</th>
                             <th class="px-6 py-3 text-center">Alpha</th>
@@ -123,7 +119,12 @@
                     <tbody class="bg-white divide-y divide-gray-200 text-xs text-gray-900">
                         @forelse($karyawans as $index => $karyawan)
                             @php
-                                $stats = $rekapData[$karyawan->id] ?? ['total_masuk' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0];
+                                $stats = $rekapData[$karyawan->id] ?? [
+                                    'total_masuk' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0,
+                                    'terlambat_kali' => 0, 'terlambat_menit' => 0,
+                                    'pulang_cepat_kali' => 0, 'pulang_cepat_menit' => 0,
+                                    'lembur_jam' => 0
+                                ];
                             @endphp
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
                                 <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-500">
@@ -139,9 +140,26 @@
                                     {{ $karyawan->pekerjaan ?: '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $stats['total_masuk'] > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500' }}">
                                         {{ $stats['total_masuk'] }} Hari
                                     </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium {{ $stats['terlambat_kali'] > 0 ? 'text-red-600' : 'text-gray-500' }}">
+                                    @if($stats['terlambat_kali'] > 0)
+                                        {{ $stats['terlambat_kali'] }}x ({{ $stats['terlambat_menit'] }}m)
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium {{ $stats['pulang_cepat_kali'] > 0 ? 'text-amber-600' : 'text-gray-500' }}">
+                                    @if($stats['pulang_cepat_kali'] > 0)
+                                        {{ $stats['pulang_cepat_kali'] }}x ({{ $stats['pulang_cepat_menit'] }}m)
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium {{ $stats['lembur_jam'] > 0 ? 'text-indigo-600' : 'text-gray-500' }}">
+                                    {{ $stats['lembur_jam'] > 0 ? $stats['lembur_jam'] . ' Jam' : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $stats['sakit'] > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500' }}">
@@ -231,14 +249,14 @@
                                 </div>
                                 <div>
                                     <label for="start_date" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Awal</label>
-                                    <input type="date" name="start_date" id="start_date" required
-                                           value="{{ Carbon\Carbon::createFromDate($year, $month, 1)->startOfMonth()->format('Y-m-d') }}"
+                                    <input type="date" name="start_date" id="start_date_export" required
+                                           value="{{ $startDateStr }}"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
                                 </div>
                                 <div>
                                     <label for="end_date" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Akhir</label>
-                                    <input type="date" name="end_date" id="end_date" required
-                                           value="{{ Carbon\Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d') }}"
+                                    <input type="date" name="end_date" id="end_date_export" required
+                                           value="{{ $endDateStr }}"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm">
                                 </div>
                             </div>

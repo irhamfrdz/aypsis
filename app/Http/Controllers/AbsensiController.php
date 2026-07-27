@@ -377,11 +377,15 @@ class AbsensiController extends Controller
             return $this->exportRekap($request);
         }
 
-        $month = $request->input('month', Carbon::now()->month);
-        $year = $request->input('year', Carbon::now()->year);
+        // Handle Date Range
+        $defaultEndDate = Carbon::now()->day >= 26 ? Carbon::now()->addMonth()->day(25) : Carbon::now()->day(25);
+        $defaultStartDate = $defaultEndDate->copy()->subMonth()->day(26);
 
-        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+        $startDateStr = $request->input('start_date', $defaultStartDate->toDateString());
+        $endDateStr = $request->input('end_date', $defaultEndDate->toDateString());
+
+        $startDate = Carbon::parse($startDateStr)->startOfDay();
+        $endDate = Carbon::parse($endDateStr)->endOfDay();
 
         // Get all active employees (exclude those who have resigned)
         $karyawansQuery = Karyawan::whereNull('tanggal_berhenti');
@@ -409,14 +413,14 @@ class AbsensiController extends Controller
         $cabangs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
         $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
 
-        // Calculate normal workdays in the selected month (excluding weekends)
+        // Calculate normal workdays in the selected range (excluding weekends)
         $normalWorkdays = 0;
-        $daysInMonth = $startDate->daysInMonth;
-        for ($d = 1; $d <= $daysInMonth; $d++) {
-            $date = Carbon::createFromDate($year, $month, $d);
-            if (!$date->isSunday()) {
+        $tempDate = $startDate->copy();
+        while ($tempDate->lte($endDate)) {
+            if (!$tempDate->isSunday()) {
                 $normalWorkdays++;
             }
+            $tempDate->addDay();
         }
 
         // Fetch all attendance records for this month to group in PHP (avoiding N+1 queries)
@@ -448,25 +452,67 @@ class AbsensiController extends Controller
             $karyawanPermissions = $permissions->get($karyawan->id, collect());
 
             // Group logs by Date to get unique check-in dates
-            $presentDates = $logs->groupBy(function ($log) {
+            $logsByDate = $logs->groupBy(function ($log) {
                 return Carbon::parse($log->waktu)->subHours(6)->toDateString();
-            })->keys()->toArray();
+            });
+            $presentDates = $logsByDate->keys()->toArray();
 
             $hadir = 0;
             $sakit = 0;
             $izin = 0;
             $alpha = 0;
+            $terlambatKali = 0;
+            $terlambatMenit = 0;
+            $pulangCepatKali = 0;
+            $pulangCepatMenit = 0;
+            $lemburJam = 0;
 
-            for ($d = 1; $d <= $daysInMonth; $d++) {
-                $date = Carbon::createFromDate($year, $month, $d);
-                if ($date->isSunday()) {
+            $tempDate = $startDate->copy();
+            while ($tempDate->lte($endDate)) {
+                if ($tempDate->isSunday()) {
+                    $tempDate->addDay();
                     continue; // Skip Sundays
                 }
 
-                $dateStr = $date->toDateString();
+                $dateStr = $tempDate->toDateString();
 
                 if (in_array($dateStr, $presentDates)) {
                     $hadir++;
+                    $dayLogs = $logsByDate->get($dateStr);
+                    
+                    // Lateness
+                    $masukLog = $dayLogs->where('tipe', 'Masuk')->first();
+                    if ($masukLog) {
+                        $waktuMasuk = Carbon::parse($masukLog->waktu);
+                        $jamMasukNormal = Carbon::parse($dateStr . ' 08:00:00');
+                        if ($waktuMasuk->gt($jamMasukNormal->copy()->addMinutes(5))) {
+                            $terlambatKali++;
+                            $terlambatMenit += $jamMasukNormal->diffInMinutes($waktuMasuk);
+                        }
+                    }
+
+                    // Early leave
+                    $pulangLog = $dayLogs->where('tipe', 'Pulang')->first();
+                    if ($pulangLog) {
+                        $waktuPulang = Carbon::parse($pulangLog->waktu);
+                        $jamPulangNormal = Carbon::parse($dateStr . ' 17:00:00');
+                        // if clock out is next day (e.g. 02:00 AM), it's not early leave. 
+                        // But if it's same day before 17:00
+                        if ($waktuPulang->lt($jamPulangNormal) && $waktuPulang->format('Y-m-d') == $dateStr) {
+                            $pulangCepatKali++;
+                            $pulangCepatMenit += $waktuPulang->diffInMinutes($jamPulangNormal);
+                        }
+                    }
+
+                    // Overtime (Lembur)
+                    $lemburMasuk = $dayLogs->where('tipe', 'Lembur_Masuk')->first();
+                    $lemburPulang = $dayLogs->where('tipe', 'Lembur_Pulang')->first();
+                    if ($lemburMasuk && $lemburPulang) {
+                        $lm = Carbon::parse($lemburMasuk->waktu);
+                        $lp = Carbon::parse($lemburPulang->waktu);
+                        $lemburJam += $lm->diffInMinutes($lp) / 60;
+                    }
+
                 } else {
                     // Check if they had an approved permission on this day
                     $matchedPerm = $karyawanPermissions->first(function($perm) use ($dateStr) {
@@ -484,6 +530,8 @@ class AbsensiController extends Controller
                         $alpha++;
                     }
                 }
+                
+                $tempDate->addDay();
             }
 
             $rekapData[$karyawan->id] = [
@@ -491,10 +539,15 @@ class AbsensiController extends Controller
                 'sakit' => $sakit,
                 'izin' => $izin,
                 'alpha' => $alpha,
+                'terlambat_kali' => $terlambatKali,
+                'terlambat_menit' => $terlambatMenit,
+                'pulang_cepat_kali' => $pulangCepatKali,
+                'pulang_cepat_menit' => $pulangCepatMenit,
+                'lembur_jam' => round($lemburJam, 1),
             ];
         }
 
-        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'month', 'year'));
+        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays'));
     }
 
     /**

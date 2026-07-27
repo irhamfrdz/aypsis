@@ -90,9 +90,26 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 karyawan_id,
                 DATE(DATE_SUB(waktu, INTERVAL 6 HOUR)) as tanggal,
                 MIN(CASE WHEN LOWER(tipe) = "masuk" THEN waktu ELSE NULL END) as waktu_masuk,
-                MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang
+                MAX(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN waktu ELSE NULL END) as waktu_pulang,
+                MIN(CASE WHEN LOWER(tipe) = "lembur_masuk" THEN waktu ELSE NULL END) as waktu_lembur_masuk,
+                MAX(CASE WHEN LOWER(tipe) = "lembur_pulang" THEN waktu ELSE NULL END) as waktu_lembur_pulang
             ')
             ->groupBy('karyawan_id', \Illuminate\Support\Facades\DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'))
+            ->get()
+            ->get()
+            ->groupBy('karyawan_id');
+
+        // Fetch all approved permissions/leaves
+        $permissions = \Illuminate\Support\Facades\DB::table('permohonan_izins')
+            ->where('status', 'APPROVED')
+            ->where(function($q) use ($startDate, $endDate) {
+                $q->whereBetween('tanggal_mulai', [$startDate->toDateString(), $endDate->toDateString()])
+                  ->orWhereBetween('tanggal_selesai', [$startDate->toDateString(), $endDate->toDateString()])
+                  ->orWhere(function($sub) use ($startDate, $endDate) {
+                      $sub->where('tanggal_mulai', '<=', $startDate->toDateString())
+                          ->where('tanggal_selesai', '>=', $endDate->toDateString());
+                  });
+            })
             ->get()
             ->groupBy('karyawan_id');
 
@@ -137,10 +154,16 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             $logs = $allLogs->get($karyawan->id, collect());
             $logsByDay = $logs->keyBy('tanggal');
 
+            $karyawanPermissions = $permissions->get($karyawan->id, collect());
+
             $dailyStatus = [];
             $riilDays = 0;
+            $sakitDays = 0;
+            $izinDays = 0;
+            $alphaDays = 0;
             $totalLateMinutes = 0;
             $totalEarlyMinutes = 0;
+            $totalOvertimeMinutes = 0;
 
             foreach ($daysData as $dateString => $dayInfo) {
                 $isWeekend = $dayInfo['isWeekend'];
@@ -150,7 +173,24 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                     if ($isWeekend) {
                         $dailyStatus[$dateString] = '';
                     } else {
-                        $dailyStatus[$dateString] = 'A';
+                        // Check if they had an approved permission on this day
+                        $matchedPerm = $karyawanPermissions->first(function($perm) use ($dateString) {
+                            return $dateString >= $perm->tanggal_mulai && $dateString <= $perm->tanggal_selesai;
+                        });
+
+                        if ($matchedPerm) {
+                            $jenis = strtolower($matchedPerm->jenis_izin);
+                            if ($jenis === 'sakit') {
+                                $sakitDays++;
+                                $dailyStatus[$dateString] = 'S';
+                            } else {
+                                $izinDays++;
+                                $dailyStatus[$dateString] = 'I';
+                            }
+                        } else {
+                            $alphaDays++;
+                            $dailyStatus[$dateString] = 'A';
+                        }
                     }
                 } else {
                     if (!$isWeekend) {
@@ -160,17 +200,24 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                     $inTimeStr = $log->waktu_masuk ? substr($log->waktu_masuk, 11, 5) : '-';
                     $outTimeStr = $log->waktu_pulang ? substr($log->waktu_pulang, 11, 5) : '-';
 
-                    if ($inTimeStr !== '-' && $inTimeStr > '08:00') {
-                        $diff = strtotime($inTimeStr.':00') - $limitInTime;
+                    if ($inTimeStr !== '-' && $inTimeStr > '08:05') { // 5 menit toleransi
+                        $diff = strtotime($inTimeStr.':00') - strtotime('08:00:00');
                         if ($diff > 0) {
                             $totalLateMinutes += round($diff / 60);
                         }
                     }
 
                     if ($outTimeStr !== '-' && $outTimeStr < '17:00') {
-                        $diff = $limitOutTime - strtotime($outTimeStr.':00');
+                        $diff = strtotime('17:00:00') - strtotime($outTimeStr.':00');
                         if ($diff > 0) {
                             $totalEarlyMinutes += round($diff / 60);
+                        }
+                    }
+
+                    if ($log->waktu_lembur_masuk && $log->waktu_lembur_pulang) {
+                        $diff = strtotime($log->waktu_lembur_pulang) - strtotime($log->waktu_lembur_masuk);
+                        if ($diff > 0) {
+                            $totalOvertimeMinutes += round($diff / 60);
                         }
                     }
 
@@ -178,16 +225,17 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                 }
             }
 
-            $absenDays = max(0, $normalDays - $riilDays);
-
             $this->rekapData[] = [
                 'karyawan' => $karyawan,
                 'dailyStatus' => $dailyStatus,
                 'normalDays' => $normalDays,
                 'riilDays' => $riilDays,
-                'absenDays' => $absenDays,
+                'absenDays' => $alphaDays,
+                'sakitDays' => $sakitDays,
+                'izinDays' => $izinDays,
                 'lateMinutes' => $totalLateMinutes,
                 'earlyMinutes' => $totalEarlyMinutes,
+                'overtimeMinutes' => $totalOvertimeMinutes,
             ];
         }
     }
@@ -218,7 +266,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         foreach ($this->dayHeaders as $h) {
             $header1[] = $h['date'];
         }
-        $header1 = array_merge($header1, ['Normal Hari', 'Absen Hari', 'Trlmbt Menit', 'Plg. Cpt Menit', 'Lmbr Menit', 'Jml. Ijin', 'D. Luar']);
+        $header1 = array_merge($header1, ['Normal Hari', 'Masuk Hari', 'Trlmbt Menit', 'Plg. Cpt Menit', 'Lmbr Menit', 'Sakit', 'Ijin', 'Alpha']);
         $rows[] = $header1;
         
         // Row 5: Header 2
@@ -226,7 +274,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         foreach ($this->dayHeaders as $h) {
             $header2[] = $h['dayName'];
         }
-        $header2 = array_merge($header2, ['', '', '', '', '', '', '']);
+        $header2 = array_merge($header2, ['', '', '', '', '', '', '', '']);
         $rows[] = $header2;
         
         // Data Rows (Starting at row 6)
@@ -239,12 +287,13 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                  $row[] = $data['dailyStatus'][$date];
             }
             $row[] = $data['normalDays'];
-            $row[] = $data['absenDays'];
+            $row[] = $data['riilDays'];
             $row[] = $data['lateMinutes'] ?: '';
             $row[] = $data['earlyMinutes'] ?: '';
-            $row[] = '';
-            $row[] = '';
-            $row[] = '';
+            $row[] = $data['overtimeMinutes'] ?: '';
+            $row[] = $data['sakitDays'] ?: '';
+            $row[] = $data['izinDays'] ?: '';
+            $row[] = $data['absenDays'] ?: '';
             $rows[] = $row;
         }
         
