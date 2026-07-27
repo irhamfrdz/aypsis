@@ -197,7 +197,7 @@ class AbsensiController extends Controller
         $daysInMonth = $startDate->daysInMonth;
         for ($d = 1; $d <= $daysInMonth; $d++) {
             $date = Carbon::createFromDate($year, $month, $d);
-            if (!$date->isWeekend()) {
+            if (!$date->isSunday()) {
                 $normalWorkdays++;
             }
         }
@@ -242,8 +242,8 @@ class AbsensiController extends Controller
 
             for ($d = 1; $d <= $daysInMonth; $d++) {
                 $date = Carbon::createFromDate($year, $month, $d);
-                if ($date->isWeekend()) {
-                    continue; // Skip weekends
+                if ($date->isSunday()) {
+                    continue; // Skip Sundays
                 }
 
                 $dateStr = $date->toDateString();

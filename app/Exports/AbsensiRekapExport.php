@@ -115,7 +115,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
         for ($i = 0; $i < $this->totalDays; $i++) {
             $date = $startDate->copy()->addDays($i);
             $dateString = $date->toDateString();
-            $isWeekend = $date->isWeekend();
+            $isWeekend = $date->isSunday();
             if (!$isWeekend) {
                 $normalDays++;
             }
