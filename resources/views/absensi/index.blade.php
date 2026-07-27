@@ -445,7 +445,7 @@
 <!-- Create Modal -->
 <div id="createModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true" onclick="document.getElementById('createModal').classList.add('hidden')"></div>
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true" onclick="resetCreateForm()"></div>
         <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
             <form action="{{ route('absensi.store') }}" method="POST">
                 @csrf
@@ -497,7 +497,7 @@
                     <button type="submit" class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
                         Simpan
                     </button>
-                    <button type="button" onclick="document.getElementById('createModal').classList.add('hidden')" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" onclick="resetCreateForm()" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Batal
                     </button>
                 </div>
@@ -614,10 +614,23 @@
         document.getElementById('create_waktu_lembur_pulang').value = '';
     }
 
+    function resetCreateForm() {
+        document.getElementById('createModal').classList.add('hidden');
+        $('#create_nik').val('').trigger('change.select2');
+        document.getElementById('create_tanggal').value = '{{ \Carbon\Carbon::now()->toDateString() }}';
+        clearAbsensiInputs();
+    }
+
     document.getElementById('create_tanggal').addEventListener('change', fetchAbsensiData);
     
-    // Also attach to select2 change event if used
     $(document).ready(function() {
+        // Initialize Select2 for modal
+        $('#create_nik').select2({
+            dropdownParent: $('#createModal'),
+            placeholder: "Pilih Karyawan",
+            allowClear: true
+        });
+
         $('#create_nik').on('change', function() {
             fetchAbsensiData();
         });
