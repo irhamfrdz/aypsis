@@ -4,6 +4,9 @@
     // Store pricelist Biaya Trucking data
     const pricelistBiayaTruckingData = {!! json_encode($pricelistBiayaTrucking) !!};
 
+    // Store pricelist Biaya Dokumen data
+    const pricelistBiayaDokumenData = {!! json_encode($pricelistBiayaDokumen ?? []) !!};
+
     // Store pricelist TKBM data for Biaya TKBM
     const pricelistTkbmData = {!! json_encode($pricelistTkbm ?? []) !!};
 

@@ -61,6 +61,8 @@ function addDokumenSection(existingData = null) {
     let kapalOptions = '<option value="">-- Pilih Kapal --</option>';
     let initialKapal = existingData ? existingData.kapal : '';
     let initialVoyage = existingData ? existingData.voyage : '';
+    let initialVendor = existingData ? existingData.vendor_id : '';
+    let initialBl = existingData ? existingData.nomor_bl : '';
     let initialNominal = existingData ? parseInt(existingData.nominal).toLocaleString('id-ID') : '0';
     let initialPph = existingData ? parseInt(existingData.pph).toLocaleString('id-ID') : '0';
     let initialTotal = existingData ? parseInt(existingData.total_biaya).toLocaleString('id-ID') : '0';
@@ -71,9 +73,18 @@ function addDokumenSection(existingData = null) {
             kapalOptions += `<option value="${kapal.nama_kapal}" ${selected}>${kapal.nama_kapal}</option>`;
         });
     }
+
+    let vendorOptions = '';
+    if (typeof pricelistBiayaDokumenData !== 'undefined') {
+        pricelistBiayaDokumenData.forEach(v => {
+            const selected = (initialVendor == v.id) ? 'selected' : '';
+            vendorOptions += `<option value="${v.id}" data-biaya="${v.biaya}" ${selected}>${v.nama_vendor} - Rp ${parseInt(v.biaya).toLocaleString('id-ID')}</option>`;
+        });
+    }
     
     // Default manual voyage state if existing voyage is set but we haven't loaded voyages list yet
     const isManualVoyage = initialVoyage ? true : false;
+    const isManualBl = initialBl ? true : false;
     
     section.innerHTML = `
         <div class="flex items-center justify-between mb-4">
@@ -102,10 +113,25 @@ function addDokumenSection(existingData = null) {
             </div>
         </div>
         
-        <div class="border-t pt-4 mt-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="border-t pt-4 mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Voyage</label>
-                <!-- the UI above already has voyage, we just need the costs -->
+                <label class="block text-xs font-medium text-gray-700 mb-1">Vendor <span class="text-red-500">*</span></label>
+                <select name="dokumen_sections[${sectionIndex}][vendor_id]" class="dokumen-vendor-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500" required>
+                    <option value="">-- Pilih Vendor --</option>
+                    ${vendorOptions}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Nomor BL</label>
+                <div class="flex gap-2">
+                    <select name="dokumen_sections[${sectionIndex}][nomor_bl]" class="dokumen-bl-select w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 ${isManualBl ? 'hidden' : ''}" ${isManualBl ? '' : 'disabled'}>
+                        <option value="">-- Pilih Voyage Terlebih Dahulu --</option>
+                    </select>
+                    <input type="text" name="dokumen_sections[${sectionIndex}][nomor_bl]" class="dokumen-bl-input w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 ${isManualBl ? '' : 'hidden'}" ${isManualBl ? '' : 'disabled'} placeholder="Ketik No. BL" value="${initialBl}">
+                    <button type="button" class="dokumen-bl-manual-btn px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition" title="Input Manual / Pilih dari List">
+                        <i class="fas fa-keyboard"></i>
+                    </button>
+                </div>
             </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -145,9 +171,15 @@ function addDokumenSection(existingData = null) {
     const voyageSelect = section.querySelector('.dokumen-voyage-select');
     const voyageInput = section.querySelector('.dokumen-voyage-input');
     const voyageManualBtn = section.querySelector('.dokumen-voyage-manual-btn');
+    const vendorSelect = section.querySelector('.dokumen-vendor-select');
+    const blSelect = section.querySelector('.dokumen-bl-select');
+    const blInput = section.querySelector('.dokumen-bl-input');
+    const blManualBtn = section.querySelector('.dokumen-bl-manual-btn');
     
     initDokumenSelect2(kapalSelect, '-- Pilih Kapal --');
     initDokumenSelect2(voyageSelect, '-- Pilih Kapal Terlebih Dahulu --');
+    initDokumenSelect2(vendorSelect, '-- Pilih Vendor --');
+    initDokumenSelect2(blSelect, '-- Pilih Voyage Terlebih Dahulu --');
     
     jQuery(kapalSelect).on('change', function() {
         const kapalId = this.value; // It is nama_kapal in the loop
@@ -179,8 +211,52 @@ function addDokumenSection(existingData = null) {
                 });
         } else {
             voyageSelect.innerHTML = '<option value="">-- Pilih Kapal Terlebih Dahulu --</option>';
+            blSelect.innerHTML = '<option value="">-- Pilih Voyage Terlebih Dahulu --</option>';
+            blSelect.disabled = true;
         }
     });
+
+    jQuery(voyageSelect).on('change', function() {
+        const voyageId = this.value;
+        blSelect.innerHTML = '<option value="">-- Memuat... --</option>';
+        blSelect.disabled = true;
+
+        if (voyageId) {
+            fetch("{{ url('biaya-kapal/get-bls-by-voyages') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ voyages: [voyageId] })
+            })
+            .then(res => res.json())
+            .then(data => {
+                let options = '<option value="">-- Pilih BL --</option>';
+                if(data.success && data.bls) {
+                    data.bls.forEach(bl => {
+                        const selected = (initialBl === bl.no_bl) ? 'selected' : '';
+                        options += `<option value="${bl.no_bl}" ${selected}>BL: ${bl.no_bl}</option>`;
+                    });
+                }
+                blSelect.innerHTML = options;
+                blSelect.disabled = false;
+            })
+            .catch(err => {
+                console.error('Error fetching BLs:', err);
+                blSelect.innerHTML = '<option value="">-- Gagal memuat --</option>';
+            });
+        } else {
+            blSelect.innerHTML = '<option value="">-- Pilih Voyage Terlebih Dahulu --</option>';
+            blSelect.disabled = true;
+        }
+    });
+
+    // If initialVoyage is set but we haven't manually triggered change, we might need to fetch BLs.
+    // In edit view, initial loads will need BLs.
+    if (initialVoyage && !isManualVoyage) {
+        jQuery(voyageSelect).trigger('change');
+    }
 
     voyageManualBtn.addEventListener('click', function() {
         if (voyageSelect.classList.contains('hidden')) {
@@ -197,6 +273,44 @@ function addDokumenSection(existingData = null) {
             voyageInput.disabled = false;
             voyageInput.setAttribute('required', 'required');
             voyageSelect.removeAttribute('required');
+        }
+    });
+
+    blManualBtn.addEventListener('click', function() {
+        if (blSelect.classList.contains('hidden')) {
+            blSelect.classList.remove('hidden');
+            blInput.classList.add('hidden');
+            
+            blSelect.disabled = (voyageSelect.value === '' && voyageInput.classList.contains('hidden'));
+            blInput.disabled = true;
+            
+            blManualBtn.innerHTML = '<i class="fas fa-keyboard"></i>';
+            blManualBtn.title = 'Input Manual';
+            
+            blSelect.setAttribute('name', `dokumen_sections[${sectionIndex}][nomor_bl]`);
+            blInput.removeAttribute('name');
+        } else {
+            blSelect.classList.add('hidden');
+            blInput.classList.remove('hidden');
+            
+            blSelect.disabled = true;
+            blInput.disabled = false;
+            
+            blManualBtn.innerHTML = '<i class="fas fa-list"></i>';
+            blManualBtn.title = 'Pilih dari List';
+            
+            blInput.setAttribute('name', `dokumen_sections[${sectionIndex}][nomor_bl]`);
+            blSelect.removeAttribute('name');
+        }
+    });
+
+    jQuery(vendorSelect).on('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption && selectedOption.dataset.biaya) {
+            const biaya = parseInt(selectedOption.dataset.biaya);
+            const nominalInput = section.querySelector('.dokumen-nominal-input');
+            nominalInput.value = biaya.toLocaleString('id-ID');
+            nominalInput.dispatchEvent(new Event('change'));
         }
     });
 

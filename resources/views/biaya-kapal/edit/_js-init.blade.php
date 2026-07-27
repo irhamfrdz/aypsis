@@ -252,4 +252,7 @@
     // Pricelist Tanto data
     var pricelistTantoData = {!! json_encode($pricelistTanto ?? []) !!};
 
+    // Pricelist Biaya Dokumen data
+    var pricelistBiayaDokumenData = {!! json_encode($pricelistBiayaDokumen ?? []) !!};
+
     // Format nominal input with thousand separator

@@ -12,6 +12,8 @@ class BiayaKapalDokumen extends Model
         'biaya_kapal_id',
         'kapal',
         'voyage',
+        'nomor_bl',
+        'vendor_id',
         'nominal',
         'pph',
         'total_biaya'

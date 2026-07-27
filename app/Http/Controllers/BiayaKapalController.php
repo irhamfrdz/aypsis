@@ -772,6 +772,8 @@ class BiayaKapalController extends Controller
             'dokumen_sections' => 'nullable|array',
             'dokumen_sections.*.kapal' => 'nullable|string|max:255',
             'dokumen_sections.*.voyage' => 'nullable|string|max:255',
+            'dokumen_sections.*.vendor_id' => 'nullable|exists:pricelist_biaya_dokumen,id',
+            'dokumen_sections.*.nomor_bl' => 'nullable|string|max:255',
             'dokumen_sections.*.nominal' => 'nullable|numeric|min:0',
             'dokumen_sections.*.pph' => 'nullable|numeric|min:0',
             'dokumen_sections.*.total_biaya' => 'nullable|numeric|min:0',
@@ -1169,6 +1171,36 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for THC from section totals
                 $totalThc = \App\Models\BiayaKapalThc::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
                 $biayaKapal->update(['nominal' => $totalThc]);
+            }
+
+            // BIAYA DOKUMEN SECTIONS: Store Dokumen details
+            if ($request->has('dokumen_sections') && ! empty($request->dokumen_sections)) {
+                foreach ($request->dokumen_sections as $sectionIndex => $section) {
+                    // Skip empty sections
+                    if (empty($section['kapal']) && empty($section['voyage'])) {
+                        continue;
+                    }
+
+                    // Clean numeric fields
+                    $cleanNum = function ($val) {
+                        return (float) str_replace(['.', ','], ['', '.'], $val ?? '0');
+                    };
+
+                    \App\Models\BiayaKapalDokumen::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'kapal' => $section['kapal'] ?? null,
+                        'voyage' => $section['voyage'] ?? null,
+                        'vendor_id' => $section['vendor_id'] ?? null,
+                        'nomor_bl' => $section['nomor_bl'] ?? null,
+                        'nominal' => $cleanNum($section['nominal'] ?? 0),
+                        'pph' => $cleanNum($section['pph'] ?? 0),
+                        'total_biaya' => $cleanNum($section['total_biaya'] ?? 0),
+                    ]);
+                }
+
+                // Auto-calculate nominal for Dokumen from section totals
+                $totalDokumen = \App\Models\BiayaKapalDokumen::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
+                $biayaKapal->update(['nominal' => $totalDokumen]);
             }
 
             // BIAYA FREIGHT SECTIONS: Store Freight details
@@ -4138,6 +4170,39 @@ class BiayaKapalController extends Controller
 
                 if ($totalThc > 0) {
                     $biayaKapal->update(['nominal' => $totalThc]);
+                }
+            }
+
+            // DOKUMEN UPDATE
+            if ($request->has('dokumen_sections')) {
+                \App\Models\BiayaKapalDokumen::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                $totalDokumen = 0;
+                if (! empty($request->dokumen_sections)) {
+                    foreach ($request->dokumen_sections as $section) {
+                        if (empty($section['kapal']) && empty($section['voyage'])) {
+                            continue;
+                        }
+
+                        $cleanNominal = str_replace(',', '.', str_replace('.', '', $section['nominal'] ?? '0'));
+                        $cleanPph = str_replace(',', '.', str_replace('.', '', $section['pph'] ?? '0'));
+                        $cleanTotal = str_replace(',', '.', str_replace('.', '', $section['total_biaya'] ?? '0'));
+
+                        \App\Models\BiayaKapalDokumen::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'kapal' => $section['kapal'] ?? null,
+                            'voyage' => $section['voyage'] ?? null,
+                            'vendor_id' => $section['vendor_id'] ?? null,
+                            'nomor_bl' => $section['nomor_bl'] ?? null,
+                            'nominal' => $cleanNominal,
+                            'pph' => $cleanPph,
+                            'total_biaya' => $cleanTotal,
+                        ]);
+                        $totalDokumen += floatval($cleanTotal);
+                    }
+                }
+
+                if ($totalDokumen > 0) {
+                    $biayaKapal->update(['nominal' => $totalDokumen]);
                 }
             }
 
