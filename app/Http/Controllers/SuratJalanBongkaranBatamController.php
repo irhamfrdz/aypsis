@@ -984,15 +984,18 @@ class SuratJalanBongkaranBatamController extends Controller
                 }
             }
 
-            if ($successCount > 0) {
+            if (empty($errors)) {
                 DB::commit();
             } else {
                 DB::rollBack();
+                $successCount = 0; // Reset success count because everything is rolled back
             }
 
             return response()->json([
-                'success' => $successCount > 0,
-                'message' => "{$successCount} surat jalan berhasil dibuat.".(! empty($errors) ? ' '.count($errors).' baris gagal.' : ''),
+                'success' => empty($errors),
+                'message' => empty($errors) 
+                    ? "{$successCount} surat jalan berhasil dibuat." 
+                    : "Proses dibatalkan. Terdapat " . count($errors) . " error yang harus diperbaiki terlebih dahulu.",
                 'success_count' => $successCount,
                 'error_count' => count($errors),
                 'errors' => $errors,

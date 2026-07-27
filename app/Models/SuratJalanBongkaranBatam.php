@@ -161,11 +161,23 @@ class SuratJalanBongkaranBatam extends Model
 
     public function setTanggalSuratJalanAttribute($value)
     {
-        $this->attributes['tanggal_surat_jalan'] = $value ? Carbon::parse($value)->format('Y-m-d') : null;
+        if (empty($value)) {
+            $this->attributes['tanggal_surat_jalan'] = null;
+        } elseif (is_numeric($value)) {
+            $this->attributes['tanggal_surat_jalan'] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d');
+        } else {
+            $this->attributes['tanggal_surat_jalan'] = Carbon::parse($value)->format('Y-m-d');
+        }
     }
 
     public function setTanggalMuatAttribute($value)
     {
-        $this->attributes['tanggal_muat'] = $value ? Carbon::parse($value)->format('Y-m-d') : null;
+        if (empty($value)) {
+            $this->attributes['tanggal_muat'] = null;
+        } elseif (is_numeric($value)) {
+            $this->attributes['tanggal_muat'] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d');
+        } else {
+            $this->attributes['tanggal_muat'] = Carbon::parse($value)->format('Y-m-d');
+        }
     }
 }
