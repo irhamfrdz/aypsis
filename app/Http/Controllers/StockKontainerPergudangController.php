@@ -128,6 +128,11 @@ class StockKontainerPergudangController extends Controller
             $item->keterangan_kegiatan = $history ? $history->keterangan : '-';
         }
 
+        // Urutkan dari yang terbaru (tanggal masuk terbaru)
+        $allContainers = $allContainers->sortByDesc(function ($item) {
+            return $item->tanggal_masuk ?? '0000-00-00 00:00:00';
+        })->values();
+
         return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang', 'id', 'type'));
     }
 
