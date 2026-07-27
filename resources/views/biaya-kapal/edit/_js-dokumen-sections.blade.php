@@ -161,13 +161,13 @@ function addDokumenSection(existingData = null) {
         }
 
         if(actualKapalId) {
-            fetch(\`/api/kapal/\${actualKapalId}/voyages\`)
+            fetch(`/api/kapal/${actualKapalId}/voyages`)
                 .then(res => res.json())
                 .then(data => {
                     let options = '<option value="">-- Pilih Voyage --</option>';
                     if(data.success && data.data) {
                         data.data.forEach(v => {
-                            options += \`<option value="\${v}">\${v}</option>\`;
+                            options += `<option value="${v}">${v}</option>`;
                         });
                     }
                     voyageSelect.innerHTML = options;
@@ -230,15 +230,15 @@ function addDokumenSection(existingData = null) {
     
     // Auto calculate PPH based on nominal when nominal changes
     nominalInput.addEventListener('change', function() {
-        let nominalValue = parseInt(this.value.replace(/\\./g, '')) || 0;
+        let nominalValue = parseInt(this.value.replace(/\./g, '')) || 0;
         let pphValue = Math.round(nominalValue * 0.02);
         pphInput.value = pphValue.toLocaleString('id-ID');
         calculateDokumenSection(section);
     });
 }
 
-function removeDokumenSection(index) {
-    const section = document.querySelector(\`.dokumen-section[data-dokumen-section-index="\${index}"]\`);
+window.removeDokumenSection = function(index) {
+    const section = document.querySelector(`.dokumen-section[data-dokumen-section-index="${index}"]`);
     if (section) {
         section.remove();
         calculateAllDokumenSections();
