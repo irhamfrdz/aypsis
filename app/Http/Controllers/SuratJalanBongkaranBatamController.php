@@ -905,9 +905,14 @@ class SuratJalanBongkaranBatamController extends Controller
                                 if (! $item->wilayah) {
                                     continue;
                                 }
-                                $subWilayahs = array_map('trim', explode(',', $item->wilayah));
-                                if (in_array($rowTujuan, $subWilayahs)) {
+                                $originalSubWilayahs = array_map('trim', explode(',', $item->wilayah));
+                                $lowerSubWilayahs = array_map('strtolower', $originalSubWilayahs);
+                                
+                                $idx = array_search(strtolower($rowTujuan), $lowerSubWilayahs);
+                                if ($idx !== false) {
                                     $matchedItem = $item;
+                                    // Use the exact case from database so UI dropdowns match perfectly
+                                    $rowTujuan = $originalSubWilayahs[$idx];
                                     break;
                                 }
                             }
