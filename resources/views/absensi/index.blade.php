@@ -563,6 +563,7 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
     function toggleInputsState(disabled) {
         const inputs = [
@@ -648,5 +649,6 @@
         document.getElementById('editModal').classList.remove('hidden');
     }
 </script>
+@endpush
 
 @endsection
