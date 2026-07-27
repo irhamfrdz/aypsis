@@ -3875,9 +3875,13 @@ class BiayaKapalController extends Controller
                         $pph = is_string($pphRaw) ? (floatval(str_replace(',', '.', str_replace('.', '', $pphRaw)))) : floatval($pphRaw);
                         $grandTotal = is_string($grandTotalRaw) ? (floatval(str_replace(',', '.', str_replace('.', '', $grandTotalRaw)))) : floatval($grandTotalRaw);
 
-                        $kuantitas = floatval($section['kuantitas'] ?? 0);
-                        $harga = floatval($section['harga'] ?? 0);
-                        $jasaAir = floatval($section['jasa_air'] ?? 0);
+                        $kuantitasRaw = $section['kuantitas'] ?? 0;
+                        $hargaRaw = $section['harga'] ?? 0;
+                        $jasaAirRaw = $section['jasa_air'] ?? 0;
+
+                        $kuantitas = is_string($kuantitasRaw) ? floatval(str_replace(',', '.', str_replace('.', '', $kuantitasRaw))) : floatval($kuantitasRaw);
+                        $harga = is_string($hargaRaw) ? floatval(str_replace(',', '.', str_replace('.', '', $hargaRaw))) : floatval($hargaRaw);
+                        $jasaAir = is_string($jasaAirRaw) ? floatval(str_replace(',', '.', str_replace('.', '', $jasaAirRaw))) : floatval($jasaAirRaw);
 
                         if (! empty($section['types']) && is_array($section['types'])) {
                             foreach ($section['types'] as $typeIndex => $typeId) {
@@ -3891,7 +3895,7 @@ class BiayaKapalController extends Controller
 
                                     // Clean price input
                                     $manualPriceRaw = isset($section['custom_prices'][$typeIndex]) ? (string) $section['custom_prices'][$typeIndex] : '0';
-                                    $typeHarga = floatval(str_replace(',', '.', $manualPriceRaw));
+                                    $typeHarga = is_string($manualPriceRaw) ? floatval(str_replace(',', '.', str_replace('.', '', $manualPriceRaw))) : floatval($manualPriceRaw);
 
                                     $actualTypeId = null; // No ID for manual
                                 } else {
@@ -3914,7 +3918,8 @@ class BiayaKapalController extends Controller
 
                                 $currentKuantitas = 0;
                                 if (isset($section['type_tonase'][$typeIndex]) && $section['type_tonase'][$typeIndex] !== '') {
-                                    $currentKuantitas = floatval(str_replace(',', '.', (string) $section['type_tonase'][$typeIndex]));
+                                    $tonaseRaw = (string) $section['type_tonase'][$typeIndex];
+                                    $currentKuantitas = floatval(str_replace(',', '.', str_replace('.', '', $tonaseRaw)));
                                 }
 
                                 // Apply Jasa Air ONLY on the first record to avoid double counting
