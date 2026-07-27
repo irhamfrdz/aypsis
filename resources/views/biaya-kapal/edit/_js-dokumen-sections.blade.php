@@ -160,13 +160,13 @@ function addDokumenSection(existingData = null) {
             if(kapalObj) actualKapalId = kapalObj.id;
         }
 
-        if(actualKapalId) {
-            fetch(`/api/kapal/${actualKapalId}/voyages`)
+        if(kapalId) {
+            fetch(`{{ url('biaya-kapal/get-voyages') }}/${encodeURIComponent(kapalId)}`)
                 .then(res => res.json())
                 .then(data => {
                     let options = '<option value="">-- Pilih Voyage --</option>';
-                    if(data.success && data.data) {
-                        data.data.forEach(v => {
+                    if(data.success && data.voyages) {
+                        data.voyages.forEach(v => {
                             options += `<option value="${v}">${v}</option>`;
                         });
                     }
