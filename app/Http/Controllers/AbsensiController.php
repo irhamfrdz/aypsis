@@ -128,8 +128,150 @@ class AbsensiController extends Controller
         $pekerjaans = Karyawan::whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
         $divisis = Karyawan::whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
         $mesins = Mesin::all()->keyBy('id');
+        $karyawanList = Karyawan::whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get(['nik', 'nama_lengkap']);
 
-        return view('absensi.index', compact('absensis', 'pekerjaans', 'divisis', 'startDate', 'endDate', 'mesins'));
+        return view('absensi.index', compact('absensis', 'pekerjaans', 'divisis', 'startDate', 'endDate', 'mesins', 'karyawanList'));
+    }
+
+    /**
+     * Store manual attendance.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nik' => 'required',
+            'tanggal' => 'required|date',
+        ]);
+
+        $nik = $request->nik;
+        $tanggal = Carbon::parse($request->tanggal)->toDateString();
+        $karyawan = Karyawan::where('nik', $nik)->first();
+        
+        $karyawan_id = $karyawan ? $karyawan->id : null;
+
+        $times = [
+            'Masuk' => $request->waktu_masuk,
+            'Istirahat_Keluar' => $request->waktu_istirahat_keluar,
+            'Istirahat_Masuk' => $request->waktu_istirahat_masuk,
+            'Pulang' => $request->waktu_pulang,
+            'Lembur_Masuk' => $request->waktu_lembur_masuk,
+            'Lembur_Pulang' => $request->waktu_lembur_pulang,
+        ];
+
+        foreach ($times as $tipe => $time) {
+            if (!empty($time)) {
+                $waktu = Carbon::parse($tanggal . ' ' . $time);
+                // Adjust waktu logic if necessary based on night shifts, but for manual input we assume it's exact time on that date
+                if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
+                    $waktu->addDay(); // If clock out is early morning, it belongs to the next day calendar-wise, but same work day.
+                }
+
+                Absensi::create([
+                    'karyawan_id' => $karyawan_id,
+                    'nik' => $nik,
+                    'waktu' => $waktu,
+                    'tipe' => $tipe,
+                    'status' => 'Manual',
+                    'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
+                ]);
+            }
+        }
+
+        return back()->with('success', 'Data absensi manual berhasil ditambahkan.');
+    }
+
+    /**
+     * Update an attendance day record.
+     */
+    public function update(Request $request)
+    {
+        $request->validate([
+            'nik' => 'required',
+            'tanggal' => 'required|date',
+        ]);
+
+        $nik = $request->nik;
+        $tanggal = Carbon::parse($request->tanggal)->toDateString();
+        
+        // Find existing employee
+        $karyawan = Karyawan::where('nik', $nik)->first();
+        $karyawan_id = $karyawan ? $karyawan->id : null;
+
+        $times = [
+            'Masuk' => $request->waktu_masuk,
+            'Istirahat_Keluar' => $request->waktu_istirahat_keluar,
+            'Istirahat_Masuk' => $request->waktu_istirahat_masuk,
+            'Pulang' => $request->waktu_pulang,
+            'Lembur_Masuk' => $request->waktu_lembur_masuk,
+            'Lembur_Pulang' => $request->waktu_lembur_pulang,
+        ];
+
+        // Process each type
+        foreach ($times as $tipe => $time) {
+            // Find existing log for this date and type
+            // Note: The index groups by DATE(waktu - 6 hours), so we search in that range
+            $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
+            $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
+
+            $existingLog = Absensi::where('nik', $nik)
+                ->where('tipe', $tipe)
+                ->whereBetween('waktu', [$startDateObj, $endDateObj])
+                ->first();
+
+            if (!empty($time)) {
+                $waktu = Carbon::parse($tanggal . ' ' . $time);
+                if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
+                    $waktu->addDay(); 
+                }
+
+                if ($existingLog) {
+                    $existingLog->update([
+                        'waktu' => $waktu,
+                        'status' => 'Manual',
+                        'keterangan' => 'Diedit secara manual'
+                    ]);
+                } else {
+                    Absensi::create([
+                        'karyawan_id' => $karyawan_id,
+                        'nik' => $nik,
+                        'waktu' => $waktu,
+                        'tipe' => $tipe,
+                        'status' => 'Manual',
+                        'keterangan' => 'Ditambahkan dari edit manual',
+                    ]);
+                }
+            } else {
+                // If time is empty, delete if exists
+                if ($existingLog) {
+                    $existingLog->delete();
+                }
+            }
+        }
+
+        return back()->with('success', 'Data absensi berhasil diperbarui.');
+    }
+
+    /**
+     * Delete all attendance logs for a specific employee on a specific date.
+     */
+    public function destroyDay(Request $request)
+    {
+        $request->validate([
+            'nik' => 'required',
+            'tanggal' => 'required|date',
+        ]);
+
+        $nik = $request->nik;
+        $tanggal = Carbon::parse($request->tanggal)->toDateString();
+
+        $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
+        $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
+
+        Absensi::where('nik', $nik)
+            ->whereBetween('waktu', [$startDateObj, $endDateObj])
+            ->delete();
+
+        return back()->with('success', 'Semua data absensi pada tanggal tersebut berhasil dihapus.');
     }
 
     /**
