@@ -187,6 +187,18 @@ return [
                 'payroll-uang-karyawan-delete' => 'Hapus Data Uang Karyawan',
             ],
         ],
+        'absensi' => [
+            'name' => 'Absensi',
+            'description' => 'Menu Absensi Karyawan',
+            'required' => true,
+            'sub_modules' => [
+                'absensi-view' => 'View Absensi',
+                'absensi-create' => 'Buat Absensi',
+                'absensi-edit' => 'Edit Absensi',
+                'absensi-delete' => 'Hapus Absensi',
+                'absensi-rekap' => 'Rekap Absensi',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
@@ -241,5 +253,9 @@ return [
         // Payroll
         'payroll' => ['payroll-view'],
         'payroll-uang-karyawan' => ['payroll-uang-karyawan-view'],
+
+        // Absensi
+        'absensi' => ['absensi-view'],
+        'absensi-rekap' => ['absensi-rekap'],
     ],
 ];
