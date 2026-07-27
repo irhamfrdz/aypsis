@@ -825,6 +825,12 @@ class SuratJalanBongkaranBatamController extends Controller
                     continue;
                 }
 
+                $rowVoyage = trim($row['no_voyage'] ?? $noVoyage);
+                if (empty($rowVoyage)) {
+                    $errors[] = "Baris {$rowNumber}: Nomor Voyage wajib diisi.";
+                    continue;
+                }
+
                 // Check uniqueness
                 if (SuratJalanBongkaranBatam::where('nomor_surat_jalan', $nomorSuratJalan)->exists()) {
                     $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan '{$nomorSuratJalan}' sudah ada di database.";
@@ -847,8 +853,8 @@ class SuratJalanBongkaranBatamController extends Controller
                                     ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) like ?", ["%{$kapalClean}%"]);
                             });
                         }
-                        if (! empty($noVoyage)) {
-                            $query->where('no_voyage', $noVoyage);
+                        if (! empty($rowVoyage)) {
+                            $query->where('no_voyage', $rowVoyage);
                         }
 
                         $query->where(function ($q) use ($noKontainerOrBl) {
@@ -874,7 +880,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
                     if (empty($manifest)) {
                         $containerName = empty($noKontainerOrBl) ? 'kosong' : $noKontainerOrBl;
-                        $errors[] = "Baris {$rowNumber}: Nomor Kontainer/BL '{$containerName}' tidak ditemukan pada kapal {$namaKapal} dan voyage {$noVoyage}.";
+                        $errors[] = "Baris {$rowNumber}: Nomor Kontainer/BL '{$containerName}' tidak ditemukan pada kapal {$namaKapal} dan voyage {$rowVoyage}.";
                         continue;
                     }
 
@@ -986,7 +992,7 @@ class SuratJalanBongkaranBatamController extends Controller
                         'jenis_pengiriman' => $finalJenisPengiriman,
                         'manifest_id' => $manifestId,
                         'nama_kapal' => $namaKapal,
-                        'no_voyage' => $noVoyage,
+                        'no_voyage' => $rowVoyage,
                         'lokasi' => $rowLokasi,
                         'input_by' => Auth::id(),
                     ]);

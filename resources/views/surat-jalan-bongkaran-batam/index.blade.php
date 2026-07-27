@@ -69,7 +69,6 @@
                         </svg>
                         Tambah Surat Jalan
                     </button>
-                    @if($selectedKapal && $selectedVoyage)
                     <button onclick="buatSuratJalanMassal()" 
                             class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +76,6 @@
                         </svg>
                         Tambah Massal
                     </button>
-                    @endif
                     <a href="{{ route('surat-jalan-bongkaran-batam.export', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage, 'mode' => request('mode', 'manifest')] + request()->only(['search', 'types'])) }}" 
                        class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -995,12 +993,21 @@
                         Panduan Format Data (Semicolon-separated / Dipisahkan Titik Koma)
                     </h4>
                     <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
+                    @if(empty($selectedVoyage))
+                    <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
+                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Kenek ; Krani ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty) ; No Voyage
+                    </div>
+                    <p class="text-xs text-indigo-600 mt-1">
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar;batam;Batu Ampar;Full;VOY123
+                    </p>
+                    @else
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
                         No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Kenek ; Krani ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty)
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
                         <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar;batam;Batu Ampar;Full
                     </p>
+                    @endif
                 </div>
 
                 <!-- Textarea Input -->
@@ -1046,6 +1053,9 @@
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tujuan Pengiriman</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">F/E</th>
+                                    @if(empty($selectedVoyage))
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Voyage</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody id="bulkPreviewBody" class="bg-white divide-y divide-gray-100">
@@ -2795,10 +2805,14 @@ function parseBulkData() {
     }
 
     const lines = rawText.split('\n').filter(line => line.trim() !== '');
-    const columnKeys = [
+    const isVoyageEmpty = '{{ $selectedVoyage }}' === '';
+    let columnKeys = [
         'nomor_surat_jalan', 'tanggal_surat_jalan', 'no_kontainer',
         'supir', 'no_plat', 'kenek', 'krani', 'aktifitas', 'lokasi', 'tujuan_pengiriman', 'f_e'
     ];
+    if (isVoyageEmpty) {
+        columnKeys.push('no_voyage');
+    }
 
     bulkParsedRows = [];
     const tbody = document.getElementById('bulkPreviewBody');
@@ -2850,6 +2864,11 @@ function parseBulkData() {
             row.tujuan_pengiriman || '-',
             row.f_e || 'Full'
         ];
+
+        if (isVoyageEmpty) {
+            cellValues.push(row.no_voyage || '<span class="text-red-500">Kosong</span>');
+            if (!row.no_voyage) warnings.push(`Baris ${index + 1}: No Voyage kosong, wajib diisi.`);
+        }
 
         cellValues.forEach((val, i) => {
             const td = document.createElement('td');
