@@ -224,11 +224,15 @@
     const addLoloSectionBottomBtn = document.getElementById('add_lolo_section_bottom_btn');
     let loloSectionCounter = 0;
 
-    // Perijinan specific fields
-    const perijinanWrapper = document.getElementById('perijinan_wrapper');
-    const perijinanSectionsContainer = document.getElementById('perijinan_sections_container');
-    const addPerijinanSectionBtn = document.getElementById('add_perijinan_section_btn');
-    const addPerijinanSectionBottomBtn = document.getElementById('add_perijinan_section_bottom_btn');
+    // Biaya Perijinan multi-section
+    var perijinanWrapper = document.getElementById('perijinan_wrapper');
+    var perijinanSectionsContainer = document.getElementById('perijinan_sections_container');
+    var addPerijinanSectionBtn = document.getElementById('add_perijinan_section_btn');
+    var addPerijinanSectionBottomBtn = document.getElementById('add_perijinan_section_bottom_btn');
+    
+    // Biaya Dokumen multi-section
+    var dokumenDetailWrapper = document.getElementById('dokumen_detail_wrapper');
+    var dokumenSectionsContainer = document.getElementById('dokumen_sections_container');
 
     // Meratus & Temas wrappers
     const meratusWrapper = document.getElementById('meratus_wrapper');

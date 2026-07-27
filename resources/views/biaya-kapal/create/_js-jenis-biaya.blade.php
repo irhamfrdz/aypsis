@@ -137,6 +137,7 @@
     const grandTotalDokumenWrapper = document.getElementById('grand_total_dokumen_wrapper');
     const pphDokumenInput = document.getElementById('pph_dokumen');
     const grandTotalDokumenInput = document.getElementById('grand_total_dokumen');
+    const dokumenDetailWrapper = document.getElementById('dokumen_detail_wrapper');
     
     // Biaya Air specific fields
     const airWrapper = document.getElementById('air_wrapper');

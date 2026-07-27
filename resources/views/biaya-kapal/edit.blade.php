@@ -19,6 +19,7 @@
 
 {{-- Biaya Dokumen: vendor dropdown --}}
 @include('biaya-kapal.edit._section-dokumen')
+@include('biaya-kapal.edit._section-dokumen-detail')
 
 {{-- Biaya Air Tawar --}}
 @include('biaya-kapal.edit._section-air')
@@ -80,6 +81,7 @@
 @include('biaya-kapal.edit._js-kapal-sections')
 @include('biaya-kapal.edit._js-tkbm-sections')
 @include('biaya-kapal.edit._js-air-sections')
+@include('biaya-kapal.edit._js-dokumen-sections')
 @include('biaya-kapal.edit._js-penerima')
 @include('biaya-kapal.edit._js-multi-select')
 @include('biaya-kapal.edit._js-operasional-sections')

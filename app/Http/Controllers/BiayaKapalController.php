@@ -429,6 +429,22 @@ class BiayaKapalController extends Controller
             unset($section);
         }
 
+        // DOKUMEN Sections
+        if (isset($data['dokumen_sections']) && is_array($data['dokumen_sections'])) {
+            foreach ($data['dokumen_sections'] as &$section) {
+                if (isset($section['nominal'])) {
+                    $section['nominal'] = str_replace(',', '.', str_replace('.', '', $section['nominal']));
+                }
+                if (isset($section['pph'])) {
+                    $section['pph'] = str_replace(',', '.', str_replace('.', '', $section['pph']));
+                }
+                if (isset($section['total_biaya'])) {
+                    $section['total_biaya'] = str_replace(',', '.', str_replace('.', '', $section['total_biaya']));
+                }
+            }
+            unset($section);
+        }
+
         // FREIGHT Sections
         if (isset($data['freight_sections']) && is_array($data['freight_sections'])) {
             foreach ($data['freight_sections'] as &$section) {
@@ -751,6 +767,14 @@ class BiayaKapalController extends Controller
             'thc_sections.*.subtotal' => 'nullable|numeric|min:0',
             'thc_sections.*.pph' => 'nullable|numeric|min:0',
             'thc_sections.*.total_biaya' => 'nullable|numeric|min:0',
+
+            // DOKUMEN sections validation
+            'dokumen_sections' => 'nullable|array',
+            'dokumen_sections.*.kapal' => 'nullable|string|max:255',
+            'dokumen_sections.*.voyage' => 'nullable|string|max:255',
+            'dokumen_sections.*.nominal' => 'nullable|numeric|min:0',
+            'dokumen_sections.*.pph' => 'nullable|numeric|min:0',
+            'dokumen_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // FREIGHT sections validation
             'freight_sections' => 'nullable|array',
@@ -3530,6 +3554,14 @@ class BiayaKapalController extends Controller
             'umum_sections.*.keterangan' => 'nullable|string',
             'umum_sections.*.nominal' => 'nullable|numeric|min:0',
             'umum_sections.*.pph' => 'nullable|numeric|min:0',
+
+            // DOKUMEN sections validation
+            'dokumen_sections' => 'nullable|array',
+            'dokumen_sections.*.kapal' => 'nullable|string|max:255',
+            'dokumen_sections.*.voyage' => 'nullable|string|max:255',
+            'dokumen_sections.*.nominal' => 'nullable|numeric|min:0',
+            'dokumen_sections.*.pph' => 'nullable|numeric|min:0',
+            'dokumen_sections.*.total_biaya' => 'nullable|numeric|min:0',
 
             // Air sections validation
             'air' => 'nullable|array',

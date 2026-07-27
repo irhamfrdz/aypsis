@@ -20,9 +20,14 @@
         if(meratusWrapper) meratusWrapper.classList.add('hidden');
         if(temasWrapper) temasWrapper.classList.add('hidden');
         if(tantoWrapper) tantoWrapper.classList.add('hidden');
+        if(tantoWrapper) tantoWrapper.classList.add('hidden');
         if(notaReturWrapper) {
             notaReturWrapper.classList.add('hidden');
             clearAllNotaReturSections();
+        }
+        if(dokumenDetailWrapper) {
+            dokumenDetailWrapper.classList.add('hidden');
+            clearAllDokumenSections();
         }
         
         // Reset nominal input properties
@@ -64,10 +69,19 @@
             operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
             
-            // Show standard fields
-            kapalWrapper.classList.remove('hidden');
-            voyageWrapper.classList.remove('hidden');
-            blWrapper.classList.remove('hidden');
+            // Hide standard fields as we use multi-select sections
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+            
+            // Show Dokumen Detail Sections
+            if(dokumenDetailWrapper) {
+                dokumenDetailWrapper.classList.remove('hidden');
+                initializeDokumenSections();
+            }
             
             // Reset values
             ppnInput.value = '0';

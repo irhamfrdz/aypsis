@@ -19,6 +19,7 @@
 
 {{-- Biaya Dokumen: vendor dropdown --}}
 @include('biaya-kapal.create._section-dokumen')
+@include('biaya-kapal.create._section-dokumen-detail')
 
 {{-- Biaya Air Tawar --}}
 @include('biaya-kapal.create._section-air')
@@ -83,6 +84,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 @include('biaya-kapal.create._js-init')
+@include('biaya-kapal.create._js-dokumen')
 @include('biaya-kapal.create._js-jenis-biaya')
 @include('biaya-kapal.create._js-toggle')
 @include('biaya-kapal.create._js-perlengkapan')

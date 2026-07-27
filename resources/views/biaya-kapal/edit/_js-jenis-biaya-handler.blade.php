@@ -90,6 +90,10 @@
             notaReturWrapper.classList.add('hidden');
             clearAllNotaReturSections();
         }
+        if(typeof dokumenDetailWrapper !== 'undefined' && dokumenDetailWrapper) {
+            dokumenDetailWrapper.classList.add('hidden');
+            clearAllDokumenSections();
+        }
         
         // Reset required attributes
         if(nominalInput) nominalInput.setAttribute('required', 'required');
@@ -134,10 +138,22 @@
             operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
             
-            // Show standard fields
-            kapalWrapper.classList.remove('hidden');
-            voyageWrapper.classList.remove('hidden');
-            blWrapper.classList.remove('hidden');
+            // Hide standard fields as we use multi-select sections
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+            
+            // Show Dokumen Detail Sections
+            if(typeof dokumenDetailWrapper !== 'undefined' && dokumenDetailWrapper) {
+                dokumenDetailWrapper.classList.remove('hidden');
+                // initialization might be done automatically in edit based on existing data
+                // but calling it ensures it builds the UI if it's empty
+                // if it's already built, it will clear and rebuild, which is fine when toggling
+                initializeDokumenSections();
+            }
             
             // Reset values
             ppnInput.value = '0';
