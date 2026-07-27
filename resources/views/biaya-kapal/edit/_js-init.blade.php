@@ -232,7 +232,6 @@
     
     // Biaya Dokumen multi-section
     var dokumenDetailWrapper = document.getElementById('dokumen_detail_wrapper');
-    var dokumenSectionsContainer = document.getElementById('dokumen_sections_container');
 
     // Meratus & Temas wrappers
     const meratusWrapper = document.getElementById('meratus_wrapper');
