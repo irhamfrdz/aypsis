@@ -82,9 +82,9 @@ function addDokumenSection(existingData = null) {
         });
     }
     
-    // Default manual voyage state if existing voyage is set but we haven't loaded voyages list yet
-    const isManualVoyage = initialVoyage ? true : false;
-    const isManualBl = initialBl ? true : false;
+    // Default to select dropdowns first. If fetch fails or value is missing, they can use the manual button.
+    const isManualVoyage = false;
+    const isManualBl = false;
     
     section.innerHTML = `
         <div class="flex items-center justify-between mb-4">
@@ -181,7 +181,7 @@ function addDokumenSection(existingData = null) {
     initDokumenSelect2(vendorSelect, '-- Pilih Vendor --');
     initDokumenSelect2(blSelect, '-- Pilih Voyage Terlebih Dahulu --');
     
-    jQuery(kapalSelect).on('change', function() {
+    jQuery(kapalSelect).on('change', function(e, prefillData = null) {
         const kapalId = this.value; // It is nama_kapal in the loop
         voyageSelect.innerHTML = '<option value="">-- Memuat... --</option>';
         voyageSelect.disabled = true;
@@ -204,6 +204,17 @@ function addDokumenSection(existingData = null) {
                     }
                     voyageSelect.innerHTML = options;
                     voyageSelect.disabled = false;
+
+                    if (prefillData && prefillData.voyage) {
+                        // Check if the prefill voyage exists in the options
+                        const exists = Array.from(voyageSelect.options).some(opt => opt.value === prefillData.voyage);
+                        if (exists) {
+                            jQuery(voyageSelect).val(prefillData.voyage).trigger('change', [prefillData]);
+                        } else {
+                            // If not exists in dropdown, switch to manual
+                            voyageManualBtn.click();
+                        }
+                    }
                 })
                 .catch(err => {
                     console.error('Error fetching voyages:', err);
@@ -216,7 +227,7 @@ function addDokumenSection(existingData = null) {
         }
     });
 
-    jQuery(voyageSelect).on('change', function() {
+    jQuery(voyageSelect).on('change', function(e, prefillData = null) {
         const voyageId = this.value;
         blSelect.innerHTML = '<option value="">-- Memuat... --</option>';
         blSelect.disabled = true;
@@ -238,13 +249,22 @@ function addDokumenSection(existingData = null) {
                     Object.values(data.bls).forEach(bl => {
                         if (bl.nomor_bl && !uniqueBls.has(bl.nomor_bl)) {
                             uniqueBls.add(bl.nomor_bl);
-                            const selected = (initialBl === bl.nomor_bl) ? 'selected' : '';
-                            options += `<option value="${bl.nomor_bl}" ${selected}>BL: ${bl.nomor_bl}</option>`;
+                            options += `<option value="${bl.nomor_bl}">BL: ${bl.nomor_bl}</option>`;
                         }
                     });
                 }
                 blSelect.innerHTML = options;
                 blSelect.disabled = false;
+
+                if (prefillData && prefillData.bl) {
+                    const exists = Array.from(blSelect.options).some(opt => opt.value === prefillData.bl);
+                    if (exists) {
+                        jQuery(blSelect).val(prefillData.bl).trigger('change');
+                    } else {
+                        // Switch to manual if not found
+                        blManualBtn.click();
+                    }
+                }
             })
             .catch(err => {
                 console.error('Error fetching BLs:', err);
@@ -353,6 +373,10 @@ function addDokumenSection(existingData = null) {
         pphInput.value = pphValue.toLocaleString('id-ID');
         calculateDokumenSection(section);
     });
+
+    if (initialKapal) {
+        jQuery(kapalSelect).trigger('change', [{voyage: initialVoyage, bl: initialBl}]);
+    }
 }
 
 window.removeDokumenSection = function(index) {
