@@ -966,6 +966,7 @@ class SuratJalanBongkaranBatamController extends Controller
                         'jenis_barang' => $finalJenisBarang,
                         'tujuan_alamat' => $finalTujuanAlamat,
                         'tujuan_pengambilan' => $rowTujuan,
+                        'tujuan_pengiriman' => $rowTujuan,
                         'uang_jalan_nominal' => $uangJalanNominal,
                         'f_e' => $rowLokasi === 'batam' ? $rowFE : null,
                         'ring' => $finalRing,
