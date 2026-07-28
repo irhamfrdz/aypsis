@@ -149,7 +149,9 @@ class ZKLibrary
             $this->timeout_usec = $usec;
         }
         $timeout = array('sec' => $this->timeout_sec, 'usec' => $this->timeout_usec);
-        stream_set_timeout($this->socket, $this->timeout_sec);
+        if (is_resource($this->socket)) {
+            stream_set_timeout($this->socket, $this->timeout_sec);
+        }
     }
 
     public function ping($timeout = 1)
