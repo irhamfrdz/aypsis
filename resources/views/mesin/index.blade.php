@@ -19,6 +19,9 @@
                     <p class="mt-1 text-sm text-gray-600">Daftar dan kelola mesin fingerprint untuk absensi</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
+                    <a href="{{ route('mesin-users.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
+                        <i class="fa-solid fa-users mr-2"></i> Data User Mesin
+                    </a>
                     @can('mesin-create')
                     <a href="{{ route('master.mesin.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,6 +182,16 @@
                                                 Sync Absensi
                                             </button>
                                         </form>
+
+                                        @if($mesin->tipe_mesin === 'ADMS')
+                                        <form action="{{ route('mesin-users.queue-sync') }}" method="POST" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="sn" value="{{ $mesin->kode_mesin }}">
+                                            <button type="submit" class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-colors" title="Tarik Data User dari Mesin">
+                                                Tarik User
+                                            </button>
+                                        </form>
+                                        @endif
                                     @endif
 
                                     @can('mesin-update')

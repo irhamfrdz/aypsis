@@ -111,6 +111,14 @@ use App\Http\Controllers\Api\ADMSController;
 Route::get('iclock/cdata', [ADMSController::class, 'handshake']);
 Route::post('iclock/cdata', [ADMSController::class, 'receiveData']);
 Route::get('iclock/getrequest', [ADMSController::class, 'getRequest']);
+Route::post('iclock/devicecmd', [ADMSController::class, 'deviceCmd']);
+
+// ADMS Command Queue Routes
+Route::middleware(['auth'])->group(function() {
+    Route::get('master/mesin-users', [\App\Http\Controllers\MesinUserController::class, 'index'])->name('mesin-users.index');
+    Route::post('master/mesin-users/queue-sync', [\App\Http\Controllers\MesinUserController::class, 'queueSync'])->name('mesin-users.queue-sync');
+    Route::get('master/mesin-users/export', [\App\Http\Controllers\MesinUserController::class, 'export'])->name('mesin-users.export');
+});
 
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);

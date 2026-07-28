@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Absensi;
 use App\Models\Karyawan;
+use App\Models\AdmsCommand;
+use App\Models\MesinUser;
 use Carbon\Carbon;
 
 class ADMSController extends Controller
@@ -66,8 +68,97 @@ class ADMSController extends Controller
         $sn = $request->query('SN');
         Log::info("ADMS GetRequest dari SN: {$sn}");
         
-        // Balas OK untuk memberitahu tidak ada perintah (reboot, clear log, dll)
+        // Cek apakah ada antrean perintah untuk mesin ini
+        $command = AdmsCommand::where('sn', $sn)
+            ->where('status', 'pending')
+            ->orderBy('id', 'asc')
+            ->first();
+
+        if ($command) {
+            $command->update(['status' => 'sent']);
+            // Format wajib ADMS: C:<id>:<command>
+            $response = "C:{$command->id}:{$command->command}\r\n";
+            Log::info("ADMS SendCommand ke SN: {$sn} -> " . $response);
+            return response($response, 200)->header('Content-Type', 'text/plain');
+        }
+
+        // Balas OK untuk memberitahu tidak ada perintah
         return response("OK\r\n", 200)->header('Content-Type', 'text/plain');
+    }
+
+    /**
+     * Mesin mengirimkan hasil dari perintah (POST /iclock/devicecmd)
+     */
+    public function deviceCmd(Request $request)
+    {
+        $sn = $request->query('SN');
+        $rawData = $request->getContent();
+        Log::info("ADMS DeviceCmd dari SN: {$sn} | Payload:", ['data' => $rawData]);
+
+        // Format return biasanya: ID=ReturnCode
+        // Contoh: ID=1&Return=0&CMD=DATA QUERY USERINFO
+        // Jika return berisi data, formatnya bisa berbeda (misal multiline)
+        $lines = explode("\n", $rawData);
+        $commandId = null;
+
+        // Cari ID perintah dari baris pertama (misal: ID=1&Return=0)
+        if (isset($lines[0]) && preg_match('/ID=(\d+)/', $lines[0], $matches)) {
+            $commandId = $matches[1];
+        }
+
+        if ($commandId) {
+            $command = AdmsCommand::find($commandId);
+            if ($command) {
+                $command->update([
+                    'status' => 'success',
+                    'response_data' => $rawData
+                ]);
+
+                // Jika ini adalah perintah tarik user
+                if (strpos($command->command, 'USERINFO') !== false) {
+                    $this->processUserInfo($rawData, $sn);
+                }
+            }
+        }
+
+        return response("OK\r\n", 200)->header('Content-Type', 'text/plain');
+    }
+
+    private function processUserInfo($rawData, $sn)
+    {
+        $lines = explode("\n", $rawData);
+        
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (empty($line) || strpos($line, 'PIN=') === false) continue;
+
+            // Parse PIN=123 Name=Adit Pri=0...
+            $userData = [];
+            $parts = explode("\t", $line);
+            if (count($parts) == 1) {
+                // Kadang dipisah spasi
+                $parts = preg_split('/\s+/', $line);
+            }
+
+            foreach ($parts as $part) {
+                if (strpos($part, '=') !== false) {
+                    list($k, $v) = explode('=', $part, 2);
+                    $userData[$k] = $v;
+                }
+            }
+
+            if (isset($userData['PIN'])) {
+                MesinUser::updateOrCreate(
+                    ['sn' => $sn, 'pin' => $userData['PIN']],
+                    [
+                        'name' => $userData['Name'] ?? null,
+                        'privilege' => $userData['Pri'] ?? null,
+                        'password' => $userData['Pwd'] ?? null,
+                        'group' => $userData['Grp'] ?? null,
+                    ]
+                );
+            }
+        }
     }
 
     /**
