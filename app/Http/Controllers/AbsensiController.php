@@ -17,9 +17,9 @@ class AbsensiController extends Controller
     {
         $mdbPath = env('MDB_PATH', 'C:\\Program Files (x86)\\Solution\\att2000.mdb');
         
-        if (!file_exists($mdbPath)) {
-            return redirect()->back()->with('error', 'Database mesin finger tidak ditemukan di path: ' . $mdbPath);
-        }
+        // if (!file_exists($mdbPath)) {
+        //     return redirect()->back()->with('error', 'Database mesin finger tidak ditemukan di path: ' . $mdbPath);
+        // }
 
         try {
             $conn = new \PDO("odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=$mdbPath;Uid=;Pwd=;");
