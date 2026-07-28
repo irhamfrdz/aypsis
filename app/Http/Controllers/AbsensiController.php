@@ -546,6 +546,7 @@ class AbsensiController extends Controller
             $pulangCepatKali = 0;
             $pulangCepatMenit = 0;
             $lemburJam = 0;
+            $lemburKali = 0;
 
             $tempDate = $startDate->copy();
             while ($tempDate->lte($endDate)) {
@@ -603,10 +604,13 @@ class AbsensiController extends Controller
                     // Overtime (Lembur)
                     $lemburMasuk = $dayLogs->where('tipe', 'Lembur_Masuk')->first();
                     $lemburPulang = $dayLogs->where('tipe', 'Lembur_Pulang')->first();
-                    if ($lemburMasuk && $lemburPulang) {
-                        $lm = Carbon::parse($lemburMasuk->waktu);
-                        $lp = Carbon::parse($lemburPulang->waktu);
-                        $lemburJam += $lm->diffInMinutes($lp) / 60;
+                    if ($lemburMasuk || $lemburPulang) {
+                        $lemburKali++;
+                        if ($lemburMasuk && $lemburPulang) {
+                            $lm = Carbon::parse($lemburMasuk->waktu);
+                            $lp = Carbon::parse($lemburPulang->waktu);
+                            $lemburJam += $lm->diffInMinutes($lp) / 60;
+                        }
                     }
 
                 } else {
@@ -640,6 +644,7 @@ class AbsensiController extends Controller
                 'pulang_cepat_kali' => $pulangCepatKali,
                 'pulang_cepat_menit' => $pulangCepatMenit,
                 'lembur_jam' => round($lemburJam, 1),
+                'lembur_kali' => $lemburKali,
             ];
         }
 

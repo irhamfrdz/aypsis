@@ -134,7 +134,7 @@
                                     'total_masuk' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0,
                                     'terlambat_kali' => 0, 'terlambat_menit' => 0,
                                     'pulang_cepat_kali' => 0, 'pulang_cepat_menit' => 0,
-                                    'lembur_jam' => 0
+                                    'lembur_jam' => 0, 'lembur_kali' => 0
                                 ];
                             @endphp
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
@@ -169,8 +169,12 @@
                                         -
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium {{ $stats['lembur_jam'] > 0 ? 'text-indigo-600' : 'text-gray-500' }}">
-                                    {{ $stats['lembur_jam'] > 0 ? $stats['lembur_jam'] . ' Jam' : '-' }}
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium {{ $stats['lembur_kali'] > 0 ? 'text-indigo-600' : 'text-gray-500' }}">
+                                    @if($stats['lembur_kali'] > 0)
+                                        {{ $stats['lembur_kali'] }}x {{ $stats['lembur_jam'] > 0 ? '(' . $stats['lembur_jam'] . ' Jam)' : '' }}
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $stats['sakit'] > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500' }}">
