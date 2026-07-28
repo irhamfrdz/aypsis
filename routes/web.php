@@ -1559,6 +1559,10 @@ Route::middleware([
             ->name('master.mesin.sync-logs')
             ->middleware('can:mesin-update');
 
+        Route::post('master/mesin/{mesin}/sync-users', [MesinController::class, 'syncUsers'])
+            ->name('master.mesin.sync-users')
+            ->middleware('can:mesin-update');
+
         // Kelola Absensi Management
         Route::get('absensi', [AbsensiController::class, 'index'])
             ->name('absensi.index')
