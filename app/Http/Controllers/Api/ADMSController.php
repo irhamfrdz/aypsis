@@ -132,41 +132,44 @@ class ADMSController extends Controller
         
         foreach ($lines as $line) {
             $line = trim($line);
-            if (empty($line) || strpos($line, 'PIN=') === false) continue;
+            if (empty($line)) continue;
 
-            // Parse PIN=123 Name=Adit Pri=0...
             $userData = [];
-            // ZKTeco sometimes uses tabs, sometimes spaces, sometimes commas to separate fields
-            $parts = preg_split('/[\t,]+/', $line);
-            if (count($parts) == 1) {
-                // Jika masih 1 bagian, coba split pakai spasi (tapi hati-hati spasi di nama)
-                // Sebaiknya kita gunakan regex untuk menangkap key=value
-                preg_match_all('/(\w+)=([^,\t]+)/', $line, $matches);
+
+            // Format 1: Dari devicecmd (misal: PIN=123 Name=Adit Pri=0)
+            if (strpos(strtoupper($line), 'PIN=') !== false) {
+                preg_match_all('/(\w+)=([^,\t]*)/', $line, $matches);
                 if (!empty($matches[1])) {
                     foreach ($matches[1] as $idx => $key) {
-                        $userData[$key] = trim($matches[2][$idx]);
+                        $userData[strtoupper($key)] = trim($matches[2][$idx]);
                     }
-                    $parts = []; // Lewati loop parts di bawah
-                } else {
-                    $parts = preg_split('/\s+/', $line);
+                }
+            } 
+            // Format 2: Dari cdata?table=USERINFO (Tab-separated values: PIN Name Pri Pass Grp...)
+            else {
+                // Abaikan jika baris adalah header teks "PIN"
+                if (strtoupper(trim(explode("\t", $line)[0])) === 'PIN') continue;
+
+                // Kadang dipisahkan koma, kadang tab. Kita coba pisahkan
+                $parts = preg_split('/[\t,]+/', $line);
+                if (count($parts) >= 1) {
+                    $userData['PIN'] = trim($parts[0]);
+                    $userData['NAME'] = isset($parts[1]) ? trim($parts[1]) : null;
+                    $userData['PRI'] = isset($parts[2]) ? trim($parts[2]) : null;
+                    $userData['PWD'] = isset($parts[3]) ? trim($parts[3]) : null;
+                    // Pada ZKTeco, index ke-4 biasanya CardNo, ke-5 Group
+                    $userData['GRP'] = isset($parts[5]) ? trim($parts[5]) : null;
                 }
             }
 
-            foreach ($parts as $part) {
-                if (strpos($part, '=') !== false) {
-                    list($k, $v) = explode('=', $part, 2);
-                    $userData[$k] = $v;
-                }
-            }
-
-            if (isset($userData['PIN'])) {
+            if (!empty($userData['PIN']) && is_numeric($userData['PIN'])) {
                 MesinUser::updateOrCreate(
                     ['sn' => $sn, 'pin' => $userData['PIN']],
                     [
-                        'name' => $userData['Name'] ?? null,
-                        'privilege' => $userData['Pri'] ?? null,
-                        'password' => $userData['Pwd'] ?? null,
-                        'group' => $userData['Grp'] ?? null,
+                        'name' => $userData['NAME'] ?? null,
+                        'privilege' => $userData['PRI'] ?? null,
+                        'password' => $userData['PWD'] ?? null,
+                        'group' => $userData['GRP'] ?? null,
                     ]
                 );
             }
