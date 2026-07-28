@@ -113,6 +113,12 @@ Route::post('iclock/cdata', [ADMSController::class, 'receiveData']);
 Route::get('iclock/getrequest', [ADMSController::class, 'getRequest']);
 Route::post('iclock/devicecmd', [ADMSController::class, 'deviceCmd']);
 
+Route::get('debug-adms', function() {
+    $logPath = storage_path('logs/laravel.log');
+    $output = shell_exec("tail -n 300 " . escapeshellarg($logPath) . " | grep ADMS");
+    return response("<pre>".$output."</pre>");
+});
+
 // ADMS Command Queue Routes
 Route::middleware(['auth'])->group(function() {
     Route::get('master/mesin-users', [\App\Http\Controllers\MesinUserController::class, 'index'])->name('mesin-users.index');
