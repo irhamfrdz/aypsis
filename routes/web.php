@@ -115,8 +115,21 @@ Route::post('iclock/devicecmd', [ADMSController::class, 'deviceCmd']);
 
 Route::get('debug-adms', function() {
     $logPath = storage_path('logs/laravel.log');
-    $output = shell_exec("tail -n 300 " . escapeshellarg($logPath) . " | grep ADMS");
-    return response("<pre>".$output."</pre>");
+    if (!file_exists($logPath)) return 'Log file not found di: ' . $logPath;
+    
+    $lines = file($logPath);
+    if (!$lines) return 'Log file empty or unreadable';
+    
+    $output = '';
+    // Ambil 3000 baris terakhir agar pasti tertangkap
+    $tail = array_slice($lines, -3000);
+    foreach ($tail as $line) {
+        if (stripos($line, 'ADMS') !== false) {
+            $output .= htmlspecialchars($line);
+        }
+    }
+    
+    return response("<pre>". ($output ?: "Belum ada log ADMS dalam 3000 baris terakhir. Pastikan mesin dalam keadaan menyala dan terhubung ke internet.") ."</pre>");
 });
 
 // ADMS Command Queue Routes
