@@ -469,6 +469,22 @@ class AbsensiController extends Controller
             $karyawansQuery->where('divisi', $request->divisi);
         }
 
+        if ($request->filled('kehadiran')) {
+            $kehadiran = $request->kehadiran;
+            $startObj = $startDate->copy()->setTime(6, 0, 0);
+            $endObj = $endDate->copy()->addDays(1)->setTime(5, 59, 59);
+
+            if ($kehadiran === '0_hari') {
+                $karyawansQuery->whereDoesntHave('absensi', function ($q) use ($startObj, $endObj) {
+                    $q->whereBetween('waktu', [$startObj, $endObj]);
+                });
+            } elseif ($kehadiran === 'ada_absen') {
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj) {
+                    $q->whereBetween('waktu', [$startObj, $endObj]);
+                });
+            }
+        }
+
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
         $pekerjaans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
         $divisis = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
@@ -546,7 +562,7 @@ class AbsensiController extends Controller
                     $masukLog = $dayLogs->where('tipe', 'Masuk')->first();
                     if ($masukLog) {
                         $waktuMasuk = Carbon::parse($masukLog->waktu);
-                        $jamMasukNormal = Carbon::parse($dateStr . ' 08:00:00');
+                        $jamMasukNormal = Carbon::parse($dateStr . ' 09:00:00');
                         if ($waktuMasuk->gt($jamMasukNormal->copy()->addMinutes(5))) {
                             // Check for approved datang_terlambat permission
                             $hasLatePermission = $karyawanPermissions->contains(function($perm) use ($dateStr) {

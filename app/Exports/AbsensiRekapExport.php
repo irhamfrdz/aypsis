@@ -146,7 +146,7 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             ];
         }
 
-        $limitInTime = strtotime('08:00:00');
+        $limitInTime = strtotime('09:00:00');
         $limitOutTime = strtotime('17:00:00');
 
         foreach ($karyawans as $karyawan) {
@@ -199,8 +199,8 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
                     $inTimeStr = $log->waktu_masuk ? substr($log->waktu_masuk, 11, 5) : '-';
                     $outTimeStr = $log->waktu_pulang ? substr($log->waktu_pulang, 11, 5) : '-';
 
-                    if ($inTimeStr !== '-' && $inTimeStr > '08:05') { // 5 menit toleransi
-                        $diff = strtotime($inTimeStr.':00') - strtotime('08:00:00');
+                    if ($inTimeStr !== '-' && $inTimeStr > '09:05') { // 5 menit toleransi
+                        $diff = strtotime($inTimeStr.':00') - strtotime('09:00:00');
                         if ($diff > 0) {
                             // Check for approved datang_terlambat permission
                             $hasLatePermission = $karyawanPermissions->contains(function($perm) use ($dateString) {
