@@ -602,8 +602,8 @@ class AbsensiController extends Controller
                     }
 
                     // Overtime (Lembur)
-                    $lemburMasuk = $dayLogs->where('tipe', 'Lembur_Masuk')->first();
-                    $lemburPulang = $dayLogs->where('tipe', 'Lembur_Pulang')->first();
+                    $lemburMasuk = $dayLogs->first(function($val) { return strtolower($val->tipe) === 'lembur_masuk'; });
+                    $lemburPulang = $dayLogs->first(function($val) { return strtolower($val->tipe) === 'lembur_pulang'; });
                     if ($lemburMasuk || $lemburPulang) {
                         $lemburKali++;
                         if ($lemburMasuk && $lemburPulang) {
