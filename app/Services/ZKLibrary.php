@@ -245,10 +245,7 @@ class ZKLibrary
         $buf = unpack('C' . (8 + strlen($command_string)) . 'c', $buf);
         $u = unpack('S', $this->checkSum($buf));
         if (is_array($u)) {
-            while (list($key) = each($u)) {
-                $u = $u[$key];
-                break;
-            }
+            $u = reset($u);
         }
         $chksum = $u;
         $reply_id += 1;
