@@ -1026,6 +1026,24 @@ document.addEventListener('DOMContentLoaded', function() {
         // Check initially
         checkOdometerVisibility();
     }
+
+    // Form submit validation
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const kapalSelect = document.getElementById('kapal_id');
+            const voyageSelect = document.getElementById('nomor_voyage');
+            
+            if (kapalSelect && kapalSelect.value && voyageSelect && !voyageSelect.value) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validasi Gagal',
+                    text: 'Nomor Voyage harus dipilih jika Kapal sudah dipilih!'
+                });
+            }
+        });
+    }
 });
 </script>
 @endpush
