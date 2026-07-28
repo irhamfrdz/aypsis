@@ -415,14 +415,62 @@
     <details class="mb-4 border rounded">
         <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Informasi Mesin Finger</summary>
         <div class="p-4 text-sm">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Data Identitas di Mesin -->
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-3 border-b pb-2">Identitas di Mesin</h4>
+                    <div class="p-4 border rounded-lg bg-gray-50 space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-blue-100 text-blue-600 p-2 rounded-full">
+                                <i class="fas fa-id-badge fa-fw"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-semibold uppercase">PIN / ID User</p>
+                                <p class="font-medium text-gray-800 text-base">{{ is_numeric($karyawan->nik) ? str_pad($karyawan->nik, 4, '0', STR_PAD_LEFT) : ($karyawan->nik ?? '-') }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="bg-indigo-100 text-indigo-600 p-2 rounded-full">
+                                <i class="fas fa-user fa-fw"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-semibold uppercase">Nama Tampilan</p>
+                                <p class="font-medium text-gray-800">{{ $karyawan->nama_panggilan ?? $karyawan->nama_lengkap ?? '-' }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3 opacity-70">
+                            <div class="bg-gray-200 text-gray-500 p-2 rounded-full">
+                                <i class="fas fa-camera fa-fw"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-semibold uppercase">Photo (Wajah)</p>
+                                <p class="text-xs text-gray-500 italic mt-0.5">Tidak tersedia di database lokal</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3 opacity-70">
+                            <div class="bg-gray-200 text-gray-500 p-2 rounded-full">
+                                <i class="fas fa-fingerprint fa-fw"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 font-semibold uppercase">Sidik Jari</p>
+                                <p class="text-xs text-gray-500 italic mt-0.5">Tidak tersedia di database lokal</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2"><i class="fas fa-info-circle"></i> Cocokkan data ini dengan yang tertera pada layar mesin fingerprint Anda.</p>
+                </div>
+
                 <!-- Mesin Terdaftar -->
                 <div>
                     <h4 class="font-semibold text-gray-700 mb-3 border-b pb-2">Mesin Finger Terdaftar</h4>
                     @if($mesins->count() > 0)
                         <div class="space-y-3">
                             @foreach($mesins as $mesin)
-                                <div class="p-3 border rounded bg-white flex justify-between items-center">
+                                <div class="p-3 border rounded bg-white flex justify-between items-center shadow-sm">
                                     <div>
                                         <p class="font-medium text-gray-800">{{ $mesin->nama_mesin }}</p>
                                         <p class="text-xs text-gray-500">IP: {{ $mesin->ip_address ?? '-' }}</p>
@@ -432,7 +480,9 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-gray-500 italic text-sm py-2">Belum ada data mesin finger untuk karyawan ini.</p>
+                        <div class="p-4 bg-gray-50 border rounded text-center">
+                            <p class="text-gray-500 italic text-sm">Belum ada data mesin finger untuk karyawan ini.</p>
+                        </div>
                     @endif
                 </div>
                 
@@ -442,30 +492,31 @@
                     @if($lastAbsensi->count() > 0)
                         <div class="space-y-3">
                             @foreach($lastAbsensi as $absensi)
-                                <div class="p-3 border rounded bg-white">
-                                    <div class="flex justify-between">
+                                <div class="p-3 border rounded bg-white shadow-sm border-l-4 {{ strtolower($absensi->tipe) == 'masuk' ? 'border-l-blue-500' : 'border-l-orange-500' }}">
+                                    <div class="flex justify-between items-center">
                                         <p class="font-medium text-gray-800">{{ $formatDate($absensi->waktu, 'd/M/Y H:i') }}</p>
-                                        <p class="text-xs font-semibold text-indigo-600">{{ $absensi->tipe }}</p>
+                                        <span class="text-xs font-bold {{ strtolower($absensi->tipe) == 'masuk' ? 'text-blue-600' : 'text-orange-600' }}">{{ $absensi->tipe }}</span>
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-1">
-                                        Mesin: {{ $absensi->mesin ? $absensi->mesin->nama_mesin : '-' }}
+                                    <p class="text-xs text-gray-500 mt-1 flex items-center">
+                                        <i class="fas fa-hdd mr-1"></i> {{ $absensi->mesin ? $absensi->mesin->nama_mesin : '-' }}
                                     </p>
                                 </div>
                             @endforeach
                             <div class="pt-2 text-right">
-                                <a href="{{ route('absensi.index', ['search' => $karyawan->nik]) }}" class="text-xs text-blue-600 hover:underline">
-                                    Lihat Semua Riwayat &rarr;
+                                <a href="{{ route('absensi.index', ['search' => $karyawan->nik]) }}" class="text-xs text-blue-600 hover:text-blue-800 font-medium hover:underline flex items-center justify-end">
+                                    Lihat Semua Riwayat <i class="fas fa-arrow-right ml-1"></i>
                                 </a>
                             </div>
                         </div>
                     @else
-                        <p class="text-gray-500 italic text-sm py-2">Belum ada riwayat absensi dari mesin.</p>
+                        <div class="p-4 bg-gray-50 border rounded text-center">
+                            <p class="text-gray-500 italic text-sm">Belum ada riwayat absensi dari mesin.</p>
+                        </div>
                     @endif
                 </div>
             </div>
         </div>
     </details>
-
     <details class="mb-4 border rounded">
         <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Bank</summary>
         <div class="p-4 grid grid-cols-2 gap-6 text-sm">
