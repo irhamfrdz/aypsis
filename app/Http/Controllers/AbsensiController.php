@@ -174,7 +174,7 @@ class AbsensiController extends Controller
         ')
         ->groupBy('karyawan_id', 'nik', \DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'));
 
-        // Filter by Status Absen (Tidak Masuk/Tidak Pulang/Lengkap) on aggregate having clause
+        // Filter by Status Absen (Tidak Masuk/Tidak Pulang/Lengkap/Lembur) on aggregate having clause
         if ($request->filled('status_absen')) {
             $status_absen = $request->status_absen;
             if ($status_absen === 'tidak_masuk') {
@@ -183,6 +183,8 @@ class AbsensiController extends Controller
                 $query->havingRaw('waktu_pulang IS NULL AND waktu_masuk IS NOT NULL'); // Jika tidak masuk, tidak dihitung tidak pulang
             } elseif ($status_absen === 'lengkap') {
                 $query->havingRaw('waktu_masuk IS NOT NULL AND waktu_pulang IS NOT NULL');
+            } elseif ($status_absen === 'ada_lembur') {
+                $query->havingRaw('waktu_lembur_masuk IS NOT NULL OR waktu_lembur_pulang IS NOT NULL');
             }
         }
 

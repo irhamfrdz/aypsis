@@ -116,6 +116,7 @@
                             <option value="tidak_masuk" {{ request('status_absen') == 'tidak_masuk' ? 'selected' : '' }}>Tidak Absen Masuk</option>
                             <option value="tidak_pulang" {{ request('status_absen') == 'tidak_pulang' ? 'selected' : '' }}>Tidak Absen Pulang</option>
                             <option value="lengkap" {{ request('status_absen') == 'lengkap' ? 'selected' : '' }}>Masuk & Pulang Lengkap</option>
+                            <option value="ada_lembur" {{ request('status_absen') == 'ada_lembur' ? 'selected' : '' }}>Ada Absen Lembur</option>
                         </select>
                     </div>
 
