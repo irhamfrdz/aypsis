@@ -42,7 +42,7 @@
                         <h3 class="text-base font-semibold leading-6 text-gray-900">Daftar Armada Aktif</h3>
                         <p class="mt-1 max-w-2xl text-sm text-gray-500">Truk dengan IMEI terdaftar</p>
                     </div>
-                    <span class="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">{{ $mobils->count() }} Truk</span>
+                    <span id="truck-counter" class="inline-flex items-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">{{ $mobils->count() }} Truk</span>
                 </div>
                 <!-- Filter Buttons -->
                 <div class="px-4 py-3 border-b border-gray-100 bg-white flex space-x-2">
@@ -311,6 +311,10 @@
                 }
             }
         });
+
+        // Update truck counter based on visible items
+        let visibleCount = $('.truck-item:visible').length;
+        $('#truck-counter').text(visibleCount + ' Truk');
     }
 </script>
 @endpush
