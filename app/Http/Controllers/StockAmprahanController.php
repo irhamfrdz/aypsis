@@ -2025,7 +2025,7 @@ class StockAmprahanController extends Controller
                 'no_faktur' => $item->nomor_bukti ?? '-',
                 'referensi' => $item->vendorAmprahan->nama_toko ?? '-',
                 'kts_masuk' => $initialStock,
-                'nilai_masuk' => $initialStock * ($item->harga_satuan ?? 0),
+                'nilai_masuk' => ($initialStock * ($item->harga_satuan ?? 0)) + ($item->adjustment ?? 0),
                 'kts_keluar' => 0,
                 'nilai_keluar' => 0,
             ];
@@ -2212,7 +2212,7 @@ class StockAmprahanController extends Controller
                 'no_faktur' => $item->nomor_bukti ?? '-',
                 'referensi' => $item->vendorAmprahan->nama_toko ?? '-',
                 'kts_masuk' => $initialStock,
-                'nilai_masuk' => $initialStock * ($item->harga_satuan ?? 0),
+                'nilai_masuk' => ($initialStock * ($item->harga_satuan ?? 0)) + ($item->adjustment ?? 0),
                 'kts_keluar' => 0,
                 'nilai_keluar' => 0,
             ];
