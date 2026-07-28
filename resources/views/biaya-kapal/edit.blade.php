@@ -27,6 +27,9 @@
 {{-- Biaya Buruh / Barang --}}
 @include('biaya-kapal.edit._section-buruh')
 
+{{-- Biaya OPP/OPT --}}
+@include('biaya-kapal.edit._section-opp-opt')
+
 {{-- Biaya TKBM --}}
 @include('biaya-kapal.edit._section-tkbm')
 
@@ -80,6 +83,7 @@
 @include('biaya-kapal.edit._js-jenis-biaya-handler')
 @include('biaya-kapal.edit._js-kapal-sections')
 @include('biaya-kapal.edit._js-tkbm-sections')
+@include('biaya-kapal.edit._js-opp-opt')
 @include('biaya-kapal.edit._js-air-sections')
 @include('biaya-kapal.edit._js-dokumen-sections')
 @include('biaya-kapal.edit._js-penerima')

@@ -90,6 +90,14 @@
             notaReturWrapper.classList.add('hidden');
             clearAllNotaReturSections();
         }
+        if(notaReturWrapper) {
+            notaReturWrapper.classList.add('hidden');
+            clearAllNotaReturSections();
+        }
+        if(oppOptWrapper) {
+            oppOptWrapper.classList.add('hidden');
+            if(typeof clearAllOppOptSections === 'function') clearAllOppOptSections();
+        }
         if(typeof dokumenDetailWrapper !== 'undefined' && dokumenDetailWrapper) {
             dokumenDetailWrapper.classList.add('hidden');
             clearAllDokumenSections();
@@ -132,6 +140,12 @@
             if (document.getElementById('tkbm_wrapper')) {
                 document.getElementById('tkbm_wrapper').classList.add('hidden');
                 clearAllTkbmSections();
+            }
+            
+            // Hide OPP/OPT wrapper
+            if(oppOptWrapper) {
+                oppOptWrapper.classList.add('hidden');
+                if(typeof clearAllOppOptSections === 'function') clearAllOppOptSections();
             }
             
             // Hide Operasional wrapper
@@ -554,6 +568,65 @@
             sisaPembayaranWrapper.classList.remove('hidden');
             calculateSisaPembayaran();
         }
+        // Show OPP/OPT wrapper if "OPP/OPT" is selected
+        else if (selectedText.toLowerCase().includes('opp/opt') || selectedText.toLowerCase().includes('opp / opt')) {
+            if(oppOptWrapper) oppOptWrapper.classList.remove('hidden');
+            if(typeof initializeOppOptSections === 'function') initializeOppOptSections();
+            
+            // Hide other wrappers
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            
+            if (storageWrapper) storageWrapper.classList.add('hidden');
+            clearAllStorageSections();
+
+            // Hide Nama Kapal and Nomor Voyage fields (already in section)
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            
+            // Hide BL wrapper
+            blWrapper.classList.add('hidden');
+            clearBlSelections();
+            
+            // Hide PPN/PPH fields
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            
+            // Hide vendor wrapper
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            
+            // Hide PPH Dokumen fields
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+            pphDokumenInput.value = '0';
+            grandTotalDokumenInput.value = '0';
+            
+            // Hide Biaya Air fields
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            
+            // Hide TKBM wrapper
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+            
+            // Hide Operasional wrapper
+            operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
+            
+            // Show DP fields for Biaya OPP/OPT
+            dpWrapper.classList.remove('hidden');
+            sisaPembayaranWrapper.classList.remove('hidden');
+            calculateSisaPembayaran();
+        }
         // Show operasional wrapper if "Operasional" is selected
         else if (selectedText.toLowerCase().includes('operasional')) {
             operasionalWrapper.classList.remove('hidden');
@@ -564,6 +637,12 @@
             // Hide other wrappers
             barangWrapper.classList.add('hidden');
             clearAllKapalSections();
+            
+            // Hide OPP/OPT wrapper
+            if(oppOptWrapper) {
+                oppOptWrapper.classList.add('hidden');
+                if(typeof clearAllOppOptSections === 'function') clearAllOppOptSections();
+            }
             
             if (storageWrapper) storageWrapper.classList.add('hidden');
             clearAllStorageSections();

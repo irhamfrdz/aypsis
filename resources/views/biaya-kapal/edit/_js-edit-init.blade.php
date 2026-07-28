@@ -3,6 +3,7 @@
         $editKapalSections = [];
         $editAirSections = [];
         $editTkbmSections = [];
+        $editOppOptSections = [];
         $editOperasionalSections = [];
         $editMeratusSections = [];
         $editTemasSections = [];
@@ -114,6 +115,45 @@
             }
         }
         
+        // Group OPP/OPT
+        if(old('opp_opt_sections')) {
+            foreach(old('opp_opt_sections') as $sectionIndex => $section) {
+                $editOppOptSections[] = [
+                    'kapal' => $section['kapal'] ?? '',
+                    'voyage' => $section['voyage'] ?? '',
+                    'total_nominal' => $section['total_nominal'] ?? 0,
+                    'dp' => $section['dp'] ?? 0,
+                    'sisa_pembayaran' => $section['sisa_pembayaran'] ?? 0,
+                    'barang' => collect($section['barang'] ?? [])->map(function($i){ 
+                        return ['barang_id' => $i['barang_id'] ?? null, 'jumlah' => (float)($i['jumlah'] ?? 0)]; 
+                    })->values()
+                ];
+            }
+        } else if(isset($biayaKapal->oppOptDetails) && $biayaKapal->oppOptDetails->count() > 0) {
+            $grouped = $biayaKapal->oppOptDetails->groupBy(function($item) {
+                return $item->kapal . '|||' . $item->voyage;
+            });
+            foreach($grouped as $key => $items) {
+                 $parts = explode('|||', $key); 
+                 if(count($parts) >= 2) {
+                     $firstItem = $items->first();
+                     $editOppOptSections[] = [
+                         'kapal' => $parts[0],
+                         'voyage' => $parts[1],
+                         'total_nominal' => $firstItem->total_nominal ?? 0,
+                         'dp' => $firstItem->dp ?? 0,
+                         'sisa_pembayaran' => $firstItem->sisa_pembayaran ?? 0,
+                         'barang' => $items->map(function($i){
+                             return [
+                                 'barang_id' => $i->pricelist_opp_opt_id,
+                                 'jumlah' => (float)$i->jumlah
+                             ];
+                         })->values()
+                     ];
+                 }
+            }
+        }
+
         // Map Operasional
         if(old('operasional_sections')) {
             foreach(old('operasional_sections') as $oldOp) {
@@ -413,6 +453,7 @@
     var existingKapalSections = @json($editKapalSections);
     var existingAirSections = @json($editAirSections);
     var existingTkbmSections = @json($editTkbmSections);
+    var existingOppOptSections = @json($editOppOptSections);
     var existingOperasionalSections = @json($editOperasionalSections);
     var existingStuffingSections = @json($editStuffingSections);
     var existingTruckingSections = @json($editTruckingSections);
@@ -677,6 +718,11 @@
         // 5. OPERASIONAL SECTIONS
         if (existingOperasionalSections.length > 0) {
             initializeOperasionalSections();
+        }
+
+        // 5.1 OPP/OPT SECTIONS
+        if (typeof existingOppOptSections !== 'undefined' && existingOppOptSections.length > 0) {
+            initializeOppOptSections();
         }
 
         // 6. STUFFING SECTIONS

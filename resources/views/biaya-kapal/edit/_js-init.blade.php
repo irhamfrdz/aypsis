@@ -147,6 +147,7 @@
     var kuantitasAirWrapper = document.getElementById('kuantitas_air_wrapper');
     var kuantitasAirInput = document.getElementById('kuantitas_air');
     var operasionalWrapper = document.getElementById('operasional_wrapper');
+    var oppOptWrapper = document.getElementById('opp_opt_wrapper');
     var jasaAirInput = document.getElementById('jasa_air');
     var pphAirInput = document.getElementById('pph_air');
     var grandTotalAirInput = document.getElementById('grand_total_air');
