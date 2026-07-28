@@ -13,18 +13,18 @@
                 const section = addOppOptSection(true); // true means isEdit to avoid default row
                 const sectionIndex = section.getAttribute('data-opp-opt-section-index');
                 
+                const voySel = section.querySelector('.opp-opt-voyage-select');
+                voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
+                voySel.value = data.voyage;
+                voySel.setAttribute('data-saved-voyage', data.voyage);
+                voySel.disabled = false;
+                
                 // Kapal & Voyage
                 const kapalSel = section.querySelector('.opp-opt-kapal-select');
                 if (kapalSel) {
                     kapalSel.value = data.kapal;
                     kapalSel.dispatchEvent(new Event('change', { bubbles: true }));
                 }
-                
-                const voySel = section.querySelector('.opp-opt-voyage-select');
-                voySel.innerHTML = `<option value="${data.voyage}">${data.voyage}</option>`;
-                voySel.value = data.voyage;
-                voySel.setAttribute('data-saved-voyage', data.voyage);
-                voySel.disabled = false;
 
                 // Hidden values
                 const totalHidden = section.querySelector('.opp-opt-section-total-hidden');
