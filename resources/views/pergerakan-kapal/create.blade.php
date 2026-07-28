@@ -244,6 +244,7 @@
                                 <option value="departed" {{ old('status') == 'departed' ? 'selected' : '' }}>Berangkat</option>
                                 <option value="delayed" {{ old('status') == 'delayed' ? 'selected' : '' }}>Tertunda</option>
                                 <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                                <option value="docking" {{ old('status') == 'docking' ? 'selected' : '' }}>Docking</option>
                             </select>
                             @error('status')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

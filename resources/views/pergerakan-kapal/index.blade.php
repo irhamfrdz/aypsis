@@ -125,6 +125,7 @@
                     <option value="departed" {{ request('status') == 'departed' ? 'selected' : '' }}>Berangkat</option>
                     <option value="delayed" {{ request('status') == 'delayed' ? 'selected' : '' }}>Tertunda</option>
                     <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                    <option value="docking" {{ request('status') == 'docking' ? 'selected' : '' }}>Docking</option>
                 </select>
             </div>
             <div class="w-full md:w-48">

@@ -48,6 +48,7 @@ class PergerakanKapal extends Model
             'departed' => 'bg-purple-100 text-purple-800',
             'delayed' => 'bg-orange-100 text-orange-800',
             'cancelled' => 'bg-red-100 text-red-800',
+            'docking' => 'bg-teal-100 text-teal-800',
             default => 'bg-gray-100 text-gray-800'
         };
     }
@@ -64,6 +65,7 @@ class PergerakanKapal extends Model
             'departed' => 'Berangkat',
             'delayed' => 'Tertunda',
             'cancelled' => 'Dibatalkan',
+            'docking' => 'Docking',
             default => 'Unknown'
         };
     }

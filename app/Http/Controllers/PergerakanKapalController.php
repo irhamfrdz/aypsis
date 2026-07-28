@@ -103,7 +103,7 @@ class PergerakanKapalController extends Controller
             'tanggal_sandar' => 'nullable|date',
             'tanggal_labuh' => 'nullable|date',
             'tanggal_berangkat' => 'nullable|date',
-            'status' => 'required|in:scheduled,sailing,arrived,departed,delayed,cancelled',
+            'status' => 'required|in:scheduled,sailing,arrived,departed,delayed,cancelled,docking',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -162,7 +162,7 @@ class PergerakanKapalController extends Controller
             'tanggal_sandar' => 'nullable|date',
             'tanggal_labuh' => 'nullable|date',
             'tanggal_berangkat' => 'nullable|date',
-            'status' => 'required|in:scheduled,sailing,arrived,departed,delayed,cancelled',
+            'status' => 'required|in:scheduled,sailing,arrived,departed,delayed,cancelled,docking',
             'keterangan' => 'nullable|string',
         ]);
 
