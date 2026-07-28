@@ -906,7 +906,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-                fetch('{{ route("manifests.auto-update-tanggal-berangkat", [], false) }}', {
+                fetch('{{ route("report.manifests.auto-update-tanggal-berangkat", [], false) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
