@@ -475,11 +475,11 @@ class AbsensiController extends Controller
             $endObj = $endDate->copy()->addDays(1)->setTime(5, 59, 59);
 
             if ($kehadiran === '0_hari') {
-                $karyawansQuery->whereDoesntHave('absensis', function ($q) use ($startObj, $endObj) {
+                $karyawansQuery->whereDoesntHave('absensi', function ($q) use ($startObj, $endObj) {
                     $q->whereBetween('waktu', [$startObj, $endObj]);
                 });
             } elseif ($kehadiran === 'ada_absen') {
-                $karyawansQuery->whereHas('absensis', function ($q) use ($startObj, $endObj) {
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj) {
                     $q->whereBetween('waktu', [$startObj, $endObj]);
                 });
             }
