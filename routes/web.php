@@ -1576,6 +1576,10 @@ Route::middleware([
             ->name('absensi.export_dat')
             ->middleware('can:absensi-view');
 
+        Route::get('absensi/export-machine-users', [AbsensiController::class, 'exportMachineUsers'])
+            ->name('absensi.export_machine_users')
+            ->middleware('can:absensi-view');
+
         Route::delete('absensi/delete-log', [AbsensiController::class, 'deleteLog'])
             ->name('absensi.delete_log')
             ->middleware('can:absensi-delete');

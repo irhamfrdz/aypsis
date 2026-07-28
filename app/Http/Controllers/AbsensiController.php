@@ -11,6 +11,58 @@ use Illuminate\Http\Request;
 class AbsensiController extends Controller
 {
     /**
+     * Download User Data from fingerprint machine (MDB)
+     */
+    public function exportMachineUsers()
+    {
+        $mdbPath = env('MDB_PATH', 'C:\Program Files (x86)\Solution\att2000.mdb');
+        
+        if (!file_exists($mdbPath)) {
+            return redirect()->back()->with('error', 'Database mesin finger tidak ditemukan di path: ' . $mdbPath);
+        }
+
+        try {
+            $conn = new \PDO("odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=$mdbPath;Uid=;Pwd=;");
+            $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+            $query = "SELECT u.Badgenumber, u.Name, u.USERID FROM USERINFO u ORDER BY u.USERID ASC";
+            $stmt = $conn->query($query);
+            $mdbUsers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            $filename = 'data_user_mesin_finger_' . date('Y-m-d_H-i-s') . '.csv';
+
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+                'Pragma' => 'no-cache',
+                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+                'Expires' => '0'
+            ];
+
+            $callback = function() use ($mdbUsers) {
+                $file = fopen('php://output', 'w');
+                // CSV Header
+                fputcsv($file, ['No', 'USERID', 'Badgenumber (NIK)', 'Name']);
+
+                $no = 1;
+                foreach ($mdbUsers as $user) {
+                    fputcsv($file, [
+                        $no++,
+                        $user['USERID'],
+                        $user['Badgenumber'],
+                        $user['Name']
+                    ]);
+                }
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal membaca database mesin finger: ' . $e->getMessage());
+        }
+    }
+    /**
      * Display a listing of attendance logs.
      */
     /**
