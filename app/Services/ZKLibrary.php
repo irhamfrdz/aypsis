@@ -72,7 +72,7 @@ class ZKLibrary
         if ($port != null) {
             $this->port = $port;
         }
-        $this->socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+        $this->socket = @fsockopen('udp://'.$this->ip, $this->port, $errno, $errstr, 3);
         $this->setTimeout($this->timeout_sec, $this->timeout_usec);
     }
 
@@ -100,9 +100,9 @@ class ZKLibrary
         $session_id = 0;
         $reply_id = -1 + USHRT_MAX;
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
-        socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
+        fwrite($this->socket, $buf);
         try {
-            socket_recvfrom($this->socket, $this->received_data, 1024, 0, $this->ip, $this->port);
+            $this->received_data = fread($this->socket, 1024);
             if (strlen($this->received_data) > 0) {
                 $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6', substr($this->received_data, 0, 8));
                 $this->session_id = hexdec($u['h6'] . $u['h5']);
@@ -129,9 +129,9 @@ class ZKLibrary
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
         $reply_id = hexdec($u['h8'] . $u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
-        socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
+        fwrite($this->socket, $buf);
         try {
-            socket_recvfrom($this->socket, $this->received_data, 1024, 0, $this->ip, $this->port);
+            $this->received_data = fread($this->socket, 1024);
             return $this->checkValid($this->received_data);
         } catch (ErrorException $e) {
             return false;
@@ -149,7 +149,7 @@ class ZKLibrary
             $this->timeout_usec = $usec;
         }
         $timeout = array('sec' => $this->timeout_sec, 'usec' => $this->timeout_usec);
-        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $timeout);
+        stream_set_timeout($this->socket, $this->timeout_sec);
     }
 
     public function ping($timeout = 1)
@@ -274,9 +274,9 @@ class ZKLibrary
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
         $reply_id = hexdec($u['h8'] . $u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
-        socket_sendto($this->socket, $buf, strlen($buf), MSG_EOR, $this->ip, $this->port);
+        fwrite($this->socket, $buf);
         try {
-            socket_recvfrom($this->socket, $this->received_data, 1024, 0, $this->ip, $this->port);
+            $this->received_data = fread($this->socket, 1024);
             $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6', substr($this->received_data, 0, 8));
             $this->session_id =  hexdec($u['h6'] . $u['h5']);
             return substr($this->received_data, $offset_data);
@@ -628,19 +628,19 @@ class ZKLibrary
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
         $reply_id = hexdec($u['h8'] . $u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
-        socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
+        fwrite($this->socket, $buf);
         try {
-            socket_recvfrom($this->socket, $this->received_data, 1024, 0, $this->ip, $this->port);
+            $this->received_data = fread($this->socket, 1024);
             $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6', substr($this->received_data, 0, 8));
             $bytes = $this->getSizeUser();
             if ($bytes) {
                 while ($bytes > 0) {
-                    socket_recvfrom($this->socket, $received_data, 1032, 0, $this->ip, $this->port);
+                    $received_data = fread($this->socket, 1032);
                     array_push($this->user_data, $received_data);
                     $bytes -= 1024;
                 }
                 $this->session_id =  hexdec($u['h6'] . $u['h5']);
-                socket_recvfrom($this->socket, $received_data, 1024, 0, $this->ip, $this->port);
+                $received_data = fread($this->socket, 1024);
             }
             $users = array();
             if (count($this->user_data) > 0) {
@@ -707,19 +707,19 @@ class ZKLibrary
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
         $reply_id = hexdec($u['h8'] . $u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
-        socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
+        fwrite($this->socket, $buf);
         try {
-            socket_recvfrom($this->socket, $this->received_data, 1024, 0, $this->ip, $this->port);
+            $this->received_data = fread($this->socket, 1024);
             $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6', substr($this->received_data, 0, 8));
             $bytes = $this->getSizeTemplate();
             if ($bytes) {
                 while ($bytes > 0) {
-                    socket_recvfrom($this->socket, $received_data, 1032, 0, $this->ip, $this->port);
+                    $received_data = fread($this->socket, 1032);
                     array_push($this->user_data, $received_data);
                     $bytes -= 1024;
                 }
                 $this->session_id =  hexdec($u['h6'] . $u['h5']);
-                socket_recvfrom($this->socket, $received_data, 1024, 0, $this->ip, $this->port);
+                $received_data = fread($this->socket, 1024);
             }
             $template_data = array();
             if (count($this->user_data) > 0) {
@@ -757,19 +757,19 @@ class ZKLibrary
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
         $reply_id = hexdec($u['h8'] . $u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
-        socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
+        fwrite($this->socket, $buf);
         try {
-            socket_recvfrom($this->socket, $this->received_data, 1024, 0, $this->ip, $this->port);
+            $this->received_data = fread($this->socket, 1024);
             $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6', substr($this->received_data, 0, 8));
             $bytes = $this->getSizeUser();
             if ($bytes) {
                 while ($bytes > 0) {
-                    socket_recvfrom($this->socket, $received_data, 1032, 0, $this->ip, $this->port);
+                    $received_data = fread($this->socket, 1032);
                     array_push($this->user_data, $received_data);
                     $bytes -= 1024;
                 }
                 $this->session_id =  hexdec($u['h6'] . $u['h5']);
-                socket_recvfrom($this->socket, $received_data, 1024, 0, $this->ip, $this->port);
+                $received_data = fread($this->socket, 1024);
             }
             $users = array();
             $retdata = "";
@@ -823,7 +823,7 @@ class ZKLibrary
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
         $reply_id = hexdec($u['h8'] . $u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
-        socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
+        fwrite($this->socket, $buf);
         try {
             $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6', substr($this->received_data, 0, 8));
             $this->session_id = hexdec($u['h6'] . $u['h5']);
@@ -916,18 +916,18 @@ class ZKLibrary
         $u = unpack('H2h1/H2h2/H2h3/H2h4/H2h5/H2h6/H2h7/H2h8', substr($this->received_data, 0, 8));
         $reply_id = hexdec($u['h8'] . $u['h7']);
         $buf = $this->createHeader($command, $chksum, $session_id, $reply_id, $command_string);
-        socket_sendto($this->socket, $buf, strlen($buf), 0, $this->ip, $this->port);
+        fwrite($this->socket, $buf);
         try {
-            socket_recvfrom($this->socket, $this->received_data, 1024, 0, $this->ip, $this->port);
+            $this->received_data = fread($this->socket, 1024);
             $bytes = $this->getSizeAttendance();
             if ($bytes) {
                 while ($bytes > 0) {
-                    socket_recvfrom($this->socket, $received_data, 1032, 0, $this->ip, $this->port);
+                    $received_data = fread($this->socket, 1032);
                     array_push($this->attendance_data, $received_data);
                     $bytes -= 1024;
                 }
                 $this->session_id = hexdec($u['h6'] . $u['h5']);
-                socket_recvfrom($this->socket, $received_data, 1024, 0, $this->ip, $this->port);
+                $received_data = fread($this->socket, 1024);
             }
             $attendance = array();
             if (count($this->attendance_data) > 0) {
