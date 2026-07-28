@@ -33,4 +33,12 @@ class Mesin extends Model
         'status',
         'keterangan',
     ];
+
+    /**
+     * Get the attendance logs for this machine.
+     */
+    public function absensi()
+    {
+        return $this->hasMany(Absensi::class, 'mesin_id');
+    }
 }
