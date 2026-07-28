@@ -5813,6 +5813,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::post('manifests/auto-update-nomor-urut', [App\Http\Controllers\ManifestController::class, 'autoUpdateNomorUrut'])->name('manifests.auto-update-nomor-urut');
     Route::post('manifests/auto-update-nomor-urut-all', [App\Http\Controllers\ManifestController::class, 'autoUpdateNomorUrutAll'])->name('manifests.auto-update-nomor-urut-all');
     Route::post('manifests/auto-update-size', [App\Http\Controllers\ManifestController::class, 'autoUpdateSize'])->name('manifests.auto-update-size');
+    Route::post('manifests/auto-update-tanggal-berangkat', [App\Http\Controllers\ManifestController::class, 'autoUpdateTanggalBerangkat'])->name('manifests.auto-update-tanggal-berangkat');
     Route::post('manifests/{id}/update-nomor-bl', [App\Http\Controllers\ManifestController::class, 'updateNomorBl'])->name('manifests.update-nomor-bl');
     Route::post('manifests/{id}/update-nomor-urut', [App\Http\Controllers\ManifestController::class, 'updateNomorUrut'])->name('manifests.update-nomor-urut');
     Route::post('manifests/{id}/update-satuan', [App\Http\Controllers\ManifestController::class, 'updateSatuan'])->name('manifests.update-satuan');

@@ -443,6 +443,35 @@ class ManifestController extends Controller
     }
 
     /**
+     * Auto update tanggal berangkat for specific voyage
+     */
+    public function autoUpdateTanggalBerangkat(Request $request)
+    {
+        $request->validate([
+            'nama_kapal' => 'required|string',
+            'no_voyage' => 'required|string',
+            'tanggal_berangkat' => 'required|date'
+        ]);
+
+        $namaKapal = $request->input('nama_kapal');
+        $noVoyage = $request->input('no_voyage');
+        $tanggalBerangkat = $request->input('tanggal_berangkat');
+
+        $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
+        $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+        $noVoyage = trim($noVoyage);
+
+        $updatedCount = Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            ->where('no_voyage', $noVoyage)
+            ->update(['tanggal_berangkat' => $tanggalBerangkat]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Tanggal berangkat berhasil diupdate untuk {$updatedCount} manifest.",
+        ]);
+    }
+
+    /**
      * Auto update nomor urut for ALL voyages
      */
     public function autoUpdateNomorUrutAll(Request $request)

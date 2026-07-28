@@ -34,6 +34,13 @@
                         </svg>
                         Update Size
                     </button>
+                    <button onclick="autoUpdateTanggalBerangkat('{{ $namaKapal }}', '{{ $noVoyage }}', '{{ $manifests->first()->tanggal_berangkat ?? '' }}')"
+                       class="inline-flex items-center justify-center px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-lg hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        Update Tgl Berangkat
+                    </button>
                     @can('manifest-edit')
                     <button type="button" onclick="updateManifestData(true)" 
                             class="inline-flex items-center px-4 py-2 bg-cyan-600 text-white text-sm font-medium rounded-lg hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500">
@@ -881,7 +888,55 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+        window.autoUpdateTanggalBerangkat = function(namaKapal, noVoyage, currentTgl) {
+        Swal.fire({
+            title: 'Update Tanggal Berangkat',
+            html: '<p class="text-sm text-gray-500 mb-3">Set tanggal berangkat untuk kapal <b>' + namaKapal + '</b> voyage <b>' + noVoyage + '</b></p>' +
+                  '<input type="date" id="tgl_berangkat" class="swal2-input" value="' + currentTgl + '" style="max-width: 100%;">',
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            cancelButtonText: 'Batal',
+            preConfirm: () => {
+                const date = document.getElementById('tgl_berangkat').value;
+                if (!date) {
+                    Swal.showValidationMessage('Silakan pilih tanggal');
+                }
+                return date;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                fetch('{{ route("manifests.auto-update-tanggal-berangkat", [], false) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        nama_kapal: namaKapal,
+                        no_voyage: noVoyage,
+                        tanggal_berangkat: result.value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Berhasil!', data.message, 'success').then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error!', data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error!', 'Terjadi kesalahan network', 'error');
+                });
+            }
+        });
+    }
     window.updateManifestData = function(isDryRun) {
+
         const actionText = isDryRun ? 'Preview Update' : 'Update Data';
         const confirmText = isDryRun ? 
             'Anda akan melihat preview data Manifest yang akan diupdate dari Tanda Terima tanpa mengubah data apapun. Lanjutkan?' : 
