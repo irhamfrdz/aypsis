@@ -562,7 +562,7 @@ class AbsensiController extends Controller
                     $masukLog = $dayLogs->where('tipe', 'Masuk')->first();
                     if ($masukLog) {
                         $waktuMasuk = Carbon::parse($masukLog->waktu);
-                        $jamMasukNormal = Carbon::parse($dateStr . ' 08:00:00');
+                        $jamMasukNormal = Carbon::parse($dateStr . ' 09:00:00');
                         if ($waktuMasuk->gt($jamMasukNormal->copy()->addMinutes(5))) {
                             // Check for approved datang_terlambat permission
                             $hasLatePermission = $karyawanPermissions->contains(function($perm) use ($dateStr) {
