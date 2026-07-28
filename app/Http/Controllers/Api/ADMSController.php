@@ -51,8 +51,10 @@ class ADMSController extends Controller
         
         Log::info("ADMS Terima Data dari SN: {$sn} | Table: {$table} | Payload:", ['data' => $rawData]);
 
-        if ($table === 'ATTLOG') {
+        if ($table === 'ATTLOG' || $table === 'attlog') {
             $this->processAttLog($rawData, $sn);
+        } elseif (stripos($table, 'user') !== false) { // Handle 'user', 'USER', 'USERINFO'
+            $this->processUserInfo($rawData, $sn);
         }
 
         // Harus membalas "OK" agar mesin menganggap data sudah terkirim 
@@ -134,10 +136,20 @@ class ADMSController extends Controller
 
             // Parse PIN=123 Name=Adit Pri=0...
             $userData = [];
-            $parts = explode("\t", $line);
+            // ZKTeco sometimes uses tabs, sometimes spaces, sometimes commas to separate fields
+            $parts = preg_split('/[\t,]+/', $line);
             if (count($parts) == 1) {
-                // Kadang dipisah spasi
-                $parts = preg_split('/\s+/', $line);
+                // Jika masih 1 bagian, coba split pakai spasi (tapi hati-hati spasi di nama)
+                // Sebaiknya kita gunakan regex untuk menangkap key=value
+                preg_match_all('/(\w+)=([^,\t]+)/', $line, $matches);
+                if (!empty($matches[1])) {
+                    foreach ($matches[1] as $idx => $key) {
+                        $userData[$key] = trim($matches[2][$idx]);
+                    }
+                    $parts = []; // Lewati loop parts di bawah
+                } else {
+                    $parts = preg_split('/\s+/', $line);
+                }
             }
 
             foreach ($parts as $part) {
