@@ -677,7 +677,43 @@ class MasterKapalController extends Controller
                 'summary_bongkar' => $self->formatManifestSummary($bongkarItems),
                 'summary_muat' => $self->formatManifestSummary($muatItems),
             ];
-        })->values();
+        });
+
+        // Ambil voyage dari pergerakan_kapal juga
+        $pergerakanKapals = \App\Models\PergerakanKapal::where(function ($q) use ($namaKapal, $kapalClean) {
+            $q->where('nama_kapal', $namaKapal)
+                ->orWhereRaw("LOWER(REPLACE(nama_kapal, '.', '')) LIKE ?", ["%{$kapalClean}%"]);
+        })
+            ->whereNotNull('voyage')
+            ->where('voyage', '!=', '')
+            ->select('voyage as no_voyage', 'tujuan_tujuan as pelabuhan_tujuan', 'tujuan_asal as pelabuhan_asal', 'tanggal_berangkat')
+            ->orderBy('voyage', 'desc')
+            ->get();
+
+        $groupedPergerakan = $pergerakanKapals->groupBy('no_voyage')->map(function ($items, $voyage) {
+            $first = $items->first();
+            return [
+                'no_voyage' => $voyage,
+                'pelabuhan_tujuan' => $first->pelabuhan_tujuan,
+                'pelabuhan_asal' => $first->pelabuhan_asal,
+                'pelabuhan_muat' => $first->pelabuhan_asal,
+                'pelabuhan_bongkar' => $first->pelabuhan_tujuan,
+                'tanggal_berangkat' => $first->tanggal_berangkat ? $first->tanggal_berangkat->format('Y-m-d') : null,
+                'total_kontainer' => 0,
+                'summary_bongkar' => '',
+                'summary_muat' => '',
+            ];
+        });
+
+        // Merge tanpa duplicate (jika di manifest sudah ada, biarkan)
+        foreach ($groupedPergerakan as $voyage => $data) {
+            if (!$grouped->has($voyage)) {
+                $grouped->put($voyage, $data);
+            }
+        }
+
+        // Sort descending & reindex values
+        $grouped = $grouped->sortByDesc('no_voyage')->values();
 
         return response()->json([
             'next_nomor_surat' => \App\Models\KapalSpkbm::generateNomor(),
