@@ -15,7 +15,7 @@ class AbsensiController extends Controller
      */
     public function exportMachineUsers()
     {
-        $mdbPath = env('MDB_PATH', 'C:\Program Files (x86)\Solution\att2000.mdb');
+        $mdbPath = env('MDB_PATH', 'C:\\Program Files (x86)\\Solution\\att2000.mdb');
         
         if (!file_exists($mdbPath)) {
             return redirect()->back()->with('error', 'Database mesin finger tidak ditemukan di path: ' . $mdbPath);
