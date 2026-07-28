@@ -441,27 +441,46 @@
                             </div>
                         </div>
 
-                        <div class="flex items-start space-x-3 opacity-70">
-                            <div class="bg-gray-200 text-gray-500 p-2 rounded-full">
+                        <div class="flex items-start space-x-3 {{ !$karyawan->has_photo ? 'opacity-70' : '' }}">
+                            <div class="{{ $karyawan->has_photo ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500' }} p-2 rounded-full">
                                 <i class="fas fa-camera fa-fw"></i>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500 font-semibold uppercase">Photo (Wajah)</p>
-                                <p class="text-xs text-gray-500 italic mt-0.5">Tidak tersedia di database lokal</p>
+                                @if($karyawan->has_photo)
+                                    <p class="font-medium text-green-700 mt-0.5">Terekam di Mesin</p>
+                                @else
+                                    <p class="text-xs text-gray-500 italic mt-0.5">Belum terekam</p>
+                                @endif
                             </div>
                         </div>
                         
-                        <div class="flex items-start space-x-3 opacity-70">
-                            <div class="bg-gray-200 text-gray-500 p-2 rounded-full">
+                        <div class="flex items-start space-x-3 {{ !$karyawan->has_fingerprint ? 'opacity-70' : '' }}">
+                            <div class="{{ $karyawan->has_fingerprint ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500' }} p-2 rounded-full">
                                 <i class="fas fa-fingerprint fa-fw"></i>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500 font-semibold uppercase">Sidik Jari</p>
-                                <p class="text-xs text-gray-500 italic mt-0.5">Tidak tersedia di database lokal</p>
+                                @if($karyawan->has_fingerprint)
+                                    <p class="font-medium text-green-700 mt-0.5">Terekam di Mesin</p>
+                                @else
+                                    <p class="text-xs text-gray-500 italic mt-0.5">Belum terekam</p>
+                                @endif
                             </div>
                         </div>
                     </div>
-                    <p class="text-xs text-gray-400 mt-2"><i class="fas fa-info-circle"></i> Cocokkan data ini dengan yang tertera pada layar mesin fingerprint Anda.</p>
+                    
+                    @if($mesins->count() > 0)
+                    <div class="mt-3">
+                        <form action="{{ route('master.mesin.sync-users', $mesins->first()->id) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="w-full text-center bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-2 rounded text-xs font-medium transition-colors shadow-sm">
+                                <i class="fas fa-sync-alt mr-1"></i> Cek & Sinkronkan Status dari Mesin Utama
+                            </button>
+                        </form>
+                    </div>
+                    @endif
+                    <p class="text-xs text-gray-400 mt-2"><i class="fas fa-info-circle"></i> Sinkronisasi akan memperbarui status berdasarkan data yang ada di mesin fingerprint.</p>
                 </div>
 
                 <!-- Mesin Terdaftar -->
