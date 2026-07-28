@@ -399,6 +399,73 @@
         </div>
     </details>
 
+    @php
+        $mesins = \App\Models\Mesin::whereHas('absensi', function($q) use ($karyawan) {
+            $q->where('karyawan_id', $karyawan->id);
+        })->get();
+        
+        $lastAbsensi = \App\Models\Absensi::with('mesin')
+            ->where('karyawan_id', $karyawan->id)
+            ->whereNotNull('mesin_id')
+            ->orderBy('waktu', 'desc')
+            ->take(5)
+            ->get();
+    @endphp
+
+    <details class="mb-4 border rounded">
+        <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Informasi Mesin Finger</summary>
+        <div class="p-4 text-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Mesin Terdaftar -->
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-3 border-b pb-2">Mesin Finger Terdaftar</h4>
+                    @if($mesins->count() > 0)
+                        <div class="space-y-3">
+                            @foreach($mesins as $mesin)
+                                <div class="p-3 border rounded bg-white flex justify-between items-center">
+                                    <div>
+                                        <p class="font-medium text-gray-800">{{ $mesin->nama_mesin }}</p>
+                                        <p class="text-xs text-gray-500">IP: {{ $mesin->ip_address ?? '-' }}</p>
+                                    </div>
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Terekam</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-gray-500 italic text-sm py-2">Belum ada data mesin finger untuk karyawan ini.</p>
+                    @endif
+                </div>
+                
+                <!-- Riwayat Absensi Terakhir -->
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-3 border-b pb-2">5 Absensi Terakhir di Mesin</h4>
+                    @if($lastAbsensi->count() > 0)
+                        <div class="space-y-3">
+                            @foreach($lastAbsensi as $absensi)
+                                <div class="p-3 border rounded bg-white">
+                                    <div class="flex justify-between">
+                                        <p class="font-medium text-gray-800">{{ $formatDate($absensi->waktu, 'd/M/Y H:i') }}</p>
+                                        <p class="text-xs font-semibold text-indigo-600">{{ $absensi->tipe }}</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Mesin: {{ $absensi->mesin ? $absensi->mesin->nama_mesin : '-' }}
+                                    </p>
+                                </div>
+                            @endforeach
+                            <div class="pt-2 text-right">
+                                <a href="{{ route('absensi.index', ['search' => $karyawan->nik]) }}" class="text-xs text-blue-600 hover:underline">
+                                    Lihat Semua Riwayat &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    @else
+                        <p class="text-gray-500 italic text-sm py-2">Belum ada riwayat absensi dari mesin.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </details>
+
     <details class="mb-4 border rounded">
         <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Bank</summary>
         <div class="p-4 grid grid-cols-2 gap-6 text-sm">
