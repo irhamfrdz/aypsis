@@ -15,52 +15,71 @@ class AbsensiController extends Controller
      */
     public function exportMachineUsers()
     {
-        $mdbPath = env('MDB_PATH', 'C:\\Program Files (x86)\\Solution\\att2000.mdb');
-        
-        // if (!file_exists($mdbPath)) {
-        //     return redirect()->back()->with('error', 'Database mesin finger tidak ditemukan di path: ' . $mdbPath);
-        // }
+        $mesins = \App\Models\Mesin::all();
+        $allUsers = [];
 
-        try {
-            $conn = new \PDO("odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=$mdbPath;Uid=;Pwd=;");
-            $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
-            $query = "SELECT u.Badgenumber, u.Name, u.USERID FROM USERINFO u ORDER BY u.USERID ASC";
-            $stmt = $conn->query($query);
-            $mdbUsers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            $filename = 'data_user_mesin_finger_' . date('Y-m-d_H-i-s') . '.csv';
-
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => "attachment; filename=\"$filename\"",
-                'Pragma' => 'no-cache',
-                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-                'Expires' => '0'
-            ];
-
-            $callback = function() use ($mdbUsers) {
-                $file = fopen('php://output', 'w');
-                // CSV Header
-                fputcsv($file, ['No', 'USERID', 'Badgenumber (NIK)', 'Name']);
-
-                $no = 1;
-                foreach ($mdbUsers as $user) {
-                    fputcsv($file, [
-                        $no++,
-                        $user['USERID'],
-                        $user['Badgenumber'],
-                        $user['Name']
-                    ]);
+        foreach ($mesins as $mesin) {
+            $service = new \App\Services\ZKLibrary($mesin->ip_address, (int)$mesin->port);
+            if ($service->connect()) {
+                $users = $service->getUser();
+                if (is_array($users)) {
+                    foreach ($users as $uid => $userData) {
+                        $nik = trim($userData[0] ?? '');
+                        $name = trim($userData[1] ?? '');
+                        
+                        if (is_numeric($nik)) {
+                            $nik = str_pad($nik, 4, '0', STR_PAD_LEFT);
+                        }
+                        
+                        $allUsers[$nik] = [
+                            'userid' => $uid,
+                            'nik' => $nik,
+                            'name' => $name,
+                            'mesin_ip' => $mesin->ip_address,
+                            'mesin_nama' => $mesin->nama_mesin
+                        ];
+                    }
                 }
-                fclose($file);
-            };
-
-            return response()->stream($callback, 200, $headers);
-
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal membaca database mesin finger: ' . $e->getMessage());
+                $service->disconnect();
+            }
         }
+
+        if (empty($allUsers)) {
+            return redirect()->back()->with('error', 'Tidak ada data user yang berhasil ditarik dari mesin finger mana pun (Atau semua mesin sedang offline).');
+        }
+
+        // Sort by NIK
+        ksort($allUsers);
+
+        $filename = 'data_user_mesin_finger_' . date('Y-m-d_H-i-s') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+
+        $callback = function() use ($allUsers) {
+            $file = fopen('php://output', 'w');
+            // CSV Header
+            fputcsv($file, ['No', 'NIK (Badgenumber)', 'Nama', 'Dari Mesin', 'IP Mesin']);
+
+            $no = 1;
+            foreach ($allUsers as $user) {
+                fputcsv($file, [
+                    $no++,
+                    $user['nik'],
+                    $user['name'],
+                    $user['mesin_nama'],
+                    $user['mesin_ip']
+                ]);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
     /**
      * Display a listing of attendance logs.
