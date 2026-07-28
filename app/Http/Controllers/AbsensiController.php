@@ -639,7 +639,8 @@ class AbsensiController extends Controller
         $cabang = $request->input('cabang');
         $tempat = $request->input('tempat');
 
-        $fileName = 'rekap-absensi-' . $startDate . '-sd-' . $endDate . '.xlsx';
+        $tempatSlug = $tempat ? \Illuminate\Support\Str::slug($tempat) . '-' : '';
+        $fileName = 'rekap-absensi-' . $tempatSlug . $startDate . '-sd-' . $endDate . '.xlsx';
 
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\AbsensiRekapExport($startDate, $endDate, $search, $pekerjaan, $divisi, $cabang, $tempat),
