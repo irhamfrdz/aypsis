@@ -182,16 +182,16 @@
                                                 Sync Absensi
                                             </button>
                                         </form>
+                                    @endif
 
-                                        @if($mesin->tipe_mesin === 'ADMS')
-                                        <form action="{{ route('mesin-users.queue-sync') }}" method="POST" class="inline">
-                                            @csrf
-                                            <input type="hidden" name="sn" value="{{ $mesin->kode_mesin }}">
-                                            <button type="submit" class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-colors" title="Tarik Data User dari Mesin">
-                                                Tarik User
-                                            </button>
-                                        </form>
-                                        @endif
+                                    @if($mesin->tipe_mesin === 'ADMS')
+                                    <form action="{{ route('mesin-users.queue-sync') }}" method="POST" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="sn" value="{{ $mesin->kode_mesin }}">
+                                        <button type="submit" class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-colors" title="Tarik Data User dari Mesin">
+                                            Tarik User
+                                        </button>
+                                    </form>
                                     @endif
 
                                     @can('mesin-update')
