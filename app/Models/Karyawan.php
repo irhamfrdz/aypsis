@@ -21,6 +21,7 @@ class Karyawan extends Model
         'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'status_jkn', 'no_ketenagakerjaan', 'status_bp_jamsostek', 'cabang_bpjs', 'no_sim',
         'sim_berlaku_mulai', 'sim_berlaku_sampai',
         'cabang', 'nik_supervisor', 'supervisor', 'verification_status', 'verified_by', 'verified_at', 'nominal_uang_makan',
+        'has_fingerprint', 'has_photo',
     ];
 
     protected $dates = [
