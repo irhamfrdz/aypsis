@@ -96,7 +96,6 @@ class AbsensiRekapExport extends StringValueBinder implements FromArray, WithCus
             ')
             ->groupBy('karyawan_id', \Illuminate\Support\Facades\DB::raw('DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))'))
             ->get()
-            ->get()
             ->groupBy('karyawan_id');
 
         // Fetch all approved permissions/leaves
