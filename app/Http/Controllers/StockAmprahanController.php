@@ -2068,7 +2068,7 @@ class StockAmprahanController extends Controller
                 'kts_masuk' => 0,
                 'nilai_masuk' => 0,
                 'kts_keluar' => $usage->jumlah,
-                'nilai_keluar' => $usage->jumlah * ($usage->stockAmprahan->harga_satuan ?? 0),
+                'nilai_keluar' => ($usage->jumlah * ($usage->stockAmprahan->harga_satuan ?? 0)) + ($usage->adjustment_nilai_keluar ?? 0),
             ];
         });
 
@@ -2255,7 +2255,7 @@ class StockAmprahanController extends Controller
                 'kts_masuk' => 0,
                 'nilai_masuk' => 0,
                 'kts_keluar' => $usage->jumlah,
-                'nilai_keluar' => $usage->jumlah * ($usage->stockAmprahan->harga_satuan ?? 0),
+                'nilai_keluar' => ($usage->jumlah * ($usage->stockAmprahan->harga_satuan ?? 0)) + ($usage->adjustment_nilai_keluar ?? 0),
             ];
         });
 
