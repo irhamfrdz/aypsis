@@ -5200,6 +5200,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('ob/mark-as-ob-bl', [\App\Http\Controllers\ObController::class, 'markAsOBBl'])
         ->name('ob.mark-as-ob-bl')
         ->middleware('can:ob-view');
+    Route::post('ob/update-supir', [\App\Http\Controllers\ObController::class, 'updateSupir'])
+        ->name('ob.update-supir')
+        ->middleware('can:ob-view');
+    Route::post('ob/update-supir-bl', [\App\Http\Controllers\ObController::class, 'updateSupirBl'])
+        ->name('ob.update-supir-bl')
+        ->middleware('can:ob-view');
     Route::post('ob/process-tl', [\App\Http\Controllers\ObController::class, 'processTL'])
         ->name('ob.process-tl')
         ->middleware('can:ob-view');

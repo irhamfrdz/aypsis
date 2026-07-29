@@ -421,7 +421,7 @@
                                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded text-xs font-medium">
                                 <i class="fas fa-undo mr-1"></i>Batalkan OB
                             </button>
-                            <button type="button" onclick="openSupirModal('bl', {{ $bl->id }})"
+                            <button type="button" onclick="openSupirModal('bl', {{ $bl->id }}, true)"
                                    class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded text-xs font-medium">
                                 <i class="fas fa-user-edit mr-1"></i>Ganti Supir
                             </button>
@@ -549,7 +549,7 @@
                                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded text-xs font-medium">
                                 <i class="fas fa-undo mr-1"></i>Batalkan OB
                             </button>
-                            <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
+                            <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }}, true)"
                                    class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded text-xs font-medium">
                                 <i class="fas fa-user-edit mr-1"></i>Ganti Supir
                             </button>
@@ -783,7 +783,7 @@
                                     </button>
                                 @endif
                                 @if($bl->supir_id)
-                                    <button type="button" onclick="openSupirModal('bl', {{ $bl->id }})"
+                                    <button type="button" onclick="openSupirModal('bl', {{ $bl->id }}, true)"
                                            class="text-teal-600 hover:text-teal-900 transition duration-150"
                                            title="Ganti Supir OB">
                                         <i class="fas fa-user-edit"></i>
@@ -1044,7 +1044,7 @@
                                         @endif
                                     @endif
                                     @if($naikKapal->supir_id)
-                                        <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
+                                        <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }}, true)"
                                                class="text-teal-600 hover:text-teal-900 transition duration-150"
                                                title="Ganti Supir OB">
                                             <i class="fas fa-user-edit"></i>
@@ -1114,6 +1114,7 @@
             <form id="formMarkOB" class="mt-4">
                 <input type="hidden" id="record_type" name="record_type">
                 <input type="hidden" id="record_id" name="record_id">
+                <input type="hidden" id="is_ganti_supir" name="is_ganti_supir" value="0">
                 
                 <div class="mb-3">
                     <label for="supir_search" class="block text-xs font-medium text-gray-700 mb-1.5">
@@ -1160,8 +1161,9 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="ke_gudang_id" class="block text-xs font-medium text-gray-700 mb-1.5">
+                <div id="ob_fields">
+                    <div class="mb-3">
+                        <label for="ke_gudang_id" class="block text-xs font-medium text-gray-700 mb-1.5">
                         Ke <span class="text-red-500">*</span>
                     </label>
                     <select id="ke_gudang_id" name="ke_gudang_id" required
@@ -1195,6 +1197,7 @@
                               placeholder="Catatan retur barang untuk surat jalan bongkaran..."></textarea>
                     <p class="text-[10px] text-gray-500 mt-0.5">Akan disimpan di surat jalan bongkaran jika ada</p>
                 </div>
+                </div>
 
                 <!-- Modal Footer -->
                 <div class="flex justify-end gap-2 pt-2 border-t">
@@ -1204,8 +1207,8 @@
                     </button>
                     <button type="submit" id="btnSubmitOB"
                             class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition duration-200">
-                        <i class="fas fa-check mr-1"></i>
-                        Tandai Sudah OB
+                        <i class="fas fa-check mr-1" id="btnSubmitOBIcon"></i>
+                        <span id="btnSubmitOBText">Tandai Sudah OB</span>
                     </button>
                 </div>
             </form>
@@ -1612,12 +1615,32 @@ function showNotification(message, type) {
     }, 4000);
 }
 
-function openSupirModal(type, id) {
+function openSupirModal(type, id, isGanti = false) {
     document.getElementById('record_type').value = type;
     document.getElementById('record_id').value = id;
+    document.getElementById('is_ganti_supir').value = isGanti ? '1' : '0';
     
     document.getElementById('catatan').value = '';
     document.getElementById('retur_barang').value = '';
+    
+    const obFields = document.getElementById('ob_fields');
+    const keGudangId = document.getElementById('ke_gudang_id');
+    const btnSubmitText = document.getElementById('btnSubmitOBText');
+    const btnSubmitIcon = document.getElementById('btnSubmitOBIcon');
+    
+    if (isGanti) {
+        obFields.style.display = 'none';
+        keGudangId.removeAttribute('required');
+        btnSubmitText.textContent = 'Simpan Supir';
+        btnSubmitIcon.className = 'fas fa-save mr-1';
+        document.querySelector('#supirModal h3').textContent = 'Ganti Supir';
+    } else {
+        obFields.style.display = 'block';
+        keGudangId.setAttribute('required', 'required');
+        btnSubmitText.textContent = 'Tandai Sudah OB';
+        btnSubmitIcon.className = 'fas fa-check mr-1';
+        document.querySelector('#supirModal h3').textContent = 'Pilih Supir';
+    }
     
     // Reset supir selection
     document.getElementById('supir_id').value = '';
@@ -2042,12 +2065,14 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     const catatan = document.getElementById('catatan').value;
     const returBarang = document.getElementById('retur_barang').value;
     
+    const isGantiSupir = document.getElementById('is_ganti_supir').value === '1';
+    
     if (!supirId) {
         alert('Silakan pilih supir terlebih dahulu');
         return;
     }
     
-    if (!keGudangId) {
+    if (!isGantiSupir && !keGudangId) {
         alert('Silakan pilih lokasi tujuan (Ke) terlebih dahulu');
         return;
     }
@@ -2057,7 +2082,7 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
     
     // Determine endpoint based on record type
-    let endpoint = '/ob/mark-as-ob';
+    let endpoint = isGantiSupir ? '/ob/update-supir' : '/ob/mark-as-ob';
     let requestData = {
         naik_kapal_id: recordId,
         supir_id: supirId,
@@ -2067,7 +2092,7 @@ document.getElementById('formMarkOB').addEventListener('submit', function(e) {
     };
     
     if (recordType === 'bl') {
-        endpoint = '/ob/mark-as-ob-bl';
+        endpoint = isGantiSupir ? '/ob/update-supir-bl' : '/ob/mark-as-ob-bl';
         requestData = {
             bl_id: recordId,
             supir_id: supirId,

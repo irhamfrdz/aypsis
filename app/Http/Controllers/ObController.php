@@ -1531,6 +1531,82 @@ class ObController extends Controller
     }
 
     /**
+     * Update Supir for Naik Kapal
+     */
+    public function updateSupir(Request $request)
+    {
+        $user = Auth::user();
+        if (! $user->can('ob-view')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $request->validate([
+                'naik_kapal_id' => 'required|exists:naik_kapal,id',
+                'supir_id' => 'required|exists:karyawans,id',
+            ]);
+
+            $naikKapal = NaikKapal::findOrFail($request->naik_kapal_id);
+            $naikKapal->supir_id = $request->supir_id;
+            $naikKapal->save();
+
+            // Also update in Bl if it exists
+            Bl::where('nomor_kontainer', $naikKapal->nomor_kontainer)
+                ->where('no_voyage', $naikKapal->no_voyage)
+                ->where('nama_kapal', $naikKapal->nama_kapal)
+                ->update(['supir_id' => $request->supir_id]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengganti supir',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update Supir for Bl
+     */
+    public function updateSupirBl(Request $request)
+    {
+        $user = Auth::user();
+        if (! $user->can('ob-view')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $request->validate([
+                'bl_id' => 'required|exists:bls,id',
+                'supir_id' => 'required|exists:karyawans,id',
+            ]);
+
+            $bl = Bl::findOrFail($request->bl_id);
+            $bl->supir_id = $request->supir_id;
+            $bl->save();
+
+            // Also update in NaikKapal if it exists
+            NaikKapal::where('nomor_kontainer', $bl->nomor_kontainer)
+                ->where('no_voyage', $bl->no_voyage)
+                ->where('nama_kapal', $bl->nama_kapal)
+                ->update(['supir_id' => $request->supir_id]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengganti supir',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Unmark BL from OB status
      */
     public function unmarkOBBl(Request $request)
