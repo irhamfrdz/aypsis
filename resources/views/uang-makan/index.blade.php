@@ -57,6 +57,13 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $uangMakan->karyawan->nama_lengkap ?? '-' }}</div>
                                     <div class="text-sm text-gray-500">{{ $uangMakan->karyawan->nik ?? '-' }}</div>
+                                    <div class="text-xs text-gray-400 mt-1">
+                                        @if($uangMakan->karyawan && $uangMakan->karyawan->akun_bank)
+                                            {{ $uangMakan->karyawan->nama_bank ?? 'Bank' }} - {{ $uangMakan->karyawan->akun_bank }}
+                                        @else
+                                            No Rek: -
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">{{ $uangMakan->tanggal->format('d M Y') }}</div>
