@@ -174,8 +174,24 @@
             /* ensure no printing artifacts from browser margins */
             html, body { width: 210mm; height: 330mm; }
             .no-print { display: none !important; }
+            .select2-container { display: none !important; }
+        }
+        
+        /* Select2 Style Overrides */
+        .select2-container .select2-selection--single {
+            height: 32px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 30px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 30px;
         }
     </style>
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
 <body>
     <div class="no-print">
@@ -366,5 +382,36 @@
     @endif
     {{-- Nama Alex (static) --}}
     <div class="alex-name">Alex</div>
+    
+    <!-- jQuery and Select2 JS -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#bl_selector').select2({
+                width: '500px',
+                placeholder: 'Cari Nomor BL, Kontainer, atau Pengirim...',
+                matcher: function(params, data) {
+                    // If there are no search terms, return all of the data
+                    if ($.trim(params.term) === '') {
+                        return data;
+                    }
+
+                    // Do not display the item if there is no 'text' property
+                    if (typeof data.text === 'undefined') {
+                        return null;
+                    }
+
+                    // Case-insensitive search
+                    if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+                        return data;
+                    }
+
+                    // Return `null` if the term should not be displayed
+                    return null;
+                }
+            });
+        });
+    </script>
 </body>
 </html>
