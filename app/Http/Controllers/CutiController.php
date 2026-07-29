@@ -7,10 +7,20 @@ use Illuminate\Http\Request;
 
 class CutiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $cutis = \App\Models\Cuti::with('karyawan')->latest()->paginate(10);
-        return view('cuti.index', compact('cutis'));
+        $query = \App\Models\Cuti::with('karyawan')->latest();
+        
+        if ($request->filled('penempatan')) {
+            $query->whereHas('karyawan', function($q) use ($request) {
+                $q->where('penempatan', $request->penempatan);
+            });
+        }
+        
+        $cutis = $query->paginate(10)->withQueryString();
+        $penempatans = \App\Models\Karyawan::whereNotNull('penempatan')->distinct()->pluck('penempatan');
+        
+        return view('cuti.index', compact('cutis', 'penempatans'));
     }
 
     public function create()

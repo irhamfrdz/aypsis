@@ -38,6 +38,26 @@
             </div>
         @endif
 
+        <!-- Filter Section -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+            <form action="{{ route('uang-makan.index') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-4">
+                <div class="w-full sm:w-1/3">
+                    <label for="penempatan" class="sr-only">Filter Penempatan</label>
+                    <select id="penempatan" name="penempatan" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="this.form.submit()">
+                        <option value="">Semua Penempatan</option>
+                        @foreach($penempatans as $pen)
+                            <option value="{{ $pen }}" {{ request('penempatan') == $pen ? 'selected' : '' }}>{{ $pen }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @if(request('penempatan'))
+                <div>
+                    <a href="{{ route('uang-makan.index') }}" class="text-sm text-indigo-600 hover:text-indigo-900">Reset Filter</a>
+                </div>
+                @endif
+            </form>
+        </div>
+
         <!-- Table Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">

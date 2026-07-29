@@ -7,10 +7,20 @@ use Illuminate\Http\Request;
 
 class UangMakanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $uangMakans = \App\Models\UangMakan::with('karyawan')->latest()->paginate(10);
-        return view('uang-makan.index', compact('uangMakans'));
+        $query = \App\Models\UangMakan::with('karyawan')->latest();
+        
+        if ($request->filled('penempatan')) {
+            $query->whereHas('karyawan', function($q) use ($request) {
+                $q->where('penempatan', $request->penempatan);
+            });
+        }
+        
+        $uangMakans = $query->paginate(10)->withQueryString();
+        $penempatans = \App\Models\Karyawan::whereNotNull('penempatan')->distinct()->pluck('penempatan');
+        
+        return view('uang-makan.index', compact('uangMakans', 'penempatans'));
     }
 
     public function create()
