@@ -35,9 +35,12 @@
                                         <label for="check_all_karyawan" class="ml-2 block text-xs text-gray-600">Pilih Semua</label>
                                     </div>
                                 </div>
+                                <div class="mb-2 mt-1">
+                                    <input type="text" id="search_karyawan" placeholder="Cari nama karyawan atau NIK..." class="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                                </div>
                                 <div class="mt-1 border border-gray-300 rounded-md p-3 h-64 overflow-y-auto bg-white" id="karyawan_list_container">
                                     @foreach($karyawans as $karyawan)
-                                        <div class="flex items-center py-2 border-b border-gray-100 last:border-0 karyawan-item" data-penempatan="{{ $karyawan->penempatan }}">
+                                        <div class="flex items-center py-2 border-b border-gray-100 last:border-0 karyawan-item" data-penempatan="{{ $karyawan->penempatan }}" data-search="{{ strtolower($karyawan->nama_lengkap . ' ' . $karyawan->nik) }}">
                                             <input type="checkbox" name="karyawan_id[]" value="{{ $karyawan->id }}" id="karyawan_{{ $karyawan->id }}" class="karyawan-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" {{ (is_array(old('karyawan_id')) && in_array($karyawan->id, old('karyawan_id'))) ? 'checked' : '' }}>
                                             <label for="karyawan_{{ $karyawan->id }}" class="ml-3 block text-sm font-medium text-gray-700">
                                                 {{ $karyawan->nama_lengkap }} <span class="text-xs text-gray-500 font-normal">({{ $karyawan->nik }})</span>
@@ -105,6 +108,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const penempatanSelect = document.getElementById('filter_penempatan');
+        const searchInput = document.getElementById('search_karyawan');
         const karyawanItems = document.querySelectorAll('.karyawan-item');
         const checkAllBox = document.getElementById('check_all_karyawan');
         const karyawanCheckboxes = document.querySelectorAll('.karyawan-checkbox');
@@ -122,11 +126,15 @@
             checkAllBox.indeterminate = someChecked && !allChecked;
         }
 
-        penempatanSelect.addEventListener('change', function() {
-            const selectedPenempatan = this.value;
+        function applyFilters() {
+            const selectedPenempatan = penempatanSelect.value;
+            const searchKeyword = searchInput.value.toLowerCase();
             
             karyawanItems.forEach(item => {
-                if (selectedPenempatan === "" || item.dataset.penempatan === selectedPenempatan) {
+                const matchesPenempatan = (selectedPenempatan === "" || item.dataset.penempatan === selectedPenempatan);
+                const matchesSearch = (searchKeyword === "" || item.dataset.search.includes(searchKeyword));
+                
+                if (matchesPenempatan && matchesSearch) {
                     item.style.display = 'flex';
                 } else {
                     item.style.display = 'none';
@@ -136,7 +144,10 @@
                 }
             });
             updateCheckAllState();
-        });
+        }
+
+        penempatanSelect.addEventListener('change', applyFilters);
+        searchInput.addEventListener('input', applyFilters);
 
         checkAllBox.addEventListener('change', function() {
             const isChecked = this.checked;
