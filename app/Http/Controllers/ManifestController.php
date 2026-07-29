@@ -1319,7 +1319,12 @@ class ManifestController extends Controller
         $baData->pelabuhan_asal = '';
         $baData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan;
         
-        return view('manifests.print-ba', compact('baData', 'manifest'));
+        $relatedManifests = Manifest::where('nama_kapal', $manifest->nama_kapal)
+            ->where('no_voyage', $manifest->no_voyage)
+            ->orderBy('nomor_bl')
+            ->get(['id', 'nomor_bl', 'pengirim', 'penerima', 'nomor_kontainer']);
+            
+        return view('manifests.print-ba', compact('baData', 'manifest', 'relatedManifests'));
     }
 
     private function extractImagesFromTandaTerima($tandaTerima, &$imageUrls)

@@ -142,13 +142,59 @@
             white-space: nowrap;
             text-align: right;
         }
+        .no-print {
+            padding: 15px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .no-print select {
+            padding: 5px 10px;
+            font-size: 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            max-width: 500px;
+        }
+        .no-print button {
+            padding: 6px 12px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .no-print button:hover {
+            background: #2563eb;
+        }
         @media print {
             /* ensure no printing artifacts from browser margins */
             html, body { width: 210mm; height: 330mm; }
+            .no-print { display: none !important; }
         }
     </style>
 </head>
 <body>
+    <div class="no-print">
+        <label><b>Voyage:</b> {{ $manifest->nama_kapal }} {{ $manifest->no_voyage ? ' / ' . $manifest->no_voyage : '' }}</label>
+        
+        <label style="margin-left: 15px;"><b>Pilih BL:</b></label>
+        <select id="bl_selector">
+            @foreach($relatedManifests as $rm)
+                <option value="{{ route('report.manifests.print-ba', $rm->id) }}" {{ $rm->id == $manifest->id ? 'selected' : '' }}>
+                    {{ $rm->nomor_bl ?: '-' }} | {{ $rm->nomor_kontainer ?: '-' }} | {{ \Illuminate\Support\Str::limit($rm->pengirim, 20) }} -> {{ \Illuminate\Support\Str::limit($rm->penerima, 20) }}
+                </option>
+            @endforeach
+        </select>
+        
+        <button type="button" onclick="window.location.href = document.getElementById('bl_selector').value;">Tampilkan</button>
+        
+        <button type="button" onclick="window.print()" style="background: #10b981; margin-left: auto;">Print</button>
+    </div>
+    
     {{-- Pengirim (ambil dari tabel bls via $baData->pengirim) --}}
     @if(isset($baData) && !empty($baData->pengirim))
         <div class="pengirim">{!! nl2br(e($baData->pengirim)) !!}</div>
