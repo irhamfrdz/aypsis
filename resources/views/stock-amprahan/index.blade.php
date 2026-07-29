@@ -81,6 +81,42 @@
     </div>
     @endif
 
+    @if(session('error'))
+    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg shadow-sm flex items-start">
+        <div class="flex-shrink-0 mt-0.5">
+            <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="ml-3 w-full">
+            <h3 class="text-sm font-medium text-red-800">Proses Gagal</h3>
+            <div class="mt-1 text-sm text-red-700 whitespace-pre-wrap">
+                {!! session('error') !!}
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if($errors->any())
+    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg shadow-sm flex items-start">
+        <div class="flex-shrink-0 mt-0.5">
+            <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="ml-3 w-full">
+            <h3 class="text-sm font-medium text-red-800">Terdapat Kesalahan Input:</h3>
+            <div class="mt-1 text-sm text-red-700">
+                <ul class="list-disc pl-5 space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Bulk Actions --}}
     <div id="bulkActions" class="hidden mb-6 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm p-4 animate-in fade-in slide-in-from-top-4 duration-300">
         <div class="flex items-center justify-between">
