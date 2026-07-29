@@ -155,6 +155,11 @@
             });
     };
 
+    var perlengkapanWrapper = document.getElementById('perlengkapan_wrapper');
+    var perlengkapanSectionsContainer = document.getElementById('perlengkapan_sections_container');
+    var addPerlengkapanSectionBtn = document.getElementById('add_perlengkapan_section_btn');
+    var addPerlengkapanSectionBottomBtn = document.getElementById('add_perlengkapan_section_bottom_btn');
+
     if (addPerlengkapanSectionBtn) {
         addPerlengkapanSectionBtn.addEventListener('click', () => addPerlengkapanSection());
     }
