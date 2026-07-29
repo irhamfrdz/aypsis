@@ -2289,6 +2289,68 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Data Karyawan (Cuti & Uang Makan) --}}
+                            <tr class="module-row" data-module="data-karyawan">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Data Uang Makan & Cuti</div>
+                                            <div class="text-xs text-gray-500">Kelola uang makan dan cuti karyawan</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="data-karyawan-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="data-karyawan-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="data-karyawan-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="data-karyawan-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Data Uang Makan --}}
+                            <tr class="submodule-row" data-parent="data-karyawan">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Uang Makan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[data-uang-makan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['data-uang-makan']['view']) && $userMatrixPermissions['data-uang-makan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[data-uang-makan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['data-uang-makan']['create']) && $userMatrixPermissions['data-uang-makan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[data-uang-makan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['data-uang-makan']['update']) && $userMatrixPermissions['data-uang-makan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[data-uang-makan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['data-uang-makan']['delete']) && $userMatrixPermissions['data-uang-makan']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Data Cuti --}}
+                            <tr class="submodule-row" data-parent="data-karyawan">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Cuti</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[data-cuti][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['data-cuti']['view']) && $userMatrixPermissions['data-cuti']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[data-cuti][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['data-cuti']['create']) && $userMatrixPermissions['data-cuti']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[data-cuti][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['data-cuti']['update']) && $userMatrixPermissions['data-cuti']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[data-cuti][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['data-cuti']['delete']) && $userMatrixPermissions['data-cuti']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Aktiva --}}
                             <tr class="module-row" data-module="aktiva">
                                 <td class="module-header">
@@ -4735,6 +4797,9 @@
 
                 // Initialize check all user permissions
                 initializeCheckAllUser();
+
+                // Initialize check all data karyawan
+                initializeCheckAllDataKaryawan();
                 initializeCheckAllAktivitasLainnya();
 
                 // Initialize check all pembayaran permissions
@@ -5204,6 +5269,57 @@
                     if (headerCheckbox && userCheckboxes.length > 0) {
                         const allChecked = Array.from(userCheckboxes).every(cb => cb.checked);
                         const someChecked = Array.from(userCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            // Initialize checkbox handling for Data Karyawan
+            function initializeCheckAllDataKaryawan() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.data-karyawan-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in data karyawan sub-modules
+                        const dataKaryawanCheckboxes = document.querySelectorAll(`[data-parent="data-karyawan"] input[name*="[${permission}]"]`);
+                        dataKaryawanCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`Semua izin ${permission} Data Uang Makan & Cuti telah dicentang`, 'success');
+                        } else {
+                            showToast(`Semua izin ${permission} Data Uang Makan & Cuti telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="data-karyawan"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateDataKaryawanHeaderCheckboxes();
+                    });
+                });
+
+                // Initial check of header checkboxes
+                updateDataKaryawanHeaderCheckboxes();
+            }
+
+            function updateDataKaryawanHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.data-karyawan-header-checkbox[data-permission="${permission}"]`);
+                    const dataKaryawanCheckboxes = document.querySelectorAll(`[data-parent="data-karyawan"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && dataKaryawanCheckboxes.length > 0) {
+                        const allChecked = Array.from(dataKaryawanCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(dataKaryawanCheckboxes).some(cb => cb.checked);
 
                         headerCheckbox.checked = allChecked;
                         headerCheckbox.indeterminate = someChecked && !allChecked;
