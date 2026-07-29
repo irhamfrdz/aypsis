@@ -14,6 +14,8 @@ use App\Http\Controllers\CabangController;
 use App\Http\Controllers\CheckpointController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DivisiController;
+use App\Http\Controllers\CutiController;
+use App\Http\Controllers\UangMakanController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmailAccountController;
 use App\Http\Controllers\JenisBarangController;
@@ -6659,5 +6661,20 @@ Route::middleware(['auth',
     Route::resource('master/tunjangan', \App\Http\Controllers\MasterTunjanganController::class)
         ->names('master.tunjangan')
         ->middleware('can:master-tunjangan');
+
+    // Data Karyawan (Cuti & Uang Makan)
+    Route::get('cuti', [CutiController::class, 'index'])->name('cuti.index')->middleware('can:data-cuti-view');
+    Route::get('cuti/create', [CutiController::class, 'create'])->name('cuti.create')->middleware('can:data-cuti-create');
+    Route::post('cuti', [CutiController::class, 'store'])->name('cuti.store')->middleware('can:data-cuti-create');
+    Route::get('cuti/{cuti}/edit', [CutiController::class, 'edit'])->name('cuti.edit')->middleware('can:data-cuti-edit');
+    Route::put('cuti/{cuti}', [CutiController::class, 'update'])->name('cuti.update')->middleware('can:data-cuti-edit');
+    Route::delete('cuti/{cuti}', [CutiController::class, 'destroy'])->name('cuti.destroy')->middleware('can:data-cuti-delete');
+
+    Route::get('uang-makan', [UangMakanController::class, 'index'])->name('uang-makan.index')->middleware('can:data-uang-makan-view');
+    Route::get('uang-makan/create', [UangMakanController::class, 'create'])->name('uang-makan.create')->middleware('can:data-uang-makan-create');
+    Route::post('uang-makan', [UangMakanController::class, 'store'])->name('uang-makan.store')->middleware('can:data-uang-makan-create');
+    Route::get('uang-makan/{uang_makan}/edit', [UangMakanController::class, 'edit'])->name('uang-makan.edit')->middleware('can:data-uang-makan-edit');
+    Route::put('uang-makan/{uang_makan}', [UangMakanController::class, 'update'])->name('uang-makan.update')->middleware('can:data-uang-makan-edit');
+    Route::delete('uang-makan/{uang_makan}', [UangMakanController::class, 'destroy'])->name('uang-makan.destroy')->middleware('can:data-uang-makan-delete');
 });
 

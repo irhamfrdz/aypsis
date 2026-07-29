@@ -478,6 +478,35 @@
                 </div>
                 @endif
 
+                {{-- Data Karyawan (Cuti & Uang Makan) --}}
+                @php
+                    $isDataKaryawanRoute = Request::is('cuti*') || Request::routeIs('cuti.*') || Request::is('uang-makan*') || Request::routeIs('uang-makan.*');
+                    $hasDataKaryawanPermissions = $isAdmin || ($user && ($user->can('data-cuti-view') || $user->can('data-uang-makan-view')));
+                @endphp
+
+                @if($hasDataKaryawanPermissions)
+                <div class="mt-4 mb-6">
+                    <button id="data-karyawan-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-sm font-medium {{ $isDataKaryawanRoute ? 'bg-blue-50 text-blue-700' : '' }}">
+                        <span class="text-sm font-semibold">Uang Makan & Cuti</span>
+                        <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isDataKaryawanRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div id="data-karyawan-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isDataKaryawanRoute) style="display: block;" @endif>
+                        @if($user && $user->can('data-uang-makan-view'))
+                            <a href="{{ route('uang-makan.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('uang-makan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">Data Uang Makan</span>
+                            </a>
+                        @endif
+                        @if($user && $user->can('data-cuti-view'))
+                            <a href="{{ route('cuti.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('cuti.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">Data Cuti</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
                 {{-- Kelola Email Section --}}
                 @php
                     $isEmailRoute = Request::is('email*') || Request::routeIs('email.*');
@@ -2846,6 +2875,7 @@
         setupDropdown('report-menu-toggle', 'report-menu-content');
         setupDropdown('monitoring-menu-toggle', 'monitoring-menu-content');
         setupDropdown('absensi-menu-toggle', 'absensi-menu-content');
+        setupDropdown('data-karyawan-menu-toggle', 'data-karyawan-menu-content');
         setupDropdown('email-menu-toggle', 'email-menu-content');
         setupDropdown('payroll-menu-toggle', 'payroll-menu-content');
 

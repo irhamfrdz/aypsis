@@ -199,9 +199,26 @@ return [
                 'absensi-rekap' => 'Rekap Absensi',
             ],
         ],
+        'data-karyawan' => [
+            'name' => 'Data Uang Makan & Cuti',
+            'description' => 'Menu Uang Makan dan Cuti',
+            'required' => true,
+            'sub_modules' => [
+                'data-uang-makan-view' => 'View Uang Makan',
+                'data-uang-makan-create' => 'Buat Uang Makan',
+                'data-uang-makan-edit' => 'Edit Uang Makan',
+                'data-uang-makan-delete' => 'Hapus Uang Makan',
+                'data-cuti-view' => 'View Cuti',
+                'data-cuti-create' => 'Buat Cuti',
+                'data-cuti-edit' => 'Edit Cuti',
+                'data-cuti-delete' => 'Hapus Cuti',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
+        'data-uang-makan' => ['data-uang-makan-view'],
+        'data-cuti' => ['data-cuti-view'],
         // Dashboard - semua user bisa akses
         'dashboard' => [],
 

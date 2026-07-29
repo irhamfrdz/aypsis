@@ -54,4 +54,9 @@ return [
         'label' => 'Payroll',
         'prefixes' => ['payroll-'],
     ],
+
+    'data-karyawan' => [
+        'label' => 'Data Karyawan',
+        'prefixes' => ['data-uang-makan', 'data-cuti'],
+    ],
 ];
