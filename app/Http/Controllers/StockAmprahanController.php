@@ -155,8 +155,16 @@ class StockAmprahanController extends Controller
         $chasis = MasterChasisBatam::orderBy('kode')->get();
 
         $banks = Bank::orderBy('name')->pluck('name')->toArray();
+        
+        $availableStocks = \App\Models\StockAmprahan::select('nama_barang', DB::raw('MIN(id) as id'), DB::raw('SUM(jumlah) as total_stock'), DB::raw('MAX(satuan) as satuan'))
+            ->where('jumlah', '>', 0)
+            ->whereNotNull('nama_barang')
+            ->where('nama_barang', '!=', '')
+            ->groupBy('nama_barang')
+            ->orderBy('nama_barang')
+            ->get();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'uniqueNamaBarang', 'selectedMobil', 'banks', 'vendors', 'chasis'));
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'uniqueNamaBarang', 'selectedMobil', 'banks', 'vendors', 'chasis', 'availableStocks'));
     }
 
     public function exportExcel(Request $request)
@@ -632,6 +640,166 @@ class StockAmprahanController extends Controller
         }
 
         return redirect()->route('stock-amprahan.index')->with('success', $message);
+    }
+
+    public function downloadTemplate()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\StockAmprahanTemplateExport, 'Template_Import_Stock_Amprahan.xlsx');
+    }
+
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'file_excel' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ]);
+
+        try {
+            $data = \Maatwebsite\Excel\Facades\Excel::toArray(new \stdClass(), $request->file('file_excel'));
+            $rows = $data[0] ?? [];
+
+            if (empty($rows)) {
+                return redirect()->back()->with('error', 'File Excel kosong atau tidak terbaca.');
+            }
+
+            // Remove header row if first cell looks like a header
+            if (!empty($rows) && (stripos((string)$rows[0][0], 'Bukti') !== false || stripos((string)$rows[0][1], 'Tanggal') !== false || stripos((string)$rows[0][0], 'nomor') !== false)) {
+                array_shift($rows);
+            }
+
+            $successCount = 0;
+            $errors = [];
+            $masterItems = \App\Models\MasterNamaBarangAmprahan::where('status', 'active')->get();
+            $vendors = \App\Models\VendorAmprahan::all();
+            $gudangItems = \App\Models\MasterGudangAmprahan::where('status', 'active')->get();
+
+            $validTipe = ['Pemakaian', 'Perbaikan', 'Perlengkapan', 'Peralatan', 'Transportasi', 'Inventory'];
+
+            DB::beginTransaction();
+            
+            foreach ($rows as $index => $parts) {
+                $lineNum = $index + 2; // +1 for 0-index, +1 for header
+                
+                // Skip completely empty rows
+                if (empty(array_filter($parts))) continue;
+
+                $nomorBukti = $parts[0] ?? '';
+                
+                // Parse excel date (can be numeric or string)
+                $tanggalBeli = $parts[1] ?? '';
+                if (is_numeric($tanggalBeli)) {
+                    $tanggalBeli = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tanggalBeli)->format('Y-m-d');
+                } else if (!empty($tanggalBeli)) {
+                    $tanggalBeli = date('Y-m-d', strtotime($tanggalBeli));
+                }
+
+                $tipeAmprahan = $parts[2] ?? '';
+                $tipeBarang = $parts[3] ?? '';
+                $vendorName = $parts[4] ?? '';
+                $lokasi = $parts[5] ?? '';
+                $namaBarang = $parts[6] ?? '';
+                $jumlah = $parts[7] ?? 0;
+                $satuan = $parts[8] ?? 'Pcs';
+                $hargaSatuan = $parts[9] ?? 0;
+                $keterangan = $parts[10] ?? '';
+
+                if (empty($namaBarang)) {
+                    $errors[] = "Baris {$lineNum}: Nama barang kosong";
+                    continue;
+                }
+
+                if (! is_numeric($jumlah) || $jumlah <= 0) {
+                    $errors[] = "Baris {$lineNum}: Jumlah harus angka positif (ditemukan: '{$jumlah}')";
+                    continue;
+                }
+
+                if (! empty($tanggalBeli) && ! strtotime($tanggalBeli)) {
+                    $errors[] = "Baris {$lineNum}: Format tanggal tidak valid";
+                    continue;
+                }
+
+                $matchedTipe = null;
+                foreach ($validTipe as $tipe) {
+                    if (strtolower($tipe) === strtolower($tipeAmprahan)) {
+                        $matchedTipe = $tipe;
+                        break;
+                    }
+                }
+                if (! $matchedTipe) {
+                    $errors[] = "Baris {$lineNum}: Tipe amprahan '{$tipeAmprahan}' tidak valid";
+                    continue;
+                }
+
+                if (empty($vendorName)) {
+                    $errors[] = "Baris {$lineNum}: Nama vendor kosong";
+                    continue;
+                }
+
+                $vendorMatch = $vendors->first(function ($v) use ($vendorName) {
+                    return strtolower(trim($v->nama_toko)) === strtolower(trim($vendorName));
+                });
+
+                if (! $vendorMatch) {
+                    $errors[] = "Baris {$lineNum}: Vendor/Toko '{$vendorName}' tidak ditemukan di database master";
+                    continue;
+                }
+
+                if (! empty($lokasi)) {
+                    $lokasiMatch = $gudangItems->first(function ($g) use ($lokasi) {
+                        return strtolower(trim($g->nama_gudang)) === strtolower(trim($lokasi));
+                    });
+
+                    if (! $lokasiMatch) {
+                        $errors[] = "Baris {$lineNum}: Lokasi/Gudang '{$lokasi}' tidak ditemukan di master gudang";
+                        continue;
+                    }
+                    $lokasi = $lokasiMatch->nama_gudang;
+                }
+
+                $hargaSatuan = str_replace(['.', ','], ['', '.'], (string)$hargaSatuan);
+                if (! is_numeric($hargaSatuan)) {
+                    $hargaSatuan = 0;
+                }
+
+                $masterMatch = $masterItems->first(function ($m) use ($tipeBarang) {
+                    return strtolower(trim($m->nama_barang)) === strtolower(trim($tipeBarang));
+                });
+
+                if (! $masterMatch) {
+                    $errors[] = "Baris {$lineNum}: Tipe barang '{$tipeBarang}' tidak ditemukan di master barang";
+                    continue;
+                }
+
+                StockAmprahan::create([
+                    'nomor_bukti' => $nomorBukti,
+                    'tanggal_beli' => $tanggalBeli,
+                    'type_amprahan' => $matchedTipe,
+                    'nama_barang' => $namaBarang,
+                    'master_nama_barang_amprahan_id' => $masterMatch->id,
+                    'harga_satuan' => $hargaSatuan,
+                    'jumlah' => $jumlah,
+                    'satuan' => $satuan,
+                    'lokasi' => $lokasi,
+                    'keterangan' => $keterangan,
+                    'vendor_amprahan_id' => $vendorMatch->id,
+                    'created_by' => Auth::id(),
+                    'status_lunas' => 'Belum Lunas'
+                ]);
+
+                $successCount++;
+            }
+
+            if (!empty($errors)) {
+                DB::rollBack();
+                return redirect()->back()->with('error', "Ditemukan kesalahan pada data Excel:\n" . implode("\n", $errors));
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', "Berhasil import {$successCount} data stock dari Excel.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat membaca Excel: ' . $e->getMessage());
+        }
     }
 
     /**

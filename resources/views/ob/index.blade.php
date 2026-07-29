@@ -421,6 +421,10 @@
                                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded text-xs font-medium">
                                 <i class="fas fa-undo mr-1"></i>Batalkan OB
                             </button>
+                            <button type="button" onclick="openSupirModal('bl', {{ $bl->id }})"
+                                   class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                                <i class="fas fa-user-edit mr-1"></i>Ganti Supir
+                            </button>
                         @endif
                         @if($isTL)
                         <button type="button" onclick="clearTL('bl', {{ $bl->id }})"
@@ -544,6 +548,10 @@
                             <button type="button" onclick="unmarkOB('naik_kapal', {{ $naikKapal->id }})"
                                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded text-xs font-medium">
                                 <i class="fas fa-undo mr-1"></i>Batalkan OB
+                            </button>
+                            <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
+                                   class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                                <i class="fas fa-user-edit mr-1"></i>Ganti Supir
                             </button>
                         @endif
                         @if($isTL)
@@ -774,11 +782,19 @@
                                         <i class="fas fa-undo"></i>
                                     </button>
                                 @endif
-                                <button type="button" onclick="openSupirModal('bl', {{ $bl->id }})"
-                                       class="text-blue-600 hover:text-blue-900 transition duration-150"
-                                       title="Input Supir OB">
-                                    <i class="fas fa-user-plus"></i>
-                                </button>
+                                @if($bl->supir_id)
+                                    <button type="button" onclick="openSupirModal('bl', {{ $bl->id }})"
+                                           class="text-teal-600 hover:text-teal-900 transition duration-150"
+                                           title="Ganti Supir OB">
+                                        <i class="fas fa-user-edit"></i>
+                                    </button>
+                                @else
+                                    <button type="button" onclick="openSupirModal('bl', {{ $bl->id }})"
+                                           class="text-blue-600 hover:text-blue-900 transition duration-150"
+                                           title="Input Supir OB">
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>
+                                @endif
                                 @if($bl->sudah_tl)
                                 <button type="button" onclick="clearTL('bl', {{ $bl->id }})"
                                        class="text-red-600 hover:text-red-900 transition duration-150"
@@ -1027,11 +1043,19 @@
                                         </button>
                                         @endif
                                     @endif
-                                    <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
-                                           class="text-blue-600 hover:text-blue-900 transition duration-150"
-                                           title="Input Supir OB">
-                                        <i class="fas fa-user-plus"></i>
-                                    </button>
+                                    @if($naikKapal->supir_id)
+                                        <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
+                                               class="text-teal-600 hover:text-teal-900 transition duration-150"
+                                               title="Ganti Supir OB">
+                                            <i class="fas fa-user-edit"></i>
+                                        </button>
+                                    @else
+                                        <button type="button" onclick="openSupirModal('naik_kapal', {{ $naikKapal->id }})"
+                                               class="text-blue-600 hover:text-blue-900 transition duration-150"
+                                               title="Input Supir OB">
+                                            <i class="fas fa-user-plus"></i>
+                                        </button>
+                                    @endif
                                     <button type="button" onclick="kirimManifest('naik_kapal', {{ $naikKapal->id }})"
                                            class="text-indigo-600 hover:text-indigo-900 transition duration-150"
                                            title="Kirim ke Manifest">

@@ -5895,6 +5895,12 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::post('stock-amprahan/bulk-store', [\App\Http\Controllers\StockAmprahanController::class, 'bulkStore'])
         ->name('stock-amprahan.bulk-store')
         ->middleware('can:stock-amprahan-create');
+    Route::get('stock-amprahan/download-template', [\App\Http\Controllers\StockAmprahanController::class, 'downloadTemplate'])
+        ->name('stock-amprahan.download-template')
+        ->middleware('can:stock-amprahan-view');
+    Route::post('stock-amprahan/import-excel', [\App\Http\Controllers\StockAmprahanController::class, 'importExcel'])
+        ->name('stock-amprahan.import-excel')
+        ->middleware('can:stock-amprahan-create');
     Route::post('stock-amprahan/bulk-usage', [\App\Http\Controllers\StockAmprahanController::class, 'bulkUsage'])
         ->name('stock-amprahan.bulk-usage')
         ->middleware('can:stock-amprahan-update');

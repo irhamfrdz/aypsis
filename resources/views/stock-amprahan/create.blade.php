@@ -39,9 +39,34 @@
             <span class="text-gray-800 font-medium">Tambah Baru</span>
         </nav>
 
+        {{-- Alert Section --}}
+        @if(session('success'))
+        <div class="mb-4 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg shadow-sm">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 text-xl mr-3"></i>
+                <p class="text-green-700 font-medium">{{ session('success') }}</p>
+            </div>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+            <div class="flex items-start">
+                <i class="fas fa-exclamation-circle text-red-500 text-xl mr-3 mt-0.5"></i>
+                <p class="text-red-700 font-medium whitespace-pre-line">{{ session('error') }}</p>
+            </div>
+        </div>
+        @endif
+
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="p-8">
-                <h2 class="text-xl font-bold text-gray-800 mb-6">Informasi Stock Baru</h2>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                    <h2 class="text-xl font-bold text-gray-800">Informasi Stock Baru</h2>
+                    <button type="button" onclick="document.getElementById('importExcelModal').classList.remove('hidden')" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Upload Excel
+                    </button>
+                </div>
                 
                 <form action="{{ route('stock-amprahan.store') }}" method="POST" class="space-y-8">
                     @csrf
@@ -554,6 +579,63 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Import Excel Modal --}}
+<div id="importExcelModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true" onclick="document.getElementById('importExcelModal').classList.add('hidden')"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-file-excel text-green-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Upload Excel Stock Amprahan
+                        </h3>
+                        <div class="mt-4">
+                            <form action="{{ route('stock-amprahan.import-excel') }}" method="POST" enctype="multipart/form-data" id="importExcelForm">
+                                @csrf
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File Excel</label>
+                                    <input type="file" name="file_excel" accept=".xlsx,.xls,.csv" required
+                                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-colors">
+                                    <p class="mt-2 text-xs text-gray-500">Format yang didukung: .xlsx, .xls, .csv</p>
+                                </div>
+                                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mt-4">
+                                    <h4 class="text-sm font-bold text-blue-800 mb-2">Format Kolom yang Dibutuhkan:</h4>
+                                    <ol class="list-decimal ml-4 text-xs text-blue-700 space-y-1">
+                                        <li>No. Bukti</li>
+                                        <li>Tanggal Beli (YYYY-MM-DD)</li>
+                                        <li>Tipe Amprahan</li>
+                                        <li>Type Barang (Kategori Master)</li>
+                                        <li>Vendor/Toko</li>
+                                        <li>Lokasi/Gudang</li>
+                                        <li>Nama Barang (Spesifik)</li>
+                                        <li>Jumlah</li>
+                                        <li>Satuan</li>
+                                        <li>Harga Satuan</li>
+                                        <li>Keterangan</li>
+                                    </ol>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100">
+                <button type="submit" form="importExcelForm" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200">
+                    <i class="fas fa-upload mr-2 mt-1"></i> Upload & Proses
+                </button>
+                <button type="button" onclick="document.getElementById('importExcelModal').classList.add('hidden')" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200">
+                    Batal
+                </button>
             </div>
         </div>
     </div>

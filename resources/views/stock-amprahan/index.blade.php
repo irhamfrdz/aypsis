@@ -48,6 +48,16 @@
                 </svg>
                 Input Masal
             </button>
+            <button type="button" onclick="document.getElementById('importExcelModal').classList.remove('hidden')" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                <i class="fas fa-file-excel mr-2"></i>
+                Upload Excel
+            </button>
+            <button type="button" onclick="openGeneralUsageModal()" class="inline-flex items-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                </svg>
+                Input Barang Keluar
+            </button>
             <a href="{{ route('stock-amprahan.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -344,7 +354,8 @@
                         </td>
 
                         <!-- Info Barang -->
-                        <td class="px-3 py-3">
+                        <td class
+                        ="px-3 py-3">
                             <div class="text-xs font-bold text-gray-900">{{ $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-') }}</div>
                             <div class="text-[10px] text-gray-500">Master: {{ $item->masterNamaBarangAmprahan->nama_barang ?? '-' }}</div>
                             <div class="text-[10px] text-gray-400 mb-1.5">ID: #{{ str_pad($item->id, 5, '0', STR_PAD_LEFT) }}</div>
@@ -558,12 +569,21 @@
                                 </h3>
                                 <div class="mt-2">
                                     <div id="errorMessage" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700"></div>
-                                    <p class="text-sm text-gray-500 mb-4">
+                                    <p class="text-sm text-gray-500 mb-4" id="modalFixedItemContainer">
                                         Silakan isi detail pengambilan untuk barang <strong id="modalItemName"></strong>.
                                         Sisa stock saat ini: <strong id="modalCurrentStock"></strong> <span id="modalUnit"></span>
                                     </p>
                                     
                                     <div class="space-y-4">
+                                        <div id="modalDynamicItemContainer" class="hidden mb-4">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Barang <span class="text-red-500">*</span></label>
+                                            <select id="general_nama_barang_select" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm searchable-select" onchange="updateGeneralUsageData()">
+                                                <option value="">-- Pilih Barang --</option>
+                                                @foreach($availableStocks as $stock)
+                                                    <option value="{{ $stock->id }}" data-stock="{{ $stock->total_stock }}" data-unit="{{ $stock->satuan }}">{{ $stock->nama_barang }} (Sisa: {{ number_format($stock->total_stock, 0, ',', '.') }} {{ $stock->satuan }})</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
                                             <div class="relative" id="penerima_dropdown">
@@ -1066,17 +1086,79 @@
 </div>
 
 <script>
+    function updateGeneralUsageData() {
+        const select = document.getElementById('general_nama_barang_select');
+        const selectedOption = select.options[select.selectedIndex];
+        
+        if (selectedOption && selectedOption.value) {
+            const id = selectedOption.value;
+            const stock = selectedOption.getAttribute('data-stock');
+            const unit = selectedOption.getAttribute('data-unit');
+            
+            document.getElementById('modalCurrentStock').textContent = stock;
+            document.getElementById('modalUnit').textContent = unit;
+            
+            document.getElementById('usageForm').action = "{{ url('stock-amprahan') }}/" + id + "/usage";
+            
+            const input = document.getElementById('jumlah_ambil');
+            input.max = stock;
+        } else {
+            document.getElementById('usageForm').action = '';
+            document.getElementById('modalCurrentStock').textContent = '0';
+            document.getElementById('modalUnit').textContent = '';
+            
+            const input = document.getElementById('jumlah_ambil');
+            input.max = 0;
+        }
+    }
+
+    function openGeneralUsageModal() {
+        document.getElementById('usageModal').classList.remove('hidden');
+        document.getElementById('modalFixedItemContainer').classList.add('hidden');
+        document.getElementById('modalDynamicItemContainer').classList.remove('hidden');
+        
+        document.getElementById('usageForm').reset();
+        document.getElementById('usageForm').action = '';
+        document.getElementById('errorMessage').classList.add('hidden');
+        document.getElementById('stockError').classList.add('hidden');
+        
+        document.getElementById('penerima_search_input').value = '';
+        document.getElementById('penerima_id_hidden').value = '';
+        document.getElementById('kendaraan_search_input').value = '';
+        document.getElementById('kendaraan_id_hidden').value = '';
+        document.getElementById('truck_search_input').value = '';
+        document.getElementById('truck_id_hidden').value = '';
+        document.getElementById('buntut_search_input').value = '';
+        document.getElementById('buntut_id_hidden').value = '';
+        document.getElementById('kapal_search_input').value = '';
+        document.getElementById('kapal_id_hidden').value = '';
+        document.getElementById('alat_berat_search_input').value = '';
+        document.getElementById('alat_berat_id_hidden').value = '';
+        document.getElementById('kantor').value = '';
+        
+        const generalSelect = document.getElementById('general_nama_barang_select');
+        if (generalSelect) {
+            generalSelect.selectedIndex = 0;
+            const searchInput = generalSelect.parentElement.querySelector('input[type="text"]');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+        }
+        
+        updateGeneralUsageData();
+    }
+
     function openUsageModal(id, name, stock, unit) {
         document.getElementById('usageModal').classList.remove('hidden');
+        document.getElementById('modalFixedItemContainer').classList.remove('hidden');
+        document.getElementById('modalDynamicItemContainer').classList.add('hidden');
+        
         document.getElementById('modalItemName').textContent = name;
         document.getElementById('modalCurrentStock').textContent = stock;
         document.getElementById('modalUnit').textContent = unit;
-        document.getElementById('kilometer').value = '';
-        document.getElementById('odometer').value = '';
         
         // Set form action
-        const form = document.getElementById('usageForm');
-        form.action = `/stock-amprahan/${id}/usage`;
+        document.getElementById('usageForm').action = `/stock-amprahan/${id}/usage`;
         
         // Max validation
         const input = document.getElementById('jumlah_ambil');
@@ -2642,6 +2724,68 @@
 </script>
 
 @endsection
+
+{{-- Import Excel Modal --}}
+<div id="importExcelModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" aria-hidden="true" onclick="document.getElementById('importExcelModal').classList.add('hidden')"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-file-excel text-green-600"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Upload Excel Stock Amprahan
+                        </h3>
+                        <div class="mt-4">
+                            <form action="{{ route('stock-amprahan.import-excel') }}" method="POST" enctype="multipart/form-data" id="importExcelForm">
+                                @csrf
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih File Excel</label>
+                                    <input type="file" name="file_excel" accept=".xlsx,.xls,.csv" required
+                                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-colors">
+                                    <div class="flex items-center justify-between mt-2">
+                                        <p class="text-xs text-gray-500">Format yang didukung: .xlsx, .xls, .csv</p>
+                                        <a href="{{ route('stock-amprahan.download-template') }}" class="text-sm text-green-600 hover:text-green-800 font-medium transition-colors">
+                                            <i class="fas fa-download mr-1"></i> Download Template
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mt-4">
+                                    <h4 class="text-sm font-bold text-blue-800 mb-2">Format Kolom yang Dibutuhkan:</h4>
+                                    <ol class="list-decimal ml-4 text-xs text-blue-700 space-y-1">
+                                        <li>No. Bukti</li>
+                                        <li>Tanggal Beli (YYYY-MM-DD)</li>
+                                        <li>Tipe Amprahan</li>
+                                        <li>Type Barang (Kategori Master)</li>
+                                        <li>Vendor/Toko</li>
+                                        <li>Lokasi/Gudang</li>
+                                        <li>Nama Barang (Spesifik)</li>
+                                        <li>Jumlah</li>
+                                        <li>Satuan</li>
+                                        <li>Harga Satuan</li>
+                                        <li>Keterangan</li>
+                                    </ol>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-100">
+                <button type="submit" form="importExcelForm" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200">
+                    <i class="fas fa-upload mr-2 mt-1"></i> Upload & Proses
+                </button>
+                <button type="button" onclick="document.getElementById('importExcelModal').classList.add('hidden')" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
 <script>
