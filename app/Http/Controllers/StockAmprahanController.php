@@ -522,8 +522,26 @@ class StockAmprahanController extends Controller
                 $jumlah = $parts[7] ?? 0;
                 $satuan = $parts[8] ?? 'Pcs';
                 $hargaSatuan = $parts[9] ?? 0;
-                $keterangan = $parts[10] ?? '';
+                $hargaTotal = $parts[10] ?? 0;
+                $keterangan = $parts[11] ?? '';
 
+                // Clean harga (remove dots/commas for thousand separators)
+                $hargaSatuan = str_replace(['.', ','], ['', '.'], $hargaSatuan);
+                $hargaTotal = str_replace(['.', ','], ['', '.'], $hargaTotal);
+
+                if (! is_numeric($hargaSatuan)) {
+                    $hargaSatuan = 0;
+                }
+                
+                if (! is_numeric($hargaTotal)) {
+                    $hargaTotal = 0;
+                }
+
+                if (empty($hargaSatuan) || $hargaSatuan == 0) {
+                    if (!empty($hargaTotal) && $hargaTotal > 0 && is_numeric($jumlah) && $jumlah > 0) {
+                        $hargaSatuan = $hargaTotal / $jumlah;
+                    }
+                }
                 if (empty($namaBarang)) {
                     $errors[] = "Baris {$lineNum}: Nama barang kosong";
 
@@ -588,11 +606,7 @@ class StockAmprahanController extends Controller
                     $lokasi = $lokasiMatch->nama_gudang;
                 }
 
-                // Clean harga_satuan (remove dots/commas for thousand separators)
-                $hargaSatuan = str_replace(['.', ','], ['', '.'], $hargaSatuan);
-                if (! is_numeric($hargaSatuan)) {
-                    $hargaSatuan = 0;
-                }
+                // cleaning was moved to top of loop
 
                 // Validasi Tipe Barang (harus sesuai dengan MasterNamaBarangAmprahan)
                 $masterMatch = $masterItems->first(function ($m) use ($tipeBarang) {
@@ -700,8 +714,26 @@ class StockAmprahanController extends Controller
                 $jumlah = $parts[7] ?? 0;
                 $satuan = $parts[8] ?? 'Pcs';
                 $hargaSatuan = $parts[9] ?? 0;
-                $keterangan = $parts[10] ?? '';
+                $hargaTotal = $parts[10] ?? 0;
+                $keterangan = $parts[11] ?? '';
 
+                // Clean harga (remove dots/commas for thousand separators)
+                $hargaSatuan = str_replace(['.', ','], ['', '.'], $hargaSatuan);
+                $hargaTotal = str_replace(['.', ','], ['', '.'], $hargaTotal);
+
+                if (! is_numeric($hargaSatuan)) {
+                    $hargaSatuan = 0;
+                }
+                
+                if (! is_numeric($hargaTotal)) {
+                    $hargaTotal = 0;
+                }
+
+                if (empty($hargaSatuan) || $hargaSatuan == 0) {
+                    if (!empty($hargaTotal) && $hargaTotal > 0 && is_numeric($jumlah) && $jumlah > 0) {
+                        $hargaSatuan = $hargaTotal / $jumlah;
+                    }
+                }
                 if (empty($namaBarang)) {
                     $errors[] = "Baris {$lineNum}: Nama barang kosong";
                     continue;
@@ -755,10 +787,7 @@ class StockAmprahanController extends Controller
                     $lokasi = $lokasiMatch->nama_gudang;
                 }
 
-                $hargaSatuan = str_replace(['.', ','], ['', '.'], (string)$hargaSatuan);
-                if (! is_numeric($hargaSatuan)) {
-                    $hargaSatuan = 0;
-                }
+                // cleaning was moved to top of loop
 
                 $masterMatch = $masterItems->first(function ($m) use ($tipeBarang) {
                     return strtolower(trim($m->nama_barang)) === strtolower(trim($tipeBarang));

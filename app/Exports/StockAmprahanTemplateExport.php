@@ -20,6 +20,7 @@ class StockAmprahanTemplateExport implements FromArray, WithHeadings
             'Jumlah',
             'Satuan',
             'Harga Satuan',
+            'Harga Total (Opsional)',
             'Keterangan'
         ];
     }
@@ -39,6 +40,7 @@ class StockAmprahanTemplateExport implements FromArray, WithHeadings
                 '10',
                 'Pcs',
                 '50000',
+                '500000',
                 'Untuk stok cadangan'
             ]
         ];
