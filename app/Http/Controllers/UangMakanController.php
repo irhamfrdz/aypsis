@@ -16,7 +16,8 @@ class UangMakanController extends Controller
     public function create()
     {
         $karyawans = \App\Models\Karyawan::whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get();
-        return view('uang-makan.create', compact('karyawans'));
+        $penempatans = $karyawans->pluck('penempatan')->filter()->unique()->values();
+        return view('uang-makan.create', compact('karyawans', 'penempatans'));
     }
 
     public function store(Request $request)

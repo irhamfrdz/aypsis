@@ -16,17 +16,29 @@
                     @csrf
                     
                     <div class="space-y-6">
-                        <div>
-                            <label for="karyawan_id" class="block text-sm font-medium text-gray-700">Karyawan</label>
-                            <select id="karyawan_id" name="karyawan_id" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="">Pilih Karyawan</option>
-                                @foreach($karyawans as $karyawan)
-                                    <option value="{{ $karyawan->id }}" {{ old('karyawan_id') == $karyawan->id ? 'selected' : '' }} data-nominal="{{ $karyawan->nominal_uang_makan ?? 50000 }}">{{ $karyawan->nama_lengkap }} ({{ $karyawan->nik }})</option>
-                                @endforeach
-                            </select>
-                            @error('karyawan_id')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="filter_penempatan" class="block text-sm font-medium text-gray-700">Filter Penempatan</label>
+                                <select id="filter_penempatan" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">Semua Penempatan</option>
+                                    @foreach($penempatans as $penempatan)
+                                        <option value="{{ $penempatan }}">{{ $penempatan }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="karyawan_id" class="block text-sm font-medium text-gray-700">Karyawan</label>
+                                <select id="karyawan_id" name="karyawan_id" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">Pilih Karyawan</option>
+                                    @foreach($karyawans as $karyawan)
+                                        <option value="{{ $karyawan->id }}" data-penempatan="{{ $karyawan->penempatan }}" {{ old('karyawan_id') == $karyawan->id ? 'selected' : '' }} data-nominal="{{ $karyawan->nominal_uang_makan ?? 50000 }}">{{ $karyawan->nama_lengkap }} ({{ $karyawan->nik }})</option>
+                                    @endforeach
+                                </select>
+                                @error('karyawan_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -69,24 +81,39 @@
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
-    // Opsional: Otomatis mengisi nominal saat karyawan dipilih
     document.addEventListener('DOMContentLoaded', function() {
+        const penempatanSelect = document.getElementById('filter_penempatan');
         const karyawanSelect = document.getElementById('karyawan_id');
         const nominalInput = document.getElementById('nominal');
-        
-        if (karyawanSelect && nominalInput) {
-            karyawanSelect.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                if (selectedOption && selectedOption.dataset.nominal) {
-                    // Update the nominal value if it exists on the karyawans table
-                    nominalInput.value = selectedOption.dataset.nominal;
+        const karyawanOptions = Array.from(karyawanSelect.options).filter(opt => opt.value !== "");
+
+        penempatanSelect.addEventListener('change', function() {
+            const selectedPenempatan = this.value;
+            
+            // Reset and rebuild options
+            karyawanSelect.innerHTML = '<option value="">Pilih Karyawan</option>';
+            
+            karyawanOptions.forEach(option => {
+                if (selectedPenempatan === "" || option.dataset.penempatan === selectedPenempatan) {
+                    karyawanSelect.appendChild(option.cloneNode(true));
                 }
             });
-        }
+            
+            // Trigger change event to update nominal if needed
+            karyawanSelect.dispatchEvent(new Event('change'));
+        });
+        
+        // Update nominal logic
+        karyawanSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && selectedOption.dataset.nominal && nominalInput) {
+                nominalInput.value = selectedOption.dataset.nominal;
+            }
+        });
     });
 </script>
 @endpush
-@endsection
