@@ -23,13 +23,21 @@ class UangMakanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'karyawan_id' => 'required|exists:karyawans,id',
+            'karyawan_id' => 'required|array|min:1',
+            'karyawan_id.*' => 'exists:karyawans,id',
             'tanggal' => 'required|date',
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
 
-        \App\Models\UangMakan::create($validated);
+        foreach ($validated['karyawan_id'] as $id) {
+            \App\Models\UangMakan::create([
+                'karyawan_id' => $id,
+                'tanggal' => $validated['tanggal'],
+                'nominal' => $validated['nominal'],
+                'keterangan' => $validated['keterangan'],
+            ]);
+        }
         return redirect()->route('uang-makan.index')->with('success', 'Data uang makan berhasil ditambahkan.');
     }
 

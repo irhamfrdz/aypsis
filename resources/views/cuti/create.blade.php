@@ -28,13 +28,23 @@
                             </div>
 
                             <div>
-                                <label for="karyawan_id" class="block text-sm font-medium text-gray-700">Karyawan</label>
-                                <select id="karyawan_id" name="karyawan_id" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                    <option value="">Pilih Karyawan</option>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="block text-sm font-medium text-gray-700">Karyawan</label>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="check_all_karyawan" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                                        <label for="check_all_karyawan" class="ml-2 block text-xs text-gray-600">Pilih Semua</label>
+                                    </div>
+                                </div>
+                                <div class="mt-1 border border-gray-300 rounded-md p-3 h-64 overflow-y-auto bg-white" id="karyawan_list_container">
                                     @foreach($karyawans as $karyawan)
-                                        <option value="{{ $karyawan->id }}" data-penempatan="{{ $karyawan->penempatan }}" {{ old('karyawan_id') == $karyawan->id ? 'selected' : '' }}>{{ $karyawan->nama_lengkap }} ({{ $karyawan->nik }})</option>
+                                        <div class="flex items-center py-2 border-b border-gray-100 last:border-0 karyawan-item" data-penempatan="{{ $karyawan->penempatan }}">
+                                            <input type="checkbox" name="karyawan_id[]" value="{{ $karyawan->id }}" id="karyawan_{{ $karyawan->id }}" class="karyawan-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" {{ (is_array(old('karyawan_id')) && in_array($karyawan->id, old('karyawan_id'))) ? 'checked' : '' }}>
+                                            <label for="karyawan_{{ $karyawan->id }}" class="ml-3 block text-sm font-medium text-gray-700">
+                                                {{ $karyawan->nama_lengkap }} <span class="text-xs text-gray-500 font-normal">({{ $karyawan->nik }})</span>
+                                            </label>
+                                        </div>
                                     @endforeach
-                                </select>
+                                </div>
                                 @error('karyawan_id')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -95,23 +105,52 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const penempatanSelect = document.getElementById('filter_penempatan');
-        const karyawanSelect = document.getElementById('karyawan_id');
-        const karyawanOptions = Array.from(karyawanSelect.options).filter(opt => opt.value !== "");
+        const karyawanItems = document.querySelectorAll('.karyawan-item');
+        const checkAllBox = document.getElementById('check_all_karyawan');
+        const karyawanCheckboxes = document.querySelectorAll('.karyawan-checkbox');
+
+        function updateCheckAllState() {
+            const visibleCheckboxes = Array.from(karyawanCheckboxes).filter(cb => cb.closest('.karyawan-item').style.display !== 'none');
+            if (visibleCheckboxes.length === 0) {
+                checkAllBox.checked = false;
+                checkAllBox.indeterminate = false;
+                return;
+            }
+            const allChecked = visibleCheckboxes.every(cb => cb.checked);
+            const someChecked = visibleCheckboxes.some(cb => cb.checked);
+            checkAllBox.checked = allChecked;
+            checkAllBox.indeterminate = someChecked && !allChecked;
+        }
 
         penempatanSelect.addEventListener('change', function() {
             const selectedPenempatan = this.value;
             
-            // Reset and rebuild options
-            karyawanSelect.innerHTML = '<option value="">Pilih Karyawan</option>';
-            
-            karyawanOptions.forEach(option => {
-                if (selectedPenempatan === "" || option.dataset.penempatan === selectedPenempatan) {
-                    karyawanSelect.appendChild(option.cloneNode(true));
+            karyawanItems.forEach(item => {
+                if (selectedPenempatan === "" || item.dataset.penempatan === selectedPenempatan) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                    // Uncheck if hidden by filter
+                    const cb = item.querySelector('.karyawan-checkbox');
+                    if (cb) cb.checked = false;
                 }
             });
-            
-            // Trigger change event just in case
-            karyawanSelect.dispatchEvent(new Event('change'));
+            updateCheckAllState();
+        });
+
+        checkAllBox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            karyawanCheckboxes.forEach(cb => {
+                if (cb.closest('.karyawan-item').style.display !== 'none') {
+                    cb.checked = isChecked;
+                }
+            });
+        });
+
+        karyawanCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                updateCheckAllState();
+            });
         });
     });
 </script>

@@ -23,14 +23,23 @@ class CutiController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'karyawan_id' => 'required|exists:karyawans,id',
+            'karyawan_id' => 'required|array|min:1',
+            'karyawan_id.*' => 'exists:karyawans,id',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'jenis_cuti' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
         ]);
 
-        \App\Models\Cuti::create($validated);
+        foreach ($validated['karyawan_id'] as $id) {
+            \App\Models\Cuti::create([
+                'karyawan_id' => $id,
+                'tanggal_mulai' => $validated['tanggal_mulai'],
+                'tanggal_selesai' => $validated['tanggal_selesai'],
+                'jenis_cuti' => $validated['jenis_cuti'],
+                'keterangan' => $validated['keterangan'],
+            ]);
+        }
         return redirect()->route('cuti.index')->with('success', 'Data cuti berhasil ditambahkan.');
     }
 
