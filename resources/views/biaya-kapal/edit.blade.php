@@ -64,6 +64,9 @@
 {{-- Biaya Umum --}}
 @include('biaya-kapal.create._section-umum')
 
+{{-- Biaya Perlengkapan --}}
+@include('biaya-kapal.create._section-perlengkapan')
+
 
 {{-- ===== FORM FIELDS EXTRA ===== --}}
 @include('biaya-kapal.edit._form-fields-extra')
@@ -101,6 +104,7 @@
 @include('biaya-kapal.edit._js-tanto')
 @include('biaya-kapal.create._js-nota-retur')
 @include('biaya-kapal.edit._js-umum-sections')
+@include('biaya-kapal.edit._js-perlengkapan-sections')
 
 {{-- Init must be last after all functions are defined --}}
 @include('biaya-kapal.edit._js-edit-init')

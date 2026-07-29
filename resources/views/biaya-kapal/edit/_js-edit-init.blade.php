@@ -448,6 +448,21 @@
                 ];
             }
         }
+        
+        // Map Perlengkapan
+        $editPerlengkapanSections = [];
+        if($biayaKapal->perlengkapanDetails && $biayaKapal->perlengkapanDetails->count() > 0) {
+            foreach($biayaKapal->perlengkapanDetails as $prl) {
+                $editPerlengkapanSections[] = [
+                    'id' => $prl->id,
+                    'nama_kapal' => $prl->nama_kapal,
+                    'no_voyage' => $prl->no_voyage,
+                    'keterangan' => $prl->keterangan,
+                    'jumlah_biaya' => $prl->jumlah_biaya
+                ];
+            }
+        }
+
     @endphp
 
     var existingKapalSections = @json($editKapalSections);
@@ -464,6 +479,7 @@
     var existingTantoSections = @json($editTantoSections);
     var existingNotaReturSections = @json($editNotaReturSections);
     var existingUmumSections = @json($editUmumSections);
+    var existingPerlengkapanSections = @json($editPerlengkapanSections);
 
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(initializeEditMode, 500);
@@ -952,6 +968,13 @@
             existingUmumSections.forEach(myData => {
                 if (typeof addUmumSection === 'function') addUmumSection(myData);
             });
+        }
+        
+        // 15. PERLENGKAPAN SECTIONS
+        if (existingPerlengkapanSections && existingPerlengkapanSections.length > 0) {
+            if (typeof populatePerlengkapanData === 'function') {
+                populatePerlengkapanData(existingPerlengkapanSections);
+            }
         }
     }
 

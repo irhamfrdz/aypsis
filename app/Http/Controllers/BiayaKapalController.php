@@ -3621,6 +3621,13 @@ class BiayaKapalController extends Controller
             'umum_sections.*.nominal' => 'nullable|numeric|min:0',
             'umum_sections.*.pph' => 'nullable|numeric|min:0',
 
+            // Perlengkapan sections
+            'perlengkapan_sections' => 'nullable|array',
+            'perlengkapan_sections.*.nama_kapal' => 'nullable|string|max:255',
+            'perlengkapan_sections.*.no_voyage' => 'nullable|string|max:255',
+            'perlengkapan_sections.*.keterangan' => 'nullable|string',
+            'perlengkapan_sections.*.jumlah_biaya' => 'nullable|numeric|min:0',
+
             // DOKUMEN sections validation
             'dokumen_sections' => 'nullable|array',
             'dokumen_sections.*.kapal' => 'nullable|string|max:255',
@@ -4910,6 +4917,38 @@ class BiayaKapalController extends Controller
                 }
                 if ($totalUmum > 0 || (isset($jenisBiayaName) && stripos($jenisBiayaName, 'umum') !== false)) {
                     $biayaKapal->update(['nominal' => $totalUmum]);
+                }
+            }
+
+            // PERLENGKAPAN UPDATE
+            if ($request->has('perlengkapan_sections')) {
+                BiayaKapalPerlengkapan::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                $totalPerlengkapan = 0;
+                
+                if (! empty($request->perlengkapan_sections)) {
+                    foreach ($request->perlengkapan_sections as $section) {
+                        if (empty($section['nama_kapal']) && empty($section['jumlah_biaya'])) {
+                            continue;
+                        }
+
+                        $jumlah = floatval(
+                            str_replace(',', '.', str_replace('.', '', (string) ($section['jumlah_biaya'] ?? '0')))
+                        );
+
+                        BiayaKapalPerlengkapan::create([
+                            'biaya_kapal_id' => $biayaKapal->id,
+                            'nama_kapal' => $section['nama_kapal'] ?? null,
+                            'no_voyage' => $section['no_voyage'] ?? null,
+                            'keterangan' => $section['keterangan'] ?? null,
+                            'jumlah_biaya' => $jumlah,
+                        ]);
+
+                        $totalPerlengkapan += $jumlah;
+                    }
+                }
+                
+                if ($totalPerlengkapan > 0 || (isset($jenisBiayaName) && stripos($jenisBiayaName, 'perlengkapan') !== false)) {
+                    $biayaKapal->update(['nominal' => $totalPerlengkapan]);
                 }
             }
 
