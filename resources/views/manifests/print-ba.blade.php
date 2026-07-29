@@ -204,17 +204,21 @@
         // Default fallback
         $unitText = '';
         
-        // Prioritas 1: Ambil langsung dari object baData (kuantitas + satuan dari manifests table)
-        if (isset($baData->kuantitas) && !empty($baData->kuantitas)) {
-            $kuantitas = $baData->kuantitas;
-            $satuan = $baData->satuan ?? 'unit';
-            $unitText = $kuantitas . ' ' . $satuan;
-        }
-        // Prioritas 2: Cek via relationship manifest (jika object baData punya relation manifest)
-        elseif (isset($baData->manifest) && !empty($baData->manifest->kuantitas)) {
-            $kuantitas = $baData->manifest->kuantitas;
-            $satuan = $baData->manifest->satuan ?? 'unit';
-            $unitText = $kuantitas . ' ' . $satuan;
+        if (!$isCargo) {
+            $unitText = '1 unit';
+        } else {
+            // Prioritas 1: Ambil langsung dari object baData (kuantitas + satuan dari manifests table)
+            if (isset($baData->kuantitas) && !empty($baData->kuantitas)) {
+                $kuantitas = $baData->kuantitas;
+                $satuan = $baData->satuan ?? 'unit';
+                $unitText = $kuantitas . ' ' . $satuan;
+            }
+            // Prioritas 2: Cek via relationship manifest (jika object baData punya relation manifest)
+            elseif (isset($baData->manifest) && !empty($baData->manifest->kuantitas)) {
+                $kuantitas = $baData->manifest->kuantitas;
+                $satuan = $baData->manifest->satuan ?? 'unit';
+                $unitText = $kuantitas . ' ' . $satuan;
+            }
         }
     @endphp
     @if(!empty($unitText))
