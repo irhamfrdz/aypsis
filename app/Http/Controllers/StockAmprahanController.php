@@ -164,7 +164,26 @@ class StockAmprahanController extends Controller
             ->orderBy('nama_barang')
             ->get();
 
-        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'uniqueNamaBarang', 'selectedMobil', 'banks', 'vendors', 'chasis', 'availableStocks'));
+        $stockDetailsQuery = \App\Models\StockAmprahan::select('nama_barang', 'jumlah', 'harga_satuan', 'tanggal_beli', 'created_at')
+            ->where('jumlah', '>', 0)
+            ->whereNotNull('nama_barang')
+            ->where('nama_barang', '!=', '')
+            ->orderBy('tanggal_beli', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $stockDetails = [];
+        foreach ($stockDetailsQuery as $sd) {
+            if (!isset($stockDetails[$sd->nama_barang])) {
+                $stockDetails[$sd->nama_barang] = [];
+            }
+            $stockDetails[$sd->nama_barang][] = [
+                'jumlah' => (float) $sd->jumlah,
+                'harga_satuan' => (float) $sd->harga_satuan
+            ];
+        }
+
+        return view('stock-amprahan.index', compact('items', 'karyawans', 'kendaraans', 'alatBerats', 'kapals', 'search', 'stats', 'masterItems', 'uniqueNamaBarang', 'selectedMobil', 'banks', 'vendors', 'chasis', 'availableStocks', 'stockDetails'));
     }
 
     public function exportExcel(Request $request)

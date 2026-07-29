@@ -841,7 +841,7 @@
                                          </div>
                                          <div>
                                              <label for="jumlah_ambil" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Ambil</label>
-                                            <input type="number" name="jumlah" id="jumlah_ambil" required min="1" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out" placeholder="Masukkan jumlah barang...">
+                                            <input type="number" name="jumlah" id="jumlah_ambil" required min="1" step="any" class="block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out" placeholder="Masukkan jumlah barang..." oninput="calculateRupiahUsage()">
                                             <p class="text-xs text-red-500 mt-1 hidden" id="stockError">
                                                 <span class="flex items-center">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -850,6 +850,14 @@
                                                     Jumlah melebihi stock yang tersedia!
                                                 </span>
                                             </p>
+                                        </div>
+                                        
+                                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 mt-2">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm font-medium text-gray-700">Estimasi Nilai Barang Keluar:</span>
+                                                <span class="text-lg font-bold text-green-600" id="estimasi_rupiah_keluar">Rp 0</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1 italic">Nilai dihitung berdasarkan metode FIFO (First-In First-Out) dari riwayat pembelian barang.</p>
                                         </div>
                                         
                                         <div>
@@ -1122,6 +1130,62 @@
 </div>
 
 <script>
+    var stockDetailsData = @json($stockDetails ?? []);
+
+    function calculateRupiahUsage() {
+        const estimasiEl = document.getElementById('estimasi_rupiah_keluar');
+        let namaBarang = '';
+        
+        // Cek mode apa yang sedang aktif (General/Dynamic vs Fixed)
+        if (!document.getElementById('modalDynamicItemContainer').classList.contains('hidden')) {
+            const select = document.getElementById('general_nama_barang_select');
+            const selectedOption = select.options[select.selectedIndex];
+            if (!selectedOption || !selectedOption.value) {
+                estimasiEl.textContent = 'Rp 0';
+                return;
+            }
+            namaBarang = selectedOption.text.split(' (Sisa:')[0].trim();
+        } else {
+            namaBarang = document.getElementById('modalItemName').textContent.trim();
+        }
+
+        const inputVal = parseFloat(document.getElementById('jumlah_ambil').value) || 0;
+        
+        if (inputVal <= 0 || !stockDetailsData[namaBarang]) {
+            estimasiEl.textContent = 'Rp 0';
+            return;
+        }
+
+        let remainingToTake = inputVal;
+        let totalRupiah = 0;
+        const availableStockHistory = stockDetailsData[namaBarang];
+
+        for (let i = 0; i < availableStockHistory.length; i++) {
+            const stock = availableStockHistory[i];
+            const stockAvailable = parseFloat(stock.jumlah);
+            const price = parseFloat(stock.harga_satuan);
+
+            if (remainingToTake <= stockAvailable) {
+                totalRupiah += remainingToTake * price;
+                remainingToTake = 0;
+                break;
+            } else {
+                totalRupiah += stockAvailable * price;
+                remainingToTake -= stockAvailable;
+            }
+        }
+
+        // Format to Rupiah
+        const formatter = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+
+        estimasiEl.textContent = formatter.format(totalRupiah);
+    }
+
     function updateGeneralUsageData() {
         const select = document.getElementById('general_nama_barang_select');
         const selectedOption = select.options[select.selectedIndex];
@@ -1138,6 +1202,7 @@
             
             const input = document.getElementById('jumlah_ambil');
             input.max = stock;
+            calculateRupiahUsage();
         } else {
             document.getElementById('usageForm').action = '';
             document.getElementById('modalCurrentStock').textContent = '0';
@@ -1145,6 +1210,7 @@
             
             const input = document.getElementById('jumlah_ambil');
             input.max = 0;
+            calculateRupiahUsage();
         }
     }
 
@@ -1200,6 +1266,7 @@
         const input = document.getElementById('jumlah_ambil');
         input.max = stock;
         input.value = '';
+        calculateRupiahUsage();
         
         input.addEventListener('input', function() {
             const val = parseFloat(this.value);
