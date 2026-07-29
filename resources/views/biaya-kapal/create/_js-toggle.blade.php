@@ -29,6 +29,7 @@
             dokumenDetailWrapper.classList.add('hidden');
             clearAllDokumenSections();
         }
+        if(buruhBongkarWrapper) buruhBongkarWrapper.classList.add('hidden');
         
         // Reset nominal input properties
         if(nominalInput) {
@@ -384,6 +385,61 @@
             // Hide Operasional wrapper
             operasionalWrapper.classList.add('hidden');
             clearAllOperasionalSections();
+        }
+        // Show Buruh Bongkar fields if "Biaya Buruh Bongkar" is selected (KB054)
+        else if (selectedValue === 'KB054') {
+            if (buruhBongkarWrapper) buruhBongkarWrapper.classList.remove('hidden');
+
+            // Hide standard kapal/voyage/bl fields
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
+
+            // Hide other standard fields
+            if(nominalWrapper) nominalWrapper.classList.add('hidden');
+            if(penerimaWrapper) penerimaWrapper.classList.add('hidden');
+            if(namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
+            if(nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
+
+            // Remove required attributes
+            if(nominalInput) nominalInput.removeAttribute('required');
+            if(penerimaInput) penerimaInput.removeAttribute('required');
+
+            // Hide other type-specific fields
+            vendorWrapper.classList.add('hidden');
+            if (vendorSelect) vendorSelect.value = '';
+            barangWrapper.classList.add('hidden');
+            clearAllKapalSections();
+            if (airWrapper) airWrapper.classList.add('hidden');
+            clearAllAirSections();
+            ppnWrapper.classList.add('hidden');
+            pphWrapper.classList.add('hidden');
+            totalBiayaWrapper.classList.add('hidden');
+            dpWrapper.classList.add('hidden');
+            sisaPembayaranWrapper.classList.add('hidden');
+            biayaMateraiWrapper.classList.add('hidden');
+            pphDokumenWrapper.classList.add('hidden');
+            grandTotalDokumenWrapper.classList.add('hidden');
+
+            // Reset values
+            ppnInput.value = '0';
+            pphInput.value = '0';
+            totalBiayaInput.value = '';
+            dpInput.value = '0';
+            sisaPembayaranInput.value = '0';
+
+            // Hide other wrappers
+            if (document.getElementById('tkbm_wrapper')) {
+                document.getElementById('tkbm_wrapper').classList.add('hidden');
+                clearAllTkbmSections();
+            }
+            if (operasionalWrapper) operasionalWrapper.classList.add('hidden');
+            clearAllOperasionalSections();
+            if (truckingWrapper) truckingWrapper.classList.add('hidden');
+            clearAllTruckingSections();
         }
         // Show barang wrapper if "Biaya Buruh" is selected
         else if (selectedText.toLowerCase().includes('buruh')) {

@@ -1296,6 +1296,32 @@ class ManifestController extends Controller
         return view('manifests.print-document', compact('manifest', 'imageUrls'));
     }
 
+    public function printBa($id)
+    {
+        $manifest = Manifest::findOrFail($id);
+        $baData = new \stdClass;
+        $baData->id = $manifest->id;
+        $baData->nomor_ba = 'BA/'.date('Y/m/d').'/'.str_pad($manifest->id, 4, '0', STR_PAD_LEFT);
+        $baData->tanggal_ba = $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('Y-m-d') : now()->format('Y-m-d');
+        $baData->manifest = $manifest;
+        $baData->pengirim = $manifest->pengirim;
+        $baData->penerima = $manifest->penerima;
+        $baData->contact_person = '';
+        $baData->no_kontainer = $manifest->nomor_kontainer;
+        $baData->jenis_barang = $manifest->nama_barang;
+        $baData->size_kontainer = $manifest->size_kontainer;
+        $baData->tipe_kontainer = $manifest->tipe_kontainer;
+        $baData->kuantitas = $manifest->kuantitas;
+        $baData->satuan = $manifest->satuan;
+        $baData->nama_kapal = $manifest->nama_kapal;
+        $baData->no_voyage = $manifest->no_voyage;
+        $baData->no_bl = $manifest->nomor_bl;
+        $baData->pelabuhan_asal = '';
+        $baData->pelabuhan_tujuan = $manifest->pelabuhan_tujuan;
+        
+        return view('manifests.print-ba', compact('baData', 'manifest'));
+    }
+
     private function extractImagesFromTandaTerima($tandaTerima, &$imageUrls)
     {
         $gambar = $tandaTerima->gambar_checkpoint;

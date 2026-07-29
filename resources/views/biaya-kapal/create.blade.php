@@ -66,8 +66,13 @@
 @include('biaya-kapal.create._section-perijinan')
 @include('biaya-kapal.create._section-freight')
 @include('biaya-kapal.create._section-meratus')
+{{-- Biaya Temas --}}
 @include('biaya-kapal.create._section-temas')
+{{-- Biaya Tanto --}}
 @include('biaya-kapal.create._section-tanto')
+
+{{-- Biaya Buruh Bongkar --}}
+@include('biaya-kapal.create._section-buruh-bongkar')
 
 {{-- ===== FORM FIELDS EXTRA ===== --}}
 @include('biaya-kapal.create._form-fields-extra')
@@ -110,6 +115,7 @@
 @include('biaya-kapal.create._js-meratus')
 @include('biaya-kapal.create._js-temas')
 @include('biaya-kapal.create._js-tanto')
+@include('biaya-kapal.create._js-buruh-bongkar')
 </script>
 @endpush
 

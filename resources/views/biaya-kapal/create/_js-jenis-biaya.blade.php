@@ -209,6 +209,9 @@
     // Nota Retur multi-section
     const notaReturWrapper = document.getElementById('nota_retur_wrapper');
     
+    // Buruh Bongkar wrapper
+    const buruhBongkarWrapper = document.getElementById('buruh_bongkar_wrapper');
+    
     // Standard field wrappers
     const nominalWrapper = document.getElementById('nominal_wrapper');
     const penerimaWrapper = document.getElementById('penerima_wrapper');

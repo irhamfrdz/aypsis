@@ -300,6 +300,11 @@ class BiayaKapal extends Model
         return $this->hasMany(BiayaKapalTenagaKerja::class, 'biaya_kapal_id');
     }
 
+    public function buruhBongkar()
+    {
+        return $this->hasOne(BiayaKapalBuruhBongkar::class, 'biaya_kapal_id');
+    }
+
     public function bank()
     {
         return $this->belongsTo(Bank::class, 'bank_id');

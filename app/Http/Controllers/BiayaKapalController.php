@@ -1090,6 +1090,26 @@ class BiayaKapalController extends Controller
                 $biayaKapal->update(['nominal' => $totalTrucking]);
             }
 
+            // BIAYA BURUH BONGKAR: Store buruh bongkar details
+            if ($request->jenis_biaya === 'KB054' && $request->has('buruh_bongkar_pengirim')) {
+                $buruhBongkar = \App\Models\BiayaKapalBuruhBongkar::create([
+                    'biaya_kapal_id' => $biayaKapal->id,
+                    'nama_pengirim' => $request->buruh_bongkar_pengirim,
+                    'start_date' => $request->buruh_bongkar_start_date,
+                    'end_date' => $request->buruh_bongkar_end_date,
+                ]);
+
+                if ($request->has('buruh_bongkar_manifest_ids') && is_array($request->buruh_bongkar_manifest_ids)) {
+                    foreach ($request->buruh_bongkar_manifest_ids as $manifestId) {
+                        \App\Models\BiayaKapalBuruhBongkarDetail::create([
+                            'biaya_kapal_buruh_bongkar_id' => $buruhBongkar->id,
+                            'manifest_id' => $manifestId,
+                            // surat_jalan_tipe could be retrieved dynamically or just left null for now
+                        ]);
+                    }
+                }
+            }
+
             // BIAYA STUFFING SECTIONS: Store stuffing details
             if ($request->has('stuffing_sections') && ! empty($request->stuffing_sections)) {
                 foreach ($request->stuffing_sections as $sectionIndex => $section) {
@@ -3088,6 +3108,7 @@ class BiayaKapalController extends Controller
             'storageDetails',
             'perijinanDetails.details',
             'meratusDetails',
+            'buruhBongkar.details',
             'temasDetails',
             'tantoDetails',
             'umumDetails',
@@ -4137,6 +4158,31 @@ class BiayaKapalController extends Controller
                 // Auto-calculate nominal for trucking from section totals
                 $totalTrucking = BiayaKapalTrucking::where('biaya_kapal_id', $biayaKapal->id)->sum('total_biaya');
                 $biayaKapal->update(['nominal' => $totalTrucking]);
+            }
+
+            // BIAYA BURUH BONGKAR: Update buruh bongkar details
+            if ($request->jenis_biaya === 'KB054' && $request->has('buruh_bongkar_pengirim')) {
+                // Delete existing
+                $existing = \App\Models\BiayaKapalBuruhBongkar::where('biaya_kapal_id', $biayaKapal->id)->first();
+                if ($existing) {
+                    $existing->delete();
+                }
+
+                $buruhBongkar = \App\Models\BiayaKapalBuruhBongkar::create([
+                    'biaya_kapal_id' => $biayaKapal->id,
+                    'nama_pengirim' => $request->buruh_bongkar_pengirim,
+                    'start_date' => $request->buruh_bongkar_start_date,
+                    'end_date' => $request->buruh_bongkar_end_date,
+                ]);
+
+                if ($request->has('buruh_bongkar_manifest_ids') && is_array($request->buruh_bongkar_manifest_ids)) {
+                    foreach ($request->buruh_bongkar_manifest_ids as $manifestId) {
+                        \App\Models\BiayaKapalBuruhBongkarDetail::create([
+                            'biaya_kapal_buruh_bongkar_id' => $buruhBongkar->id,
+                            'manifest_id' => $manifestId,
+                        ]);
+                    }
+                }
             }
 
             // THC UPDATE (NEW)
@@ -5925,5 +5971,75 @@ class BiayaKapalController extends Controller
                 'no_voyage' => ! empty($voyageList) ? $voyageList : null,
             ]);
         }
+    }
+
+    /**
+     * Get distinct pengirim list from manifests
+     */
+    public function searchPengirim(Request $request)
+    {
+        $search = $request->get('q', '');
+        
+        $query = \App\Models\Manifest::select('pengirim')
+            ->distinct()
+            ->whereNotNull('pengirim')
+            ->where('pengirim', '!=', '');
+
+        if ($search) {
+            $query->where('pengirim', 'like', "%{$search}%");
+        }
+
+        $pengirim = $query->orderBy('pengirim')
+            ->take(20)
+            ->get()
+            ->map(function ($item) {
+                return ['id' => $item->pengirim, 'text' => $item->pengirim];
+            });
+
+        return response()->json($pengirim);
+    }
+
+    /**
+     * Get manifest data for Buruh Bongkar
+     */
+    public function getManifestBuruhBongkar(Request $request)
+    {
+        $pengirim = $request->get('pengirim');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+        if (!$pengirim || !$startDate || !$endDate) {
+            return response()->json(['data' => []]);
+        }
+
+        $manifests = \App\Models\Manifest::with(['suratJalanBongkaran', 'suratJalanBongkaranBatam'])
+            ->where('pengirim', $pengirim)
+            ->whereBetween('tanggal_berangkat', [$startDate, $endDate])
+            ->orderBy('tanggal_berangkat', 'desc')
+            ->get();
+
+        $data = $manifests->map(function ($manifest) {
+            $suratJalan = '-';
+            $tipe = null;
+            
+            if ($manifest->suratJalanBongkaran) {
+                $suratJalan = $manifest->suratJalanBongkaran->nomor_surat_jalan;
+                $tipe = 'regular';
+            } elseif ($manifest->suratJalanBongkaranBatam) {
+                $suratJalan = $manifest->suratJalanBongkaranBatam->nomor_surat_jalan;
+                $tipe = 'batam';
+            }
+
+            return [
+                'id' => $manifest->id,
+                'nomor_kontainer' => $manifest->nomor_kontainer,
+                'no_voyage' => $manifest->no_voyage,
+                'surat_jalan' => $suratJalan,
+                'surat_jalan_tipe' => $tipe,
+                'tanggal_berangkat' => $manifest->tanggal_berangkat ? $manifest->tanggal_berangkat->format('d-m-Y') : '-',
+            ];
+        });
+
+        return response()->json(['data' => $data]);
     }
 }

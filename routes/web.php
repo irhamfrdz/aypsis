@@ -1971,6 +1971,10 @@ Route::middleware([
             ->name('biaya-kapal.get-container-counts');
         Route::get('biaya-kapal/search-tanda-terima', [\App\Http\Controllers\BiayaKapalController::class, 'searchTandaTerima'])
             ->name('biaya-kapal.search-tanda-terima');
+        Route::get('biaya-kapal/search-pengirim', [\App\Http\Controllers\BiayaKapalController::class, 'searchPengirim'])
+            ->name('biaya-kapal.search-pengirim');
+        Route::post('biaya-kapal/get-manifest-buruh-bongkar', [\App\Http\Controllers\BiayaKapalController::class, 'getManifestBuruhBongkar'])
+            ->name('biaya-kapal.get-manifest-buruh-bongkar');
         Route::get('biaya-kapal/get-containers-by-voyage', [\App\Http\Controllers\BiayaKapalController::class, 'getContainersByVoyage'])
             ->name('biaya-kapal.get-containers-by-voyage');
         Route::get('biaya-kapal/get-containers', [\App\Http\Controllers\BiayaKapalController::class, 'getContainersByVoyage'])
@@ -5853,6 +5857,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::post('manifests/{id}/update-kuantitas', [App\Http\Controllers\ManifestController::class, 'updateKuantitas'])->name('manifests.update-kuantitas');
     Route::get('manifests/export', [App\Http\Controllers\ManifestController::class, 'export'])->name('manifests.export');
     Route::get('manifests/{id}/print-document', [App\Http\Controllers\ManifestController::class, 'printDocument'])->name('manifests.print-document');
+    Route::get('manifests/{id}/print-ba', [App\Http\Controllers\ManifestController::class, 'printBa'])->name('manifests.print-ba');
     Route::resource('manifests', App\Http\Controllers\ManifestController::class);
 });
 
