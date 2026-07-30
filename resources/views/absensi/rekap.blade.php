@@ -28,7 +28,7 @@
         <!-- Filter Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <form action="{{ route('absensi.rekap') }}" method="GET" class="space-y-4" id="filterForm">
-                <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-8 gap-4">
                     <!-- Search Karyawan -->
                     <div class="md:col-span-2">
                         <label for="search" class="block text-xs font-semibold text-gray-700 mb-1">Cari Karyawan / NIK</label>
@@ -44,7 +44,7 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                             <option value="">Semua Penempatan</option>
                             @foreach($penempatans as $penempatan)
-                                <option value="{{ $penempatan }}" {{ request('penempatan') == $penempatan ? 'selected' : '' }}>{{ $penempatan }}</option>
+                                <option value="{{ $penempatan }}" {{ request('penempatan') == $penempatan ? 'selected' : '' }}>{{ strtoupper($penempatan) }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -53,11 +53,21 @@
                     <div class="md:col-span-1">
                         <label for="grup" class="block text-xs font-semibold text-gray-700 mb-1">Group</label>
                         <select name="grup" id="grup"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs"
+                                onchange="handleGrupFilterChange()">
                             <option value="">Semua Group</option>
                             @foreach($grupsList as $g)
                                 <option value="{{ $g }}" {{ request('grup') == $g ? 'selected' : '' }}>{{ $g }}</option>
                             @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Sub Group -->
+                    <div class="md:col-span-1">
+                        <label for="sub_grup" class="block text-xs font-semibold text-gray-700 mb-1">Sub Group</label>
+                        <select name="sub_grup" id="sub_grup"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                            <option value="">Semua Sub Group</option>
                         </select>
                     </div>
 
@@ -93,7 +103,7 @@
                         <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                             Filter Rekap
                         </button>
-                        @if(request()->anyFilled(['search', 'penempatan', 'grup', 'kehadiran']))
+                        @if(request()->anyFilled(['search', 'penempatan', 'grup', 'sub_grup', 'kehadiran']))
                             <a href="{{ route('absensi.rekap') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                                 Reset
                             </a>
@@ -302,4 +312,44 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    const grupMap = @json($grupMap ?? []);
+    const oldSubGrup = '{{ request('sub_grup') }}';
+    const oldGrup = '{{ request('grup') }}';
+
+    function handleGrupFilterChange() {
+        const grupSelect = document.getElementById('grup');
+        const subGrupSelect = document.getElementById('sub_grup');
+        const selectedGrup = grupSelect.value;
+        
+        // Reset Sub Group options
+        subGrupSelect.innerHTML = '<option value="">Semua Sub Group</option>';
+        
+        if (selectedGrup && grupMap[selectedGrup]) {
+            const subs = grupMap[selectedGrup];
+            subs.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.text = sub;
+                subGrupSelect.appendChild(option);
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Run once on load to populate sub_grup if a grup was selected
+        handleGrupFilterChange();
+        
+        // If there was an old sub_grup selected, re-select it
+        if (oldSubGrup) {
+            const subGrupSelect = document.getElementById('sub_grup');
+            if (Array.from(subGrupSelect.options).some(opt => opt.value === oldSubGrup)) {
+                subGrupSelect.value = oldSubGrup;
+            }
+        }
+    });
+</script>
+@endpush
 @endsection

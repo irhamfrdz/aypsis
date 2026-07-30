@@ -489,10 +489,16 @@ class AbsensiController extends Controller
 
         if ($request->filled('grup')) {
             $grupReq = $request->grup;
-            $karyawansQuery->where(function($q) use ($grupReq) {
-                $q->where('grup', 'LIKE', '%"' . $grupReq . ':%')
-                  ->orWhere('grup', 'LIKE', '%"' . $grupReq . '"%');
-            });
+            if ($request->filled('sub_grup')) {
+                $subGrupReq = $request->sub_grup;
+                $searchStr = $grupReq . ':' . $subGrupReq;
+                $karyawansQuery->where('grup', 'LIKE', '%"' . $searchStr . '"%');
+            } else {
+                $karyawansQuery->where(function($q) use ($grupReq) {
+                    $q->where('grup', 'LIKE', '%"' . $grupReq . ':%')
+                      ->orWhere('grup', 'LIKE', '%"' . $grupReq . '"%');
+                });
+            }
         }
 
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
@@ -501,7 +507,7 @@ class AbsensiController extends Controller
         $cabangs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
         $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
 
-        $grupsList = [];
+        $grupMap = [];
         $karyawansGrups = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('grup')->pluck('grup');
         foreach ($karyawansGrups as $grupArray) {
             if (is_string($grupArray)) {
@@ -511,13 +517,23 @@ class AbsensiController extends Controller
                 foreach ($grupArray as $g) {
                     $parts = explode(':', $g, 2);
                     $main = $parts[0];
-                    if (!in_array($main, $grupsList) && $main !== '') {
-                        $grupsList[] = $main;
+                    $sub = $parts[1] ?? '';
+                    if ($main !== '') {
+                        if (!isset($grupMap[$main])) {
+                            $grupMap[$main] = [];
+                        }
+                        if ($sub !== '' && !in_array($sub, $grupMap[$main])) {
+                            $grupMap[$main][] = $sub;
+                        }
                     }
                 }
             }
         }
-        sort($grupsList);
+        ksort($grupMap);
+        foreach ($grupMap as &$subs) {
+            sort($subs);
+        }
+        $grupsList = array_keys($grupMap);
 
         // Calculate normal workdays in the selected range (excluding weekends)
         $normalWorkdays = 0;
@@ -674,7 +690,7 @@ class AbsensiController extends Controller
             ];
         }
 
-        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'grupsList'));
+        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'grupsList', 'grupMap'));
     }
 
     /**
