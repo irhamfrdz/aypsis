@@ -28,7 +28,7 @@
         <!-- Filter Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <form action="{{ route('absensi.rekap') }}" method="GET" class="space-y-4" id="filterForm">
-                <div class="grid grid-cols-1 md:grid-cols-8 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <!-- Search Karyawan -->
                     <div class="md:col-span-2">
                         <label for="search" class="block text-xs font-semibold text-gray-700 mb-1">Cari Karyawan / NIK</label>
@@ -71,6 +71,28 @@
                         </select>
                     </div>
 
+                    <!-- Group BPJS -->
+                    <div class="md:col-span-1">
+                        <label for="grup_bpjs" class="block text-xs font-semibold text-gray-700 mb-1">Group BPJS</label>
+                        <select name="grup_bpjs" id="grup_bpjs"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs"
+                                onchange="handleGrupBpjsFilterChange()">
+                            <option value="">Semua Group BPJS</option>
+                            @foreach($grupsBpjsList as $g)
+                                <option value="{{ $g }}" {{ request('grup_bpjs') == $g ? 'selected' : '' }}>{{ $g }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Sub Group BPJS -->
+                    <div class="md:col-span-1">
+                        <label for="sub_grup_bpjs" class="block text-xs font-semibold text-gray-700 mb-1">Sub Group BPJS</label>
+                        <select name="sub_grup_bpjs" id="sub_grup_bpjs"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                            <option value="">Semua Sub Group BPJS</option>
+                        </select>
+                    </div>
+
                     <!-- Tingkat Kehadiran -->
                     <div class="md:col-span-1">
                         <label for="kehadiran" class="block text-xs font-semibold text-gray-700 mb-1">Tingkat Kehadiran</label>
@@ -99,15 +121,15 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="flex items-end gap-2">
-                        <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
-                            Filter Rekap
-                        </button>
-                        @if(request()->anyFilled(['search', 'penempatan', 'grup', 'sub_grup', 'kehadiran']))
-                            <a href="{{ route('absensi.rekap') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
+                    <div class="md:col-span-5 flex items-end gap-2 justify-end mt-2">
+                        @if(request()->anyFilled(['search', 'penempatan', 'grup', 'sub_grup', 'grup_bpjs', 'sub_grup_bpjs', 'kehadiran']))
+                            <a href="{{ route('absensi.rekap') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                                 Reset
                             </a>
                         @endif
+                        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
+                            Filter Rekap
+                        </button>
                     </div>
                 </div>
             </form>
@@ -319,6 +341,10 @@
     const oldSubGrup = '{{ request('sub_grup') }}';
     const oldGrup = '{{ request('grup') }}';
 
+    const grupBpjsMap = @json($grupBpjsMap ?? []);
+    const oldSubGrupBpjs = '{{ request('sub_grup_bpjs') }}';
+    const oldGrupBpjs = '{{ request('grup_bpjs') }}';
+
     function handleGrupFilterChange() {
         const grupSelect = document.getElementById('grup');
         const subGrupSelect = document.getElementById('sub_grup');
@@ -338,15 +364,43 @@
         }
     }
 
+    function handleGrupBpjsFilterChange() {
+        const grupBpjsSelect = document.getElementById('grup_bpjs');
+        const subGrupBpjsSelect = document.getElementById('sub_grup_bpjs');
+        const selectedGrupBpjs = grupBpjsSelect.value;
+        
+        // Reset Sub Group options
+        subGrupBpjsSelect.innerHTML = '<option value="">Semua Sub Group BPJS</option>';
+        
+        if (selectedGrupBpjs && grupBpjsMap[selectedGrupBpjs]) {
+            const subs = grupBpjsMap[selectedGrupBpjs];
+            subs.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub;
+                option.text = sub;
+                subGrupBpjsSelect.appendChild(option);
+            });
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // Run once on load to populate sub_grup if a grup was selected
         handleGrupFilterChange();
+        handleGrupBpjsFilterChange();
         
         // If there was an old sub_grup selected, re-select it
         if (oldSubGrup) {
             const subGrupSelect = document.getElementById('sub_grup');
             if (Array.from(subGrupSelect.options).some(opt => opt.value === oldSubGrup)) {
                 subGrupSelect.value = oldSubGrup;
+            }
+        }
+        
+        // If there was an old sub_grup_bpjs selected, re-select it
+        if (oldSubGrupBpjs) {
+            const subGrupBpjsSelect = document.getElementById('sub_grup_bpjs');
+            if (Array.from(subGrupBpjsSelect.options).some(opt => opt.value === oldSubGrupBpjs)) {
+                subGrupBpjsSelect.value = oldSubGrupBpjs;
             }
         }
     });

@@ -501,6 +501,20 @@ class AbsensiController extends Controller
             }
         }
 
+        if ($request->filled('grup_bpjs')) {
+            $grupBpjsReq = $request->grup_bpjs;
+            if ($request->filled('sub_grup_bpjs')) {
+                $subGrupBpjsReq = $request->sub_grup_bpjs;
+                $searchStr = $grupBpjsReq . ':' . $subGrupBpjsReq;
+                $karyawansQuery->where('grup_bpjs', 'LIKE', '%"' . $searchStr . '"%');
+            } else {
+                $karyawansQuery->where(function($q) use ($grupBpjsReq) {
+                    $q->where('grup_bpjs', 'LIKE', '%"' . $grupBpjsReq . ':%')
+                      ->orWhere('grup_bpjs', 'LIKE', '%"' . $grupBpjsReq . '"%');
+                });
+            }
+        }
+
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
         $pekerjaans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
         $divisis = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
@@ -540,6 +554,37 @@ class AbsensiController extends Controller
             sort($subs);
         }
         $grupsList = array_keys($grupMap);
+
+        $grupBpjsMap = [
+            'BPJS-TK' => ['BPU HL JAKSEL', 'BPU SUPIR JKT PLUIT', 'BPU ALEXINDO PLUIT', 'BPU CILANDAK HL', 'PPU JKT', 'PPU BTM'],
+            'BPJS-JKN' => ['BPU REIMBURSMENT']
+        ];
+        $karyawansGrupsBpjs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('grup_bpjs')->pluck('grup_bpjs');
+        foreach ($karyawansGrupsBpjs as $grupBpjsArray) {
+            if (is_string($grupBpjsArray)) {
+                $grupBpjsArray = json_decode($grupBpjsArray, true);
+            }
+            if (is_array($grupBpjsArray)) {
+                foreach ($grupBpjsArray as $g) {
+                    $parts = explode(':', $g, 2);
+                    $main = $parts[0];
+                    $sub = $parts[1] ?? '';
+                    if ($main !== '') {
+                        if (!isset($grupBpjsMap[$main])) {
+                            $grupBpjsMap[$main] = [];
+                        }
+                        if ($sub !== '' && !in_array($sub, $grupBpjsMap[$main])) {
+                            $grupBpjsMap[$main][] = $sub;
+                        }
+                    }
+                }
+            }
+        }
+        ksort($grupBpjsMap);
+        foreach ($grupBpjsMap as &$subs) {
+            sort($subs);
+        }
+        $grupsBpjsList = array_keys($grupBpjsMap);
 
         // Calculate normal workdays in the selected range (excluding weekends)
         $normalWorkdays = 0;
@@ -696,7 +741,7 @@ class AbsensiController extends Controller
             ];
         }
 
-        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'grupsList', 'grupMap'));
+        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'grupsList', 'grupMap', 'grupsBpjsList', 'grupBpjsMap'));
     }
 
     /**
