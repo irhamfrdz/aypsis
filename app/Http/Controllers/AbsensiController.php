@@ -501,6 +501,9 @@ class AbsensiController extends Controller
         $tunjangansList = [];
         $karyawansTunjangans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('tunjangan')->pluck('tunjangan');
         foreach ($karyawansTunjangans as $tunjanganArray) {
+            if (is_string($tunjanganArray)) {
+                $tunjanganArray = json_decode($tunjanganArray, true);
+            }
             if (is_array($tunjanganArray)) {
                 foreach ($tunjanganArray as $t) {
                     if (!in_array($t, $tunjangansList)) {
