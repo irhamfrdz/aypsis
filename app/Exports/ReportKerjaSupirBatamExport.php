@@ -43,7 +43,7 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
                 'Supir',
                 'Tipe Pekerjaan',
                 'Tujuan',
-                'No. Dokumen',
+                'No. Surat Jalan',
                 'No. Kontainer',
                 'Uang Jalan / Biaya (Rp)',
             ],
