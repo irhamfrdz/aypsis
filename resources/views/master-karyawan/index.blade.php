@@ -154,7 +154,9 @@
                                             'UANG MAKAN' => [],
                                             'TRANSPORTASI' => [],
                                             'LEMBUR' => [],
-                                            'CUTI' => []
+                                            'CUTI' => [],
+                                            'BPJS-TK' => [],
+                                            'BPJS-JKN' => []
                                         ];
                                         $defaultGrups = array_keys($subGroups);
                                         $existingGrups = [];
