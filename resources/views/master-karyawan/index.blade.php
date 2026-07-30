@@ -1356,3 +1356,6 @@ $(document).ready(function() {
     @apply rounded-l-md;
 }
 
+
+</style>
+@endsection
