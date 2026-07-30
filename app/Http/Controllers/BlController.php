@@ -1247,29 +1247,38 @@ class BlController extends Controller
                             continue;
                         }
 
-                        // Parse tonnage dan volume (validate numeric)
                         $tonnage = null;
                         // Determine tonnage/volume using header aliases and robust parsing
                         $tonnageRaw = $getCol(['tonnage', 'tonnage (ton)', 'tonnage*'], 14);
                         if (isset($tonnageRaw) && $tonnageRaw !== '') {
-                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($tonnageRaw));
-                            if (! is_numeric($tonnageStr)) {
-                                $errors[] = "Baris {$rowNumber}: Nilai tonnage tidak valid ('{$tonnageRaw}') ({$rowPreview})";
-                                $tonnage = null;
+                            $rawTrimmed = trim($tonnageRaw);
+                            if (preg_match('/^\d+(\.\d+)?$/', $rawTrimmed)) {
+                                $tonnage = (float) $rawTrimmed;
                             } else {
-                                $tonnage = (float) $tonnageStr;
+                                $tonnageStr = str_replace(['.', ','], ['', '.'], $rawTrimmed);
+                                if (! is_numeric($tonnageStr)) {
+                                    $errors[] = "Baris {$rowNumber}: Nilai tonnage tidak valid ('{$tonnageRaw}') ({$rowPreview})";
+                                    $tonnage = null;
+                                } else {
+                                    $tonnage = (float) $tonnageStr;
+                                }
                             }
                         }
 
                         $volume = null;
-                        $volumeRaw = $getCol(['volume', 'volume (m³)', 'volume*'], 15);
+                        $volumeRaw = $getCol(['volume', 'volume (m3)', 'volume*'], 15);
                         if (isset($volumeRaw) && $volumeRaw !== '') {
-                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($volumeRaw));
-                            if (! is_numeric($volumeStr)) {
-                                $errors[] = "Baris {$rowNumber}: Nilai volume tidak valid ('{$volumeRaw}') ({$rowPreview})";
-                                $volume = null;
+                            $rawTrimmed = trim($volumeRaw);
+                            if (preg_match('/^\d+(\.\d+)?$/', $rawTrimmed)) {
+                                $volume = (float) $rawTrimmed;
                             } else {
-                                $volume = (float) $volumeStr;
+                                $volumeStr = str_replace(['.', ','], ['', '.'], $rawTrimmed);
+                                if (! is_numeric($volumeStr)) {
+                                    $errors[] = "Baris {$rowNumber}: Nilai volume tidak valid ('{$volumeRaw}') ({$rowPreview})";
+                                    $volume = null;
+                                } else {
+                                    $volume = (float) $volumeStr;
+                                }
                             }
                         }
 
@@ -1476,12 +1485,16 @@ class BlController extends Controller
                             $rawTonnage = $worksheet->getCell("O{$row}")->getValue();
                         }
                         $tonnage = null;
-                        if (! empty($rawTonnage)) {
-                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($rawTonnage));
-                            if (! is_numeric($tonnageStr)) {
-                                $errors[] = "Baris {$row}: Nilai tonnage tidak valid ('{$rawTonnage}') ({$rowPreview})";
+                        if (isset($rawTonnage) && $rawTonnage !== '') {
+                            if (is_float($rawTonnage) || is_int($rawTonnage) || preg_match('/^\d+(\.\d+)?$/', trim($rawTonnage))) {
+                                $tonnage = (float) trim($rawTonnage);
                             } else {
-                                $tonnage = (float) $tonnageStr;
+                                $tonnageStr = str_replace(['.', ','], ['', '.'], trim($rawTonnage));
+                                if (! is_numeric($tonnageStr)) {
+                                    $errors[] = "Baris {$row}: Nilai tonnage tidak valid ('{$rawTonnage}') ({$rowPreview})";
+                                } else {
+                                    $tonnage = (float) $tonnageStr;
+                                }
                             }
                         }
 
@@ -1493,12 +1506,16 @@ class BlController extends Controller
                             $rawVolume = $worksheet->getCell("P{$row}")->getValue();
                         }
                         $volume = null;
-                        if (! empty($rawVolume)) {
-                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($rawVolume));
-                            if (! is_numeric($volumeStr)) {
-                                $errors[] = "Baris {$row}: Nilai volume tidak valid ('{$rawVolume}') ({$rowPreview})";
+                        if (isset($rawVolume) && $rawVolume !== '') {
+                            if (is_float($rawVolume) || is_int($rawVolume) || preg_match('/^\d+(\.\d+)?$/', trim($rawVolume))) {
+                                $volume = (float) trim($rawVolume);
                             } else {
-                                $volume = (float) $volumeStr;
+                                $volumeStr = str_replace(['.', ','], ['', '.'], trim($rawVolume));
+                                if (! is_numeric($volumeStr)) {
+                                    $errors[] = "Baris {$row}: Nilai volume tidak valid ('{$rawVolume}') ({$rowPreview})";
+                                } else {
+                                    $volume = (float) $volumeStr;
+                                }
                             }
                         }
 
