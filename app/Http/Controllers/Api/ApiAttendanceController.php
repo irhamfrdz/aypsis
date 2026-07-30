@@ -53,6 +53,30 @@ class ApiAttendanceController extends Controller
             ], 400);
         }
 
+        // Proses base64 foto menjadi file fisik
+        $fotoUrl = null;
+        if ($request->foto) {
+            $fotoData = $request->foto;
+            // Cek apakah ada prefix data:image/...;base64,
+            if (preg_match('/^data:image\/(\w+);base64,/', $fotoData, $type)) {
+                $fotoData = substr($fotoData, strpos($fotoData, ',') + 1);
+                $ext = strtolower($type[1]);
+            } else {
+                $ext = 'jpg';
+            }
+            
+            $decodedData = base64_decode($fotoData);
+            $fileName = 'selfie_' . $karyawan->nik . '_' . time() . '.' . $ext;
+            
+            $uploadPath = public_path('uploads/absensi');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+            
+            file_put_contents($uploadPath . '/' . $fileName, $decodedData);
+            $fotoUrl = '/uploads/absensi/' . $fileName;
+        }
+
         // Create absensi entry
         $absensi = Absensi::create([
             'karyawan_id' => $karyawan->id,
@@ -62,7 +86,7 @@ class ApiAttendanceController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'keterangan' => $request->keterangan,
-            'foto' => $request->foto,
+            'foto' => $fotoUrl,
             'device' => $request->device,
             'detail_lokasi' => $request->detail_lokasi,
         ]);

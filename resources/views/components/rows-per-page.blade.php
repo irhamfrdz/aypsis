@@ -19,7 +19,13 @@
             {{-- Preserve existing search and sort parameters --}}
             @foreach(request()->query() as $key => $value)
                 @if($key !== 'per_page' && $key !== 'page')
-                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                    @if(is_array($value))
+                        @foreach($value as $v)
+                            <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
+                        @endforeach
+                    @else
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                    @endif
                 @endif
             @endforeach
 

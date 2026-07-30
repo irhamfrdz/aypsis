@@ -96,6 +96,17 @@ class KaryawanController extends Controller
         if ($request->filled('cabang')) {
             $query->where('cabang', $request->cabang);
         }
+        if ($request->filled('penempatan')) {
+            $query->where('penempatan', $request->penempatan);
+        }
+        if ($request->filled('tunjangan')) {
+            $tunjangans = (array) $request->tunjangan;
+            $query->where(function ($q) use ($tunjangans) {
+                foreach ($tunjangans as $t) {
+                    $q->orWhere('tunjangan', 'LIKE', '%"' . $t . '"%');
+                }
+            });
+        }
 
         // Filter: Tanggal Masuk range
         if ($request->filled('tanggal_masuk_start')) {
@@ -190,6 +201,7 @@ class KaryawanController extends Controller
         // Prepare filter options
         $divisiOptions = Karyawan::whereNotNull('divisi')->distinct()->orderBy('divisi')->pluck('divisi');
         $cabangOptions = Karyawan::whereNotNull('cabang')->distinct()->orderBy('cabang')->pluck('cabang');
+        $penempatanOptions = Karyawan::whereNotNull('penempatan')->distinct()->orderBy('penempatan')->pluck('penempatan');
 
         // Apply common filters and sorting
         $this->applyKaryawanFilters($query, $request);
@@ -207,7 +219,7 @@ class KaryawanController extends Controller
         // Menggunakan paginate dengan per_page yang dinamis
         $karyawans = $query->paginate($perPage)->appends($request->query());
 
-        return view('master-karyawan.index', compact('karyawans', 'counts', 'divisiOptions', 'cabangOptions'));
+        return view('master-karyawan.index', compact('karyawans', 'counts', 'divisiOptions', 'cabangOptions', 'penempatanOptions'));
     }
 
     /**
@@ -918,6 +930,8 @@ class KaryawanController extends Controller
             'pekerjaan' => 'nullable|string|max:255',
             'penempatan' => 'nullable|string|max:255',
             'nominal_uang_makan' => 'nullable|numeric|min:0',
+            'tunjangan' => 'nullable|array',
+            'tunjangan.*' => 'string|max:255',
             'tanggal_masuk' => 'required|date',
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
@@ -958,9 +972,8 @@ class KaryawanController extends Controller
         // Convert data to uppercase except email and family_members
         $familyMembers = $validated['family_members'] ?? [];
         unset($validated['family_members']); // Remove from main data
-
         foreach ($validated as $key => $value) {
-            if ($value !== null && $key !== 'email') {
+            if ($value !== null && $key !== 'email' && !is_array($value)) {
                 $validated[$key] = strtoupper($value);
             }
         }
@@ -1114,6 +1127,8 @@ class KaryawanController extends Controller
             'pekerjaan' => 'nullable|string|max:255',
             'penempatan' => 'nullable|string|max:255',
             'nominal_uang_makan' => 'nullable|numeric|min:0',
+            'tunjangan' => 'nullable|array',
+            'tunjangan.*' => 'string|max:255',
             'tanggal_masuk' => 'required|date',
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
@@ -1157,7 +1172,7 @@ class KaryawanController extends Controller
 
         // Convert data to uppercase except email
         foreach ($validated as $key => $value) {
-            if ($value !== null && $key !== 'email') {
+            if ($value !== null && $key !== 'email' && !is_array($value)) {
                 $validated[$key] = strtoupper($value);
             }
         }

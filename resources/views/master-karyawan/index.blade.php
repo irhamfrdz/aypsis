@@ -52,8 +52,14 @@
                 <!-- COMPACT FILTERS -->
                 <div class="bg-gray-50/50 rounded-xl p-3 border border-gray-200 shadow-sm">
                     <form method="GET" action="{{ route('master.karyawan.index') }}" class="space-y-3">
-                        @foreach(request()->except(['search', 'divisi', 'cabang', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end', 'page']) as $key => $value)
-                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                        @foreach(request()->except(['search', 'divisi', 'cabang', 'penempatan', 'tunjangan', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end', 'page']) as $key => $value)
+                            @if(is_array($value))
+                                @foreach($value as $v)
+                                    <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
+                                @endforeach
+                            @else
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endif
                         @endforeach
 
                         <!-- Row 1: Core Filters -->
@@ -104,13 +110,13 @@
                                     </a>
                                 </div>
                                 <button type="submit" class="px-4 py-1.5 bg-gray-900 text-white rounded-lg text-[10px] font-bold uppercase hover:bg-gray-800 transition-colors"><i class="fas fa-filter mr-1"></i> Filter</button>
-                                @if(request()->anyFilled(['search', 'divisi', 'cabang', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end']))
-                                    <a href="{{ route('master.karyawan.index') }}" class="p-1.5 text-gray-400 hover:text-red-500" title="Reset"><i class="fas fa-undo"></i></a>
+                                @if(request()->anyFilled(['search', 'divisi', 'cabang', 'penempatan', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end', 'tunjangan']))
+                                    <a href="{{ route('master.karyawan.index') }}" class="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-[10px] font-bold uppercase hover:bg-red-100 transition-colors" title="Reset Filter"><i class="fas fa-undo mr-1"></i> Reset</a>
                                 @endif
                             </div>
                         </div>
 
-                        <!-- Row 2: Date Ranges -->
+                        <!-- Row 2: Date Ranges & Tunjangan -->
                         <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
                             <div class="flex items-center gap-2">
                                 <span class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Tgl Masuk:</span>
@@ -127,6 +133,29 @@
                                     <span class="text-gray-300">-</span>
                                     <input type="date" name="tanggal_berhenti_end" value="{{ request('tanggal_berhenti_end') }}" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-red-500 w-28 shadow-xs">
                                 </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-bold text-gray-500 uppercase tracking-tighter">Penempatan:</span>
+                                @if(isset($penempatanOptions) && count($penempatanOptions) > 0)
+                                <select name="penempatan" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs" onchange="this.form.submit()">
+                                    <option value="">Semua Penempatan</option>
+                                    @foreach($penempatanOptions as $opt)
+                                        <option value="{{ $opt }}" {{ request('penempatan') == $opt ? 'selected' : '' }}>{{ strtoupper($opt) }}</option>
+                                    @endforeach
+                                </select>
+                                @endif
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-bold text-blue-500 uppercase tracking-tighter">Tunjangan:</span>
+                                <select name="tunjangan[]" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs" multiple title="Tahan Ctrl/Cmd untuk pilih beberapa">
+                                    @php
+                                        $tunjanganOptions = ['UANG MAKAN', 'TRANSPORTASI', 'BPJS', 'CUTI TAHUNAN'];
+                                        $selectedTunjangan = (array) request('tunjangan', []);
+                                    @endphp
+                                    @foreach($tunjanganOptions as $opt)
+                                        <option value="{{ $opt }}" {{ in_array($opt, $selectedTunjangan) ? 'selected' : '' }}>{{ $opt }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                     </form>
@@ -406,6 +435,11 @@
                         </th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
+                                <span>TUNJANGAN</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
                                 <span>NO HP</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_hp', 'direction' => 'asc'])) }}"
@@ -507,6 +541,17 @@
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 @if($karyawan->penempatan)
                                     {{ strtoupper($karyawan->penempatan) }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="px-4 py-2 text-center text-[10px] text-gray-900">
+                                @if(is_array($karyawan->tunjangan) && count($karyawan->tunjangan) > 0)
+                                    <div class="flex flex-wrap justify-center gap-1 max-w-[120px]">
+                                        @foreach($karyawan->tunjangan as $t)
+                                            <span class="inline-flex px-1.5 py-0.5 rounded text-[8px] font-medium bg-blue-100 text-blue-800 whitespace-nowrap">{{ $t }}</span>
+                                        @endforeach
+                                    </div>
                                 @else
                                     -
                                 @endif

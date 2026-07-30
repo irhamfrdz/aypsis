@@ -16,21 +16,29 @@ class PayrollController extends Controller
         $startDate = $request->start_date ? \Carbon\Carbon::parse($request->start_date) : now()->startOfWeek();
         $endDate = $request->end_date ? \Carbon\Carbon::parse($request->end_date) : now()->endOfWeek();
         $penempatan = $request->penempatan;
+        $tunjangan = $request->tunjangan;
 
         $payrolls = [];
         $isGenerated = $request->has('generate');
 
         if ($isGenerated) {
+            if (!empty($penempatan) && empty($tunjangan)) {
+                return back()->with('error', 'Error: Jika Anda memfilter berdasarkan Penempatan, Anda juga wajib memilih Filter Tunjangan.');
+            }
+
             // Get all karyawans with their attendance grouped by date
             $query = \App\Models\Karyawan::where('status', 'active');
             if (!empty($penempatan)) {
                 $query->where('penempatan', $penempatan);
             }
+            if (!empty($tunjangan)) {
+                $query->where('tunjangan', 'LIKE', '%"' . $tunjangan . '"%');
+            }
             
             $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
                     $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
                       ->where('tipe', 'Masuk');
-                }])->get();
+                }, 'uangMakanTerbaru'])->get();
 
             foreach ($karyawans as $k) {
                 // Count unique days they clocked in
@@ -45,7 +53,7 @@ class PayrollController extends Controller
                         $multiplier = 2;
                     }
                     
-                    $karyawanNominalDasar = $k->nominal_uang_makan ?? 0;
+                    $karyawanNominalDasar = $k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0);
                     $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;
 
                     $payrolls[] = [
@@ -59,7 +67,7 @@ class PayrollController extends Controller
             }
         }
 
-        return view('payroll.uang-makan', compact('startDate', 'endDate', 'penempatan', 'payrolls', 'isGenerated'));
+        return view('payroll.uang-makan', compact('startDate', 'endDate', 'penempatan', 'tunjangan', 'payrolls', 'isGenerated'));
     }
 
     public function storeUangMakan(Request $request)
@@ -72,17 +80,25 @@ class PayrollController extends Controller
         $startDate = \Carbon\Carbon::parse($request->start_date);
         $endDate = \Carbon\Carbon::parse($request->end_date);
         $penempatan = $request->penempatan;
+        $tunjangan = $request->tunjangan;
+
+        if (!empty($penempatan) && empty($tunjangan)) {
+            return back()->with('error', 'Error: Jika Anda memfilter berdasarkan Penempatan, Anda juga wajib memilih Filter Tunjangan.');
+        }
         
         // Get karyawans and recalculate payout
         $query = \App\Models\Karyawan::where('status', 'active');
         if (!empty($penempatan)) {
             $query->where('penempatan', $penempatan);
         }
+        if (!empty($tunjangan)) {
+            $query->where('tunjangan', 'LIKE', '%"' . $tunjangan . '"%');
+        }
         
         $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
                 $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
                   ->where('tipe', 'Masuk');
-            }])->get();
+            }, 'uangMakanTerbaru'])->get();
 
         $submittedPayrolls = $request->input('payrolls', []);
         $count = 0;
@@ -97,8 +113,8 @@ class PayrollController extends Controller
                     $multiplier = 2;
                 }
                 
-                // Prioritaskan nilai dari form input manual, jika tidak ada gunakan data Karyawan
-                $karyawanNominalDasar = $submittedPayrolls[$k->id]['nominal_per_hari'] ?? ($k->nominal_uang_makan ?? 0);
+                // Prioritaskan nilai dari form input manual, jika tidak ada gunakan data Uang Makan terbaru
+                $karyawanNominalDasar = $submittedPayrolls[$k->id]['nominal_per_hari'] ?? ($k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0));
                 $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;
 
                 \App\Models\PayrollUangMakan::updateOrCreate(

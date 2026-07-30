@@ -228,8 +228,15 @@
                 </div>
 
                 <div>
-                    <label for="nominal_uang_makan" class="{{ $labelClasses }}">Nominal Uang Makan (Rp/Hari)</label>
-                    <input type="number" name="nominal_uang_makan" id="nominal_uang_makan" class="{{ $inputClasses }}" value="{{ old('nominal_uang_makan', $karyawan->nominal_uang_makan ?? 50000) }}">
+                    <label for="tunjangan" class="{{ $labelClasses }}">Tunjangan</label>
+                    <select name="tunjangan[]" id="tunjangan" class="{{ $selectClasses }}" multiple>
+                        @php $selectedTunjangan = old('tunjangan', $karyawan->tunjangan ?? []); @endphp
+                        <option value="UANG MAKAN" {{ (is_array($selectedTunjangan) && in_array('UANG MAKAN', $selectedTunjangan)) ? 'selected' : '' }}>UANG MAKAN</option>
+                        <option value="TRANSPORTASI" {{ (is_array($selectedTunjangan) && in_array('TRANSPORTASI', $selectedTunjangan)) ? 'selected' : '' }}>TRANSPORTASI</option>
+                        <option value="BPJS" {{ (is_array($selectedTunjangan) && in_array('BPJS', $selectedTunjangan)) ? 'selected' : '' }}>BPJS</option>
+                        <option value="CUTI TAHUNAN" {{ (is_array($selectedTunjangan) && in_array('CUTI TAHUNAN', $selectedTunjangan)) ? 'selected' : '' }}>CUTI TAHUNAN</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Tahan tombol Ctrl (Windows) atau Command (Mac) untuk memilih lebih dari satu.</p>
                 </div>
 
                 <div>

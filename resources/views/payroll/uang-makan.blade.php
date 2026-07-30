@@ -7,11 +7,27 @@
 @section('content')
 <div class="space-y-6">
     <!-- Filter Card -->
+    @if(session('error'))
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-md shadow-sm">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700 font-medium">
+                        {{ session('error') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
     <div class="bg-white shadow-md rounded-lg p-6 border border-gray-100">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">Pengaturan & Filter Pencairan</h3>
         
         <form action="{{ route('payroll.uang-makan') }}" method="GET" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Periode Awal (Start Date)</label>
                     <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
@@ -33,9 +49,25 @@
                         <option value="GARASI BATAM" {{ request('penempatan') == 'GARASI BATAM' ? 'selected' : '' }}>GARASI BATAM</option>
                     </select>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter Tunjangan (Opsional)</label>
+                    <select name="tunjangan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                        <option value="">-- Semua Tunjangan --</option>
+                        <option value="UANG MAKAN" {{ request('tunjangan') == 'UANG MAKAN' ? 'selected' : '' }}>UANG MAKAN</option>
+                        <option value="TRANSPORTASI" {{ request('tunjangan') == 'TRANSPORTASI' ? 'selected' : '' }}>TRANSPORTASI</option>
+                        <option value="BPJS" {{ request('tunjangan') == 'BPJS' ? 'selected' : '' }}>BPJS</option>
+                        <option value="CUTI TAHUNAN" {{ request('tunjangan') == 'CUTI TAHUNAN' ? 'selected' : '' }}>CUTI TAHUNAN</option>
+                    </select>
+                </div>
             </div>
             
-            <div class="flex justify-end pt-2 border-t border-gray-100 mt-4">
+            <div class="flex justify-end pt-2 border-t border-gray-100 mt-4 gap-2">
+                @if(request()->has('generate'))
+                <a href="{{ route('payroll.uang-makan') }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition font-medium shadow-sm flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Reset Filter
+                </a>
+                @endif
                 <button type="submit" name="generate" value="1" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium shadow-sm flex items-center">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     Kalkulasi Data Absensi
@@ -61,6 +93,9 @@
                     <input type="hidden" name="end_date" value="{{ $endDate->format('Y-m-d') }}">
                     @if(request('penempatan'))
                     <input type="hidden" name="penempatan" value="{{ request('penempatan') }}">
+                    @endif
+                    @if(request('tunjangan'))
+                    <input type="hidden" name="tunjangan" value="{{ request('tunjangan') }}">
                     @endif
                     
                     <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition font-medium shadow-sm flex items-center">
@@ -109,7 +144,7 @@
                                 <input type="number" name="payrolls[{{ $row['karyawan']->id }}][nominal_per_hari]" value="{{ $row['nominal_per_hari'] }}" 
                                        data-kehadiran="{{ $row['total_kehadiran'] }}" 
                                        data-multiplier="{{ $row['multiplier'] }}"
-                                       class="nominal-input w-28 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-right text-sm py-1">
+                                       class="nominal-input w-28 rounded-md border-gray-300 bg-gray-100 text-gray-500 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-right text-sm py-1" readonly>
                             </div>
                         </td>
                         <td class="p-4 text-right font-bold text-green-600 total-payout-text">

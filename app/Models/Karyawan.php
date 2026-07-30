@@ -20,7 +20,7 @@ class Karyawan extends Model
         'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'catatan', 'catatan_pekerjaan', 'status_pajak',
         'nama_bank', 'bank_cabang', 'akun_bank', 'atas_nama', 'jkn', 'status_jkn', 'no_ketenagakerjaan', 'status_bp_jamsostek', 'cabang_bpjs', 'no_sim',
         'sim_berlaku_mulai', 'sim_berlaku_sampai',
-        'cabang', 'nik_supervisor', 'supervisor', 'verification_status', 'verified_by', 'verified_at', 'nominal_uang_makan',
+        'cabang', 'nik_supervisor', 'supervisor', 'verification_status', 'verified_by', 'verified_at', 'nominal_uang_makan', 'tunjangan',
         'has_fingerprint', 'has_photo',
     ];
 
@@ -38,12 +38,23 @@ class Karyawan extends Model
         'sim_berlaku_mulai' => 'date',
         'sim_berlaku_sampai' => 'date',
         'verified_at' => 'datetime',
+        'tunjangan' => 'array',
     ];
 
     // In this codebase users table has nullable karyawan_id; keep inverse relation here.
     public function user()
     {
         return $this->hasOne(User::class, 'karyawan_id', 'id');
+    }
+
+    public function uangMakans()
+    {
+        return $this->hasMany(UangMakan::class);
+    }
+
+    public function uangMakanTerbaru()
+    {
+        return $this->hasOne(UangMakan::class)->latestOfMany('tanggal');
     }
 
     /**
