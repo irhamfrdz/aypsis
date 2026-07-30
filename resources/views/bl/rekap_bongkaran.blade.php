@@ -65,7 +65,7 @@
                 </thead>
                 <tbody>
                     @forelse($items as $item)
-                        <tr class="hover:bg-gray-50/50 transition duration-150">
+                        <tr class="hover:bg-gray-50/50 transition duration-150 {{ isset($item['is_cargo']) && $item['is_cargo'] ? 'cargo-row' : '' }}" data-key="{{ $item['key'] ?? '' }}">
                             <!-- Qty -->
                             <td class="border border-gray-400 px-2 py-0.5 text-right font-medium w-16 text-gray-900">
                                 {{ number_format($item['kuantitas'], 0, ',', '.') }}
@@ -79,12 +79,18 @@
                                 {{ Str::limit($item['nama_barang'], 80) }}
                             </td>
                             <!-- Ton/M3 Amount -->
-                            <td class="border border-gray-400 px-2 py-0.5 text-right font-medium w-16 text-gray-900">
+                            <td class="border border-gray-400 px-2 py-0.5 text-right font-medium w-16 text-gray-900 amount-cell" data-tonnage="{{ $item['tonnage'] ?? '' }}" data-volume="{{ $item['volume'] ?? '' }}">
                                 {{ $item['amount'] !== null ? number_format($item['amount'], 3, ',', '.') : '' }}
                             </td>
                             <!-- Ton/M3 Unit -->
-                            <td class="border border-gray-400 px-2 py-0.5 text-center text-gray-700 w-16 border-l-0">
-                                {{ $item['unit'] }}
+                            <td class="border border-gray-400 px-2 py-0.5 text-center text-gray-700 w-16 border-l-0 unit-cell">
+                                <span>{{ $item['unit'] }}</span>
+                                @if(isset($item['is_cargo']) && $item['is_cargo'])
+                                <div class="no-print mt-1 flex justify-center space-x-1">
+                                    <button type="button" class="btn-toggle-unit text-[9px] px-1 bg-gray-200 hover:bg-gray-300 rounded {{ $item['unit'] === 'ton' ? 'font-bold bg-blue-100' : '' }}" data-unit="ton">Ton</button>
+                                    <button type="button" class="btn-toggle-unit text-[9px] px-1 bg-gray-200 hover:bg-gray-300 rounded {{ $item['unit'] === 'm3' ? 'font-bold bg-blue-100' : '' }}" data-unit="m3">M3</button>
+                                </div>
+                                @endif
                             </td>
                         </tr>
                     @empty
@@ -101,7 +107,7 @@
                             <td colspan="3" class="border border-gray-400 px-2 py-0.5 text-left text-gray-900 uppercase tracking-wider">
                                 Jumlah
                             </td>
-                            <td class="border border-gray-400 px-2 py-0.5 text-right text-gray-900">
+                            <td class="border border-gray-400 px-2 py-0.5 text-right text-gray-900 total-amount-cell">
                                 {{ rtrim(rtrim(number_format($totalAmount, 3, ',', '.'), '0'), ',') }}
                             </td>
                             <td class="border border-gray-400 px-2 py-0.5 text-center text-gray-700">
@@ -171,5 +177,67 @@
         padding: 4px 6px !important;
     }
 }
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.btn-toggle-unit').forEach(btn => {
+        btn.addEventListener('click', function() {
+            let tr = this.closest('tr');
+            let unit = this.getAttribute('data-unit');
+            let amountCell = tr.querySelector('.amount-cell');
+            let unitCellSpan = tr.querySelector('.unit-cell span');
+            
+            tr.querySelectorAll('.btn-toggle-unit').forEach(b => b.classList.remove('font-bold', 'bg-blue-100'));
+            this.classList.add('font-bold', 'bg-blue-100');
+
+            let val = amountCell.getAttribute('data-' + (unit === 'ton' ? 'tonnage' : 'volume'));
+            if (val && parseFloat(val) > 0) {
+                let parts = parseFloat(val).toFixed(3).split('.');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                amountCell.innerText = parts.join(',');
+            } else {
+                amountCell.innerText = '';
+            }
+            unitCellSpan.innerText = unit;
+
+            let total = 0;
+            document.querySelectorAll('.amount-cell').forEach(cell => {
+                let text = cell.innerText.replace(/\./g, '').replace(',', '.');
+                let num = parseFloat(text);
+                if (!isNaN(num)) total += num;
+            });
+            
+            let totalCell = document.querySelector('.total-amount-cell');
+            if(totalCell) {
+                let formattedTotal = total.toFixed(3).replace('.', ',');
+                formattedTotal = formattedTotal.replace(/0+$/, '').replace(/\,$/, '');
+                if(!formattedTotal) formattedTotal = '0';
+                
+                let parts = formattedTotal.split(',');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                totalCell.innerText = parts.join(',');
+            }
+        });
+    });
+
+    let printBtn = document.querySelector('a[href*="rekap-bongkaran/print"]');
+    if (printBtn) {
+        printBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            let url = new URL(this.href);
+            document.querySelectorAll('.cargo-row').forEach(row => {
+                let key = row.getAttribute('data-key');
+                let activeBtn = row.querySelector('.btn-toggle-unit.font-bold');
+                if (key && activeBtn) {
+                    let unit = activeBtn.getAttribute('data-unit');
+                    url.searchParams.append('choices[' + key + ']', unit);
+                }
+            });
+            window.open(url.toString(), '_blank');
+        });
+    }
+});
+</script>
 @endsection

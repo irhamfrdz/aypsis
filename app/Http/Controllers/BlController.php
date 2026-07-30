@@ -2519,20 +2519,27 @@ class BlController extends Controller
                 $amount = null;
                 $unit = '';
 
-                if ($totalVolume > 0) {
+                $safeKey = md5($key);
+                $choice = request()->input("choices.$safeKey");
+
+                if ($choice === 'm3' || ($choice !== 'ton' && $totalVolume > 0)) {
                     $amount = $totalVolume;
                     $unit = 'm3';
-                } elseif ($totalTonnage > 0) {
+                } elseif ($choice === 'ton' || ($choice !== 'm3' && $totalTonnage > 0)) {
                     $amount = $totalTonnage;
                     $unit = 'ton';
                 }
 
                 return [
+                    'key' => $safeKey,
+                    'is_cargo' => true,
                     'kuantitas' => $totalKuantitas,
                     'satuan' => $satuan,
                     'nama_barang' => $namaBarang,
                     'amount' => $amount,
                     'unit' => $unit,
+                    'tonnage' => $totalTonnage,
+                    'volume' => $totalVolume,
                 ];
             } else {
                 $size = $parts[1];
@@ -2552,7 +2559,11 @@ class BlController extends Controller
                 $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container Full {$size} feet";
                 $satuan = 'Unit';
 
+                $safeKey = md5($key);
+
                 return [
+                    'key' => $safeKey,
+                    'is_cargo' => false,
                     'kuantitas' => $totalKuantitas,
                     'satuan' => $satuan,
                     'nama_barang' => $namaBarang,
@@ -2704,20 +2715,27 @@ class BlController extends Controller
                 $amount = null;
                 $unit = '';
 
-                if ($totalVolume > 0) {
+                $safeKey = md5($key);
+                $choice = request()->input("choices.$safeKey");
+
+                if ($choice === 'm3' || ($choice !== 'ton' && $totalVolume > 0)) {
                     $amount = $totalVolume;
                     $unit = 'm3';
-                } elseif ($totalTonnage > 0) {
+                } elseif ($choice === 'ton' || ($choice !== 'm3' && $totalTonnage > 0)) {
                     $amount = $totalTonnage;
                     $unit = 'ton';
                 }
 
                 return [
+                    'key' => $safeKey,
+                    'is_cargo' => true,
                     'kuantitas' => $totalKuantitas,
                     'satuan' => $satuan,
                     'nama_barang' => $namaBarang,
                     'amount' => $amount,
                     'unit' => $unit,
+                    'tonnage' => $totalTonnage,
+                    'volume' => $totalVolume,
                 ];
             } else {
                 $size = $parts[1];
@@ -2737,12 +2755,18 @@ class BlController extends Controller
                 $namaBarang = ($status === 'empty') ? "Container Kosong {$size} feet" : "Container Full {$size} feet";
                 $satuan = 'Unit';
 
+                $safeKey = md5($key);
+
                 return [
+                    'key' => $safeKey,
+                    'is_cargo' => false,
                     'kuantitas' => $totalKuantitas,
                     'satuan' => $satuan,
                     'nama_barang' => $namaBarang,
                     'amount' => null,
                     'unit' => '',
+                    'tonnage' => null,
+                    'volume' => null,
                 ];
             }
         })->values();
