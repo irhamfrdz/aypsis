@@ -228,8 +228,8 @@
                 </div>
 
                 <div>
-                    <label for="grup" class="{{ $labelClasses }}">Group</label>
-                    <select name="grup[]" id="grup" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
+                    <label class="{{ $labelClasses }}">Group</label>
+                    <div id="grup-container" class="space-y-2">
                         @php
                             $defaultGrups = ['GAJI', 'UANG MAKAN', 'LEMBUR', 'PREMI'];
                             $existingGrups = [];
@@ -244,22 +244,28 @@
                             }
                             $allGrups = array_unique(array_merge($defaultGrups, $existingGrups));
                             $selectedGrup = old('grup', $karyawan->grup);
-                            if (is_string($selectedGrup)) {
-                                $selectedGrup = json_decode($selectedGrup, true) ?? [];
-                            }
-                            if (!is_array($selectedGrup)) {
-                                $selectedGrup = [];
-                            }
+                            if (is_string($selectedGrup)) $selectedGrup = json_decode($selectedGrup, true) ?? [];
+                            if (!is_array($selectedGrup)) $selectedGrup = [];
                             foreach ($selectedGrup as $s) {
                                 if (!in_array($s, $allGrups)) $allGrups[] = $s;
                             }
                             sort($allGrups);
+                            if (empty($selectedGrup)) $selectedGrup = [''];
                         @endphp
-                        @foreach($allGrups as $g)
-                            <option value="{{ $g }}" {{ in_array($g, $selectedGrup) ? 'selected' : '' }}>{{ $g }}</option>
+                        @foreach($selectedGrup as $index => $sg)
+                            <div class="flex items-center gap-2 grup-row">
+                                <select name="grup[]" class="{{ $selectClasses }} select2-tags" style="width: 100%;">
+                                    <option value="">Pilih atau Ketik Group Baru</option>
+                                    @foreach($allGrups as $g)
+                                        <option value="{{ $g }}" {{ $g == $sg ? 'selected' : '' }}>{{ $g }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="px-2 py-1.5 bg-red-500 text-white rounded text-xs font-bold hover:bg-red-600 remove-grup" {!! count($selectedGrup) == 1 && $index == 0 ? 'style="display:none;"' : '' !!}>X</button>
+                            </div>
                         @endforeach
-                    </select>
-                    <p class="text-xs text-gray-500 mt-1">Pilih dari daftar atau ketik nama group baru lalu tekan Enter. Anda bisa memilih lebih dari satu.</p>
+                    </div>
+                    <button type="button" id="add-grup" class="mt-2 px-3 py-1 bg-indigo-500 text-white text-[10px] font-bold rounded-md hover:bg-indigo-600 transition">+ Tambah Dropdown</button>
+                    <p class="text-xs text-gray-500 mt-1">Pilih dari daftar atau ketik nama group baru lalu tekan Enter.</p>
                 </div>
 
                 <div>
@@ -1010,12 +1016,46 @@
                 $('.select2-tags').select2({
                     tags: true,
                     placeholder: "Pilih atau Ketik Group Baru",
-                    allowClear: true,
-                    width: '100%'
+                    allowClear: true
+                });
+
+                // Dynamic Group Dropdown Logic
+                document.getElementById('add-grup')?.addEventListener('click', function() {
+                    let container = document.getElementById('grup-container');
+                    let firstRow = container.querySelector('.grup-row').cloneNode(true);
+                    let select = firstRow.querySelector('select');
+                    
+                    // Remove existing select2 generated elements from the clone
+                    let s2span = firstRow.querySelector('.select2-container');
+                    if(s2span) s2span.remove();
+                    
+                    select.classList.remove('select2-hidden-accessible');
+                    select.removeAttribute('data-select2-id');
+                    select.value = '';
+                    
+                    // Show remove button
+                    firstRow.querySelector('.remove-grup').style.display = 'block';
+                    
+                    container.appendChild(firstRow);
+                    $(select).select2({ tags: true });
+                    
+                    // Ensure the first row's remove button is also visible if there's more than one row
+                    if (container.querySelectorAll('.grup-row').length > 1) {
+                        container.querySelector('.remove-grup').style.display = 'block';
+                    }
+                });
+
+                document.getElementById('grup-container')?.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('remove-grup')) {
+                        let container = document.getElementById('grup-container');
+                        if (container.querySelectorAll('.grup-row').length > 1) {
+                            e.target.closest('.grup-row').remove();
+                        }
+                        if (container.querySelectorAll('.grup-row').length === 1) {
+                            container.querySelector('.remove-grup').style.display = 'none';
+                        }
+                    }
                 });
             }
         });
     </script>
-
-
-@endpush
