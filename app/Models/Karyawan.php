@@ -39,6 +39,7 @@ class Karyawan extends Model
         'sim_berlaku_sampai' => 'date',
         'verified_at' => 'datetime',
         'tunjangan' => 'array',
+        'grup' => 'array',
     ];
 
     // In this codebase users table has nullable karyawan_id; keep inverse relation here.

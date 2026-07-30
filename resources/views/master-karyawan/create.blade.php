@@ -253,19 +253,28 @@
 
                     <div>
                         <label for="grup" class="{{ $labelClasses }}">Group</label>
-                        <select name="grup" id="grup" class="{{ $selectClasses }} select2-tags" style="width: 100%;">
-                            <option value="">Pilih atau Ketik Group Baru</option>
+                        <select name="grup[]" id="grup" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
                             @php
                                 $defaultGrups = ['GAJI', 'UANG MAKAN', 'LEMBUR', 'PREMI'];
-                                $existingGrups = \App\Models\Karyawan::whereNotNull('grup')->where('grup', '!=', '')->pluck('grup')->unique()->toArray();
+                                $existingGrups = [];
+                                $karyawansGrups = \App\Models\Karyawan::whereNotNull('grup')->pluck('grup');
+                                foreach ($karyawansGrups as $grupArray) {
+                                    if (is_string($grupArray)) $grupArray = json_decode($grupArray, true);
+                                    if (is_array($grupArray)) {
+                                        foreach ($grupArray as $g) {
+                                            if (!in_array($g, $existingGrups) && $g !== '') $existingGrups[] = $g;
+                                        }
+                                    }
+                                }
                                 $allGrups = array_unique(array_merge($defaultGrups, $existingGrups));
                                 sort($allGrups);
+                                $oldGrup = (array) old('grup', []);
                             @endphp
                             @foreach($allGrups as $g)
-                                <option value="{{ $g }}" {{ old('grup') == $g ? 'selected' : '' }}>{{ $g }}</option>
+                                <option value="{{ $g }}" {{ in_array($g, $oldGrup) ? 'selected' : '' }}>{{ $g }}</option>
                             @endforeach
                         </select>
-                        <p class="text-xs text-gray-500 mt-1">Pilih dari daftar atau ketik nama group baru lalu tekan Enter.</p>
+                        <p class="text-xs text-gray-500 mt-1">Pilih dari daftar atau ketik nama group baru lalu tekan Enter. Anda bisa memilih lebih dari satu.</p>
                     </div>
 
                 <div>

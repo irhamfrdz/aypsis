@@ -489,7 +489,7 @@ class AbsensiController extends Controller
 
         if ($request->filled('grup')) {
             $grup = $request->grup;
-            $karyawansQuery->where('grup', $grup);
+            $karyawansQuery->whereJsonContains('grup', $grup);
         }
 
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
@@ -498,7 +498,20 @@ class AbsensiController extends Controller
         $cabangs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
         $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
 
-        $grupsList = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('grup')->where('grup', '!=', '')->pluck('grup')->unique()->values()->toArray();
+        $grupsList = [];
+        $karyawansGrups = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('grup')->pluck('grup');
+        foreach ($karyawansGrups as $grupArray) {
+            if (is_string($grupArray)) {
+                $grupArray = json_decode($grupArray, true);
+            }
+            if (is_array($grupArray)) {
+                foreach ($grupArray as $g) {
+                    if (!in_array($g, $grupsList) && $g !== '') {
+                        $grupsList[] = $g;
+                    }
+                }
+            }
+        }
         sort($grupsList);
 
         // Calculate normal workdays in the selected range (excluding weekends)

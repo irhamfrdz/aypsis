@@ -150,7 +150,16 @@
                                 <select name="grup[]" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs select2-multiple" multiple title="Tahan Ctrl/Cmd untuk pilih beberapa">
                                     @php
                                         $defaultGrups = ['GAJI', 'UANG MAKAN', 'LEMBUR', 'PREMI'];
-                                        $existingGrups = \App\Models\Karyawan::whereNotNull('grup')->where('grup', '!=', '')->pluck('grup')->unique()->toArray();
+                                        $existingGrups = [];
+                                        $karyawansGrups = \App\Models\Karyawan::whereNotNull('grup')->pluck('grup');
+                                        foreach ($karyawansGrups as $grupArray) {
+                                            if (is_string($grupArray)) $grupArray = json_decode($grupArray, true);
+                                            if (is_array($grupArray)) {
+                                                foreach ($grupArray as $g) {
+                                                    if (!in_array($g, $existingGrups) && $g !== '') $existingGrups[] = $g;
+                                                }
+                                            }
+                                        }
                                         $grupOptions = array_unique(array_merge($defaultGrups, $existingGrups));
                                         sort($grupOptions);
                                         $selectedGrup = (array) request('grup', []);
