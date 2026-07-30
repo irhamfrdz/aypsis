@@ -487,11 +487,29 @@ class AbsensiController extends Controller
             }
         }
 
+        if ($request->filled('tunjangan')) {
+            $tunjangan = $request->tunjangan;
+            $karyawansQuery->whereJsonContains('tunjangan', $tunjangan);
+        }
+
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
         $pekerjaans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
         $divisis = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
         $cabangs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
         $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
+
+        $tunjangansList = [];
+        $karyawansTunjangans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('tunjangan')->pluck('tunjangan');
+        foreach ($karyawansTunjangans as $tunjanganArray) {
+            if (is_array($tunjanganArray)) {
+                foreach ($tunjanganArray as $t) {
+                    if (!in_array($t, $tunjangansList)) {
+                        $tunjangansList[] = $t;
+                    }
+                }
+            }
+        }
+        sort($tunjangansList);
 
         // Calculate normal workdays in the selected range (excluding weekends)
         $normalWorkdays = 0;
@@ -648,7 +666,7 @@ class AbsensiController extends Controller
             ];
         }
 
-        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays'));
+        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'tunjangansList'));
     }
 
     /**

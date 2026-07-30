@@ -28,7 +28,7 @@
         <!-- Filter Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <form action="{{ route('absensi.rekap') }}" method="GET" class="space-y-4" id="filterForm">
-                <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-7 gap-4">
                     <!-- Search Karyawan -->
                     <div class="md:col-span-2">
                         <label for="search" class="block text-xs font-semibold text-gray-700 mb-1">Cari Karyawan / NIK</label>
@@ -45,6 +45,18 @@
                             <option value="">Semua Pekerjaan</option>
                             @foreach($pekerjaans as $pekerjaan)
                                 <option value="{{ $pekerjaan }}" {{ request('pekerjaan') == $pekerjaan ? 'selected' : '' }}>{{ $pekerjaan }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Tunjangan -->
+                    <div class="md:col-span-1">
+                        <label for="tunjangan" class="block text-xs font-semibold text-gray-700 mb-1">Tunjangan</label>
+                        <select name="tunjangan" id="tunjangan"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                            <option value="">Semua Tunjangan</option>
+                            @foreach($tunjangansList as $t)
+                                <option value="{{ $t }}" {{ request('tunjangan') == $t ? 'selected' : '' }}>{{ $t }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -81,7 +93,7 @@
                         <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                             Filter Rekap
                         </button>
-                        @if(request()->anyFilled(['search', 'pekerjaan', 'month', 'year']))
+                        @if(request()->anyFilled(['search', 'pekerjaan', 'tunjangan', 'kehadiran']))
                             <a href="{{ route('absensi.rekap') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                                 Reset
                             </a>
