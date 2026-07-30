@@ -812,6 +812,12 @@ class SuratJalanBongkaranBatamController extends Controller
         $successCount = 0;
         $errors = [];
 
+        // Fetch valid karyawans and kendaraans to validate bulk data
+        $allKaryawanPanggilan = \App\Models\Karyawan::pluck('nama_panggilan')->map(fn($v) => strtolower(trim($v)))->toArray();
+        $allKaryawanLengkap = \App\Models\Karyawan::pluck('nama_lengkap')->map(fn($v) => strtolower(trim($v)))->toArray();
+        $allKaryawans = array_merge($allKaryawanPanggilan, $allKaryawanLengkap);
+        $allKendaraans = \App\Models\Mobil::pluck('nomor_polisi')->map(fn($v) => strtolower(trim(str_replace(' ', '', $v))))->toArray();
+
         try {
             DB::beginTransaction();
 
@@ -821,7 +827,6 @@ class SuratJalanBongkaranBatamController extends Controller
 
                 if (empty($nomorSuratJalan)) {
                     $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan wajib diisi.";
-
                     continue;
                 }
 
@@ -829,6 +834,38 @@ class SuratJalanBongkaranBatamController extends Controller
                 if (empty($rowVoyage)) {
                     $errors[] = "Baris {$rowNumber}: Nomor Voyage wajib diisi.";
                     continue;
+                }
+
+                // Check Supir, Kenek, Krani in Master Karyawan
+                if (!empty($row['supir']) && !in_array(strtolower(trim($row['supir'])), $allKaryawans)) {
+                    $errors[] = "Baris {$rowNumber}: Supir '{$row['supir']}' tidak terdaftar di Master Karyawan.";
+                }
+                if (!empty($row['kenek']) && !in_array(strtolower(trim($row['kenek'])), $allKaryawans)) {
+                    $errors[] = "Baris {$rowNumber}: Kenek '{$row['kenek']}' tidak terdaftar di Master Karyawan.";
+                }
+                if (!empty($row['krani']) && !in_array(strtolower(trim($row['krani'])), $allKaryawans)) {
+                    $errors[] = "Baris {$rowNumber}: Krani '{$row['krani']}' tidak terdaftar di Master Karyawan.";
+                }
+
+                // Check No Plat in Master Kendaraan
+                if (!empty($row['no_plat'])) {
+                    $platClean = strtolower(trim(str_replace(' ', '', $row['no_plat'])));
+                    if (!in_array($platClean, $allKendaraans)) {
+                        $errors[] = "Baris {$rowNumber}: No Plat '{$row['no_plat']}' tidak terdaftar di Master Kendaraan.";
+                    }
+                }
+                
+                // If there are errors in this row regarding karyawan/kendaraan, skip to next row
+                if (!empty($errors)) {
+                    // Check if current row caused errors by matching row number prefix
+                    $rowHasError = false;
+                    foreach ($errors as $err) {
+                        if (str_starts_with($err, "Baris {$rowNumber}:")) {
+                            $rowHasError = true;
+                            break;
+                        }
+                    }
+                    if ($rowHasError) continue;
                 }
 
                 // Check uniqueness
