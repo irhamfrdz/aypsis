@@ -236,7 +236,7 @@
                     <div class="flex justify-between gap-2 mt-1 border-t border-gray-50 pt-1">
                         <span class="text-gray-500 shrink-0">Alamat:</span>
                         <span class="font-medium text-right text-[10px] sm:text-xs line-clamp-3" id="address-${loc.mobil_id}" title="${loc.alamat || ''}">
-                            ${loc.alamat ? loc.alamat : '<button onclick="loadAddress(' + loc.mobil_id + ', ' + loc.lat + ', ' + loc.lng + ')" class="text-indigo-600 hover:underline">Tampilkan Alamat</button>'}
+                            ${loc.alamat ? loc.alamat : '<button type="button" onclick="event.stopPropagation(); loadAddress(' + loc.mobil_id + ', ' + loc.lat + ', ' + loc.lng + ')" class="text-indigo-600 hover:underline">Tampilkan Alamat</button>'}
                         </span>
                     </div>
                     <div class="mt-3 pt-2 border-t border-gray-100 text-gray-400 flex items-center">
