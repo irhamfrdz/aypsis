@@ -1,27 +1,35 @@
 // --- BIAYA BURUH BONGKAR SCRIPT ---
 
 $(document).ready(function() {
-    // Initialize Select2 for Pengirim
-    $('#buruh_bongkar_pengirim').select2({
-        placeholder: '-- Pilih Pengirim --',
-        allowClear: true,
-        ajax: {
-            url: "{{ route('biaya-kapal.search-pengirim') }}",
-            dataType: 'json',
-            delay: 250,
-            data: function (params) {
-                return {
-                    q: params.term, // search term
-                };
-            },
-            processResults: function (data) {
-                return {
-                    results: data
-                };
-            },
-            cache: true
+    function initBuruhBongkarSelect2() {
+        if (typeof jQuery.fn.select2 !== 'undefined') {
+            $('#buruh_bongkar_pengirim').select2({
+                placeholder: '-- Pilih Pengirim --',
+                allowClear: true,
+                ajax: {
+                    url: "{{ route('biaya-kapal.search-pengirim') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term, // search term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                }
+            });
+        } else {
+            setTimeout(initBuruhBongkarSelect2, 100);
         }
-    });
+    }
+
+    // Initialize Select2 for Pengirim
+    initBuruhBongkarSelect2();
 
     // Handle Cari Data Button
     $('#btn_cari_buruh_bongkar').on('click', function() {
