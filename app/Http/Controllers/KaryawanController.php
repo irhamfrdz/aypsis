@@ -101,19 +101,7 @@ class KaryawanController extends Controller
         }
         if ($request->filled('grup')) {
             $grups = (array) $request->grup;
-            $query->where(function ($q) use ($grups) {
-                foreach ($grups as $filter) {
-                    // $filter format: "GROUP:JENIS" (e.g. "GAJI:TUNAI") or just "GROUP"
-                    if (str_contains($filter, ':')) {
-                        [$groupName, $jenisName] = explode(':', $filter, 2);
-                        // Search for {"GAJI": [..., "TUNAI", ...]}
-                        $q->orWhereJsonContains("grup->$groupName", $jenisName);
-                    } else {
-                        // Fallback if they only send Group name
-                        $q->orWhereNotNull("grup->$filter");
-                    }
-                }
-            });
+            $query->whereIn('grup', $grups);
         }
 
         // Filter: Tanggal Masuk range
@@ -986,17 +974,6 @@ class KaryawanController extends Controller
             }
         }
 
-        // Filter empty inner arrays in grup
-        if (isset($validated['grup']) && is_array($validated['grup'])) {
-            $cleanedGrup = [];
-            foreach ($validated['grup'] as $grupKey => $grupValues) {
-                if (is_array($grupValues) && count($grupValues) > 0) {
-                    $cleanedGrup[$grupKey] = $grupValues;
-                }
-            }
-            $validated['grup'] = !empty($cleanedGrup) ? $cleanedGrup : null;
-        }
-
         // Simpan data dalam database
         $karyawan = Karyawan::create($validated);
 
@@ -1194,17 +1171,6 @@ class KaryawanController extends Controller
             if ($value !== null && $key !== 'email' && !is_array($value)) {
                 $validated[$key] = strtoupper($value);
             }
-        }
-
-        // Filter empty inner arrays in grup
-        if (isset($validated['grup']) && is_array($validated['grup'])) {
-            $cleanedGrup = [];
-            foreach ($validated['grup'] as $grupKey => $grupValues) {
-                if (is_array($grupValues) && count($grupValues) > 0) {
-                    $cleanedGrup[$grupKey] = $grupValues;
-                }
-            }
-            $validated['grup'] = !empty($cleanedGrup) ? $cleanedGrup : null;
         }
 
         // Approval logic for specific catatan_pekerjaan (Restrict sensitive edits for specific statuses)

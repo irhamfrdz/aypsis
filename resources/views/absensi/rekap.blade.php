@@ -51,19 +51,12 @@
 
                     <!-- Group -->
                     <div class="md:col-span-1">
-                        <label for="grup" class="block text-xs font-semibold text-gray-700 mb-1">Group & Jenis</label>
-                        <select name="grup[]" id="grup" multiple title="Pilih Group & Jenis"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs select2-multiple">
-                            @php
-                                $selectedGrup = (array) request('grup', []);
-                            @endphp
-                            @foreach($grupsList as $groupName => $jenisArray)
-                                <optgroup label="{{ $groupName }}">
-                                    @foreach($jenisArray as $j)
-                                        @php $value = $groupName . ':' . $j; @endphp
-                                        <option value="{{ $value }}" {{ in_array($value, $selectedGrup) ? 'selected' : '' }}>{{ $j }}</option>
-                                    @endforeach
-                                </optgroup>
+                        <label for="grup" class="block text-xs font-semibold text-gray-700 mb-1">Group</label>
+                        <select name="grup" id="grup"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                            <option value="">Semua Group</option>
+                            @foreach($grupsList as $g)
+                                <option value="{{ $g }}" {{ request('grup') == $g ? 'selected' : '' }}>{{ $g }}</option>
                             @endforeach
                         </select>
                     </div>

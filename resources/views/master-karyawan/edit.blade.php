@@ -227,88 +227,39 @@
                     </select>
                 </div>
 
-                <!-- Grup & Jenis Section -->
-                <div class="col-span-1 md:col-span-2 mt-4 pt-4 border-t border-gray-200">
-                    <h4 class="text-sm font-semibold text-gray-700 mb-4">Tunjangan / Group & Jenis</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="grup" class="{{ $labelClasses }}">Group</label>
+                    <select name="grup[]" id="grup" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
                         @php
-                            $selectedGrup = $karyawan->grup;
+                            $defaultGrups = ['GAJI', 'UANG MAKAN', 'LEMBUR', 'PREMI'];
+                            $existingGrups = [];
+                            $karyawansGrups = \App\Models\Karyawan::whereNotNull('grup')->pluck('grup');
+                            foreach ($karyawansGrups as $grupArray) {
+                                if (is_string($grupArray)) $grupArray = json_decode($grupArray, true);
+                                if (is_array($grupArray)) {
+                                    foreach ($grupArray as $g) {
+                                        if (!in_array($g, $existingGrups) && $g !== '') $existingGrups[] = $g;
+                                    }
+                                }
+                            }
+                            $allGrups = array_unique(array_merge($defaultGrups, $existingGrups));
+                            $selectedGrup = old('grup', $karyawan->grup);
                             if (is_string($selectedGrup)) {
                                 $selectedGrup = json_decode($selectedGrup, true) ?? [];
                             }
                             if (!is_array($selectedGrup)) {
                                 $selectedGrup = [];
                             }
+                            foreach ($selectedGrup as $s) {
+                                if (!in_array($s, $allGrups)) $allGrups[] = $s;
+                            }
+                            sort($allGrups);
                         @endphp
-
-                        <!-- GAJI -->
-                        <div>
-                            <label for="grup_gaji" class="{{ $labelClasses }}">GAJI</label>
-                            <select name="grup[GAJI][]" id="grup_gaji" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
-                                @php
-                                    $gajiOptions = ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'];
-                                    $oldGaji = old('grup.GAJI', $selectedGrup['GAJI'] ?? []);
-                                    if (!is_array($oldGaji)) $oldGaji = [];
-                                    $allGaji = array_unique(array_merge($gajiOptions, $oldGaji));
-                                @endphp
-                                @foreach($allGaji as $opt)
-                                    <option value="{{ $opt }}" {{ in_array($opt, $oldGaji) ? 'selected' : '' }}>{{ $opt }}</option>
-                                @endforeach
-                            </select>
-                            <p class="text-[10px] text-gray-500 mt-1">Pilih jenis gaji. Bisa ketik baru lalu Enter.</p>
-                        </div>
-
-                        <!-- UANG MAKAN -->
-                        <div>
-                            <label for="grup_uang_makan" class="{{ $labelClasses }}">UANG MAKAN</label>
-                            <select name="grup[UANG MAKAN][]" id="grup_uang_makan" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
-                                @php
-                                    $umOptions = ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'];
-                                    $oldUM = old('grup.UANG MAKAN', $selectedGrup['UANG MAKAN'] ?? []);
-                                    if (!is_array($oldUM)) $oldUM = [];
-                                    $allUM = array_unique(array_merge($umOptions, $oldUM));
-                                @endphp
-                                @foreach($allUM as $opt)
-                                    <option value="{{ $opt }}" {{ in_array($opt, $oldUM) ? 'selected' : '' }}>{{ $opt }}</option>
-                                @endforeach
-                            </select>
-                            <p class="text-[10px] text-gray-500 mt-1">Pilih jenis uang makan. Bisa ketik baru lalu Enter.</p>
-                        </div>
-
-                        <!-- TRANSPORTASI -->
-                        <div>
-                            <label for="grup_transport" class="{{ $labelClasses }}">TRANSPORTASI</label>
-                            <select name="grup[TRANSPORTASI][]" id="grup_transport" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
-                                @php
-                                    $transportOptions = ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'];
-                                    $oldTransport = old('grup.TRANSPORTASI', $selectedGrup['TRANSPORTASI'] ?? []);
-                                    if (!is_array($oldTransport)) $oldTransport = [];
-                                    $allTransport = array_unique(array_merge($transportOptions, $oldTransport));
-                                @endphp
-                                @foreach($allTransport as $opt)
-                                    <option value="{{ $opt }}" {{ in_array($opt, $oldTransport) ? 'selected' : '' }}>{{ $opt }}</option>
-                                @endforeach
-                            </select>
-                            <p class="text-[10px] text-gray-500 mt-1">Pilih jenis transportasi. Bisa ketik baru lalu Enter.</p>
-                        </div>
-
-                        <!-- LEMBUR -->
-                        <div>
-                            <label for="grup_lembur" class="{{ $labelClasses }}">LEMBUR</label>
-                            <select name="grup[LEMBUR][]" id="grup_lembur" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
-                                @php
-                                    $lemburOptions = ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'];
-                                    $oldLembur = old('grup.LEMBUR', $selectedGrup['LEMBUR'] ?? []);
-                                    if (!is_array($oldLembur)) $oldLembur = [];
-                                    $allLembur = array_unique(array_merge($lemburOptions, $oldLembur));
-                                @endphp
-                                @foreach($allLembur as $opt)
-                                    <option value="{{ $opt }}" {{ in_array($opt, $oldLembur) ? 'selected' : '' }}>{{ $opt }}</option>
-                                @endforeach
-                            </select>
-                            <p class="text-[10px] text-gray-500 mt-1">Pilih jenis lembur. Bisa ketik baru lalu Enter.</p>
-                        </div>
-                    </div>
+                        @foreach($allGrups as $g)
+                            <option value="{{ $g }}" {{ in_array($g, $selectedGrup) ? 'selected' : '' }}>{{ $g }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Pilih dari daftar atau ketik nama group baru lalu tekan Enter. Anda bisa memilih lebih dari satu.</p>
                 </div>
 
                 <div>

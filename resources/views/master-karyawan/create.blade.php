@@ -251,70 +251,30 @@
                         </select>
                     </div>
 
-                    <!-- Grup & Jenis Section -->
-                    <div class="col-span-1 md:col-span-2 mt-4 pt-4 border-t border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-4">Tunjangan / Group & Jenis</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- GAJI -->
-                            <div>
-                                <label for="grup_gaji" class="{{ $labelClasses }}">GAJI</label>
-                                <select name="grup[GAJI][]" id="grup_gaji" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
-                                    @php
-                                        $gajiOptions = ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'];
-                                        $oldGaji = (array) old('grup.GAJI', []);
-                                    @endphp
-                                    @foreach($gajiOptions as $opt)
-                                        <option value="{{ $opt }}" {{ in_array($opt, $oldGaji) ? 'selected' : '' }}>{{ $opt }}</option>
-                                    @endforeach
-                                </select>
-                                <p class="text-[10px] text-gray-500 mt-1">Pilih jenis gaji. Bisa ketik baru lalu Enter.</p>
-                            </div>
-
-                            <!-- UANG MAKAN -->
-                            <div>
-                                <label for="grup_uang_makan" class="{{ $labelClasses }}">UANG MAKAN</label>
-                                <select name="grup[UANG MAKAN][]" id="grup_uang_makan" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
-                                    @php
-                                        $umOptions = ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'];
-                                        $oldUM = (array) old('grup.UANG MAKAN', []);
-                                    @endphp
-                                    @foreach($umOptions as $opt)
-                                        <option value="{{ $opt }}" {{ in_array($opt, $oldUM) ? 'selected' : '' }}>{{ $opt }}</option>
-                                    @endforeach
-                                </select>
-                                <p class="text-[10px] text-gray-500 mt-1">Pilih jenis uang makan. Bisa ketik baru lalu Enter.</p>
-                            </div>
-
-                            <!-- TRANSPORTASI -->
-                            <div>
-                                <label for="grup_transport" class="{{ $labelClasses }}">TRANSPORTASI</label>
-                                <select name="grup[TRANSPORTASI][]" id="grup_transport" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
-                                    @php
-                                        $transportOptions = ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'];
-                                        $oldTransport = (array) old('grup.TRANSPORTASI', []);
-                                    @endphp
-                                    @foreach($transportOptions as $opt)
-                                        <option value="{{ $opt }}" {{ in_array($opt, $oldTransport) ? 'selected' : '' }}>{{ $opt }}</option>
-                                    @endforeach
-                                </select>
-                                <p class="text-[10px] text-gray-500 mt-1">Pilih jenis transportasi. Bisa ketik baru lalu Enter.</p>
-                            </div>
-
-                            <!-- LEMBUR -->
-                            <div>
-                                <label for="grup_lembur" class="{{ $labelClasses }}">LEMBUR</label>
-                                <select name="grup[LEMBUR][]" id="grup_lembur" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
-                                    @php
-                                        $lemburOptions = ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'];
-                                        $oldLembur = (array) old('grup.LEMBUR', []);
-                                    @endphp
-                                    @foreach($lemburOptions as $opt)
-                                        <option value="{{ $opt }}" {{ in_array($opt, $oldLembur) ? 'selected' : '' }}>{{ $opt }}</option>
-                                    @endforeach
-                                </select>
-                                <p class="text-[10px] text-gray-500 mt-1">Pilih jenis lembur. Bisa ketik baru lalu Enter.</p>
-                            </div>
-                        </div>
+                    <div>
+                        <label for="grup" class="{{ $labelClasses }}">Group</label>
+                        <select name="grup[]" id="grup" class="{{ $selectClasses }} select2-tags" multiple style="width: 100%;">
+                            @php
+                                $defaultGrups = ['GAJI', 'UANG MAKAN', 'LEMBUR', 'PREMI'];
+                                $existingGrups = [];
+                                $karyawansGrups = \App\Models\Karyawan::whereNotNull('grup')->pluck('grup');
+                                foreach ($karyawansGrups as $grupArray) {
+                                    if (is_string($grupArray)) $grupArray = json_decode($grupArray, true);
+                                    if (is_array($grupArray)) {
+                                        foreach ($grupArray as $g) {
+                                            if (!in_array($g, $existingGrups) && $g !== '') $existingGrups[] = $g;
+                                        }
+                                    }
+                                }
+                                $allGrups = array_unique(array_merge($defaultGrups, $existingGrups));
+                                sort($allGrups);
+                                $oldGrup = (array) old('grup', []);
+                            @endphp
+                            @foreach($allGrups as $g)
+                                <option value="{{ $g }}" {{ in_array($g, $oldGrup) ? 'selected' : '' }}>{{ $g }}</option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Pilih dari daftar atau ketik nama group baru lalu tekan Enter. Anda bisa memilih lebih dari satu.</p>
                     </div>
 
                 <div>

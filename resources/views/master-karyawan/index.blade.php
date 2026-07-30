@@ -149,38 +149,23 @@
                                 <span class="text-[9px] font-bold text-blue-500 uppercase tracking-tighter">Group:</span>
                                 <select name="grup[]" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs select2-multiple" multiple title="Tahan Ctrl/Cmd untuk pilih beberapa">
                                     @php
-                                        $selectedGrup = (array) request('grup', []);
-                                        $groupedOptions = [
-                                            'GAJI' => ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'],
-                                            'UANG MAKAN' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
-                                            'TRANSPORTASI' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
-                                            'LEMBUR' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
-                                        ];
-                                        // Include existing unique values from DB just in case they added custom ones
+                                        $defaultGrups = ['GAJI', 'UANG MAKAN', 'LEMBUR', 'PREMI'];
+                                        $existingGrups = [];
                                         $karyawansGrups = \App\Models\Karyawan::whereNotNull('grup')->pluck('grup');
                                         foreach ($karyawansGrups as $grupArray) {
                                             if (is_string($grupArray)) $grupArray = json_decode($grupArray, true);
                                             if (is_array($grupArray)) {
-                                                foreach ($grupArray as $groupName => $jenisArray) {
-                                                    if (!isset($groupedOptions[$groupName])) $groupedOptions[$groupName] = [];
-                                                    if (is_array($jenisArray)) {
-                                                        foreach ($jenisArray as $j) {
-                                                            if (!in_array($j, $groupedOptions[$groupName]) && $j !== '') {
-                                                                $groupedOptions[$groupName][] = $j;
-                                                            }
-                                                        }
-                                                    }
+                                                foreach ($grupArray as $g) {
+                                                    if (!in_array($g, $existingGrups) && $g !== '') $existingGrups[] = $g;
                                                 }
                                             }
                                         }
+                                        $grupOptions = array_unique(array_merge($defaultGrups, $existingGrups));
+                                        sort($grupOptions);
+                                        $selectedGrup = (array) request('grup', []);
                                     @endphp
-                                    @foreach($groupedOptions as $groupName => $jenisArray)
-                                        <optgroup label="{{ $groupName }}">
-                                            @foreach($jenisArray as $j)
-                                                @php $value = $groupName . ':' . $j; @endphp
-                                                <option value="{{ $value }}" {{ in_array($value, $selectedGrup) ? 'selected' : '' }}>{{ $j }}</option>
-                                            @endforeach
-                                        </optgroup>
+                                    @foreach($grupOptions as $opt)
+                                        <option value="{{ $opt }}" {{ in_array($opt, $selectedGrup) ? 'selected' : '' }}>{{ $opt }}</option>
                                     @endforeach
                                 </select>
                             </div>
