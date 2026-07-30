@@ -49,14 +49,14 @@
                         </select>
                     </div>
 
-                    <!-- Tunjangan -->
+                    <!-- Group -->
                     <div class="md:col-span-1">
-                        <label for="tunjangan" class="block text-xs font-semibold text-gray-700 mb-1">Tunjangan</label>
-                        <select name="tunjangan" id="tunjangan"
+                        <label for="grup" class="block text-xs font-semibold text-gray-700 mb-1">Group</label>
+                        <select name="grup" id="grup"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                            <option value="">Semua Tunjangan</option>
-                            @foreach($tunjangansList as $t)
-                                <option value="{{ $t }}" {{ request('tunjangan') == $t ? 'selected' : '' }}>{{ $t }}</option>
+                            <option value="">Semua Group</option>
+                            @foreach($grupsList as $g)
+                                <option value="{{ $g }}" {{ request('grup') == $g ? 'selected' : '' }}>{{ $g }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -93,7 +93,7 @@
                         <button type="submit" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                             Filter Rekap
                         </button>
-                        @if(request()->anyFilled(['search', 'penempatan', 'tunjangan', 'kehadiran']))
+                        @if(request()->anyFilled(['search', 'penempatan', 'grup', 'kehadiran']))
                             <a href="{{ route('absensi.rekap') }}" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                                 Reset
                             </a>

@@ -252,12 +252,14 @@
                     </div>
 
                     <div>
-                        <label for="tunjangan" class="{{ $labelClasses }}">Tunjangan</label>
-                        <select name="tunjangan[]" id="tunjangan" class="{{ $selectClasses }}" multiple>
-                            <option value="UANG MAKAN" {{ (is_array(old('tunjangan')) && in_array('UANG MAKAN', old('tunjangan'))) ? 'selected' : '' }}>UANG MAKAN</option>
-                            <option value="TRANSPORTASI" {{ (is_array(old('tunjangan')) && in_array('TRANSPORTASI', old('tunjangan'))) ? 'selected' : '' }}>TRANSPORTASI</option>
-                            <option value="BPJS" {{ (is_array(old('tunjangan')) && in_array('BPJS', old('tunjangan'))) ? 'selected' : '' }}>BPJS</option>
-                            <option value="CUTI TAHUNAN" {{ (is_array(old('tunjangan')) && in_array('CUTI TAHUNAN', old('tunjangan'))) ? 'selected' : '' }}>CUTI TAHUNAN</option>
+                        <label for="grup" class="{{ $labelClasses }}">Group</label>
+                        <select name="grup[]" id="grup" class="{{ $selectClasses }}" multiple>
+                            <option value="GAJI" {{ (is_array(old('grup')) && in_array('GAJI', old('grup'))) ? 'selected' : '' }}>GAJI</option>
+                            <option value="BPJS-JKN" {{ (is_array(old('grup')) && in_array('BPJS-JKN', old('grup'))) ? 'selected' : '' }}>BPJS-JKN</option>
+                            <option value="BPJS-TK" {{ (is_array(old('grup')) && in_array('BPJS-TK', old('grup'))) ? 'selected' : '' }}>BPJS-TK</option>
+                            <option value="UANG MAKAN" {{ (is_array(old('grup')) && in_array('UANG MAKAN', old('grup'))) ? 'selected' : '' }}>UANG MAKAN</option>
+                            <option value="TRANSPORTASI" {{ (is_array(old('grup')) && in_array('TRANSPORTASI', old('grup'))) ? 'selected' : '' }}>TRANSPORTASI</option>
+                            <option value="PREMI" {{ (is_array(old('grup')) && in_array('PREMI', old('grup'))) ? 'selected' : '' }}>PREMI</option>
                         </select>
                         <p class="text-xs text-gray-500 mt-1">Tahan tombol Ctrl (Windows) atau Command (Mac) untuk memilih lebih dari satu.</p>
                     </div>

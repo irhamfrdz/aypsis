@@ -228,13 +228,15 @@
                 </div>
 
                 <div>
-                    <label for="tunjangan" class="{{ $labelClasses }}">Tunjangan</label>
-                    <select name="tunjangan[]" id="tunjangan" class="{{ $selectClasses }}" multiple>
-                        @php $selectedTunjangan = old('tunjangan', $karyawan->tunjangan ?? []); @endphp
-                        <option value="UANG MAKAN" {{ (is_array($selectedTunjangan) && in_array('UANG MAKAN', $selectedTunjangan)) ? 'selected' : '' }}>UANG MAKAN</option>
-                        <option value="TRANSPORTASI" {{ (is_array($selectedTunjangan) && in_array('TRANSPORTASI', $selectedTunjangan)) ? 'selected' : '' }}>TRANSPORTASI</option>
-                        <option value="BPJS" {{ (is_array($selectedTunjangan) && in_array('BPJS', $selectedTunjangan)) ? 'selected' : '' }}>BPJS</option>
-                        <option value="CUTI TAHUNAN" {{ (is_array($selectedTunjangan) && in_array('CUTI TAHUNAN', $selectedTunjangan)) ? 'selected' : '' }}>CUTI TAHUNAN</option>
+                    <label for="grup" class="{{ $labelClasses }}">Group</label>
+                    <select name="grup[]" id="grup" class="{{ $selectClasses }}" multiple>
+                        @php $selectedGrup = old('grup', $karyawan->grup ?? []); @endphp
+                        <option value="GAJI" {{ (is_array($selectedGrup) && in_array('GAJI', $selectedGrup)) ? 'selected' : '' }}>GAJI</option>
+                        <option value="BPJS-JKN" {{ (is_array($selectedGrup) && in_array('BPJS-JKN', $selectedGrup)) ? 'selected' : '' }}>BPJS-JKN</option>
+                        <option value="BPJS-TK" {{ (is_array($selectedGrup) && in_array('BPJS-TK', $selectedGrup)) ? 'selected' : '' }}>BPJS-TK</option>
+                        <option value="UANG MAKAN" {{ (is_array($selectedGrup) && in_array('UANG MAKAN', $selectedGrup)) ? 'selected' : '' }}>UANG MAKAN</option>
+                        <option value="TRANSPORTASI" {{ (is_array($selectedGrup) && in_array('TRANSPORTASI', $selectedGrup)) ? 'selected' : '' }}>TRANSPORTASI</option>
+                        <option value="PREMI" {{ (is_array($selectedGrup) && in_array('PREMI', $selectedGrup)) ? 'selected' : '' }}>PREMI</option>
                     </select>
                     <p class="text-xs text-gray-500 mt-1">Tahan tombol Ctrl (Windows) atau Command (Mac) untuk memilih lebih dari satu.</p>
                 </div>

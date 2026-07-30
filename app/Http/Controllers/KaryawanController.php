@@ -99,11 +99,11 @@ class KaryawanController extends Controller
         if ($request->filled('penempatan')) {
             $query->where('penempatan', $request->penempatan);
         }
-        if ($request->filled('tunjangan')) {
-            $tunjangans = (array) $request->tunjangan;
-            $query->where(function ($q) use ($tunjangans) {
-                foreach ($tunjangans as $t) {
-                    $q->orWhere('tunjangan', 'LIKE', '%"' . $t . '"%');
+        if ($request->filled('grup')) {
+            $grups = (array) $request->grup;
+            $query->where(function ($q) use ($grups) {
+                foreach ($grups as $g) {
+                    $q->orWhere('grup', 'LIKE', '%"' . $g . '"%');
                 }
             });
         }
@@ -930,8 +930,8 @@ class KaryawanController extends Controller
             'pekerjaan' => 'nullable|string|max:255',
             'penempatan' => 'nullable|string|max:255',
             'nominal_uang_makan' => 'nullable|numeric|min:0',
-            'tunjangan' => 'nullable|array',
-            'tunjangan.*' => 'string|max:255',
+            'grup' => 'nullable|array',
+            'grup.*' => 'string|max:255',
             'tanggal_masuk' => 'required|date',
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
@@ -1127,8 +1127,8 @@ class KaryawanController extends Controller
             'pekerjaan' => 'nullable|string|max:255',
             'penempatan' => 'nullable|string|max:255',
             'nominal_uang_makan' => 'nullable|numeric|min:0',
-            'tunjangan' => 'nullable|array',
-            'tunjangan.*' => 'string|max:255',
+            'grup' => 'nullable|array',
+            'grup.*' => 'string|max:255',
             'tanggal_masuk' => 'required|date',
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',

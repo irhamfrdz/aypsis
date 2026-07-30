@@ -487,9 +487,9 @@ class AbsensiController extends Controller
             }
         }
 
-        if ($request->filled('tunjangan')) {
-            $tunjangan = $request->tunjangan;
-            $karyawansQuery->whereJsonContains('tunjangan', $tunjangan);
+        if ($request->filled('grup')) {
+            $grup = $request->grup;
+            $karyawansQuery->whereJsonContains('grup', $grup);
         }
 
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
@@ -669,7 +669,7 @@ class AbsensiController extends Controller
             ];
         }
 
-        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'tunjangansList'));
+        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'grupsList'));
     }
 
     /**

@@ -146,14 +146,14 @@
                                 @endif
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="text-[9px] font-bold text-blue-500 uppercase tracking-tighter">Tunjangan:</span>
-                                <select name="tunjangan[]" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs" multiple title="Tahan Ctrl/Cmd untuk pilih beberapa">
+                                <span class="text-[9px] font-bold text-blue-500 uppercase tracking-tighter">Group:</span>
+                                <select name="grup[]" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs" multiple title="Tahan Ctrl/Cmd untuk pilih beberapa">
                                     @php
-                                        $tunjanganOptions = ['UANG MAKAN', 'TRANSPORTASI', 'BPJS', 'CUTI TAHUNAN'];
-                                        $selectedTunjangan = (array) request('tunjangan', []);
+                                        $grupOptions = ['GAJI', 'BPJS-JKN', 'BPJS-TK', 'UANG MAKAN', 'TRANSPORTASI', 'PREMI'];
+                                        $selectedGrup = (array) request('grup', []);
                                     @endphp
-                                    @foreach($tunjanganOptions as $opt)
-                                        <option value="{{ $opt }}" {{ in_array($opt, $selectedTunjangan) ? 'selected' : '' }}>{{ $opt }}</option>
+                                    @foreach($grupOptions as $opt)
+                                        <option value="{{ $opt }}" {{ in_array($opt, $selectedGrup) ? 'selected' : '' }}>{{ $opt }}</option>
                                     @endforeach
                                 </select>
                             </div>
