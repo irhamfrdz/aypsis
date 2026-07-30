@@ -108,6 +108,21 @@ class ReportKerjaSupirBatamController extends Controller
             
             $supirNames = array_unique($supirNames);
 
+            // Pre-calculate ring mapping from Master Pricelist Uang Jalan Batam for Tarik Kosong & Langsir
+            $ringMapping = [];
+            $pricelists = \App\Models\PricelistUangJalanBatam::activeBbm()->get(['wilayah', 'ring']);
+            foreach ($pricelists as $p) {
+                if ($p->wilayah) {
+                    $subWilayahs = explode(',', $p->wilayah);
+                    foreach ($subWilayahs as $sw) {
+                        $trimmed = trim($sw);
+                        if ($trimmed !== '') {
+                            $ringMapping[strtolower($trimmed)] = $p->ring;
+                        }
+                    }
+                }
+            }
+
             if (!empty($supirNames)) {
                 // 1. Surat Jalan Batam (Regular)
                 $regularSJs = \App\Models\SuratJalanBatam::whereIn('supir', $supirNames)
@@ -166,6 +181,8 @@ class ReportKerjaSupirBatamController extends Controller
                 foreach ($tarikKosongSJs as $sj) {
                     $ritVal = is_numeric($sj->uang_jalan) ? (float) $sj->uang_jalan : 0;
                     $totalRit += $ritVal;
+                    $tujuan = $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? '-';
+                    $ring = $ringMapping[strtolower(trim($tujuan))] ?? '-';
                     $waybills[] = [
                         'tanggal_sort' => $sj->tanggal_surat_jalan->format('Y-m-d H:i:s'),
                         'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
@@ -174,15 +191,17 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->no_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'nik' => $nikLookup[$sj->supir] ?? '-',
-                        'ring' => '-',
+                        'ring' => $ring,
                         'uang_jalan' => $ritVal,
-                        'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? '-',
+                        'tujuan' => $tujuan,
                     ];
                 }
 
                 foreach ($langsirBatamList as $langsir) {
                     $ritVal = is_numeric($langsir->biaya) ? (float) $langsir->biaya : 0;
                     $totalRit += $ritVal;
+                    $tujuan = $langsir->ke ?? '-';
+                    $ring = $ringMapping[strtolower(trim($tujuan))] ?? '-';
                     $waybills[] = [
                         'tanggal_sort' => $langsir->tanggal->format('Y-m-d H:i:s'),
                         'tanggal' => $langsir->tanggal->format('d/m/Y'),
@@ -191,9 +210,9 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $langsir->no_kontainer ?? '-',
                         'supir' => $langsir->supir,
                         'nik' => $nikLookup[$langsir->supir] ?? '-',
-                        'ring' => '-',
+                        'ring' => $ring,
                         'uang_jalan' => $ritVal,
-                        'tujuan' => $langsir->ke ?? '-',
+                        'tujuan' => $tujuan,
                     ];
                 }
 
