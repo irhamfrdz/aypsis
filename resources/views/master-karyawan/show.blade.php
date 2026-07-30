@@ -367,6 +367,38 @@
             </div>
 
             <div class="col-span-2">
+                <p class="font-semibold text-gray-600 mb-2">Group & Sub Group</p>
+                @php
+                    $grupData = $karyawan->grup;
+                    if (is_string($grupData)) $grupData = json_decode($grupData, true);
+                    if (!is_array($grupData)) $grupData = [];
+                @endphp
+                @if(count($grupData) > 0)
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($grupData as $g)
+                            @php
+                                $parts = explode(':', $g, 2);
+                                $main = $parts[0] ?? '';
+                                $sub = $parts[1] ?? '';
+                            @endphp
+                            <div class="inline-flex items-center rounded border border-gray-200 bg-white overflow-hidden">
+                                <span class="px-2.5 py-1 text-[11px] font-medium bg-blue-50 text-blue-700 {{ $sub ? 'border-r border-gray-200' : '' }}">
+                                    {{ strtoupper($main) }}
+                                </span>
+                                @if($sub)
+                                <span class="px-2.5 py-1 text-[11px] font-medium bg-green-50 text-green-700">
+                                    {{ strtoupper($sub) }}
+                                </span>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-gray-800">-</p>
+                @endif
+            </div>
+
+            <div class="col-span-2 mt-2">
                 <div class="flex justify-between items-center mb-2">
                     <p class="font-semibold text-gray-600">Catatan Pekerjaan</p>
                     <button onclick="toggleEditCatatanPekerjaan()" id="editCatatanBtn" class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors">
