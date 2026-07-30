@@ -44,12 +44,24 @@ class FixSuratJalanMasterData extends Command
         $suratJalans = \App\Models\SuratJalanBongkaranBatam::all();
         $updatedCount = 0;
 
+        // Manual alias mapping for old invalid data
+        $aliasSupir = [
+            'taufik' => 'TAUFIK H',
+            'andrisyah' => 'ANDRIYANSYAH',
+        ];
+
         foreach ($suratJalans as $sj) {
             $changed = false;
             
             // Fix Supir
             if (!empty($sj->supir)) {
                 $key = strtolower(trim($sj->supir));
+                
+                // Apply manual alias if exists
+                if (isset($aliasSupir[$key])) {
+                    $key = strtolower(trim($aliasSupir[$key]));
+                }
+
                 if (isset($supirMap[$key]) && $sj->supir !== $supirMap[$key]) {
                     $sj->supir = $supirMap[$key];
                     $changed = true;
