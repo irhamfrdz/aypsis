@@ -38,11 +38,7 @@ $(document).ready(function() {
         const endDate = $('#buruh_bongkar_end_date').val();
 
         if (!pengirim || !startDate || !endDate) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Perhatian',
-                text: 'Harap isi Nama Pengirim dan Range Tanggal terlebih dahulu.'
-            });
+            alert('Harap isi Nama Pengirim dan Range Tanggal terlebih dahulu.');
             return;
         }
 
@@ -96,20 +92,12 @@ $(document).ready(function() {
                     updateSelectedCount();
                 } else {
                     $('#buruh_bongkar_results_container').addClass('hidden');
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Tidak Ditemukan',
-                        text: 'Tidak ada data manifest untuk pengirim dan range tanggal tersebut.'
-                    });
+                    alert('Tidak ada data manifest untuk pengirim dan range tanggal tersebut.');
                 }
             },
             error: function(xhr) {
                 console.error(xhr);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Terjadi kesalahan saat mengambil data.'
-                });
+                alert('Terjadi kesalahan saat mengambil data.');
             },
             complete: function() {
                 // Restore button
