@@ -254,12 +254,15 @@
                         @endphp
                         @foreach($selectedGrup as $index => $sg)
                             <div class="flex items-center gap-2 grup-row">
-                                <select name="grup[]" class="{{ $selectClasses }} select2-tags" style="width: 100%;">
-                                    <option value="">Pilih atau Ketik Group Baru</option>
+                                <select name="grup[]" class="{{ $selectClasses }} grup-select" onchange="if(this.value=='__baru__'){this.style.display='none'; this.nextElementSibling.style.display='block'; this.nextElementSibling.focus(); this.nextElementSibling.name='grup[]'; this.name='';}">
+                                    <option value="">-- Pilih Group --</option>
                                     @foreach($allGrups as $g)
                                         <option value="{{ $g }}" {{ $g == $sg ? 'selected' : '' }}>{{ $g }}</option>
                                     @endforeach
+                                    <option value="__baru__" class="font-bold text-blue-600">+ KETIK GROUP BARU...</option>
                                 </select>
+                                <input type="text" class="{{ str_replace('bg-gray-100', 'bg-white', $selectClasses) }} grup-input" style="display:none;" placeholder="Ketik group baru dan tekan enter/klik di luar..." onblur="if(this.value==''){this.style.display='none'; this.previousElementSibling.style.display='block'; this.name=''; this.previousElementSibling.name='grup[]'; this.previousElementSibling.value='';}">
+                                
                                 <button type="button" class="px-2 py-1.5 bg-red-500 text-white rounded text-xs font-bold hover:bg-red-600 remove-grup" {!! count($selectedGrup) == 1 && $index == 0 ? 'style="display:none;"' : '' !!}>X</button>
                             </div>
                         @endforeach
@@ -1011,33 +1014,27 @@
                 });
             }
 
-            // Initialize Select2 for tags
+            // Initialize Select2 for tags (no longer used for grup, but kept if other fields need it)
             if ($.fn.select2) {
-                $('.select2-tags').select2({
-                    tags: true,
-                    placeholder: "Pilih atau Ketik Group Baru",
-                    allowClear: true
-                });
-
                 // Dynamic Group Dropdown Logic
                 document.getElementById('add-grup')?.addEventListener('click', function() {
                     let container = document.getElementById('grup-container');
                     let firstRow = container.querySelector('.grup-row').cloneNode(true);
-                    let select = firstRow.querySelector('select');
+                    let select = firstRow.querySelector('.grup-select');
+                    let input = firstRow.querySelector('.grup-input');
                     
-                    // Remove existing select2 generated elements from the clone
-                    let s2span = firstRow.querySelector('.select2-container');
-                    if(s2span) s2span.remove();
-                    
-                    select.classList.remove('select2-hidden-accessible');
-                    select.removeAttribute('data-select2-id');
                     select.value = '';
+                    select.style.display = 'block';
+                    select.name = 'grup[]';
+                    
+                    input.value = '';
+                    input.style.display = 'none';
+                    input.name = '';
                     
                     // Show remove button
                     firstRow.querySelector('.remove-grup').style.display = 'block';
                     
                     container.appendChild(firstRow);
-                    $(select).select2({ tags: true });
                     
                     // Ensure the first row's remove button is also visible if there's more than one row
                     if (container.querySelectorAll('.grup-row').length > 1) {
