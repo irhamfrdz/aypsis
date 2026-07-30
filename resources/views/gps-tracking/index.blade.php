@@ -233,12 +233,39 @@
                         <span class="text-gray-500">Kecepatan:</span>
                         <span class="font-medium">${loc.speed} km/h</span>
                     </div>
+                    <div class="flex justify-between gap-2 mt-1 border-t border-gray-50 pt-1">
+                        <span class="text-gray-500 shrink-0">Alamat:</span>
+                        <span class="font-medium text-right text-[10px] sm:text-xs line-clamp-3" id="address-${loc.mobil_id}" title="${loc.alamat || ''}">
+                            ${loc.alamat ? loc.alamat : '<button onclick="loadAddress(' + loc.mobil_id + ', ' + loc.lat + ', ' + loc.lng + ')" class="text-indigo-600 hover:underline">Tampilkan Alamat</button>'}
+                        </span>
+                    </div>
                     <div class="mt-3 pt-2 border-t border-gray-100 text-gray-400 flex items-center">
                         <i class="far fa-clock mr-1"></i> Update: ${loc.last_update}
                     </div>
                 </div>
             </div>
         `;
+    }
+
+    async function loadAddress(id, lat, lng) {
+        const el = document.getElementById('address-' + id);
+        if(!el) return;
+        el.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
+        try {
+            const res = await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18&addressdetails=1');
+            const data = await res.json();
+            if(data && data.display_name) {
+                let address = data.address.road ? data.address.road + ', ' : '';
+                address += data.address.city || data.address.town || data.address.village || data.address.county || '';
+                if (!address || address.length < 5) address = data.display_name;
+                el.innerText = address;
+                el.title = data.display_name;
+            } else {
+                el.innerText = 'Alamat tidak ditemukan';
+            }
+        } catch(e) {
+            el.innerHTML = '<button onclick="loadAddress(' + id + ', ' + lat + ', ' + lng + ')" class="text-red-500 hover:underline">Gagal, Coba Lagi</button>';
+        }
     }
 
     function focusOnTruck(mobilId) {

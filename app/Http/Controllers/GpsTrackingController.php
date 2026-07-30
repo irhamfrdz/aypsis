@@ -70,6 +70,7 @@ class GpsTrackingController extends Controller
                     'lng' => $payload['longitude'] ?? null,
                     'speed' => $payload['speed'] ?? 0,
                     'status' => $statusText,
+                    'alamat' => $payload['address'] ?? $payload['location'] ?? null,
                     'last_update' => $payload['last_update'] ?? now()->format('Y-m-d H:i:s'),
                 ];
             }
