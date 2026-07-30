@@ -456,7 +456,12 @@
                         </th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
-                                <span>TUNJANGAN</span>
+                                <span>GROUP</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
+                                <span>SUB GROUP</span>
                             </div>
                         </th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
@@ -566,11 +571,39 @@
                                     -
                                 @endif
                             </td>
-                            <td class="px-4 py-2 text-center text-[10px] text-gray-900">
-                                @if(is_array($karyawan->tunjangan) && count($karyawan->tunjangan) > 0)
-                                    <div class="flex flex-wrap justify-center gap-1 max-w-[120px]">
-                                        @foreach($karyawan->tunjangan as $t)
-                                            <span class="inline-flex px-1.5 py-0.5 rounded text-[8px] font-medium bg-blue-100 text-blue-800 whitespace-nowrap">{{ $t }}</span>
+                            @php
+                                $grupData = $karyawan->grup;
+                                if (is_string($grupData)) $grupData = json_decode($grupData, true);
+                                if (!is_array($grupData)) $grupData = [];
+                            @endphp
+                            <td class="px-4 py-2 text-center text-[10px] text-gray-900 align-top">
+                                @if(count($grupData) > 0)
+                                    <div class="flex flex-col items-center gap-1">
+                                        @foreach($grupData as $g)
+                                            @php
+                                                $parts = explode(':', $g, 2);
+                                                $main = $parts[0] ?? '';
+                                            @endphp
+                                            <span class="inline-flex px-1.5 py-0.5 rounded text-[8px] font-medium bg-blue-100 text-blue-800 whitespace-nowrap h-4 items-center">{{ strtoupper($main) }}</span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="px-4 py-2 text-center text-[10px] text-gray-900 align-top">
+                                @if(count($grupData) > 0)
+                                    <div class="flex flex-col items-center gap-1">
+                                        @foreach($grupData as $g)
+                                            @php
+                                                $parts = explode(':', $g, 2);
+                                                $sub = $parts[1] ?? '';
+                                            @endphp
+                                            @if($sub)
+                                                <span class="inline-flex px-1.5 py-0.5 rounded text-[8px] font-medium bg-green-100 text-green-800 whitespace-nowrap h-4 items-center">{{ strtoupper($sub) }}</span>
+                                            @else
+                                                <span class="inline-flex px-1.5 py-0.5 rounded text-[8px] h-4 items-center text-transparent opacity-0">-</span>
+                                            @endif
                                         @endforeach
                                     </div>
                                 @else
@@ -661,8 +694,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ request('show_berhenti') ? '11' : '10' }}" class="px-6 py-2 text-center text-gray-500">
-                                <div class="flex flex-col items-center">
+                            <td colspan="{{ request('show_berhenti') ? '12' : '11' }}" class="px-6 py-2 text-center text-gray-500">
+                                <div class="flex flex-col items-center justify-center py-6">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
                                     </svg>
@@ -739,6 +772,28 @@
                         <div>
                             <span class="block text-gray-400 mb-0.5">Tgl Berhenti</span>
                             <span class="font-medium text-red-600">{{ \Carbon\Carbon::parse($karyawan->tanggal_berhenti)->format('d/M/Y') }}</span>
+                        </div>
+                        @endif
+                        @php
+                            $grupData = $karyawan->grup;
+                            if (is_string($grupData)) $grupData = json_decode($grupData, true);
+                            if (!is_array($grupData)) $grupData = [];
+                        @endphp
+                        @if(count($grupData) > 0)
+                        <div class="col-span-2">
+                            <span class="block text-gray-400 mb-0.5">Group & Sub Group</span>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                @foreach($grupData as $g)
+                                    @php
+                                        $parts = explode(':', $g, 2);
+                                        $main = $parts[0] ?? '';
+                                        $sub = $parts[1] ?? '';
+                                    @endphp
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-blue-100 text-blue-800">
+                                        {{ strtoupper($main) }}{{ $sub ? ' - ' . strtoupper($sub) : '' }}
+                                    </span>
+                                @endforeach
+                            </div>
                         </div>
                         @endif
                     </div>
