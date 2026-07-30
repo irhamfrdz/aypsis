@@ -463,8 +463,8 @@ class AbsensiController extends Controller
             });
         }
 
-        if ($request->filled('pekerjaan')) {
-            $karyawansQuery->where('pekerjaan', $request->pekerjaan);
+        if ($request->filled('penempatan')) {
+            $karyawansQuery->where('penempatan', $request->penempatan);
         }
 
         if ($request->filled('divisi')) {
