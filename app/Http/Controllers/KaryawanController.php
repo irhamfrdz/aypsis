@@ -101,11 +101,7 @@ class KaryawanController extends Controller
         }
         if ($request->filled('grup')) {
             $grups = (array) $request->grup;
-            $query->where(function ($q) use ($grups) {
-                foreach ($grups as $g) {
-                    $q->orWhere('grup', 'LIKE', '%"' . $g . '"%');
-                }
-            });
+            $query->whereIn('grup', $grups);
         }
 
         // Filter: Tanggal Masuk range

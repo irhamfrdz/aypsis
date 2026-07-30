@@ -147,9 +147,12 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="text-[9px] font-bold text-blue-500 uppercase tracking-tighter">Group:</span>
-                                <select name="grup[]" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs" multiple title="Tahan Ctrl/Cmd untuk pilih beberapa">
+                                <select name="grup[]" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs select2-multiple" multiple title="Tahan Ctrl/Cmd untuk pilih beberapa">
                                     @php
-                                        $grupOptions = ['GAJI', 'BPJS-JKN', 'BPJS-TK', 'UANG MAKAN', 'TRANSPORTASI', 'PREMI'];
+                                        $defaultGrups = ['GAJI', 'UANG MAKAN', 'LEMBUR', 'PREMI'];
+                                        $existingGrups = \App\Models\Karyawan::whereNotNull('grup')->where('grup', '!=', '')->pluck('grup')->unique()->toArray();
+                                        $grupOptions = array_unique(array_merge($defaultGrups, $existingGrups));
+                                        sort($grupOptions);
                                         $selectedGrup = (array) request('grup', []);
                                     @endphp
                                     @foreach($grupOptions as $opt)
@@ -1270,6 +1273,17 @@ function closeAuditLogModal() {
 document.getElementById('auditLogModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeAuditLogModal();
+    }
+});
+
+// Initialize Select2
+$(document).ready(function() {
+    if ($.fn.select2) {
+        $('.select2-multiple').select2({
+            placeholder: "Pilih Group",
+            allowClear: true,
+            width: '100%'
+        });
     }
 });
 </script>
