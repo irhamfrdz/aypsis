@@ -852,9 +852,20 @@ class SuratJalanBongkaranBatamController extends Controller
                     continue;
                 }
 
+                // Manual alias mapping for old invalid data
+                $aliasSupir = [
+                    'taufik' => 'TAUFIK H',
+                    'andrisyah' => 'ANDRIYANSYAH',
+                ];
+
                 // Check Supir in Master Karyawan (divisi supir)
                 if (!empty($row['supir'])) {
                     $supirKey = strtolower(trim($row['supir']));
+                    
+                    if (isset($aliasSupir[$supirKey])) {
+                        $supirKey = strtolower(trim($aliasSupir[$supirKey]));
+                    }
+
                     if (isset($supirMap[$supirKey])) {
                         $row['supir'] = $supirMap[$supirKey];
                     } else {
