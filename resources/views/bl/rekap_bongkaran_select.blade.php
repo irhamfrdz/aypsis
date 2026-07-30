@@ -103,49 +103,55 @@
     </div>
 </div>
 
+@push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const kapalSelect = document.getElementById('nama_kapal');
-    const voyageSelect = document.getElementById('no_voyage');
+$(document).ready(function() {
+    // Inisialisasi Select2
+    $('#nama_kapal').select2({
+        width: '100%',
+        placeholder: '-- Pilih Kapal --'
+    });
+    
+    $('#no_voyage').select2({
+        width: '100%',
+        placeholder: '- Pilih Kapal Terlebih Dahulu -'
+    });
 
-    kapalSelect.addEventListener('change', function() {
-        const namaKapal = this.value;
-        voyageSelect.innerHTML = '<option value="">Loading...</option>';
-        voyageSelect.disabled = true;
+    $('#nama_kapal').on('change', function() {
+        const namaKapal = $(this).val();
+        const voyageSelect = $('#no_voyage');
+        
+        voyageSelect.empty().append('<option value="">Loading...</option>').prop('disabled', true).trigger('change.select2');
 
         if (!namaKapal) {
-            voyageSelect.innerHTML = '<option value="">- Pilih Kapal Terlebih Dahulu -</option>';
+            voyageSelect.empty().append('<option value="">- Pilih Kapal Terlebih Dahulu -</option>').trigger('change.select2');
             return;
         }
 
-        fetch(`{{ route('bl.get-voyage-by-kapal', [], false) }}?nama_kapal=${encodeURIComponent(namaKapal)}`, {
-            method: 'GET',
-            headers: { 
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+        $.ajax({
+            url: `{{ route('bl.get-voyage-by-kapal', [], false) }}`,
+            type: 'GET',
+            data: { nama_kapal: namaKapal },
+            dataType: 'json',
+            success: function(data) {
+                voyageSelect.empty();
+                if (data.success && data.voyages && data.voyages.length) {
+                    voyageSelect.append('<option value="">-- Pilih Voyage --</option>');
+                    data.voyages.forEach(function(v) {
+                        voyageSelect.append(new Option(v, v));
+                    });
+                    voyageSelect.prop('disabled', false).trigger('change.select2');
+                } else {
+                    voyageSelect.append('<option value="">Belum ada voyage untuk kapal ini</option>').prop('disabled', true).trigger('change.select2');
+                }
             },
-            credentials: 'same-origin'
-        })
-        .then(r => r.json())
-        .then(data => {
-            voyageSelect.innerHTML = '';
-            if (data.success && data.voyages && data.voyages.length) {
-                voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
-                data.voyages.forEach(v => {
-                    voyageSelect.innerHTML += `<option value="${v}">${v}</option>`;
-                });
-                voyageSelect.disabled = false;
-            } else {
-                voyageSelect.innerHTML = '<option value="">Belum ada voyage untuk kapal ini</option>';
-                voyageSelect.disabled = true;
+            error: function(err) {
+                console.error('Fetch error:', err);
+                voyageSelect.empty().append('<option value="">Error loading voyage</option>').prop('disabled', true).trigger('change.select2');
             }
-        })
-        .catch(err => {
-            console.error('Fetch error:', err);
-            voyageSelect.innerHTML = '<option value="">Error loading voyage</option>';
-            voyageSelect.disabled = true;
         });
     });
 });
 </script>
+@endpush
 @endsection
