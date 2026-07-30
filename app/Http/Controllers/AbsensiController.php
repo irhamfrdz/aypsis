@@ -488,8 +488,11 @@ class AbsensiController extends Controller
         }
 
         if ($request->filled('grup')) {
-            $grup = $request->grup;
-            $karyawansQuery->whereJsonContains('grup', $grup);
+            $grupReq = $request->grup;
+            $karyawansQuery->where(function($q) use ($grupReq) {
+                $q->where('grup', 'LIKE', '%"' . $grupReq . ':%')
+                  ->orWhere('grup', 'LIKE', '%"' . $grupReq . '"%');
+            });
         }
 
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
@@ -506,8 +509,10 @@ class AbsensiController extends Controller
             }
             if (is_array($grupArray)) {
                 foreach ($grupArray as $g) {
-                    if (!in_array($g, $grupsList) && $g !== '') {
-                        $grupsList[] = $g;
+                    $parts = explode(':', $g, 2);
+                    $main = $parts[0];
+                    if (!in_array($main, $grupsList) && $main !== '') {
+                        $grupsList[] = $main;
                     }
                 }
             }

@@ -149,14 +149,23 @@
                                 <span class="text-[9px] font-bold text-blue-500 uppercase tracking-tighter">Group:</span>
                                 <select name="grup[]" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs select2-multiple" multiple title="Tahan Ctrl/Cmd untuk pilih beberapa">
                                     @php
-                                        $defaultGrups = ['GAJI', 'UANG MAKAN', 'LEMBUR', 'PREMI'];
+                                        $subGroups = [
+                                            'GAJI' => [],
+                                            'UANG MAKAN' => [],
+                                            'TRANSPORTASI' => [],
+                                            'LEMBUR' => [],
+                                            'CUTI' => []
+                                        ];
+                                        $defaultGrups = array_keys($subGroups);
                                         $existingGrups = [];
                                         $karyawansGrups = \App\Models\Karyawan::whereNotNull('grup')->pluck('grup');
                                         foreach ($karyawansGrups as $grupArray) {
                                             if (is_string($grupArray)) $grupArray = json_decode($grupArray, true);
                                             if (is_array($grupArray)) {
                                                 foreach ($grupArray as $g) {
-                                                    if (!in_array($g, $existingGrups) && $g !== '') $existingGrups[] = $g;
+                                                    $parts = explode(':', $g, 2);
+                                                    $main = $parts[0];
+                                                    if (!in_array($main, $existingGrups) && $main !== '') $existingGrups[] = $main;
                                                 }
                                             }
                                         }

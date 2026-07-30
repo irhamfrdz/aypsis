@@ -255,14 +255,23 @@
                         <label class="{{ $labelClasses }}">Group</label>
                         <div id="grup-container" class="space-y-2">
                             @php
-                                $defaultGrups = ['GAJI', 'UANG MAKAN', 'LEMBUR', 'PREMI'];
+                                $subGroups = [
+                                    'GAJI' => ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'],
+                                    'UANG MAKAN' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+                                    'TRANSPORTASI' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+                                    'LEMBUR' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+                                    'CUTI' => []
+                                ];
+                                $defaultGrups = array_keys($subGroups);
                                 $existingGrups = [];
                                 $karyawansGrups = \App\Models\Karyawan::whereNotNull('grup')->pluck('grup');
                                 foreach ($karyawansGrups as $grupArray) {
                                     if (is_string($grupArray)) $grupArray = json_decode($grupArray, true);
                                     if (is_array($grupArray)) {
                                         foreach ($grupArray as $g) {
-                                            if (!in_array($g, $existingGrups) && $g !== '') $existingGrups[] = $g;
+                                            $parts = explode(':', $g, 2);
+                                            $main = $parts[0];
+                                            if (!in_array($main, $existingGrups) && $main !== '') $existingGrups[] = $main;
                                         }
                                     }
                                 }
@@ -272,15 +281,43 @@
                                 if (empty($oldGrup)) $oldGrup = [''];
                             @endphp
                             @foreach($oldGrup as $index => $sg)
+                                @php
+                                    $parts = explode(':', $sg, 2);
+                                    $sgMain = $parts[0] ?? '';
+                                    $sgSub = $parts[1] ?? '';
+                                @endphp
                                 <div class="flex items-center gap-2 grup-row">
-                                    <select name="grup[]" class="{{ $selectClasses }} grup-select" onchange="if(this.value=='__baru__'){this.style.display='none'; this.nextElementSibling.style.display='block'; this.nextElementSibling.focus(); this.nextElementSibling.name='grup[]'; this.name='';}">
-                                        <option value="">-- Pilih Group --</option>
-                                        @foreach($allGrups as $g)
-                                            <option value="{{ $g }}" {{ $g == $sg ? 'selected' : '' }}>{{ $g }}</option>
-                                        @endforeach
-                                        <option value="__baru__" class="font-bold text-blue-600">+ KETIK GROUP BARU...</option>
-                                    </select>
-                                    <input type="text" class="{{ str_replace('bg-gray-100', 'bg-white', $selectClasses) }} grup-input" style="display:none;" placeholder="Ketik group baru dan tekan enter/klik di luar..." onblur="if(this.value==''){this.style.display='none'; this.previousElementSibling.style.display='block'; this.name=''; this.previousElementSibling.name='grup[]'; this.previousElementSibling.value='';}">
+                                    <input type="hidden" name="grup[]" class="grup-hidden-val" value="{{ $sg }}">
+                                    
+                                    <!-- Main Group -->
+                                    <div class="flex-1">
+                                        <select class="{{ $selectClasses }} grup-main" onchange="handleGrupChange(this)">
+                                            <option value="">-- Pilih Group --</option>
+                                            @foreach($allGrups as $g)
+                                                <option value="{{ $g }}" {{ $g == $sgMain ? 'selected' : '' }}>{{ $g }}</option>
+                                            @endforeach
+                                            <option value="__baru__" class="font-bold text-blue-600">+ KETIK GROUP BARU...</option>
+                                        </select>
+                                        <input type="text" class="{{ str_replace('bg-gray-100', 'bg-white', $selectClasses) }} grup-main-input" style="display:none;" placeholder="Ketik group baru..." onblur="handleGrupInputBlur(this)" value="{{ !in_array($sgMain, $allGrups) && $sgMain ? $sgMain : '' }}">
+                                    </div>
+                                    
+                                    <!-- Sub Group -->
+                                    <div class="flex-1">
+                                        <select class="{{ $selectClasses }} grup-sub" onchange="handleGrupChange(this)">
+                                            <option value="">-- Sub Group (Opsional) --</option>
+                                            @if(isset($subGroups[$sgMain]))
+                                                @foreach($subGroups[$sgMain] as $sub)
+                                                    <option value="{{ $sub }}" {{ $sub == $sgSub ? 'selected' : '' }}>{{ $sub }}</option>
+                                                @endforeach
+                                            @endif
+                                            @if($sgSub && (!isset($subGroups[$sgMain]) || !in_array($sgSub, $subGroups[$sgMain])))
+                                                <option value="{{ $sgSub }}" selected>{{ $sgSub }}</option>
+                                            @endif
+                                            <option value="__baru__" class="font-bold text-blue-600">+ KETIK SUB GROUP BARU...</option>
+                                        </select>
+                                        <input type="text" class="{{ str_replace('bg-gray-100', 'bg-white', $selectClasses) }} grup-sub-input" style="display:none;" placeholder="Ketik sub group baru..." onblur="handleGrupInputBlur(this)">
+                                    </div>
+
                                     <button type="button" class="px-2 py-1.5 bg-red-500 text-white rounded text-xs font-bold hover:bg-red-600 remove-grup" {!! count($oldGrup) == 1 && $index == 0 ? 'style="display:none;"' : '' !!}>X</button>
                                 </div>
                             @endforeach
@@ -1004,20 +1041,95 @@
 
             // Initialize Select2 for tags (no longer used for grup, but kept if other fields need it)
             if ($.fn.select2) {
+                // Sub Group mapping for JS
+                const subGroupsMap = {
+                    'GAJI': ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'],
+                    'UANG MAKAN': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+                    'TRANSPORTASI': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+                    'LEMBUR': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM']
+                };
+
+                window.handleGrupChange = function(select) {
+                    let row = select.closest('.grup-row');
+                    if (select.value === '__baru__') {
+                        select.style.display = 'none';
+                        let input = select.nextElementSibling;
+                        input.style.display = 'block';
+                        input.focus();
+                    } else if (select.classList.contains('grup-main')) {
+                        // Update Sub Group options based on main group
+                        let subSelect = row.querySelector('.grup-sub');
+                        let subInput = row.querySelector('.grup-sub-input');
+                        
+                        // Reset sub group
+                        subSelect.innerHTML = '<option value="">-- Sub Group (Opsional) --</option>';
+                        let subs = subGroupsMap[select.value] || [];
+                        subs.forEach(function(sub) {
+                            subSelect.innerHTML += '<option value="' + sub + '">' + sub + '</option>';
+                        });
+                        subSelect.innerHTML += '<option value="__baru__" class="font-bold text-blue-600">+ KETIK SUB GROUP BARU...</option>';
+                        
+                        subSelect.style.display = 'block';
+                        subSelect.value = '';
+                        subInput.style.display = 'none';
+                        subInput.value = '';
+                    }
+                    updateGrupHidden(row);
+                };
+
+                window.handleGrupInputBlur = function(input) {
+                    if (input.value.trim() === '') {
+                        input.style.display = 'none';
+                        let select = input.previousElementSibling;
+                        select.style.display = 'block';
+                        select.value = '';
+                    }
+                    updateGrupHidden(input.closest('.grup-row'));
+                };
+
+                window.updateGrupHidden = function(row) {
+                    let mainSelect = row.querySelector('.grup-main');
+                    let mainInput = row.querySelector('.grup-main-input');
+                    let subSelect = row.querySelector('.grup-sub');
+                    let subInput = row.querySelector('.grup-sub-input');
+                    let hidden = row.querySelector('.grup-hidden-val');
+                    
+                    let mainVal = mainSelect.style.display === 'none' ? mainInput.value.trim() : mainSelect.value;
+                    let subVal = subSelect.style.display === 'none' ? subInput.value.trim() : subSelect.value;
+                    
+                    if (mainVal === '__baru__') mainVal = mainInput.value.trim();
+                    if (subVal === '__baru__') subVal = subInput.value.trim();
+                    
+                    if (mainVal) {
+                        hidden.value = subVal ? (mainVal + ':' + subVal) : mainVal;
+                    } else {
+                        hidden.value = '';
+                    }
+                };
+
                 // Dynamic Group Dropdown Logic
                 document.getElementById('add-grup')?.addEventListener('click', function() {
                     let container = document.getElementById('grup-container');
                     let firstRow = container.querySelector('.grup-row').cloneNode(true);
-                    let select = firstRow.querySelector('.grup-select');
-                    let input = firstRow.querySelector('.grup-input');
                     
-                    select.value = '';
-                    select.style.display = 'block';
-                    select.name = 'grup[]';
+                    let mainSelect = firstRow.querySelector('.grup-main');
+                    let mainInput = firstRow.querySelector('.grup-main-input');
+                    let subSelect = firstRow.querySelector('.grup-sub');
+                    let subInput = firstRow.querySelector('.grup-sub-input');
+                    let hidden = firstRow.querySelector('.grup-hidden-val');
                     
-                    input.value = '';
-                    input.style.display = 'none';
-                    input.name = '';
+                    mainSelect.value = '';
+                    mainSelect.style.display = 'block';
+                    mainInput.value = '';
+                    mainInput.style.display = 'none';
+                    
+                    subSelect.innerHTML = '<option value="">-- Sub Group (Opsional) --</option><option value="__baru__" class="font-bold text-blue-600">+ KETIK SUB GROUP BARU...</option>';
+                    subSelect.value = '';
+                    subSelect.style.display = 'block';
+                    subInput.value = '';
+                    subInput.style.display = 'none';
+                    
+                    hidden.value = '';
                     
                     // Show remove button
                     firstRow.querySelector('.remove-grup').style.display = 'block';
