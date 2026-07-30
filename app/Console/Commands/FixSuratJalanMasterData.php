@@ -18,14 +18,18 @@ class FixSuratJalanMasterData extends Command
     {
         $this->info("Fetching Master Data...");
         
-        $allKaryawansMap = [];
-        foreach (\App\Models\Karyawan::all(['nama_panggilan', 'nama_lengkap']) as $k) {
-            if ($k->nama_panggilan) {
-                $allKaryawansMap[strtolower(trim($k->nama_panggilan))] = $k->nama_panggilan;
-            }
-            if ($k->nama_lengkap) {
-                $allKaryawansMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
-            }
+        $supirMap = [];
+        $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')->get(['nama_panggilan', 'nama_lengkap']);
+        foreach ($karyawanSupirs as $k) {
+            if ($k->nama_panggilan) $supirMap[strtolower(trim($k->nama_panggilan))] = $k->nama_panggilan;
+            if ($k->nama_lengkap)   $supirMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
+        }
+
+        $kraniMap = [];
+        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')->get(['nama_panggilan', 'nama_lengkap']);
+        foreach ($karyawanKranis as $k) {
+            if ($k->nama_panggilan) $kraniMap[strtolower(trim($k->nama_panggilan))] = $k->nama_panggilan;
+            if ($k->nama_lengkap)   $kraniMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
         }
 
         $allKendaraansMap = [];
@@ -46,8 +50,8 @@ class FixSuratJalanMasterData extends Command
             // Fix Supir
             if (!empty($sj->supir)) {
                 $key = strtolower(trim($sj->supir));
-                if (isset($allKaryawansMap[$key]) && $sj->supir !== $allKaryawansMap[$key]) {
-                    $sj->supir = $allKaryawansMap[$key];
+                if (isset($supirMap[$key]) && $sj->supir !== $supirMap[$key]) {
+                    $sj->supir = $supirMap[$key];
                     $changed = true;
                 }
             }
@@ -55,8 +59,8 @@ class FixSuratJalanMasterData extends Command
             // Fix Kenek
             if (!empty($sj->kenek)) {
                 $key = strtolower(trim($sj->kenek));
-                if (isset($allKaryawansMap[$key]) && $sj->kenek !== $allKaryawansMap[$key]) {
-                    $sj->kenek = $allKaryawansMap[$key];
+                if (isset($kraniMap[$key]) && $sj->kenek !== $kraniMap[$key]) {
+                    $sj->kenek = $kraniMap[$key];
                     $changed = true;
                 }
             }
@@ -64,8 +68,8 @@ class FixSuratJalanMasterData extends Command
             // Fix Krani
             if (!empty($sj->krani)) {
                 $key = strtolower(trim($sj->krani));
-                if (isset($allKaryawansMap[$key]) && $sj->krani !== $allKaryawansMap[$key]) {
-                    $sj->krani = $allKaryawansMap[$key];
+                if (isset($kraniMap[$key]) && $sj->krani !== $kraniMap[$key]) {
+                    $sj->krani = $kraniMap[$key];
                     $changed = true;
                 }
             }

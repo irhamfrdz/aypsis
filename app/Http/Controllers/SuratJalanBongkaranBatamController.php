@@ -812,11 +812,27 @@ class SuratJalanBongkaranBatamController extends Controller
         $successCount = 0;
         $errors = [];
 
-        // Fetch valid karyawans and kendaraans to validate bulk data
-        $allKaryawanPanggilan = \App\Models\Karyawan::pluck('nama_panggilan')->map(fn($v) => strtolower(trim($v)))->toArray();
-        $allKaryawanLengkap = \App\Models\Karyawan::pluck('nama_lengkap')->map(fn($v) => strtolower(trim($v)))->toArray();
-        $allKaryawans = array_merge($allKaryawanPanggilan, $allKaryawanLengkap);
-        $allKendaraans = \App\Models\Mobil::pluck('nomor_polisi')->map(fn($v) => strtolower(trim(str_replace(' ', '', $v))))->toArray();
+        // Map valid karyawans (separated by division) and kendaraans to validate and auto-correct bulk data
+        $supirMap = [];
+        $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')->get(['nama_panggilan', 'nama_lengkap']);
+        foreach ($karyawanSupirs as $k) {
+            if ($k->nama_panggilan) $supirMap[strtolower(trim($k->nama_panggilan))] = $k->nama_panggilan;
+            if ($k->nama_lengkap)   $supirMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
+        }
+
+        $kraniMap = [];
+        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')->get(['nama_panggilan', 'nama_lengkap']);
+        foreach ($karyawanKranis as $k) {
+            if ($k->nama_panggilan) $kraniMap[strtolower(trim($k->nama_panggilan))] = $k->nama_panggilan;
+            if ($k->nama_lengkap)   $kraniMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
+        }
+
+        $allKendaraansMap = [];
+        foreach (\App\Models\Mobil::all(['nomor_polisi']) as $m) {
+            if ($m->nomor_polisi) {
+                $allKendaraansMap[strtolower(trim(str_replace(' ', '', $m->nomor_polisi)))] = $m->nomor_polisi;
+            }
+        }
 
         try {
             DB::beginTransaction();
@@ -836,21 +852,42 @@ class SuratJalanBongkaranBatamController extends Controller
                     continue;
                 }
 
-                // Check Supir, Kenek, Krani in Master Karyawan
-                if (!empty($row['supir']) && !in_array(strtolower(trim($row['supir'])), $allKaryawans)) {
-                    $errors[] = "Baris {$rowNumber}: Supir '{$row['supir']}' tidak terdaftar di Master Karyawan.";
+                // Check Supir in Master Karyawan (divisi supir)
+                if (!empty($row['supir'])) {
+                    $supirKey = strtolower(trim($row['supir']));
+                    if (isset($supirMap[$supirKey])) {
+                        $row['supir'] = $supirMap[$supirKey];
+                    } else {
+                        $errors[] = "Baris {$rowNumber}: Supir '{$row['supir']}' tidak terdaftar di Master Karyawan dengan divisi Supir.";
+                    }
                 }
-                if (!empty($row['kenek']) && !in_array(strtolower(trim($row['kenek'])), $allKaryawans)) {
-                    $errors[] = "Baris {$rowNumber}: Kenek '{$row['kenek']}' tidak terdaftar di Master Karyawan.";
+                
+                // Check Kenek in Master Karyawan (divisi krani)
+                if (!empty($row['kenek'])) {
+                    $kenekKey = strtolower(trim($row['kenek']));
+                    if (isset($kraniMap[$kenekKey])) {
+                        $row['kenek'] = $kraniMap[$kenekKey];
+                    } else {
+                        $errors[] = "Baris {$rowNumber}: Kenek '{$row['kenek']}' tidak terdaftar di Master Karyawan dengan divisi Krani.";
+                    }
                 }
-                if (!empty($row['krani']) && !in_array(strtolower(trim($row['krani'])), $allKaryawans)) {
-                    $errors[] = "Baris {$rowNumber}: Krani '{$row['krani']}' tidak terdaftar di Master Karyawan.";
+                
+                // Check Krani in Master Karyawan (divisi krani)
+                if (!empty($row['krani'])) {
+                    $kraniKey = strtolower(trim($row['krani']));
+                    if (isset($kraniMap[$kraniKey])) {
+                        $row['krani'] = $kraniMap[$kraniKey];
+                    } else {
+                        $errors[] = "Baris {$rowNumber}: Krani '{$row['krani']}' tidak terdaftar di Master Karyawan dengan divisi Krani.";
+                    }
                 }
 
-                // Check No Plat in Master Kendaraan
+                // Check No Plat in Master Kendaraan and auto-correct formatting
                 if (!empty($row['no_plat'])) {
                     $platClean = strtolower(trim(str_replace(' ', '', $row['no_plat'])));
-                    if (!in_array($platClean, $allKendaraans)) {
+                    if (isset($allKendaraansMap[$platClean])) {
+                        $row['no_plat'] = $allKendaraansMap[$platClean];
+                    } else {
                         $errors[] = "Baris {$rowNumber}: No Plat '{$row['no_plat']}' tidak terdaftar di Master Kendaraan.";
                     }
                 }
