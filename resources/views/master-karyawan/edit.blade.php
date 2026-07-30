@@ -236,9 +236,7 @@
                                 'UANG MAKAN' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
                                 'TRANSPORTASI' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
                                 'LEMBUR' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
-                                'CUTI' => [],
-                                'BPJS-TK' => ['BPU HL JAKSEL', 'BPU SUPIR JKT PLUIT', 'BPU ALEXINDO PLUIT', 'BPU CILANDAK HL', 'PPU JKT', 'PPU BTM'],
-                                'BPJS-JKN' => ['BPU REIMBURSMENT']
+                                'CUTI' => []
                             ];
                             $defaultGrups = array_keys($subGroups);
                             $existingGrups = [];
@@ -513,6 +511,90 @@
                     <label for="cabang_bpjs" class="{{ $labelClasses }}">Cabang BPJS</label>
                     <input type="text" name="cabang_bpjs" id="cabang_bpjs" class="{{ $inputClasses }}" placeholder="Contoh: Cabang Batam" value="{{ old('cabang_bpjs', $karyawan->cabang_bpjs) }}">
                 </div>
+            </div>
+
+            <div class="mt-4 border-t pt-4">
+                <label class="{{ $labelClasses }}">Group BPJS</label>
+                <div id="grup-bpjs-container" class="space-y-2">
+                    @php
+                        $subGroupsBpjs = [
+                            'BPJS-TK' => ['BPU HL JAKSEL', 'BPU SUPIR JKT PLUIT', 'BPU ALEXINDO PLUIT', 'BPU CILANDAK HL', 'PPU JKT', 'PPU BTM'],
+                            'BPJS-JKN' => ['BPU REIMBURSMENT']
+                        ];
+                        $defaultGrupsBpjs = array_keys($subGroupsBpjs);
+                        $existingGrupsBpjs = [];
+                        $karyawansGrupsBpjs = \App\Models\Karyawan::whereNotNull('grup_bpjs')->pluck('grup_bpjs');
+                        foreach ($karyawansGrupsBpjs as $grupArray) {
+                            if (is_string($grupArray)) $grupArray = json_decode($grupArray, true);
+                            if (is_array($grupArray)) {
+                                foreach ($grupArray as $g) {
+                                    $parts = explode(':', $g, 2);
+                                    $main = $parts[0];
+                                    if (!in_array($main, $existingGrupsBpjs) && $main !== '') $existingGrupsBpjs[] = $main;
+                                }
+                            }
+                        }
+                        $allGrupsBpjs = array_unique(array_merge($defaultGrupsBpjs, $existingGrupsBpjs));
+                        $selectedGrupBpjs = old('grup_bpjs', $karyawan->grup_bpjs ?? []);
+                        if (is_string($selectedGrupBpjs)) $selectedGrupBpjs = json_decode($selectedGrupBpjs, true) ?? [];
+                        if (!is_array($selectedGrupBpjs)) $selectedGrupBpjs = [];
+                        foreach ($selectedGrupBpjs as $s) {
+                            $parts = explode(':', $s, 2);
+                            $main = $parts[0];
+                            if (!in_array($main, $allGrupsBpjs) && $main !== '') $allGrupsBpjs[] = $main;
+                        }
+                        sort($allGrupsBpjs);
+                        if (empty($selectedGrupBpjs)) $selectedGrupBpjs = [''];
+                    @endphp
+                    @foreach($selectedGrupBpjs as $index => $sg)
+                        @php
+                            $parts = explode(':', $sg, 2);
+                            $sgMain = $parts[0] ?? '';
+                            $sgSub = $parts[1] ?? '';
+                        @endphp
+                        <div class="flex items-center gap-2 grup-bpjs-row">
+                            <input type="hidden" name="grup_bpjs[]" class="grup-bpjs-hidden-val" value="{{ $sg }}">
+                            
+                            <div class="flex-1">
+                                <select class="{{ $selectClasses }} grup-bpjs-main" onchange="handleGrupBpjsChange(this)">
+                                    <option value="">-- Pilih Group BPJS --</option>
+                                    @foreach($allGrupsBpjs as $g)
+                                        <option value="{{ $g }}" {{ $g == $sgMain ? 'selected' : '' }}>{{ $g }}</option>
+                                    @endforeach
+                                    <option value="__baru__" class="font-bold text-blue-600">+ KETIK GROUP BPJS BARU...</option>
+                                </select>
+                                <input type="text" class="{{ $inputClasses }} grup-bpjs-main-input mt-1" placeholder="Ketik group bpjs baru..." style="display:none;">
+                            </div>
+                            <div class="flex-1 relative">
+                                <select class="{{ $selectClasses }} grup-bpjs-sub" onchange="handleSubGrupBpjsChange(this)">
+                                    <option value="">-- Sub Group (Opsional) --</option>
+                                    @if($sgMain !== '')
+                                        @php
+                                            $subs = $subGroupsBpjs[$sgMain] ?? [];
+                                            if ($sgSub !== '' && !in_array($sgSub, $subs)) {
+                                                $subs[] = $sgSub;
+                                            }
+                                        @endphp
+                                        @foreach($subs as $sub)
+                                            <option value="{{ $sub }}" {{ $sub == $sgSub ? 'selected' : '' }}>{{ $sub }}</option>
+                                        @endforeach
+                                    @endif
+                                    <option value="__baru__" class="font-bold text-blue-600">+ KETIK SUB GROUP BARU...</option>
+                                </select>
+                                <input type="text" class="{{ $inputClasses }} grup-bpjs-sub-input mt-1" placeholder="Ketik sub group baru..." style="display:none;" value="{{ $sgSub }}">
+                            </div>
+                            
+                            @if($index > 0)
+                                <button type="button" class="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200" onclick="this.closest('.grup-bpjs-row').remove(); updateGrupBpjsHidden(this.closest('#grup-bpjs-container'));">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+                <button type="button" id="add-grup-bpjs-btn" class="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium">
+                    + Tambah Group BPJS
+                </button>
             </div>
         </fieldset>
 
@@ -1061,9 +1143,7 @@
                     'GAJI': ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'],
                     'UANG MAKAN': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
                     'TRANSPORTASI': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
-                    'LEMBUR': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
-                    'BPJS-TK': ['BPU HL JAKSEL', 'BPU SUPIR JKT PLUIT', 'BPU ALEXINDO PLUIT', 'BPU CILANDAK HL', 'PPU JKT', 'PPU BTM'],
-                    'BPJS-JKN': ['BPU REIMBURSMENT']
+                    'LEMBUR': ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM']
                 };
 
                 window.handleGrupChange = function(select) {
@@ -1171,5 +1251,118 @@
                     }
                 });
             }
+
+            // Grup BPJS JS Logic
+            const subGroupsBpjsMap = {
+                'BPJS-TK': ['BPU HL JAKSEL', 'BPU SUPIR JKT PLUIT', 'BPU ALEXINDO PLUIT', 'BPU CILANDAK HL', 'PPU JKT', 'PPU BTM'],
+                'BPJS-JKN': ['BPU REIMBURSMENT']
+            };
+
+            window.handleGrupBpjsChange = function(select) {
+                let row = select.closest('.grup-bpjs-row');
+                if (select.value === '__baru__') {
+                    select.style.display = 'none';
+                    let input = select.nextElementSibling;
+                    input.style.display = 'block';
+                    input.focus();
+                } else if (select.classList.contains('grup-bpjs-main')) {
+                    let subSelect = row.querySelector('.grup-bpjs-sub');
+                    let subInput = row.querySelector('.grup-bpjs-sub-input');
+                    
+                    subSelect.innerHTML = '<option value="">-- Sub Group (Opsional) --</option>';
+                    let subs = subGroupsBpjsMap[select.value] || [];
+                    subs.forEach(function(sub) {
+                        subSelect.innerHTML += '<option value="' + sub + '">' + sub + '</option>';
+                    });
+                    subSelect.innerHTML += '<option value="__baru__" class="font-bold text-blue-600">+ KETIK SUB GROUP BARU...</option>';
+                    
+                    subSelect.style.display = 'block';
+                    subSelect.value = '';
+                    subInput.style.display = 'none';
+                    subInput.value = '';
+                }
+                updateGrupBpjsHidden(row);
+            };
+
+            window.handleSubGrupBpjsChange = function(select) {
+                if (select.value === '__baru__') {
+                    select.style.display = 'none';
+                    let input = select.nextElementSibling;
+                    input.style.display = 'block';
+                    input.focus();
+                }
+                updateGrupBpjsHidden(select.closest('.grup-bpjs-row'));
+            };
+
+            document.querySelectorAll('.grup-bpjs-main-input, .grup-bpjs-sub-input').forEach(function(input) {
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() === '') {
+                        this.style.display = 'none';
+                        let select = this.previousElementSibling;
+                        select.style.display = 'block';
+                        select.value = '';
+                    }
+                    updateGrupBpjsHidden(this.closest('.grup-bpjs-row'));
+                });
+            });
+
+            window.updateGrupBpjsHidden = function(row) {
+                if (!row) return;
+                let mainSelect = row.querySelector('.grup-bpjs-main');
+                let mainInput = row.querySelector('.grup-bpjs-main-input');
+                let subSelect = row.querySelector('.grup-bpjs-sub');
+                let subInput = row.querySelector('.grup-bpjs-sub-input');
+                let hidden = row.querySelector('.grup-bpjs-hidden-val');
+                
+                let mainVal = mainSelect.style.display === 'none' ? mainInput.value.trim() : mainSelect.value;
+                let subVal = subSelect.style.display === 'none' ? subInput.value.trim() : subSelect.value;
+                
+                if (mainVal === '__baru__') mainVal = mainInput.value.trim();
+                if (subVal === '__baru__') subVal = subInput.value.trim();
+                
+                if (mainVal) {
+                    hidden.value = subVal ? (mainVal + ':' + subVal) : mainVal;
+                } else {
+                    hidden.value = '';
+                }
+            };
+
+            document.getElementById('add-grup-bpjs-btn')?.addEventListener('click', function() {
+                let container = document.getElementById('grup-bpjs-container');
+                let firstRow = container.querySelector('.grup-bpjs-row').cloneNode(true);
+                
+                let mainSelect = firstRow.querySelector('.grup-bpjs-main');
+                let mainInput = firstRow.querySelector('.grup-bpjs-main-input');
+                let subSelect = firstRow.querySelector('.grup-bpjs-sub');
+                let subInput = firstRow.querySelector('.grup-bpjs-sub-input');
+                let hidden = firstRow.querySelector('.grup-bpjs-hidden-val');
+                
+                mainSelect.value = '';
+                mainSelect.style.display = 'block';
+                mainInput.value = '';
+                mainInput.style.display = 'none';
+                
+                subSelect.innerHTML = '<option value="">-- Sub Group (Opsional) --</option><option value="__baru__" class="font-bold text-blue-600">+ KETIK SUB GROUP BARU...</option>';
+                subSelect.value = '';
+                subSelect.style.display = 'block';
+                subInput.value = '';
+                subInput.style.display = 'none';
+                
+                hidden.value = '';
+                
+                let removeBtn = firstRow.querySelector('button');
+                if (!removeBtn) {
+                    removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200';
+                    removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    removeBtn.onclick = function() {
+                        this.closest('.grup-bpjs-row').remove();
+                    };
+                    firstRow.appendChild(removeBtn);
+                }
+                
+                container.appendChild(firstRow);
+            });
         });
     </script>

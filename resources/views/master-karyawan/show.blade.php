@@ -635,6 +635,37 @@
                 <p class="font-semibold text-gray-600">Cabang BPJS</p>
                 <p class="text-gray-800">{{ $karyawan->cabang_bpjs ?? '-' }}</p>
             </div>
+
+            <div class="col-span-2 mt-2 pt-4 border-t border-gray-200">
+                <p class="font-semibold text-gray-600 mb-2">Group BPJS</p>
+                @php
+                    $grupBpjsData = $karyawan->grup_bpjs;
+                    if (is_string($grupBpjsData)) $grupBpjsData = json_decode($grupBpjsData, true);
+                    if (!is_array($grupBpjsData)) $grupBpjsData = [];
+                @endphp
+                
+                @if(empty($grupBpjsData))
+                    <p class="text-gray-800">-</p>
+                @else
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($grupBpjsData as $grupItem)
+                            @php
+                                $parts = explode(':', $grupItem, 2);
+                                $mainGrup = $parts[0] ?? '';
+                                $subGrup = $parts[1] ?? '';
+                            @endphp
+                            @if($mainGrup !== '')
+                                <div class="inline-flex items-center text-sm border border-gray-200 rounded overflow-hidden">
+                                    <span class="bg-gray-100 px-3 py-1 font-semibold text-gray-700">{{ $mainGrup }}</span>
+                                    @if($subGrup !== '')
+                                        <span class="bg-white px-3 py-1 text-gray-600 border-l border-gray-200">{{ $subGrup }}</span>
+                                    @endif
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
+            </div>
         </div>
     </details>
 
