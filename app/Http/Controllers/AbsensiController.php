@@ -489,7 +489,17 @@ class AbsensiController extends Controller
 
         if ($request->filled('grup')) {
             $grup = $request->grup;
-            $karyawansQuery->whereJsonContains('grup', $grup);
+            $grups = (array) $request->grup;
+            $karyawansQuery->where(function ($q) use ($grups) {
+                foreach ($grups as $filter) {
+                    if (str_contains($filter, ':')) {
+                        [$groupName, $jenisName] = explode(':', $filter, 2);
+                        $q->orWhereJsonContains("grup->$groupName", $jenisName);
+                    } else {
+                        $q->orWhereNotNull("grup->$filter");
+                    }
+                }
+            });
         }
 
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
@@ -498,21 +508,34 @@ class AbsensiController extends Controller
         $cabangs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
         $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
 
-        $grupsList = [];
+        // grupsList is now an associative array: ['GAJI' => ['TUNAI', ...], ...]
+        $grupsList = [
+            'GAJI' => ['TUNAI', 'TRANSFER', 'ABK', 'MAGANG', 'HARIAN'],
+            'UANG MAKAN' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+            'TRANSPORTASI' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+            'LEMBUR' => ['KANTOR JAKARTA', 'PELABUHAN', 'PELABUHAN 1', 'GARASI', 'KANTOR BATAM', 'PELABUHAN BATAM'],
+        ];
         $karyawansGrups = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('grup')->pluck('grup');
         foreach ($karyawansGrups as $grupArray) {
             if (is_string($grupArray)) {
                 $grupArray = json_decode($grupArray, true);
             }
             if (is_array($grupArray)) {
-                foreach ($grupArray as $g) {
-                    if (!in_array($g, $grupsList) && $g !== '') {
-                        $grupsList[] = $g;
+                foreach ($grupArray as $groupName => $jenisArray) {
+                    if (!isset($grupsList[$groupName])) $grupsList[$groupName] = [];
+                    if (is_array($jenisArray)) {
+                        foreach ($jenisArray as $g) {
+                            if (!in_array($g, $grupsList[$groupName]) && $g !== '') {
+                                $grupsList[$groupName][] = $g;
+                            }
+                        }
                     }
                 }
             }
         }
-        sort($grupsList);
+        foreach ($grupsList as $key => $values) {
+            sort($grupsList[$key]);
+        }
 
         // Calculate normal workdays in the selected range (excluding weekends)
         $normalWorkdays = 0;
