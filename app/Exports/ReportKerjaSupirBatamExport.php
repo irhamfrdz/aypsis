@@ -45,6 +45,7 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
                 'Tujuan',
                 'No. Surat Jalan',
                 'No. Kontainer',
+                'Ring',
                 'Uang Jalan / Biaya (Rp)',
             ],
         ];
@@ -65,21 +66,22 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
             $item['tujuan'],
             $item['no_dokumen'],
             $item['no_kontainer'],
+            $item['ring'],
             (float) $item['uang_jalan'],
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->mergeCells('A1:I1');
-        $sheet->mergeCells('A2:I2');
+        $sheet->mergeCells('A1:J1');
+        $sheet->mergeCells('A2:J2');
 
         $lastRow = $sheet->getHighestRow();
         
         // Add total row at the bottom
         $sheet->setCellValue('A' . ($lastRow + 1), 'TOTAL PENDAPATAN SUPIR');
-        $sheet->mergeCells('A' . ($lastRow + 1) . ':H' . ($lastRow + 1));
-        $sheet->setCellValue('I' . ($lastRow + 1), (float) $this->totalRit);
+        $sheet->mergeCells('A' . ($lastRow + 1) . ':I' . ($lastRow + 1));
+        $sheet->setCellValue('J' . ($lastRow + 1), (float) $this->totalRit);
         
         $lastRow = $sheet->getHighestRow();
 
@@ -96,14 +98,14 @@ class ReportKerjaSupirBatamExport implements FromCollection, ShouldAutoSize, Wit
             $lastRow => [
                 'font' => ['bold' => true],
             ],
-            'A1:I'.$lastRow => [
+            'A1:J'.$lastRow => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
                     ],
                 ],
             ],
-            'I5:I'.$lastRow => [
+            'J5:J'.$lastRow => [
                 'numberFormat' => [
                     'formatCode' => '#,##0'
                 ]

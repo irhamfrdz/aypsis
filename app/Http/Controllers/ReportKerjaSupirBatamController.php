@@ -140,6 +140,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->no_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'nik' => $nikLookup[$sj->supir] ?? '-',
+                        'ring' => $sj->ring ?? '-',
                         'uang_jalan' => $ritVal,
                         'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? $sj->tujuan_alamat ?? '-',
                     ];
@@ -156,6 +157,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->no_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'nik' => $nikLookup[$sj->supir] ?? '-',
+                        'ring' => $sj->ring ?? '-',
                         'uang_jalan' => $ritVal,
                         'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? $sj->tujuan_alamat ?? '-',
                     ];
@@ -172,6 +174,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $sj->no_kontainer ?? '-',
                         'supir' => $sj->supir,
                         'nik' => $nikLookup[$sj->supir] ?? '-',
+                        'ring' => '-',
                         'uang_jalan' => $ritVal,
                         'tujuan' => $sj->tujuan_pengambilan ?? $sj->tujuan_pengiriman ?? '-',
                     ];
@@ -188,6 +191,7 @@ class ReportKerjaSupirBatamController extends Controller
                         'no_kontainer' => $langsir->no_kontainer ?? '-',
                         'supir' => $langsir->supir,
                         'nik' => $nikLookup[$langsir->supir] ?? '-',
+                        'ring' => '-',
                         'uang_jalan' => $ritVal,
                         'tujuan' => $langsir->ke ?? '-',
                     ];
