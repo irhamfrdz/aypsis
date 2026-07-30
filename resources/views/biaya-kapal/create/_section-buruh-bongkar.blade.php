@@ -1,8 +1,8 @@
-<div id="buruh_bongkar_wrapper" class="hidden mt-6 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-    <div class="mb-4 pb-3 border-b border-gray-200 flex justify-between items-center">
-        <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <i class="fas fa-boxes text-blue-500"></i> Detail Biaya Buruh Bongkar
-        </h3>
+<div id="buruh_bongkar_wrapper" class="md:col-span-2 hidden">
+    <div class="flex items-center justify-between mb-4">
+        <label class="block text-sm font-medium text-gray-700">
+            Detail Biaya Buruh Bongkar <span class="text-red-500">*</span>
+        </label>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
