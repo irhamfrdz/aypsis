@@ -951,7 +951,9 @@
             </div>
         </div>
     </div>
-</div><script>
+</div>
+@push('scripts')
+<script>
 // Enhanced Delete Modal Functions
 function openDeleteModal(karyawanId, nik, namaLengkap) {
     // Set form action
@@ -1296,6 +1298,7 @@ $(document).ready(function() {
     }
 });
 </script>
+@endpush
 
 <style>
 /* Sticky Table Header Styles */
