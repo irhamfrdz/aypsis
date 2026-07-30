@@ -366,31 +366,45 @@
                 <p class="text-gray-800">{{ $karyawan->plat ?? '-' }}</p>
             </div>
 
-            <div class="col-span-2">
-                <p class="font-semibold text-gray-600 mb-2">Group & Sub Group</p>
+            <div>
+                <p class="font-semibold text-gray-600 mb-2">Group</p>
                 @php
                     $grupData = $karyawan->grup;
                     if (is_string($grupData)) $grupData = json_decode($grupData, true);
                     if (!is_array($grupData)) $grupData = [];
+                    $mainGroups = [];
+                    $subGroups = [];
+                    foreach ($grupData as $g) {
+                        $parts = explode(':', $g, 2);
+                        if (!empty($parts[0]) && !in_array($parts[0], $mainGroups)) {
+                            $mainGroups[] = $parts[0];
+                        }
+                        if (!empty($parts[1]) && !in_array($parts[1], $subGroups)) {
+                            $subGroups[] = $parts[1];
+                        }
+                    }
                 @endphp
-                @if(count($grupData) > 0)
+                @if(count($mainGroups) > 0)
                     <div class="flex flex-wrap gap-2">
-                        @foreach($grupData as $g)
-                            @php
-                                $parts = explode(':', $g, 2);
-                                $main = $parts[0] ?? '';
-                                $sub = $parts[1] ?? '';
-                            @endphp
-                            <div class="inline-flex items-center rounded border border-gray-200 bg-white overflow-hidden">
-                                <span class="px-2.5 py-1 text-[11px] font-medium bg-blue-50 text-blue-700 {{ $sub ? 'border-r border-gray-200' : '' }}">
-                                    {{ strtoupper($main) }}
-                                </span>
-                                @if($sub)
-                                <span class="px-2.5 py-1 text-[11px] font-medium bg-green-50 text-green-700">
-                                    {{ strtoupper($sub) }}
-                                </span>
-                                @endif
-                            </div>
+                        @foreach($mainGroups as $main)
+                            <span class="px-2.5 py-1 text-[11px] font-medium bg-blue-50 text-blue-700 rounded border border-blue-100">
+                                {{ strtoupper($main) }}
+                            </span>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-gray-800">-</p>
+                @endif
+            </div>
+
+            <div>
+                <p class="font-semibold text-gray-600 mb-2">Sub Group</p>
+                @if(count($subGroups) > 0)
+                    <div class="flex flex-wrap gap-2">
+                        @foreach($subGroups as $sub)
+                            <span class="px-2.5 py-1 text-[11px] font-medium bg-green-50 text-green-700 rounded border border-green-100">
+                                {{ strtoupper($sub) }}
+                            </span>
                         @endforeach
                     </div>
                 @else
