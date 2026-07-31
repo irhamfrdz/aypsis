@@ -59,11 +59,24 @@
         </div>
 
         <!-- Table Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <form action="{{ route('uang-makan.bulk-delete') }}" method="POST" id="bulk-delete-form">
+            @csrf
+            <div class="mb-4 flex justify-between items-center">
+                <div></div>
+                @can('data-uang-makan-delete')
+                <button type="submit" id="btn-bulk-delete" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md text-sm hidden shadow-sm transition-colors duration-200" onclick="return confirm('Apakah Anda yakin ingin menghapus data yang dipilih?')">
+                    Hapus Data Terpilih (<span id="selected-count">0</span>)
+                </button>
+                @endcan
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
+                                <input type="checkbox" id="check-all" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer">
+                            </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
@@ -75,6 +88,9 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse ($uangMakans as $index => $uangMakan)
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <input type="checkbox" name="ids[]" value="{{ $uangMakan->id }}" class="row-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer">
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $uangMakans->firstItem() + $index }}
                                 </td>
@@ -113,7 +129,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">Belum ada data uang makan.</td>
+                                <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">Belum ada data uang makan.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -125,6 +141,48 @@
                 </div>
             @endif
         </div>
+        </form>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkAll = document.getElementById('check-all');
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+        const btnBulkDelete = document.getElementById('btn-bulk-delete');
+        const selectedCount = document.getElementById('selected-count');
+
+        function updateBulkDeleteButton() {
+            const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+            if(selectedCount) selectedCount.textContent = checkedCount;
+            
+            if (btnBulkDelete) {
+                if (checkedCount > 0) {
+                    btnBulkDelete.classList.remove('hidden');
+                } else {
+                    btnBulkDelete.classList.add('hidden');
+                }
+            }
+
+            if(checkAll) {
+                checkAll.checked = (checkedCount === rowCheckboxes.length && rowCheckboxes.length > 0);
+            }
+        }
+
+        if(checkAll) {
+            checkAll.addEventListener('change', function() {
+                rowCheckboxes.forEach(cb => {
+                    cb.checked = checkAll.checked;
+                });
+                updateBulkDeleteButton();
+            });
+        }
+
+        rowCheckboxes.forEach(cb => {
+            cb.addEventListener('change', updateBulkDeleteButton);
+        });
+    });
+</script>
+@endpush

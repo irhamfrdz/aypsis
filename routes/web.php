@@ -6704,5 +6704,6 @@ Route::middleware(['auth',
     Route::get('uang-makan/{uang_makan}/edit', [UangMakanController::class, 'edit'])->name('uang-makan.edit')->middleware('can:data-uang-makan-edit');
     Route::put('uang-makan/{uang_makan}', [UangMakanController::class, 'update'])->name('uang-makan.update')->middleware('can:data-uang-makan-edit');
     Route::delete('uang-makan/{uang_makan}', [UangMakanController::class, 'destroy'])->name('uang-makan.destroy')->middleware('can:data-uang-makan-delete');
+    Route::post('uang-makan/bulk-delete', [UangMakanController::class, 'bulkDelete'])->name('uang-makan.bulk-delete')->middleware('can:data-uang-makan-delete');
 });
 

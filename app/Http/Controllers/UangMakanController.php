@@ -75,4 +75,15 @@ class UangMakanController extends Controller
         $uangMakan->delete();
         return redirect()->route('uang-makan.index')->with('success', 'Data uang makan berhasil dihapus.');
     }
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:uang_makans,id'
+        ]);
+
+        \App\Models\UangMakan::whereIn('id', $request->ids)->delete();
+
+        return redirect()->back()->with('success', count($request->ids) . ' Data uang makan berhasil dihapus.');
+    }
 }
