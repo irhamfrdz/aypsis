@@ -27,7 +27,7 @@
         <h3 class="text-lg font-semibold text-gray-800 mb-4">Pengaturan & Filter Pencairan</h3>
         
         <form action="{{ route('payroll.uang-makan') }}" method="GET" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Periode Awal (Start Date)</label>
                     <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
@@ -50,13 +50,21 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter Tunjangan (Opsional)</label>
-                    <select name="tunjangan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-                        <option value="">-- Semua Tunjangan --</option>
-                        <option value="UANG MAKAN" {{ request('tunjangan') == 'UANG MAKAN' ? 'selected' : '' }}>UANG MAKAN</option>
-                        <option value="TRANSPORTASI" {{ request('tunjangan') == 'TRANSPORTASI' ? 'selected' : '' }}>TRANSPORTASI</option>
-                        <option value="BPJS" {{ request('tunjangan') == 'BPJS' ? 'selected' : '' }}>BPJS</option>
-                        <option value="CUTI TAHUNAN" {{ request('tunjangan') == 'CUTI TAHUNAN' ? 'selected' : '' }}>CUTI TAHUNAN</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter Group (Opsional)</label>
+                    <select name="group" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                        <option value="">-- Semua Group --</option>
+                        @foreach($allGroups as $g)
+                            <option value="{{ $g }}" {{ request('group') == $g ? 'selected' : '' }}>{{ $g }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter Sub Group (Opsional)</label>
+                    <select name="sub_group" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                        <option value="">-- Semua Sub Group --</option>
+                        @foreach($allSubGroups as $sg)
+                            <option value="{{ $sg }}" {{ request('sub_group') == $sg ? 'selected' : '' }}>{{ $sg }}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -94,8 +102,11 @@
                     @if(request('penempatan'))
                     <input type="hidden" name="penempatan" value="{{ request('penempatan') }}">
                     @endif
-                    @if(request('tunjangan'))
-                    <input type="hidden" name="tunjangan" value="{{ request('tunjangan') }}">
+                    @if(request('group'))
+                    <input type="hidden" name="group" value="{{ request('group') }}">
+                    @endif
+                    @if(request('sub_group'))
+                    <input type="hidden" name="sub_group" value="{{ request('sub_group') }}">
                     @endif
                     
                     <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition font-medium shadow-sm flex items-center">

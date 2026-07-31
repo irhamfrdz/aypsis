@@ -16,23 +16,25 @@ class PayrollController extends Controller
         $startDate = $request->start_date ? \Carbon\Carbon::parse($request->start_date) : now()->startOfWeek();
         $endDate = $request->end_date ? \Carbon\Carbon::parse($request->end_date) : now()->endOfWeek();
         $penempatan = $request->penempatan;
-        $tunjangan = $request->tunjangan;
+        $group = $request->group;
+        $subGroup = $request->sub_group;
 
         $payrolls = [];
         $isGenerated = $request->has('generate');
 
         if ($isGenerated) {
-            if (!empty($penempatan) && empty($tunjangan)) {
-                return back()->with('error', 'Error: Jika Anda memfilter berdasarkan Penempatan, Anda juga wajib memilih Filter Tunjangan.');
-            }
-
-            // Get all karyawans with their attendance grouped by date
             $query = \App\Models\Karyawan::where('status', 'active');
             if (!empty($penempatan)) {
                 $query->where('penempatan', $penempatan);
             }
-            if (!empty($tunjangan)) {
-                $query->where('tunjangan', 'LIKE', '%"' . $tunjangan . '"%');
+            if (!empty($group)) {
+                $query->where(function($q) use ($group) {
+                    $q->where('grup', 'LIKE', '%"' . $group . ':%')
+                      ->orWhere('grup', 'LIKE', '%"' . $group . '"%');
+                });
+            }
+            if (!empty($subGroup)) {
+                $query->where('grup', 'LIKE', '%:' . $subGroup . '"%');
             }
             
             $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
@@ -67,7 +69,24 @@ class PayrollController extends Controller
             }
         }
 
-        return view('payroll.uang-makan', compact('startDate', 'endDate', 'penempatan', 'tunjangan', 'payrolls', 'isGenerated'));
+        // Fetch all unique groups and subgroups for the view
+        $allKaryawans = \App\Models\Karyawan::where('status', 'active')->get(['grup']);
+        $allGroups = [];
+        $allSubGroups = [];
+        foreach($allKaryawans as $k) {
+            $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
+            if(is_array($kGrup)) {
+                foreach($kGrup as $g) {
+                    $parts = explode(':', $g, 2);
+                    if($parts[0] !== '' && !in_array($parts[0], $allGroups)) $allGroups[] = $parts[0];
+                    if(isset($parts[1]) && $parts[1] !== '' && !in_array($parts[1], $allSubGroups)) $allSubGroups[] = $parts[1];
+                }
+            }
+        }
+        sort($allGroups);
+        sort($allSubGroups);
+
+        return view('payroll.uang-makan', compact('startDate', 'endDate', 'penempatan', 'group', 'subGroup', 'allGroups', 'allSubGroups', 'payrolls', 'isGenerated'));
     }
 
     public function storeUangMakan(Request $request)
@@ -80,19 +99,21 @@ class PayrollController extends Controller
         $startDate = \Carbon\Carbon::parse($request->start_date);
         $endDate = \Carbon\Carbon::parse($request->end_date);
         $penempatan = $request->penempatan;
-        $tunjangan = $request->tunjangan;
+        $group = $request->group;
+        $subGroup = $request->sub_group;
 
-        if (!empty($penempatan) && empty($tunjangan)) {
-            return back()->with('error', 'Error: Jika Anda memfilter berdasarkan Penempatan, Anda juga wajib memilih Filter Tunjangan.');
-        }
-        
-        // Get karyawans and recalculate payout
         $query = \App\Models\Karyawan::where('status', 'active');
         if (!empty($penempatan)) {
             $query->where('penempatan', $penempatan);
         }
-        if (!empty($tunjangan)) {
-            $query->where('tunjangan', 'LIKE', '%"' . $tunjangan . '"%');
+        if (!empty($group)) {
+            $query->where(function($q) use ($group) {
+                $q->where('grup', 'LIKE', '%"' . $group . ':%')
+                  ->orWhere('grup', 'LIKE', '%"' . $group . '"%');
+            });
+        }
+        if (!empty($subGroup)) {
+            $query->where('grup', 'LIKE', '%:' . $subGroup . '"%');
         }
         
         $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
