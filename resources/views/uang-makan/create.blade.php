@@ -158,10 +158,11 @@
             try {
                 const response = await fetch(`{{ route('uang-makan.check-existing') }}?tanggal=${tanggal}`);
                 const existingIds = await response.json();
+                const stringIds = existingIds.map(String);
                 
                 karyawanCheckboxes.forEach(cb => {
                     const listItem = cb.closest('.karyawan-item');
-                    if (existingIds.includes(parseInt(cb.value))) {
+                    if (stringIds.includes(String(cb.value))) {
                         cb.checked = true;
                         cb.disabled = true;
                         listItem.classList.add('opacity-50', 'bg-gray-100');
