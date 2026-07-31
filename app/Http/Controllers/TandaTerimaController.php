@@ -1661,6 +1661,26 @@ class TandaTerimaController extends Controller
                         $suratJalanUpdateData['no_seal'] = $updateData['no_seal'];
                     }
 
+                    // Sync jenis barang ke Surat Jalan dan Order
+                    if (array_key_exists('jenis_barang', $updateData) && !empty($updateData['jenis_barang'])) {
+                        $jenisBarangString = $updateData['jenis_barang'];
+                        // Update di surat jalan
+                        $suratJalanUpdateData['jenis_barang'] = $jenisBarangString;
+
+                        // Update di order (harus mencari atau membuat master JenisBarang)
+                        if ($suratJalan->order_id) {
+                            $jenisBarangModel = \App\Models\JenisBarang::where('nama_barang', $jenisBarangString)->first();
+                            if (!$jenisBarangModel) {
+                                $jenisBarangModel = \App\Models\JenisBarang::create([
+                                    'kode' => 'JB' . strtoupper(substr(uniqid(), -4)),
+                                    'nama_barang' => strtoupper($jenisBarangString),
+                                    'status' => 'active'
+                                ]);
+                            }
+                            $suratJalan->order->update(['jenis_barang_id' => $jenisBarangModel->id]);
+                        }
+                    }
+
                     // Update tanggal checkpoint jika ada perubahan
                     if (isset($updateData['tanggal_checkpoint_supir']) && $updateData['tanggal_checkpoint_supir'] != $suratJalan->tanggal_checkpoint) {
                         $suratJalanUpdateData['tanggal_checkpoint'] = $updateData['tanggal_checkpoint_supir'];
