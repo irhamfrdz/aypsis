@@ -2518,6 +2518,7 @@
                         <option value="TUKANG TAMBAL BAN GARASI">TUKANG TAMBAL BAN GARASI</option>
                         <option value="KENEK MONTIR GARASI">KENEK MONTIR GARASI</option>
                         <option value="KANTOR GARASI PLUIT">KANTOR GARASI PLUIT</option>
+                        <option value="KANTOR PLUIT">KANTOR PLUIT</option>
                         <option value="KANTOR PELABUHAN">KANTOR PELABUHAN</option>
                         <option value="KANTOR GARASI SEMUT">KANTOR GARASI SEMUT</option>
                         <option value="GARASI SEMUT">GARASI SEMUT</option>
