@@ -86,4 +86,23 @@ class UangMakanController extends Controller
 
         return redirect()->back()->with('success', count($request->ids) . ' Data uang makan berhasil dihapus.');
     }
+
+    public function downloadTemplate()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\UangMakanTemplateExport, 'Template_Import_Uang_Makan.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048'
+        ]);
+
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\UangMakanImport, $request->file('file'));
+            return redirect()->route('uang-makan.index')->with('success', 'Data uang makan berhasil diimpor.');
+        } catch (\Exception $e) {
+            return redirect()->route('uang-makan.index')->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
+        }
+    }
 }
