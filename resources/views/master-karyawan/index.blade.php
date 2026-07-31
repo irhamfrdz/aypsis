@@ -456,6 +456,17 @@
                                 </div>
                             </div>
                         </th>
+                        
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
+                                <span>GROUP</span>
+                            </div>
+                        </th>
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
+                                <span>SUB GROUP</span>
+                            </div>
+                        </th>
 
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
@@ -560,6 +571,33 @@
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 @if($karyawan->penempatan)
                                     {{ strtoupper($karyawan->penempatan) }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            
+                            @php
+                                $mainGroups = [];
+                                $subGroups = [];
+                                $grupData = is_string($karyawan->grup) ? json_decode($karyawan->grup, true) : $karyawan->grup;
+                                if (is_array($grupData)) {
+                                    foreach ($grupData as $g) {
+                                        $parts = explode(':', $g, 2);
+                                        if (!empty($parts[0]) && !in_array($parts[0], $mainGroups)) $mainGroups[] = $parts[0];
+                                        if (!empty($parts[1]) && !in_array($parts[1], $subGroups)) $subGroups[] = $parts[1];
+                                    }
+                                }
+                            @endphp
+                            <td class="px-4 py-2 text-center text-[10px] text-gray-900">
+                                @if(count($mainGroups) > 0)
+                                    {{ strtoupper(implode(', ', $mainGroups)) }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="px-4 py-2 text-center text-[10px] text-gray-900">
+                                @if(count($subGroups) > 0)
+                                    {{ strtoupper(implode(', ', $subGroups)) }}
                                 @else
                                     -
                                 @endif
