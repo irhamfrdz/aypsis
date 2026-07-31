@@ -240,32 +240,25 @@ class AbsensiController extends Controller
                 ->whereBetween('waktu', [$startDateObj, $endDateObj])
                 ->first();
 
+            // Jika sudah ada data, jangan diubah atau dihapus (dikunci)
+            if ($existingLog) {
+                continue;
+            }
+
             if (!empty($time)) {
                 $waktu = Carbon::parse($tanggal . ' ' . $time);
                 if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
                     $waktu->addDay(); 
                 }
 
-                if ($existingLog) {
-                    $existingLog->update([
-                        'waktu' => $waktu,
-                        'status' => 'Manual',
-                        'keterangan' => 'Diedit secara manual (via Tambah)'
-                    ]);
-                } else {
-                    Absensi::create([
-                        'karyawan_id' => $karyawan_id,
-                        'nik' => $nik,
-                        'waktu' => $waktu,
-                        'tipe' => $tipe,
-                        'status' => 'Manual',
-                        'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
-                    ]);
-                }
-            } else {
-                if ($existingLog) {
-                    $existingLog->delete();
-                }
+                Absensi::create([
+                    'karyawan_id' => $karyawan_id,
+                    'nik' => $nik,
+                    'waktu' => $waktu,
+                    'tipe' => $tipe,
+                    'status' => 'Manual',
+                    'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
+                ]);
             }
         }
 
@@ -310,33 +303,25 @@ class AbsensiController extends Controller
                 ->whereBetween('waktu', [$startDateObj, $endDateObj])
                 ->first();
 
+            // Jika sudah ada data, jangan diubah atau dihapus (dikunci)
+            if ($existingLog) {
+                continue;
+            }
+
             if (!empty($time)) {
                 $waktu = Carbon::parse($tanggal . ' ' . $time);
                 if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
                     $waktu->addDay(); 
                 }
 
-                if ($existingLog) {
-                    $existingLog->update([
-                        'waktu' => $waktu,
-                        'status' => 'Manual',
-                        'keterangan' => 'Diedit secara manual'
-                    ]);
-                } else {
-                    Absensi::create([
-                        'karyawan_id' => $karyawan_id,
-                        'nik' => $nik,
-                        'waktu' => $waktu,
-                        'tipe' => $tipe,
-                        'status' => 'Manual',
-                        'keterangan' => 'Ditambahkan dari edit manual',
-                    ]);
-                }
-            } else {
-                // If time is empty, delete if exists
-                if ($existingLog) {
-                    $existingLog->delete();
-                }
+                Absensi::create([
+                    'karyawan_id' => $karyawan_id,
+                    'nik' => $nik,
+                    'waktu' => $waktu,
+                    'tipe' => $tipe,
+                    'status' => 'Manual',
+                    'keterangan' => 'Ditambahkan dari edit manual',
+                ]);
             }
         }
 

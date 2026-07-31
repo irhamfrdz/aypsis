@@ -619,12 +619,25 @@
                     return response.json();
                 })
                 .then(data => {
-                    document.getElementById('create_waktu_masuk').value = data.waktu_masuk || '';
-                    document.getElementById('create_waktu_pulang').value = data.waktu_pulang || '';
-                    document.getElementById('create_waktu_istirahat_keluar').value = data.waktu_istirahat_keluar || '';
-                    document.getElementById('create_waktu_istirahat_masuk').value = data.waktu_istirahat_masuk || '';
-                    document.getElementById('create_waktu_lembur_masuk').value = data.waktu_lembur_masuk || '';
-                    document.getElementById('create_waktu_lembur_pulang').value = data.waktu_lembur_pulang || '';
+                    const setAndLock = (id, val) => {
+                        const el = document.getElementById(id);
+                        el.value = val || '';
+                        if (val) {
+                            el.readOnly = true;
+                            el.classList.add('bg-gray-200', 'cursor-not-allowed');
+                        } else {
+                            el.readOnly = false;
+                            el.classList.remove('bg-gray-200', 'cursor-not-allowed');
+                        }
+                    };
+                    
+                    setAndLock('create_waktu_masuk', data.waktu_masuk);
+                    setAndLock('create_waktu_pulang', data.waktu_pulang);
+                    setAndLock('create_waktu_istirahat_keluar', data.waktu_istirahat_keluar);
+                    setAndLock('create_waktu_istirahat_masuk', data.waktu_istirahat_masuk);
+                    setAndLock('create_waktu_lembur_masuk', data.waktu_lembur_masuk);
+                    setAndLock('create_waktu_lembur_pulang', data.waktu_lembur_pulang);
+                    
                     toggleInputsState(false);
                 })
                 .catch(error => {
@@ -638,12 +651,18 @@
     }
 
     function clearAbsensiInputs() {
-        document.getElementById('create_waktu_masuk').value = '';
-        document.getElementById('create_waktu_pulang').value = '';
-        document.getElementById('create_waktu_istirahat_keluar').value = '';
-        document.getElementById('create_waktu_istirahat_masuk').value = '';
-        document.getElementById('create_waktu_lembur_masuk').value = '';
-        document.getElementById('create_waktu_lembur_pulang').value = '';
+        const clearAndUnlock = (id) => {
+            const el = document.getElementById(id);
+            el.value = '';
+            el.readOnly = false;
+            el.classList.remove('bg-gray-200', 'cursor-not-allowed');
+        };
+        clearAndUnlock('create_waktu_masuk');
+        clearAndUnlock('create_waktu_pulang');
+        clearAndUnlock('create_waktu_istirahat_keluar');
+        clearAndUnlock('create_waktu_istirahat_masuk');
+        clearAndUnlock('create_waktu_lembur_masuk');
+        clearAndUnlock('create_waktu_lembur_pulang');
     }
 
     function resetCreateForm() {
@@ -671,12 +690,26 @@
     function openEditModal(nik, tanggal, masuk, isOut, isIn, pulang, lemburIn, lemburOut) {
         document.getElementById('edit_nik').value = nik;
         document.getElementById('edit_tanggal').value = tanggal;
-        document.getElementById('edit_waktu_masuk').value = masuk;
-        document.getElementById('edit_waktu_istirahat_keluar').value = isOut;
-        document.getElementById('edit_waktu_istirahat_masuk').value = isIn;
-        document.getElementById('edit_waktu_pulang').value = pulang;
-        document.getElementById('edit_waktu_lembur_masuk').value = lemburIn;
-        document.getElementById('edit_waktu_lembur_pulang').value = lemburOut;
+        
+        const setAndLockEdit = (id, val) => {
+            const el = document.getElementById(id);
+            el.value = val || '';
+            if (val) {
+                el.readOnly = true;
+                el.classList.add('bg-gray-200', 'cursor-not-allowed');
+            } else {
+                el.readOnly = false;
+                el.classList.remove('bg-gray-200', 'cursor-not-allowed');
+            }
+        };
+
+        setAndLockEdit('edit_waktu_masuk', masuk);
+        setAndLockEdit('edit_waktu_istirahat_keluar', isOut);
+        setAndLockEdit('edit_waktu_istirahat_masuk', isIn);
+        setAndLockEdit('edit_waktu_pulang', pulang);
+        setAndLockEdit('edit_waktu_lembur_masuk', lemburIn);
+        setAndLockEdit('edit_waktu_lembur_pulang', lemburOut);
+        
         document.getElementById('editModal').classList.remove('hidden');
     }
 </script>
