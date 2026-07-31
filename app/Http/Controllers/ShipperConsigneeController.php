@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use App\Models\ShipperConsignee;
+use Illuminate\Http\Request;
+
+class ShipperConsigneeController extends Controller
+{
+    public function index()
+    {
+        $shipperConsignees = ShipperConsignee::orderBy('id', 'desc')->get();
+        return view('master.shipper-consignee.index', compact('shipperConsignees'));
+    }
+
+    public function create()
+    {
+        return view('master.shipper-consignee.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'shipper' => 'nullable|string|max:255',
+            'consignee' => 'nullable|string|max:255',
+        ]);
+
+        ShipperConsignee::create($request->all());
+
+        return redirect()->route('master.shipper-consignee.index')
+            ->with('success', 'Data Shipper / Consignee berhasil ditambahkan.');
+    }
+
+    public function edit(ShipperConsignee $shipper_consignee)
+    {
+        return view('master.shipper-consignee.edit', compact('shipper_consignee'));
+    }
+
+    public function update(Request $request, ShipperConsignee $shipper_consignee)
+    {
+        $request->validate([
+            'shipper' => 'nullable|string|max:255',
+            'consignee' => 'nullable|string|max:255',
+        ]);
+
+        $shipper_consignee->update($request->all());
+
+        return redirect()->route('master.shipper-consignee.index')
+            ->with('success', 'Data Shipper / Consignee berhasil diperbarui.');
+    }
+
+    public function destroy(ShipperConsignee $shipper_consignee)
+    {
+        $shipper_consignee->delete();
+
+        return redirect()->route('master.shipper-consignee.index')
+            ->with('success', 'Data Shipper / Consignee berhasil dihapus.');
+    }
+}

@@ -594,8 +594,8 @@
 
                         {{-- Master Umum Sub-Dropdown --}}
                         @php
-                            $isUmumRoute = Request::routeIs('master.cabang.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('klasifikasi-biaya.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master.lwbp-lama.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.mesin.*');
-                            $hasUmumPermissions = $user && ($user->can('master-cabang-view') || $user->can('master-kode-nomor-view') || $user->can('master-nomor-terakhir-view') || $user->can('master-kegiatan-view') || $user->can('master-pelabuhan-view') || $user->can('master-klasifikasi-biaya-view') || $user->can('master-dokumen-perijinan-kapal-view') || $user->can('master-lwbp-lama-view') || $user->can('mesin-view') || $isAdmin);
+                            $isUmumRoute = Request::routeIs('master.cabang.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('klasifikasi-biaya.*') || Request::routeIs('master-dokumen-perijinan-kapal.*') || Request::routeIs('master.lwbp-lama.*') || Request::routeIs('master.item-kwitansi.*') || Request::routeIs('master.mesin.*') || Request::routeIs('master.shipper-consignee.*');
+                            $hasUmumPermissions = $user && ($user->can('master-cabang-view') || $user->can('master-kode-nomor-view') || $user->can('master-nomor-terakhir-view') || $user->can('master-kegiatan-view') || $user->can('master-pelabuhan-view') || $user->can('master-klasifikasi-biaya-view') || $user->can('master-dokumen-perijinan-kapal-view') || $user->can('master-lwbp-lama-view') || $user->can('mesin-view') || $user->can('master-shipper-consignee-view') || $isAdmin);
                         @endphp
 
                         @if($hasUmumPermissions)
@@ -662,6 +662,11 @@
                                 @if($isAdmin || ($user && $user->can('master-item-kwitansi-view')))
                                     <a href="{{ route('master.item-kwitansi.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.item-kwitansi.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs font-semibold">Item Barang Kwitansi</span>
+                                    </a>
+                                @endif
+                                @if($user && $user->can('master-shipper-consignee-view'))
+                                    <a href="{{ route('master.shipper-consignee.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.shipper-consignee.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs font-semibold">Shipper / Consignee</span>
                                     </a>
                                 @endif
                                 </div>

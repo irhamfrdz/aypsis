@@ -540,6 +540,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Data Shipper / Consignee --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Shipper / Consignee</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-shipper-consignee][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-shipper-consignee']['view']) && $userMatrixPermissions['master-shipper-consignee']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-shipper-consignee][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-shipper-consignee']['create']) && $userMatrixPermissions['master-shipper-consignee']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-shipper-consignee][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-shipper-consignee']['update']) && $userMatrixPermissions['master-shipper-consignee']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-shipper-consignee][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-shipper-consignee']['delete']) && $userMatrixPermissions['master-shipper-consignee']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Kode Nomor --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

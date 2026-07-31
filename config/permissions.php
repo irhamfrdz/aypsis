@@ -47,6 +47,7 @@ return [
                 'master-mobil' => 'Manajemen Mobil',
                 'master-chasis-batam' => 'Manajemen Chasis Batam',
                 'master-tunjangan' => 'Manajemen Tunjangan',
+                'master-shipper-consignee' => 'Manajemen Shipper Consignee',
             ],
         ],
         'user-approval' => [

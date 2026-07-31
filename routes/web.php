@@ -1686,6 +1686,14 @@ Route::middleware([
         // 🏗️ CORE MASTER DATA (SIMPLE RESOURCES) - Alphabetical Order
         // ═══════════════════════════════════════════════════════════════════════
 
+        // 🏢 Shipper Consignee Management with permissions
+        Route::resource('master/shipper-consignee', \App\Http\Controllers\ShipperConsigneeController::class)
+            ->names('master.shipper-consignee')
+            ->middleware([
+                'index' => 'can:master-shipper-consignee-view',
+                'show' => 'can:master-shipper-consignee-view',
+            ]);
+
         // 🏢 Cabang (Branch) Management with permissions
         Route::resource('master/cabang', CabangController::class)
             ->names('master.cabang')
