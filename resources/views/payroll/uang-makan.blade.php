@@ -23,23 +23,23 @@
             </div>
         </div>
     @endif
-    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-100">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Pengaturan & Filter Pencairan</h3>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Pengaturan & Filter Pencairan</h3>
         
         <form action="{{ route('payroll.uang-makan') }}" method="GET" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Periode Awal (Start Date)</label>
-                    <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Periode Awal (Start Date)</label>
+                    <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Periode Akhir (End Date)</label>
-                    <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Periode Akhir (End Date)</label>
+                    <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter Penempatan (Opsional)</label>
-                    <select name="penempatan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-                        <option value="">-- Semua Penempatan --</option>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Filter Penempatan (Opsional)</label>
+                    <select name="penempatan" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                        <option value="">Semua Penempatan</option>
                         <option value="JAKARTA PELABHUHAN" {{ request('penempatan') == 'JAKARTA PELABHUHAN' ? 'selected' : '' }}>JAKARTA PELABHUHAN</option>
                         <option value="JAKARTA PELABUHAN 1" {{ request('penempatan') == "JAKARTA PELABUHAN 1" ? 'selected' : '' }}>JAKARTA PELABUHAN 1</option>
                         <option value="JAKARTA KRANI" {{ request('penempatan') == 'JAKARTA KRANI' ? 'selected' : '' }}>JAKARTA KRANI</option>
@@ -50,47 +50,48 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter Group (Opsional)</label>
-                    <select name="group" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-                        <option value="">-- Semua Group --</option>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Filter Group (Opsional)</label>
+                    <select name="group" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                        <option value="">Semua Group</option>
                         @foreach($allGroups as $g)
                             <option value="{{ $g }}" {{ request('group') == $g ? 'selected' : '' }}>{{ $g }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Filter Sub Group (Opsional)</label>
-                    <select name="sub_group" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-                        <option value="">-- Semua Sub Group --</option>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Filter Sub Group (Opsional)</label>
+                    <select name="sub_group" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                        <option value="">Semua Sub Group</option>
                         @foreach($allSubGroups as $sg)
                             <option value="{{ $sg }}" {{ request('sub_group') == $sg ? 'selected' : '' }}>{{ $sg }}</option>
                         @endforeach
                     </select>
                 </div>
-            </div>
-            
-            <div class="flex justify-end pt-2 border-t border-gray-100 mt-4 gap-2">
-                @if(request()->has('generate'))
-                <a href="{{ route('payroll.uang-makan') }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition font-medium shadow-sm flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    Reset Filter
-                </a>
-                @endif
-                <button type="submit" name="generate" value="1" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium shadow-sm flex items-center">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    Kalkulasi Data Absensi
-                </button>
+                
+                <!-- Action Buttons -->
+                <div class="md:col-span-5 flex items-end gap-2 justify-end mt-2">
+                    @if(request()->has('generate'))
+                        <a href="{{ route('payroll.uang-makan') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
+                            Reset Filter
+                        </a>
+                    @endif
+                    <button type="submit" name="generate" value="1" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
+                        Kalkulasi Data Absensi
+                    </button>
+                </div>
             </div>
         </form>
     </div>
 
     <!-- Results Card -->
     @if($isGenerated)
-    <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-100">
-        <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-bold text-gray-800">Hasil Kalkulasi: {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}</h3>
-                <p class="text-sm text-gray-500 mt-1">Ditemukan {{ count($payrolls) }} karyawan dengan data absensi masuk.</p>
+                <h3 class="text-sm font-bold text-gray-900">
+                    Hasil Kalkulasi: {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
+                </h3>
+                <p class="text-xs text-gray-500 mt-1">Ditemukan {{ count($payrolls) }} karyawan dengan data absensi masuk.</p>
             </div>
             
             @if(count($payrolls) > 0)
@@ -109,8 +110,8 @@
                     <input type="hidden" name="sub_group" value="{{ request('sub_group') }}">
                     @endif
                     
-                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition font-medium shadow-sm flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                    <button type="submit" class="inline-flex items-center justify-center px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
                         Simpan Data Payout
                     </button>
             </div>
@@ -118,54 +119,62 @@
         </div>
         
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-gray-100 text-gray-700 text-sm">
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penempatan</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Kehadiran</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Multiplier</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal Uang Makan</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Payout</th>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50 font-semibold text-gray-500 uppercase tracking-wider text-[10px]">
+                    <tr>
+                        <th class="px-6 py-3 text-left">Karyawan</th>
+                        <th class="px-6 py-3 text-left">Penempatan</th>
+                        <th class="px-6 py-3 text-center">Total Kehadiran</th>
+                        <th class="px-6 py-3 text-center">Multiplier</th>
+                        <th class="px-6 py-3 text-right">Nominal Uang Makan</th>
+                        <th class="px-6 py-3 text-right">Total Payout</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="bg-white divide-y divide-gray-200 text-xs text-gray-900">
                     @forelse($payrolls as $row)
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="p-4">
-                            <div class="font-medium text-gray-800">{{ $row['karyawan']->nama_lengkap }}</div>
-                            <div class="text-xs text-gray-500">{{ $row['karyawan']->nik }}</div>
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-medium">{{ $row['karyawan']->nama_lengkap }}</div>
+                            <div class="text-xs text-indigo-600 font-mono font-semibold">{{ $row['karyawan']->nik }}</div>
                         </td>
-                        <td class="p-4 text-sm text-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-500">
                             {{ $row['karyawan']->penempatan ?? '-' }}
                         </td>
-                        <td class="p-4 text-center font-bold text-blue-600">
-                            {{ $row['total_kehadiran'] }} Hari
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                                {{ $row['total_kehadiran'] }} Hari
+                            </span>
                         </td>
-                        <td class="p-4 text-center">
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
                             @if($row['multiplier'] == 2)
-                                <span class="px-2.5 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full">2x</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800">2x</span>
                             @else
-                                <span class="px-2.5 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded-full">1x</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-500">1x</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-700">
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
                             <div class="flex items-center justify-end gap-2">
                                 <span class="text-gray-500">Rp</span>
                                 <input type="number" name="payrolls[{{ $row['karyawan']->id }}][nominal_per_hari]" value="{{ $row['nominal_per_hari'] }}" 
                                        data-kehadiran="{{ $row['total_kehadiran'] }}" 
                                        data-multiplier="{{ $row['multiplier'] }}"
-                                       class="nominal-input w-28 rounded-md border-gray-300 bg-gray-100 text-gray-500 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 text-right text-sm py-1" readonly>
+                                       class="nominal-input w-28 px-3 py-1 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 text-right text-xs transition-colors duration-200" readonly>
                             </div>
                         </td>
-                        <td class="p-4 text-right font-bold text-green-600 total-payout-text">
+                        <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-green-600 total-payout-text">
                             Rp {{ number_format($row['total_payout'], 0, ',', '.') }}
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="p-8 text-center text-gray-500">
-                            Tidak ada data absensi untuk periode ini.
+                        <td colspan="6" class="px-6 py-10 text-center">
+                            <div class="flex flex-col items-center">
+                                <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h3 class="text-sm font-medium text-gray-900 mb-1">Tidak ada data absensi</h3>
+                                <p class="text-xs text-gray-500">Tidak ada data absensi untuk periode ini.</p>
+                            </div>
                         </td>
                     </tr>
                     @endforelse
