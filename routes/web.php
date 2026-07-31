@@ -2295,6 +2295,35 @@ Route::middleware([
                 'destroy' => 'can:master-pricelist-uang-jalan-batam-delete',
             ]);
 
+        // 💰 Pricelist Uang Jalan Management
+        Route::get('master-pricelist-uang-jalan/download-template', [\App\Http\Controllers\MasterPricelistUangJalanController::class, 'downloadTemplate'])
+            ->name('master-pricelist-uang-jalan.download-template')
+            ->middleware('can:master-pricelist-uang-jalan-view');
+
+        Route::post('master-pricelist-uang-jalan/import', [\App\Http\Controllers\MasterPricelistUangJalanController::class, 'import'])
+            ->name('master-pricelist-uang-jalan.import')
+            ->middleware('can:master-pricelist-uang-jalan-create');
+
+        Route::get('master-pricelist-uang-jalan/export', [\App\Http\Controllers\MasterPricelistUangJalanController::class, 'export'])
+            ->name('master-pricelist-uang-jalan.export')
+            ->middleware('can:master-pricelist-uang-jalan-view');
+
+        Route::post('master-pricelist-uang-jalan/{id}/copy', [\App\Http\Controllers\MasterPricelistUangJalanController::class, 'copy'])
+            ->name('master-pricelist-uang-jalan.copy')
+            ->middleware('can:master-pricelist-uang-jalan-create');
+
+        Route::resource('master-pricelist-uang-jalan', \App\Http\Controllers\MasterPricelistUangJalanController::class)
+            ->names('master-pricelist-uang-jalan')
+            ->middleware([
+                'index' => 'can:master-pricelist-uang-jalan-view',
+                'show' => 'can:master-pricelist-uang-jalan-view',
+                'create' => 'can:master-pricelist-uang-jalan-create',
+                'store' => 'can:master-pricelist-uang-jalan-create',
+                'edit' => 'can:master-pricelist-uang-jalan-edit',
+                'update' => 'can:master-pricelist-uang-jalan-edit',
+                'destroy' => 'can:master-pricelist-uang-jalan-delete',
+            ]);
+
         // ⛽ Kelola BBM Management with permissions
         Route::resource('kelola-bbm', \App\Http\Controllers\KelolaBbmController::class)
             ->names('kelola-bbm')
