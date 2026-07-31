@@ -905,6 +905,15 @@ class KaryawanController extends Controller
      */
     public function store(Request $request)
     {
+        if ($request->has('grup')) {
+            $grup = array_filter($request->grup ?? [], fn($val) => $val !== null && $val !== '');
+            $request->merge(['grup' => empty($grup) ? null : array_values($grup)]);
+        }
+        if ($request->has('grup_bpjs')) {
+            $grupBpjs = array_filter($request->grup_bpjs ?? [], fn($val) => $val !== null && $val !== '');
+            $request->merge(['grup_bpjs' => empty($grupBpjs) ? null : array_values($grupBpjs)]);
+        }
+
         $validated = $request->validate([
             'nik' => 'required|string|max:255|unique:karyawans',
             'nama_panggilan' => 'required|string|max:255|unique:karyawans',
@@ -932,9 +941,9 @@ class KaryawanController extends Controller
             'penempatan' => 'nullable|string|max:255',
             'nominal_uang_makan' => 'nullable|numeric|min:0',
             'grup' => 'nullable|array',
-            'grup.*' => 'string|max:255',
+            'grup.*' => 'nullable|string|max:255',
             'grup_bpjs' => 'nullable|array',
-            'grup_bpjs.*' => 'string|max:255',
+            'grup_bpjs.*' => 'nullable|string|max:255',
             'tanggal_masuk' => 'required|date',
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
@@ -1103,6 +1112,15 @@ class KaryawanController extends Controller
             ]);
         }
 
+        if ($request->has('grup')) {
+            $grup = array_filter($request->grup ?? [], fn($val) => $val !== null && $val !== '');
+            $request->merge(['grup' => empty($grup) ? null : array_values($grup)]);
+        }
+        if ($request->has('grup_bpjs')) {
+            $grupBpjs = array_filter($request->grup_bpjs ?? [], fn($val) => $val !== null && $val !== '');
+            $request->merge(['grup_bpjs' => empty($grupBpjs) ? null : array_values($grupBpjs)]);
+        }
+
         // Anda perlu menambahkan logika validasi di sini, mirip dengan metode store()
         $validated = $request->validate([
             'nik' => ['required', 'string', 'regex:/^[0-9]+$/', Rule::unique('karyawans')->ignore($karyawan->id)],
@@ -1131,9 +1149,9 @@ class KaryawanController extends Controller
             'penempatan' => 'nullable|string|max:255',
             'nominal_uang_makan' => 'nullable|numeric|min:0',
             'grup' => 'nullable|array',
-            'grup.*' => 'string|max:255',
+            'grup.*' => 'nullable|string|max:255',
             'grup_bpjs' => 'nullable|array',
-            'grup_bpjs.*' => 'string|max:255',
+            'grup_bpjs.*' => 'nullable|string|max:255',
             'tanggal_masuk' => 'required|date',
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
@@ -1296,6 +1314,15 @@ class KaryawanController extends Controller
      */
     public function onboardingUpdate(Request $request, Karyawan $karyawan)
     {
+        if ($request->has('grup')) {
+            $grup = array_filter($request->grup ?? [], fn($val) => $val !== null && $val !== '');
+            $request->merge(['grup' => empty($grup) ? null : array_values($grup)]);
+        }
+        if ($request->has('grup_bpjs')) {
+            $grupBpjs = array_filter($request->grup_bpjs ?? [], fn($val) => $val !== null && $val !== '');
+            $request->merge(['grup_bpjs' => empty($grupBpjs) ? null : array_values($grupBpjs)]);
+        }
+
         $validated = $request->validate([
             'nik' => ['required', 'string', 'regex:/^[0-9]+$/', Rule::unique('karyawans')->ignore($karyawan->id)],
             'nama_panggilan' => 'required|string|max:255',
