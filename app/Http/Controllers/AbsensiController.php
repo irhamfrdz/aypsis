@@ -489,7 +489,8 @@ class AbsensiController extends Controller
                 $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : "DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))";
 
                 $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
-                    $q->whereBetween('waktu', [$startObj, $endObj])
+                    $q->select(\DB::raw($dateExpr))
+                      ->whereBetween('waktu', [$startObj, $endObj])
                       ->whereIn('tipe', ['Masuk', 'Pulang'])
                       ->groupBy(\DB::raw($dateExpr))
                       ->havingRaw('COUNT(DISTINCT tipe) = 1');
