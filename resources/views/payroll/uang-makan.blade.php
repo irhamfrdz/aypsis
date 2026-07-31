@@ -122,6 +122,7 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50 font-semibold text-gray-500 uppercase tracking-wider text-[10px]">
                     <tr>
+                        <th class="px-6 py-3 text-center w-12">No.</th>
                         <th class="px-6 py-3 text-left">Karyawan</th>
                         <th class="px-6 py-3 text-left">Penempatan</th>
                         <th class="px-6 py-3 text-center">Total Kehadiran</th>
@@ -133,6 +134,9 @@
                 <tbody class="bg-white divide-y divide-gray-200 text-xs text-gray-900">
                     @forelse($payrolls as $row)
                     <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500 font-medium">
+                            {{ $loop->iteration }}
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="font-medium">{{ $row['karyawan']->nama_lengkap }}</div>
                             <div class="text-xs text-indigo-600 font-mono font-semibold">{{ $row['karyawan']->nik }}</div>
@@ -167,7 +171,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-10 text-center">
+                        <td colspan="7" class="px-6 py-10 text-center">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
