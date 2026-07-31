@@ -1337,6 +1337,7 @@ class TandaTerimaController extends Controller
             'kontak_penerima' => 'nullable|string|max:255',
             'notify_party' => 'nullable|string|max:255',
             'alamat_notify_party' => 'nullable|string',
+            'jenis_barang' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -1455,6 +1456,7 @@ class TandaTerimaController extends Controller
                 })(),
                 'notify_party' => $request->notify_party,
                 'alamat_notify_party' => $request->alamat_notify_party,
+                'jenis_barang' => $request->filled('jenis_barang') ? $request->jenis_barang : $tandaTerima->jenis_barang,
                 'term' => $term,
                 'updated_by' => Auth::id(),
             ];

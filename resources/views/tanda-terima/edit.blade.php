@@ -743,8 +743,8 @@
                     </div>
                 </div>
 
-                <!-- Estimasi Nama Kapal, Nomor RO & Expired Date -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Estimasi Nama Kapal, Nomor RO, Surat Jalan Pabrik & Jenis Barang -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                         <label for="estimasi_nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">Estimasi Nama Kapal</label>
                         <select name="estimasi_nama_kapal" id="estimasi_nama_kapal"
@@ -758,6 +758,16 @@
                             @endforeach
                         </select>
                         @error('estimasi_nama_kapal')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label for="jenis_barang" class="block text-sm font-medium text-gray-700 mb-2">Jenis Barang</label>
+                        <input type="text" name="jenis_barang" id="jenis_barang"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm @error('jenis_barang') border-red-500 @enderror"
+                               placeholder="Masukkan jenis barang"
+                               value="{{ old('jenis_barang', $tandaTerima->jenis_barang) }}">
+                        @error('jenis_barang')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -1025,7 +1035,7 @@
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label for="estimasi_nama_kapal" class="block text-xs font-medium text-gray-500 mb-2">
                                     Estimasi Nama Kapal
@@ -1037,6 +1047,20 @@
                                        placeholder="Contoh: Meratus"
                                        value="{{ old('estimasi_nama_kapal', $tandaTerima->estimasi_nama_kapal) }}">
                                 @error('estimasi_nama_kapal')
+                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="jenis_barang_lcl" class="block text-xs font-medium text-gray-500 mb-2">
+                                    Jenis Barang
+                                </label>
+                                <input type="text"
+                                       name="jenis_barang"
+                                       id="jenis_barang_lcl"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('jenis_barang') border-red-500 @enderror"
+                                       placeholder="Contoh: GARMENT"
+                                       value="{{ old('jenis_barang', $tandaTerima->jenis_barang) }}">
+                                @error('jenis_barang')
                                     <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
