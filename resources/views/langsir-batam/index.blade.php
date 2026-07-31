@@ -382,6 +382,16 @@ function showBulkAlert(title, message, type = 'error') {
     alertArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+function convertExcelDate(serial) {
+    if (!serial || isNaN(serial) || serial.toString().length !== 5) return serial;
+    const excelEpoch = new Date(1899, 11, 30); // Excel epoch starts at Dec 30 1899 for some reason
+    const jsDate = new Date(excelEpoch.getTime() + (parseInt(serial) * 86400000));
+    const year = jsDate.getFullYear();
+    const month = String(jsDate.getMonth() + 1).padStart(2, '0');
+    const day = String(jsDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 const containerSizesMap = @json($containerSizes ?? []);
 
 function calculateLangsirBiaya(dari, ke, size, status, obDalamPelabuhan) {
@@ -464,8 +474,10 @@ function parseBulkData() {
                 }
             }
 
+            const tanggalVal = convertExcelDate(cols[0] || '');
+
             const rowData = {
-                tanggal: cols[0] || '',
+                tanggal: tanggalVal,
                 no_kontainer: noKontainerVal,
                 size: sizeVal,
                 no_seal: cols[3] || '',
