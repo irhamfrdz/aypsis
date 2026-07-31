@@ -46,7 +46,22 @@ class LangsirBatamController extends Controller
 
         $langsirs = $query->orderBy('tanggal', 'desc')->paginate(15);
 
-        return view('langsir-batam.index', compact('langsirs', 'search', 'tanggal_dari', 'tanggal_sampai'));
+        // Fetch container sizes for auto-fill in bulk insert
+        $stockContainers = \App\Models\StockKontainer::whereNotNull('nomor_seri_gabungan')->pluck('ukuran', 'nomor_seri_gabungan')->toArray();
+        $containers = \App\Models\Kontainer::whereNotNull('nomor_seri_gabungan')->pluck('ukuran', 'nomor_seri_gabungan')->toArray();
+        $containerSizesRaw = array_merge($containers, $stockContainers);
+        
+        $containerSizes = [];
+        foreach ($containerSizesRaw as $no => $size) {
+            // Normalize size format, e.g. "20" to "20FT"
+            $normalizedSize = trim($size);
+            if (is_numeric($normalizedSize)) {
+                $normalizedSize .= 'FT';
+            }
+            $containerSizes[strtoupper(trim($no))] = strtoupper($normalizedSize);
+        }
+
+        return view('langsir-batam.index', compact('langsirs', 'search', 'tanggal_dari', 'tanggal_sampai', 'containerSizes'));
     }
 
     /**

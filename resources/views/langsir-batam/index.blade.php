@@ -382,6 +382,8 @@ function showBulkAlert(title, message, type = 'error') {
     alertArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+const containerSizesMap = @json($containerSizes ?? []);
+
 function calculateLangsirBiaya(dari, ke, size, status, obDalamPelabuhan) {
     if (obDalamPelabuhan && obDalamPelabuhan.trim().toUpperCase() === 'YA') {
         return 20000;
@@ -437,13 +439,24 @@ function parseBulkData() {
         if (!line.trim()) return;
         const cols = line.split(';').map(c => c.trim());
         if (cols.length >= 3 && cols[1]) {
+            const noKontainerVal = cols[1] || '';
+            let sizeVal = cols[2] || '';
+            
+            // Auto fill size jika kosong
+            if (sizeVal === '') {
+                const noKontainerKey = noKontainerVal.trim().toUpperCase();
+                if (containerSizesMap[noKontainerKey]) {
+                    sizeVal = containerSizesMap[noKontainerKey];
+                }
+            }
+
             let biayaVal = cols[9] || '';
             const statusVal = cols[10] || 'FULL';
             const obVal = cols[11] || 'Tidak';
             
             // Auto calculate biaya jika dikosongkan atau 0
             if (biayaVal === '' || biayaVal === '0') {
-                const calcBiaya = calculateLangsirBiaya(cols[4], cols[5], cols[2], statusVal, obVal);
+                const calcBiaya = calculateLangsirBiaya(cols[4], cols[5], sizeVal, statusVal, obVal);
                 if (calcBiaya > 0) {
                     biayaVal = calcBiaya.toString();
                 } else {
@@ -453,8 +466,8 @@ function parseBulkData() {
 
             const rowData = {
                 tanggal: cols[0] || '',
-                no_kontainer: cols[1] || '',
-                size: cols[2] || '',
+                no_kontainer: noKontainerVal,
+                size: sizeVal,
                 no_seal: cols[3] || '',
                 dari: cols[4] || '',
                 ke: cols[5] || '',
