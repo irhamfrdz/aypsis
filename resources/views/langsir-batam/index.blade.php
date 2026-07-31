@@ -382,6 +382,38 @@ function showBulkAlert(title, message, type = 'error') {
     alertArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+function calculateLangsirBiaya(dari, ke, size, status, obDalamPelabuhan) {
+    if (obDalamPelabuhan && obDalamPelabuhan.trim().toUpperCase() === 'YA') {
+        return 20000;
+    }
+
+    const dariVal = (dari || '').trim().toUpperCase();
+    const keVal = (ke || '').trim().toUpperCase();
+    const sizeVal = (size || '').trim().toUpperCase();
+    const statusVal = (status || '').trim().toUpperCase();
+
+    const isSrimasPelabuhan = (dariVal === 'SRIMAS' && keVal === 'PELABUHAN') || (dariVal === 'PELABUHAN' && keVal === 'SRIMAS');
+    const isTpkSrimas = (dariVal === 'TPK/RTG' && keVal === 'SRIMAS') || (dariVal === 'SRIMAS' && keVal === 'TPK/RTG');
+
+    let price = 0;
+    if (isSrimasPelabuhan) {
+        if (sizeVal === '20FT') {
+            price = statusVal === 'FULL' ? 40000 : 35000;
+        } else if (sizeVal === '40FT') {
+            price = statusVal === 'FULL' ? 50000 : 45000;
+        }
+    } else if (isTpkSrimas) {
+        if (statusVal === 'FULL') {
+            if (sizeVal === '20FT') {
+                price = 50000;
+            } else if (sizeVal === '40FT') {
+                price = 60000;
+            }
+        }
+    }
+    return price;
+}
+
 function parseBulkData() {
     const text = document.getElementById('bulkTextarea').value.trim();
     const previewContainer = document.getElementById('bulkPreviewContainer');
@@ -405,6 +437,20 @@ function parseBulkData() {
         if (!line.trim()) return;
         const cols = line.split(';').map(c => c.trim());
         if (cols.length >= 3 && cols[1]) {
+            let biayaVal = cols[9] || '';
+            const statusVal = cols[10] || 'FULL';
+            const obVal = cols[11] || 'Tidak';
+            
+            // Auto calculate biaya jika dikosongkan atau 0
+            if (biayaVal === '' || biayaVal === '0') {
+                const calcBiaya = calculateLangsirBiaya(cols[4], cols[5], cols[2], statusVal, obVal);
+                if (calcBiaya > 0) {
+                    biayaVal = calcBiaya.toString();
+                } else {
+                    biayaVal = '0';
+                }
+            }
+
             const rowData = {
                 tanggal: cols[0] || '',
                 no_kontainer: cols[1] || '',
@@ -415,9 +461,9 @@ function parseBulkData() {
                 gudang_tujuan: cols[6] || '',
                 supir: cols[7] || '',
                 no_plat: cols[8] || '',
-                biaya: cols[9] || '0',
-                status: cols[10] || 'FULL',
-                ob_dalam_pelabuhan: cols[11] || 'Tidak',
+                biaya: biayaVal,
+                status: statusVal,
+                ob_dalam_pelabuhan: obVal,
                 keterangan: cols[12] || ''
             };
             bulkParsedRows.push(rowData);
