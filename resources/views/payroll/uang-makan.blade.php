@@ -210,37 +210,89 @@
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
         <!-- Modal panel -->
-        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div class="sm:flex sm:items-start">
-                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                        <i class="fas fa-file-invoice text-blue-600"></i>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-gray-100">
+            <!-- Header -->
+            <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-50 p-2 rounded-lg">
+                        <i class="fas fa-file-invoice text-blue-600 text-lg"></i>
                     </div>
-                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Masukkan Pranota</h3>
-                        <div class="mt-2">
-                            <p class="text-sm text-gray-500 mb-4">Silakan masukkan detail pranota untuk karyawan yang dipilih.</p>
-                            
-                            <!-- Contoh Form Input -->
-                            <div class="space-y-4">
-                                <div>
-                                    <label for="no_pranota" class="block text-sm font-medium text-gray-700">No Pranota</label>
-                                    <input type="text" name="no_pranota" id="no_pranota" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Contoh: PRN-2026-07-001">
-                                </div>
-                                <div>
-                                    <label for="keterangan_pranota" class="block text-sm font-medium text-gray-700">Keterangan</label>
-                                    <textarea name="keterangan_pranota" id="keterangan_pranota" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Opsional..."></textarea>
-                                </div>
-                            </div>
+                    <h3 class="text-lg font-bold text-gray-800" id="modal-title">Konfirmasi Masuk Pranota Uang Makan</h3>
+                </div>
+                <button type="button" onclick="closePranotaModal()" class="text-gray-400 hover:text-gray-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="bg-white px-6 py-5">
+                <!-- Form Inputs -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Nomor Pranota <span class="text-red-500">*</span></label>
+                        <div class="flex rounded-md shadow-sm">
+                            <input type="text" id="nomor_pranota" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Contoh: PRN-2026-07-001">
+                            <button type="button" class="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Pranota <span class="text-red-500">*</span></label>
+                        <input type="date" id="tanggal_pranota" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="{{ date('Y-m-d') }}">
+                    </div>
+                </div>
+
+                <!-- Item Terpilih -->
+                <div class="mb-2">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-3">Item Terpilih</h4>
+                    <div class="border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+                        <div class="overflow-y-auto max-h-64 custom-scrollbar">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Karyawan</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Penempatan</th>
+                                        <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Kehadiran</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Payout</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-item-list" class="bg-white divide-y divide-gray-100 text-sm">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
+
+                <!-- Footer Stats -->
+                <div class="flex justify-between items-end border-b border-gray-200 pb-4 mb-4 mt-4">
+                    <div class="text-sm text-gray-500">
+                        <span id="modal-item-count" class="font-medium text-gray-700">0</span> item terpilih
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xs text-gray-500 mb-1">Total Nominal</div>
+                        <div class="text-2xl font-bold text-blue-600" id="modal-total-nominal">Rp 0</div>
+                    </div>
+                </div>
+
+                <!-- Adjustments -->
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-800">Adjustments (Opsional)</h4>
+                        <p class="text-xs text-gray-500 mt-1">Gunakan minus (-) pada nominal untuk pengurangan</p>
+                    </div>
+                    <button type="button" class="inline-flex items-center px-3 py-1.5 border border-blue-600 text-blue-600 bg-white rounded-md text-sm font-medium hover:bg-blue-50 transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Tambah Adjustment
+                    </button>
+                </div>
             </div>
-            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button type="button" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+            
+            <div class="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse rounded-b-lg">
+                <button type="button" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2 bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto transition-colors">
                     Simpan Pranota
                 </button>
-                <button type="button" onclick="closePranotaModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                <button type="button" onclick="closePranotaModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto transition-colors">
                     Batal
                 </button>
             </div>
@@ -313,6 +365,43 @@
     });
 
     function openPranotaModal() {
+        const modalList = document.getElementById('modal-item-list');
+        const countSpan = document.getElementById('modal-item-count');
+        const totalSpan = document.getElementById('modal-total-nominal');
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+        
+        modalList.innerHTML = '';
+        let total = 0;
+        
+        rowCheckboxes.forEach(cb => {
+            const tr = cb.closest('tr');
+            
+            const karyawanName = tr.querySelector('td:nth-child(3) .font-medium').innerText.trim();
+            const karyawanNik = tr.querySelector('td:nth-child(3) .text-xs').innerText.trim();
+            const penempatan = tr.querySelector('td:nth-child(4)').innerText.trim();
+            const kehadiran = tr.querySelector('td:nth-child(5)').innerText.trim();
+            const payoutText = tr.querySelector('.total-payout-text').innerText;
+            
+            // Parse Rp 325.000 to integer 325000
+            const payoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
+            total += payoutVal;
+            
+            const trModal = document.createElement('tr');
+            trModal.innerHTML = `
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="font-bold text-gray-900">${karyawanName}</div>
+                    <div class="text-[10px] text-gray-500 font-mono">${karyawanNik}</div>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-gray-600">${penempatan}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600 font-medium">${kehadiran}</td>
+                <td class="px-4 py-3 whitespace-nowrap text-right font-bold text-gray-900">Rp ${new Intl.NumberFormat('id-ID').format(payoutVal)}</td>
+            `;
+            modalList.appendChild(trModal);
+        });
+        
+        countSpan.innerText = rowCheckboxes.length;
+        totalSpan.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+        
         document.getElementById('pranota-modal').classList.remove('hidden');
     }
 
