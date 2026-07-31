@@ -11,9 +11,17 @@ class UangMakanController extends Controller
     {
         $query = \App\Models\UangMakan::with('karyawan')->latest();
         
-        if ($request->filled('penempatan')) {
+        if ($request->filled('penempatan') || $request->filled('search')) {
             $query->whereHas('karyawan', function($q) use ($request) {
-                $q->where('penempatan', $request->penempatan);
+                if ($request->filled('penempatan')) {
+                    $q->where('penempatan', $request->penempatan);
+                }
+                if ($request->filled('search')) {
+                    $q->where(function($sub) use ($request) {
+                        $sub->where('nama_lengkap', 'like', '%' . $request->search . '%')
+                            ->orWhere('nik', 'like', '%' . $request->search . '%');
+                    });
+                }
             });
         }
         
