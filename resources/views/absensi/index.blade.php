@@ -86,7 +86,7 @@
         <!-- Filter Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <form action="{{ route('absensi.index') }}" method="GET" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     <!-- Search Karyawan -->
                     <div>
                         <label for="search" class="block text-xs font-semibold text-gray-700 mb-1">Cari Karyawan / NIK</label>
@@ -103,6 +103,18 @@
                             <option value="">Semua Pekerjaan</option>
                             @foreach($pekerjaans as $pekerjaan)
                                 <option value="{{ $pekerjaan }}" {{ request('pekerjaan') == $pekerjaan ? 'selected' : '' }}>{{ $pekerjaan }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Penempatan -->
+                    <div>
+                        <label for="penempatan" class="block text-xs font-semibold text-gray-700 mb-1">Penempatan</label>
+                        <select name="penempatan" id="penempatan"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                            <option value="">Semua Penempatan</option>
+                            @foreach($penempatans as $penempatan)
+                                <option value="{{ $penempatan }}" {{ request('penempatan') == $penempatan ? 'selected' : '' }}>{{ strtoupper($penempatan) }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -139,7 +151,7 @@
                     <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 shadow-sm">
                         Filter Data
                     </button>
-                    @if(request()->anyFilled(['search', 'pekerjaan', 'status_absen', 'start_date', 'end_date']))
+                    @if(request()->anyFilled(['search', 'pekerjaan', 'penempatan', 'status_absen', 'start_date', 'end_date']))
                         <a href="{{ route('absensi.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 shadow-sm">
                             Reset
                         </a>

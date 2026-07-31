@@ -136,6 +136,14 @@ class AbsensiController extends Controller
             });
         }
 
+        // Filter by Penempatan
+        if ($request->filled('penempatan')) {
+            $penempatan = $request->penempatan;
+            $query->whereHas('karyawan', function ($kQ) use ($penempatan) {
+                $kQ->where('penempatan', $penempatan);
+            });
+        }
+
         // Filter by Divisi
         if ($request->filled('divisi')) {
             $divisi = $request->divisi;
@@ -191,10 +199,11 @@ class AbsensiController extends Controller
         $absensis = $query->orderBy('tanggal', 'desc')->paginate(25)->withQueryString();
         $pekerjaans = Karyawan::whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
         $divisis = Karyawan::whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
+        $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
         $mesins = Mesin::all()->keyBy('id');
         $karyawanList = Karyawan::whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get(['nik', 'nama_lengkap']);
 
-        return view('absensi.index', compact('absensis', 'pekerjaans', 'divisis', 'startDate', 'endDate', 'mesins', 'karyawanList'));
+        return view('absensi.index', compact('absensis', 'pekerjaans', 'divisis', 'penempatans', 'startDate', 'endDate', 'mesins', 'karyawanList'));
     }
 
     /**
