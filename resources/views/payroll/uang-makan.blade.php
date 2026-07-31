@@ -210,7 +210,7 @@
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
         <!-- Modal panel -->
-        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-gray-100">
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100">
             <!-- Header -->
             <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                 <div class="flex items-center gap-3">
@@ -246,14 +246,17 @@
                 <div class="mb-2">
                     <h4 class="text-sm font-semibold text-gray-800 mb-3">Item Terpilih</h4>
                     <div class="border border-gray-200 rounded-lg overflow-hidden flex flex-col">
-                        <div class="overflow-y-auto max-h-64 custom-scrollbar">
+                        <div class="overflow-y-auto max-h-[60vh] custom-scrollbar">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50 sticky top-0 z-10">
                                     <tr>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Karyawan</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Penempatan</th>
-                                        <th scope="col" class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Kehadiran</th>
-                                        <th scope="col" class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Payout</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Karyawan</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Penempatan</th>
+                                        <th scope="col" class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Kehadiran</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal Awal</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Adjustment</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Akhir</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Catatan</th>
                                     </tr>
                                 </thead>
                                 <tbody id="modal-item-list" class="bg-white divide-y divide-gray-100 text-sm">
@@ -275,17 +278,6 @@
                     </div>
                 </div>
 
-                <!-- Adjustments -->
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h4 class="text-sm font-semibold text-gray-800">Adjustments (Opsional)</h4>
-                        <p class="text-xs text-gray-500 mt-1">Gunakan minus (-) pada nominal untuk pengurangan</p>
-                    </div>
-                    <button type="button" class="inline-flex items-center px-3 py-1.5 border border-blue-600 text-blue-600 bg-white rounded-md text-sm font-medium hover:bg-blue-50 transition-colors">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Tambah Adjustment
-                    </button>
-                </div>
             </div>
             
             <div class="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse rounded-b-lg">
@@ -367,11 +359,9 @@
     function openPranotaModal() {
         const modalList = document.getElementById('modal-item-list');
         const countSpan = document.getElementById('modal-item-count');
-        const totalSpan = document.getElementById('modal-total-nominal');
         const rowCheckboxes = document.querySelectorAll('.row-checkbox:checked');
         
         modalList.innerHTML = '';
-        let total = 0;
         
         rowCheckboxes.forEach(cb => {
             const tr = cb.closest('tr');
@@ -383,26 +373,58 @@
             const payoutText = tr.querySelector('.total-payout-text').innerText;
             
             // Parse Rp 325.000 to integer 325000
-            const payoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
-            total += payoutVal;
+            const basePayoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
             
             const trModal = document.createElement('tr');
             trModal.innerHTML = `
-                <td class="px-4 py-3 whitespace-nowrap">
+                <td class="px-3 py-2 whitespace-nowrap">
                     <div class="font-bold text-gray-900">${karyawanName}</div>
                     <div class="text-[10px] text-gray-500 font-mono">${karyawanNik}</div>
                 </td>
-                <td class="px-4 py-3 whitespace-nowrap text-gray-600">${penempatan}</td>
-                <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600 font-medium">${kehadiran}</td>
-                <td class="px-4 py-3 whitespace-nowrap text-right font-bold text-gray-900">Rp ${new Intl.NumberFormat('id-ID').format(payoutVal)}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-600">${penempatan}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-center text-gray-600 font-medium">${kehadiran}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-gray-700">Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-right">
+                    <input type="number" class="modal-adjustment-input w-24 px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-right" value="0" data-base-payout="${basePayoutVal}">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right font-bold text-blue-700 modal-row-payout" data-current-payout="${basePayoutVal}">Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}</td>
+                <td class="px-3 py-2 whitespace-nowrap">
+                    <input type="text" class="w-full min-w-[120px] px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Catatan...">
+                </td>
             `;
             modalList.appendChild(trModal);
         });
         
         countSpan.innerText = rowCheckboxes.length;
-        totalSpan.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+        updateModalTotal();
         
+        // Add event listeners to adjustment inputs
+        const adjInputs = document.querySelectorAll('.modal-adjustment-input');
+        adjInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const base = parseInt(this.getAttribute('data-base-payout')) || 0;
+                const adj = parseInt(this.value) || 0;
+                const newPayout = base + adj;
+                
+                const tr = this.closest('tr');
+                const payoutTd = tr.querySelector('.modal-row-payout');
+                payoutTd.setAttribute('data-current-payout', newPayout);
+                payoutTd.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(newPayout);
+                
+                updateModalTotal();
+            });
+        });
+
         document.getElementById('pranota-modal').classList.remove('hidden');
+    }
+
+    function updateModalTotal() {
+        const payouts = document.querySelectorAll('.modal-row-payout');
+        let total = 0;
+        payouts.forEach(td => {
+            total += parseInt(td.getAttribute('data-current-payout')) || 0;
+        });
+        document.getElementById('modal-total-nominal').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
     }
 
     function closePranotaModal() {
