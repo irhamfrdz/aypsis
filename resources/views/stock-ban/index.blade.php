@@ -248,7 +248,9 @@
                             $banPerAlatBerat[$name]++;
                         } elseif ($ban->mobil_id && $ban->mobil) {
                             $jenis = strtoupper($ban->mobil->jenis ?? '');
-                            $name = $ban->mobil->nomor_polisi ?? 'Unknown';
+                            $name = $ban->mobil->nomor_polisi ?? '';
+                            if (empty($name)) $name = $ban->mobil->no_kir ?? '';
+                            if (empty($name)) $name = $ban->mobil->kode_no ?? 'Unknown';
                             if (strpos($jenis, 'BUNTUT') !== false) {
                                 if(!isset($banPerBuntut[$name])) $banPerBuntut[$name] = 0;
                                 $banPerBuntut[$name]++;
