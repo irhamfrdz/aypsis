@@ -6701,6 +6701,7 @@ Route::middleware(['auth',
     Route::delete('uang-makan/bulk-delete', [UangMakanController::class, 'bulkDelete'])->name('uang-makan.bulk-delete')->middleware('can:data-uang-makan-delete');
     Route::get('uang-makan/template', [UangMakanController::class, 'downloadTemplate'])->name('uang-makan.template')->middleware('can:data-uang-makan-create');
     Route::post('uang-makan/import', [UangMakanController::class, 'import'])->name('uang-makan.import')->middleware('can:data-uang-makan-create');
+    Route::get('uang-makan/check-existing', [UangMakanController::class, 'checkExisting'])->name('uang-makan.check-existing')->middleware('can:data-uang-makan-create');
     Route::get('uang-makan', [UangMakanController::class, 'index'])->name('uang-makan.index')->middleware('can:data-uang-makan-view');
     Route::get('uang-makan/create', [UangMakanController::class, 'create'])->name('uang-makan.create')->middleware('can:data-uang-makan-create');
     Route::post('uang-makan', [UangMakanController::class, 'store'])->name('uang-makan.store')->middleware('can:data-uang-makan-create');

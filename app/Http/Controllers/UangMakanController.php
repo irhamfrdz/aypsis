@@ -30,6 +30,20 @@ class UangMakanController extends Controller
         return view('uang-makan.create', compact('karyawans', 'penempatans'));
     }
 
+    public function checkExisting(Request $request)
+    {
+        $tanggal = $request->tanggal;
+        if (!$tanggal) {
+            return response()->json([]);
+        }
+
+        $existingIds = \App\Models\UangMakan::whereDate('tanggal', $tanggal)
+            ->pluck('karyawan_id')
+            ->toArray();
+
+        return response()->json($existingIds);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

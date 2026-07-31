@@ -148,9 +148,42 @@
         const checkAllBox = document.getElementById('check_all_karyawan');
         const karyawanCheckboxes = document.querySelectorAll('.karyawan-checkbox');
         const nominalInput = document.getElementById('nominal');
+        const tanggalInput = document.getElementById('tanggal');
+
+        async function checkExistingData() {
+            if (!tanggalInput) return;
+            const tanggal = tanggalInput.value;
+            if (!tanggal) return;
+
+            try {
+                const response = await fetch(`{{ route('uang-makan.check-existing') }}?tanggal=${tanggal}`);
+                const existingIds = await response.json();
+                
+                karyawanCheckboxes.forEach(cb => {
+                    const listItem = cb.closest('.karyawan-item');
+                    if (existingIds.includes(parseInt(cb.value))) {
+                        cb.checked = true;
+                        cb.disabled = true;
+                        listItem.classList.add('opacity-50', 'bg-gray-100');
+                    } else {
+                        cb.disabled = false;
+                        listItem.classList.remove('opacity-50', 'bg-gray-100');
+                    }
+                });
+                updateCheckAllState();
+                updateNominalFromFirstChecked();
+            } catch (error) {
+                console.error('Error checking existing data:', error);
+            }
+        }
+
+        if (tanggalInput) {
+            tanggalInput.addEventListener('change', checkExistingData);
+            checkExistingData(); // Run on load
+        }
 
         function updateCheckAllState() {
-            const visibleCheckboxes = Array.from(karyawanCheckboxes).filter(cb => cb.closest('.karyawan-item').style.display !== 'none');
+            const visibleCheckboxes = Array.from(karyawanCheckboxes).filter(cb => cb.closest('.karyawan-item').style.display !== 'none' && !cb.disabled);
             if (visibleCheckboxes.length === 0) {
                 checkAllBox.checked = false;
                 checkAllBox.indeterminate = false;
@@ -178,7 +211,7 @@
                     item.style.display = 'none';
                     // Uncheck if hidden by filter
                     const cb = item.querySelector('.karyawan-checkbox');
-                    if (cb) cb.checked = false;
+                    if (cb && !cb.disabled) cb.checked = false;
                 }
             });
             updateCheckAllState();
@@ -191,7 +224,7 @@
         checkAllBox.addEventListener('change', function() {
             const isChecked = this.checked;
             karyawanCheckboxes.forEach(cb => {
-                if (cb.closest('.karyawan-item').style.display !== 'none') {
+                if (cb.closest('.karyawan-item').style.display !== 'none' && !cb.disabled) {
                     cb.checked = isChecked;
                 }
             });
@@ -208,7 +241,7 @@
 
         function updateNominalFromFirstChecked() {
             if (!nominalInput) return;
-            const firstChecked = document.querySelector('.karyawan-checkbox:checked');
+            const firstChecked = document.querySelector('.karyawan-checkbox:checked:not(:disabled)');
             if (firstChecked && firstChecked.dataset.nominal) {
                 nominalInput.value = firstChecked.dataset.nominal;
             }
