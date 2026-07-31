@@ -55,9 +55,10 @@ class UangMakanController extends Controller
         ]);
 
         foreach ($validated['karyawan_id'] as $id) {
-            \App\Models\UangMakan::create([
+            \App\Models\UangMakan::firstOrCreate([
                 'karyawan_id' => $id,
                 'tanggal' => $validated['tanggal'],
+            ], [
                 'nominal' => $validated['nominal'],
                 'keterangan' => $validated['keterangan'],
             ]);

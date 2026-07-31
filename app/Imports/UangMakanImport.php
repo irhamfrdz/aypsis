@@ -22,6 +22,14 @@ class UangMakanImport implements ToModel, WithHeadingRow, WithValidation
             ? Date::excelToDateTimeObject($row['tanggal'])->format('Y-m-d')
             : date('Y-m-d', strtotime($row['tanggal']));
 
+        $exists = UangMakan::where('karyawan_id', $karyawan->id)
+            ->whereDate('tanggal', $tanggal)
+            ->exists();
+
+        if ($exists) {
+            return null; // Skip if data already exists
+        }
+
         return new UangMakan([
             'karyawan_id' => $karyawan->id,
             'tanggal'     => $tanggal,
