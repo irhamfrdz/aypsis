@@ -68,4 +68,21 @@ class Mobil extends Model
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
+
+    /**
+     * Get the display name for the mobilization unit (nomor_polisi + no_kir).
+     */
+    public function getDisplayNameAttribute()
+    {
+        $name = trim($this->nomor_polisi ?? '');
+        $kir = trim($this->no_kir ?? '');
+        
+        if (!empty($name) && !empty($kir) && $kir !== '-') {
+            return $name . ' / ' . $kir;
+        } elseif (empty($name)) {
+            return $kir ?: 'Unknown';
+        }
+        
+        return $name;
+    }
 }
