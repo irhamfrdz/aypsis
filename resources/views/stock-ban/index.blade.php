@@ -248,7 +248,7 @@
                             $banPerAlatBerat[$name]++;
                         } elseif ($ban->mobil_id && $ban->mobil) {
                             $jenis = strtoupper($ban->mobil->jenis ?? '');
-                            $name = $ban->mobil->display_name;
+                            $name = $ban->mobil->nomor_polisi ?? 'Unknown';
                             if (strpos($jenis, 'BUNTUT') !== false) {
                                 if(!isset($banPerBuntut[$name])) $banPerBuntut[$name] = 0;
                                 $banPerBuntut[$name]++;
@@ -601,7 +601,11 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     @if($ban->mobil)
                                         @php
-                                            $displayPlat = $ban->mobil->display_name;
+                                            $displayPlat = $ban->mobil->nomor_polisi;
+                                            // Fallback to no_kir for Buntut if plate is empty
+                                            if (empty($displayPlat) && $ban->mobil->jenis && stripos($ban->mobil->jenis, 'buntut') !== false) {
+                                                $displayPlat = $ban->mobil->no_kir ?? '-';
+                                            }
                                         @endphp
                                         <span class="text-blue-600 font-medium">
                                             <i class="fas fa-truck mr-1"></i> {{ $displayPlat }}
@@ -840,7 +844,7 @@
                                 <span class="text-gray-500">Unit / Tujuan</span>
                                 <span class="text-gray-800 font-medium">
                                     @if($ban->mobil)
-                                        <i class="fas fa-truck text-blue-500 mr-1"></i> {{ $ban->mobil->display_name }}
+                                        <i class="fas fa-truck text-blue-500 mr-1"></i> {{ $ban->mobil->nomor_polisi }}
                                     @elseif($ban->alatBerat)
                                         <i class="fas fa-tractor text-orange-500 mr-1"></i> {{ $ban->alatBerat->nama }}
                                     @else
@@ -1178,7 +1182,11 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     @if($ban->mobil)
                                         @php
-                                            $displayPlat = $ban->mobil->display_name;
+                                            $displayPlat = $ban->mobil->nomor_polisi;
+                                            // Fallback to no_kir for Buntut if plate is empty
+                                            if (empty($displayPlat) && $ban->mobil->jenis && stripos($ban->mobil->jenis, 'buntut') !== false) {
+                                                $displayPlat = $ban->mobil->no_kir ?? '-';
+                                            }
                                         @endphp
                                         <span class="text-blue-600 font-medium">
                                             <i class="fas fa-truck mr-1"></i> {{ $displayPlat }}
@@ -1401,7 +1409,7 @@
                                 <span class="text-gray-500">Unit / Tujuan</span>
                                 <span class="text-gray-800 font-medium">
                                     @if($ban->mobil)
-                                        <i class="fas fa-truck text-blue-500 mr-1"></i> {{ $ban->mobil->display_name }}
+                                        <i class="fas fa-truck text-blue-500 mr-1"></i> {{ $ban->mobil->nomor_polisi }}
                                     @elseif($ban->alatBerat)
                                         <i class="fas fa-tractor text-orange-500 mr-1"></i> {{ $ban->alatBerat->nama }}
                                     @else
