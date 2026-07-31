@@ -6698,6 +6698,7 @@ Route::middleware(['auth',
     Route::put('cuti/{cuti}', [CutiController::class, 'update'])->name('cuti.update')->middleware('can:data-cuti-edit');
     Route::delete('cuti/{cuti}', [CutiController::class, 'destroy'])->name('cuti.destroy')->middleware('can:data-cuti-delete');
 
+    Route::delete('uang-makan/bulk-delete', [UangMakanController::class, 'bulkDelete'])->name('uang-makan.bulk-delete')->middleware('can:data-uang-makan-delete');
     Route::get('uang-makan', [UangMakanController::class, 'index'])->name('uang-makan.index')->middleware('can:data-uang-makan-view');
     Route::get('uang-makan/create', [UangMakanController::class, 'create'])->name('uang-makan.create')->middleware('can:data-uang-makan-create');
     Route::post('uang-makan', [UangMakanController::class, 'store'])->name('uang-makan.store')->middleware('can:data-uang-makan-create');

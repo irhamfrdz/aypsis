@@ -998,14 +998,20 @@
                         No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Kenek ; Krani ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty) ; No Voyage
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar;batam;Batu Ampar;Full;VOY123
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar;batam;Batu Ampar (PB);Full;VOY123
+                    </p>
+                    <p class="text-xs text-indigo-600 mt-1 italic">
+                        *Untuk tujuan dengan ekspedisi ganda, tambahkan dalam kurung untuk membedakan, misal: <strong>Batu Ampar (PB)</strong> atau <strong>Batu Ampar (AYP)</strong>.
                     </p>
                     @else
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
                         No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Kenek ; Krani ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty)
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar;batam;Batu Ampar;Full
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar;batam;Batu Ampar (PB);Full
+                    </p>
+                    <p class="text-xs text-indigo-600 mt-1 italic">
+                        *Untuk tujuan dengan ekspedisi ganda, tambahkan dalam kurung untuk membedakan, misal: <strong>Batu Ampar (PB)</strong> atau <strong>Batu Ampar (AYP)</strong>.
                     </p>
                     @endif
                 </div>

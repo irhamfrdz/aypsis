@@ -995,6 +995,16 @@ class SuratJalanBongkaranBatamController extends Controller
 
                     if (! empty($rowTujuan)) {
                         if ($rowLokasi === 'batam') {
+                            // Parse requested expedisi/ring if provided in format "Lokasi (Ring X - EXPEDISI)" or "Lokasi (EXPEDISI)"
+                            $requestedExpedisi = null;
+                            $requestedRing = null;
+                            $searchTujuan = trim($rowTujuan);
+                            if (preg_match('/^(.*?)\s*\((?:Ring\s+(\d+)\s*-\s*)?([A-Za-z0-9]+)\)$/i', $searchTujuan, $matches)) {
+                                $searchTujuan = trim($matches[1]);
+                                $requestedRing = !empty($matches[2]) ? trim($matches[2]) : null;
+                                $requestedExpedisi = strtoupper(trim($matches[3]));
+                            }
+
                             // Find Pricelist Uang Jalan Batam
                             $pricelistItems = \App\Models\PricelistUangJalanBatam::activeBbm()->get();
                             $matchedItem = null;
@@ -1002,10 +1012,19 @@ class SuratJalanBongkaranBatamController extends Controller
                                 if (! $item->wilayah) {
                                     continue;
                                 }
+
+                                // Skip if user explicitly provided expedisi/ring but it doesn't match
+                                if ($requestedExpedisi && strtoupper($item->expedisi) !== $requestedExpedisi) {
+                                    continue;
+                                }
+                                if ($requestedRing && (string)$item->ring !== $requestedRing) {
+                                    continue;
+                                }
+
                                 $originalSubWilayahs = array_map('trim', explode(',', $item->wilayah));
                                 $lowerSubWilayahs = array_map('strtolower', $originalSubWilayahs);
                                 
-                                $idx = array_search(strtolower($rowTujuan), $lowerSubWilayahs);
+                                $idx = array_search(strtolower($searchTujuan), $lowerSubWilayahs);
                                 if ($idx !== false) {
                                     $matchedItem = $item;
                                     // Use the exact case from database so UI dropdowns match perfectly
