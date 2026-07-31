@@ -147,7 +147,8 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="text-[9px] font-bold text-blue-500 uppercase tracking-tighter">Group:</span>
-                                <select name="grup[]" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs select2-multiple" multiple title="Tahan Ctrl/Cmd untuk pilih beberapa">
+                                <select name="grup" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-blue-500 w-32 shadow-xs" onchange="this.form.submit()">
+                                    <option value="">Semua Group</option>
                                     @php
                                         $subGroups = [
                                             'GAJI' => [],
@@ -173,10 +174,10 @@
                                         }
                                         $grupOptions = array_unique(array_merge($defaultGrups, $existingGrups));
                                         sort($grupOptions);
-                                        $selectedGrup = (array) request('grup', []);
+                                        $selectedGrup = request('grup', '');
                                     @endphp
                                     @foreach($grupOptions as $opt)
-                                        <option value="{{ $opt }}" {{ in_array($opt, $selectedGrup) ? 'selected' : '' }}>{{ $opt }}</option>
+                                        <option value="{{ $opt }}" {{ $selectedGrup == $opt ? 'selected' : '' }}>{{ strtoupper($opt) }}</option>
                                     @endforeach
                                 </select>
                             </div>
