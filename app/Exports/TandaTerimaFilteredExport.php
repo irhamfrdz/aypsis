@@ -61,7 +61,7 @@ class TandaTerimaFilteredExport implements FromCollection, ShouldAutoSize, WithE
             // Only missing tanda terima
             $query->whereDoesntHave('tandaTerima');
 
-            $rows = $query->with('order.pengirim')->orderBy('created_at', 'desc')->get()->map(function ($s) {
+            $rows = $query->with(['order.pengirim', 'order.penerima'])->orderBy('created_at', 'desc')->get()->map(function ($s) {
                 return [
                     $s->no_surat_jalan,
                     $s->tanggal_surat_jalan ? $s->tanggal_surat_jalan->format('d/M/Y') : '-',
@@ -73,6 +73,8 @@ class TandaTerimaFilteredExport implements FromCollection, ShouldAutoSize, WithE
                     $s->kegiatan,
                     optional($s->order->pengirim)->nama_pengirim ?? '-',
                     $s->tujuan_pengiriman ?? '-',
+                    $s->jenis_barang ?? '-',
+                    optional($s->order->penerima)->nama_penerima ?? '-',
                 ];
             });
 
@@ -82,7 +84,7 @@ class TandaTerimaFilteredExport implements FromCollection, ShouldAutoSize, WithE
         // If mode is 'combined', export TandaTerima rows followed by missing SuratJalan rows mapped to same schema
         if ($this->mode === 'combined') {
             // Get TandaTerima rows (same as below)
-            $ttQuery = TandaTerima::with(['suratJalan.order.pengirim']);
+            $ttQuery = TandaTerima::with(['suratJalan.order.pengirim', 'suratJalan.order.penerima']);
             if (! empty($this->filters['search'])) {
                 $search = $this->filters['search'];
                 $ttQuery->where(function ($q) use ($search) {
@@ -132,6 +134,8 @@ class TandaTerimaFilteredExport implements FromCollection, ShouldAutoSize, WithE
                     data_get($t, 'suratJalan.order.pengirim.nama_pengirim', '-'),
                     $t->no_dn ?? '-',
                     $t->surat_jalan_pabrik ?? '-',
+                    is_array($t->nama_barang) ? implode(', ', $t->nama_barang) : ($t->nama_barang ?? data_get($t, 'suratJalan.jenis_barang', '-')),
+                    $t->penerima ?? data_get($t, 'suratJalan.order.penerima.nama_penerima', '-'),
                 ];
             });
 
@@ -169,7 +173,7 @@ class TandaTerimaFilteredExport implements FromCollection, ShouldAutoSize, WithE
                 });
             });
 
-            $sjRows = $sjQuery->with('order.pengirim')->orderBy('created_at', 'desc')->get()->map(function ($s) {
+            $sjRows = $sjQuery->with(['order.pengirim', 'order.penerima'])->orderBy('created_at', 'desc')->get()->map(function ($s) {
                 return [
                     '',
                     '',
@@ -189,6 +193,8 @@ class TandaTerimaFilteredExport implements FromCollection, ShouldAutoSize, WithE
                     optional($s->order->pengirim)->nama_pengirim ?? '-',
                     '-',
                     '-',
+                    $s->jenis_barang ?? '-',
+                    optional($s->order->penerima)->nama_penerima ?? '-',
                 ];
             });
 
@@ -197,7 +203,7 @@ class TandaTerimaFilteredExport implements FromCollection, ShouldAutoSize, WithE
         }
 
         // Otherwise export TandaTerima rows
-        $query = TandaTerima::with(['suratJalan.order.pengirim']);
+        $query = TandaTerima::with(['suratJalan.order.pengirim', 'suratJalan.order.penerima']);
         if (! empty($this->filters['search'])) {
             $search = $this->filters['search'];
             $query->where(function ($q) use ($search) {
@@ -248,6 +254,8 @@ class TandaTerimaFilteredExport implements FromCollection, ShouldAutoSize, WithE
                 data_get($t, 'suratJalan.order.pengirim.nama_pengirim', '-'),
                 $t->no_dn ?? '-',
                 $t->surat_jalan_pabrik ?? '-',
+                is_array($t->nama_barang) ? implode(', ', $t->nama_barang) : ($t->nama_barang ?? data_get($t, 'suratJalan.jenis_barang', '-')),
+                $t->penerima ?? data_get($t, 'suratJalan.order.penerima.nama_penerima', '-'),
             ];
         });
 
@@ -257,11 +265,11 @@ class TandaTerimaFilteredExport implements FromCollection, ShouldAutoSize, WithE
     public function headings(): array
     {
         if ($this->mode === 'missing') {
-            return ['No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'No. Seal', 'Size', 'Supir', 'No. Plat', 'Kegiatan', 'Pengirim', 'Tujuan'];
+            return ['No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'No. Seal', 'Size', 'Supir', 'No. Plat', 'Kegiatan', 'Pengirim', 'Tujuan', 'Nama Barang', 'Nama Penerima'];
         }
 
         // For Tanda Terima and combined mode, use the Tanda Terima heading layout
-        return ['ID', 'ID Tanda Terima', 'No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'No. Seal', 'Size', 'Supir', 'No. Plat', 'Nama Kapal', 'Jenis Barang', 'Tujuan Ambil', 'Tujuan Kirim', 'Kegiatan', 'Status', 'Pengirim', 'No. DN', 'SJ Pabrik'];
+        return ['ID', 'ID Tanda Terima', 'No. Surat Jalan', 'Tanggal', 'No. Kontainer', 'No. Seal', 'Size', 'Supir', 'No. Plat', 'Nama Kapal', 'Jenis Barang', 'Tujuan Ambil', 'Tujuan Kirim', 'Kegiatan', 'Status', 'Pengirim', 'No. DN', 'SJ Pabrik', 'Nama Barang', 'Nama Penerima'];
     }
 
     public function registerEvents(): array
