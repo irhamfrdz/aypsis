@@ -170,6 +170,7 @@
                             <th class="px-6 py-3 text-left">NIK</th>
                             <th class="px-6 py-3 text-left">Nama Lengkap</th>
                             <th class="px-6 py-3 text-left">Pekerjaan</th>
+                            <th class="px-6 py-3 text-left">Divisi</th>
                             <th class="px-6 py-3 text-left">Tanggal</th>
                             <th class="px-6 py-3 text-center text-green-700 bg-green-50/50">Jam Masuk</th>
                             <th class="px-6 py-3 text-center text-orange-700 bg-orange-50/50">Istirahat Keluar</th>
@@ -198,6 +199,19 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-500">
                                     {{ $absensi->karyawan ? $absensi->karyawan->pekerjaan : '-' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-500">
+                                    @if($absensi->karyawan && $absensi->karyawan->divisi && $absensi->karyawan->divisi !== '0')
+                                        <span class="inline-flex px-2 py-1 text-[10px] font-medium rounded-md
+                                            {{ strtolower($absensi->karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' :
+                                               (strtolower($absensi->karyawan->divisi) === 'abk' ? 'bg-blue-100 text-blue-800' :
+                                               (strtolower($absensi->karyawan->divisi) === 'supir' ? 'bg-gray-100 text-gray-800' :
+                                               'bg-gray-100 text-gray-800')) }}">
+                                            {{ strtoupper($absensi->karyawan->divisi) }}
+                                        </span>
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap font-mono text-gray-600">
                                     {{ Carbon\Carbon::parse($absensi->tanggal)->format('d-m-Y') }}
