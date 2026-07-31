@@ -673,6 +673,35 @@ class SuratJalanBatamController extends Controller
         $successCount = 0;
         $errors = [];
 
+        // Map valid karyawans (separated by division) and kendaraans to validate and auto-correct bulk data
+        $supirMap = [];
+        $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
+        foreach ($karyawanSupirs as $k) {
+            if ($k->nama_panggilan) $supirMap[strtolower(trim($k->nama_panggilan))] = $k;
+            if ($k->nama_lengkap)   $supirMap[strtolower(trim($k->nama_lengkap))] = $k;
+        }
+
+        $kenekMap = [];
+        $karyawanKeneks = \App\Models\Karyawan::where('divisi', 'kenek')->get(['id', 'nama_panggilan', 'nama_lengkap']);
+        foreach ($karyawanKeneks as $k) {
+            if ($k->nama_panggilan) $kenekMap[strtolower(trim($k->nama_panggilan))] = $k;
+            if ($k->nama_lengkap)   $kenekMap[strtolower(trim($k->nama_lengkap))] = $k;
+        }
+
+        $kraniMap = [];
+        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')->get(['id', 'nama_panggilan', 'nama_lengkap']);
+        foreach ($karyawanKranis as $k) {
+            if ($k->nama_panggilan) $kraniMap[strtolower(trim($k->nama_panggilan))] = $k;
+            if ($k->nama_lengkap)   $kraniMap[strtolower(trim($k->nama_lengkap))] = $k;
+        }
+
+        $allKendaraansMap = [];
+        foreach (\App\Models\Mobil::all(['nomor_polisi']) as $m) {
+            if ($m->nomor_polisi) {
+                $allKendaraansMap[strtolower(trim(str_replace(' ', '', $m->nomor_polisi)))] = $m->nomor_polisi;
+            }
+        }
+
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();
 
@@ -711,6 +740,62 @@ class SuratJalanBatamController extends Controller
                     }
                 }
 
+                // Validasi Supir
+                $finalSupir = null;
+                $inputSupir = trim($row['supir'] ?? '');
+                if (!empty($inputSupir)) {
+                    $supirKey = strtolower($inputSupir);
+                    if (isset($supirMap[$supirKey])) {
+                        $finalSupir = $supirMap[$supirKey]->nama_panggilan ?: $supirMap[$supirKey]->nama_lengkap;
+                        // Auto fill plat jika kosong
+                        if (empty($row['no_plat']) && $supirMap[$supirKey]->plat) {
+                            $row['no_plat'] = $supirMap[$supirKey]->plat;
+                        }
+                    } else {
+                        $errors[] = "Baris {$rowNumber}: Supir '{$inputSupir}' tidak valid (tidak terdaftar di Master Karyawan sebagai Supir).";
+                        continue;
+                    }
+                }
+
+                // Validasi No Plat
+                $finalPlat = null;
+                $inputPlat = trim($row['no_plat'] ?? '');
+                if (!empty($inputPlat)) {
+                    $platKey = strtolower(str_replace(' ', '', $inputPlat));
+                    if (isset($allKendaraansMap[$platKey])) {
+                        $finalPlat = $allKendaraansMap[$platKey];
+                    } else {
+                        $errors[] = "Baris {$rowNumber}: No Plat '{$inputPlat}' tidak valid (tidak terdaftar di Master Mobil).";
+                        continue;
+                    }
+                }
+
+                // Validasi Kenek
+                $finalKenek = null;
+                $inputKenek = trim($row['kenek'] ?? '');
+                if (!empty($inputKenek)) {
+                    $kenekKey = strtolower($inputKenek);
+                    if (isset($kenekMap[$kenekKey])) {
+                        $finalKenek = $kenekMap[$kenekKey]->nama_panggilan ?: $kenekMap[$kenekKey]->nama_lengkap;
+                    } else {
+                        $errors[] = "Baris {$rowNumber}: Kenek '{$inputKenek}' tidak valid (tidak terdaftar di Master Karyawan sebagai Kenek).";
+                        continue;
+                    }
+                }
+
+                // Validasi Krani
+                $finalKrani = null;
+                $inputKrani = trim($row['krani'] ?? '');
+                if (!empty($inputKrani)) {
+                    $kraniKey = strtolower($inputKrani);
+                    if (isset($kraniMap[$kraniKey])) {
+                        $finalKrani = $kraniMap[$kraniKey]->nama_panggilan ?: $kraniMap[$kraniKey]->nama_lengkap;
+                    } else {
+                        $errors[] = "Baris {$rowNumber}: Krani '{$inputKrani}' tidak valid (tidak terdaftar di Master Karyawan sebagai Krani).";
+                        continue;
+                    }
+                }
+
                 $uangJalan = $this->calculateUangJalanValue($tujuanKirim, $size, $fe);
 
                 SuratJalanBatam::create([
@@ -721,10 +806,10 @@ class SuratJalanBatamController extends Controller
                     'size' => $size,
                     'tipe_kontainer' => trim($row['tipe_kontainer'] ?? '') ?: 'Dry Container',
                     'f_e' => $fe,
-                    'supir' => trim($row['supir'] ?? '') ?: null,
-                    'no_plat' => trim($row['no_plat'] ?? '') ?: null,
-                    'kenek' => trim($row['kenek'] ?? '') ?: null,
-                    'krani' => trim($row['krani'] ?? '') ?: null,
+                    'supir' => $finalSupir,
+                    'no_plat' => $finalPlat,
+                    'kenek' => $finalKenek,
+                    'krani' => $finalKrani,
                     'jenis_barang' => trim($row['jenis_barang'] ?? '') ?: null,
                     'pengirim' => trim($row['pengirim'] ?? '') ?: $sharedPengirim,
                     'penerima' => trim($row['penerima'] ?? '') ?: $sharedPenerima,
