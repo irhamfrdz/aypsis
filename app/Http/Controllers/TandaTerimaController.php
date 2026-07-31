@@ -2266,6 +2266,15 @@ class TandaTerimaController extends Controller
                     $updateFields['tujuan_pengiriman'] = $tujuanPengiriman;
                 }
 
+                // Update barang if available from request or tanda terima
+                $jenisBarang = $request->filled('jenis_barang')
+                    ? $request->jenis_barang
+                    : $tandaTerima->jenis_barang;
+
+                if (! empty($jenisBarang)) {
+                    $updateFields['barang'] = $jenisBarang;
+                }
+
                 $prospek->update($updateFields);
                 $updatedCount++;
 
