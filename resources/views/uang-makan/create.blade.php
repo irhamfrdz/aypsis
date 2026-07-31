@@ -68,9 +68,6 @@
                                         <label for="check_all_karyawan" class="ml-2 block text-xs text-gray-600">Pilih Semua</label>
                                     </div>
                                 </div>
-                                <div class="mb-2 mt-1">
-                                    <input type="text" id="search_karyawan" placeholder="Cari nama karyawan atau NIK..." class="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                                </div>
                                 <div class="mt-1 border border-gray-300 rounded-md p-3 h-64 overflow-y-auto bg-white" id="karyawan_list_container">
                                     @foreach($karyawans as $karyawan)
                                         @php
@@ -147,7 +144,6 @@
         const penempatanSelect = document.getElementById('filter_penempatan');
         const groupSelect = document.getElementById('filter_group');
         const subGroupSelect = document.getElementById('filter_sub_group');
-        const searchInput = document.getElementById('search_karyawan');
         const karyawanItems = document.querySelectorAll('.karyawan-item');
         const checkAllBox = document.getElementById('check_all_karyawan');
         const karyawanCheckboxes = document.querySelectorAll('.karyawan-checkbox');
@@ -170,15 +166,13 @@
             const selectedPenempatan = penempatanSelect.value;
             const selectedGroup = groupSelect.value;
             const selectedSubGroup = subGroupSelect.value;
-            const searchKeyword = searchInput.value.toLowerCase();
             
             karyawanItems.forEach(item => {
                 const matchesPenempatan = (selectedPenempatan === "" || item.dataset.penempatan === selectedPenempatan);
                 const matchesGroup = (selectedGroup === "" || item.dataset.grup.includes(selectedGroup));
                 const matchesSubGroup = (selectedSubGroup === "" || item.dataset.subgrup.includes(selectedSubGroup));
-                const matchesSearch = (searchKeyword === "" || item.dataset.search.includes(searchKeyword));
                 
-                if (matchesPenempatan && matchesGroup && matchesSubGroup && matchesSearch) {
+                if (matchesPenempatan && matchesGroup && matchesSubGroup) {
                     item.style.display = 'flex';
                 } else {
                     item.style.display = 'none';
@@ -193,7 +187,6 @@
         penempatanSelect.addEventListener('change', applyFilters);
         groupSelect.addEventListener('change', applyFilters);
         subGroupSelect.addEventListener('change', applyFilters);
-        searchInput.addEventListener('input', applyFilters);
 
         checkAllBox.addEventListener('change', function() {
             const isChecked = this.checked;
