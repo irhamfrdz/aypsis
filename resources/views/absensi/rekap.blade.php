@@ -101,6 +101,7 @@
                             <option value="">Semua Tingkat</option>
                             <option value="0_hari" {{ request('kehadiran') == '0_hari' ? 'selected' : '' }}>0 Hari (Tidak Absen)</option>
                             <option value="ada_absen" {{ request('kehadiran') == 'ada_absen' ? 'selected' : '' }}>Ada Absen (> 0 Hari)</option>
+                            <option value="tidak_lengkap" {{ request('kehadiran') == 'tidak_lengkap' ? 'selected' : '' }}>Hanya Masuk/Pulang Saja</option>
                         </select>
                     </div>
 

@@ -484,6 +484,16 @@ class AbsensiController extends Controller
                 $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj) {
                     $q->whereBetween('waktu', [$startObj, $endObj]);
                 });
+            } elseif ($kehadiran === 'tidak_lengkap') {
+                $driver = \DB::connection()->getDriverName();
+                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : "DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))";
+
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
+                    $q->whereBetween('waktu', [$startObj, $endObj])
+                      ->whereIn('tipe', ['Masuk', 'Pulang'])
+                      ->groupBy(\DB::raw($dateExpr))
+                      ->havingRaw('COUNT(DISTINCT tipe) = 1');
+                });
             }
         }
 
