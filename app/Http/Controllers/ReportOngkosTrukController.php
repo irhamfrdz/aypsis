@@ -1047,11 +1047,18 @@ class ReportOngkosTrukController extends Controller
 
     public function export2(Request $request)
     {
-        $startDate = \Carbon\Carbon::parse($request->start_date);
-        $endDate = \Carbon\Carbon::parse($request->end_date);
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'no_plat' => 'nullable|array',
+        ]);
+
+        $startDate = Carbon::parse($request->start_date)->startOfDay();
+        $endDate = Carbon::parse($request->end_date)->endOfDay();
+        $noPlat = $request->no_plat;
 
         // Fetch data exactly like the index view
-        $data = $this->getReportData($startDate, $endDate);
+        $data = $this->getReportData($startDate, $endDate, $noPlat);
 
         // Sort data by tanggal
         $data = $data->sortBy('tanggal');
@@ -1071,6 +1078,338 @@ class ReportOngkosTrukController extends Controller
             new \App\Exports\ReportOngkosTrukExport2($data, $startDate, $endDate),
             $filename
         );
+    }
+
+    private function getReportData($startDate, $endDate, $noPlat = null)
+    {
+        $querySj = SuratJalan::whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+            $tt->whereBetween('tanggal', [$startDate, $endDate]);
+        });
+
+        $querySjb = SuratJalanBongkaran::whereHas('tandaTerima', function ($tt) use ($startDate, $endDate) {
+            $tt->whereBetween('tanggal_tanda_terima', [$startDate, $endDate]);
+        });
+
+        if ($noPlat && count($noPlat) > 0) {
+            $querySj->whereIn('no_plat', $noPlat);
+            $querySjb->whereIn('no_plat', $noPlat);
+        }
+
+        $suratJalans = $querySj->with(['tandaTerima', 'order', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans', 'supirKaryawan', 'supir2Karyawan', 'kenekKaryawan'])->get();
+        $suratJalanBongkarans = $querySjb->with(['tandaTerima', 'tujuanPengambilanRelation', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans', 'supirKaryawan', 'supir2Karyawan', 'kenekKaryawan'])->get();
+
+        // Fetch all adjustments in bulk to avoid N+1
+        $sjIds = $suratJalans->pluck('id');
+        $sjbIds = $suratJalanBongkarans->pluck('id');
+        $allNoSjs = $suratJalans->pluck('no_surat_jalan')->merge($suratJalanBongkarans->pluck('nomor_surat_jalan'))->unique();
+
+        $adjInvoices = InvoiceAktivitasLain::with(['pembayarans', 'suratJalan'])->whereIn('surat_jalan_id', $sjIds->merge($sjbIds))
+            ->where(function ($q) {
+                $q->where('jenis_aktivitas', 'like', '%Adjusment%')
+                    ->orWhere('jenis_aktivitas', 'like', '%Adjustment%');
+            })->where('tipe_penyesuaian', 'not like', '%krani%')->get()->groupBy('surat_jalan_id');
+
+        $adjPembayarans = PembayaranAktivitasLain::whereIn('no_surat_jalan', $allNoSjs)
+            ->where('tipe_penyesuaian', 'not like', '%krani%')
+            ->get();
+
+        // Fetch direct payments that link to invoices via invoice_ids (globally, because payment might lack no_surat_jalan)
+        $directPayments = PembayaranAktivitasLain::whereNotNull('invoice_ids')->get();
+        // Pre-build invoice to direct payment mapping
+        $dpByInvoiceId = [];
+        foreach ($directPayments as $dp) {
+            // Handle comma-separated string (e.g. "1,2,3")
+            $ids = explode(',', $dp->invoice_ids);
+            foreach ($ids as $id) {
+                $trimmedId = trim($id);
+                if ($trimmedId) {
+                    $dpByInvoiceId[$trimmedId][] = $dp;
+                }
+            }
+
+            // Also handle JSON format just in case
+            try {
+                $jsonIds = json_decode($dp->invoice_ids, true);
+                if (is_array($jsonIds)) {
+                    foreach ($jsonIds as $id) {
+                        $dpByInvoiceId[$id][] = $dp;
+                    }
+                }
+            } catch (\Exception $e) {
+            }
+        }
+
+        $adjPembayaransGrouped = $adjPembayarans->filter(function ($dp) {
+            $type = strtolower($dp->jenis_aktivitas ?? '');
+
+            return str_contains($type, 'adjusment') || str_contains($type, 'adjustment');
+        })->groupBy('no_surat_jalan');
+
+        $data = collect();
+
+        foreach ($suratJalans as $sj) {
+            $ongkosTruk = $this->calculateOngkosTruk($sj);
+            $totalUangJalanRaw = $sj->uangJalan ? $sj->uangJalan->jumlah_total : 0;
+
+            // Collect adjustments for this SJ
+            $sjAdjs = collect();
+            if (isset($adjInvoices[$sj->id])) {
+                $filteredInvoices = $adjInvoices[$sj->id]->filter(function ($adj) use ($sj) {
+                    return ! $adj->suratJalan || $adj->suratJalan->no_surat_jalan === $sj->no_surat_jalan;
+                });
+                $sjAdjs = $sjAdjs->merge($filteredInvoices);
+            }
+            if (isset($adjPembayaransGrouped[$sj->no_surat_jalan])) {
+                $sjAdjs = $sjAdjs->merge($adjPembayaransGrouped[$sj->no_surat_jalan]);
+            }
+
+            $appliedAdjNominal = 0;
+            foreach ($sjAdjs as $adj) {
+                $isInvoice = ($adj instanceof \App\Models\InvoiceAktivitasLain);
+                $isAddition = (strtolower($adj->jenis_penyesuaian ?? '') === 'penambahan');
+                $isUjType = ($adj->jenis_aktivitas === 'Pembayaran Adjustment Uang Jalan');
+
+                if ($isInvoice && $isAddition && $isUjType) {
+                    $nominal = (float) ($adj->grand_total ?: ($adj->total ?: 0));
+                    $appliedAdjNominal += $nominal;
+                }
+            }
+
+            $mainNomorBukti = '-';
+            if ($sj->uangJalan && count($sj->uangJalan->pranotaUangJalan) > 0) {
+                $buktis = collect();
+                foreach ($sj->uangJalan->pranotaUangJalan as $pranota) {
+                    if ($pranota->pembayaranPranotaUangJalans) {
+                        $buktis = $buktis->merge($pranota->pembayaranPranotaUangJalans->pluck('nomor_accurate'));
+                    }
+                }
+                $mainNomorBukti = $buktis->filter()->unique()->implode(', ') ?: '-';
+            }
+
+            $driverData = $this->resolveDriverData($sj);
+            $tanggal = ($sj->tandaTerima && $sj->tandaTerima->tanggal) ? $sj->tandaTerima->tanggal : $sj->tanggal_surat_jalan;
+
+            // Main Row
+            $data->push([
+                'tanggal' => $tanggal,
+                'no_surat_jalan' => $sj->no_surat_jalan,
+                'no_plat' => $sj->no_plat,
+                'nama_lengkap_supir' => $driverData['nama'],
+                'nik_supir' => $driverData['nik'],
+                'nama_lengkap_kenek' => $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : ($sj->kenek ?: '-'),
+                'nik_kenek' => $sj->kenek_nik,
+                'rit_supir' => ($sj->supir || $sj->supir2 || $sj->supirKaryawan) ? 1 : 0,
+                'rit_kenek' => ($sj->kenek || $sj->kenekKaryawan) ? 1 : 0,
+                'supir' => $sj->supir ?: ($sj->supir2 ?: '-'),
+                'keterangan' => ($sj->pengirim ?? '-').' ke '.($sj->tujuan_pengiriman ?? '-'),
+                'kegiatan_str' => 'Uang Jalan Muat',
+                'muatan_str' => $sj->jenis_barang ?? '-',
+                'pt_str' => $sj->pengirim ?? $sj->tujuan_pengiriman ?? '-',
+                'keterangan_lengkap' => 'kegiatan muat barang '.($sj->jenis_barang ?? '').' ke '.($sj->tujuan_pengambilan ?? '').' '.($sj->pengirim ?? $sj->tujuan_pengiriman ?? ''),
+                'tujuan' => $sj->tujuan_pengambilan ?? '-',
+                'rit' => $sj->rit,
+                'ongkos_truck' => $ongkosTruk,
+                'uang_jalan' => $totalUangJalanRaw - $appliedAdjNominal,
+                'nomor_bukti' => $mainNomorBukti,
+            ]);
+
+            // Adjustment Rows
+            foreach ($sjAdjs as $adj) {
+                $nominal = (float) ($adj->grand_total ?: ($adj->total ?: (isset($adj->jumlah) ? $adj->jumlah : 0)));
+
+                $adjDate = $adj->tanggal_invoice ?? ($adj->tanggal ?? $tanggal);
+                $adjNomorAccurate = '';
+                if ($adj->nomor_accurate) {
+                    $adjNomorAccurate = $adj->nomor_accurate;
+                }
+
+                if ($adj instanceof \App\Models\InvoiceAktivitasLain) {
+                    $accNums = collect();
+                    if ($adj->nomor_accurate) {
+                        $accNums->push($adj->nomor_accurate);
+                    }
+
+                    // From many-to-many relationship
+                    $accNums = $accNums->merge($adj->pembayarans->pluck('nomor_accurate'));
+
+                    // From direct payments (invoice_ids link)
+                    if (isset($dpByInvoiceId[$adj->id])) {
+                        foreach ($dpByInvoiceId[$adj->id] as $dp) {
+                            if ($dp->nomor_accurate) {
+                                $accNums->push($dp->nomor_accurate);
+                            }
+                        }
+                    }
+                    $adjNomorAccurate = $accNums->filter()->unique()->implode(', ');
+                }
+
+                // Priority: Specific Payment > Parent Payment > Internal ID
+                if ($adjNomorAccurate) {
+                    $nomorBukti = $adjNomorAccurate;
+                } elseif ($mainNomorBukti !== '-') {
+                    $nomorBukti = $mainNomorBukti;
+                } else {
+                    $nomorBukti = $adj->nomor_invoice ?: ($adj->nomor ?: '-');
+                }
+
+                $data->push([
+                    'tanggal' => $adjDate,
+                    'no_surat_jalan' => $sj->no_surat_jalan,
+                    'no_plat' => $sj->no_plat,
+                    'nama_lengkap_supir' => $driverData['nama'],
+                    'nik_supir' => $driverData['nik'],
+                    'nama_lengkap_kenek' => $sj->kenekKaryawan ? $sj->kenekKaryawan->nama_lengkap : ($sj->kenek ?: '-'),
+                    'nik_kenek' => $sj->kenek_nik,
+                    'rit_supir' => 0,
+                    'rit_kenek' => 0,
+                    'supir' => $sj->supir ?: ($sj->supir2 ?: '-'),
+                    'keterangan' => $adj->jenis_aktivitas,
+                    'kegiatan_str' => $adj->jenis_aktivitas,
+                    'muatan_str' => $sj->jenis_barang ?? '-',
+                    'pt_str' => $sj->pengirim ?? $sj->tujuan_pengiriman ?? '-',
+                    'tujuan' => '-',
+                    'rit' => '-',
+                    'ongkos_truck' => 0,
+                    'uang_jalan' => $nominal,
+                    'nomor_bukti' => $nomorBukti,
+                ]);
+            }
+        }
+
+        foreach ($suratJalanBongkarans as $sjb) {
+            $ongkosTruk = $this->calculateOngkosTruk($sjb);
+            $totalUangJalanRaw = $sjb->uangJalan ? $sjb->uangJalan->jumlah_total : 0;
+
+            // Collect adjustments for this SJB
+            $sjbAdjs = collect();
+            if (isset($adjInvoices[$sjb->id])) {
+                $filteredInvoices = $adjInvoices[$sjb->id]->filter(function ($adj) use ($sjb) {
+                    if ($adj->suratJalan && $adj->suratJalan->no_surat_jalan !== $sjb->nomor_surat_jalan) {
+                        return false;
+                    }
+
+                    return true;
+                });
+                $sjbAdjs = $sjbAdjs->merge($filteredInvoices);
+            }
+            if (isset($adjPembayaransGrouped[$sjb->nomor_surat_jalan])) {
+                $sjbAdjs = $sjbAdjs->merge($adjPembayaransGrouped[$sjb->nomor_surat_jalan]);
+            }
+
+            $appliedAdjNominal = 0;
+            foreach ($sjbAdjs as $adj) {
+                $isInvoice = ($adj instanceof \App\Models\InvoiceAktivitasLain);
+                $isAddition = (strtolower($adj->jenis_penyesuaian ?? '') === 'penambahan');
+                $isUjType = ($adj->jenis_aktivitas === 'Pembayaran Adjustment Uang Jalan');
+
+                if ($isInvoice && $isAddition && $isUjType) {
+                    $nominal = (float) ($adj->grand_total ?: ($adj->total ?: 0));
+                    $appliedAdjNominal += $nominal;
+                }
+            }
+
+            $mainNomorBukti = '-';
+            if ($sjb->uangJalan && count($sjb->uangJalan->pranotaUangJalan) > 0) {
+                $buktis = collect();
+                foreach ($sjb->uangJalan->pranotaUangJalan as $pranota) {
+                    if ($pranota->pembayaranPranotaUangJalans) {
+                        $buktis = $buktis->merge($pranota->pembayaranPranotaUangJalans->pluck('nomor_accurate'));
+                    }
+                }
+                $mainNomorBukti = $buktis->filter()->unique()->implode(', ') ?: '-';
+            }
+
+            $driverData = $this->resolveDriverData($sjb);
+            $tanggal = ($sjb->tandaTerima && $sjb->tandaTerima->tanggal_tanda_terima) ? $sjb->tandaTerima->tanggal_tanda_terima : $sjb->tanggal_surat_jalan;
+
+            // Main Row
+            $data->push([
+                'tanggal' => $tanggal,
+                'no_surat_jalan' => $sjb->nomor_surat_jalan,
+                'no_plat' => $sjb->no_plat,
+                'nama_lengkap_supir' => $driverData['nama'],
+                'nik_supir' => $driverData['nik'],
+                'nama_lengkap_kenek' => $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : ($sjb->kenek ?: '-'),
+                'nik_kenek' => $sjb->kenek_nik,
+                'rit_supir' => ($sjb->supir || $sjb->supir2 || $sjb->supirKaryawan) ? 1 : 0,
+                'rit_kenek' => ($sjb->kenek || $sjb->kenekKaryawan) ? 1 : 0,
+                'supir' => $sjb->supir ?: ($sjb->supir2 ?: '-'),
+                'keterangan' => ($sjb->pengirim ?? '-').' ke '.($sjb->tujuan_pengiriman ?? '-'),
+                'kegiatan_str' => 'Uang Jalan Bongkar',
+                'muatan_str' => $sjb->jenis_barang ?? '-',
+                'pt_str' => $sjb->pengirim ?? $sjb->tujuan_pengiriman ?? '-',
+                'keterangan_lengkap' => 'kegiatan bongkar barang '.($sjb->jenis_barang ?? '').' ke '.($sjb->tujuan_pengambilan ?? '').' '.($sjb->pengirim ?? $sjb->tujuan_pengiriman ?? ''),
+                'tujuan' => $sjb->tujuan_pengambilan ?? '-',
+                'rit' => $sjb->rit,
+                'ongkos_truck' => $ongkosTruk,
+                'uang_jalan' => $totalUangJalanRaw - $appliedAdjNominal,
+                'nomor_bukti' => $mainNomorBukti,
+            ]);
+
+            // Adjustment Rows
+            foreach ($sjbAdjs as $adj) {
+                $nominal = (float) ($adj->grand_total ?: ($adj->total ?: (isset($adj->jumlah) ? $adj->jumlah : 0)));
+
+                $adjDate = $adj->tanggal_invoice ?? ($adj->tanggal ?? $tanggal);
+                $adjNomorAccurate = '';
+                if ($adj->nomor_accurate) {
+                    $adjNomorAccurate = $adj->nomor_accurate;
+                }
+
+                if ($adj instanceof \App\Models\InvoiceAktivitasLain) {
+                    $accNums = collect();
+                    if ($adj->nomor_accurate) {
+                        $accNums->push($adj->nomor_accurate);
+                    }
+
+                    // From many-to-many relationship
+                    $accNums = $accNums->merge($adj->pembayarans->pluck('nomor_accurate'));
+
+                    // From direct payments (invoice_ids link)
+                    if (isset($dpByInvoiceId[$adj->id])) {
+                        foreach ($dpByInvoiceId[$adj->id] as $dp) {
+                            if ($dp->nomor_accurate) {
+                                $accNums->push($dp->nomor_accurate);
+                            }
+                        }
+                    }
+                    $adjNomorAccurate = $accNums->filter()->unique()->implode(', ');
+                }
+
+                // Priority: Specific Payment > Parent Payment > Internal ID
+                if ($adjNomorAccurate) {
+                    $nomorBukti = $adjNomorAccurate;
+                } elseif ($mainNomorBukti !== '-') {
+                    $nomorBukti = $mainNomorBukti;
+                } else {
+                    $nomorBukti = $adj->nomor_invoice ?: ($adj->nomor ?: '-');
+                }
+
+                $data->push([
+                    'tanggal' => $adjDate,
+                    'no_surat_jalan' => $sjb->nomor_surat_jalan,
+                    'no_plat' => $sjb->no_plat,
+                    'nama_lengkap_supir' => $driverData['nama'],
+                    'nik_supir' => $driverData['nik'],
+                    'nama_lengkap_kenek' => $sjb->kenekKaryawan ? $sjb->kenekKaryawan->nama_lengkap : ($sjb->kenek ?: '-'),
+                    'nik_kenek' => $sjb->kenek_nik,
+                    'rit_supir' => 0,
+                    'rit_kenek' => 0,
+                    'supir' => $sjb->supir ?: ($sjb->supir2 ?: '-'),
+                    'keterangan' => $adj->jenis_aktivitas,
+                    'kegiatan_str' => $adj->jenis_aktivitas,
+                    'muatan_str' => $sjb->jenis_barang ?? '-',
+                    'pt_str' => $sjb->pengirim ?? $sjb->tujuan_pengiriman ?? '-',
+                    'tujuan' => '-',
+                    'rit' => '-',
+                    'ongkos_truck' => 0,
+                    'uang_jalan' => $nominal,
+                    'nomor_bukti' => $nomorBukti,
+                ]);
+            }
+        }
+
+        return $data;
     }
 
     private function calculateOngkosTruk($item)
