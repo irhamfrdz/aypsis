@@ -109,6 +109,18 @@ return [
                 'pranota-perbaikan-kontainer-print' => 'Cetak Pranota',
             ],
         ],
+        'pranota-uang-makan' => [
+            'name' => 'Pranota Uang Makan',
+            'description' => 'Menu Pranota Uang Makan',
+            'required' => true,
+            'sub_modules' => [
+                'pranota-uang-makan-view' => 'View Pranota Uang Makan',
+                'pranota-uang-makan-create' => 'Buat Pranota Uang Makan',
+                'pranota-uang-makan-edit' => 'Edit Pranota Uang Makan',
+                'pranota-uang-makan-delete' => 'Hapus Pranota Uang Makan',
+                'pranota-uang-makan-print' => 'Cetak Pranota Uang Makan',
+            ],
+        ],
         'tanda-terima-surat-jalan-kontainer-sewa' => [
             'name' => 'Tanda Terima SJ Kontainer Sewa',
             'description' => 'Menu tanda terima surat jalan kontainer sewa',

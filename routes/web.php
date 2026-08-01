@@ -16,6 +16,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DivisiController;
 use App\Http\Controllers\CutiController;
 use App\Http\Controllers\UangMakanController;
+use App\Http\Controllers\PranotaUangMakanController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmailAccountController;
 use App\Http\Controllers\JenisBarangController;
@@ -6713,6 +6714,8 @@ Route::middleware(['auth',
     Route::get('/payroll', [\App\Http\Controllers\PayrollController::class, 'index'])->name('payroll.index')->middleware('can:payroll-view');
     Route::get('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'uangMakan'])->name('payroll.uang-makan')->middleware('can:payroll-view');
     Route::post('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'storeUangMakan'])->name('payroll.uang-makan.store')->middleware('can:payroll-view');
+    Route::get('pranota-uang-makan/{id}/export-auto-transfer', [\App\Http\Controllers\PranotaUangMakanController::class, 'exportAutoTransfer'])->name('pranota-uang-makan.export-auto-transfer')->middleware('can:payroll-view');
+    Route::resource('pranota-uang-makan', \App\Http\Controllers\PranotaUangMakanController::class)->middleware('can:payroll-view');
     
     // Master Tunjangan
     Route::resource('master/tunjangan', \App\Http\Controllers\MasterTunjanganController::class)

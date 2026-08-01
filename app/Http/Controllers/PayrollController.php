@@ -18,6 +18,7 @@ class PayrollController extends Controller
         $penempatan = $request->penempatan;
         $group = $request->group;
         $subGroup = $request->sub_group;
+        $cabang = $request->cabang;
 
         $payrolls = [];
         $isGenerated = $request->has('generate');
@@ -35,6 +36,9 @@ class PayrollController extends Controller
             }
             if (!empty($subGroup)) {
                 $query->where('grup', 'LIKE', '%:' . $subGroup . '"%');
+            }
+            if (!empty($cabang)) {
+                $query->where('cabang', $cabang);
             }
             
             $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
@@ -86,7 +90,9 @@ class PayrollController extends Controller
         sort($allGroups);
         sort($allSubGroups);
 
-        return view('payroll.uang-makan', compact('startDate', 'endDate', 'penempatan', 'group', 'subGroup', 'allGroups', 'allSubGroups', 'payrolls', 'isGenerated'));
+        $allCabang = \App\Models\Karyawan::where('status', 'active')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang')->sort()->values();
+
+        return view('payroll.uang-makan', compact('startDate', 'endDate', 'penempatan', 'group', 'subGroup', 'cabang', 'allGroups', 'allSubGroups', 'allCabang', 'payrolls', 'isGenerated'));
     }
 
     public function storeUangMakan(Request $request)
@@ -101,6 +107,7 @@ class PayrollController extends Controller
         $penempatan = $request->penempatan;
         $group = $request->group;
         $subGroup = $request->sub_group;
+        $cabang = $request->cabang;
 
         $query = \App\Models\Karyawan::where('status', 'active');
         if (!empty($penempatan)) {
@@ -114,6 +121,9 @@ class PayrollController extends Controller
         }
         if (!empty($subGroup)) {
             $query->where('grup', 'LIKE', '%:' . $subGroup . '"%');
+        }
+        if (!empty($cabang)) {
+            $query->where('cabang', $cabang);
         }
         
         $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {

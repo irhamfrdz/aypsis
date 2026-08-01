@@ -23,11 +23,31 @@
             </div>
         </div>
     @endif
+
+    @if($errors->any())
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-md shadow-sm">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm text-red-800 font-medium">Terdapat kesalahan:</h3>
+                    <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    @endif
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <h3 class="text-lg font-bold text-gray-900 mb-4">Pengaturan & Filter Pencairan</h3>
         
         <form action="{{ route('payroll.uang-makan') }}" method="GET" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Periode Awal (Start Date)</label>
                     <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
@@ -67,9 +87,20 @@
                         @endforeach
                     </select>
                 </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Filter Cabang (Opsional)</label>
+                    <select name="cabang" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
+                        <option value="">Semua Cabang</option>
+                        @if(isset($allCabang))
+                            @foreach($allCabang as $cb)
+                                <option value="{{ $cb }}" {{ request('cabang') == $cb ? 'selected' : '' }}>{{ $cb }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
                 
                 <!-- Action Buttons -->
-                <div class="md:col-span-5 flex items-end gap-2 justify-end mt-2">
+                <div class="md:col-span-6 flex items-end gap-2 justify-end mt-2">
                     @if(request()->has('generate'))
                         <a href="{{ route('payroll.uang-makan') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                             Reset Filter
@@ -95,8 +126,8 @@
             </div>
             
             @if(count($payrolls) > 0)
-            <div class="flex items-center gap-2">
-                <form action="{{ route('payroll.uang-makan.store') }}" method="POST" id="form-payout" class="m-0">
+            <form action="{{ route('payroll.uang-makan.store') }}" method="POST" id="form-payout" class="m-0">
+                <div class="flex items-center gap-2">
                     @csrf
                     <input type="hidden" name="start_date" value="{{ $startDate->format('Y-m-d') }}">
                     <input type="hidden" name="end_date" value="{{ $endDate->format('Y-m-d') }}">
@@ -118,7 +149,7 @@
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
                         Simpan Data Payout
                     </button>
-            </div>
+                </div>
             @endif
         </div>
         
@@ -210,9 +241,10 @@
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
         <!-- Modal panel -->
-        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100">
+        <form action="{{ route('pranota-uang-makan.store') }}" method="POST" class="inline-flex flex-col align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100 max-h-[90vh]">
+            @csrf
             <!-- Header -->
-            <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="bg-blue-50 p-2 rounded-lg">
                         <i class="fas fa-file-invoice text-blue-600 text-lg"></i>
@@ -224,21 +256,21 @@
                 </button>
             </div>
             
-            <div class="bg-white px-6 py-5">
+            <div class="bg-white px-6 py-5 flex-1 overflow-y-auto">
                 <!-- Form Inputs -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Nomor Pranota <span class="text-red-500">*</span></label>
                         <div class="flex rounded-md shadow-sm">
-                            <input type="text" id="nomor_pranota" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Contoh: PRN-2026-07-001">
-                            <button type="button" class="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors">
+                            <input type="text" id="nomor_pranota" name="nomor_pranota" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono text-gray-700 bg-gray-50" readonly value="PUM-{{ date('y') }}-{{ date('m') }}-001">
+                            <button type="button" onclick="generateNewPranotaNumber()" class="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Generate Ulang">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                             </button>
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Pranota <span class="text-red-500">*</span></label>
-                        <input type="date" id="tanggal_pranota" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="{{ date('Y-m-d') }}">
+                        <input type="date" id="tanggal_pranota" name="tanggal_pranota" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="{{ date('Y-m-d') }}">
                     </div>
                 </div>
 
@@ -246,7 +278,7 @@
                 <div class="mb-2">
                     <h4 class="text-sm font-semibold text-gray-800 mb-3">Item Terpilih</h4>
                     <div class="border border-gray-200 rounded-lg overflow-hidden flex flex-col">
-                        <div class="overflow-y-auto max-h-[60vh] custom-scrollbar">
+                        <div class="custom-scrollbar">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50 sticky top-0 z-10">
                                     <tr>
@@ -267,28 +299,30 @@
                     </div>
                 </div>
 
-                <!-- Footer Stats -->
-                <div class="flex justify-between items-end border-b border-gray-200 pb-4 mb-4 mt-4">
-                    <div class="text-sm text-gray-500">
-                        <span id="modal-item-count" class="font-medium text-gray-700">0</span> item terpilih
-                    </div>
-                    <div class="text-right">
-                        <div class="text-xs text-gray-500 mb-1">Total Nominal</div>
-                        <div class="text-2xl font-bold text-blue-600" id="modal-total-nominal">Rp 0</div>
-                    </div>
-                </div>
-
             </div>
             
-            <div class="bg-gray-50 px-6 py-4 sm:flex sm:flex-row-reverse rounded-b-lg">
-                <button type="button" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2 bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto transition-colors">
-                    Simpan Pranota
-                </button>
-                <button type="button" onclick="closePranotaModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto transition-colors">
-                    Batal
-                </button>
+            <div class="bg-gray-50 px-6 py-4 sm:flex sm:items-center sm:justify-between rounded-b-lg shrink-0 border-t border-gray-200">
+                <!-- Footer Stats -->
+                <div class="flex items-center gap-6 mb-4 sm:mb-0">
+                    <div class="text-sm text-gray-500">
+                        <span id="modal-item-count" class="font-medium text-gray-700">0</span> item
+                    </div>
+                    <div class="text-right sm:text-left">
+                        <div class="text-xs text-gray-500">Total Nominal</div>
+                        <div class="text-xl font-bold text-blue-600 leading-tight" id="modal-total-nominal">Rp 0</div>
+                    </div>
+                </div>
+                
+                <div class="sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2 bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto transition-colors">
+                        Simpan Pranota
+                    </button>
+                    <button type="button" onclick="closePranotaModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto transition-colors">
+                        Batal
+                    </button>
+                </div>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 
@@ -365,6 +399,7 @@
         
         rowCheckboxes.forEach(cb => {
             const tr = cb.closest('tr');
+            const karyawanId = cb.value;
             
             const karyawanName = tr.querySelector('td:nth-child(3) .font-medium').innerText.trim();
             const karyawanNik = tr.querySelector('td:nth-child(3) .text-xs').innerText.trim();
@@ -382,14 +417,20 @@
                     <div class="text-[10px] text-gray-500 font-mono">${karyawanNik}</div>
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-gray-600">${penempatan}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-center text-gray-600 font-medium">${kehadiran}</td>
-                <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-gray-700">Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-center text-gray-600 font-medium">
+                    ${kehadiran}
+                    <input type="hidden" name="karyawans[${karyawanId}][kehadiran]" value="${kehadiran}">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-gray-700">
+                    Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}
+                    <input type="hidden" name="karyawans[${karyawanId}][nominal_awal]" value="${basePayoutVal}">
+                </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right">
-                    <input type="number" class="modal-adjustment-input w-24 px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-right" value="0" data-base-payout="${basePayoutVal}">
+                    <input type="number" name="karyawans[${karyawanId}][adjustment]" class="modal-adjustment-input w-24 px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-right" value="0" data-base-payout="${basePayoutVal}">
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap text-right font-bold text-blue-700 modal-row-payout" data-current-payout="${basePayoutVal}">Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}</td>
                 <td class="px-3 py-2 whitespace-nowrap">
-                    <input type="text" class="w-full min-w-[120px] px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Catatan...">
+                    <input type="text" name="karyawans[${karyawanId}][catatan]" class="w-full min-w-[120px] px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Catatan...">
                 </td>
             `;
             modalList.appendChild(trModal);
@@ -429,6 +470,18 @@
 
     function closePranotaModal() {
         document.getElementById('pranota-modal').classList.add('hidden');
+    }
+
+    function generateNewPranotaNumber() {
+        const input = document.getElementById('nomor_pranota');
+        const currentVal = input.value;
+        const parts = currentVal.split('-');
+        if (parts.length === 4) {
+            let runningNumber = parseInt(parts[3], 10);
+            runningNumber++;
+            parts[3] = String(runningNumber).padStart(3, '0');
+            input.value = parts.join('-');
+        }
     }
 </script>
 @endpush

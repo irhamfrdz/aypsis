@@ -630,6 +630,22 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pranota Uang Makan --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Pranota Uang Makan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-makan][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-makan][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-makan][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-makan][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-makan][print]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">

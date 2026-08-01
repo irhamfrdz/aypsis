@@ -2454,6 +2454,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pranota Uang Makan --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pranota Uang Makan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-makan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-uang-makan']['view']) && $userMatrixPermissions['pranota-uang-makan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-makan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-uang-makan']['create']) && $userMatrixPermissions['pranota-uang-makan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-makan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-uang-makan']['update']) && $userMatrixPermissions['pranota-uang-makan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-makan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-uang-makan']['delete']) && $userMatrixPermissions['pranota-uang-makan']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-makan][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-uang-makan']['print']) && $userMatrixPermissions['pranota-uang-makan']['print']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Gerak Kontainer --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">
