@@ -74,7 +74,7 @@
                                         <i class="fas fa-print text-sm"></i>
                                     </a>
                                     <a href="{{ route('pranota-uang-makan.export-auto-transfer', $pranota->id) }}" class="inline-flex items-center justify-center p-2 text-green-500 hover:text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors" title="Export Excel Auto Transfer">
-                                        <i class="fas fa-file-excel text-sm"></i>
+                                         <i class="fas fa-file-excel text-sm"></i>
                                     </a>
                                     <form action="{{ route('pranota-uang-makan.destroy', $pranota->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus Pranota Uang Makan ini? Data detail yang terkait juga akan ikut terhapus.');">
                                         @csrf

@@ -94,9 +94,12 @@ class PranotaUangMakanAutoTransferExport implements FromCollection, WithHeadings
 
         $karyawan = $detail->karyawan;
         
+        $dateStr = $this->pranota->tanggal_pranota ? $this->pranota->tanggal_pranota->format('dmy') : date('dmy');
+        $transactionId = '01' . $dateStr . '-' . str_pad($this->rowNumber, 3, '0', STR_PAD_LEFT);
+        
         return [
             $this->rowNumber++,
-            $this->pranota->nomor_pranota, // Transaction ID
+            $transactionId, // Transaction ID
             'BCA', // Transfer Type - standard value, can be empty if not needed
             '1682889955', // Debited Acc.
             '', // Beneficiary ID
