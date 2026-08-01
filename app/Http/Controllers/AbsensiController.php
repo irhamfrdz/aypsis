@@ -222,19 +222,21 @@ class AbsensiController extends Controller
         $karyawan = Karyawan::where('nik', $nik)->first();
         $karyawan_id = $karyawan ? $karyawan->id : null;
 
-        $times = [
-            'Masuk' => $request->waktu_masuk,
-            'Istirahat_Keluar' => $request->waktu_istirahat_keluar,
-            'Istirahat_Masuk' => $request->waktu_istirahat_masuk,
-            'Pulang' => $request->waktu_pulang,
-            'Lembur_Masuk' => $request->waktu_lembur_masuk,
-            'Lembur_Pulang' => $request->waktu_lembur_pulang,
-        ];
-
-        foreach ($request->tanggal as $tglInput) {
+        foreach ($request->tanggal as $index => $tglInput) {
             $tanggal = Carbon::parse($tglInput)->toDateString();
             
+            $times = [
+                'Masuk' => $request->waktu_masuk[$index] ?? null,
+                'Istirahat_Keluar' => $request->waktu_istirahat_keluar[$index] ?? null,
+                'Istirahat_Masuk' => $request->waktu_istirahat_masuk[$index] ?? null,
+                'Pulang' => $request->waktu_pulang[$index] ?? null,
+                'Lembur_Masuk' => $request->waktu_lembur_masuk[$index] ?? null,
+                'Lembur_Pulang' => $request->waktu_lembur_pulang[$index] ?? null,
+            ];
+            
             foreach ($times as $tipe => $time) {
+                if (empty($time)) continue;
+
                 $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
                 $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
 
@@ -248,21 +250,19 @@ class AbsensiController extends Controller
                     continue;
                 }
 
-                if (!empty($time)) {
-                    $waktu = Carbon::parse($tanggal . ' ' . $time);
-                    if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
-                        $waktu->addDay(); 
-                    }
-
-                    Absensi::create([
-                        'karyawan_id' => $karyawan_id,
-                        'nik' => $nik,
-                        'waktu' => $waktu,
-                        'tipe' => $tipe,
-                        'status' => 'Manual',
-                        'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
-                    ]);
+                $waktu = Carbon::parse($tanggal . ' ' . $time);
+                if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
+                    $waktu->addDay(); 
                 }
+
+                Absensi::create([
+                    'karyawan_id' => $karyawan_id,
+                    'nik' => $nik,
+                    'waktu' => $waktu,
+                    'tipe' => $tipe,
+                    'status' => 'Manual',
+                    'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
+                ]);
             }
         }
 

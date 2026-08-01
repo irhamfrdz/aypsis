@@ -506,44 +506,53 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Tanggal</label>
-                            <div id="date_inputs_container" class="space-y-2">
-                                <div class="flex items-center gap-2 date-input-row">
-                                    <input type="date" name="tanggal[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="tanggal-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                                    <button type="button" class="mt-1 inline-flex items-center justify-center p-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none" onclick="addDateInput()" title="Tambah Tanggal">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <div id="entries_container" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                            <!-- Entry Block -->
+                            <div class="absensi-entry bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
+                                <h4 class="text-sm font-bold text-gray-700 mb-3 border-b pb-2 flex justify-between items-center">
+                                    <span>Entri <span class="entry-number">1</span></span>
+                                    <button type="button" class="text-red-500 hover:text-red-700 hidden remove-entry-btn" onclick="removeEntry(this)">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
+                                </h4>
+                                
+                                <div class="mb-3">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal</label>
+                                    <input type="date" name="tanggal[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="tanggal-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" required onchange="fetchDataForEntry(this)">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Jam Masuk</label>
+                                        <input type="time" name="waktu_masuk[]" class="waktu-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Jam Pulang</label>
+                                        <input type="time" name="waktu_pulang[]" class="waktu-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Istirahat Keluar</label>
+                                        <input type="time" name="waktu_istirahat_keluar[]" class="waktu-istirahat-keluar-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Istirahat Masuk</label>
+                                        <input type="time" name="waktu_istirahat_masuk[]" class="waktu-istirahat-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Lembur Masuk</label>
+                                        <input type="time" name="waktu_lembur_masuk[]" class="waktu-lembur-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-700 mb-1">Lembur Pulang</label>
+                                        <input type="time" name="waktu_lembur_pulang[]" class="waktu-lembur-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                                    </div>
                                 </div>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Anda bisa menambah lebih dari 1 tanggal secara acak dengan tombol +.</p>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Jam Masuk</label>
-                                <input type="time" name="waktu_masuk" id="create_waktu_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Jam Pulang</label>
-                                <input type="time" name="waktu_pulang" id="create_waktu_pulang" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Istirahat Keluar</label>
-                                <input type="time" name="waktu_istirahat_keluar" id="create_waktu_istirahat_keluar" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Istirahat Masuk</label>
-                                <input type="time" name="waktu_istirahat_masuk" id="create_waktu_istirahat_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Lembur Masuk</label>
-                                <input type="time" name="waktu_lembur_masuk" id="create_waktu_lembur_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Lembur Pulang</label>
-                                <input type="time" name="waktu_lembur_pulang" id="create_waktu_lembur_pulang" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                            </div>
-                        </div>
+                        
+                        <button type="button" onclick="addAbsensiEntry()" class="w-full mt-2 inline-flex justify-center items-center px-4 py-2 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-lg hover:bg-indigo-100 border border-indigo-200 border-dashed transition-colors">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Tambah Entri Hari Lain
+                        </button>
                     </div>
                 </div>
                 <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -618,112 +627,171 @@
 
 @push('scripts')
 <script>
-    function toggleInputsState(disabled) {
-        const inputs = [
-            'create_waktu_masuk', 'create_waktu_pulang',
-            'create_waktu_istirahat_keluar', 'create_waktu_istirahat_masuk',
-            'create_waktu_lembur_masuk', 'create_waktu_lembur_pulang'
-        ];
-        inputs.forEach(id => {
-            document.getElementById(id).disabled = disabled;
+    function toggleEntryInputsState(entry, disabled) {
+        const inputs = entry.querySelectorAll('input[type="time"]');
+        inputs.forEach(input => {
+            input.disabled = disabled;
         });
     }
 
-    function addDateInput() {
-        const container = document.getElementById('date_inputs_container');
-        const row = document.createElement('div');
-        row.className = 'flex items-center gap-2 date-input-row mt-2';
-        row.innerHTML = `
-            <input type="date" name="tanggal[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="tanggal-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-            <button type="button" class="mt-1 inline-flex items-center justify-center p-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none" onclick="this.parentElement.remove()" title="Hapus Tanggal">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
-            </button>
-        `;
-        container.appendChild(row);
+    function addAbsensiEntry() {
+        const container = document.getElementById('entries_container');
+        const entryCount = container.querySelectorAll('.absensi-entry').length + 1;
         
-        const newInput = row.querySelector('.tanggal-input');
-        newInput.addEventListener('change', fetchAbsensiData);
+        const template = `
+            <div class="absensi-entry bg-gray-50 p-4 rounded-lg border border-gray-200 relative mt-4">
+                <h4 class="text-sm font-bold text-gray-700 mb-3 border-b pb-2 flex justify-between items-center">
+                    <span>Entri <span class="entry-number">${entryCount}</span></span>
+                    <button type="button" class="text-red-500 hover:text-red-700 remove-entry-btn" onclick="removeEntry(this)">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </h4>
+                
+                <div class="mb-3">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal</label>
+                    <input type="date" name="tanggal[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="tanggal-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs" required onchange="fetchDataForEntry(this)">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Jam Masuk</label>
+                        <input type="time" name="waktu_masuk[]" class="waktu-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Jam Pulang</label>
+                        <input type="time" name="waktu_pulang[]" class="waktu-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Istirahat Keluar</label>
+                        <input type="time" name="waktu_istirahat_keluar[]" class="waktu-istirahat-keluar-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Istirahat Masuk</label>
+                        <input type="time" name="waktu_istirahat_masuk[]" class="waktu-istirahat-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Lembur Masuk</label>
+                        <input type="time" name="waktu_lembur_masuk[]" class="waktu-lembur-masuk-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Lembur Pulang</label>
+                        <input type="time" name="waktu_lembur_pulang[]" class="waktu-lembur-pulang-input block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-xs">
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', template);
+        updateEntryNumbers();
+        
+        const lastEntry = container.lastElementChild;
+        const dateInput = lastEntry.querySelector('.tanggal-input');
+        fetchDataForEntry(dateInput);
     }
 
-    function fetchAbsensiData() {
-        const nik = document.getElementById('create_nik').value;
-        const dateInputs = document.querySelectorAll('.tanggal-input');
+    function removeEntry(btn) {
+        btn.closest('.absensi-entry').remove();
+        updateEntryNumbers();
+    }
 
-        // Hanya isi otomatis dan kunci jika user hanya mengisi 1 tanggal
-        if (nik && dateInputs.length === 1 && dateInputs[0].value) {
-            const tanggalMulai = dateInputs[0].value;
-            toggleInputsState(true);
-            fetch(`{{ route('absensi.get_data') }}?nik=${nik}&tanggal=${tanggalMulai}`)
+    function updateEntryNumbers() {
+        const entries = document.querySelectorAll('.absensi-entry');
+        entries.forEach((entry, index) => {
+            entry.querySelector('.entry-number').textContent = index + 1;
+            const removeBtn = entry.querySelector('.remove-entry-btn');
+            if (entries.length > 1) {
+                removeBtn.classList.remove('hidden');
+            } else {
+                removeBtn.classList.add('hidden');
+            }
+        });
+    }
+
+    function fetchDataForEntry(dateInput) {
+        const nik = document.getElementById('create_nik').value;
+        const tanggal = dateInput.value;
+        const entry = dateInput.closest('.absensi-entry');
+
+        if (nik && tanggal) {
+            toggleEntryInputsState(entry, true);
+            fetch(`{{ route('absensi.get_data') }}?nik=${nik}&tanggal=${tanggal}`)
                 .then(response => {
                     if (!response.ok) throw new Error('Network response was not ok');
                     return response.json();
                 })
                 .then(data => {
-                    const setAndLock = (id, val) => {
-                        const el = document.getElementById(id);
-                        el.value = val || '';
-                        if (val) {
-                            el.readOnly = true;
-                            el.classList.add('bg-gray-200', 'cursor-not-allowed');
-                        } else {
-                            el.readOnly = false;
-                            el.classList.remove('bg-gray-200', 'cursor-not-allowed');
+                    const setAndLock = (className, val) => {
+                        const el = entry.querySelector('.' + className);
+                        if(el) {
+                            el.value = val || '';
+                            if (val) {
+                                el.readOnly = true;
+                                el.classList.add('bg-gray-200', 'cursor-not-allowed');
+                            } else {
+                                el.readOnly = false;
+                                el.classList.remove('bg-gray-200', 'cursor-not-allowed');
+                            }
                         }
                     };
                     
-                    setAndLock('create_waktu_masuk', data.waktu_masuk);
-                    setAndLock('create_waktu_pulang', data.waktu_pulang);
-                    setAndLock('create_waktu_istirahat_keluar', data.waktu_istirahat_keluar);
-                    setAndLock('create_waktu_istirahat_masuk', data.waktu_istirahat_masuk);
-                    setAndLock('create_waktu_lembur_masuk', data.waktu_lembur_masuk);
-                    setAndLock('create_waktu_lembur_pulang', data.waktu_lembur_pulang);
+                    setAndLock('waktu-masuk-input', data.waktu_masuk);
+                    setAndLock('waktu-pulang-input', data.waktu_pulang);
+                    setAndLock('waktu-istirahat-keluar-input', data.waktu_istirahat_keluar);
+                    setAndLock('waktu-istirahat-masuk-input', data.waktu_istirahat_masuk);
+                    setAndLock('waktu-lembur-masuk-input', data.waktu_lembur_masuk);
+                    setAndLock('waktu-lembur-pulang-input', data.waktu_lembur_pulang);
                     
-                    toggleInputsState(false);
+                    toggleEntryInputsState(entry, false);
                 })
                 .catch(error => {
                     console.error('Error fetching data:', error);
-                    clearAbsensiInputs();
-                    toggleInputsState(false);
+                    clearEntryInputs(entry);
+                    toggleEntryInputsState(entry, false);
                 });
         } else {
-            clearAbsensiInputs();
+            clearEntryInputs(entry);
         }
     }
 
-    function clearAbsensiInputs() {
-        const clearAndUnlock = (id) => {
-            const el = document.getElementById(id);
-            el.value = '';
-            el.readOnly = false;
-            el.classList.remove('bg-gray-200', 'cursor-not-allowed');
+    function fetchAllEntriesData() {
+        const entries = document.querySelectorAll('.absensi-entry');
+        entries.forEach(entry => {
+            const dateInput = entry.querySelector('.tanggal-input');
+            fetchDataForEntry(dateInput);
+        });
+    }
+
+    function clearEntryInputs(entry) {
+        const clearAndUnlock = (className) => {
+            const el = entry.querySelector('.' + className);
+            if(el) {
+                el.value = '';
+                el.readOnly = false;
+                el.classList.remove('bg-gray-200', 'cursor-not-allowed');
+            }
         };
-        clearAndUnlock('create_waktu_masuk');
-        clearAndUnlock('create_waktu_pulang');
-        clearAndUnlock('create_waktu_istirahat_keluar');
-        clearAndUnlock('create_waktu_istirahat_masuk');
-        clearAndUnlock('create_waktu_lembur_masuk');
-        clearAndUnlock('create_waktu_lembur_pulang');
+        clearAndUnlock('waktu-masuk-input');
+        clearAndUnlock('waktu-pulang-input');
+        clearAndUnlock('waktu-istirahat-keluar-input');
+        clearAndUnlock('waktu-istirahat-masuk-input');
+        clearAndUnlock('waktu-lembur-masuk-input');
+        clearAndUnlock('waktu-lembur-pulang-input');
     }
 
     function resetCreateForm() {
         document.getElementById('createModal').classList.add('hidden');
         $('#create_nik').val('').trigger('change.select2');
         
-        const container = document.getElementById('date_inputs_container');
-        container.innerHTML = `
-            <div class="flex items-center gap-2 date-input-row">
-                <input type="date" name="tanggal[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="tanggal-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                <button type="button" class="mt-1 inline-flex items-center justify-center p-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none" onclick="addDateInput()" title="Tambah Tanggal">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                </button>
-            </div>
-        `;
-        document.querySelector('.tanggal-input').addEventListener('change', fetchAbsensiData);
-
-        clearAbsensiInputs();
+        const container = document.getElementById('entries_container');
+        const entries = container.querySelectorAll('.absensi-entry');
+        for(let i = 1; i < entries.length; i++) {
+            entries[i].remove();
+        }
+        
+        const firstEntry = container.querySelector('.absensi-entry');
+        firstEntry.querySelector('.tanggal-input').value = '{{ \Carbon\Carbon::now()->toDateString() }}';
+        clearEntryInputs(firstEntry);
+        updateEntryNumbers();
     }
-
-    document.querySelector('.tanggal-input').addEventListener('change', fetchAbsensiData);
     
     $(document).ready(function() {
         // Initialize Select2 for modal
@@ -734,7 +802,7 @@
         });
 
         $('#create_nik').on('change', function() {
-            fetchAbsensiData();
+            fetchAllEntriesData();
         });
     });
 
