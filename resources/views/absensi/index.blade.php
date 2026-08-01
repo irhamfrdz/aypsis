@@ -506,9 +506,15 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Tanggal</label>
-                            <input type="date" name="tanggal" id="create_tanggal" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Dari Tanggal</label>
+                                <input type="date" name="tanggal_mulai" id="create_tanggal_mulai" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Sampai Tanggal</label>
+                                <input type="date" name="tanggal_selesai" id="create_tanggal_selesai" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                            </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -623,11 +629,13 @@
 
     function fetchAbsensiData() {
         const nik = document.getElementById('create_nik').value;
-        const tanggal = document.getElementById('create_tanggal').value;
+        const tanggalMulai = document.getElementById('create_tanggal_mulai').value;
+        const tanggalSelesai = document.getElementById('create_tanggal_selesai').value;
 
-        if (nik && tanggal) {
+        // Hanya isi otomatis dan kunci jika rentang tanggal adalah 1 hari
+        if (nik && tanggalMulai && tanggalMulai === tanggalSelesai) {
             toggleInputsState(true);
-            fetch(`{{ route('absensi.get_data') }}?nik=${nik}&tanggal=${tanggal}`)
+            fetch(`{{ route('absensi.get_data') }}?nik=${nik}&tanggal=${tanggalMulai}`)
                 .then(response => {
                     if (!response.ok) throw new Error('Network response was not ok');
                     return response.json();
@@ -682,11 +690,13 @@
     function resetCreateForm() {
         document.getElementById('createModal').classList.add('hidden');
         $('#create_nik').val('').trigger('change.select2');
-        document.getElementById('create_tanggal').value = '{{ \Carbon\Carbon::now()->toDateString() }}';
+        document.getElementById('create_tanggal_mulai').value = '{{ \Carbon\Carbon::now()->toDateString() }}';
+        document.getElementById('create_tanggal_selesai').value = '{{ \Carbon\Carbon::now()->toDateString() }}';
         clearAbsensiInputs();
     }
 
-    document.getElementById('create_tanggal').addEventListener('change', fetchAbsensiData);
+    document.getElementById('create_tanggal_mulai').addEventListener('change', fetchAbsensiData);
+    document.getElementById('create_tanggal_selesai').addEventListener('change', fetchAbsensiData);
     
     $(document).ready(function() {
         // Initialize Select2 for modal

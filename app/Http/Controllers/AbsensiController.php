@@ -213,11 +213,13 @@ class AbsensiController extends Controller
     {
         $request->validate([
             'nik' => 'required',
-            'tanggal' => 'required|date',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
         ]);
 
         $nik = $request->nik;
-        $tanggal = Carbon::parse($request->tanggal)->toDateString();
+        $tanggalMulai = Carbon::parse($request->tanggal_mulai)->startOfDay();
+        $tanggalSelesai = Carbon::parse($request->tanggal_selesai)->startOfDay();
         
         $karyawan = Karyawan::where('nik', $nik)->first();
         $karyawan_id = $karyawan ? $karyawan->id : null;
@@ -231,35 +233,41 @@ class AbsensiController extends Controller
             'Lembur_Pulang' => $request->waktu_lembur_pulang,
         ];
 
-        foreach ($times as $tipe => $time) {
-            $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
-            $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
+        $currentDate = $tanggalMulai->copy();
+        while ($currentDate->lte($tanggalSelesai)) {
+            $tanggal = $currentDate->toDateString();
+            
+            foreach ($times as $tipe => $time) {
+                $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
+                $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
 
-            $existingLog = Absensi::where('nik', $nik)
-                ->where('tipe', $tipe)
-                ->whereBetween('waktu', [$startDateObj, $endDateObj])
-                ->first();
+                $existingLog = Absensi::where('nik', $nik)
+                    ->where('tipe', $tipe)
+                    ->whereBetween('waktu', [$startDateObj, $endDateObj])
+                    ->first();
 
-            // Jika sudah ada data, jangan diubah atau dihapus (dikunci)
-            if ($existingLog) {
-                continue;
-            }
-
-            if (!empty($time)) {
-                $waktu = Carbon::parse($tanggal . ' ' . $time);
-                if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
-                    $waktu->addDay(); 
+                // Jika sudah ada data, jangan diubah atau dihapus (dikunci)
+                if ($existingLog) {
+                    continue;
                 }
 
-                Absensi::create([
-                    'karyawan_id' => $karyawan_id,
-                    'nik' => $nik,
-                    'waktu' => $waktu,
-                    'tipe' => $tipe,
-                    'status' => 'Manual',
-                    'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
-                ]);
+                if (!empty($time)) {
+                    $waktu = Carbon::parse($tanggal . ' ' . $time);
+                    if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
+                        $waktu->addDay(); 
+                    }
+
+                    Absensi::create([
+                        'karyawan_id' => $karyawan_id,
+                        'nik' => $nik,
+                        'waktu' => $waktu,
+                        'tipe' => $tipe,
+                        'status' => 'Manual',
+                        'keterangan' => $request->keterangan ?? 'Ditambahkan secara manual',
+                    ]);
+                }
             }
+            $currentDate->addDay();
         }
 
         return back()->with('success', 'Data absensi manual berhasil disimpan.');
