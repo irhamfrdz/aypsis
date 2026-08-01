@@ -47,7 +47,7 @@
         <h3 class="text-lg font-bold text-gray-900 mb-4">Pengaturan & Filter Pencairan</h3>
         
         <form action="{{ route('payroll.uang-makan') }}" method="GET" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Periode Awal (Start Date)</label>
                     <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
@@ -55,19 +55,6 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Periode Akhir (End Date)</label>
                     <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Filter Penempatan (Opsional)</label>
-                    <select name="penempatan" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                        <option value="">Semua Penempatan</option>
-                        <option value="JAKARTA PELABHUHAN" {{ request('penempatan') == 'JAKARTA PELABHUHAN' ? 'selected' : '' }}>JAKARTA PELABHUHAN</option>
-                        <option value="JAKARTA PELABUHAN 1" {{ request('penempatan') == "JAKARTA PELABUHAN 1" ? 'selected' : '' }}>JAKARTA PELABUHAN 1</option>
-                        <option value="JAKARTA KRANI" {{ request('penempatan') == 'JAKARTA KRANI' ? 'selected' : '' }}>JAKARTA KRANI</option>
-                        <option value="KANTOR JAKARTA" {{ request('penempatan') == 'KANTOR JAKARTA' ? 'selected' : '' }}>KANTOR JAKARTA</option>
-                        <option value="GARASAI JAKARTA" {{ request('penempatan') == 'GARASAI JAKARTA' ? 'selected' : '' }}>GARASAI JAKARTA</option>
-                        <option value="KANTOR BATAM" {{ request('penempatan') == 'KANTOR BATAM' ? 'selected' : '' }}>KANTOR BATAM</option>
-                        <option value="GARASI BATAM" {{ request('penempatan') == 'GARASI BATAM' ? 'selected' : '' }}>GARASI BATAM</option>
-                    </select>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Filter Group (Opsional)</label>
@@ -100,7 +87,7 @@
                 </div>
                 
                 <!-- Action Buttons -->
-                <div class="md:col-span-6 flex items-end gap-2 justify-end mt-2">
+                <div class="md:col-span-5 flex items-end gap-2 justify-end mt-2">
                     @if(request()->has('generate'))
                         <a href="{{ route('payroll.uang-makan') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                             Reset Filter
