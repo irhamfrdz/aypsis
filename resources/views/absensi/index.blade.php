@@ -506,15 +506,17 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Dari Tanggal</label>
-                                <input type="date" name="tanggal_mulai" id="create_tanggal_mulai" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Tanggal</label>
+                            <div id="date_inputs_container" class="space-y-2">
+                                <div class="flex items-center gap-2 date-input-row">
+                                    <input type="date" name="tanggal[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="tanggal-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                                    <button type="button" class="mt-1 inline-flex items-center justify-center p-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none" onclick="addDateInput()" title="Tambah Tanggal">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    </button>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Sampai Tanggal</label>
-                                <input type="date" name="tanggal_selesai" id="create_tanggal_selesai" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
-                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Anda bisa menambah lebih dari 1 tanggal secara acak dengan tombol +.</p>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -627,13 +629,29 @@
         });
     }
 
+    function addDateInput() {
+        const container = document.getElementById('date_inputs_container');
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2 date-input-row mt-2';
+        row.innerHTML = `
+            <input type="date" name="tanggal[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="tanggal-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+            <button type="button" class="mt-1 inline-flex items-center justify-center p-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none" onclick="this.parentElement.remove()" title="Hapus Tanggal">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+            </button>
+        `;
+        container.appendChild(row);
+        
+        const newInput = row.querySelector('.tanggal-input');
+        newInput.addEventListener('change', fetchAbsensiData);
+    }
+
     function fetchAbsensiData() {
         const nik = document.getElementById('create_nik').value;
-        const tanggalMulai = document.getElementById('create_tanggal_mulai').value;
-        const tanggalSelesai = document.getElementById('create_tanggal_selesai').value;
+        const dateInputs = document.querySelectorAll('.tanggal-input');
 
-        // Hanya isi otomatis dan kunci jika rentang tanggal adalah 1 hari
-        if (nik && tanggalMulai && tanggalMulai === tanggalSelesai) {
+        // Hanya isi otomatis dan kunci jika user hanya mengisi 1 tanggal
+        if (nik && dateInputs.length === 1 && dateInputs[0].value) {
+            const tanggalMulai = dateInputs[0].value;
             toggleInputsState(true);
             fetch(`{{ route('absensi.get_data') }}?nik=${nik}&tanggal=${tanggalMulai}`)
                 .then(response => {
@@ -690,13 +708,22 @@
     function resetCreateForm() {
         document.getElementById('createModal').classList.add('hidden');
         $('#create_nik').val('').trigger('change.select2');
-        document.getElementById('create_tanggal_mulai').value = '{{ \Carbon\Carbon::now()->toDateString() }}';
-        document.getElementById('create_tanggal_selesai').value = '{{ \Carbon\Carbon::now()->toDateString() }}';
+        
+        const container = document.getElementById('date_inputs_container');
+        container.innerHTML = `
+            <div class="flex items-center gap-2 date-input-row">
+                <input type="date" name="tanggal[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" class="tanggal-input mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                <button type="button" class="mt-1 inline-flex items-center justify-center p-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 focus:outline-none" onclick="addDateInput()" title="Tambah Tanggal">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                </button>
+            </div>
+        `;
+        document.querySelector('.tanggal-input').addEventListener('change', fetchAbsensiData);
+
         clearAbsensiInputs();
     }
 
-    document.getElementById('create_tanggal_mulai').addEventListener('change', fetchAbsensiData);
-    document.getElementById('create_tanggal_selesai').addEventListener('change', fetchAbsensiData);
+    document.querySelector('.tanggal-input').addEventListener('change', fetchAbsensiData);
     
     $(document).ready(function() {
         // Initialize Select2 for modal

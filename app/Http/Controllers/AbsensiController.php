@@ -213,13 +213,11 @@ class AbsensiController extends Controller
     {
         $request->validate([
             'nik' => 'required',
-            'tanggal_mulai' => 'required|date',
-            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'tanggal' => 'required|array',
+            'tanggal.*' => 'required|date',
         ]);
 
         $nik = $request->nik;
-        $tanggalMulai = Carbon::parse($request->tanggal_mulai)->startOfDay();
-        $tanggalSelesai = Carbon::parse($request->tanggal_selesai)->startOfDay();
         
         $karyawan = Karyawan::where('nik', $nik)->first();
         $karyawan_id = $karyawan ? $karyawan->id : null;
@@ -233,9 +231,8 @@ class AbsensiController extends Controller
             'Lembur_Pulang' => $request->waktu_lembur_pulang,
         ];
 
-        $currentDate = $tanggalMulai->copy();
-        while ($currentDate->lte($tanggalSelesai)) {
-            $tanggal = $currentDate->toDateString();
+        foreach ($request->tanggal as $tglInput) {
+            $tanggal = Carbon::parse($tglInput)->toDateString();
             
             foreach ($times as $tipe => $time) {
                 $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
@@ -267,7 +264,6 @@ class AbsensiController extends Controller
                     ]);
                 }
             }
-            $currentDate->addDay();
         }
 
         return back()->with('success', 'Data absensi manual berhasil disimpan.');
