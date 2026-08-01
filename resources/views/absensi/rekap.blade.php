@@ -364,7 +364,7 @@
                     <div>
                         <label for="karyawan_id_izin" class="block text-sm font-medium text-gray-700 mb-1">Karyawan <span class="text-red-500">*</span></label>
                         <select name="karyawan_id" id="karyawan_id_izin" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm bg-white">
+                                class="select2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm bg-white">
                             <option value="">Pilih Karyawan</option>
                             @foreach($allKaryawans as $kar)
                                 <option value="{{ $kar->id }}">{{ $kar->nama_lengkap }} ({{ $kar->nik }})</option>
@@ -487,6 +487,16 @@
             if (Array.from(subGrupBpjsSelect.options).some(opt => opt.value === oldSubGrupBpjs)) {
                 subGrupBpjsSelect.value = oldSubGrupBpjs;
             }
+        }
+
+        // Initialize Select2 for the Izin Modal
+        if ($('#karyawan_id_izin').length) {
+            $('#karyawan_id_izin').select2({
+                placeholder: "Cari berdasarkan nama atau NIK...",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#izinModal')
+            });
         }
     });
     
