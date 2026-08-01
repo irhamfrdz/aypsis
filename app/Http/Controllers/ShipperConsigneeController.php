@@ -57,4 +57,23 @@ class ShipperConsigneeController extends Controller
         return redirect()->route('master.shipper-consignee.index')
             ->with('success', 'Data Shipper / Consignee berhasil dihapus.');
     }
+
+    public function template()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ShipperConsigneeTemplateExport, 'Template_Import_Shipper_Consignee.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048'
+        ]);
+
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\ShipperConsigneeImport, $request->file('file'));
+            return redirect()->back()->with('success', 'Data Shipper / Consignee berhasil diimport.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal import data: ' . $e->getMessage());
+        }
+    }
 }
