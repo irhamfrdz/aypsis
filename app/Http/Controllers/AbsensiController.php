@@ -528,6 +528,8 @@ class AbsensiController extends Controller
         }
 
         $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
+        $allKaryawans = Karyawan::whereNull('tanggal_berhenti')->where('status', 'active')->orderBy('nama_lengkap')->get();
+        
         $pekerjaans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
         $divisis = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('divisi')->where('divisi', '!=', '')->distinct()->pluck('divisi');
         $cabangs = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang');
@@ -756,7 +758,40 @@ class AbsensiController extends Controller
             ];
         }
 
-        return view('absensi.rekap', compact('karyawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'grupsList', 'grupMap', 'grupsBpjsList', 'grupBpjsMap'));
+        return view('absensi.rekap', compact('karyawans', 'allKaryawans', 'rekapData', 'pekerjaans', 'divisis', 'cabangs', 'penempatans', 'startDateStr', 'endDateStr', 'normalWorkdays', 'grupsList', 'grupMap', 'grupsBpjsList', 'grupBpjsMap'));
+    }
+
+    /**
+     * Store manual izin from rekap page.
+     */
+    public function storeIzin(Request $request)
+    {
+        $request->validate([
+            'karyawan_id' => 'required|exists:karyawans,id',
+            'jenis_izin' => 'required|string',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'alasan' => 'required|string',
+        ]);
+
+        $karyawan = Karyawan::findOrFail($request->karyawan_id);
+
+        \Illuminate\Support\Facades\DB::table('permohonan_izins')->insert([
+            'karyawan_id' => $karyawan->id,
+            'nik' => $karyawan->nik,
+            'nama' => $karyawan->nama_lengkap,
+            'divisi' => $karyawan->divisi ?? '-',
+            'jenis_izin' => $request->jenis_izin,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_selesai' => $request->tanggal_selesai,
+            'waktu' => null,
+            'alasan' => $request->alasan,
+            'status' => 'APPROVED',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'Izin karyawan berhasil ditambahkan.');
     }
 
     /**

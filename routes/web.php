@@ -1637,6 +1637,10 @@ Route::middleware([
         Route::get('absensi/rekap/export', [AbsensiController::class, 'exportRekap'])
             ->name('absensi.rekap.export')
             ->middleware('can:absensi-rekap');
+
+        Route::post('absensi/izin', [AbsensiController::class, 'storeIzin'])
+            ->name('absensi.izin.store')
+            ->middleware('can:absensi-rekap');
     });
 
     // Additional Master Data Routes with required middleware

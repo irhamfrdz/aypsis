@@ -14,12 +14,18 @@
                     <h1 class="text-3xl font-bold text-gray-900">Rekap Absensi Bulanan</h1>
                     <p class="mt-1 text-sm text-gray-600">Ringkasan kehadiran karyawan berdasarkan scan fingerprint per bulan</p>
                 </div>
-                <div>
+                <div class="flex items-center space-x-3">
+                    <button type="button" onclick="openIzinModal()" class="inline-flex items-center justify-center px-4 py-2 border border-transparent bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Tambah Izin Karyawan
+                    </button>
                     <a href="{{ route('absensi.index') }}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 bg-white text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        Lihat Log Scan Absensi
+                        Lihat Log Scan
                     </a>
                 </div>
             </div>
@@ -331,6 +337,89 @@
     </div>
 </div>
 
+<!-- Modal Tambah Izin -->
+<div id="izinModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeIzinModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Tambah Izin Karyawan</h3>
+                        <p class="text-sm text-gray-500">Buat data izin atau cuti karyawan (Otomatis Approved)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form action="{{ route('absensi.izin.store') }}" method="POST" id="izinForm">
+                @csrf
+                <div class="px-4 py-5 sm:p-6 space-y-4">
+                    <!-- Karyawan -->
+                    <div>
+                        <label for="karyawan_id_izin" class="block text-sm font-medium text-gray-700 mb-1">Karyawan <span class="text-red-500">*</span></label>
+                        <select name="karyawan_id" id="karyawan_id_izin" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm bg-white">
+                            <option value="">Pilih Karyawan</option>
+                            @foreach($allKaryawans as $kar)
+                                <option value="{{ $kar->id }}">{{ $kar->nama_lengkap }} ({{ $kar->nik }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Jenis Izin -->
+                    <div>
+                        <label for="jenis_izin" class="block text-sm font-medium text-gray-700 mb-1">Jenis Izin <span class="text-red-500">*</span></label>
+                        <select name="jenis_izin" id="jenis_izin" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-sm bg-white">
+                            <option value="">Pilih Jenis</option>
+                            <option value="Sakit">Sakit</option>
+                            <option value="Cuti">Cuti</option>
+                            <option value="Izin">Izin (Full 1 Hari)</option>
+                            <option value="Datang_Terlambat">Datang Terlambat</option>
+                            <option value="Pulang_Cepat">Pulang Cepat</option>
+                        </select>
+                    </div>
+
+                    <!-- Tanggal -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="tanggal_mulai_izin" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai <span class="text-red-500">*</span></label>
+                            <input type="date" name="tanggal_mulai" id="tanggal_mulai_izin" required value="{{ date('Y-m-d') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label for="tanggal_selesai_izin" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai <span class="text-red-500">*</span></label>
+                            <input type="date" name="tanggal_selesai" id="tanggal_selesai_izin" required value="{{ date('Y-m-d') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Keterangan -->
+                    <div>
+                        <label for="alasan_izin" class="block text-sm font-medium text-gray-700 mb-1">Keterangan / Alasan <span class="text-red-500">*</span></label>
+                        <textarea name="alasan" id="alasan_izin" rows="2" required
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="Tulis alasan izin..."></textarea>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Simpan Izin
+                    </button>
+                    <button type="button" onclick="closeIzinModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
     const grupMap = @json($grupMap ?? []);
@@ -400,6 +489,14 @@
             }
         }
     });
+    
+    function openIzinModal() {
+        document.getElementById('izinModal').classList.remove('hidden');
+    }
+    
+    function closeIzinModal() {
+        document.getElementById('izinModal').classList.add('hidden');
+    }
 </script>
 @endpush
 @endsection
