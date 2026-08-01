@@ -432,6 +432,9 @@ class AbsensiController extends Controller
     public function rekap(Request $request)
     {
         if ($request->has('export')) {
+            if ($request->export === 'pdf') {
+                return $this->exportRekapPdf($request);
+            }
             return $this->exportRekap($request);
         }
 
@@ -835,5 +838,110 @@ class AbsensiController extends Controller
         return response($content)
             ->header('Content-Type', 'text/plain')
             ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    }
+
+    public function exportRekapPdf(Request $request)
+    {
+        $startDateStr = $request->input('start_date', Carbon::now()->startOfMonth()->toDateString());
+        $endDateStr = $request->input('end_date', Carbon::now()->endOfMonth()->toDateString());
+        
+        $startDate = Carbon::parse($startDateStr)->startOfDay();
+        $endDate = Carbon::parse($endDateStr)->endOfDay();
+        
+        $karyawansQuery = Karyawan::whereNull('tanggal_berhenti')->orderBy('nik', 'asc');
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $karyawansQuery->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('nama_panggilan', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%");
+            });
+        }
+        if ($request->filled('penempatan')) {
+            $karyawansQuery->where('penempatan', $request->penempatan);
+        }
+        if ($request->filled('divisi')) {
+            $karyawansQuery->where('divisi', $request->divisi);
+        }
+        if ($request->filled('grup')) {
+            $grupReq = $request->grup;
+            if ($request->filled('sub_grup')) {
+                $subGrupReq = $request->sub_grup;
+                $searchStr = $grupReq . ':' . $subGrupReq;
+                $karyawansQuery->where('grup', 'LIKE', '%"' . $searchStr . '"%');
+            } else {
+                $karyawansQuery->where(function ($q) use ($grupReq) {
+                    $q->where('grup', 'LIKE', '%"' . $grupReq . ':%')
+                      ->orWhere('grup', 'LIKE', '%"' . $grupReq . '"%');
+                });
+            }
+        }
+
+        $karyawans = $karyawansQuery->get();
+
+        $attendance = Absensi::whereBetween('waktu', [
+                $startDate->copy()->setTime(6, 0, 0),
+                $endDate->copy()->addDays(1)->setTime(5, 59, 59)
+            ])
+            ->orderBy('waktu', 'asc')
+            ->get()
+            ->groupBy('karyawan_id');
+            
+        $periodDates = [];
+        $tempDate = $startDate->copy();
+        while ($tempDate->lte($endDate)) {
+            $periodDates[] = $tempDate->copy();
+            $tempDate->addDay();
+        }
+
+        $pdfData = [];
+        $hariIndo = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+        foreach ($karyawans as $karyawan) {
+            $logs = $attendance->get($karyawan->id, collect());
+            $dayLogs = [];
+            
+            foreach ($periodDates as $date) {
+                $dateStart = $date->copy()->setTime(6, 0, 0);
+                $dateEnd = $date->copy()->addDays(1)->setTime(5, 59, 59);
+                
+                $todayLogs = $logs->filter(function($log) use ($dateStart, $dateEnd) {
+                    return Carbon::parse($log->waktu)->between($dateStart, $dateEnd);
+                });
+                
+                $masuk = null;
+                $pulang = null;
+                
+                if ($todayLogs->count() > 0) {
+                    $masuk = Carbon::parse($todayLogs->first()->waktu)->format('H.i');
+                    if ($todayLogs->count() > 1) {
+                        $pulang = Carbon::parse($todayLogs->last()->waktu)->format('H.i');
+                    }
+                }
+                
+                $dayStr = $date->format('m/d') . ' ' . $hariIndo[$date->dayOfWeek];
+                $scanStr = $masuk ? ($pulang ? "$masuk-$pulang" : "$masuk-") : '-';
+                
+                $dayLogs[] = [
+                    'date_label' => $dayStr,
+                    'scan' => $scanStr
+                ];
+            }
+            
+            $pdfData[] = [
+                'karyawan' => $karyawan,
+                'logs' => $dayLogs
+            ];
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('absensi.rekap-pdf', [
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'pdfData' => $pdfData,
+            'cabangTitle' => $request->penempatan ?: 'Kantor',
+        ])->setPaper('A4', 'portrait');
+
+        return $pdf->download('Data_Scan_Karyawan.pdf');
     }
 }
