@@ -672,13 +672,16 @@ class AbsensiController extends Controller
                         $waktuMasuk = Carbon::parse($masukLog->waktu);
                         $jamMasukNormal = Carbon::parse($dateStr . ' 09:00:00');
                         if ($waktuMasuk->gt($jamMasukNormal->copy()->addMinutes(5))) {
+                            // Cek apakah penempatan kebal terlambat
+                            $isExempt = in_array(strtolower(trim($karyawan->penempatan)), ['pelabuhan', 'garasi', 'pelabuhan 1', '1']);
+
                             // Check for approved datang_terlambat permission
                             $hasLatePermission = $karyawanPermissions->contains(function($perm) use ($dateStr) {
                                 return strtolower($perm->jenis_izin) === 'datang_terlambat' && 
                                        $dateStr >= $perm->tanggal_mulai && $dateStr <= $perm->tanggal_selesai;
                             });
                             
-                            if (!$hasLatePermission) {
+                            if (!$hasLatePermission && !$isExempt) {
                                 $terlambatKali++;
                                 $terlambatMenit += $jamMasukNormal->diffInMinutes($waktuMasuk);
                             }
