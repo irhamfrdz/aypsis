@@ -1896,6 +1896,21 @@
                             <tr class="submodule-row" data-parent="pembayaran">
                                 <td class="submodule">
                                     <div class="flex items-center">
+                                        <span>Pembayaran DP OB</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][print]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
                                         <span>Pembayaran Uang Muka</span>
                                     </div>
                                 </td>
