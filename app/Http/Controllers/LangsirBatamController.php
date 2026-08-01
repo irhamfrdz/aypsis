@@ -172,7 +172,6 @@ class LangsirBatamController extends Controller
         }
 
         $asalGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['dari']))->first();
-        $tujuanGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['ke']))->first();
 
         $obSuffix = $validated['ob_dalam_pelabuhan'] ? " [OB Dalam Pelabuhan]" : "";
 
@@ -182,7 +181,7 @@ class LangsirBatamController extends Controller
             'jenis_kegiatan' => 'Langsir',
             'tanggal_kegiatan' => $validated['tanggal'],
             'asal_gudang_id' => $asalGudang?->id,
-            'gudang_id' => $tujuanGudang?->id,
+            'gudang_id' => $validated['gudang_tujuan_id'],
             'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']}{$obSuffix} [No Transaksi: {$validated['no_transaksi']}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
             'created_by' => Auth::id(),
         ]);
@@ -316,7 +315,6 @@ class LangsirBatamController extends Controller
                 // Log to HistoryKontainer
                 $tipeKontainer = $stockKontainer ? 'stock' : 'kontainer';
                 $asalGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($dataInsert['dari']))->first();
-                $tujuanGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($dataInsert['ke']))->first();
                 $obSuffix = $dataInsert['ob_dalam_pelabuhan'] ? " [OB Dalam Pelabuhan]" : "";
 
                 \App\Models\HistoryKontainer::create([
@@ -325,7 +323,7 @@ class LangsirBatamController extends Controller
                     'jenis_kegiatan' => 'Langsir',
                     'tanggal_kegiatan' => $dataInsert['tanggal'],
                     'asal_gudang_id' => $asalGudang?->id,
-                    'gudang_id' => $tujuanGudang?->id,
+                    'gudang_id' => $dataInsert['gudang_tujuan_id'],
                     'keterangan' => "Langsir ({$dataInsert['status']}) dari {$dataInsert['dari']} ke {$dataInsert['ke']}{$obSuffix} [No Transaksi: {$dataInsert['no_transaksi']}]." . ($dataInsert['keterangan'] ? " Ket: {$dataInsert['keterangan']}" : ""),
                     'created_by' => Auth::id(),
                 ]);
