@@ -48,9 +48,10 @@ class PayrollController extends Controller
 
             foreach ($karyawans as $k) {
                 // Count unique days they clocked in
-                $uniqueDays = $k->absensi->map(function($abs) {
+                $uniqueDaysDates = $k->absensi->map(function($abs) {
                     return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
-                })->unique()->count();
+                })->unique()->values();
+                $uniqueDays = $uniqueDaysDates->count();
 
                 if ($uniqueDays > 0) {
                     // Determine multiplier based on penempatan
@@ -65,6 +66,7 @@ class PayrollController extends Controller
                     $payrolls[] = [
                         'karyawan' => $k,
                         'total_kehadiran' => $uniqueDays,
+                        'dates_kehadiran' => $uniqueDaysDates->toArray(),
                         'multiplier' => $multiplier,
                         'nominal_per_hari' => $karyawanNominalDasar,
                         'total_payout' => $totalPayout,
@@ -134,9 +136,10 @@ class PayrollController extends Controller
         $submittedPayrolls = $request->input('payrolls', []);
         $count = 0;
         foreach ($karyawans as $k) {
-            $uniqueDays = $k->absensi->map(function($abs) {
+            $uniqueDaysDates = $k->absensi->map(function($abs) {
                 return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
-            })->unique()->count();
+            })->unique()->values();
+            $uniqueDays = $uniqueDaysDates->count();
 
             if ($uniqueDays > 0) {
                 $multiplier = 1;

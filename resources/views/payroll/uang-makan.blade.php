@@ -173,7 +173,17 @@
                             {{ $row['karyawan']->penempatan ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                            @php
+                                \Carbon\Carbon::setLocale('id');
+                                $datesStr = '';
+                                if(isset($row['dates_kehadiran']) && is_array($row['dates_kehadiran'])) {
+                                    $datesList = array_map(function($date) {
+                                        return \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y');
+                                    }, $row['dates_kehadiran']);
+                                    $datesStr = implode("\n", $datesList);
+                                }
+                            @endphp
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 cursor-help" title="{{ $datesStr }}">
                                 {{ $row['total_kehadiran'] }} Hari
                             </span>
                         </td>
