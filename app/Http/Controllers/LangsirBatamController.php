@@ -172,6 +172,8 @@ class LangsirBatamController extends Controller
         }
 
         $asalGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['dari']))->first();
+        $tujuanGudang = \App\Models\Gudang::find($validated['gudang_tujuan_id']);
+        $namaTujuan = $tujuanGudang ? $tujuanGudang->nama_gudang : $validated['ke'];
 
         $obSuffix = $validated['ob_dalam_pelabuhan'] ? " [OB Dalam Pelabuhan]" : "";
 
@@ -182,7 +184,7 @@ class LangsirBatamController extends Controller
             'tanggal_kegiatan' => $validated['tanggal'],
             'asal_gudang_id' => $asalGudang?->id,
             'gudang_id' => $validated['gudang_tujuan_id'],
-            'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']}{$obSuffix} [No Transaksi: {$validated['no_transaksi']}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+            'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$namaTujuan}{$obSuffix} [No Transaksi: {$validated['no_transaksi']}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
             'created_by' => Auth::id(),
         ]);
 
@@ -315,6 +317,8 @@ class LangsirBatamController extends Controller
                 // Log to HistoryKontainer
                 $tipeKontainer = $stockKontainer ? 'stock' : 'kontainer';
                 $asalGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($dataInsert['dari']))->first();
+                $tujuanGudang = \App\Models\Gudang::find($dataInsert['gudang_tujuan_id']);
+                $namaTujuan = $tujuanGudang ? $tujuanGudang->nama_gudang : $dataInsert['ke'];
                 $obSuffix = $dataInsert['ob_dalam_pelabuhan'] ? " [OB Dalam Pelabuhan]" : "";
 
                 \App\Models\HistoryKontainer::create([
@@ -324,7 +328,7 @@ class LangsirBatamController extends Controller
                     'tanggal_kegiatan' => $dataInsert['tanggal'],
                     'asal_gudang_id' => $asalGudang?->id,
                     'gudang_id' => $dataInsert['gudang_tujuan_id'],
-                    'keterangan' => "Langsir ({$dataInsert['status']}) dari {$dataInsert['dari']} ke {$dataInsert['ke']}{$obSuffix} [No Transaksi: {$dataInsert['no_transaksi']}]." . ($dataInsert['keterangan'] ? " Ket: {$dataInsert['keterangan']}" : ""),
+                    'keterangan' => "Langsir ({$dataInsert['status']}) dari {$dataInsert['dari']} ke {$namaTujuan}{$obSuffix} [No Transaksi: {$dataInsert['no_transaksi']}]." . ($dataInsert['keterangan'] ? " Ket: {$dataInsert['keterangan']}" : ""),
                     'created_by' => Auth::id(),
                 ]);
 
@@ -433,19 +437,19 @@ class LangsirBatamController extends Controller
         }
 
         $asalGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['dari']))->first();
-        $tujuanGudang = \App\Models\Gudang::where('nama_gudang', 'like', trim($validated['ke']))->first();
 
         $obSuffix = $validated['ob_dalam_pelabuhan'] ? " [OB Dalam Pelabuhan]" : "";
 
         $history = \App\Models\HistoryKontainer::where('keterangan', 'like', "%[No Transaksi: {$langsir->no_transaksi}]%")->first();
         if ($history) {
+            $tujuanGudang = \App\Models\Gudang::find($history->gudang_id);
+            $namaTujuan = $tujuanGudang ? $tujuanGudang->nama_gudang : $validated['ke'];
             $history->update([
                 'nomor_kontainer' => $validated['no_kontainer'],
                 'tipe_kontainer' => $tipeKontainer,
                 'tanggal_kegiatan' => $validated['tanggal'],
                 'asal_gudang_id' => $asalGudang?->id,
-                'gudang_id' => $tujuanGudang?->id,
-                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']}{$obSuffix} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
+                'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$namaTujuan}{$obSuffix} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
             ]);
         } else {
             \App\Models\HistoryKontainer::create([
@@ -454,7 +458,6 @@ class LangsirBatamController extends Controller
                 'jenis_kegiatan' => 'Langsir',
                 'tanggal_kegiatan' => $validated['tanggal'],
                 'asal_gudang_id' => $asalGudang?->id,
-                'gudang_id' => $tujuanGudang?->id,
                 'keterangan' => "Langsir ({$validated['status']}) dari {$validated['dari']} ke {$validated['ke']}{$obSuffix} [No Transaksi: {$langsir->no_transaksi}]." . ($validated['keterangan'] ? " Ket: {$validated['keterangan']}" : ""),
                 'created_by' => Auth::id(),
             ]);
