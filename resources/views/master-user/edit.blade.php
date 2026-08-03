@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Edit Pengguna')
 @section('page_title', 'Edit Pengguna')
@@ -2356,7 +2356,7 @@
                                 <td class="submodule">
                                     <div class="flex items-center">
                                         <span class="text-sm mr-2">└─</span>
-                                        <span>Data Uang Lembur  <span>
+                                        <span>Data Uang Lembur</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[data-cuti][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['data-cuti']['view']) && $userMatrixPermissions['data-cuti']['view']) checked @endif></td>

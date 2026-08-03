@@ -537,7 +537,7 @@
                                 <td class="submodule">
                                     <div class="flex items-center">
                                         <span class="text-sm mr-2">└─</span>
-                                        <span>Data Cuti</span>
+                                        <span>Data Uang Lembur</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[data-cuti][view]" value="1" class="permission-checkbox"></td>
