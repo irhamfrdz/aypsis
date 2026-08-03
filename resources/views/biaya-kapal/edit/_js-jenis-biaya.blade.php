@@ -1,4 +1,4 @@
-﻿    
+    
     nominalInput.addEventListener('input', function(e) {
         // Remove all non-numeric characters
         let value = this.value.replace(/\D/g, '');
@@ -120,12 +120,28 @@
 
     // Before form submit, remove formatting from all currency fields
     document.querySelector('form').addEventListener('submit', function(e) {
-        nominalInput.value = nominalInput.value.replace(/\./g, '');
-        ppnInput.value = ppnInput.value.replace(/\./g, '');
-        pphInput.value = pphInput.value.replace(/\./g, '');
-        if (dpInput.value) {
-            dpInput.value = dpInput.value.replace(/\./g, '');
-        }
+        if (nominalInput && nominalInput.value) nominalInput.value = nominalInput.value.replace(/\./g, '');
+        if (ppnInput && ppnInput.value) ppnInput.value = ppnInput.value.replace(/\./g, '');
+        if (pphInput && pphInput.value) pphInput.value = pphInput.value.replace(/\./g, '');
+        if (dpInput && dpInput.value) dpInput.value = dpInput.value.replace(/\./g, '');
+        
+        // Clean up all dynamic sections' formatted inputs
+        const dynamicInputs = document.querySelectorAll(
+            '.dokumen-nominal-input, .dokumen-pph-input, .dokumen-total-input, ' +
+            '.trucking-subtotal-input, .trucking-pph-input, .trucking-total-input, ' +
+            '.thc-subtotal-input, .thc-pph-input, .thc-total-input, ' +
+            '.storage-subtotal-input, .storage-pph-input, .storage-total-input, ' +
+            '.lolo-subtotal-input, .lolo-pph-input, .lolo-total-input, ' +
+            '.stuffing-subtotal-input, .stuffing-pph-input, .stuffing-total-input, ' +
+            '.umum-pph-input'
+        );
+        
+        dynamicInputs.forEach(input => {
+            if (input.value) {
+                input.value = input.value.replace(/\./g, '');
+            }
+        });
+        
         if (sisaPembayaranInput.value) {
             sisaPembayaranInput.value = sisaPembayaranInput.value.replace(/\./g, '');
         }
