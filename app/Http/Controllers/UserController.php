@@ -1596,6 +1596,27 @@ class UserController extends Controller
                         $action = str_replace('memo-', '', $action);
                         $module = 'permohonan-memo';
                     }
+                    // Special handling for payroll-uang-karyawan-* and payroll-perhitungan-lembur-* permissions
+                    if ($module === 'payroll') {
+                        if (strpos($action, 'uang-karyawan-') === 0) {
+                            $action = str_replace('uang-karyawan-', '', $action);
+                            $module = 'payroll-uang-karyawan';
+                        } elseif (strpos($action, 'perhitungan-lembur-') === 0) {
+                            $action = str_replace('perhitungan-lembur-', '', $action);
+                            $module = 'payroll-perhitungan-lembur';
+                        }
+                    }
+
+                    // Special handling for data-uang-makan-* and data-cuti-* permissions
+                    if ($module === 'data') {
+                        if (strpos($action, 'uang-makan-') === 0) {
+                            $action = str_replace('uang-makan-', '', $action);
+                            $module = 'data-uang-makan';
+                        } elseif (strpos($action, 'cuti-') === 0) {
+                            $action = str_replace('cuti-', '', $action);
+                            $module = 'data-cuti';
+                        }
+                    }
 
                     // Special handling for profile-* permissions
                     if ($module === 'profile' && in_array($action, ['show', 'edit', 'update', 'destroy'])) {
