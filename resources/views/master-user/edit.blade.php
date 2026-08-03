@@ -4118,6 +4118,51 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Stowage Plan --}}
+                            <tr class="module-row" data-module="stowage-plan">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Stowage Plan</div>
+                                            <div class="text-xs text-gray-500">Pengaturan koordinat kontainer kapal</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="stowage-plan-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="stowage-plan-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="stowage-plan-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="stowage-plan-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+                            
+                            {{-- Stowage Plan Sub-modules --}}
+                            <tr class="submodule-row" data-parent="stowage-plan">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2 ml-4">└─</span>
+                                        <span>Kelola Stowage Plan</span>
+                                    </div>
+                                </td>
+                                <td class="text-center"><input type="checkbox" name="permissions[stowage-plan][view]" value="1" class="permission-checkbox" @if(old('permissions.stowage-plan.view') || (isset($userMatrixPermissions['stowage-plan']['view']) && $userMatrixPermissions['stowage-plan']['view']) || ($user && $user->can('stowage-plan-view'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[stowage-plan][create]" value="1" class="permission-checkbox" @if(old('permissions.stowage-plan.create') || (isset($userMatrixPermissions['stowage-plan']['create']) && $userMatrixPermissions['stowage-plan']['create']) || ($user && $user->can('stowage-plan-create'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[stowage-plan][update]" value="1" class="permission-checkbox" @if(old('permissions.stowage-plan.update') || (isset($userMatrixPermissions['stowage-plan']['update']) && $userMatrixPermissions['stowage-plan']['update']) || ($user && $user->can('stowage-plan-edit'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[stowage-plan][delete]" value="1" class="permission-checkbox" @if(old('permissions.stowage-plan.delete') || (isset($userMatrixPermissions['stowage-plan']['delete']) && $userMatrixPermissions['stowage-plan']['delete']) || ($user && $user->can('stowage-plan-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Kwitansi --}}
                             <tr class="module-row" data-module="kwitansi">
                                 <td class="module-header">

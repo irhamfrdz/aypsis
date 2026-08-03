@@ -409,16 +409,16 @@ function calculateLangsirBiaya(dari, ke, size, status, obDalamPelabuhan) {
 
     let price = 0;
     if (isSrimasPelabuhan) {
-        if (sizeVal === '20FT') {
+        if (sizeVal === '20FT' || sizeVal === '20') {
             price = statusVal === 'FULL' ? 40000 : 35000;
-        } else if (sizeVal === '40FT') {
+        } else if (sizeVal === '40FT' || sizeVal === '40') {
             price = statusVal === 'FULL' ? 50000 : 45000;
         }
     } else if (isTpkSrimas) {
         if (statusVal === 'FULL') {
-            if (sizeVal === '20FT') {
+            if (sizeVal === '20FT' || sizeVal === '20') {
                 price = 50000;
-            } else if (sizeVal === '40FT') {
+            } else if (sizeVal === '40FT' || sizeVal === '40') {
                 price = 60000;
             }
         }

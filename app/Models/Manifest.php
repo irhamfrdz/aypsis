@@ -83,6 +83,11 @@ class Manifest extends Model
         return $this->hasOne(SuratJalanBongkaranBatam::class, 'manifest_id');
     }
 
+    public function stowagePlan()
+    {
+        return $this->hasOne(StowagePlan::class, 'manifest_id');
+    }
+
     /**
      * Get the Tanda Terima number for display, with fallbacks.
      */

@@ -26,6 +26,9 @@ class MasterKapal extends Model
         'length_overall',
         'catatan',
         'status',
+        'stowage_bays',
+        'stowage_rows',
+        'stowage_tiers',
     ];
 
     protected $casts = [

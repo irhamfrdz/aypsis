@@ -248,6 +248,60 @@
                 </div>
             </div>
 
+            <!-- Stowage Config -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Konfigurasi Peta Kapal (Stowage)
+                </label>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <p class="text-xs text-gray-500 mb-4">Tambahkan nomor Bay, Row, dan Tier kapal. Urutan akan otomatis disesuaikan di halaman Stowage Plan.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Bays -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-2">Stowage Bays</label>
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" id="bay_input_field" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm" placeholder="Contoh: 01, 03..." maxlength="3">
+                                <button type="button" onclick="addPill('bay')" class="bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white px-3 py-1.5 rounded-lg transition-colors text-sm font-medium shadow-sm">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div id="bay_pills_container" class="flex flex-wrap gap-1"></div>
+                            <input type="hidden" name="stowage_bays" id="stowage_bays" value="{{ old('stowage_bays') }}">
+                        </div>
+
+                        <!-- Rows -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-2">Stowage Rows</label>
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" id="row_input_field" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" placeholder="Contoh: 02, 00, 01..." maxlength="3">
+                                <button type="button" onclick="addPill('row')" class="bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg transition-colors text-sm font-medium shadow-sm">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div id="row_pills_container" class="flex flex-wrap gap-1"></div>
+                            <input type="hidden" name="stowage_rows" id="stowage_rows" value="{{ old('stowage_rows') }}">
+                        </div>
+
+                        <!-- Tiers -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-2">Stowage Tiers</label>
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" id="tier_input_field" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm" placeholder="Contoh: 82, 84, 86..." maxlength="3">
+                                <button type="button" onclick="addPill('tier')" class="bg-green-100 text-green-700 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg transition-colors text-sm font-medium shadow-sm">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div id="tier_pills_container" class="flex flex-wrap gap-1"></div>
+                            <input type="hidden" name="stowage_tiers" id="stowage_tiers" value="{{ old('stowage_tiers') }}">
+                        </div>
+                    </div>
+                </div>
+                @error('stowage_bays')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                @error('stowage_rows')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                @error('stowage_tiers')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+            </div>
+
             <!-- Catatan -->
             <div class="mb-6">
                 <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
@@ -296,4 +350,101 @@
         </form>
     </div>
 </div>
+@push('scripts')
+<script>
+    const configs = {
+        bay: {
+            data: document.getElementById('stowage_bays').value ? document.getElementById('stowage_bays').value.split(',').map(s => s.trim()).filter(s => s) : [],
+            input: 'bay_input_field',
+            container: 'bay_pills_container',
+            hidden: 'stowage_bays',
+            color: 'purple',
+            label: 'Bay'
+        },
+        row: {
+            data: document.getElementById('stowage_rows').value ? document.getElementById('stowage_rows').value.split(',').map(s => s.trim()).filter(s => s) : [],
+            input: 'row_input_field',
+            container: 'row_pills_container',
+            hidden: 'stowage_rows',
+            color: 'blue',
+            label: 'Row'
+        },
+        tier: {
+            data: document.getElementById('stowage_tiers').value ? document.getElementById('stowage_tiers').value.split(',').map(s => s.trim()).filter(s => s) : [],
+            input: 'tier_input_field',
+            container: 'tier_pills_container',
+            hidden: 'stowage_tiers',
+            color: 'green',
+            label: 'Tier'
+        }
+    };
+
+    function renderPills(type) {
+        const conf = configs[type];
+        const container = document.getElementById(conf.container);
+        if(!container) return;
+        
+        container.innerHTML = '';
+        
+        // Sort numerically
+        conf.data.sort((a, b) => parseInt(a) - parseInt(b));
+        
+        if (conf.data.length === 0) {
+            container.innerHTML = '<span class="text-[10px] text-gray-400 italic">Belum ada data.</span>';
+        }
+        
+        conf.data.forEach(item => {
+            const pill = document.createElement('div');
+            pill.className = `inline-flex items-center bg-white border border-${conf.color}-200 text-${conf.color}-700 rounded-full px-2 py-0.5 shadow-sm text-xs group transition-colors hover:border-red-300 hover:bg-red-50`;
+            pill.innerHTML = `
+                <span class="font-bold mr-1">${item}</span>
+                <button type="button" onclick="removePill('${type}', '${item}')" class="text-${conf.color}-400 hover:text-red-500 focus:outline-none transition-colors">
+                    <i class="fas fa-times text-[10px]"></i>
+                </button>
+            `;
+            container.appendChild(pill);
+        });
+
+        document.getElementById(conf.hidden).value = conf.data.join(',');
+    }
+
+    function addPill(type) {
+        const conf = configs[type];
+        const input = document.getElementById(conf.input);
+        if(!input) return;
+        
+        let val = input.value.trim();
+        // pad with 0 if single digit
+        if (val.length === 1 && !isNaN(val)) val = '0' + val;
+        
+        if (val && !conf.data.includes(val) && !isNaN(val)) {
+            conf.data.push(val);
+            renderPills(type);
+            input.value = '';
+        } else if(isNaN(val)) {
+            alert('Nilai harus berupa angka!');
+        } else if(conf.data.includes(val)) {
+            alert(conf.label + ' sudah ada!');
+        }
+        input.focus();
+    }
+
+    function removePill(type, item) {
+        configs[type].data = configs[type].data.filter(b => b !== item);
+        renderPills(type);
+    }
+
+    // Bind Enter key
+    ['bay', 'row', 'tier'].forEach(type => {
+        document.getElementById(configs[type].input)?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addPill(type);
+            }
+        });
+        renderPills(type); // Initial render
+    });
+</script>
+@endpush
+
 @endsection

@@ -85,6 +85,9 @@ class MasterKapalController extends Controller
             'length_overall' => 'nullable|numeric|min:0',
             'catatan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
+            'stowage_bays' => 'nullable|string',
+            'stowage_rows' => 'nullable|string',
+            'stowage_tiers' => 'nullable|string',
         ]);
 
         try {
@@ -135,6 +138,9 @@ class MasterKapalController extends Controller
             'length_overall' => 'nullable|numeric|min:0',
             'catatan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
+            'stowage_bays' => 'nullable|string',
+            'stowage_rows' => 'nullable|string',
+            'stowage_tiers' => 'nullable|string',
         ]);
 
         try {

@@ -2207,6 +2207,13 @@
                     </a>
                 @endif
 
+                {{-- Stowage Plan --}}
+                @if($user && $user->can('stowage-plan-view'))
+                    <a href="{{ route('stowage-plan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('stowage-plan.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Stowage Plan</span>
+                    </a>
+                @endif
+
                 {{-- Pembayaran DP OB --}}
                 @if($user && $user->can('pembayaran-ob-view'))
                     <a href="{{ route('pembayaran-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pembayaran-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">

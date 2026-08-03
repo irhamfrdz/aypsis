@@ -227,6 +227,14 @@ Route::middleware([
     Route::get('/kontainer-sewa-final/print-payment/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPayment'])->name('kontainer-sewa-final.print-payment');
     Route::get('/kontainer-sewa-final/print-permohonan/{id}', [App\Http\Controllers\KontainerSewaFinalController::class, 'printPermohonan'])->name('kontainer-sewa-final.print-permohonan');
 
+    // Stowage Plan Web View
+    Route::get('/stowage-plan', [\App\Http\Controllers\StowagePlanWebController::class, 'index'])
+        ->name('stowage-plan.index')
+        ->middleware('can:stowage-plan-view');
+    Route::get('/stowage-plan/{ship}', [\App\Http\Controllers\StowagePlanWebController::class, 'show'])
+        ->name('stowage-plan.show')
+        ->middleware('can:stowage-plan-view');
+
     // 📦 Surat Jalan Pengambilan/Pengembalian Kontainer Sewa
     Route::get('/surat-jalan-kontainer-sewa', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'index'])->name('surat-jalan-kontainer-sewa.index');
     Route::get('/surat-jalan-kontainer-sewa/create', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'create'])->name('surat-jalan-kontainer-sewa.create');
