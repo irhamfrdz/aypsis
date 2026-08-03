@@ -197,9 +197,9 @@
                                     {{ $karyawan->penempatan ?: '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $stats['total_masuk'] > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500' }}">
+                                    <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_hadir'] ?? []) }}" class="btn-detail-hadir inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 {{ $stats['total_masuk'] > 0 ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
                                         {{ $stats['total_masuk'] }} Hari
-                                    </span>
+                                    </button>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium {{ $stats['terlambat_kali'] > 0 ? 'text-red-600' : 'text-gray-500' }}">
                                     @if($stats['terlambat_kali'] > 0)
@@ -331,6 +331,38 @@
                 </button>
                 <button type="button" onclick="document.getElementById('exportModal').classList.add('hidden')" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
                     Batal
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Kehadiran -->
+<div id="detailHadirModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDetailHadir()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="detailHadirTitle">
+                            Detail Kehadiran
+                        </h3>
+                        <div class="mt-4 max-h-[60vh] overflow-y-auto pr-2" id="detailHadirContent">
+                            <!-- Content will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="closeDetailHadir()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Tutup
                 </button>
             </div>
         </div>
@@ -498,6 +530,20 @@
                 dropdownParent: $('#izinModal')
             });
         }
+
+        // Event listener for detail hadir
+        document.querySelectorAll('.btn-detail-hadir').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                let dates = [];
+                try {
+                    dates = JSON.parse(this.getAttribute('data-dates'));
+                } catch (e) {
+                    console.error("Gagal parse dates", e);
+                }
+                showDetailHadir(nama, dates);
+            });
+        });
     });
     
     function openIzinModal() {
@@ -506,6 +552,32 @@
     
     function closeIzinModal() {
         document.getElementById('izinModal').classList.add('hidden');
+    }
+
+    function showDetailHadir(nama, dates) {
+        let html = '';
+        if (!dates || dates.length === 0) {
+            html = '<p class="text-sm text-gray-500 text-center py-4">Tidak ada data kehadiran.</p>';
+        } else {
+            html = '<ul class="space-y-2">';
+            dates.forEach((date, index) => {
+                html += `
+                    <li class="flex items-center text-sm font-medium text-gray-700 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                        <span class="w-6 h-6 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs mr-3 shrink-0">${index + 1}</span>
+                        ${date}
+                    </li>
+                `;
+            });
+            html += '</ul>';
+        }
+        
+        document.getElementById('detailHadirTitle').innerText = 'Detail Hadir: ' + nama;
+        document.getElementById('detailHadirContent').innerHTML = html;
+        document.getElementById('detailHadirModal').classList.remove('hidden');
+    }
+
+    function closeDetailHadir() {
+        document.getElementById('detailHadirModal').classList.add('hidden');
     }
 </script>
 @endpush

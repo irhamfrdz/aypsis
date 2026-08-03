@@ -98,26 +98,22 @@ class AbsensiImportController extends Controller
                 $datetimeStr = trim($parts[1]);
                 
                 try {
-                    $waktu = Carbon::parse($datetimeStr)->format('Y-m-d H:i:s');
+                    $parsedTime = Carbon::parse($datetimeStr);
+                    
+                    // Jika waktu absensi adalah 09:01 atau 09:02, sesuaikan menjadi 09:00
+                    if ($parsedTime->format('H:i') === '09:01' || $parsedTime->format('H:i') === '09:02') {
+                        $parsedTime->setTime(9, 0, 0);
+                    }
+                    
+                    $waktu = $parsedTime->format('Y-m-d H:i:s');
                 } catch (\Exception $e) {
                     continue; // Skip invalid date
                 }
 
                 $state = isset($parts[2]) ? (int)trim($parts[2]) : 0;
                 
-                // Mapping state
-                if ($state == 0) {
+                if (in_array($state, [0, 3, 4])) {
                     $type = 'Masuk';
-                } elseif ($state == 1) {
-                    $type = 'Pulang';
-                } elseif ($state == 2) {
-                    $type = 'istirahat_keluar';
-                } elseif ($state == 3) {
-                    $type = 'istirahat_masuk';
-                } elseif ($state == 4) {
-                    $type = 'lembur_masuk';
-                } elseif ($state == 5) {
-                    $type = 'lembur_pulang';
                 } else {
                     $type = 'Pulang';
                 }

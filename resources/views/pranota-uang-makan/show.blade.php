@@ -2,96 +2,206 @@
 
 @section('content')
 <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-    <!-- Page header -->
+    
+    <!-- Page Header -->
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
+        <!-- Left: Title & Back Button -->
         <div class="mb-4 sm:mb-0 flex items-center gap-4">
-            <a href="{{ route('pranota-uang-makan.index') }}" class="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            <a href="{{ route('pranota-uang-makan.index') }}" 
+               class="flex items-center justify-center w-10 h-10 bg-white border border-slate-200 rounded-full hover:bg-slate-50 hover:border-slate-300 transition-all text-slate-500 hover:text-slate-700 shadow-sm"
+               title="Kembali ke Daftar">
+                <i class="fa-solid fa-arrow-left"></i>
             </a>
-            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold">Detail Pranota Uang Makan</h1>
+            <div>
+                <h1 class="text-2xl md:text-3xl text-slate-800 font-bold tracking-tight">Detail Pranota Uang Makan</h1>
+                <p class="text-sm text-slate-500 mt-1">Rincian uang makan karyawan berdasarkan kehadiran</p>
+            </div>
         </div>
-        <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+
+        <!-- Right: Actions -->
+        <div class="flex items-center space-x-3">
             <!-- Print Button -->
-            <button class="btn bg-white border-gray-200 hover:border-gray-300 text-gray-600" onclick="window.print()">
-                <svg class="w-4 h-4 fill-current text-gray-400 shrink-0 mr-2" viewBox="0 0 16 16">
-                    <path d="M12.9 6h-9.8c-.5 0-.9-.4-.9-.9v-3.2c0-.5.4-.9.9-.9h9.8c.5 0 .9.4.9.9v3.2c0 .5-.4.9-.9.9zM3.8 2.8v2.4h8.4v-2.4h-8.4z" />
-                    <path d="M16 8.5v5.5c0 .6-.4 1-1 1h-14c-.6 0-1-.4-1-1v-5.5c0-.6.4-1 1-1h14c.6 0 1 .4 1 1zM2 13h12v-3.5h-12v3.5z" />
-                </svg>
-                <span>Cetak Pranota</span>
+            <button onclick="window.print()" 
+                    class="btn bg-white border-slate-200 hover:border-slate-300 text-slate-600 shadow-sm transition-all flex items-center px-4 py-2 rounded-lg">
+                <i class="fa-solid fa-print text-slate-400 mr-2"></i>
+                <span class="font-medium">Cetak Pranota</span>
             </button>
-            <form action="{{ route('pranota-uang-makan.destroy', $pranota->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota ini?');">
+            
+            <!-- Delete Button -->
+            <form action="{{ route('pranota-uang-makan.destroy', $pranota->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota ini? Tindakan ini tidak dapat dibatalkan.');">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn bg-red-500 hover:bg-red-600 text-white">
-                    <svg class="w-4 h-4 fill-current opacity-50 shrink-0 mr-2" viewBox="0 0 16 16">
-                        <path d="M5 7h2v6H5V7zm4 0h2v6H9V7zm3-6v2h4v2h-1v10c0 .6-.4 1-1 1H2c-.6 0-1-.4-1-1V5H0V3h4V1c0-.6.4-1 1-1h6c.6 0 1 .4 1 1zM6 2v1h4V2H6zm7 3H3v9h10V5z" />
-                    </svg>
-                    <span>Hapus</span>
+                <button type="submit" 
+                        class="btn bg-rose-500 hover:bg-rose-600 text-white shadow-sm transition-all flex items-center px-4 py-2 rounded-lg">
+                    <i class="fa-solid fa-trash-can mr-2 text-white/70"></i>
+                    <span class="font-medium">Hapus</span>
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Details -->
-    <div class="bg-white p-6 shadow-lg rounded-sm border border-gray-200 mb-8">
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <div>
-                <div class="text-sm text-gray-500">Nomor Pranota</div>
-                <div class="text-lg font-bold text-gray-800">{{ $pranota->nomor_pranota }}</div>
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Card: Nomor Pranota -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center transition-all hover:shadow-md">
+            <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mr-5 shrink-0">
+                <i class="fa-solid fa-file-invoice text-2xl"></i>
             </div>
-            <div class="text-right">
-                <div class="text-sm text-gray-500">Tanggal</div>
-                <div class="text-lg font-bold text-gray-800">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</div>
+            <div>
+                <div class="text-sm font-semibold text-slate-500 mb-1 uppercase tracking-wider">Nomor Pranota</div>
+                <div class="text-2xl font-bold text-slate-800">{{ $pranota->nomor_pranota }}</div>
             </div>
         </div>
+        
+        <!-- Card: Tanggal Pranota -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center transition-all hover:shadow-md">
+            <div class="w-14 h-14 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mr-5 shrink-0">
+                <i class="fa-solid fa-calendar-day text-2xl"></i>
+            </div>
+            <div>
+                <div class="text-sm font-semibold text-slate-500 mb-1 uppercase tracking-wider">Tanggal Pranota</div>
+                <div class="text-2xl font-bold text-slate-800">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Details Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+        <div class="px-6 py-5 border-b border-slate-200 bg-slate-50/80 flex justify-between items-center">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center">
+                <i class="fa-solid fa-users text-slate-400 mr-2"></i>
+                Rincian Karyawan
+            </h2>
+            <span class="bg-slate-200 text-slate-600 text-xs font-bold px-3 py-1 rounded-full">
+                {{ $pranota->details->count() }} Data
+            </span>
+        </div>
+        
         <div class="overflow-x-auto">
-            <table class="table-auto w-full border-collapse">
-                <thead class="text-xs font-semibold uppercase text-gray-500 bg-gray-50 border-y border-gray-200">
+            <table class="w-full text-left border-collapse">
+                <thead class="text-xs font-semibold uppercase text-slate-500 bg-white border-b border-slate-200">
                     <tr>
-                        <th class="px-4 py-3 whitespace-nowrap text-left">Karyawan</th>
-                        <th class="px-4 py-3 whitespace-nowrap text-center">Kehadiran</th>
-                        <th class="px-4 py-3 whitespace-nowrap text-right">Nominal Awal</th>
-                        <th class="px-4 py-3 whitespace-nowrap text-right">Adjustment</th>
-                        <th class="px-4 py-3 whitespace-nowrap text-left">Catatan</th>
-                        <th class="px-4 py-3 whitespace-nowrap text-right">Total Akhir</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Karyawan</th>
+                        <th class="px-6 py-4 whitespace-nowrap text-center">Kehadiran</th>
+                        <th class="px-6 py-4 whitespace-nowrap text-right">Nominal Awal</th>
+                        <th class="px-6 py-4 whitespace-nowrap text-right">Adjustment</th>
+                        <th class="px-6 py-4 whitespace-nowrap">Catatan</th>
+                        <th class="px-6 py-4 whitespace-nowrap text-right font-bold text-slate-700">Total Akhir</th>
                     </tr>
                 </thead>
-                <tbody class="text-sm divide-y divide-gray-200">
-                    @foreach($pranota->details as $detail)
-                        <tr>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="font-medium text-gray-800">{{ $detail->karyawan->nama_lengkap ?? '-' }}</div>
-                                <div class="text-[10px] font-mono text-gray-500">{{ $detail->karyawan->nik ?? '-' }}</div>
+                <tbody class="text-sm divide-y divide-slate-100">
+                    @forelse($pranota->details as $detail)
+                        <tr class="hover:bg-slate-50 transition-colors group">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mr-3 text-sm font-bold border border-slate-200 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-100 transition-colors">
+                                        {{ substr($detail->karyawan->nama_lengkap ?? 'U', 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-slate-800">{{ $detail->karyawan->nama_lengkap ?? '-' }}</div>
+                                        <div class="text-xs text-slate-500 font-mono mt-0.5">{{ $detail->karyawan->nik ?? '-' }}</div>
+                                    </div>
+                                </div>
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap text-center">
-                                <div class="font-medium text-gray-600">{{ $detail->kehadiran }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                    {{ $detail->kehadiran }} Hari
+                                </span>
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap text-right">
-                                <div class="text-gray-600">Rp {{ number_format($detail->nominal_awal, 0, ',', '.') }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-slate-600 font-medium">
+                                Rp {{ number_format($detail->nominal_awal, 0, ',', '.') }}
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap text-right">
-                                <div class="text-gray-600">Rp {{ number_format($detail->adjustment, 0, ',', '.') }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                @if($detail->adjustment > 0)
+                                    <span class="inline-flex items-center text-emerald-600 font-semibold bg-emerald-50 px-2 py-1 rounded text-xs border border-emerald-100">
+                                        <i class="fa-solid fa-plus text-[10px] mr-1"></i> Rp {{ number_format($detail->adjustment, 0, ',', '.') }}
+                                    </span>
+                                @elseif($detail->adjustment < 0)
+                                    <span class="inline-flex items-center text-rose-600 font-semibold bg-rose-50 px-2 py-1 rounded text-xs border border-rose-100">
+                                        <i class="fa-solid fa-minus text-[10px] mr-1"></i> Rp {{ number_format(abs($detail->adjustment), 0, ',', '.') }}
+                                    </span>
+                                @else
+                                    <span class="text-slate-400 font-medium">Rp 0</span>
+                                @endif
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap text-left">
-                                <div class="text-gray-600">{{ $detail->catatan ?? '-' }}</div>
+                            <td class="px-6 py-4 text-slate-600 text-sm max-w-xs truncate" title="{{ $detail->catatan }}">
+                                {{ $detail->catatan ?: '-' }}
                             </td>
-                            <td class="px-4 py-3 whitespace-nowrap text-right">
-                                <div class="font-medium text-blue-600">Rp {{ number_format($detail->total_akhir, 0, ',', '.') }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <span class="font-bold text-slate-800 text-[15px]">
+                                    Rp {{ number_format($detail->total_akhir, 0, ',', '.') }}
+                                </span>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                                        <i class="fa-solid fa-inbox text-2xl text-slate-400"></i>
+                                    </div>
+                                    <p class="font-medium text-slate-600">Tidak ada rincian data karyawan.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
                 <tfoot>
-                    <tr class="border-t-2 border-gray-200 bg-gray-50">
-                        <td colspan="5" class="px-4 py-3 text-right font-bold text-gray-700">Total Keseluruhan</td>
-                        <td class="px-4 py-3 text-right font-bold text-blue-600 text-lg">Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}</td>
+                    <tr class="border-t-2 border-slate-200 bg-slate-50/80">
+                        <td colspan="5" class="px-6 py-5 text-right text-sm font-extrabold text-slate-700 tracking-wide uppercase">
+                            Total Keseluruhan
+                        </td>
+                        <td class="px-6 py-5 text-right">
+                            <div class="text-xl font-black text-blue-600">
+                                Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}
+                            </div>
+                        </td>
                     </tr>
                 </tfoot>
             </table>
         </div>
     </div>
 </div>
+
+<style>
+    @media print {
+        body {
+            background-color: white !important;
+        }
+        body * {
+            visibility: hidden;
+        }
+        .max-w-9xl, .max-w-9xl * {
+            visibility: visible;
+        }
+        .max-w-9xl {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 0 !important;
+        }
+        .btn, form, a, .fa-arrow-left {
+            display: none !important;
+        }
+        .shadow-sm, .shadow-md {
+            box-shadow: none !important;
+        }
+        .border, .border-slate-200, .border-slate-100 {
+            border-color: #e5e7eb !important;
+        }
+        .bg-white, .bg-slate-50, .bg-slate-50\/80, .bg-slate-100 {
+            background-color: transparent !important;
+        }
+        /* Make sure table lines show up in print */
+        table {
+            border: 1px solid #e5e7eb !important;
+        }
+        th, td {
+            border-bottom: 1px solid #e5e7eb !important;
+        }
+    }
+</style>
 
 @push('scripts')
 <script>

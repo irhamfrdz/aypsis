@@ -221,7 +221,14 @@ class ADMSController extends Controller
                 
                 try {
                     // Memastikan data yang diproses selalu menggunakan zona waktu Jakarta (WIB)
-                    $logTime = Carbon::parse($datetimeStr, 'Asia/Jakarta')->format('Y-m-d H:i:s');
+                    $parsedTime = Carbon::parse($datetimeStr, 'Asia/Jakarta');
+                    
+                    // Jika waktu absensi adalah 09:01 atau 09:02, sesuaikan menjadi 09:00
+                    if ($parsedTime->format('H:i') === '09:01' || $parsedTime->format('H:i') === '09:02') {
+                        $parsedTime->setTime(9, 0, 0);
+                    }
+                    
+                    $logTime = $parsedTime->format('Y-m-d H:i:s');
                 } catch (\Exception $e) {
                     continue; // Skip format tanggal salah
                 }
@@ -229,18 +236,8 @@ class ADMSController extends Controller
                 // Index ke-3 biasanya state (0=Masuk, 1=Pulang, 2=Break Out, 3=Break In, 4=OT In, 5=OT Out)
                 $state = isset($parts[3]) ? (int) $parts[3] : 0;
                 
-                if ($state == 0) {
+                if (in_array($state, [0, 3, 4])) {
                     $type = 'Masuk';
-                } elseif ($state == 1) {
-                    $type = 'Pulang';
-                } elseif ($state == 2) {
-                    $type = 'istirahat_keluar';
-                } elseif ($state == 3) {
-                    $type = 'istirahat_masuk';
-                } elseif ($state == 4) {
-                    $type = 'lembur_masuk';
-                } elseif ($state == 5) {
-                    $type = 'lembur_pulang';
                 } else {
                     $type = 'Pulang';
                 }

@@ -645,6 +645,7 @@ class AbsensiController extends Controller
             $presentDates = $logsByDate->keys()->toArray();
 
             $hadir = 0;
+            $detail_hadir = [];
             $sakit = 0;
             $izin = 0;
             $alpha = 0;
@@ -666,6 +667,7 @@ class AbsensiController extends Controller
 
                 if (in_array($dateStr, $presentDates)) {
                     $hadir++;
+                    $detail_hadir[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     $dayLogs = $logsByDate->get($dateStr);
                     
                     // Lateness
@@ -746,6 +748,7 @@ class AbsensiController extends Controller
 
             $rekapData[$karyawan->id] = [
                 'total_masuk' => $hadir,
+                'detail_hadir' => $detail_hadir,
                 'sakit' => $sakit,
                 'izin' => $izin,
                 'alpha' => $alpha,
