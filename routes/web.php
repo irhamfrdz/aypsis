@@ -6736,6 +6736,13 @@ Route::middleware(['auth',
     Route::put('cuti/{cuti}', [CutiController::class, 'update'])->name('cuti.update')->middleware('can:data-cuti-edit');
     Route::delete('cuti/{cuti}', [CutiController::class, 'destroy'])->name('cuti.destroy')->middleware('can:data-cuti-delete');
 
+    Route::get('uang-lembur', [\App\Http\Controllers\UangLemburController::class, 'index'])->name('uang-lembur.index')->middleware('can:data-cuti-view');
+    Route::get('uang-lembur/create', [\App\Http\Controllers\UangLemburController::class, 'create'])->name('uang-lembur.create')->middleware('can:data-cuti-create');
+    Route::post('uang-lembur', [\App\Http\Controllers\UangLemburController::class, 'store'])->name('uang-lembur.store')->middleware('can:data-cuti-create');
+    Route::get('uang-lembur/{uangLembur}/edit', [\App\Http\Controllers\UangLemburController::class, 'edit'])->name('uang-lembur.edit')->middleware('can:data-cuti-edit');
+    Route::put('uang-lembur/{uangLembur}', [\App\Http\Controllers\UangLemburController::class, 'update'])->name('uang-lembur.update')->middleware('can:data-cuti-edit');
+    Route::delete('uang-lembur/{uangLembur}', [\App\Http\Controllers\UangLemburController::class, 'destroy'])->name('uang-lembur.destroy')->middleware('can:data-cuti-delete');
+
     Route::delete('uang-makan/bulk-delete', [UangMakanController::class, 'bulkDelete'])->name('uang-makan.bulk-delete')->middleware('can:data-uang-makan-delete');
     Route::get('uang-makan/template', [UangMakanController::class, 'downloadTemplate'])->name('uang-makan.template')->middleware('can:data-uang-makan-create');
     Route::post('uang-makan/import', [UangMakanController::class, 'import'])->name('uang-makan.import')->middleware('can:data-uang-makan-create');

@@ -512,7 +512,7 @@
                             </a>
                         @endif
                         @if($user && $user->can('data-cuti-view'))
-                            <a href="{{ route('cuti.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('cuti.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                            <a href="{{ route('uang-lembur.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('uang-lembur.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                                 <span class="text-xs font-medium">Data Uang Lembur</span>
                             </a>
                         @endif
