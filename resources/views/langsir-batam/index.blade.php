@@ -533,9 +533,11 @@ function submitBulkLangsir() {
     submitText.classList.add('hidden');
     submitLoading.classList.remove('hidden');
 
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
     const payload = {
         rows: bulkParsedRows,
-        _token: '{{ csrf_token() }}'
+        _token: token
     };
 
     fetch('{{ route("langsir-batam.store-bulk", [], false) }}', {
@@ -544,8 +546,9 @@ function submitBulkLangsir() {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': token
         },
+        credentials: 'same-origin',
         body: JSON.stringify(payload)
     })
     .then(response => response.json())
