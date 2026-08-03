@@ -17,7 +17,7 @@ class UangLemburController extends Controller
         
         if ($search) {
             $query->whereHas('karyawan', function($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
+                $q->where('nama_lengkap', 'like', "%{$search}%")
                   ->orWhere('nik', 'like', "%{$search}%");
             });
         }
@@ -29,7 +29,7 @@ class UangLemburController extends Controller
 
     public function create()
     {
-        $karyawans = Karyawan::where('status_aktif', 'Aktif')->orderBy('nama')->get();
+        $karyawans = Karyawan::whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get();
         return view('uang-lembur.create', compact('karyawans'));
     }
 
@@ -59,7 +59,7 @@ class UangLemburController extends Controller
 
     public function edit(UangLembur $uangLembur)
     {
-        $karyawans = Karyawan::where('status_aktif', 'Aktif')->orderBy('nama')->get();
+        $karyawans = Karyawan::whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get();
         return view('uang-lembur.edit', compact('uangLembur', 'karyawans'));
     }
 

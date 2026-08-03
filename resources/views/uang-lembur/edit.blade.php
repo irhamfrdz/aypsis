@@ -25,7 +25,7 @@
                             <select id="karyawan_id" name="karyawan_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm" required>
                                 <option value="">Pilih Karyawan</option>
                                 @foreach($karyawans as $karyawan)
-                                    <option value="{{ $karyawan->id }}" {{ $uangLembur->karyawan_id == $karyawan->id ? 'selected' : '' }}>{{ $karyawan->nama }} ({{ $karyawan->nik }}) - {{ $karyawan->penempatan }}</option>
+                                    <option value="{{ $karyawan->id }}" {{ $uangLembur->karyawan_id == $karyawan->id ? 'selected' : '' }}>{{ $karyawan->nama_lengkap }} ({{ $karyawan->nik }}) - {{ $karyawan->penempatan }}</option>
                                 @endforeach
                             </select>
                         </div>

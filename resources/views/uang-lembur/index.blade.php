@@ -72,7 +72,7 @@
                         @forelse ($lemburs as $lembur)
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ $lembur->karyawan->nama ?? '-' }}</div>
+                                    <div class="text-sm font-medium text-gray-900">{{ $lembur->karyawan->nama_lengkap ?? '-' }}</div>
                                     <div class="text-sm text-gray-500">{{ $lembur->karyawan->nik ?? '-' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
