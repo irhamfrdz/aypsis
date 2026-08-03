@@ -94,7 +94,7 @@
                         <h3 class="font-bold text-gray-700"><i class="fas fa-ship text-purple-500 mr-2"></i> Peta Kapal</h3>
                         <div class="bg-gray-100 p-1 rounded-lg flex text-xs">
                             <button id="btn-topdown" onclick="toggleView('topdown')" class="px-3 py-1 bg-white shadow-sm rounded-md font-medium text-purple-700 transition-colors">Top Down</button>
-                            <button id="btn-crosssection" onclick="toggleView('crosssection')" class="px-3 py-1 text-gray-500 hover:text-gray-700 font-medium transition-colors">Cross Section</button>
+                            <button id="btn-deckplan" onclick="toggleView('deckplan')" class="px-3 py-1 text-gray-500 hover:text-gray-700 font-medium transition-colors">Deck Plan</button>
                         </div>
                     </div>
                     <div class="flex gap-2">
@@ -156,20 +156,20 @@
                     </div>
                 </div>
 
-                <!-- CROSS SECTION VIEW -->
-                <div id="view-crosssection" class="hidden flex-1 bg-gray-50 flex flex-col">
+                <!-- DECK PLAN VIEW -->
+                <div id="view-deckplan" class="hidden flex-1 bg-gray-50 flex flex-col">
                     <div class="p-4 border-b border-gray-200 bg-white flex justify-between items-center">
-                        <h4 class="font-bold text-gray-600 text-sm">Potongan Melintang (Rows x Tiers)</h4>
+                        <h4 class="font-bold text-gray-600 text-sm">Denah Deck (Bays x Rows)</h4>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs text-gray-500 font-semibold">Pilih Bay:</span>
-                            <select id="cross-section-bay" onchange="renderCrossSection()" class="border-gray-200 rounded p-1 text-sm bg-gray-50 font-bold text-purple-700 focus:ring-purple-500">
-                                @foreach($stowageBays as $b)
-                                    <option value="{{ str_pad($b, 2, '0', STR_PAD_LEFT) }}">BAY {{ str_pad($b, 2, '0', STR_PAD_LEFT) }}</option>
+                            <span class="text-xs text-gray-500 font-semibold">Pilih Tier:</span>
+                            <select id="deck-plan-tier" onchange="renderDeckPlan()" class="border-gray-200 rounded p-1 text-sm bg-gray-50 font-bold text-purple-700 focus:ring-purple-500">
+                                @foreach($stowageTiers as $t)
+                                    <option value="{{ str_pad($t, 2, '0', STR_PAD_LEFT) }}">TIER {{ str_pad($t, 2, '0', STR_PAD_LEFT) }}</option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
-                    <div id="cross-section-grid" class="flex-1 overflow-auto p-6 flex flex-col items-center justify-end" style="background-image: radial-gradient(#00000011 1px, transparent 1px); background-size: 20px 20px;">
+                    <div id="deck-plan-grid" class="flex-1 overflow-auto p-6 flex flex-col items-center justify-start" style="background-image: radial-gradient(#00000011 1px, transparent 1px); background-size: 20px 20px;">
                         <!-- Rendered via JS -->
                     </div>
                 </div>
@@ -239,44 +239,45 @@
         })->values();
     @endphp
     const plansData = @json($mappedPlans);
+    const availableBays = Object.values(@json($stowageBays));
     const availableRows = Object.values(@json($stowageRows));
-    const availableTiers = Object.values(@json($stowageTiers)).reverse();
+    const availableTiers = Object.values(@json($stowageTiers));
 
     function toggleView(view) {
         if(view === 'topdown') {
             document.getElementById('view-topdown').classList.remove('hidden');
-            document.getElementById('view-crosssection').classList.add('hidden');
+            document.getElementById('view-deckplan').classList.add('hidden');
             
             document.getElementById('btn-topdown').className = 'px-3 py-1 bg-white shadow-sm rounded-md font-medium text-purple-700 transition-colors';
-            document.getElementById('btn-crosssection').className = 'px-3 py-1 text-gray-500 hover:text-gray-700 font-medium transition-colors';
+            document.getElementById('btn-deckplan').className = 'px-3 py-1 text-gray-500 hover:text-gray-700 font-medium transition-colors';
         } else {
             document.getElementById('view-topdown').classList.add('hidden');
-            document.getElementById('view-crosssection').classList.remove('hidden');
+            document.getElementById('view-deckplan').classList.remove('hidden');
             
-            document.getElementById('btn-crosssection').className = 'px-3 py-1 bg-white shadow-sm rounded-md font-medium text-purple-700 transition-colors';
+            document.getElementById('btn-deckplan').className = 'px-3 py-1 bg-white shadow-sm rounded-md font-medium text-purple-700 transition-colors';
             document.getElementById('btn-topdown').className = 'px-3 py-1 text-gray-500 hover:text-gray-700 font-medium transition-colors';
             
-            renderCrossSection();
+            renderDeckPlan();
         }
     }
 
-    function renderCrossSection() {
-        const bay = document.getElementById('cross-section-bay').value;
-        const grid = document.getElementById('cross-section-grid');
+    function renderDeckPlan() {
+        const tier = document.getElementById('deck-plan-tier').value;
+        const grid = document.getElementById('deck-plan-grid');
         
-        if(availableRows.length === 0 || availableTiers.length === 0) {
-            grid.innerHTML = '<div class="text-gray-400 text-center w-full mt-20 p-6 bg-white rounded-lg shadow-sm max-w-sm"><i class="fas fa-exclamation-triangle text-3xl mb-3 text-yellow-400"></i><p>Konfigurasi Row dan Tier di Master Kapal belum diset.</p></div>';
+        if(availableBays.length === 0 || availableRows.length === 0) {
+            grid.innerHTML = '<div class="text-gray-400 text-center w-full mt-20 p-6 bg-white rounded-lg shadow-sm max-w-sm"><i class="fas fa-exclamation-triangle text-3xl mb-3 text-yellow-400"></i><p>Konfigurasi Bay dan Row di Master Kapal belum diset.</p></div>';
             return;
         }
 
-        let html = '<div class="inline-flex flex-col gap-1 pb-10">'; // pb-10 for bottom spacing
+        let html = '<div class="inline-flex flex-col gap-1 pb-10">';
         
-        availableTiers.forEach(tier => {
+        availableRows.forEach(row => {
             html += '<div class="flex gap-1 items-center">';
             // Y-axis label
-            html += `<div class="text-[10px] text-gray-500 font-bold w-6 text-right pr-1">${tier}</div>`;
+            html += `<div class="text-[10px] text-gray-500 font-bold w-6 text-right pr-1">${row}</div>`;
             
-            availableRows.forEach(row => {
+            availableBays.forEach(bay => {
                 const container = plansData.find(p => p.bay === bay && p.row === row && p.tier === tier);
                 
                 if(container) {
@@ -300,8 +301,8 @@
         // X-axis labels
         html += '<div class="flex gap-1 items-center mt-1 border-t-2 border-gray-400 pt-1">';
         html += `<div class="w-6"></div>`; // empty space for Y-axis column
-        availableRows.forEach(row => {
-            html += `<div class="w-14 text-center text-[10px] text-gray-600 font-bold">${row}</div>`;
+        availableBays.forEach(bay => {
+            html += `<div class="w-14 text-center text-[10px] text-gray-600 font-bold">BAY ${bay}</div>`;
         });
         html += '</div>'; // close x-axis
         
