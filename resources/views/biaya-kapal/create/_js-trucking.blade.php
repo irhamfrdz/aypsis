@@ -273,7 +273,10 @@
                         <div class="trucking-bl-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
                              data-id="${id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}" data-size="${blData.size}">
                             <div class="font-medium text-gray-900">${blData.kontainer} <span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded ml-1">${blData.size}'</span></div>
-                            <div class="text-xs text-gray-500">Seal: ${blData.seal}</div>
+                            <div class="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-3">
+                                <span><i class="fas fa-box text-gray-400 mr-1"></i> ${blData.nama_barang || 'Tidak ada kargo'}</span>
+                                <span><i class="fas fa-lock text-gray-400 mr-1"></i> Seal: ${blData.seal}</span>
+                            </div>
                         </div>
                     `;
                 });

@@ -5361,44 +5361,7 @@ class BiayaKapalController extends Controller
             $voyages = $request->input('voyages', []);
             $source = $request->input('source');
 
-            // If source is trucking, get from master tables as requested
-            if ($source === 'trucking') {
-                $results = collect();
 
-                // Get from kontainers table
-                $kontainers = DB::table('kontainers')
-                    ->select('nomor_seri_gabungan as nomor_kontainer', 'ukuran as size_kontainer')
-                    ->get();
-
-                foreach ($kontainers as $k) {
-                    $results->put('master-'.$k->nomor_kontainer, [
-                        'kontainer' => $k->nomor_kontainer,
-                        'seal' => 'N/A',
-                        'size' => $k->size_kontainer,
-                    ]);
-                }
-
-                // Get from stock_kontainers table
-                $stockKontainers = DB::table('stock_kontainers')
-                    ->select('nomor_seri_gabungan as nomor_kontainer', 'ukuran as size_kontainer')
-                    ->get();
-
-                foreach ($stockKontainers as $s) {
-                    // Avoid double entries if same number exists in both
-                    if (! $results->has('master-'.$s->nomor_kontainer)) {
-                        $results->put('master-'.$s->nomor_kontainer, [
-                            'kontainer' => $s->nomor_kontainer,
-                            'seal' => 'N/A',
-                            'size' => $s->size_kontainer,
-                        ]);
-                    }
-                }
-
-                return response()->json([
-                    'success' => true,
-                    'bls' => $results,
-                ]);
-            }
 
             if (empty($voyages)) {
                 return response()->json([
