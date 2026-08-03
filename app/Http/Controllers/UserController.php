@@ -1932,6 +1932,31 @@ class UserController extends Controller
                     // Try multiple naming patterns to find the permission
                     $found = false;
 
+                    // DIRECT FIX: Handle payroll, data-cuti, data-uang-makan explicitly
+                    if (in_array($module, ['payroll', 'payroll-uang-karyawan', 'payroll-perhitungan-lembur', 'data-cuti', 'data-uang-makan']) && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map update to edit for some permissions, or just check both
+                        $actionMap = [
+                            'view' => $module . '-view',
+                            'create' => $module . '-create',
+                            'update' => $module . '-edit', // In database they use -edit instead of -update sometimes
+                            'delete' => $module . '-delete',
+                        ];
+                        
+                        $permissionName = $actionMap[$action] ?? ($module . '-' . $action);
+                        $directPermission = Permission::where('name', $permissionName)->first();
+                        
+                        // fallback if the database actually uses -update
+                        if (!$directPermission && $action === 'update') {
+                            $directPermission = Permission::where('name', $module . '-update')->first();
+                        }
+
+                        if ($directPermission) {
+                            $permissionIds[] = $directPermission->id;
+                            $found = true;
+                            continue;
+                        }
+                    }
+
                     // Special handling for different module patterns
                     if (strpos($module, 'master-') === 0) {
                         // Convert master-karyawan to master.karyawan format
@@ -2508,6 +2533,8 @@ class UserController extends Controller
                                 }
                             }
                         }
+
+
 
                         // DIRECT FIX: Handle karyawan-tidak-tetap permissions explicitly
                         if ($module === 'karyawan-tidak-tetap' && in_array($action, ['view', 'create', 'update', 'delete'])) {

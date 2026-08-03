@@ -13,15 +13,8 @@ return new class extends Migration
     {
         Schema::create('uang_lemburs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('karyawan_id')->constrained('karyawans')->onDelete('cascade');
-            $table->date('tanggal');
-            $table->string('tipe_hari'); // 'Hari Kerja' atau 'Hari Libur'
-            $table->time('jam_mulai');
-            $table->time('jam_selesai');
-            $table->decimal('total_jam', 5, 2)->default(0);
-            $table->decimal('nominal_uang', 15, 2)->default(0);
-            $table->string('status')->default('pending'); // pending, approved, rejected
-            $table->text('keterangan')->nullable();
+            $table->string('group')->default('Lembur');
+            $table->string('sub_group'); 
             $table->timestamps();
         });
     }

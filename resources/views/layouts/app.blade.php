@@ -493,8 +493,8 @@
 
                 {{-- Data Karyawan (Cuti & Uang Makan) --}}
                 @php
-                    $isDataKaryawanRoute = Request::is('cuti*') || Request::routeIs('cuti.*') || Request::is('uang-makan*') || Request::routeIs('uang-makan.*');
-                    $hasDataKaryawanPermissions = $isAdmin || ($user && ($user->can('data-cuti-view') || $user->can('data-uang-makan-view')));
+                    $isDataKaryawanRoute = Request::is('cuti*') || Request::routeIs('cuti.*') || Request::is('uang-makan*') || Request::routeIs('uang-makan.*') || Request::routeIs('uang-lembur.*');
+                    $hasDataKaryawanPermissions = $isAdmin || ($user && ($user->can('data-cuti-view') || $user->can('data-uang-makan-view') || $user->can('payroll-uang-karyawan-view')));
                 @endphp
 
                 @if($hasDataKaryawanPermissions)
@@ -511,9 +511,10 @@
                                 <span class="text-xs font-medium">Data Uang Makan</span>
                             </a>
                         @endif
-                        @if($user && $user->can('data-cuti-view'))
+
+                        @if($user && ($user->can('payroll-uang-karyawan-view') || $isAdmin))
                             <a href="{{ route('uang-lembur.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('uang-lembur.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
-                                <span class="text-xs font-medium">Data Uang Lembur</span>
+                                <span class="text-xs font-medium">Data Uang Karyawan</span>
                             </a>
                         @endif
                     </div>
@@ -554,7 +555,7 @@
                 <!-- Payroll Section -->
                 @php
                     $isPayrollRoute = Request::routeIs('payroll.*');
-                    $showPayrollSection = $user && ($user->can('payroll-view') || $user->can('payroll-uang-karyawan-view') || $isAdmin);
+                    $showPayrollSection = $user && ($user->can('payroll-view') || $isAdmin);
                 @endphp
 
                 @if($showPayrollSection)
@@ -574,12 +575,6 @@
                         @if($user->can('payroll-view') || $isAdmin)
                         <a href="{{ route('payroll.uang-makan') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('payroll.uang-makan') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                             <span class="text-xs font-medium">Uang Makan Mingguan</span>
-                        </a>
-                        @endif
-
-                        @if($user->can('payroll-uang-karyawan-view') || $isAdmin)
-                        <a href="#" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 text-gray-600 hover:shadow-sm">
-                            <span class="text-xs font-medium">Data Uang Karyawan</span>
                         </a>
                         @endif
                     </div>
