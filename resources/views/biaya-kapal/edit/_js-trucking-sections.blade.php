@@ -223,7 +223,7 @@
 
         blDropdown.innerHTML = '<p class="px-3 py-2 text-sm text-gray-500 italic">Memuat kontainer...</p>';
 
-        fetch("{{ url('biaya-kapal/get-bls-by-voyages') }}", {
+        return fetch("{{ url('biaya-kapal/get-bls-by-voyages') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -836,9 +836,25 @@
                         
                         section.querySelector('.trucking-vendor-select').value = myData.nama_vendor;
                         
+                        if (myData.voyage) {
+                            try {
+                                await loadBlsForTruckingSection(sectionIndex, myData.voyage);
+                            } catch(e) {
+                                console.error('Gagal memuat kontainer trucking', e);
+                            }
+                        }
+                        
                         if (myData.no_bl_ids && myData.no_bl_ids.length > 0) {
+                            const blDropdown = section.querySelector('.trucking-bl-dropdown');
                             myData.no_bl_ids.forEach(blId => {
                                 addBlChipToTruckingSection(sectionIndex, blId);
+                                if (blDropdown) {
+                                    const opt = blDropdown.querySelector(`.trucking-bl-option[data-id="${blId}"]`);
+                                    if (opt) {
+                                        opt.classList.add('selected');
+                                        opt.classList.add('bg-blue-100');
+                                    }
+                                }
                             });
                         }
                         
