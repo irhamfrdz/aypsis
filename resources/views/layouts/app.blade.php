@@ -577,6 +577,12 @@
                             <span class="text-xs font-medium">Uang Makan Mingguan</span>
                         </a>
                         @endif
+
+                        @if($user->can('payroll-perhitungan-lembur-view') || $isAdmin)
+                        <a href="{{ route('payroll.perhitungan-lembur') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('payroll.perhitungan-lembur') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                            <span class="text-xs font-medium">Perhitungan Lembur</span>
+                        </a>
+                        @endif
                     </div>
                 </div>
                 @endif

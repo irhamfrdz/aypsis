@@ -6730,6 +6730,9 @@ Route::middleware(['auth',
     Route::post('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'storeUangMakan'])->name('payroll.uang-makan.store')->middleware('can:payroll-view');
     Route::get('pranota-uang-makan/{id}/export-auto-transfer', [\App\Http\Controllers\PranotaUangMakanController::class, 'exportAutoTransfer'])->name('pranota-uang-makan.export-auto-transfer')->middleware('can:payroll-view');
     Route::resource('pranota-uang-makan', \App\Http\Controllers\PranotaUangMakanController::class)->middleware('can:payroll-view');
+
+    // Perhitungan Lembur
+    Route::get('/payroll/perhitungan-lembur', [\App\Http\Controllers\PerhitunganLemburController::class, 'index'])->name('payroll.perhitungan-lembur')->middleware('can:payroll-perhitungan-lembur-view');
     
     // Master Tunjangan
     Route::resource('master/tunjangan', \App\Http\Controllers\MasterTunjanganController::class)

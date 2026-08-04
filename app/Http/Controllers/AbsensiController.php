@@ -646,6 +646,7 @@ class AbsensiController extends Controller
 
             $hadir = 0;
             $detail_hadir = [];
+            $detail_lembur = [];
             $sakit = 0;
             $izin = 0;
             $alpha = 0;
@@ -658,11 +659,6 @@ class AbsensiController extends Controller
 
             $tempDate = $startDate->copy();
             while ($tempDate->lte($endDate)) {
-                if ($tempDate->isSunday()) {
-                    $tempDate->addDay();
-                    continue; // Skip Sundays
-                }
-
                 $dateStr = $tempDate->toDateString();
 
                 if (in_array($dateStr, $presentDates)) {
@@ -718,11 +714,14 @@ class AbsensiController extends Controller
                     $lemburPulang = $dayLogs->first(function($val) { return strtolower($val->tipe) === 'lembur_pulang'; });
                     if ($lemburMasuk || $lemburPulang) {
                         $lemburKali++;
+                        $jam = 0;
                         if ($lemburMasuk && $lemburPulang) {
                             $lm = Carbon::parse($lemburMasuk->waktu);
                             $lp = Carbon::parse($lemburPulang->waktu);
-                            $lemburJam += $lm->diffInMinutes($lp) / 60;
+                            $jam = $lm->diffInMinutes($lp) / 60;
+                            $lemburJam += $jam;
                         }
+                        $detail_lembur[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ($jam > 0 ? " (" . round($jam, 1) . " Jam)" : "");
                     }
 
                 } else {
@@ -758,6 +757,8 @@ class AbsensiController extends Controller
                 'pulang_cepat_menit' => $pulangCepatMenit,
                 'lembur_jam' => round($lemburJam, 1),
                 'lembur_kali' => $lemburKali,
+                'detail_hadir' => $detail_hadir,
+                'detail_lembur' => $detail_lembur,
             ];
         }
 
