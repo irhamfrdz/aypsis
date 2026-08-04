@@ -79,22 +79,28 @@
             <div class="flex justify-between items-center">
                 <div class="flex items-center">
                     <a href="{{ route('home') }}" class="nav-logo text-2xl font-bold tracking-tighter flex items-center gap-2 transition-colors duration-300 @yield('logo_class', 'text-white')">
-                        <i class="fa-solid fa-ship text-blue-500 text-3xl"></i>
+                        <img src="{{ asset('images/logo_transparent.png') }}?v={{ time() }}" alt="Logo AYP" class="h-14 w-auto">
                         <span>ALEXINDO<span class="text-blue-500 font-black">YAKINPRIMA</span></span>
                     </a>
                 </div>
                 <div class="hidden md:flex space-x-8 items-center">
-                    <a href="{{ route('home') }}#beranda" class="nav-link font-medium hover:text-blue-400 transition-colors">Beranda</a>
-                    <a href="{{ route('home') }}#layanan" class="nav-link font-medium hover:text-blue-400 transition-colors">Layanan</a>
-                    <a href="{{ route('home') }}#rute" class="nav-link font-medium hover:text-blue-400 transition-colors">Rute</a>
-                    <a href="{{ route('public.pelabuhan') }}" class="nav-link font-medium hover:text-blue-400 transition-colors">Pelabuhan</a>
+                    <a href="{{ route('home') }}#beranda" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Home" data-lang-zh="首页">Beranda</a>
+                    <a href="{{ route('home') }}#layanan" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Services" data-lang-zh="服务">Layanan</a>
+                    <a href="{{ route('home') }}#rute" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Routes" data-lang-zh="航线">Rute</a>
+                    <a href="{{ route('public.pelabuhan') }}" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Ports" data-lang-zh="港口">Pelabuhan</a>
+                    <a href="{{ route('home') }}#mitra" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Partners" data-lang-zh="合作伙伴">Mitra</a>
                     
+                    <!-- Language Toggle -->
+                    <button onclick="toggleLang()" class="flex items-center gap-1 nav-link font-medium hover:text-blue-400 transition-colors focus:outline-none" title="Ubah Bahasa / Change Language">
+                        <i class="fa-solid fa-globe"></i> <span id="current-lang-label">ID</span>
+                    </button>
+
                     @auth
-                        <a href="{{ route('dashboard') }}" class="btn-primary px-6 py-2.5 rounded-full font-semibold text-white shadow-lg">
+                        <a href="{{ route('dashboard') }}" class="btn-primary px-6 py-2.5 rounded-full font-semibold text-white shadow-lg" data-lang-en='Dashboard <i class="fa-solid fa-arrow-right ml-2"></i>' data-lang-zh='仪表盘 <i class="fa-solid fa-arrow-right ml-2"></i>'>
                             Dashboard <i class="fa-solid fa-arrow-right ml-2"></i>
                         </a>
                     @else
-                        <a href="{{ route('login') }}" class="btn-primary px-6 py-2.5 rounded-full font-semibold text-white shadow-lg">
+                        <a href="{{ route('login') }}" class="btn-primary px-6 py-2.5 rounded-full font-semibold text-white shadow-lg" data-lang-en='Login Portal <i class="fa-solid fa-user ml-2"></i>' data-lang-zh='登录门户 <i class="fa-solid fa-user ml-2"></i>'>
                             Login Portal <i class="fa-solid fa-user ml-2"></i>
                         </a>
                     @endauth
@@ -111,14 +117,20 @@
         <!-- Mobile Menu (Hidden by default) -->
         <div id="mobile-menu" class="hidden bg-white text-slate-800 absolute w-full shadow-xl mt-4 pb-4">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 flex flex-col">
-                <a href="{{ route('home') }}#beranda" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50">Beranda</a>
-                <a href="{{ route('home') }}#layanan" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50">Layanan</a>
-                <a href="{{ route('home') }}#rute" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50">Rute</a>
-                <a href="{{ route('public.pelabuhan') }}" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50">Pelabuhan</a>
+                <a href="{{ route('home') }}#beranda" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Home" data-lang-zh="首页">Beranda</a>
+                <a href="{{ route('home') }}#layanan" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Services" data-lang-zh="服务">Layanan</a>
+                <a href="{{ route('home') }}#rute" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Routes" data-lang-zh="航线">Rute</a>
+                <a href="{{ route('public.pelabuhan') }}" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Ports" data-lang-zh="港口">Pelabuhan</a>
+                <a href="{{ route('home') }}#mitra" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Partners" data-lang-zh="合作伙伴">Mitra</a>
+                
+                <button onclick="toggleLang()" class="block w-full text-left px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50 focus:outline-none">
+                    <i class="fa-solid fa-globe"></i> Language: <span id="mobile-lang-label">ID</span>
+                </button>
+
                 @auth
-                    <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-base font-medium text-blue-600">Dashboard Portal</a>
+                    <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-base font-medium text-blue-600" data-lang-en="Dashboard Portal" data-lang-zh="仪表盘门户">Dashboard Portal</a>
                 @else
-                    <a href="{{ route('login') }}" class="block px-3 py-2 text-base font-medium text-blue-600">Login Portal</a>
+                    <a href="{{ route('login') }}" class="block px-3 py-2 text-base font-medium text-blue-600" data-lang-en="Login Portal" data-lang-zh="登录门户">Login Portal</a>
                 @endauth
             </div>
         </div>
@@ -131,8 +143,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                 <div class="lg:col-span-1">
-                    <a href="{{ route('home') }}" class="text-2xl font-bold tracking-tighter flex items-center gap-2 text-white mb-6">
-                        <i class="fa-solid fa-ship text-blue-500"></i>
+                    <a href="{{ route('home') }}" class="text-2xl font-bold tracking-tighter flex flex-col items-start gap-3 text-white mb-6">
+                        <img src="{{ asset('images/logo_transparent.png') }}?v={{ time() }}" alt="Logo AYP" class="h-14 w-auto">
                         <span>ALEXINDO<span class="text-blue-500">YAKINPRIMA</span></span>
                     </a>
                     <p class="text-slate-400 mb-6 leading-relaxed">
@@ -257,6 +269,52 @@
                 });
             }
         });
+
+        // Language toggle script
+        let currentLang = localStorage.getItem('ayp_lang') || 'id';
+        function updateLanguageUI() {
+            const langLabel = document.getElementById('current-lang-label');
+            const mobileLangLabel = document.getElementById('mobile-lang-label');
+            if(langLabel) langLabel.textContent = currentLang.toUpperCase();
+            if(mobileLangLabel) mobileLangLabel.textContent = currentLang.toUpperCase();
+
+            document.querySelectorAll('[data-lang-en]').forEach(el => {
+                if(!el.hasAttribute('data-lang-id')) {
+                    el.setAttribute('data-lang-id', el.innerHTML);
+                }
+                
+                if (currentLang === 'en') {
+                    el.innerHTML = el.getAttribute('data-lang-en');
+                } else if (currentLang === 'zh') {
+                    el.innerHTML = el.getAttribute('data-lang-zh') || el.getAttribute('data-lang-en');
+                } else {
+                    el.innerHTML = el.getAttribute('data-lang-id');
+                }
+            });
+
+            document.querySelectorAll('[data-lang-en-placeholder]').forEach(el => {
+                if(!el.hasAttribute('data-lang-id-placeholder')) {
+                    el.setAttribute('data-lang-id-placeholder', el.getAttribute('placeholder') || '');
+                }
+                
+                if (currentLang === 'en') {
+                    el.setAttribute('placeholder', el.getAttribute('data-lang-en-placeholder'));
+                } else if (currentLang === 'zh') {
+                    el.setAttribute('placeholder', el.getAttribute('data-lang-zh-placeholder') || el.getAttribute('data-lang-en-placeholder'));
+                } else {
+                    el.setAttribute('placeholder', el.getAttribute('data-lang-id-placeholder'));
+                }
+            });
+        }
+        function toggleLang() {
+            if (currentLang === 'id') currentLang = 'en';
+            else if (currentLang === 'en') currentLang = 'zh';
+            else currentLang = 'id';
+            
+            localStorage.setItem('ayp_lang', currentLang);
+            updateLanguageUI();
+        }
+        document.addEventListener('DOMContentLoaded', updateLanguageUI);
     </script>
     
     @yield('scripts')
