@@ -142,6 +142,17 @@ Route::middleware(['auth'])->group(function() {
     Route::get('master/mesin-users/export', [\App\Http\Controllers\MesinUserController::class, 'export'])->name('mesin-users.export');
 });
 
+// Public Landing Page (Company Profile)
+Route::get('/', function () {
+    return view('landing');
+})->name('home');
+
+// Public Pelabuhan Tujuan
+Route::get('/pelabuhan-tujuan', function () {
+    $pelabuhans = \App\Models\MasterPelabuhan::aktif()->orderBy('nama_pelabuhan', 'asc')->get();
+    return view('pelabuhan-tujuan', compact('pelabuhans'));
+})->name('public.pelabuhan');
+
 Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
@@ -311,10 +322,7 @@ Route::middleware([
     |===========================================================================
     */
 
-    // Arahkan root URL ke dashboard
-    Route::get('/', function () {
-        return redirect()->route('dashboard');
-    });
+
 
     // Backup database route
     Route::get('/backup-database', [\App\Http\Controllers\BackupController::class, 'download'])

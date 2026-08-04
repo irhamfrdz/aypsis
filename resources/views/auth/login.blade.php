@@ -8,6 +8,12 @@
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
     <div class="w-full max-w-md bg-white rounded-lg shadow-md p-8 relative overflow-hidden">
+        <a href="{{ route('home') }}" class="inline-flex items-center text-sm text-gray-500 hover:text-indigo-600 mb-4 transition-colors">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Kembali ke Beranda
+        </a>
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">AYPSIS Login</h2>
 
         <!-- Success Animation Overlay -->
