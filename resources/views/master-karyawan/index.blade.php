@@ -53,7 +53,7 @@
                 <!-- COMPACT FILTERS -->
                 <div class="bg-gray-50/50 rounded-xl p-3 border border-gray-200 shadow-sm">
                     <form method="GET" action="{{ route('master.karyawan.index') }}" class="space-y-3">
-                        @foreach(request()->except(['search', 'divisi', 'cabang', 'penempatan', 'tunjangan', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end', 'page']) as $key => $value)
+                        @foreach(request()->except(['search', 'divisi', 'cabang', 'penempatan', 'grup', 'sub_grup', 'tunjangan', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end', 'page']) as $key => $value)
                             @if(is_array($value))
                                 @foreach($value as $v)
                                     <input type="hidden" name="{{ $key }}[]" value="{{ $v }}">
@@ -162,6 +162,7 @@
                                         ];
                                         $defaultGrups = array_keys($subGroups);
                                         $existingGrups = [];
+                                        $existingSubGrups = [];
                                         $karyawansGrups = \App\Models\Karyawan::whereNotNull('grup')->pluck('grup');
                                         foreach ($karyawansGrups as $grupArray) {
                                             if (is_string($grupArray)) $grupArray = json_decode($grupArray, true);
@@ -170,15 +171,31 @@
                                                     $parts = explode(':', $g, 2);
                                                     $main = $parts[0];
                                                     if (!in_array($main, $existingGrups) && $main !== '') $existingGrups[] = $main;
+                                                    
+                                                    if (isset($parts[1])) {
+                                                        $sub = trim($parts[1]);
+                                                        if (!in_array($sub, $existingSubGrups) && $sub !== '') $existingSubGrups[] = $sub;
+                                                    }
                                                 }
                                             }
                                         }
                                         $grupOptions = array_unique(array_merge($defaultGrups, $existingGrups));
                                         sort($grupOptions);
+                                        sort($existingSubGrups);
                                         $selectedGrup = request('grup', '');
+                                        $selectedSubGrup = request('sub_grup', '');
                                     @endphp
                                     @foreach($grupOptions as $opt)
                                         <option value="{{ $opt }}" {{ $selectedGrup == $opt ? 'selected' : '' }}>{{ strtoupper($opt) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[9px] font-bold text-teal-500 uppercase tracking-tighter">Sub Group:</span>
+                                <select name="sub_grup" class="py-1 px-2 border border-gray-300 rounded-md text-[10px] focus:ring-1 focus:ring-teal-500 w-32 shadow-xs" onchange="this.form.submit()">
+                                    <option value="">Semua Sub Group</option>
+                                    @foreach($existingSubGrups as $opt)
+                                        <option value="{{ $opt }}" {{ $selectedSubGrup == $opt ? 'selected' : '' }}>{{ strtoupper($opt) }}</option>
                                     @endforeach
                                 </select>
                             </div>

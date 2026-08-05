@@ -108,6 +108,15 @@ class KaryawanController extends Controller
                 }
             });
         }
+        if ($request->filled('sub_grup')) {
+            $subGrups = (array) $request->sub_grup;
+            $query->where(function ($q) use ($subGrups) {
+                foreach ($subGrups as $sg) {
+                    // Match format "GROUP:SUB_GROUP"
+                    $q->orWhere('grup', 'LIKE', '%:' . $sg . '"%');
+                }
+            });
+        }
 
         // Filter: Tanggal Masuk range
         if ($request->filled('tanggal_masuk_start')) {
@@ -2065,8 +2074,39 @@ class KaryawanController extends Controller
         ]);
 
         try {
-            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\KaryawanUpdateImport, $request->file('excel_file'));
-            return redirect()->route('master.karyawan.index')->with('success', 'Data karyawan berhasil diperbarui dari file Excel.');
+            $import = new \App\Imports\KaryawanUpdateImport;
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('excel_file'));
+            
+            $messages = [];
+            $hasErrors = count($import->failedRows) > 0;
+            $hasSuccess = $import->successCount > 0;
+
+            if ($hasSuccess) {
+                $messages[] = "✅ {$import->successCount} data karyawan berhasil diperbarui.";
+                if (count($import->successRows) > 0) {
+                    $messages[] = "Data berhasil: " . implode(', ', $import->successRows) . 
+                                  ($import->successCount > 5 ? ' dan lainnya.' : '');
+                }
+            }
+
+            if ($hasErrors) {
+                $totalFailed = count($import->failedRows);
+                $messages[] = "⚠️ {$totalFailed} data gagal diproses.";
+                $failedPreview = array_slice($import->failedRows, 0, 10);
+                $messages[] = "Data gagal:\n- " . implode("\n- ", $failedPreview);
+                if ($totalFailed > 10) {
+                    $messages[] = "... dan " . ($totalFailed - 10) . " error lainnya.";
+                }
+            }
+
+            if ($hasErrors && !$hasSuccess) {
+                return redirect()->back()->with('error', implode("\n", $messages));
+            } elseif ($hasErrors && $hasSuccess) {
+                return redirect()->route('master.karyawan.index')->with('warning', implode("\n", $messages));
+            } else {
+                return redirect()->route('master.karyawan.index')->with('success', implode("\n", $messages) ?: 'Data karyawan berhasil diperbarui dari file Excel.');
+            }
+
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal memproses file Excel: ' . $e->getMessage());
         }
