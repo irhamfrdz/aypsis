@@ -121,7 +121,12 @@
                                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">Tanggal</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">No. Bukti / Invoice</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Keterangan</th>
-                                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">Total</th>
+                                        @if(strtoupper($category) === 'BIAYA DOKUMEN')
+                                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Vendor</th>
+                                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal</th>
+                                            <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">PPH</th>
+                                        @endif
+                                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">@if(strtoupper($category) === 'BIAYA DOKUMEN') Total Biaya @else Total @endif</th>
                                         <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-16 no-print">Aksi</th>
                                     </tr>
                                 </thead>
@@ -172,6 +177,42 @@
                                                     {{ $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? '-' }}
                                                 @endif
                                             </td>
+                                            @if(strtoupper($category) === 'BIAYA DOKUMEN')
+                                                <td class="px-4 py-3 text-xs text-gray-700">
+                                                    @if(isset($item->dokumens) && $item->dokumens->count() > 0)
+                                                        @foreach($item->dokumens as $dok)
+                                                            @php
+                                                                $vendorName = '-';
+                                                                if ($dok->vendor_id) {
+                                                                    $vendor = \App\Models\PricelistBiayaDokumen::find($dok->vendor_id);
+                                                                    if ($vendor) $vendorName = $vendor->nama_vendor;
+                                                                }
+                                                            @endphp
+                                                            <div class="mb-1 pb-1 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">{{ $vendorName }}</div>
+                                                        @endforeach
+                                                    @else
+                                                        {{ $item->vendor->nama_vendor ?? '-' }}
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3 text-right text-xs text-gray-900 whitespace-nowrap">
+                                                    @if(isset($item->dokumens) && $item->dokumens->count() > 0)
+                                                        @foreach($item->dokumens as $dok)
+                                                            <div class="mb-1 pb-1 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">Rp {{ number_format($dok->nominal, 0, ',', '.') }}</div>
+                                                        @endforeach
+                                                    @else
+                                                        Rp {{ number_format($item->nominal, 0, ',', '.') }}
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3 text-right text-xs text-gray-900 whitespace-nowrap">
+                                                    @if(isset($item->dokumens) && $item->dokumens->count() > 0)
+                                                        @foreach($item->dokumens as $dok)
+                                                            <div class="mb-1 pb-1 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">Rp {{ number_format($dok->pph, 0, ',', '.') }}</div>
+                                                        @endforeach
+                                                    @else
+                                                        Rp {{ number_format($item->pph, 0, ',', '.') }}
+                                                    @endif
+                                                </td>
+                                            @endif
                                             <td class="px-4 py-3 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
                                                 Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
                                             </td>
@@ -199,7 +240,7 @@
                                 </tbody>
                                 <tfoot class="bg-gray-100/50 font-bold border-t border-gray-200">
                                     <tr>
-                                        <td colspan="4" class="px-4 py-3 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $category }}</td>
+                                        <td colspan="{{ strtoupper($category) === 'BIAYA DOKUMEN' ? 7 : 4 }}" class="px-4 py-3 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $category }}</td>
                                         <td class="px-4 py-3 text-right text-sm text-gray-900">
                                             Rp {{ number_format($groupTotal, 0, ',', '.') }}
                                         </td>
