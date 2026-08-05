@@ -81,4 +81,58 @@ class GpsTrackingController extends Controller
             'data' => $locations
         ]);
     }
+
+    /**
+     * Dapatkan riwayat pergerakan GPS untuk sebuah mobil (maks. 2 minggu)
+     */
+    public function getHistory($mobil_id)
+    {
+        // Hitung batas waktu mulai diam
+        // Menggunakan waktu saat data ditarik
+        $mobil = Mobil::findOrFail($mobil_id);
+        
+        $history = \App\Models\GpsHistory::where('mobil_id', $mobil_id)
+            ->where('recorded_at', '>=', now()->subDays(14))
+            ->orderBy('recorded_at', 'asc')
+            ->get();
+            
+        // Logika untuk mendeteksi berapa hari mobil tidak bergerak dari posisi terakhir
+        $lastLocation = $history->last();
+        $daysNotMoving = 0;
+        
+        if ($lastLocation) {
+            // Cari dari belakang ke depan, kapan mobil terakhir memiliki kecepatan > 0 atau berubah posisi signifikan
+            // Namun untuk lebih mudah, cek kapan terakhir kali bergerak (speed > 0)
+            $lastMoved = $history->where('speed', '>', 0)->last();
+            
+            if ($lastMoved) {
+                $daysNotMoving = $lastMoved->recorded_at->diffInDays(now());
+            } else {
+                // Jika tidak pernah bergerak sama sekali dalam riwayat ini
+                $firstRecord = $history->first();
+                $daysNotMoving = $firstRecord ? $firstRecord->recorded_at->diffInDays(now()) : 0;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'mobil' => [
+                    'nomor_polisi' => $mobil->nomor_polisi,
+                    'merek' => $mobil->merek,
+                ],
+                'days_not_moving' => floor($daysNotMoving),
+                'history' => $history->map(function($item) {
+                    return [
+                        'lat' => $item->lat,
+                        'lng' => $item->lng,
+                        'speed' => $item->speed,
+                        'status' => $item->status,
+                        'recorded_at' => $item->recorded_at->format('Y-m-d H:i:s'),
+                        'alamat' => $item->alamat,
+                    ];
+                })
+            ]
+        ]);
+    }
 }

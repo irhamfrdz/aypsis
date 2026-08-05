@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 Schedule::command('attendance:sync-local')->everyTenMinutes();
 Schedule::command('tanda-terima:update-penerima')->everyTenMinutes();
 Schedule::command('manifest:update-penerima')->everyTenMinutes();
+Schedule::command('gps:sync-history')->everyFiveMinutes()->withoutOverlapping();

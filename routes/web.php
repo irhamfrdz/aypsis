@@ -5212,6 +5212,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('gps-tracking')->name('gps-tracking.')->group(function () {
         Route::get('/', [\App\Http\Controllers\GpsTrackingController::class, 'index'])->name('index');
         Route::get('/latest-locations', [\App\Http\Controllers\GpsTrackingController::class, 'getLatestLocations'])->name('latest-locations');
+        Route::get('/history/{mobil_id}', [\App\Http\Controllers\GpsTrackingController::class, 'getHistory'])->name('history');
     });
 
     // Tagihan CAT routes

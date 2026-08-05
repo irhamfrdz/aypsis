@@ -75,6 +75,11 @@
                                 <p class="mt-1 text-xs leading-5 text-gray-500 truck-status flex items-center" id="status-{{ $mobil->id }}">
                                     <i class="fas fa-circle text-[8px] mr-1 text-gray-400"></i> Mencari sinyal...
                                 </p>
+                                <div class="mt-2 flex gap-1 justify-end">
+                                    <button type="button" onclick="event.stopPropagation(); loadHistory({{ $mobil->id }})" class="text-[10px] bg-indigo-50 border border-indigo-200 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-100 transition-colors">
+                                        <i class="fas fa-history mr-1"></i> History
+                                    </button>
+                                </div>
                             </div>
                         </li>
                         @empty
@@ -92,6 +97,26 @@
         <div class="w-full lg:w-2/3 xl:w-3/4">
             <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl overflow-hidden h-[600px] relative z-0">
                 <div id="map" class="w-full h-full"></div>
+                
+                <!-- History Info Panel -->
+                <div id="history-panel" class="hidden absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-[300px]">
+                    <div class="flex justify-between items-start mb-2 border-b pb-2">
+                        <h4 class="font-bold text-gray-800" id="history-title">Riwayat Perjalanan</h4>
+                        <button type="button" onclick="clearHistory()" class="text-gray-400 hover:text-red-500 transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="text-sm text-gray-600 space-y-2">
+                        <div class="flex justify-between">
+                            <span>Total Titik:</span>
+                            <span id="history-count" class="font-semibold text-gray-900">0</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-gray-50 p-2 rounded-md">
+                            <span class="text-gray-700 font-medium">Status Pergerakan:</span>
+                            <span id="history-idle" class="font-bold text-indigo-600 px-2 py-1 bg-indigo-50 rounded">Aktif</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -105,6 +130,7 @@
 <script>
     let map;
     let markers = {};
+    let activeHistoryLayer = null; // Menyimpan layer polyline riwayat yang sedang aktif
     let currentFilter = 'all'; // all, berjalan, berhenti
     const defaultCenter = [-6.2088, 106.8456]; // Jakarta Default Coordinate
 
@@ -342,6 +368,80 @@
         // Update truck counter based on visible items
         let visibleCount = $('.truck-item:visible').length;
         $('#truck-counter').text(visibleCount + ' Truk');
+    }
+
+    function clearHistory() {
+        if (activeHistoryLayer) {
+            map.removeLayer(activeHistoryLayer);
+            activeHistoryLayer = null;
+        }
+        $('#history-panel').addClass('hidden');
+    }
+
+    async function loadHistory(mobilId) {
+        // Tampilkan loading state
+        $('#history-panel').removeClass('hidden');
+        $('#history-title').html('<i class="fas fa-spinner fa-spin mr-2"></i>Memuat Riwayat...');
+        $('#history-count').text('-');
+        $('#history-idle').text('-');
+
+        try {
+            const response = await fetch(`{{ route('gps-tracking.index') }}/history/${mobilId}`);
+            const result = await response.json();
+
+            if (result.success && result.data) {
+                const data = result.data;
+                const history = data.history;
+
+                $('#history-title').html(`<i class="fas fa-history mr-2 text-indigo-600"></i>${data.mobil.nomor_polisi}`);
+                $('#history-count').text(history.length);
+
+                let idleText = '';
+                if (data.days_not_moving >= 14) {
+                    idleText = `<span class="text-red-600">Tidak bergerak &ge; 14 hari</span>`;
+                } else if (data.days_not_moving > 0) {
+                    idleText = `<span class="text-orange-500">Tidak bergerak ${data.days_not_moving} hari</span>`;
+                } else {
+                    idleText = `<span class="text-green-600">Aktif Bergerak</span>`;
+                }
+                $('#history-idle').html(idleText);
+
+                // Bersihkan history lama jika ada
+                if (activeHistoryLayer) {
+                    map.removeLayer(activeHistoryLayer);
+                }
+
+                if (history.length > 0) {
+                    let latlngs = [];
+                    history.forEach(item => {
+                        if (item.lat && item.lng) {
+                            latlngs.push([parseFloat(item.lat), parseFloat(item.lng)]);
+                        }
+                    });
+
+                    // Gambar garis polyline
+                    activeHistoryLayer = L.polyline(latlngs, {
+                        color: '#4f46e5', // indigo-600
+                        weight: 4,
+                        opacity: 0.7,
+                        smoothFactor: 1
+                    }).addTo(map);
+
+                    // Sesuaikan zoom peta ke seluruh rentang garis
+                    map.fitBounds(activeHistoryLayer.getBounds(), { padding: [50, 50] });
+                } else {
+                    alert('Belum ada data riwayat yang tersimpan untuk armada ini.');
+                    clearHistory();
+                }
+            } else {
+                alert('Gagal mengambil data riwayat.');
+                clearHistory();
+            }
+        } catch (error) {
+            console.error('Error fetching history:', error);
+            alert('Terjadi kesalahan koneksi.');
+            clearHistory();
+        }
     }
 </script>
 @endpush
