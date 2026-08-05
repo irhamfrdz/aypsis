@@ -153,8 +153,8 @@
                             <div class="flex items-start">
                                 <span class="inline-flex items-center justify-center w-6 h-6 bg-blue-200 text-blue-800 rounded-full text-xs font-semibold mr-3 mt-0.5">2</span>
                                 <div>
-                                    <p class="font-medium">Periksa NIK</p>
-                                    <p class="text-blue-700">Pembaruan data hanya dilakukan jika NIK ditemukan di sistem. NIK yang tidak ada akan diabaikan.</p>
+                                    <p class="font-medium">Periksa NIK / Nama Lengkap</p>
+                                    <p class="text-blue-700">Pembaruan dilakukan berdasarkan pencocokan NIK. Jika NIK kosong atau gagal terbaca, sistem akan otomatis mencari karyawan berdasarkan <strong>NAMA LENGKAP</strong>.</p>
                                 </div>
                             </div>
                             <div class="flex items-start">

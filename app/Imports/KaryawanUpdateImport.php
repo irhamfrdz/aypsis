@@ -17,41 +17,61 @@ class KaryawanUpdateImport implements ToCollection, WithHeadingRow, WithChunkRea
     */
     public function collection(Collection $rows)
     {
-        // Extract all valid NIKs from this chunk and cast to string
+        // Extract all valid NIKs and Nama Lengkap from this chunk and cast to string
         $niks = $rows->pluck('nik')->map(function($nik) {
             return trim((string)$nik);
         })->filter(function($nik) {
             return $nik !== '';
         })->toArray();
 
-        Log::info("Import Update Data started", ['niks' => $niks]);
+        $namaLengkaps = $rows->pluck('nama_lengkap')->map(function($nama) {
+            return trim((string)$nama);
+        })->filter(function($nama) {
+            return $nama !== '';
+        })->toArray();
 
-        if (empty($niks)) {
-            Log::info("No valid NIKs found in this chunk");
+        Log::info("Import Update Data started", ['nik_count' => count($niks), 'nama_count' => count($namaLengkaps)]);
+
+        if (empty($niks) && empty($namaLengkaps)) {
+            Log::info("No valid NIKs or Nama Lengkap found in this chunk");
             return;
         }
 
-        // Fetch all matching Karyawan records in a single query to avoid N+1 problem
-        $karyawans = Karyawan::whereIn('nik', $niks)->get()->keyBy('nik');
+        // Fetch all matching Karyawan records in a single query by NIK or Nama Lengkap
+        $karyawans = Karyawan::whereIn('nik', $niks)
+            ->orWhereIn('nama_lengkap', $namaLengkaps)
+            ->get();
+            
+        $byNik = $karyawans->keyBy('nik');
+        $byNama = $karyawans->keyBy('nama_lengkap');
         
-        Log::info("Found matching Karyawans", ['count' => $karyawans->count(), 'keys' => $karyawans->keys()->toArray()]);
+        Log::info("Found matching Karyawans", ['count' => $karyawans->count()]);
 
         // Wrap updates in a transaction for much faster database writes
-        DB::transaction(function () use ($rows, $karyawans) {
+        DB::transaction(function () use ($rows, $byNik, $byNama) {
             foreach ($rows as $row) {
-                if (!isset($row['nik'])) {
-                    continue;
+                $nikStr = isset($row['nik']) ? trim((string)$row['nik']) : '';
+                $namaStr = isset($row['nama_lengkap']) ? trim((string)$row['nama_lengkap']) : '';
+
+                if ($nikStr === '' && $namaStr === '') {
+                    continue; // Skip if both empty
                 }
 
-                $nikStr = trim((string)$row['nik']);
-                if ($nikStr === '') {
-                    continue;
+                $karyawan = null;
+
+                // 1. Try to find by NIK
+                if ($nikStr !== '') {
+                    $karyawan = $byNik->get($nikStr);
                 }
 
-                $karyawan = $karyawans->get($nikStr);
+                // 2. If not found by NIK, try to find by NAMA LENGKAP
+                if (!$karyawan && $namaStr !== '') {
+                    $karyawan = $byNama->get($namaStr);
+                }
+
                 if (!$karyawan) {
-                    Log::warning("NIK not found in database during import: " . $nikStr);
-                    continue; // Skip if not found
+                    Log::warning("Karyawan not found in database during import. NIK: '$nikStr', Nama: '$namaStr'");
+                    continue; // Skip if completely not found
                 }
 
                 $rowArray = $row->toArray();
