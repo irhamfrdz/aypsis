@@ -37,8 +37,12 @@ class KaryawanTidakTetapController extends Controller
         $pekerjaans = \App\Models\Pekerjaan::all();
         $pajaks = \App\Models\Pajak::all();
         $nextNik = $this->generateNextNik();
+        
+        $penempatans = \App\Models\Karyawan::distinct()->pluck('penempatan')->filter()->values();
+        $groups = \App\Models\Karyawan::distinct()->pluck('grup')->filter()->values();
+        $subGroups = collect([]); // Or fetch if there is a way later
 
-        return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks', 'nextNik'));
+        return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks', 'nextNik', 'penempatans', 'groups', 'subGroups'));
     }
 
     /**
@@ -66,6 +70,9 @@ class KaryawanTidakTetapController extends Controller
             'email' => 'nullable|email|max:255',
             'tanggal_masuk' => 'nullable|date',
             'status_pajak' => 'nullable|string|max:50',
+            'penempatan' => 'nullable|string|max:100',
+            'group' => 'nullable|string|max:100',
+            'sub_group' => 'nullable|string|max:100',
         ]);
 
         // Auto-generate NIK if not provided
@@ -112,8 +119,12 @@ class KaryawanTidakTetapController extends Controller
     {
         $pekerjaans = \App\Models\Pekerjaan::all();
         $pajaks = \App\Models\Pajak::all();
+        
+        $penempatans = \App\Models\Karyawan::distinct()->pluck('penempatan')->filter()->values();
+        $groups = \App\Models\Karyawan::distinct()->pluck('grup')->filter()->values();
+        $subGroups = collect([]);
 
-        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks'));
+        return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks', 'penempatans', 'groups', 'subGroups'));
     }
 
     /**
@@ -141,6 +152,9 @@ class KaryawanTidakTetapController extends Controller
             'email' => 'nullable|email|max:255',
             'tanggal_masuk' => 'nullable|date',
             'status_pajak' => 'nullable|string|max:50',
+            'penempatan' => 'nullable|string|max:100',
+            'group' => 'nullable|string|max:100',
+            'sub_group' => 'nullable|string|max:100',
         ]);
 
         $karyawanTidakTetap->update($validated);

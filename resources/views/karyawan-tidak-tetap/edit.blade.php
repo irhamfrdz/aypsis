@@ -162,6 +162,36 @@
                             @endforeach
                         </select>
                     </div>
+
+                    <div>
+                        <label for="penempatan" class="{{ $labelClasses }}">Penempatan</label>
+                        <select name="penempatan" id="penempatan" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Penempatan --</option>
+                            @foreach($penempatans as $p)
+                                <option value="{{ $p }}" {{ old('penempatan', $karyawanTidakTetap->penempatan) == $p ? 'selected' : '' }}>{{ $p }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="group" class="{{ $labelClasses }}">Group</label>
+                        <select name="group" id="group" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Group --</option>
+                            @foreach($groups as $g)
+                                <option value="{{ $g }}" {{ old('group', $karyawanTidakTetap->group) == $g ? 'selected' : '' }}>{{ $g }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="sub_group" class="{{ $labelClasses }}">Sub Group</label>
+                        <select name="sub_group" id="sub_group" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Sub Group --</option>
+                            @foreach($subGroups as $sg)
+                                <option value="{{ $sg }}" {{ old('sub_group', $karyawanTidakTetap->sub_group) == $sg ? 'selected' : '' }}>{{ $sg }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             </div>
         </fieldset>

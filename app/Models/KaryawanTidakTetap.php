@@ -28,6 +28,9 @@ class KaryawanTidakTetap extends Model
         'email',
         'tanggal_masuk',
         'status_pajak',
+        'penempatan',
+        'group',
+        'sub_group',
     ];
 
     protected $casts = [
