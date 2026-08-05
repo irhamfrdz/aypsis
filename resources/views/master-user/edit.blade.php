@@ -4183,6 +4183,51 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pranota Uang Makan --}}
+                            <tr class="module-row" data-module="pranota-uang-makan">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Pranota Uang Makan</div>
+                                            <div class="text-xs text-gray-500">Modul pengelolaan Pranota Uang Makan</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-uang-makan-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-uang-makan-header-checkbox permission-checkbox" data-permission="create" disabled>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-uang-makan-header-checkbox permission-checkbox" data-permission="update" disabled>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" class="pranota-uang-makan-header-checkbox permission-checkbox" data-permission="delete" disabled>
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Pranota Uang Makan Sub-modules --}}
+                            <tr class="submodule-row" data-parent="pranota-uang-makan">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2 ml-4">└─</span>
+                                        <span>Daftar Pranota Uang Makan</span>
+                                    </div>
+                                </td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-uang-makan][view]" value="1" class="permission-checkbox" @if(old('permissions.pranota-uang-makan.view') || (isset($userMatrixPermissions['pranota-uang-makan']['view']) && $userMatrixPermissions['pranota-uang-makan']['view']) || ($user && $user->can('pranota-uang-makan-view'))) checked @endif></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-uang-makan][create]" value="1" class="permission-checkbox" disabled></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-uang-makan][update]" value="1" class="permission-checkbox" disabled></td>
+                                <td class="text-center"><input type="checkbox" name="permissions[pranota-uang-makan][delete]" value="1" class="permission-checkbox" disabled></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Kwitansi --}}
                             <tr class="module-row" data-module="kwitansi">
                                 <td class="module-header">
@@ -5921,6 +5966,63 @@
                     if (headerCheckbox && kwitansiCheckboxes.length > 0) {
                         const allChecked = Array.from(kwitansiCheckboxes).every(cb => cb.checked);
                         const someChecked = Array.from(kwitansiCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            // Initialize Pranota Uang Makan checkbox handling
+            initializeCheckAllPranotaUangMakan();
+
+            function initializeCheckAllPranotaUangMakan() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.pranota-uang-makan-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        if (this.disabled) return;
+                        
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in pranota uang makan sub-modules
+                        const subCheckboxes = document.querySelectorAll(`[data-parent="pranota-uang-makan"] input[name*="[${permission}]"]`);
+                        subCheckboxes.forEach(function(checkbox) {
+                            if (!checkbox.disabled) {
+                                checkbox.checked = isChecked;
+                            }
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Pranota Uang Makan telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Pranota Uang Makan telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="pranota-uang-makan"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updatePranotaUangMakanHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updatePranotaUangMakanHeaderCheckboxes();
+            }
+
+            function updatePranotaUangMakanHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.pranota-uang-makan-header-checkbox[data-permission="${permission}"]`);
+                    const subCheckboxes = document.querySelectorAll(`[data-parent="pranota-uang-makan"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && subCheckboxes.length > 0) {
+                        const allChecked = Array.from(subCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(subCheckboxes).some(cb => cb.checked);
 
                         headerCheckbox.checked = allChecked;
                         headerCheckbox.indeterminate = someChecked && !allChecked;
