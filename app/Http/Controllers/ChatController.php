@@ -143,6 +143,55 @@ class ChatController extends Controller
                     'is_read' => false,
                 ]);
             }
+        } else {
+            // Auto-responder logic based on keywords
+            $userMessage = strtolower($request->message);
+            $userMessage = preg_replace('/[^\w\s]/', '', $userMessage); // Remove punctuation
+            
+            // Get all active FAQs
+            $faqs = \App\Models\ChatFaq::where('is_active', true)->get();
+            
+            $bestMatch = null;
+            $highestScore = 0;
+            
+            // Common Indonesian stop words to ignore
+            $stopWords = ['apa', 'apakah', 'bagaimana', 'dimana', 'kapan', 'siapa', 'mengapa', 'kenapa', 'bisa', 'yang', 'di', 'ke', 'dari', 'dan', 'atau', 'untuk', 'saya', 'kami', 'tolong', 'cara', 'halo', 'min', 'admin'];
+            
+            foreach ($faqs as $faq) {
+                $faqQuestion = strtolower($faq->question);
+                $faqQuestion = preg_replace('/[^\w\s]/', '', $faqQuestion);
+                
+                // Split question into words
+                $faqWords = array_diff(explode(' ', $faqQuestion), $stopWords);
+                $faqWords = array_filter($faqWords); // Remove empty
+                
+                if (count($faqWords) === 0) continue;
+                
+                $matchCount = 0;
+                foreach ($faqWords as $word) {
+                    if (strpos($userMessage, $word) !== false) {
+                        $matchCount++;
+                    }
+                }
+                
+                $score = $matchCount / count($faqWords);
+                
+                // Match if at least 50% of the significant words in the FAQ question are present in the user's message
+                if ($score >= 0.5 && $score > $highestScore) {
+                    $highestScore = $score;
+                    $bestMatch = $faq;
+                }
+            }
+            
+            if ($bestMatch) {
+                $autoReply = Chat::create([
+                    'session_id' => $request->session_id,
+                    'name' => 'Virtual Assistant',
+                    'message' => $bestMatch->answer,
+                    'is_admin' => true,
+                    'is_read' => false,
+                ]);
+            }
         }
 
         return response()->json([
