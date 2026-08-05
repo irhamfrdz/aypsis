@@ -39,6 +39,9 @@
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <h2 class="text-xl font-semibold text-gray-900">Import Update Data Karyawan</h2>
                 <div class="flex gap-2">
+                    <a href="{{ route('master.karyawan.import-update.template') }}" class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded transition duration-150">
+                        <i class="fas fa-download mr-2"></i>Download Template
+                    </a>
                     <a href="{{ route('master.karyawan.index') }}" class="inline-flex items-center px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded transition duration-150">
                         <i class="fas fa-arrow-left mr-2"></i>Kembali
                     </a>

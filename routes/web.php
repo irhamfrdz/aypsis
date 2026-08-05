@@ -559,6 +559,10 @@ Route::middleware([
         Route::get('karyawan/import-update', [KaryawanController::class, 'importUpdateForm'])
             ->name('karyawan.import-update')
             ->middleware(['auth', 'can:master-karyawan-update']);
+            
+        Route::get('karyawan/import-update/template', [KaryawanController::class, 'downloadUpdateTemplate'])
+            ->name('karyawan.import-update.template')
+            ->middleware(['auth', 'can:master-karyawan-update']);
 
         Route::post('karyawan/import-update', [KaryawanController::class, 'importUpdateStore'])
             ->name('karyawan.import-update.store')

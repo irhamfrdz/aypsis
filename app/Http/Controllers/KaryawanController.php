@@ -2012,6 +2012,42 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Download Excel template for import update
+     */
+    public function downloadUpdateTemplate()
+    {
+        $columns = [
+            'nik', 'nama_lengkap', 'kantor_cabang_ayp', 'pekerjaan', 'penempatan', 'group', 'sub_group'
+        ];
+
+        $fileName = 'template_import_update_karyawan.csv';
+
+        $callback = function () use ($columns) {
+            $out = fopen('php://output', 'w');
+
+            // Write UTF-8 BOM for Excel recognition
+            fwrite($out, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Write header only with semicolon delimiter for Excel
+            fwrite($out, implode(';', $columns)."\r\n");
+
+            // Add one empty row for user to start entering data
+            $emptyRow = array_fill(0, count($columns), '');
+            fwrite($out, implode(';', $emptyRow)."\r\n");
+
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
+    }
+
+    /**
      * Show form for importing data updates
      */
     public function importUpdateForm()
