@@ -376,7 +376,9 @@
     }
 
     // Before form submit, remove formatting from all currency fields
-    document.querySelector('form').addEventListener('submit', function(e) {
+    const biayaKapalForm = document.getElementById('biayaKapalForm');
+    if (biayaKapalForm) {
+        biayaKapalForm.addEventListener('submit', function(e) {
         // DEBUG: Log all kapal sections data before submit
         const sections = document.querySelectorAll('.kapal-section');
         console.log('=== FORM SUBMIT DEBUG ===');
@@ -471,7 +473,9 @@
         document.querySelectorAll('.grand-total-value').forEach(el => {
             el.value = String(el.value).replace(/\./g, '').replace(/[^0-9\-]/g, '');
         });
+        });
     });
+    }
 
     // Update file name display
     function updateFileName(input) {

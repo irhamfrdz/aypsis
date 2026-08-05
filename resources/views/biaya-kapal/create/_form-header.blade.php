@@ -56,5 +56,5 @@
             <p class="text-sm text-gray-600 mt-1">Lengkapi formulir di bawah ini dengan data yang akurat</p>
         </div>
 
-        <form action="{{ route('biaya-kapal.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
+        <form id="biayaKapalForm" action="{{ route('biaya-kapal.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
             @csrf

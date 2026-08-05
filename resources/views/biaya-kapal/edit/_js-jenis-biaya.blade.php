@@ -119,7 +119,9 @@
     }
 
     // Before form submit, remove formatting from all currency fields
-    document.querySelector('form').addEventListener('submit', function(e) {
+    const biayaKapalForm = document.getElementById('biayaKapalForm');
+    if (biayaKapalForm) {
+        biayaKapalForm.addEventListener('submit', function(e) {
         if (nominalInput && nominalInput.value) nominalInput.value = nominalInput.value.replace(/\./g, '');
         if (ppnInput && ppnInput.value) ppnInput.value = ppnInput.value.replace(/\./g, '');
         if (pphInput && pphInput.value) pphInput.value = pphInput.value.replace(/\./g, '');
@@ -179,7 +181,9 @@
         document.querySelectorAll('.grand-total-value').forEach(el => {
             el.value = String(el.value).replace(/\./g, '').replace(/[^0-9\-]/g, '');
         });
+        });
     });
+    }
 
     // Update file name display
     function updateFileName(input) {
