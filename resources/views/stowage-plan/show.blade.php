@@ -242,6 +242,7 @@
     const availableBays = Object.values(@json($stowageBays));
     const availableRows = Object.values(@json($stowageRows));
     const availableTiers = Object.values(@json($stowageTiers));
+    const disabledSlots = @json($disabledSlots);
 
     function toggleView(view) {
         if(view === 'topdown') {
@@ -270,43 +271,106 @@
             return;
         }
 
-        let html = '<div class="inline-flex flex-col gap-1 pb-10">';
-        
-        availableRows.forEach(row => {
-            html += '<div class="flex gap-1 items-center">';
-            // Y-axis label
-            html += `<div class="text-[10px] text-gray-500 font-bold w-6 text-right pr-1">${row}</div>`;
+        // Urutkan Row: Even descending, Odd ascending
+        const sortedRows = [...availableRows].sort((a, b) => {
+            let numA = parseInt(a);
+            let numB = parseInt(b);
+            let isAEven = numA % 2 === 0;
+            let isBEven = numB % 2 === 0;
+
+            if (isAEven && !isBEven) return -1;
+            if (!isAEven && isBEven) return 1;
             
-            availableBays.forEach(bay => {
-                const container = plansData.find(p => p.bay === bay && p.row === row && p.tier === tier);
-                
-                if(container) {
-                    html += `
-                        <div class="w-14 h-14 bg-orange-500 border border-orange-600 rounded flex flex-col items-center justify-center shadow-inner relative group cursor-pointer hover:bg-orange-400 transition-colors" title="No: ${container.container} | Tipe: ${container.type}">
-                            <i class="fas fa-box text-white/30 text-xl absolute"></i>
-                            <span class="text-[8px] text-white font-bold truncate w-12 text-center relative z-10 leading-tight">${container.container.substring(0,4)}<br/>${container.container.substring(4)}</span>
-                        </div>
-                    `;
-                } else {
-                    html += `
-                        <div class="w-14 h-14 bg-white/50 border border-gray-300 border-dashed rounded flex flex-col items-center justify-center hover:bg-white transition-colors">
-                            <span class="text-[9px] text-gray-300 opacity-0 group-hover:opacity-100">+</span>
-                        </div>
-                    `;
-                }
-            });
-            html += '</div>';
+            if (isAEven) return numB - numA;
+            else return numA - numB;
         });
+
+        // Urutkan bay dari depan ke belakang (kecil ke besar)
+        const sortedBays = [...availableRows].sort((a,b) => parseInt(a) - parseInt(b));
+        // Wait, availableBays is already sorted ascending by controller. We use availableBays directly.
+
+        let html = `
+            <div class="overflow-x-auto w-full p-4 flex justify-center bg-gray-50/50">
+                <div class="relative bg-slate-100 border-4 border-slate-400 shadow-xl" 
+                     style="border-radius: 50% 50% 5% 5% / 150px 150px 10px 10px; padding: 120px 30px 50px 30px; min-width: 320px;">
+                    
+                    <!-- Bow (Depan) Indicator -->
+                    <div class="absolute top-6 left-0 right-0 text-center text-slate-500 font-bold text-xs tracking-widest uppercase">
+                        <i class="fas fa-caret-up block mb-1 text-lg text-slate-400"></i>
+                        Bow (Depan)
+                    </div>
+
+                    <!-- Port / Starboard Indicators -->
+                    <div class="absolute left-[-20px] top-1/2 transform -translate-y-1/2 -rotate-90 text-slate-400 font-bold text-[10px] tracking-widest whitespace-nowrap">
+                        <span class="text-red-400 font-black">&larr;</span> PORT SIDE (KIRI)
+                    </div>
+                    <div class="absolute right-[-20px] top-1/2 transform translate-y-1/2 rotate-90 text-slate-400 font-bold text-[10px] tracking-widest whitespace-nowrap">
+                        STARBOARD (KANAN) <span class="text-green-500 font-black">&rarr;</span>
+                    </div>
+
+                    <!-- Grid Table -->
+                    <div class="bg-white rounded p-3 shadow-inner relative z-10">
+                        <table class="w-full table-auto border-collapse mx-auto">
+                            <thead>
+                                <tr>
+                                    <th class="p-2 border-b-2 border-r-2 border-gray-200 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-wider w-12 shadow-sm">Bay \\ Row</th>
+                                    ${sortedRows.map(row => `<th class="p-2 border-b-2 border-gray-200 bg-blue-50 text-xs font-bold text-blue-700 text-center w-14 shadow-sm">${row}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${availableBays.map(bay => `
+                                    <tr>
+                                        <th class="p-2 border-r-2 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-600 shadow-sm text-center">
+                                            ${bay}
+                                        </th>
+                                        ${sortedRows.map(row => {
+                                            const slotId = \`\${bay}\${row}\${tier}\`;
+                                            const isDisabled = disabledSlots.includes(slotId);
+                                            const container = plansData.find(p => p.bay === bay && p.row === row && p.tier === tier);
+                                            
+                                            if (isDisabled) {
+                                                return \`
+                                                <td class="p-1.5 border border-gray-100 text-center relative group transition-colors">
+                                                    <div class="w-10 h-14 mx-auto border-2 border-dashed border-gray-300 rounded-sm bg-gray-50 flex flex-col items-center justify-center opacity-50 shadow-sm gap-1">
+                                                        <span class="text-[8px] font-mono font-bold text-gray-400 line-through">\${slotId}</span>
+                                                    </div>
+                                                </td>
+                                                \`;
+                                            } else if (container) {
+                                                return \`
+                                                <td class="p-1.5 border border-gray-100 text-center relative group">
+                                                    <div class="w-10 h-14 mx-auto border-2 border-orange-500 rounded-sm bg-orange-500 flex flex-col items-center justify-center shadow-md relative overflow-hidden" title="No: \${container.container} | Tipe: \${container.type}">
+                                                        <i class="fas fa-box text-white/30 text-xl absolute"></i>
+                                                        <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight">\${container.container.substring(0,4)}<br/>\${container.container.substring(4)}</span>
+                                                    </div>
+                                                </td>
+                                                \`;
+                                            } else {
+                                                return \`
+                                                <td class="p-1.5 border border-gray-100 text-center relative group transition-colors hover:bg-slate-50">
+                                                    <div class="w-10 h-14 mx-auto border-2 border-slate-300 rounded-sm bg-white flex flex-col items-center justify-center group-hover:border-slate-500 group-hover:bg-slate-100 transition-all shadow-sm gap-1">
+                                                        <div class="w-6 h-1.5 bg-slate-200 rounded-sm"></div>
+                                                        <span class="text-[8px] font-mono font-bold text-slate-500 group-hover:text-slate-700">\${slotId}</span>
+                                                    </div>
+                                                </td>
+                                                \`;
+                                            }
+                                        }).join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Stern (Belakang) Indicator -->
+                    <div class="absolute bottom-6 left-0 right-0 text-center text-slate-500 font-bold text-xs tracking-widest uppercase">
+                        Stern (Belakang)
+                        <i class="fas fa-caret-down block mt-1 text-lg text-slate-400"></i>
+                    </div>
+                </div>
+            </div>
+        `;
         
-        // X-axis labels
-        html += '<div class="flex gap-1 items-center mt-1 border-t-2 border-gray-400 pt-1">';
-        html += `<div class="w-6"></div>`; // empty space for Y-axis column
-        availableBays.forEach(bay => {
-            html += `<div class="w-14 text-center text-[10px] text-gray-600 font-bold">BAY ${bay}</div>`;
-        });
-        html += '</div>'; // close x-axis
-        
-        html += '</div>'; // close main flex
         grid.innerHTML = html;
     }
 </script>

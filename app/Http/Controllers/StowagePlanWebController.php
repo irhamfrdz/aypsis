@@ -54,10 +54,14 @@ class StowagePlanWebController extends Controller
             ? array_filter(array_map('trim', explode(',', $masterKapal->stowage_tiers))) 
             : [];
 
+        $disabledSlots = $masterKapal && $masterKapal->disabled_slots
+            ? $masterKapal->disabled_slots
+            : [];
+
         sort($stowageBays);
         sort($stowageRows);
         sort($stowageTiers);
 
-        return view('stowage-plan.show', compact('plans', 'manifestsWithoutPlan', 'shipName', 'voyage', 'stowageBays', 'stowageRows', 'stowageTiers'));
+        return view('stowage-plan.show', compact('plans', 'manifestsWithoutPlan', 'shipName', 'voyage', 'stowageBays', 'stowageRows', 'stowageTiers', 'disabledSlots'));
     }
 }
