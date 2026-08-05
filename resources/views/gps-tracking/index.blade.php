@@ -448,7 +448,8 @@
                             }).bindPopup(popupContent);
                             layers.push(marker);
                             
-                            let locName = item.alamat ? item.alamat : `Lat: ${item.lat}, Lng: ${item.lng}`;
+                            let elId = 'hist-addr-' + Math.random().toString(36).substr(2, 9);
+                            let locName = item.alamat ? item.alamat : `<span id="${elId}">Lat: ${item.lat}, Lng: ${item.lng} <br><button type="button" onclick="loadHistoryAddress('${elId}', ${item.lat}, ${item.lng})" class="text-indigo-600 hover:underline text-[10px] mt-1"><i class="fas fa-map-marker-alt"></i> Tampilkan Alamat</button></span>`;
                             
                             listHtml += `
                                 <li class="pl-4 relative">
@@ -457,7 +458,7 @@
                                         <div class="text-[10px] font-semibold ${idx === 0 ? 'text-indigo-600' : 'text-gray-500'}"><i class="far fa-clock"></i> ${item.recorded_at}</div>
                                         <div class="text-[9px] font-medium px-1.5 py-0.5 rounded ${item.speed > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.speed} km/h</div>
                                     </div>
-                                    <div class="text-xs font-medium text-gray-800 break-words line-clamp-2" title="${locName}">${locName}</div>
+                                    <div class="text-xs font-medium text-gray-800 break-words" title="${item.alamat || ''}">${locName}</div>
                                 </li>
                             `;
                         }
@@ -497,6 +498,27 @@
             console.error('Error fetching history:', error);
             alert('Terjadi kesalahan koneksi.');
             clearHistory();
+        }
+    }
+
+    async function loadHistoryAddress(elId, lat, lng) {
+        const el = document.getElementById(elId);
+        if(!el) return;
+        el.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
+        try {
+            const res = await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18&addressdetails=1');
+            const data = await res.json();
+            if(data && data.display_name) {
+                let address = data.address.road ? data.address.road + ', ' : '';
+                address += data.address.city || data.address.town || data.address.village || data.address.county || '';
+                if (!address || address.length < 5) address = data.display_name;
+                el.innerText = address;
+                el.title = data.display_name;
+            } else {
+                el.innerText = 'Alamat tidak ditemukan';
+            }
+        } catch(e) {
+            el.innerHTML = `<button onclick="loadHistoryAddress('${elId}', ${lat}, ${lng})" class="text-red-500 hover:underline text-[10px]">Gagal, Coba Lagi</button>`;
         }
     }
 </script>
