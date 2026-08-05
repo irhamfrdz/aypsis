@@ -201,6 +201,11 @@ Route::get('master/permission-templates/{template}', [UserController::class, 'ge
 Route::get('api/sewa-kontainer/sync', [\App\Http\Controllers\ReactSewaKontainerSyncController::class, 'getState'])->name('react-sewa-kontainer.sync.get');
 Route::post('api/sewa-kontainer/sync', [\App\Http\Controllers\ReactSewaKontainerSyncController::class, 'saveState'])->name('react-sewa-kontainer.sync.post');
 
+// Chatbox API Routes
+Route::get('api/chat/messages', [\App\Http\Controllers\ChatController::class, 'getMessages'])->name('api.chat.messages');
+Route::get('api/chat/faqs', [\App\Http\Controllers\ChatController::class, 'getFaqs'])->name('api.chat.faqs');
+Route::post('api/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('api.chat.send');
+
 // Rute yang dilindungi middleware auth (tambahkan pemeriksaan karyawan, persetujuan, dan checklist ABK)
 Route::middleware([
     'auth',
@@ -245,6 +250,34 @@ Route::middleware([
     Route::get('/stowage-plan/{ship}', [\App\Http\Controllers\StowagePlanWebController::class, 'show'])
         ->name('stowage-plan.show')
         ->middleware('can:stowage-plan-view');
+
+    // Chatbox Management Routes
+    Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'index'])
+        ->name('chat.index')
+        ->middleware('can:chatbox-view');
+    Route::get('/chat/{sessionId}', [\App\Http\Controllers\ChatController::class, 'show'])
+        ->name('chat.show')
+        ->middleware('can:chatbox-view');
+    Route::post('/chat/reply', [\App\Http\Controllers\ChatController::class, 'reply'])
+        ->name('chat.reply')
+        ->middleware('can:chatbox-view');
+    Route::delete('/chat/{sessionId}', [\App\Http\Controllers\ChatController::class, 'destroy'])
+        ->name('chat.destroy')
+        ->middleware('can:chatbox-view');
+        
+    // Chatbox FAQ Management Routes
+    Route::get('/chat-faqs', [\App\Http\Controllers\ChatFaqController::class, 'index'])
+        ->name('chat.faq.index')
+        ->middleware('can:chatbox-view');
+    Route::post('/chat-faqs', [\App\Http\Controllers\ChatFaqController::class, 'store'])
+        ->name('chat.faq.store')
+        ->middleware('can:chatbox-view');
+    Route::put('/chat-faqs/{id}', [\App\Http\Controllers\ChatFaqController::class, 'update'])
+        ->name('chat.faq.update')
+        ->middleware('can:chatbox-view');
+    Route::delete('/chat-faqs/{id}', [\App\Http\Controllers\ChatFaqController::class, 'destroy'])
+        ->name('chat.faq.destroy')
+        ->middleware('can:chatbox-view');
 
     // 📦 Surat Jalan Pengambilan/Pengembalian Kontainer Sewa
     Route::get('/surat-jalan-kontainer-sewa', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'index'])->name('surat-jalan-kontainer-sewa.index');

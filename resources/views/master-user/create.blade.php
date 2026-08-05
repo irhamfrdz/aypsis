@@ -2064,6 +2064,28 @@
                                 <td class="empty-cell text-center text-gray-400">-</td>
                             </tr>
 
+                            {{-- Chatbox --}}
+                            <tr class="module-row" data-module="chatbox">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2" style="display: none;">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Chatbox Management</div>
+                                            <div class="text-xs text-gray-500">Kelola obrolan pengunjung dari landing page</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" name="permissions[chatbox][view]" value="1" class="permission-checkbox">
+                                </td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Audit Log --}}
                             <tr class="module-row" data-module="audit-log">
                                 <td class="module-header">

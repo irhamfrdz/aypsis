@@ -197,8 +197,8 @@
                 <p class="text-slate-600 text-lg" data-lang-en="Enjoy convenience, transparency, and full support by joining as an official partner of PT Alexindo Yakinprima." data-lang-zh="作为 PT Alexindo Yakinprima 的官方合作伙伴，享受便利、透明和全面支持。">Nikmati kemudahan, transparansi, dan dukungan penuh dengan bergabung sebagai mitra resmi PT Alexindo Yakinprima.</p>
             </div>
             
-            <!-- Partner Logos Marquee (JS Powered for 100% seamless right scroll) -->
-            <div class="overflow-hidden w-full relative py-4" id="logo-marquee-wrapper">
+            <!-- Partner Logos Marquee -->
+            <div class="overflow-hidden w-full relative py-4" id="logo-marquee-wrapper" style="-webkit-mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent); mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);">
                 <div class="flex flex-nowrap items-center w-max" id="logo-marquee-track">
                     <!-- Base Set of Logos -->
                     <div class="relative flex items-center justify-center shrink-0 px-4 mr-16 lg:mr-24">
@@ -232,27 +232,29 @@
             </div>
 
             <script>
-                document.addEventListener("DOMContentLoaded", function() {
+                // Use window load instead of DOMContentLoaded so images are fully loaded before calculating width
+                window.addEventListener("load", function() {
                     const track = document.getElementById('logo-marquee-track');
                     
                     // Duplicate the content multiple times to ensure it covers wide screens
                     const originalHTML = track.innerHTML;
-                    track.innerHTML = originalHTML + originalHTML + originalHTML + originalHTML; 
+                    // We need enough duplicates to fill the screen and allow seamless scrolling.
+                    track.innerHTML = originalHTML + originalHTML + originalHTML + originalHTML + originalHTML; 
                     
-                    // Calculate exact pixel width of ONE set
-                    // Since we have 4 identical sets, one set is exactly 1/4th of the total scrollWidth
-                    let setWidth = track.scrollWidth / 4;
+                    // Calculate exact pixel width of ONE set. 
+                    // We duplicated it so there are 5 identical sets total.
+                    let setWidth = track.scrollWidth / 5;
                     
                     // Start position: shifted left by 2 sets so we have plenty of content on both sides
                     let pos = -(setWidth * 2); 
-                    const speed = 1.5; // Pixel step per frame (adjust for speed)
+                    const speed = 1.0; // Pixel step per frame (adjust for speed)
                     
                     function animateMarquee() {
                         pos += speed; // Move right
                         
                         // If we have moved right by exactly one full set width
                         if (pos >= -setWidth) {
-                            pos -= setWidth; // Seamlessly jump back exactly one set width
+                            pos -= setWidth; // Seamlessly jump back exactly one set width to the left
                         }
                         
                         track.style.transform = `translateX(${pos}px)`;
@@ -261,8 +263,10 @@
                     
                     // Recalculate width on window resize to ensure responsiveness
                     window.addEventListener('resize', function() {
-                        setWidth = track.scrollWidth / 4;
-                        pos = -(setWidth * 2);
+                        setWidth = track.scrollWidth / 5;
+                        // Don't reset position completely to avoid jumping during resize, just ensure it's valid
+                        if (pos > -setWidth) pos -= setWidth;
+                        if (pos < -(setWidth * 3)) pos += setWidth;
                     });
                     
                     // Start animation
@@ -283,4 +287,250 @@
             </a>
         </div>
     </section>
+
+    <!-- Chatbox Feature -->
+    <div id="chatbox-container" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <!-- Chat Window (Hidden by default) -->
+        <div id="chatbox-window" class="bg-white w-80 sm:w-96 rounded-2xl shadow-2xl border border-slate-100 overflow-hidden mb-4 transition-all duration-300 transform origin-bottom-right scale-0 opacity-0 pointer-events-none">
+            <!-- Header -->
+            <div class="bg-blue-600 text-white p-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm" data-lang-en="Customer Support" data-lang-zh="客户支持">Customer Support</h4>
+                        <p class="text-xs text-blue-100" data-lang-en="Online" data-lang-zh="在线">Online</p>
+                    </div>
+                </div>
+                <button id="close-chat" class="text-blue-100 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Chat Area -->
+            <div class="h-64 p-4 overflow-y-auto bg-slate-50 flex flex-col gap-3">
+                <!-- Welcome Message -->
+                <div class="flex items-start gap-2">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-robot text-blue-600 text-xs"></i>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-sm text-slate-700">
+                        <p data-lang-en="Hello! I'm your virtual assistant. How can I help you today?" data-lang-zh="你好！我是虚拟助手。今天有什么我可以帮您的吗？">Halo! Saya asisten virtual Anda. Ada yang bisa saya bantu hari ini?</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input Area -->
+            <div id="faq-chips-container" class="px-3 pt-2 pb-1 bg-white flex overflow-x-auto gap-2 hidden border-t border-slate-100 no-scrollbar whitespace-nowrap"></div>
+            <div class="p-3 bg-white">
+                <form class="flex items-center gap-2" onsubmit="event.preventDefault();">
+                    <input type="text" class="w-full px-4 py-2 border border-slate-200 rounded-full text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-slate-50" placeholder="Ketik pesan Anda..." data-lang-en-placeholder="Type your message..." data-lang-zh-placeholder="输入您的信息...">
+                    <button type="submit" class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0 hover:bg-blue-700 transition-colors shadow-sm">
+                        <i class="fa-solid fa-paper-plane text-sm"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Toggle Button -->
+        <button id="toggle-chat" class="w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 hover:scale-110 transition-all duration-300 flex items-center justify-center relative group">
+            <span class="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+            <i class="fa-regular fa-comment-dots text-2xl group-hover:scale-110 transition-transform"></i>
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatWindow = document.getElementById('chatbox-window');
+            const toggleBtn = document.getElementById('toggle-chat');
+            const closeBtn = document.getElementById('close-chat');
+            const chatForm = chatWindow.querySelector('form');
+            const chatInput = chatForm.querySelector('input');
+            const chatArea = chatWindow.querySelector('.overflow-y-auto');
+            
+            let isOpen = false;
+            let sessionId = localStorage.getItem('chat_session_id');
+            if (!sessionId) {
+                sessionId = 'session_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('chat_session_id', sessionId);
+            }
+            let pollInterval = null;
+            let faqsLoaded = false;
+            
+            function loadFaqs() {
+                if(faqsLoaded) return;
+                fetch('/api/chat/faqs')
+                    .then(faqRes => faqRes.json())
+                    .then(faqData => {
+                        if (faqData.faqs && faqData.faqs.length > 0) {
+                            const faqContainer = document.getElementById('faq-chips-container');
+                            let faqHtml = '';
+                            faqData.faqs.forEach(faq => {
+                                faqHtml += `<button onclick="sendFaq(${faq.id}, '${faq.question.replace(/'/g, "\\'")}')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 text-xs px-3 py-1.5 rounded-full transition-colors flex-shrink-0">${faq.question}</button>`;
+                            });
+                            faqContainer.innerHTML = faqHtml;
+                            faqContainer.classList.remove('hidden');
+                        }
+                        faqsLoaded = true;
+                    })
+                    .catch(err => console.error(err));
+            }
+
+            function toggleChat() {
+                isOpen = !isOpen;
+                if (isOpen) {
+                    chatWindow.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
+                    chatWindow.classList.add('scale-100', 'opacity-100');
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-xmark text-2xl group-hover:scale-110 transition-transform"></i>';
+                    
+                    // Fetch FAQs
+                    loadFaqs();
+                    
+                    // Fetch existing messages
+                    fetchMessages();
+                    
+                    // Start polling
+                    if(pollInterval) clearInterval(pollInterval);
+                    pollInterval = setInterval(fetchMessages, 3000);
+                } else {
+                    chatWindow.classList.remove('scale-100', 'opacity-100');
+                    chatWindow.classList.add('scale-0', 'opacity-0', 'pointer-events-none');
+                    toggleBtn.innerHTML = '<span class="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span><i class="fa-regular fa-comment-dots text-2xl group-hover:scale-110 transition-transform"></i>';
+                    
+                    if(pollInterval) clearInterval(pollInterval);
+                }
+            }
+
+            toggleBtn.addEventListener('click', toggleChat);
+            closeBtn.addEventListener('click', toggleChat);
+            
+            function renderMessage(msg) {
+                const isSelf = msg.is_admin === 0; // On landing page, self is NOT admin
+                const time = new Date(msg.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+                
+                if (isSelf) {
+                    return `
+                        <div class="flex items-end justify-end gap-2">
+                            <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-br-none shadow-sm text-sm">
+                                <p>${msg.message}</p>
+                                <div class="text-[10px] text-blue-200 mt-1 text-right">${time}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="flex items-start gap-2">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-headset text-blue-600 text-xs"></i>
+                            </div>
+                            <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-sm text-slate-700">
+                                <p>${msg.message}</p>
+                                <div class="text-[10px] text-gray-400 mt-1">${time}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            function fetchMessages() {
+                fetch(`/api/chat/messages?session_id=${sessionId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const welcomeHtml = `
+                            <div class="flex items-start gap-2">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid fa-robot text-blue-600 text-xs"></i>
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-sm text-slate-700">
+                                    <p data-lang-en="Hello! I'm your virtual assistant. How can I help you today?" data-lang-zh="你好！我是虚拟助手。今天有什么我可以帮您的吗？">Halo! Saya asisten virtual Anda. Ada yang bisa saya bantu hari ini?</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        let msgsHtml = welcomeHtml;
+                        
+                        if (data.messages && data.messages.length > 0) {
+                            data.messages.forEach(msg => {
+                                msgsHtml += renderMessage(msg);
+                            });
+                        }
+                        
+                        chatArea.innerHTML = msgsHtml;
+                        chatArea.scrollTop = chatArea.scrollHeight;
+                    })
+                    .catch(err => console.error(err));
+            }
+            
+            window.sendFaq = function(faqId, question) {
+                // Immediately show optimistic UI
+                const tempHtml = renderMessage({
+                    is_admin: 0,
+                    message: question,
+                    created_at: new Date().toISOString()
+                });
+                chatArea.innerHTML += tempHtml;
+                chatArea.scrollTop = chatArea.scrollHeight;
+                
+                // Send to server
+                fetch('/api/chat/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: question,
+                        name: 'Visitor',
+                        is_faq: true,
+                        faq_id: faqId
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) fetchMessages();
+                })
+                .catch(err => console.error(err));
+            };
+            
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const message = chatInput.value.trim();
+                if (!message) return;
+                
+                chatInput.value = '';
+                
+                // Immediately show optimistic UI
+                const tempHtml = renderMessage({
+                    is_admin: 0,
+                    message: message,
+                    created_at: new Date().toISOString()
+                });
+                chatArea.innerHTML += tempHtml;
+                chatArea.scrollTop = chatArea.scrollHeight;
+                
+                // Send to server
+                fetch('/api/chat/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: message,
+                        name: 'Visitor'
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) fetchMessages();
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+            });
+        });
+    </script>
 @endsection

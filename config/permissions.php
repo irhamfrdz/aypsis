@@ -227,6 +227,14 @@ return [
                 'data-cuti-delete' => 'Hapus Cuti',
             ],
         ],
+        'chatbox' => [
+            'name' => 'Chatbox Management',
+            'description' => 'Kelola obrolan pengunjung dari landing page',
+            'required' => true,
+            'sub_modules' => [
+                'chatbox-view' => 'View Chatbox',
+            ],
+        ],
     ],
 
     'menu_permissions' => [
@@ -287,5 +295,8 @@ return [
         // Absensi
         'absensi' => ['absensi-view'],
         'absensi-rekap' => ['absensi-rekap'],
+
+        // Chatbox
+        'chatbox' => ['chatbox-view'],
     ],
 ];
