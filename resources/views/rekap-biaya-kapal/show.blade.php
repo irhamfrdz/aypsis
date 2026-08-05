@@ -178,9 +178,16 @@
                                                 @endif
                                             </td>
                                             @if(strtoupper($category) === 'BIAYA DOKUMEN')
+                                                @php
+                                                    $kapalLower = strtolower(trim($kapal));
+                                                    $voyageLower = strtolower(trim($voyage));
+                                                    $filteredDokumens = isset($item->dokumens) ? $item->dokumens->filter(function($d) use ($kapalLower, $voyageLower) {
+                                                        return isset($d->kapal) && strtolower(trim($d->kapal)) === $kapalLower && isset($d->voyage) && strtolower(trim($d->voyage)) === $voyageLower;
+                                                    }) : collect();
+                                                @endphp
                                                 <td class="px-4 py-3 text-xs text-gray-700">
-                                                    @if(isset($item->dokumens) && $item->dokumens->count() > 0)
-                                                        @foreach($item->dokumens as $dok)
+                                                    @if($filteredDokumens->count() > 0)
+                                                        @foreach($filteredDokumens as $dok)
                                                             @php
                                                                 $vendorName = '-';
                                                                 if ($dok->vendor_id) {
@@ -195,8 +202,8 @@
                                                     @endif
                                                 </td>
                                                 <td class="px-4 py-3 text-right text-xs text-gray-900 whitespace-nowrap">
-                                                    @if(isset($item->dokumens) && $item->dokumens->count() > 0)
-                                                        @foreach($item->dokumens as $dok)
+                                                    @if($filteredDokumens->count() > 0)
+                                                        @foreach($filteredDokumens as $dok)
                                                             <div class="mb-1 pb-1 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">Rp {{ number_format($dok->nominal, 0, ',', '.') }}</div>
                                                         @endforeach
                                                     @else
@@ -204,8 +211,8 @@
                                                     @endif
                                                 </td>
                                                 <td class="px-4 py-3 text-right text-xs text-gray-900 whitespace-nowrap">
-                                                    @if(isset($item->dokumens) && $item->dokumens->count() > 0)
-                                                        @foreach($item->dokumens as $dok)
+                                                    @if($filteredDokumens->count() > 0)
+                                                        @foreach($filteredDokumens as $dok)
                                                             <div class="mb-1 pb-1 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">Rp {{ number_format($dok->pph, 0, ',', '.') }}</div>
                                                         @endforeach
                                                     @else
