@@ -5469,12 +5469,17 @@ class BiayaKapalController extends Controller
             foreach ($cargoGroups as $group) {
                 $totalVolume = $group->sum('volume_perincian');
                 $totalTonnage = $group->sum('tonnage_perincian');
+                $fallbackVolume = $group->sum('volume');
+                $fallbackTonnage = $group->sum('tonnage');
+
                 if ($totalVolume > 0) {
                     $cargoMaxTvSum += $totalVolume;
                 } elseif ($totalTonnage > 0) {
                     $cargoMaxTvSum += $totalTonnage;
-                } else {
-                    $cargoMaxTvSum += $group->sum('kuantitas') ?: $group->count();
+                } elseif ($fallbackVolume > 0) {
+                    $cargoMaxTvSum += $fallbackVolume;
+                } elseif ($fallbackTonnage > 0) {
+                    $cargoMaxTvSum += $fallbackTonnage;
                 }
             }
             $counts['cargo_max_tv_sum'] = round($cargoMaxTvSum);
