@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\DB;
 
 class KaryawanUpdateImport implements ToCollection, WithHeadingRow, WithChunkReading
 {
+    public $successCount = 0;
+    public $failedRows = [];
+    public $successRows = [];
+
     /**
     * @param Collection $rows
     */
@@ -30,10 +34,7 @@ class KaryawanUpdateImport implements ToCollection, WithHeadingRow, WithChunkRea
             return $nama !== '';
         })->toArray();
 
-        Log::info("Import Update Data started", ['nik_count' => count($niks), 'nama_count' => count($namaLengkaps)]);
-
         if (empty($niks) && empty($namaLengkaps)) {
-            Log::info("No valid NIKs or Nama Lengkap found in this chunk");
             return;
         }
 
@@ -45,13 +46,12 @@ class KaryawanUpdateImport implements ToCollection, WithHeadingRow, WithChunkRea
         $byNik = $karyawans->keyBy('nik');
         $byNama = $karyawans->keyBy('nama_lengkap');
         
-        Log::info("Found matching Karyawans", ['count' => $karyawans->count()]);
-
         // Wrap updates in a transaction for much faster database writes
         DB::transaction(function () use ($rows, $byNik, $byNama) {
             foreach ($rows as $row) {
-                $nikStr = isset($row['nik']) ? trim((string)$row['nik']) : '';
-                $namaStr = isset($row['nama_lengkap']) ? trim((string)$row['nama_lengkap']) : '';
+                $rowArray = $row->toArray();
+                $nikStr = isset($rowArray['nik']) ? trim((string)$rowArray['nik']) : '';
+                $namaStr = isset($rowArray['nama_lengkap']) ? trim((string)$rowArray['nama_lengkap']) : '';
 
                 if ($nikStr === '' && $namaStr === '') {
                     continue; // Skip if both empty
@@ -70,14 +70,12 @@ class KaryawanUpdateImport implements ToCollection, WithHeadingRow, WithChunkRea
                 }
 
                 if (!$karyawan) {
-                    Log::warning("Karyawan not found in database during import. NIK: '$nikStr', Nama: '$namaStr'");
+                    $this->failedRows[] = "NIK: " . ($nikStr ?: '-') . " / Nama: " . ($namaStr ?: '-') . " - Tidak ditemukan di sistem";
                     continue; // Skip if completely not found
                 }
 
-                $rowArray = $row->toArray();
-
                 // Update fields if provided in Excel
-                if (array_key_exists('nama_lengkap', $rowArray) && $rowArray['nama_lengkap'] !== null) {
+                if (array_key_exists('nama_lengkap', $rowArray) && $rowArray['nama_lengkap'] !== null && trim((string)$rowArray['nama_lengkap']) !== '') {
                     $karyawan->nama_lengkap = trim((string)$rowArray['nama_lengkap']);
                 }
                 if (array_key_exists('kantor_cabang_ayp', $rowArray) && $rowArray['kantor_cabang_ayp'] !== null) {
@@ -93,32 +91,42 @@ class KaryawanUpdateImport implements ToCollection, WithHeadingRow, WithChunkRea
                 // Group & Sub Group processing
                 $hasGroup = array_key_exists('group', $rowArray);
                 $hasSubGroup = array_key_exists('sub_group', $rowArray);
-                
+
                 if ($hasGroup || $hasSubGroup) {
-                    $groupStr = $rowArray['group'] ?? '';
-                    $subGroupStr = $rowArray['sub_group'] ?? '';
+                    $groupVal = $hasGroup ? trim((string)$rowArray['group']) : '';
+                    $subGroupVal = $hasSubGroup ? trim((string)$rowArray['sub_group']) : '';
                     
-                    $groups = array_values(array_filter(array_map('trim', explode(',', (string)$groupStr))));
-                    $subGroups = array_values(array_filter(array_map('trim', explode(',', (string)$subGroupStr))));
-                    
-                    $grupArray = [];
-                    foreach ($groups as $index => $g) {
-                        $sg = $subGroups[$index] ?? null;
-                        if ($sg) {
-                            $grupArray[] = $g . ':' . $sg;
-                        } else {
-                            $grupArray[] = $g;
+                    if ($groupVal !== '' || $subGroupVal !== '') {
+                        $groups = array_map('trim', explode(',', $groupVal));
+                        $subGroups = array_map('trim', explode(',', $subGroupVal));
+                        
+                        $finalGroups = [];
+                        foreach ($groups as $idx => $g) {
+                            if ($g !== '') {
+                                $sg = $subGroups[$idx] ?? '';
+                                if ($sg !== '') {
+                                    $finalGroups[] = $g . ':' . $sg;
+                                } else {
+                                    $finalGroups[] = $g;
+                                }
+                            }
+                        }
+                        
+                        $karyawan->grup = !empty($finalGroups) ? $finalGroups : null;
+                    } elseif ($groupVal === '' && $subGroupVal === '') {
+                        // Optional: you can choose to clear the group if user provided empty string
+                        // For safe update, we will only clear if explicitly both are present and empty.
+                        if ($hasGroup && $hasSubGroup) {
+                            $karyawan->grup = null;
                         }
                     }
-                    
-                    $karyawan->grup = !empty($grupArray) ? $grupArray : null;
                 }
 
-                if ($karyawan->isDirty()) {
-                    Log::info("Updating NIK: $nikStr", ['dirty' => $karyawan->getDirty()]);
-                    $karyawan->save();
-                } else {
-                    Log::info("No changes for NIK: $nikStr");
+                $karyawan->save();
+                
+                $this->successCount++;
+                if (count($this->successRows) < 5) {
+                    $this->successRows[] = $karyawan->nama_lengkap;
                 }
             }
         });
@@ -126,6 +134,6 @@ class KaryawanUpdateImport implements ToCollection, WithHeadingRow, WithChunkRea
 
     public function chunkSize(): int
     {
-        return 1000;
+        return 500;
     }
 }
