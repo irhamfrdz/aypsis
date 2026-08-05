@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class UangLembur extends Model
 {
+    protected $table = 'master_uang_lemburs';
+
     protected $fillable = [
         'group',
         'sub_group',

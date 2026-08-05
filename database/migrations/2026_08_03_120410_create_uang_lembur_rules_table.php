@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('uang_lembur_rules', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('uang_lembur_id')->constrained('uang_lemburs')->onDelete('cascade');
+            $table->foreignId('uang_lembur_id')->constrained('master_uang_lemburs')->onDelete('cascade');
             $table->string('tipe_hari'); // Hari Biasa / Hari Libur
             $table->time('jam_mulai')->nullable();
             $table->time('jam_selesai')->nullable();

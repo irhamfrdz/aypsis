@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('uang_lemburs', function (Blueprint $table) {
+        Schema::create('master_uang_lemburs', function (Blueprint $table) {
             $table->id();
             $table->string('group')->default('Lembur');
             $table->string('sub_group'); 
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('uang_lemburs');
+        Schema::dropIfExists('master_uang_lemburs');
     }
 };
