@@ -711,7 +711,7 @@
     window.setActiveViewMode = function(mode) {
         activeViewMode = mode;
         renderPreview();
-    }
+    };
 
     // Bind Enter key
     ['bay', 'row', 'tier'].forEach(type => {
