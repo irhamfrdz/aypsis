@@ -191,12 +191,26 @@ class PerhitunganLemburController extends Controller
                                     $matchesTime = false;
                                     
                                     if ($rule->jam_mulai) {
+                                        // Build Carbon boundaries for the rule
+                                        $ruleMulai = \Carbon\Carbon::parse($lm->format('Y-m-d') . ' ' . $rule->jam_mulai);
+                                        
+                                        // If rule jam_mulai is far before lembur masuk, it implies it's for the next day (e.g. masuk 17:00, rule 00:00)
+                                        if ($ruleMulai->copy()->addHours(6) < $lm) {
+                                            $ruleMulai->addDay();
+                                        }
+
                                         if ($rule->is_sampai_selesai) {
-                                            if ($jamPulangTime >= $rule->jam_mulai || $lp->format('Y-m-d') > $lm->format('Y-m-d')) {
+                                            if ($lp >= $ruleMulai) {
                                                 $matchesTime = true;
                                             }
                                         } else if ($rule->jam_selesai) {
-                                            if ($jamPulangTime >= $rule->jam_mulai && $jamPulangTime <= $rule->jam_selesai) {
+                                            $ruleSelesai = \Carbon\Carbon::parse($ruleMulai->format('Y-m-d') . ' ' . $rule->jam_selesai);
+                                            // If rule jam_selesai is less than rule jam_mulai time, it crosses midnight
+                                            if ($ruleSelesai < $ruleMulai) {
+                                                $ruleSelesai->addDay();
+                                            }
+                                            
+                                            if ($lp >= $ruleMulai && $lp <= $ruleSelesai) {
                                                 $matchesTime = true;
                                             }
                                         }
