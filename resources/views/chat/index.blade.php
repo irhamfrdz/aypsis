@@ -145,7 +145,7 @@
                 container.innerHTML = '';
                 
                 data.messages.forEach(msg => {
-                    const isSelf = msg.is_admin === 1;
+                    const isSelf = msg.is_admin == 1 || msg.is_admin === true;
                     const date = new Date(msg.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
                     
                     const html = `
