@@ -395,8 +395,8 @@ function calculateDokumenSection(section) {
     const pphInput = section.querySelector('.dokumen-pph-input');
     const totalInput = section.querySelector('.dokumen-total-input');
     
-    const nominal = parseInt(nominalInput.value.replace(/\\./g, '')) || 0;
-    const pph = parseInt(pphInput.value.replace(/\\./g, '')) || 0;
+    const nominal = parseInt(nominalInput.value.replace(/\./g, '')) || 0;
+    const pph = parseInt(pphInput.value.replace(/\./g, '')) || 0;
     
     const total = nominal - pph;
     totalInput.value = total > 0 ? total.toLocaleString('id-ID') : '0';
@@ -410,7 +410,7 @@ function calculateAllDokumenSections() {
     document.querySelectorAll('.dokumen-section').forEach(section => {
         const totalInput = section.querySelector('.dokumen-total-input');
         if (totalInput) {
-            grandTotal += parseInt(totalInput.value.replace(/\\./g, '')) || 0;
+            grandTotal += parseInt(totalInput.value.replace(/\./g, '')) || 0;
         }
     });
     
