@@ -88,7 +88,7 @@
 
         <!-- Main Area: Stowage Grid Visual -->
         <div class="w-full lg:w-2/3">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[700px]">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col min-h-[700px]">
                 <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                     <div class="flex items-center gap-4">
                         <h3 class="font-bold text-gray-700"><i class="fas fa-ship text-purple-500 mr-2"></i> Peta Kapal</h3>
@@ -169,7 +169,7 @@
                             </select>
                         </div>
                     </div>
-                    <div id="deck-plan-grid" class="flex-1 overflow-auto p-6 flex flex-col items-start justify-start" style="background-image: radial-gradient(#00000011 1px, transparent 1px); background-size: 20px 20px;">
+                    <div id="deck-plan-grid" class="overflow-auto p-6" style="background-image: radial-gradient(#00000011 1px, transparent 1px); background-size: 20px 20px;">
                         <!-- Rendered via JS -->
                     </div>
                 </div>
