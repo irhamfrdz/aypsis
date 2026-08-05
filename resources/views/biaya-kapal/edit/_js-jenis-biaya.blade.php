@@ -181,7 +181,6 @@
         document.querySelectorAll('.grand-total-value').forEach(el => {
             el.value = String(el.value).replace(/\./g, '').replace(/[^0-9\-]/g, '');
         });
-        });
     });
     }
 
