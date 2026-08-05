@@ -233,6 +233,9 @@ return [
             'required' => true,
             'sub_modules' => [
                 'chatbox-view' => 'View Chatbox',
+                'chatbox-create' => 'Buat Chat/FAQ',
+                'chatbox-edit' => 'Edit Chat/FAQ',
+                'chatbox-delete' => 'Hapus Chat/FAQ',
             ],
         ],
     ],
@@ -297,6 +300,6 @@ return [
         'absensi-rekap' => ['absensi-rekap'],
 
         // Chatbox
-        'chatbox' => ['chatbox-view'],
+        'chatbox' => ['chatbox-view', 'chatbox-create', 'chatbox-edit', 'chatbox-delete'],
     ],
 ];

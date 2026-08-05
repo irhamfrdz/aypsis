@@ -263,7 +263,7 @@ Route::middleware([
         ->middleware('can:chatbox-view');
     Route::delete('/chat/{sessionId}', [\App\Http\Controllers\ChatController::class, 'destroy'])
         ->name('chat.destroy')
-        ->middleware('can:chatbox-view');
+        ->middleware('can:chatbox-delete');
         
     // Chatbox FAQ Management Routes
     Route::get('/chat-faqs', [\App\Http\Controllers\ChatFaqController::class, 'index'])
@@ -271,13 +271,13 @@ Route::middleware([
         ->middleware('can:chatbox-view');
     Route::post('/chat-faqs', [\App\Http\Controllers\ChatFaqController::class, 'store'])
         ->name('chat.faq.store')
-        ->middleware('can:chatbox-view');
+        ->middleware('can:chatbox-create');
     Route::put('/chat-faqs/{id}', [\App\Http\Controllers\ChatFaqController::class, 'update'])
         ->name('chat.faq.update')
-        ->middleware('can:chatbox-view');
+        ->middleware('can:chatbox-edit');
     Route::delete('/chat-faqs/{id}', [\App\Http\Controllers\ChatFaqController::class, 'destroy'])
         ->name('chat.faq.destroy')
-        ->middleware('can:chatbox-view');
+        ->middleware('can:chatbox-delete');
 
     // 📦 Surat Jalan Pengambilan/Pengembalian Kontainer Sewa
     Route::get('/surat-jalan-kontainer-sewa', [App\Http\Controllers\SuratJalanKontainerSewaController::class, 'index'])->name('surat-jalan-kontainer-sewa.index');
