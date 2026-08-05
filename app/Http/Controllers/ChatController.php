@@ -162,8 +162,12 @@ class ChatController extends Controller
                 $faqQuestion = preg_replace('/[^\w\s]/', '', $faqQuestion);
                 
                 // Split question into words
-                $faqWords = array_diff(explode(' ', $faqQuestion), $stopWords);
-                $faqWords = array_filter($faqWords); // Remove empty
+                $allFaqWords = array_filter(explode(' ', $faqQuestion));
+                $faqWords = array_diff($allFaqWords, $stopWords);
+                
+                if (count($faqWords) === 0) {
+                    $faqWords = $allFaqWords;
+                }
                 
                 if (count($faqWords) === 0) continue;
                 
