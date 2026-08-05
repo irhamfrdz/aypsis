@@ -449,7 +449,7 @@
                             layers.push(marker);
                             
                             let elId = 'hist-addr-' + Math.random().toString(36).substr(2, 9);
-                            let locName = item.alamat ? item.alamat : `<span id="${elId}">Lat: ${item.lat}, Lng: ${item.lng} <br><button type="button" onclick="loadHistoryAddress('${elId}', ${item.lat}, ${item.lng})" class="text-indigo-600 hover:underline text-[10px] mt-1"><i class="fas fa-map-marker-alt"></i> Tampilkan Alamat</button></span>`;
+                            let locName = item.alamat ? item.alamat : `<span id="${elId}"><button type="button" onclick="loadHistoryAddress('${elId}', ${item.lat}, ${item.lng})" class="text-indigo-600 hover:underline text-[10px]"><i class="fas fa-map-marker-alt"></i> Tampilkan Alamat</button></span>`;
                             
                             listHtml += `
                                 <li class="pl-4 relative">
