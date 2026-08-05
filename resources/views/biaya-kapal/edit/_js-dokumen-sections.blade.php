@@ -380,6 +380,9 @@ function addDokumenSection(existingData = null) {
     if (initialKapal) {
         jQuery(kapalSelect).trigger('change', [{voyage: initialVoyage, bl: initialBl}]);
     }
+
+    // Auto calculate on load to fix any incorrect saved totals
+    calculateDokumenSection(section);
 }
 
 window.removeDokumenSection = function(index) {
@@ -395,8 +398,8 @@ function calculateDokumenSection(section) {
     const pphInput = section.querySelector('.dokumen-pph-input');
     const totalInput = section.querySelector('.dokumen-total-input');
     
-    const nominal = parseInt(nominalInput.value.replace(/\./g, '')) || 0;
-    const pph = parseInt(pphInput.value.replace(/\./g, '')) || 0;
+    const nominal = parseInt(String(nominalInput.value).replace(/[^0-9]/g, '')) || 0;
+    const pph = parseInt(String(pphInput.value).replace(/[^0-9]/g, '')) || 0;
     
     const total = nominal - pph;
     totalInput.value = total > 0 ? total.toLocaleString('id-ID') : '0';
@@ -410,7 +413,7 @@ function calculateAllDokumenSections() {
     document.querySelectorAll('.dokumen-section').forEach(section => {
         const totalInput = section.querySelector('.dokumen-total-input');
         if (totalInput) {
-            grandTotal += parseInt(totalInput.value.replace(/\./g, '')) || 0;
+            grandTotal += parseInt(String(totalInput.value).replace(/[^0-9]/g, '')) || 0;
         }
     });
     
