@@ -37,10 +37,24 @@ class KaryawanTidakTetapController extends Controller
         $pekerjaans = \App\Models\Pekerjaan::all();
         $pajaks = \App\Models\Pajak::all();
         $nextNik = $this->generateNextNik();
-        
         $penempatans = \App\Models\Karyawan::distinct()->pluck('penempatan')->filter()->values();
-        $groups = \App\Models\Karyawan::pluck('grup')->flatten()->filter()->unique()->values();
-        $subGroups = collect([]); // Or fetch if there is a way later
+        
+        $rawGroups = \App\Models\Karyawan::pluck('grup')->flatten()->filter()->unique();
+        $groups = collect();
+        $subGroups = collect();
+
+        foreach ($rawGroups as $raw) {
+            if (strpos($raw, ':') !== false) {
+                $parts = explode(':', $raw, 2);
+                $groups->push(trim($parts[0]));
+                $subGroups->push(trim($parts[1]));
+            } else {
+                $groups->push(trim($raw));
+            }
+        }
+
+        $groups = $groups->unique()->filter()->values();
+        $subGroups = $subGroups->unique()->filter()->values();
 
         return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks', 'nextNik', 'penempatans', 'groups', 'subGroups'));
     }
@@ -119,10 +133,24 @@ class KaryawanTidakTetapController extends Controller
     {
         $pekerjaans = \App\Models\Pekerjaan::all();
         $pajaks = \App\Models\Pajak::all();
-        
         $penempatans = \App\Models\Karyawan::distinct()->pluck('penempatan')->filter()->values();
-        $groups = \App\Models\Karyawan::pluck('grup')->flatten()->filter()->unique()->values();
-        $subGroups = collect([]);
+        
+        $rawGroups = \App\Models\Karyawan::pluck('grup')->flatten()->filter()->unique();
+        $groups = collect();
+        $subGroups = collect();
+
+        foreach ($rawGroups as $raw) {
+            if (strpos($raw, ':') !== false) {
+                $parts = explode(':', $raw, 2);
+                $groups->push(trim($parts[0]));
+                $subGroups->push(trim($parts[1]));
+            } else {
+                $groups->push(trim($raw));
+            }
+        }
+
+        $groups = $groups->unique()->filter()->values();
+        $subGroups = $subGroups->unique()->filter()->values();
 
         return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks', 'penempatans', 'groups', 'subGroups'));
     }
