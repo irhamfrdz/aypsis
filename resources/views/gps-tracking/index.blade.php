@@ -116,6 +116,10 @@
                             <span id="history-idle" class="font-bold text-indigo-600 px-2 py-1 bg-indigo-50 rounded">Aktif</span>
                         </div>
                     </div>
+                    <!-- List Titik Koordinat -->
+                    <div class="mt-3 border-t pt-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 pr-1" id="history-list">
+                        <!-- List dinamis dimuat dari JS -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -414,11 +418,17 @@
                 if (history.length > 0) {
                     let latlngs = [];
                     let layers = [];
+                    let listHtml = '<ul class="space-y-3 relative border-l-2 border-gray-100 ml-2 mt-2">';
                     
-                    history.forEach(item => {
+                    // Kita reverse agar data terbaru di atas
+                    let reversedHistory = [...history].reverse();
+                    
+                    reversedHistory.forEach((item, idx) => {
                         if (item.lat && item.lng) {
                             const pt = [parseFloat(item.lat), parseFloat(item.lng)];
-                            latlngs.push(pt);
+                            
+                            // Hanya tambahkan point untuk polyline (perlu urutan asli, bukan reversed, 
+                            // jadi tidak kita masukkan ke latlngs di dalam loop reversed ini)
                             
                             let popupContent = `
                                 <div class="text-xs min-w-[150px]">
@@ -437,6 +447,28 @@
                                 fillOpacity: 0.9
                             }).bindPopup(popupContent);
                             layers.push(marker);
+                            
+                            let locName = item.alamat ? item.alamat : `Lat: ${item.lat}, Lng: ${item.lng}`;
+                            
+                            listHtml += `
+                                <li class="pl-4 relative">
+                                    <div class="absolute w-2.5 h-2.5 ${idx === 0 ? 'bg-indigo-600' : 'bg-gray-400'} rounded-full -left-[6px] top-1 border-2 border-white shadow-sm"></div>
+                                    <div class="flex justify-between items-center mb-0.5">
+                                        <div class="text-[10px] font-semibold ${idx === 0 ? 'text-indigo-600' : 'text-gray-500'}"><i class="far fa-clock"></i> ${item.recorded_at}</div>
+                                        <div class="text-[9px] font-medium px-1.5 py-0.5 rounded ${item.speed > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.speed} km/h</div>
+                                    </div>
+                                    <div class="text-xs font-medium text-gray-800 break-words line-clamp-2" title="${locName}">${locName}</div>
+                                </li>
+                            `;
+                        }
+                    });
+                    listHtml += '</ul>';
+                    $('#history-list').html(listHtml);
+                    
+                    // Build polyline points in original order
+                    history.forEach(item => {
+                        if (item.lat && item.lng) {
+                            latlngs.push([parseFloat(item.lat), parseFloat(item.lng)]);
                         }
                     });
 
