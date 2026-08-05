@@ -413,7 +413,7 @@
                 </a>
 
                 <!-- Pranota Uang Makan -->
-                @if($user && ($user->can('payroll-view') || $user->can('pranota-uang-makan-view')))
+                @if($user && $user->can('pranota-uang-makan-view'))
                 @php
                     $isPranotaUangMakan = Request::routeIs('pranota-uang-makan.*');
                 @endphp
