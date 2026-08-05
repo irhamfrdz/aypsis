@@ -173,12 +173,7 @@
                                                 @endif
                                             </td>
                                             <td class="px-4 py-3 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
-                                                @if(isset($item->is_pranota_ob) && $item->is_pranota_ob)
-                                                    <span class="text-gray-900">Rp {{ number_format($item->display_total, 0, ',', '.') }}</span>
-                                                    <br><span class="text-[10px] text-gray-400 font-normal">Hanya Info</span>
-                                                @else
-                                                    Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
-                                                @endif
+                                                Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
                                             </td>
                                             <td class="px-4 py-3 text-center whitespace-nowrap no-print">
                                                 @if(isset($item->is_pranota_ob) && $item->is_pranota_ob)
