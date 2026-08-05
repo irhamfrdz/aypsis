@@ -39,7 +39,7 @@ class KaryawanTidakTetapController extends Controller
         $nextNik = $this->generateNextNik();
         
         $penempatans = \App\Models\Karyawan::distinct()->pluck('penempatan')->filter()->values();
-        $groups = \App\Models\Karyawan::distinct()->pluck('grup')->filter()->values();
+        $groups = \App\Models\Karyawan::pluck('grup')->flatten()->filter()->unique()->values();
         $subGroups = collect([]); // Or fetch if there is a way later
 
         return view('karyawan-tidak-tetap.create', compact('pekerjaans', 'pajaks', 'nextNik', 'penempatans', 'groups', 'subGroups'));
@@ -121,7 +121,7 @@ class KaryawanTidakTetapController extends Controller
         $pajaks = \App\Models\Pajak::all();
         
         $penempatans = \App\Models\Karyawan::distinct()->pluck('penempatan')->filter()->values();
-        $groups = \App\Models\Karyawan::distinct()->pluck('grup')->filter()->values();
+        $groups = \App\Models\Karyawan::pluck('grup')->flatten()->filter()->unique()->values();
         $subGroups = collect([]);
 
         return view('karyawan-tidak-tetap.edit', compact('karyawanTidakTetap', 'pekerjaans', 'pajaks', 'penempatans', 'groups', 'subGroups'));
