@@ -302,6 +302,18 @@
                 @error('stowage_tiers')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
 
+            <!-- Preview Layout -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Preview Layout Kapal
+                </label>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div id="layout_preview_container">
+                        <!-- Preview akan dirender di sini -->
+                    </div>
+                </div>
+            </div>
+
             <!-- Catatan -->
             <div class="mb-6">
                 <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
@@ -406,6 +418,10 @@
         });
 
         document.getElementById(conf.hidden).value = conf.data.join(',');
+
+        if (typeof renderPreview === 'function') {
+            renderPreview();
+        }
     }
 
     function addPill(type) {
@@ -432,6 +448,93 @@
     function removePill(type, item) {
         configs[type].data = configs[type].data.filter(b => b !== item);
         renderPills(type);
+    }
+
+    let activeBayPreview = null;
+
+    function renderPreview() {
+        const bays = configs.bay.data;
+        // Urutkan Row: Even descending, Odd ascending (04, 02, 00, 01, 03)
+        const rows = [...configs.row.data].sort((a, b) => {
+            let numA = parseInt(a);
+            let numB = parseInt(b);
+            let isAEven = numA % 2 === 0;
+            let isBEven = numB % 2 === 0;
+
+            if (isAEven && !isBEven) return -1;
+            if (!isAEven && isBEven) return 1;
+            
+            if (isAEven) return numB - numA;
+            else return numA - numB;
+        });
+        // Urutkan Tier: Descending (paling besar di atas)
+        const tiers = [...configs.tier.data].sort((a, b) => parseInt(b) - parseInt(a));
+
+        const container = document.getElementById('layout_preview_container');
+        if (!container) return;
+        
+        if (bays.length === 0 || rows.length === 0 || tiers.length === 0) {
+            container.innerHTML = '<p class="text-xs text-gray-500 italic text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">Masukkan minimal 1 Bay, 1 Row, dan 1 Tier untuk melihat preview layout.</p>';
+            return;
+        }
+
+        if (!activeBayPreview || !bays.includes(activeBayPreview)) {
+            activeBayPreview = bays[0];
+        }
+
+        let html = `
+            <div class="flex flex-col gap-4">
+                <!-- Bay Tabs -->
+                <div class="flex overflow-x-auto gap-2 pb-2 border-b border-gray-200" style="scrollbar-width: thin;">
+                    ${bays.map(bay => `
+                        <button type="button" 
+                                onclick="setActiveBay('${bay}')"
+                                class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap focus:outline-none ${activeBayPreview === bay ? 'bg-purple-100 text-purple-700 border-b-2 border-purple-500' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}">
+                            Bay ${bay}
+                        </button>
+                    `).join('')}
+                </div>
+                
+                <!-- Grid -->
+                <div class="overflow-x-auto bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <table class="w-full table-auto border-collapse mx-auto" style="min-width: max-content;">
+                        <thead>
+                            <tr>
+                                <th class="p-2 border border-gray-200 bg-gray-100 text-xs font-semibold text-gray-600 shadow-sm">Tier / Row</th>
+                                ${rows.map(row => `<th class="p-2 border border-gray-200 bg-blue-50 text-xs font-semibold text-blue-700 text-center w-12 shadow-sm">${row}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tiers.map(tier => `
+                                <tr>
+                                    <th class="p-2 border border-gray-200 bg-green-50 text-xs font-semibold text-green-700 w-16 shadow-sm text-center">${tier}</th>
+                                    ${rows.map(row => `
+                                        <td class="p-1 border border-gray-200 text-center relative group hover:bg-purple-50 transition-colors">
+                                            <div class="w-12 h-12 mx-auto border-2 border-gray-300 rounded bg-gray-50 flex flex-col items-center justify-center group-hover:border-purple-500 group-hover:text-purple-600 transition-colors shadow-sm">
+                                                <i class="fas fa-box text-gray-300 group-hover:text-purple-400 mb-0.5 text-xs"></i>
+                                                <span class="text-[9px] font-mono text-gray-500 group-hover:text-purple-600">${activeBayPreview}${row}${tier}</span>
+                                            </div>
+                                        </td>
+                                    `).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div class="mt-6 flex justify-center items-center gap-4 text-xs text-gray-500">
+                        <span class="flex items-center font-medium"><i class="fas fa-arrow-left mr-2 text-red-400"></i> Port Side (Kiri)</span>
+                        <span class="flex items-center text-gray-300"><i class="fas fa-ship mx-2 text-2xl"></i></span>
+                        <span class="flex items-center font-medium">Starboard Side (Kanan) <i class="fas fa-arrow-right ml-2 text-green-500"></i></span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+    }
+
+    window.setActiveBay = function(bay) {
+        activeBayPreview = bay;
+        renderPreview();
     }
 
     // Bind Enter key
