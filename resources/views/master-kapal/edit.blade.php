@@ -531,9 +531,9 @@
                 </div>
                 
                 <!-- Ship Top-Down Grid -->
-                <div class="overflow-x-auto p-4 flex justify-center">
-                    <div class="relative bg-slate-100 border-4 border-slate-400 shadow-xl" 
-                         style="border-radius: 50% 50% 5% 5% / 150px 150px 10px 10px; padding: 120px 30px 50px 30px; min-width: 320px;">
+                <div class="overflow-x-auto overflow-y-visible w-full p-4 flex justify-center h-max min-h-full">
+                    <div class="relative bg-slate-100 border-4 border-slate-400 shadow-xl flex-shrink-0" 
+                         style="border-radius: 50% 50% 5% 5% / 150px 150px 10px 10px; padding: 120px 30px 50px 30px; min-width: 320px; height: max-content; margin-bottom: 2rem;">
                         
                         <!-- Bow (Depan) Indicator -->
                         <div class="absolute top-6 left-0 right-0 text-center text-slate-500 font-bold text-xs tracking-widest uppercase">
