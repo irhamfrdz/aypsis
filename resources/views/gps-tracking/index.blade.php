@@ -413,22 +413,46 @@
 
                 if (history.length > 0) {
                     let latlngs = [];
+                    let layers = [];
+                    
                     history.forEach(item => {
                         if (item.lat && item.lng) {
-                            latlngs.push([parseFloat(item.lat), parseFloat(item.lng)]);
+                            const pt = [parseFloat(item.lat), parseFloat(item.lng)];
+                            latlngs.push(pt);
+                            
+                            let popupContent = `
+                                <div class="text-xs min-w-[150px]">
+                                    <div class="font-bold border-b pb-1 mb-1"><i class="far fa-clock mr-1 text-indigo-600"></i> ${item.recorded_at}</div>
+                                    <div class="flex justify-between mt-1"><span>Kecepatan:</span> <span class="font-medium">${item.speed} km/h</span></div>
+                                    <div class="flex justify-between"><span>Status:</span> <span class="font-medium ${item.speed > 0 ? 'text-green-600' : 'text-red-600'}">${item.status}</span></div>
+                                </div>
+                            `;
+                            
+                            let marker = L.circleMarker(pt, {
+                                radius: 5,
+                                fillColor: item.speed > 0 ? '#10b981' : '#ef4444',
+                                color: '#ffffff',
+                                weight: 1.5,
+                                opacity: 1,
+                                fillOpacity: 0.9
+                            }).bindPopup(popupContent);
+                            layers.push(marker);
                         }
                     });
 
                     // Gambar garis polyline
-                    activeHistoryLayer = L.polyline(latlngs, {
+                    let polyline = L.polyline(latlngs, {
                         color: '#4f46e5', // indigo-600
                         weight: 4,
-                        opacity: 0.7,
+                        opacity: 0.5,
                         smoothFactor: 1
-                    }).addTo(map);
+                    });
+                    
+                    layers.unshift(polyline);
+                    activeHistoryLayer = L.layerGroup(layers).addTo(map);
 
                     // Sesuaikan zoom peta ke seluruh rentang garis
-                    map.fitBounds(activeHistoryLayer.getBounds(), { padding: [50, 50] });
+                    map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
                 } else {
                     alert('Belum ada data riwayat yang tersimpan untuk armada ini.');
                     clearHistory();
