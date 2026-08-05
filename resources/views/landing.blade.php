@@ -26,8 +26,8 @@
                 </div>
                 
                 <!-- Quick Tracking/Schedule Card -->
-                <div class="glass-panel rounded-2xl p-8 lg:p-10 transform translate-y-8 lg:translate-y-0">
-                    <div class="flex justify-between items-center mb-6 cursor-pointer group" id="toggle-tracking-btn">
+                <div class="glass-panel rounded-2xl p-8 lg:p-10 transform translate-y-8 lg:translate-y-0 transition-all duration-300" id="tracking-card">
+                    <div class="flex justify-between items-center mb-6 cursor-pointer group transition-all duration-300" id="toggle-tracking-btn">
                         <h3 class="text-2xl font-bold text-slate-800 flex items-center gap-3" data-lang-en='<i class="fa-solid fa-magnifying-glass text-blue-600"></i> Track Shipment' data-lang-zh='<i class="fa-solid fa-magnifying-glass text-blue-600"></i> 追踪货运'>
                             <i class="fa-solid fa-magnifying-glass text-blue-600"></i> Lacak Pengiriman
                         </h3>
@@ -543,6 +543,7 @@
             const toggleTrackingBtn = document.getElementById('toggle-tracking-btn');
             const trackingContent = document.getElementById('tracking-content');
             const trackingChevron = document.getElementById('tracking-chevron');
+            const trackingCard = document.getElementById('tracking-card');
             
             if (toggleTrackingBtn && trackingContent) {
                 toggleTrackingBtn.addEventListener('click', function() {
@@ -552,12 +553,28 @@
                         trackingContent.classList.remove('opacity-0');
                         trackingContent.classList.add('opacity-100');
                         trackingChevron.classList.remove('rotate-180');
+                        
+                        // Restore padding and margin
+                        toggleTrackingBtn.classList.remove('mb-0');
+                        toggleTrackingBtn.classList.add('mb-6');
+                        if (trackingCard) {
+                            trackingCard.classList.remove('p-5', 'lg:p-6');
+                            trackingCard.classList.add('p-8', 'lg:p-10');
+                        }
                     } else {
                         // Collapse
                         trackingContent.style.maxHeight = '0px';
                         trackingContent.classList.remove('opacity-100');
                         trackingContent.classList.add('opacity-0');
                         trackingChevron.classList.add('rotate-180');
+                        
+                        // Reduce padding and margin
+                        toggleTrackingBtn.classList.remove('mb-6');
+                        toggleTrackingBtn.classList.add('mb-0');
+                        if (trackingCard) {
+                            trackingCard.classList.remove('p-8', 'lg:p-10');
+                            trackingCard.classList.add('p-5', 'lg:p-6');
+                        }
                     }
                 });
             }
