@@ -3174,6 +3174,12 @@ class ObController extends Controller
                                 if (! empty($itemNames)) {
                                     $manifestData['nama_barang'] = implode(', ', $itemNames);
                                 }
+                            } else if (preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $prospek->keterangan, $matches)) {
+                                $tttsj = \App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', trim($matches[1]))->first();
+                                if ($tttsj) {
+                                    $manifestData['nomor_tanda_terima'] = $tttsj->no_tanda_terima;
+                                    $manifestData['nama_barang'] = $tttsj->nama_barang;
+                                }
                             }
                         }
                     }
@@ -3941,7 +3947,10 @@ class ObController extends Controller
             'prospek_alamat_pengiriman' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->alamat_penerima : ($naikKapal->prospek->alamat_pengiriman ?? null),
             'prospek_contact_person' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->contact_person : ($naikKapal->prospek->contact_person ?? null),
             'prospek_jumlah' => $naikKapal->prospek ? $naikKapal->prospek->kuantitas : ($naikKapal->kuantitas ?? null),
-            'prospek_satuan' => ($naikKapal->prospek && $naikKapal->prospek->tandaTerima) ? $naikKapal->prospek->tandaTerima->satuan : null,
+            'prospek_satuan' => $naikKapal->prospek ? ($naikKapal->prospek->tandaTerima ? $naikKapal->prospek->tandaTerima->satuan : (
+                preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $naikKapal->prospek->keterangan, $matches) ?
+                (\App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', trim($matches[1]))->first()?->satuan_barang) : null
+            )) : null,
             'term' => $naikKapal->prospek ? ($naikKapal->prospek->tandaTerima ? $naikKapal->prospek->tandaTerima->term : (
                 preg_match('/Tanda Terima Tanpa Surat Jalan:\s*([^|]+)/', $naikKapal->prospek->keterangan, $matches) ?
                 (\App\Models\TandaTerimaTanpaSuratJalan::where('no_tanda_terima', trim($matches[1]))->first()?->term?->kode) : null
