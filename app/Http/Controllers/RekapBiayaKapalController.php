@@ -431,8 +431,10 @@ class RekapBiayaKapalController extends Controller
             $record->apportioned = $this->getApportionedCostForRecord($record, $kapal, $voyage);
         }
 
+        $kapalLike = '%' . preg_replace('/[^a-z0-9]+/i', '%', $kapal) . '%';
+
         // Fetch Pranota OB
-        $pranotaObs = \App\Models\PranotaOb::where('nama_kapal', $kapal)
+        $pranotaObs = \App\Models\PranotaOb::where('nama_kapal', 'like', $kapalLike)
             ->where('no_voyage', $voyage)
             ->where('status', '!=', 'cancelled')
             ->get();
@@ -454,8 +456,8 @@ class RekapBiayaKapalController extends Controller
 
         // Fetch Pemakaian Stock Amprahan
         $amprahanUsages = \App\Models\StockAmprahanUsage::with(['stockAmprahan'])
-            ->whereHas('kapal', function ($q) use ($kapal) {
-                $q->where('nama_kapal', $kapal);
+            ->whereHas('kapal', function ($q) use ($kapalLike) {
+                $q->where('nama_kapal', 'like', $kapalLike);
             })
             ->where('nomor_voyage', $voyage)
             ->get();
@@ -477,15 +479,15 @@ class RekapBiayaKapalController extends Controller
         }
 
         // Fetch Uang Jalan (Muat dan Bongkar)
-        $uangJalans = \App\Models\UangJalan::where(function($query) use ($kapal, $voyage) {
-            $query->whereHas('suratJalan.prospeks', function($q) use ($kapal, $voyage) {
-                $q->where('nama_kapal', $kapal)->where('no_voyage', $voyage);
+        $uangJalans = \App\Models\UangJalan::where(function($query) use ($kapalLike, $voyage) {
+            $query->whereHas('suratJalan.prospeks', function($q) use ($kapalLike, $voyage) {
+                $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
             })
-            ->orWhereHas('suratJalanBongkaran', function($q) use ($kapal, $voyage) {
-                $q->where('nama_kapal', $kapal)->where('no_voyage', $voyage);
+            ->orWhereHas('suratJalanBongkaran', function($q) use ($kapalLike, $voyage) {
+                $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
             })
-            ->orWhereHas('suratJalanBongkaranBatam', function($q) use ($kapal, $voyage) {
-                $q->where('nama_kapal', $kapal)->where('no_voyage', $voyage);
+            ->orWhereHas('suratJalanBongkaranBatam', function($q) use ($kapalLike, $voyage) {
+                $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
             });
         })->where('status', '!=', 'dibatalkan')->get();
 
@@ -507,8 +509,8 @@ class RekapBiayaKapalController extends Controller
 
         // Fetch Tagihan Vendor Supir (Pranota Invoice Vendor Supir details)
         $tagihanVendors = \App\Models\TagihanSupirVendor::with(['vendor', 'suratJalan.prospeks'])
-            ->whereHas('suratJalan.prospeks', function($q) use ($kapal, $voyage) {
-                $q->where('nama_kapal', $kapal)->where('no_voyage', $voyage);
+            ->whereHas('suratJalan.prospeks', function($q) use ($kapalLike, $voyage) {
+                $q->where('nama_kapal', 'like', $kapalLike)->where('no_voyage', $voyage);
             })
             ->where(function($q) {
                 $q->where('status_pembayaran', '!=', 'dibatalkan')->orWhereNull('status_pembayaran');
@@ -551,7 +553,7 @@ class RekapBiayaKapalController extends Controller
         };
 
         // OB Muat (NaikKapal)
-        $obMuats = \App\Models\NaikKapal::with('supir')->where('nama_kapal', $kapal)
+        $obMuats = \App\Models\NaikKapal::with('supir')->where('nama_kapal', 'like', $kapalLike)
             ->where('no_voyage', $voyage)
             ->where('sudah_ob', true)
             ->get();
@@ -591,7 +593,7 @@ class RekapBiayaKapalController extends Controller
         }
 
         // OB Bongkar (Bl)
-        $obBongkars = \App\Models\Bl::with('supir')->where('nama_kapal', $kapal)
+        $obBongkars = \App\Models\Bl::with('supir')->where('nama_kapal', 'like', $kapalLike)
             ->where('no_voyage', $voyage)
             ->where('sudah_ob', true)
             ->get();
