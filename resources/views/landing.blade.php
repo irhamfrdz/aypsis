@@ -27,9 +27,16 @@
                 
                 <!-- Quick Tracking/Schedule Card -->
                 <div class="glass-panel rounded-2xl p-8 lg:p-10 transform translate-y-8 lg:translate-y-0">
-                    <h3 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-3" data-lang-en='<i class="fa-solid fa-magnifying-glass text-blue-600"></i> Track Shipment' data-lang-zh='<i class="fa-solid fa-magnifying-glass text-blue-600"></i> 追踪货运'>
-                        <i class="fa-solid fa-magnifying-glass text-blue-600"></i> Lacak Pengiriman
-                    </h3>
+                    <div class="flex justify-between items-center mb-6 cursor-pointer group" id="toggle-tracking-btn">
+                        <h3 class="text-2xl font-bold text-slate-800 flex items-center gap-3" data-lang-en='<i class="fa-solid fa-magnifying-glass text-blue-600"></i> Track Shipment' data-lang-zh='<i class="fa-solid fa-magnifying-glass text-blue-600"></i> 追踪货运'>
+                            <i class="fa-solid fa-magnifying-glass text-blue-600"></i> Lacak Pengiriman
+                        </h3>
+                        <button type="button" class="text-slate-400 group-hover:text-blue-600 transition-colors bg-slate-100 group-hover:bg-blue-100 w-8 h-8 rounded-full flex items-center justify-center">
+                            <i class="fa-solid fa-chevron-up transition-transform duration-300" id="tracking-chevron"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="tracking-content" class="transition-all duration-500 ease-in-out overflow-hidden opacity-100" style="max-height: 1000px;">
                     <form action="#" class="space-y-5">
                         <div>
                             <label class="block text-sm font-medium text-slate-600 mb-1" data-lang-en="Receipt / Container Number" data-lang-zh="收据 / 集装箱号">Nomor Resi / Kontainer</label>
@@ -61,6 +68,7 @@
                                 <span class="text-sm font-medium text-slate-700 text-center" data-lang-en="Partner Portal" data-lang-zh="合作伙伴门户">Portal Mitra</span>
                             </a>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -531,6 +539,28 @@
                     console.error(err);
                 });
             });
+            // Tracking minimize logic
+            const toggleTrackingBtn = document.getElementById('toggle-tracking-btn');
+            const trackingContent = document.getElementById('tracking-content');
+            const trackingChevron = document.getElementById('tracking-chevron');
+            
+            if (toggleTrackingBtn && trackingContent) {
+                toggleTrackingBtn.addEventListener('click', function() {
+                    if (trackingContent.style.maxHeight === '0px') {
+                        // Expand
+                        trackingContent.style.maxHeight = '1000px';
+                        trackingContent.classList.remove('opacity-0');
+                        trackingContent.classList.add('opacity-100');
+                        trackingChevron.classList.remove('rotate-180');
+                    } else {
+                        // Collapse
+                        trackingContent.style.maxHeight = '0px';
+                        trackingContent.classList.remove('opacity-100');
+                        trackingContent.classList.add('opacity-0');
+                        trackingChevron.classList.add('rotate-180');
+                    }
+                });
+            }
         });
     </script>
 @endsection
