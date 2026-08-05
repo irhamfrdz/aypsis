@@ -177,8 +177,9 @@
                                             data-no-kontainer="{{ $item['no_kontainer'] ?? '-' }}"
                                             data-estimasi="{{ (int) $estimasi }}"
                                             data-riil="{{ (int) $biayaRiil }}"
-                                            data-biaya-cat="{{ (int) $biayaCat }}">
-                                        <i class="fas fa-edit mr-1"></i> Edit Biaya
+                                            data-biaya-cat="{{ (int) $biayaCat }}"
+                                            data-keterangan="{{ $item['keterangan_kerusakan'] ?? (\App\Models\PerbaikanKontainer::find($item['id'] ?? null)->keterangan_kerusakan ?? '') }}">
+                                        <i class="fas fa-edit mr-1"></i> Edit Item
                                     </button>
                                 </td>
                                 @endcan
@@ -274,6 +275,13 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none">
                         </div>
 
+                        <!-- Keterangan Kerusakan -->
+                        <div>
+                            <label for="keterangan_kerusakan" class="block text-sm font-semibold text-gray-700 mb-1">Keterangan Kerusakan</label>
+                            <textarea name="keterangan_kerusakan" id="modalKeterangan" rows="2"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none"></textarea>
+                        </div>
+
                         <!-- Kalkulasi Biaya Terpakai (Dynamic) -->
                         <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-indigo-900 flex justify-between items-center">
                             <div>
@@ -318,6 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const itemIdInput = document.getElementById('modalItemId');
     const labelNoPerbaikan = document.getElementById('labelNoPerbaikan');
     const labelNoKontainer = document.getElementById('labelNoKontainer');
+    const keteranganInput = document.getElementById('modalKeterangan');
     const submitBtn = document.getElementById('btnSubmitBiaya');
 
     function calculateTerpakai() {
@@ -340,6 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const estimasi = this.getAttribute('data-estimasi');
             const riil = this.getAttribute('data-riil');
             const biayaCat = this.getAttribute('data-biaya-cat') || 0;
+            const keterangan = this.getAttribute('data-keterangan') || '';
 
             const currentBiayaCat = parseFloat(biayaCat);
 
@@ -350,6 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
             estimasiInput.value = estimasi;
             riilInput.value = riil;
             biayaCatInput.value = currentBiayaCat;
+            keteranganInput.value = keterangan;
 
             if (currentBiayaCat > 0) {
                 wrapperBiayaCat.classList.remove('hidden');

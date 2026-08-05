@@ -113,6 +113,7 @@ class PranotaPerbaikanKontainerController extends Controller
                 'estimasi_biaya' => 'required|numeric|min:0',
                 'biaya_riil' => 'required|numeric|min:0',
                 'biaya_cat' => 'nullable|numeric|min:0',
+                'keterangan_kerusakan' => 'nullable|string',
             ]);
 
             $pranota = PranotaPerbaikanKontainer::findOrFail($id);
@@ -133,6 +134,15 @@ class PranotaPerbaikanKontainerController extends Controller
                     $item['estimasi_biaya'] = $data['estimasi_biaya'];
                     $item['biaya_riil'] = $data['biaya_riil'];
                     $item['biaya_cat'] = $data['biaya_cat'] ?? 0;
+                    if (array_key_exists('keterangan_kerusakan', $data)) {
+                        $item['keterangan_kerusakan'] = $data['keterangan_kerusakan'];
+                        
+                        $perbaikan = \App\Models\PerbaikanKontainer::find($item['id']);
+                        if ($perbaikan) {
+                            $perbaikan->keterangan_kerusakan = $data['keterangan_kerusakan'];
+                            $perbaikan->save();
+                        }
+                    }
                     $itemUpdated = true;
                 }
 
