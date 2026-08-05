@@ -2012,6 +2012,31 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Show form for importing data updates
+     */
+    public function importUpdateForm()
+    {
+        return view('master-karyawan.import-update');
+    }
+
+    /**
+     * Handle import update
+     */
+    public function importUpdateStore(Request $request)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:csv,txt,xlsx,xls',
+        ]);
+
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\KaryawanUpdateImport, $request->file('excel_file'));
+            return redirect()->route('master.karyawan.index')->with('success', 'Data karyawan berhasil diperbarui dari file Excel.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal memproses file Excel: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Show crew checklist form for ABK employees
      */
     public function crewChecklist($id)

@@ -555,6 +555,15 @@ Route::middleware([
             ->name('karyawan.import.store')
             ->middleware(['auth', 'can:master-karyawan-create']);
 
+        // Import Update Karyawan from CSV/Excel
+        Route::get('karyawan/import-update', [KaryawanController::class, 'importUpdateForm'])
+            ->name('karyawan.import-update')
+            ->middleware(['auth', 'can:master-karyawan-update']);
+
+        Route::post('karyawan/import-update', [KaryawanController::class, 'importUpdateStore'])
+            ->name('karyawan.import-update.store')
+            ->middleware(['auth', 'can:master-karyawan-update']);
+
         // Export/download CSV of all karyawan
         Route::get('karyawan/export', [KaryawanController::class, 'export'])
             ->name('karyawan.export')
