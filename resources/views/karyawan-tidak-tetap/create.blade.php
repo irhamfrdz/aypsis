@@ -175,20 +175,18 @@
 
                     <div>
                         <label for="group" class="{{ $labelClasses }}">Group</label>
-                        <select name="group" id="group" class="{{ $selectClasses }}">
-                            <option value="">-- Pilih Group --</option>
+                        <select name="group[]" id="group" class="{{ $selectClasses }} select2-multiple" multiple data-placeholder="-- Pilih Group --">
                             @foreach($groups as $g)
-                                <option value="{{ $g }}" {{ old('group') == $g ? 'selected' : '' }}>{{ $g }}</option>
+                                <option value="{{ $g }}" {{ (is_array(old('group')) && in_array($g, old('group'))) ? 'selected' : '' }}>{{ $g }}</option>
                             @endforeach
                         </select>
                     </div>
 
                     <div>
                         <label for="sub_group" class="{{ $labelClasses }}">Sub Group</label>
-                        <select name="sub_group" id="sub_group" class="{{ $selectClasses }}">
-                            <option value="">-- Pilih Sub Group --</option>
+                        <select name="sub_group[]" id="sub_group" class="{{ $selectClasses }} select2-multiple" multiple data-placeholder="-- Pilih Sub Group --">
                             @foreach($subGroups as $sg)
-                                <option value="{{ $sg }}" {{ old('sub_group') == $sg ? 'selected' : '' }}>{{ $sg }}</option>
+                                <option value="{{ $sg }}" {{ (is_array(old('sub_group')) && in_array($sg, old('sub_group'))) ? 'selected' : '' }}>{{ $sg }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -256,6 +254,14 @@
 
 @push('scripts')
 <script>
+    $(document).ready(function() {
+        $('.select2-multiple').select2({
+            theme: 'classic',
+            width: '100%',
+            allowClear: true
+        });
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('pekerjaan_search');
         const hiddenInput = document.getElementById('pekerjaan');

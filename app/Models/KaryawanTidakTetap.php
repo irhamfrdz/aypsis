@@ -35,5 +35,7 @@ class KaryawanTidakTetap extends Model
 
     protected $casts = [
         'tanggal_masuk' => 'date',
+        'group' => 'array',
+        'sub_group' => 'array',
     ];
 }

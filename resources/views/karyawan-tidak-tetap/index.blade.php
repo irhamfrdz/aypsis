@@ -91,10 +91,10 @@
                                 {{ $karyawan->penempatan ?? '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $karyawan->group ?? '-' }}
+                                {{ is_array($karyawan->group) ? implode(', ', $karyawan->group) : ($karyawan->group ?? '-') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $karyawan->sub_group ?? '-' }}
+                                {{ is_array($karyawan->sub_group) ? implode(', ', $karyawan->sub_group) : ($karyawan->sub_group ?? '-') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $karyawan->cabang ?? '-' }}

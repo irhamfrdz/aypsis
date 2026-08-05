@@ -85,8 +85,10 @@ class KaryawanTidakTetapController extends Controller
             'tanggal_masuk' => 'nullable|date',
             'status_pajak' => 'nullable|string|max:50',
             'penempatan' => 'nullable|string|max:100',
-            'group' => 'nullable|string|max:100',
-            'sub_group' => 'nullable|string|max:100',
+            'group' => 'nullable|array',
+            'group.*' => 'nullable|string|max:100',
+            'sub_group' => 'nullable|array',
+            'sub_group.*' => 'nullable|string|max:100',
         ]);
 
         // Auto-generate NIK if not provided
@@ -181,8 +183,10 @@ class KaryawanTidakTetapController extends Controller
             'tanggal_masuk' => 'nullable|date',
             'status_pajak' => 'nullable|string|max:50',
             'penempatan' => 'nullable|string|max:100',
-            'group' => 'nullable|string|max:100',
-            'sub_group' => 'nullable|string|max:100',
+            'group' => 'nullable|array',
+            'group.*' => 'nullable|string|max:100',
+            'sub_group' => 'nullable|array',
+            'sub_group.*' => 'nullable|string|max:100',
         ]);
 
         $karyawanTidakTetap->update($validated);
