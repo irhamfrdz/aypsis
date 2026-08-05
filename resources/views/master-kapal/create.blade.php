@@ -459,6 +459,16 @@
         disabledSlotsArr = [];
     }
 
+    let activeTierPreview = null;
+    let activeViewMode = 'deck';
+    let activeBayPreview = null;
+    let disabledSlotsArr = [];
+    try {
+        disabledSlotsArr = JSON.parse(document.getElementById('disabled_slots').value || '[]');
+    } catch (e) {
+        disabledSlotsArr = [];
+    }
+
     window.toggleSlot = function(slotId) {
         if (disabledSlotsArr.includes(slotId)) {
             disabledSlotsArr = disabledSlotsArr.filter(id => id !== slotId);
@@ -498,61 +508,78 @@
             activeTierPreview = tiers[0];
         }
 
-        // Urutkan bay dari depan ke belakang (kecil ke besar)
         const sortedBays = [...bays].sort((a,b) => parseInt(a) - parseInt(b));
+        
+        if (!activeBayPreview || !bays.includes(activeBayPreview)) {
+            activeBayPreview = sortedBays[0];
+        }
+
+        // Sort tiers: descending for profile view
+        const sortedTiers = [...tiers].sort((a, b) => parseInt(b) - parseInt(a));
 
         let html = `
-            <div class="flex flex-col gap-4">
-                <!-- Tier Tabs -->
-                <div class="flex overflow-x-auto gap-2 pb-2 border-b border-gray-200" style="scrollbar-width: thin;">
-                    ${tiers.map(tier => `
-                        <button type="button" 
-                                onclick="setActiveTier('${tier}')"
-                                class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap focus:outline-none ${activeTierPreview === tier ? 'bg-green-100 text-green-700 border-b-2 border-green-500' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}">
-                            Tier ${tier}
-                        </button>
-                    `).join('')}
+            <div class="flex flex-col gap-4 w-full">
+                <!-- View Mode Tabs -->
+                <div class="flex gap-2 mb-2 border-b border-gray-200">
+                    <button type="button" onclick="setActiveViewMode('deck')" class="px-4 py-2 text-sm font-medium focus:outline-none border-b-2 transition-colors ${activeViewMode === 'deck' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"><i class="fas fa-layer-group mr-2"></i>Deck View</button>
+                    <button type="button" onclick="setActiveViewMode('profile')" class="px-4 py-2 text-sm font-medium focus:outline-none border-b-2 transition-colors ${activeViewMode === 'profile' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"><i class="fas fa-ship mr-2"></i>Profile View</button>
+                    <button type="button" onclick="setActiveViewMode('3d')" class="px-4 py-2 text-sm font-medium focus:outline-none border-b-2 transition-colors ${activeViewMode === '3d' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"><i class="fas fa-cubes mr-2"></i>3D View (Beta)</button>
+                </div>
+        `;
+
+        if (activeViewMode === 'deck') {
+            html += `
+                <!-- Tier Selection -->
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-gray-500 uppercase">Pilih Tier:</span>
+                    <div class="flex overflow-x-auto gap-2 pb-2" style="scrollbar-width: thin;">
+                        ${tiers.map(tier => `
+                            <button type="button" 
+                                    onclick="setActiveTier('${tier}')"
+                                    class="px-4 py-1.5 text-xs font-medium rounded-full transition-colors whitespace-nowrap focus:outline-none border ${activeTierPreview === tier ? 'bg-purple-100 text-purple-700 border-purple-300 shadow-sm' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}">
+                                Tier ${tier}
+                            </button>
+                        `).join('')}
+                    </div>
                 </div>
                 
-                <!-- Ship Top-Down Grid -->
-                <div class="w-full flex justify-center min-h-max pb-10">
+                <!-- Horizontal Ship Deck Grid -->
+                <div class="overflow-x-auto overflow-y-visible w-full p-4 flex justify-start lg:justify-center h-max min-h-full">
                     <div class="relative bg-slate-100 border-4 border-slate-400 shadow-xl flex-shrink-0" 
-                         style="border-radius: 50% 50% 5% 5% / 150px 150px 10px 10px; padding: 120px 30px 50px 30px; min-width: 320px;">
+                         style="border-radius: 150px 10px 10px 150px / 50% 5% 5% 50%; padding: 30px 50px 30px 120px; min-width: max-content; margin-right: 2rem;">
                         
-                        <!-- Bow (Depan) Indicator -->
-                        <div class="absolute top-6 left-0 right-0 text-center text-slate-500 font-bold text-xs tracking-widest uppercase">
-                            <i class="fas fa-caret-up block mb-1 text-lg text-slate-400"></i>
-                            Bow (Depan)
+                        <!-- Bow (Depan) Indicator (Left side) -->
+                        <div class="absolute left-6 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-xs tracking-widest whitespace-nowrap -rotate-90">
+                            BOW (DEPAN)
+                            <i class="fas fa-caret-up block mt-1 text-lg text-slate-400 transform rotate-90"></i>
                         </div>
 
-                        <!-- Port / Starboard Indicators -->
-                        <div class="absolute left-[-20px] top-1/2 transform -translate-y-1/2 -rotate-90 text-slate-400 font-bold text-[10px] tracking-widest whitespace-nowrap">
-                            <span class="text-red-400 font-black">&larr;</span> PORT SIDE (KIRI)
-                        </div>
-                        <div class="absolute right-[-20px] top-1/2 transform translate-y-1/2 rotate-90 text-slate-400 font-bold text-[10px] tracking-widest whitespace-nowrap">
-                            STARBOARD (KANAN) <span class="text-green-500 font-black">&rarr;</span>
+                        <!-- Stern (Belakang) Indicator (Right side) -->
+                        <div class="absolute right-6 top-1/2 transform -translate-y-1/2 text-slate-500 font-bold text-xs tracking-widest whitespace-nowrap rotate-90">
+                            STERN
+                            <i class="fas fa-caret-down block mt-1 text-lg text-slate-400 transform -rotate-90"></i>
                         </div>
 
                         <!-- Grid Table -->
-                        <div class="bg-white rounded p-3 shadow-inner relative z-10">
-                            <table class="w-full table-auto border-collapse mx-auto">
+                        <div class="bg-white rounded p-3 shadow-inner relative z-10 inline-block">
+                            <table class="w-full table-auto border-collapse">
                                 <thead>
                                     <tr>
-                                        <th class="p-2 border-b-2 border-r-2 border-gray-200 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-wider w-12 shadow-sm">Bay \\ Row</th>
-                                        ${rows.map(row => `<th class="p-2 border-b-2 border-gray-200 bg-blue-50 text-xs font-bold text-blue-700 text-center w-14 shadow-sm">${row}</th>`).join('')}
+                                        <th class="p-2 border-b-2 border-r-2 border-gray-200 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-wider shadow-sm w-16">Row \\ Bay</th>
+                                        ${sortedBays.map(bay => `<th class="p-2 border-b-2 border-gray-200 bg-blue-50 text-xs font-bold text-blue-700 text-center w-14 shadow-sm">${bay}</th>`).join('')}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${sortedBays.map(bay => `
+                                    ${rows.map(row => `
                                         <tr>
                                             <th class="p-2 border-r-2 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-600 shadow-sm text-center">
-                                                ${bay}
+                                                ${row}
                                             </th>
-                                            ${rows.map(row => {
+                                            ${sortedBays.map(bay => {
                                                 const slotId = `${bay}${row}${activeTierPreview}`;
                                                 const isDisabled = disabledSlotsArr.includes(slotId);
                                                 return `
-                                                <td class="p-1.5 border border-gray-100 text-center relative group transition-colors cursor-pointer" onclick="toggleSlot('${slotId}')" title="Klik untuk mengaktifkan/menonaktifkan slot">
+                                                <td class="p-1.5 border border-gray-100 text-center relative group transition-colors cursor-pointer hover:bg-slate-50" onclick="toggleSlot('${slotId}')" title="Klik untuk mengaktifkan/menonaktifkan slot">
                                                     ${isDisabled
                                                         ? `<div class="w-10 h-14 mx-auto border-2 border-dashed border-gray-300 rounded-sm bg-gray-50 flex flex-col items-center justify-center opacity-50 shadow-sm gap-1 hover:bg-gray-100 transition-all">
                                                              <span class="text-[8px] font-mono font-bold text-gray-400 line-through">${slotId}</span>
@@ -570,16 +597,81 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+            `;
+        } else if (activeViewMode === 'profile') {
+            html += `
+                <!-- Bay Selection -->
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-gray-500 uppercase">Pilih Bay:</span>
+                    <div class="flex overflow-x-auto gap-2 pb-2" style="scrollbar-width: thin;">
+                        ${sortedBays.map(bay => `
+                            <button type="button" 
+                                    onclick="setActiveBay('${bay}')"
+                                    class="px-4 py-1.5 text-xs font-medium rounded-full transition-colors whitespace-nowrap focus:outline-none border ${activeBayPreview === bay ? 'bg-orange-100 text-orange-700 border-orange-300 shadow-sm' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}">
+                                Bay ${bay}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <!-- Cross-Section Profile Grid -->
+                <div class="overflow-x-auto w-full p-4 flex justify-start lg:justify-center">
+                    <div class="relative bg-slate-100 border-4 border-slate-400 shadow-xl flex-shrink-0" 
+                         style="border-radius: 10px 10px 50% 50% / 10px 10px 150px 150px; padding: 30px 50px 80px 50px; min-width: max-content;">
                         
-                        <!-- Stern (Belakang) Indicator -->
-                        <div class="absolute bottom-6 left-0 right-0 text-center text-slate-500 font-bold text-xs tracking-widest uppercase">
-                            Stern (Belakang)
-                            <i class="fas fa-caret-down block mt-1 text-lg text-slate-400"></i>
+                        <div class="bg-white rounded p-3 shadow-inner relative z-10 inline-block">
+                            <table class="w-full table-auto border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th class="p-2 border-b-2 border-r-2 border-gray-200 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-wider shadow-sm w-16">Tier \\ Row</th>
+                                        ${rows.map(row => `<th class="p-2 border-b-2 border-gray-200 bg-orange-50 text-xs font-bold text-orange-700 text-center w-14 shadow-sm">${row}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sortedTiers.map(tier => `
+                                        <tr>
+                                            <th class="p-2 border-r-2 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-600 shadow-sm text-center">
+                                                ${tier}
+                                            </th>
+                                            ${rows.map(row => {
+                                                const slotId = `${activeBayPreview}${row}${tier}`;
+                                                const isDisabled = disabledSlotsArr.includes(slotId);
+                                                return `
+                                                <td class="p-1.5 border border-gray-100 text-center relative group transition-colors cursor-pointer hover:bg-slate-50" onclick="toggleSlot('${slotId}')" title="Klik untuk mengaktifkan/menonaktifkan slot">
+                                                    ${isDisabled
+                                                        ? `<div class="w-10 h-14 mx-auto border-2 border-dashed border-gray-300 rounded-sm bg-gray-50 flex flex-col items-center justify-center opacity-50 shadow-sm gap-1 hover:bg-gray-100 transition-all">
+                                                             <span class="text-[8px] font-mono font-bold text-gray-400 line-through">${slotId}</span>
+                                                           </div>`
+                                                        : `<div class="w-10 h-14 mx-auto border-2 border-slate-300 rounded-sm bg-white flex flex-col items-center justify-center group-hover:border-slate-500 group-hover:bg-slate-100 transition-all shadow-sm gap-1">
+                                                             <i class="fas fa-box text-slate-300 group-hover:text-slate-400 mb-1"></i>
+                                                             <span class="text-[8px] font-mono font-bold text-slate-500 group-hover:text-slate-700">${slotId}</span>
+                                                           </div>`
+                                                    }
+                                                </td>
+                                                `;
+                                            }).join('')}
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else if (activeViewMode === '3d') {
+            html += `
+                <div class="w-full flex flex-col items-center justify-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+                    <i class="fas fa-cubes text-6xl text-slate-300 mb-4"></i>
+                    <h3 class="text-lg font-bold text-slate-700">3D Isometric View (Placeholder)</h3>
+                    <p class="text-sm text-slate-500 mt-2 max-w-md text-center">Tampilan 3D penuh memerlukan engine khusus (seperti WebGL/Three.js). Gunakan Deck View dan Profile View untuk mengatur struktur slot kapal secara presisi.</p>
+                </div>
+            `;
+        }
+
+        html += `</div>`;
+
 
         container.innerHTML = html;
     }
@@ -587,7 +679,17 @@
     window.setActiveTier = function(tier) {
         activeTierPreview = tier;
         renderPreview();
-    };
+    }
+
+    window.setActiveBay = function(bay) {
+        activeBayPreview = bay;
+        renderPreview();
+    }
+
+    window.setActiveViewMode = function(mode) {
+        activeViewMode = mode;
+        renderPreview();
+    }
 
     // Bind Enter key
     ['bay', 'row', 'tier'].forEach(type => {
