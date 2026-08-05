@@ -240,7 +240,11 @@
                                             </td>
                                         @endif
                                         <td class="px-6 py-4 text-xs text-gray-700">
-                                            {{ $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain' }}
+                                            @if(isset($item->is_amprahan) && $item->is_amprahan)
+                                                {{ $item->jenis_biaya }} <span class="block text-[10px] text-gray-500 mt-0.5 font-medium">{{ $item->nama_barang_amprahan ?? '' }}</span>
+                                            @else
+                                                {{ $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain' }}
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
                                             Rp {{ number_format($item->display_total ?? $item->apportioned['total_biaya'], 0, ',', '.') }}

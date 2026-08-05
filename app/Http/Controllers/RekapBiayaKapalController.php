@@ -473,7 +473,8 @@ class RekapBiayaKapalController extends Controller
             $usage->is_amprahan = true;
             $usage->nomor_invoice = $usage->stockAmprahan->nomor_bukti ?? '-';
             $usage->tanggal = $usage->tanggal_pengambilan;
-            $usage->jenis_biaya = 'Pemakaian Amprahan (' . ($usage->stockAmprahan->nama_barang ?? 'Barang') . ')';
+            $usage->jenis_biaya = 'Pemakaian Amprahan';
+            $usage->nama_barang_amprahan = $usage->stockAmprahan->nama_barang ?? 'Barang';
             
             $biayaKapals->push($usage);
         }
