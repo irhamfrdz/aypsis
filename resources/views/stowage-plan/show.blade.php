@@ -286,8 +286,7 @@
         });
 
         // Urutkan bay dari depan ke belakang (kecil ke besar)
-        const sortedBays = [...availableRows].sort((a,b) => parseInt(a) - parseInt(b));
-        // Wait, availableBays is already sorted ascending by controller. We use availableBays directly.
+        const sortedBays = [...availableBays].sort((a,b) => parseInt(a) - parseInt(b));
 
         let html = `
             <div class="overflow-x-auto w-full p-4 flex justify-center bg-gray-50/50">
@@ -318,42 +317,42 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${availableBays.map(bay => `
+                                ${sortedBays.map(bay => `
                                     <tr>
                                         <th class="p-2 border-r-2 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-600 shadow-sm text-center">
                                             ${bay}
                                         </th>
                                         ${sortedRows.map(row => {
-                                            const slotId = \`\${bay}\${row}\${tier}\`;
+                                            const slotId = `${bay}${row}${tier}`;
                                             const isDisabled = disabledSlots.includes(slotId);
                                             const container = plansData.find(p => p.bay === bay && p.row === row && p.tier === tier);
                                             
                                             if (isDisabled) {
-                                                return \`
+                                                return `
                                                 <td class="p-1.5 border border-gray-100 text-center relative group transition-colors">
                                                     <div class="w-10 h-14 mx-auto border-2 border-dashed border-gray-300 rounded-sm bg-gray-50 flex flex-col items-center justify-center opacity-50 shadow-sm gap-1">
-                                                        <span class="text-[8px] font-mono font-bold text-gray-400 line-through">\${slotId}</span>
+                                                        <span class="text-[8px] font-mono font-bold text-gray-400 line-through">${slotId}</span>
                                                     </div>
                                                 </td>
-                                                \`;
+                                                `;
                                             } else if (container) {
-                                                return \`
+                                                return `
                                                 <td class="p-1.5 border border-gray-100 text-center relative group">
-                                                    <div class="w-10 h-14 mx-auto border-2 border-orange-500 rounded-sm bg-orange-500 flex flex-col items-center justify-center shadow-md relative overflow-hidden" title="No: \${container.container} | Tipe: \${container.type}">
+                                                    <div class="w-10 h-14 mx-auto border-2 border-orange-500 rounded-sm bg-orange-500 flex flex-col items-center justify-center shadow-md relative overflow-hidden" title="No: ${container.container} | Tipe: ${container.type}">
                                                         <i class="fas fa-box text-white/30 text-xl absolute"></i>
-                                                        <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight">\${container.container.substring(0,4)}<br/>\${container.container.substring(4)}</span>
+                                                        <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight">${container.container.substring(0,4)}<br/>${container.container.substring(4)}</span>
                                                     </div>
                                                 </td>
-                                                \`;
+                                                `;
                                             } else {
-                                                return \`
+                                                return `
                                                 <td class="p-1.5 border border-gray-100 text-center relative group transition-colors hover:bg-slate-50">
                                                     <div class="w-10 h-14 mx-auto border-2 border-slate-300 rounded-sm bg-white flex flex-col items-center justify-center group-hover:border-slate-500 group-hover:bg-slate-100 transition-all shadow-sm gap-1">
                                                         <div class="w-6 h-1.5 bg-slate-200 rounded-sm"></div>
-                                                        <span class="text-[8px] font-mono font-bold text-slate-500 group-hover:text-slate-700">\${slotId}</span>
+                                                        <span class="text-[8px] font-mono font-bold text-slate-500 group-hover:text-slate-700">${slotId}</span>
                                                     </div>
                                                 </td>
-                                                \`;
+                                                `;
                                             }
                                         }).join('')}
                                     </tr>
