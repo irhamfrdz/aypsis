@@ -93,7 +93,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Upload Form -->
                 <div>
-                    <form action="{{ route('karyawan.import-update.store') }}" method="POST" enctype="multipart/form-data" id="importForm">
+                    <form action="{{ route('master.karyawan.import-update.store') }}" method="POST" enctype="multipart/form-data" id="importForm">
                         @csrf
                         
                         <div class="mb-6">
