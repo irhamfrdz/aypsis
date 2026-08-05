@@ -406,7 +406,7 @@
             closeBtn.addEventListener('click', toggleChat);
             
             function renderMessage(msg) {
-                const isSelf = msg.is_admin === 0; // On landing page, self is NOT admin
+                const isSelf = msg.is_admin == 0 || msg.is_admin === false; // On landing page, self is NOT admin
                 const time = new Date(msg.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
                 
                 if (isSelf) {
