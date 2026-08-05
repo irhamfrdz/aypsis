@@ -466,7 +466,7 @@
         renderPills(type);
     }
 
-    let activeBayPreview = null;
+    let activeTierPreview = null;
 
     function renderPreview() {
         const bays = configs.bay.data;
@@ -483,8 +483,7 @@
             if (isAEven) return numB - numA;
             else return numA - numB;
         });
-        // Urutkan Tier: Descending (paling besar di atas)
-        const tiers = [...configs.tier.data].sort((a, b) => parseInt(b) - parseInt(a));
+        const tiers = configs.tier.data;
 
         const container = document.getElementById('layout_preview_container');
         if (!container) return;
@@ -494,52 +493,79 @@
             return;
         }
 
-        if (!activeBayPreview || !bays.includes(activeBayPreview)) {
-            activeBayPreview = bays[0];
+        if (!activeTierPreview || !tiers.includes(activeTierPreview)) {
+            activeTierPreview = tiers[0];
         }
+
+        // Urutkan bay dari depan ke belakang (kecil ke besar)
+        const sortedBays = [...bays].sort((a,b) => parseInt(a) - parseInt(b));
 
         let html = `
             <div class="flex flex-col gap-4">
-                <!-- Bay Tabs -->
+                <!-- Tier Tabs -->
                 <div class="flex overflow-x-auto gap-2 pb-2 border-b border-gray-200" style="scrollbar-width: thin;">
-                    ${bays.map(bay => `
+                    ${tiers.map(tier => `
                         <button type="button" 
-                                onclick="setActiveBay('${bay}')"
-                                class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap focus:outline-none ${activeBayPreview === bay ? 'bg-purple-100 text-purple-700 border-b-2 border-purple-500' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}">
-                            Bay ${bay}
+                                onclick="setActiveTier('${tier}')"
+                                class="px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap focus:outline-none ${activeTierPreview === tier ? 'bg-green-100 text-green-700 border-b-2 border-green-500' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'}">
+                            Tier ${tier}
                         </button>
                     `).join('')}
                 </div>
                 
-                <!-- Grid -->
-                <div class="overflow-x-auto bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                    <table class="w-full table-auto border-collapse mx-auto" style="min-width: max-content;">
-                        <thead>
-                            <tr>
-                                <th class="p-2 border border-gray-200 bg-gray-100 text-xs font-semibold text-gray-600 shadow-sm">Tier / Row</th>
-                                ${rows.map(row => `<th class="p-2 border border-gray-200 bg-blue-50 text-xs font-semibold text-blue-700 text-center w-12 shadow-sm">${row}</th>`).join('')}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${tiers.map(tier => `
-                                <tr>
-                                    <th class="p-2 border border-gray-200 bg-green-50 text-xs font-semibold text-green-700 w-16 shadow-sm text-center">${tier}</th>
-                                    ${rows.map(row => `
-                                        <td class="p-1 border border-gray-200 text-center relative group hover:bg-purple-50 transition-colors">
-                                            <div class="w-12 h-12 mx-auto border-2 border-gray-300 rounded bg-gray-50 flex flex-col items-center justify-center group-hover:border-purple-500 group-hover:text-purple-600 transition-colors shadow-sm">
-                                                <i class="fas fa-box text-gray-300 group-hover:text-purple-400 mb-0.5 text-xs"></i>
-                                                <span class="text-[9px] font-mono text-gray-500 group-hover:text-purple-600">${activeBayPreview}${row}${tier}</span>
-                                            </div>
-                                        </td>
+                <!-- Ship Top-Down Grid -->
+                <div class="overflow-x-auto p-4 flex justify-center">
+                    <div class="relative bg-slate-100 border-4 border-slate-400 shadow-xl" 
+                         style="border-radius: 50% 50% 5% 5% / 150px 150px 10px 10px; padding: 120px 30px 50px 30px; min-width: 320px;">
+                        
+                        <!-- Bow (Depan) Indicator -->
+                        <div class="absolute top-6 left-0 right-0 text-center text-slate-500 font-bold text-xs tracking-widest uppercase">
+                            <i class="fas fa-caret-up block mb-1 text-lg text-slate-400"></i>
+                            Bow (Depan)
+                        </div>
+
+                        <!-- Port / Starboard Indicators -->
+                        <div class="absolute left-[-20px] top-1/2 transform -translate-y-1/2 -rotate-90 text-slate-400 font-bold text-[10px] tracking-widest whitespace-nowrap">
+                            <span class="text-red-400 font-black">&larr;</span> PORT SIDE (KIRI)
+                        </div>
+                        <div class="absolute right-[-20px] top-1/2 transform translate-y-1/2 rotate-90 text-slate-400 font-bold text-[10px] tracking-widest whitespace-nowrap">
+                            STARBOARD (KANAN) <span class="text-green-500 font-black">&rarr;</span>
+                        </div>
+
+                        <!-- Grid Table -->
+                        <div class="bg-white rounded p-3 shadow-inner relative z-10">
+                            <table class="w-full table-auto border-collapse mx-auto">
+                                <thead>
+                                    <tr>
+                                        <th class="p-2 border-b-2 border-r-2 border-gray-200 bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-wider w-12 shadow-sm">Bay \\ Row</th>
+                                        ${rows.map(row => `<th class="p-2 border-b-2 border-gray-200 bg-blue-50 text-xs font-bold text-blue-700 text-center w-14 shadow-sm">${row}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${sortedBays.map(bay => `
+                                        <tr>
+                                            <th class="p-2 border-r-2 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-600 shadow-sm text-center">
+                                                ${bay}
+                                            </th>
+                                            ${rows.map(row => `
+                                                <td class="p-1.5 border border-gray-100 text-center relative group hover:bg-slate-50 transition-colors">
+                                                    <div class="w-10 h-14 mx-auto border-2 border-slate-300 rounded-sm bg-white flex flex-col items-center justify-center group-hover:border-slate-500 group-hover:bg-slate-100 transition-all shadow-sm gap-1">
+                                                        <div class="w-6 h-1.5 bg-slate-200 rounded-sm"></div>
+                                                        <span class="text-[8px] font-mono font-bold text-slate-500 group-hover:text-slate-700">${bay}${row}${activeTierPreview}</span>
+                                                    </div>
+                                                </td>
+                                            `).join('')}
+                                        </tr>
                                     `).join('')}
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                    <div class="mt-6 flex justify-center items-center gap-4 text-xs text-gray-500">
-                        <span class="flex items-center font-medium"><i class="fas fa-arrow-left mr-2 text-red-400"></i> Port Side (Kiri)</span>
-                        <span class="flex items-center text-gray-300"><i class="fas fa-ship mx-2 text-2xl"></i></span>
-                        <span class="flex items-center font-medium">Starboard Side (Kanan) <i class="fas fa-arrow-right ml-2 text-green-500"></i></span>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Stern (Belakang) Indicator -->
+                        <div class="absolute bottom-6 left-0 right-0 text-center text-slate-500 font-bold text-xs tracking-widest uppercase">
+                            Stern (Belakang)
+                            <i class="fas fa-caret-down block mt-1 text-lg text-slate-400"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -548,8 +574,8 @@
         container.innerHTML = html;
     }
 
-    window.setActiveBay = function(bay) {
-        activeBayPreview = bay;
+    window.setActiveTier = function(tier) {
+        activeTierPreview = tier;
         renderPreview();
     };
 
