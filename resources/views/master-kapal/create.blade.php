@@ -535,7 +535,7 @@
     window.setActiveBay = function(bay) {
         activeBayPreview = bay;
         renderPreview();
-    }
+    };
 
     // Bind Enter key
     ['bay', 'row', 'tier'].forEach(type => {
