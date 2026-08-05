@@ -81,10 +81,10 @@
         </div>
     </div>
 
-    <!-- Visual Breakdown / Progress Bars -->
+    <!-- Proporsi & Rincian Biaya (Combined Accordion) -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
-        <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center">
-            <i class="fas fa-chart-pie text-indigo-600 mr-2"></i> Proporsi Biaya Berdasarkan Klasifikasi
+        <h2 class="text-xl font-extrabold text-gray-800 mb-6 flex items-center">
+            <i class="fas fa-chart-pie text-indigo-600 mr-2"></i> Proporsi & Rincian Biaya Berdasarkan Klasifikasi
         </h2>
         <div class="space-y-4">
             @php
@@ -95,199 +95,131 @@
                     $groupTotal = $items->sum(fn($i) => $i->apportioned['total_biaya']);
                     $percentageOfMax = ($groupTotal / $maxGroupTotal) * 100;
                     $percentageOfGrand = $summary['grand_total'] > 0 ? ($groupTotal / $summary['grand_total']) * 100 : 0;
+                    $accordionId = Str::slug($category) . '-' . $loop->index;
                 @endphp
-                <div>
-                    <div class="flex justify-between text-sm font-semibold text-gray-700 mb-1">
-                        <span>{{ $category }}</span>
-                        <span>Rp {{ number_format($groupTotal, 0, ',', '.') }} <span class="text-xs font-normal text-gray-400">({{ number_format($percentageOfGrand, 1) }}%)</span></span>
-                    </div>
-                    <div class="w-full bg-gray-100 rounded-full h-3">
-                        <div class="bg-blue-600 h-3 rounded-full transition-all duration-500" style="width: {{ $percentageOfMax }}%"></div>
+                <div class="border border-gray-100 rounded-xl overflow-hidden group bg-white shadow-sm hover:shadow-md transition-shadow page-break-inside-avoid">
+                    <button type="button" class="w-full text-left p-5 hover:bg-gray-50 transition-colors focus:outline-none toggle-accordion" data-target="#accordion-{{ $accordionId }}">
+                        <div class="flex justify-between text-sm font-bold text-gray-800 mb-2 items-center">
+                            <span class="flex items-center uppercase tracking-wide">
+                                <i class="fas fa-chevron-right text-xs text-blue-500 mr-3 transition-transform duration-300 icon-chevron"></i>
+                                {{ $category }}
+                                <span class="ml-3 px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full text-xs font-medium">{{ $items->count() }} Trx</span>
+                            </span>
+                            <span class="text-base text-gray-900 tracking-tight">Rp {{ number_format($groupTotal, 0, ',', '.') }} <span class="text-xs font-medium text-gray-400 ml-1">({{ number_format($percentageOfGrand, 1) }}%)</span></span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-2.5 ml-6" style="width: calc(100% - 1.5rem)">
+                            <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: {{ $percentageOfMax }}%"></div>
+                        </div>
+                    </button>
+                    
+                    <div id="accordion-{{ $accordionId }}" class="accordion-body bg-gray-50/50 border-t border-gray-100" style="display: none;">
+                        <div class="p-4 overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 text-sm bg-white rounded-lg shadow-sm border border-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">No</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">Tanggal</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">No. Bukti / Invoice</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Keterangan</th>
+                                        <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">Total</th>
+                                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-16 no-print">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @php $no = 1; @endphp
+                                    @foreach($items as $item)
+                                        <tr class="hover:bg-blue-50/30 transition-colors">
+                                            <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-500 font-medium">
+                                                {{ $no++ }}
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-600">
+                                                {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/M/Y') : '-' }}
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                @if(isset($item->is_uang_jalan) || isset($item->is_tagihan_vendor))
+                                                    @php
+                                                        $sj = $item->suratJalan ?? $item->suratJalanBongkaran ?? $item->suratJalanBongkaranBatam ?? null;
+                                                        $noSuratJalan = $sj->no_surat_jalan ?? $sj->nomor_surat_jalan ?? '-';
+                                                    @endphp
+                                                    <div class="text-xs font-bold text-indigo-600">{{ $noSuratJalan }}</div>
+                                                    <div class="text-[10px] text-gray-400">Surat Jalan</div>
+                                                @elseif(isset($item->is_amprahan) && $item->is_amprahan)
+                                                    <div class="text-xs font-bold text-amber-600">{{ $item->stockAmprahan->nomor_bukti ?? '-' }}</div>
+                                                    <div class="text-[10px] text-gray-400">Bukti Amprahan</div>
+                                                @else
+                                                    <div class="text-xs font-bold text-gray-800">{{ $item->nomor_invoice ?? '-' }}</div>
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-3 text-xs text-gray-700">
+                                                @if(isset($item->is_uang_jalan) || isset($item->is_tagihan_vendor))
+                                                    @php
+                                                        $sj = $item->suratJalan ?? $item->suratJalanBongkaran ?? $item->suratJalanBongkaranBatam ?? null;
+                                                        $pengirim = '-';
+                                                        if ($sj) {
+                                                            if (method_exists($sj, 'pengirimRelation') && $sj->pengirimRelation) {
+                                                                $pengirim = $sj->pengirimRelation->nama_pengirim;
+                                                            } elseif (isset($sj->pengirim)) {
+                                                                $pengirim = is_object($sj->pengirim) ? ($sj->pengirim->nama_pengirim ?? (string)$sj->pengirim) : $sj->pengirim;
+                                                            }
+                                                        }
+                                                        $noKontainer = $sj->no_kontainer ?? '-';
+                                                    @endphp
+                                                    <span class="block"><strong>Pengirim:</strong> {{ $pengirim }}</span>
+                                                    <span class="block text-gray-500"><strong>Kontainer:</strong> {{ $noKontainer }}</span>
+                                                @elseif(isset($item->is_amprahan) && $item->is_amprahan)
+                                                    <strong>Barang:</strong> {{ $item->nama_barang_amprahan ?? '-' }}
+                                                @else
+                                                    {{ $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? '-' }}
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-3 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
+                                                @if(isset($item->is_pranota_ob) && $item->is_pranota_ob)
+                                                    <span class="text-gray-900">Rp {{ number_format($item->display_total, 0, ',', '.') }}</span>
+                                                    <br><span class="text-[10px] text-gray-400 font-normal">Hanya Info</span>
+                                                @else
+                                                    Rp {{ number_format($item->apportioned['total_biaya'], 0, ',', '.') }}
+                                                @endif
+                                            </td>
+                                            <td class="px-4 py-3 text-center whitespace-nowrap no-print">
+                                                @if(isset($item->is_pranota_ob) && $item->is_pranota_ob)
+                                                    <a href="{{ route('pranota-ob.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-7 h-7 rounded bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Pranota OB">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </a>
+                                                @elseif(isset($item->is_amprahan) && $item->is_amprahan)
+                                                    <a href="{{ route('stock-amprahan.show', $item->stock_amprahan_id ?? $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-7 h-7 rounded bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Amprahan">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </a>
+                                                @elseif(isset($item->is_ob_muat) || isset($item->is_ob_bongkar))
+                                                    <a href="{{ route('ob.index', ['nama_kapal' => $kapal, 'no_voyage' => $voyage, 'kegiatan' => isset($item->is_ob_muat) ? 'muat' : 'bongkar']) }}" target="_blank" class="inline-flex items-center justify-center w-7 h-7 rounded bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail di Menu OB">
+                                                        <i class="fas fa-external-link-alt text-xs"></i>
+                                                    </a>
+                                                @else
+                                                    <a href="{{ route('biaya-kapal.show', ['biayaKapal' => $item->id, 'kapal' => $kapal, 'voyage' => $voyage]) }}" target="_blank" class="inline-flex items-center justify-center w-7 h-7 rounded bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Transaksi">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </a>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="bg-gray-100/50 font-bold border-t border-gray-200">
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-3 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $category }}</td>
+                                        <td class="px-4 py-3 text-right text-sm text-gray-900">
+                                            Rp {{ number_format($groupTotal, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-4 py-3 no-print"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </div>
                 </div>
             @endforeach
         </div>
-    </div>
-
-    <!-- Detailed Cost Table (Grouped into Accordions) -->
-    <div class="space-y-4 mb-8">
-        <h2 class="text-xl font-extrabold text-gray-800 flex items-center border-b border-gray-200 pb-4 mb-4 mt-8">
-            <i class="fas fa-layer-group text-blue-600 mr-2"></i> Rincian Biaya Berdasarkan Kategori
-        </h2>
-
-        @php
-            $categorized = [
-                'Biaya Kapal & Pranota' => [
-                    'icon' => 'fa-ship',
-                    'bg' => 'bg-blue-100',
-                    'text' => 'text-blue-600',
-                    'items' => $biayaKapals->filter(fn($i) => !isset($i->is_uang_jalan) && !isset($i->is_amprahan) && !isset($i->is_tagihan_vendor)),
-                ],
-                'Uang Jalan' => [
-                    'icon' => 'fa-truck',
-                    'bg' => 'bg-emerald-100',
-                    'text' => 'text-emerald-600',
-                    'items' => $biayaKapals->filter(fn($i) => isset($i->is_uang_jalan) && $i->is_uang_jalan),
-                ],
-                'Pemakaian Amprahan' => [
-                    'icon' => 'fa-box-open',
-                    'bg' => 'bg-amber-100',
-                    'text' => 'text-amber-600',
-                    'items' => $biayaKapals->filter(fn($i) => isset($i->is_amprahan) && $i->is_amprahan),
-                ],
-                'Tagihan Vendor Supir' => [
-                    'icon' => 'fa-file-invoice-dollar',
-                    'bg' => 'bg-purple-100',
-                    'text' => 'text-purple-600',
-                    'items' => $biayaKapals->filter(fn($i) => isset($i->is_tagihan_vendor) && $i->is_tagihan_vendor),
-                ],
-            ];
-        @endphp
-
-        @foreach($categorized as $catName => $catData)
-            @php
-                $catItems = $catData['items'];
-                if($catItems->count() == 0) continue;
-                
-                $catTotal = $catItems->sum(fn($i) => $i->apportioned['total_biaya']);
-                $accordionId = Str::slug($catName);
-            @endphp
-            
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid">
-                <!-- Accordion Header -->
-                <button type="button" 
-                        class="w-full flex items-center justify-between px-6 py-4 bg-gray-50 hover:bg-gray-100 transition-colors focus:outline-none toggle-accordion"
-                        data-target="#accordion-{{ $accordionId }}">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 rounded-xl {{ $catData['bg'] }} {{ $catData['text'] }} flex items-center justify-center mr-4">
-                            <i class="fas {{ $catData['icon'] }} text-lg"></i>
-                        </div>
-                        <div class="text-left">
-                            <h3 class="font-bold text-gray-800 text-base">{{ $catName }}</h3>
-                            <p class="text-xs text-gray-500 font-medium">{{ $catItems->count() }} Transaksi</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center">
-                        <span class="font-bold text-gray-900 mr-4 tracking-tight">Rp {{ number_format($catTotal, 0, ',', '.') }}</span>
-                        <div class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm icon-chevron-container transition-colors">
-                            <i class="fas fa-chevron-down text-gray-500 transition-transform duration-300 icon-chevron text-xs"></i>
-                        </div>
-                    </div>
-                </button>
-                
-                <!-- Accordion Body (Table) -->
-                <div id="accordion-{{ $accordionId }}" class="accordion-body" style="display: none;">
-                    <div class="border-t border-gray-200 overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 text-sm">
-                            <thead class="bg-white">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Tanggal</th>
-                                    @if(!($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir'))
-                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-48">No. Invoice</th>
-                                    @endif
-                                    @if($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir')
-                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
-                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Pengirim</th>
-                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No. Kontainer</th>
-                                    @endif
-                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Klasifikasi</th>
-                                    <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Total</th>
-                                    <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-20 no-print">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-100">
-                                @php $no = 1; @endphp
-                                @foreach($catItems as $item)
-                                    <tr class="hover:bg-gray-50/50 transition-colors">
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-medium">
-                                            {{ $no++ }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
-                                            {{ $item->tanggal ? \Carbon\Carbon::parse($item->tanggal)->format('d/M/Y') : '-' }}
-                                        </td>
-                                        @if(!($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir'))
-                                            <td class="px-6 py-4">
-                                                <div class="text-xs font-bold text-gray-800">{{ $item->nomor_invoice }}</div>
-                                            </td>
-                                        @endif
-                                        @if($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir')
-                                            @php
-                                                $noKontainer = null;
-                                                $noSuratJalan = null;
-                                                $pengirim = null;
-                                                if ((isset($item->is_uang_jalan) && $item->is_uang_jalan) || (isset($item->is_tagihan_vendor) && $item->is_tagihan_vendor)) {
-                                                    $sj = $item->suratJalan ?? $item->suratJalanBongkaran ?? $item->suratJalanBongkaranBatam ?? null;
-                                                    $noKontainer = $sj->no_kontainer ?? null;
-                                                    $noSuratJalan = $sj->no_surat_jalan ?? $sj->nomor_surat_jalan ?? null;
-                                                    if ($sj) {
-                                                        if (method_exists($sj, 'pengirimRelation') && $sj->pengirimRelation) {
-                                                            $pengirim = $sj->pengirimRelation->nama_pengirim;
-                                                        } elseif (isset($sj->pengirim)) {
-                                                            $pengirim = is_object($sj->pengirim) ? ($sj->pengirim->nama_pengirim ?? (string)$sj->pengirim) : $sj->pengirim;
-                                                        }
-                                                    }
-                                                }
-                                            @endphp
-                                            <td class="px-6 py-4 text-xs font-medium text-indigo-600 whitespace-nowrap">
-                                                {{ $noSuratJalan ?: '-' }}
-                                            </td>
-                                            <td class="px-6 py-4 text-xs text-gray-700">
-                                                {{ $pengirim ?: '-' }}
-                                            </td>
-                                            <td class="px-6 py-4 text-xs text-gray-600 whitespace-nowrap">
-                                                {{ $noKontainer ?: '-' }}
-                                            </td>
-                                        @endif
-                                        <td class="px-6 py-4 text-xs text-gray-700">
-                                            @if(isset($item->is_amprahan) && $item->is_amprahan)
-                                                {{ $item->jenis_biaya }} <span class="block text-[10px] text-gray-500 mt-0.5 font-medium">{{ $item->nama_barang_amprahan ?? '' }}</span>
-                                            @else
-                                                {{ $item->klasifikasiBiaya->nama ?? $item->jenis_biaya ?? 'Lain-lain' }}
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 text-right text-xs text-gray-900 font-bold whitespace-nowrap">
-                                            Rp {{ number_format($item->display_total ?? $item->apportioned['total_biaya'], 0, ',', '.') }}
-                                        </td>
-                                        <td class="px-6 py-4 text-center whitespace-nowrap no-print">
-                                            @if(isset($item->is_pranota_ob) && $item->is_pranota_ob)
-                                                <a href="{{ route('pranota-ob.show', $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Pranota OB">
-                                                    <i class="fas fa-eye text-xs"></i>
-                                                </a>
-                                            @elseif(isset($item->is_amprahan) && $item->is_amprahan)
-                                                <a href="{{ route('stock-amprahan.show', $item->stock_amprahan_id ?? $item->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Stock Amprahan">
-                                                    <i class="fas fa-eye text-xs"></i>
-                                                </a>
-                                            @elseif(isset($item->is_ob_muat) || isset($item->is_ob_bongkar))
-                                                <a href="{{ route('ob.index', ['nama_kapal' => $kapal, 'no_voyage' => $voyage, 'kegiatan' => isset($item->is_ob_muat) ? 'muat' : 'bongkar']) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail di Menu OB">
-                                                    <i class="fas fa-external-link-alt text-xs"></i>
-                                                </a>
-                                            @else
-                                                <a href="{{ route('biaya-kapal.show', ['biayaKapal' => $item->id, 'kapal' => $kapal, 'voyage' => $voyage]) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors tooltip" title="Lihat Detail Transaksi">
-                                                    <i class="fas fa-eye text-xs"></i>
-                                                </a>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot class="bg-gray-50/80 font-bold border-t border-gray-200">
-                                <tr>
-                                    <td colspan="{{ ($catName === 'Uang Jalan' || $catName === 'Tagihan Vendor Supir') ? 6 : 4 }}" class="px-6 py-4 text-right text-xs text-gray-500 uppercase tracking-wider">Subtotal {{ $catName }}</td>
-                                    <td class="px-6 py-4 text-right text-sm text-gray-900">
-                                        Rp {{ number_format($catTotal, 0, ',', '.') }}
-                                    </td>
-                                    <td class="px-6 py-4 no-print"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        @endforeach
-
+        
         @if($biayaKapals->count() === 0)
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid p-12 text-center text-gray-500">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden page-break-inside-avoid p-12 text-center text-gray-500 mt-4">
                 <i class="fas fa-ship text-gray-300 text-5xl mb-4 block"></i>
                 <p class="font-semibold text-lg">Tidak ada data biaya yang ditemukan</p>
                 <p class="text-gray-400 text-sm mt-1">Silakan periksa kembali kapal dan nomor voyage yang Anda pilih.</p>
@@ -303,15 +235,13 @@
             const target = $(this).data('target');
             const $body = $(target);
             const $icon = $(this).find('.icon-chevron');
-            const $iconContainer = $(this).find('.icon-chevron-container');
             
             // Toggle slide
             $body.slideToggle(300);
             
             // Toggle styles for opened state
-            $icon.toggleClass('rotate-180');
-            $iconContainer.toggleClass('bg-blue-50 border-blue-200');
-            $(this).toggleClass('bg-gray-100');
+            $icon.toggleClass('rotate-90');
+            $(this).toggleClass('bg-blue-50/30');
         });
         
         // Open the first one by default
