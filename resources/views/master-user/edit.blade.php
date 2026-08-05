@@ -4250,9 +4250,15 @@
                                 <td class="text-center py-3">
                                     <input type="checkbox" name="permissions[chatbox][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['chatbox']['view']) && $userMatrixPermissions['chatbox']['view']) checked @endif>
                                 </td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" name="permissions[chatbox][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['chatbox']['create']) && $userMatrixPermissions['chatbox']['create']) checked @endif>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" name="permissions[chatbox][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['chatbox']['update']) && $userMatrixPermissions['chatbox']['update']) checked @endif>
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" name="permissions[chatbox][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['chatbox']['delete']) && $userMatrixPermissions['chatbox']['delete']) checked @endif>
+                                </td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>

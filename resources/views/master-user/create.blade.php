@@ -2078,9 +2078,15 @@
                                 <td class="text-center py-3">
                                     <input type="checkbox" name="permissions[chatbox][view]" value="1" class="permission-checkbox">
                                 </td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" name="permissions[chatbox][create]" value="1" class="permission-checkbox">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" name="permissions[chatbox][update]" value="1" class="permission-checkbox">
+                                </td>
+                                <td class="text-center py-3">
+                                    <input type="checkbox" name="permissions[chatbox][delete]" value="1" class="permission-checkbox">
+                                </td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
