@@ -88,7 +88,14 @@ class MasterKapalController extends Controller
             'stowage_bays' => 'nullable|string',
             'stowage_rows' => 'nullable|string',
             'stowage_tiers' => 'nullable|string',
+            'disabled_slots' => 'nullable|string',
         ]);
+
+        if (!empty($validated['disabled_slots'])) {
+            $validated['disabled_slots'] = json_decode($validated['disabled_slots'], true);
+        } else {
+            $validated['disabled_slots'] = [];
+        }
 
         try {
             MasterKapal::create($validated);
@@ -141,7 +148,14 @@ class MasterKapalController extends Controller
             'stowage_bays' => 'nullable|string',
             'stowage_rows' => 'nullable|string',
             'stowage_tiers' => 'nullable|string',
+            'disabled_slots' => 'nullable|string',
         ]);
+
+        if (!empty($validated['disabled_slots'])) {
+            $validated['disabled_slots'] = json_decode($validated['disabled_slots'], true);
+        } else {
+            $validated['disabled_slots'] = [];
+        }
 
         try {
             $masterKapal->update($validated);

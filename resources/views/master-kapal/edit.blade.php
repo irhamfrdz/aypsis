@@ -310,6 +310,7 @@
                             </div>
                             <div id="tier_pills_container" class="flex flex-wrap gap-1"></div>
                             <input type="hidden" name="stowage_tiers" id="stowage_tiers" value="{{ old('stowage_tiers', $masterKapal->stowage_tiers) }}">
+                            <input type="hidden" name="disabled_slots" id="disabled_slots" value="{{ old('disabled_slots', isset($masterKapal) && $masterKapal->disabled_slots ? json_encode($masterKapal->disabled_slots) : '[]') }}">
                         </div>
                     </div>
                 </div>
@@ -467,6 +468,22 @@
     }
 
     let activeTierPreview = null;
+    let disabledSlotsArr = [];
+    try {
+        disabledSlotsArr = JSON.parse(document.getElementById('disabled_slots').value || '[]');
+    } catch (e) {
+        disabledSlotsArr = [];
+    }
+
+    window.toggleSlot = function(slotId) {
+        if (disabledSlotsArr.includes(slotId)) {
+            disabledSlotsArr = disabledSlotsArr.filter(id => id !== slotId);
+        } else {
+            disabledSlotsArr.push(slotId);
+        }
+        document.getElementById('disabled_slots').value = JSON.stringify(disabledSlotsArr);
+        renderPreview();
+    };
 
     function renderPreview() {
         const bays = configs.bay.data;
@@ -547,14 +564,23 @@
                                             <th class="p-2 border-r-2 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-600 shadow-sm text-center">
                                                 ${bay}
                                             </th>
-                                            ${rows.map(row => `
-                                                <td class="p-1.5 border border-gray-100 text-center relative group hover:bg-slate-50 transition-colors">
-                                                    <div class="w-10 h-14 mx-auto border-2 border-slate-300 rounded-sm bg-white flex flex-col items-center justify-center group-hover:border-slate-500 group-hover:bg-slate-100 transition-all shadow-sm gap-1">
-                                                        <div class="w-6 h-1.5 bg-slate-200 rounded-sm"></div>
-                                                        <span class="text-[8px] font-mono font-bold text-slate-500 group-hover:text-slate-700">${bay}${row}${activeTierPreview}</span>
-                                                    </div>
+                                            ${rows.map(row => {
+                                                const slotId = `${bay}${row}${activeTierPreview}`;
+                                                const isDisabled = disabledSlotsArr.includes(slotId);
+                                                return `
+                                                <td class="p-1.5 border border-gray-100 text-center relative group transition-colors cursor-pointer" onclick="toggleSlot('${slotId}')" title="Klik untuk mengaktifkan/menonaktifkan slot">
+                                                    ${isDisabled
+                                                        ? `<div class="w-10 h-14 mx-auto border-2 border-dashed border-gray-300 rounded-sm bg-gray-50 flex flex-col items-center justify-center opacity-50 shadow-sm gap-1 hover:bg-gray-100 transition-all">
+                                                             <span class="text-[8px] font-mono font-bold text-gray-400 line-through">${slotId}</span>
+                                                           </div>`
+                                                        : `<div class="w-10 h-14 mx-auto border-2 border-slate-300 rounded-sm bg-white flex flex-col items-center justify-center group-hover:border-slate-500 group-hover:bg-slate-100 transition-all shadow-sm gap-1">
+                                                             <div class="w-6 h-1.5 bg-slate-200 rounded-sm"></div>
+                                                             <span class="text-[8px] font-mono font-bold text-slate-500 group-hover:text-slate-700">${slotId}</span>
+                                                           </div>`
+                                                    }
                                                 </td>
-                                            `).join('')}
+                                                `;
+                                            }).join('')}
                                         </tr>
                                     `).join('')}
                                 </tbody>

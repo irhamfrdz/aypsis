@@ -29,10 +29,12 @@ class MasterKapal extends Model
         'stowage_bays',
         'stowage_rows',
         'stowage_tiers',
+        'disabled_slots',
     ];
 
     protected $casts = [
         'status' => 'string',
+        'disabled_slots' => 'array',
     ];
 
     // Scopes
