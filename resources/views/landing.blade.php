@@ -177,7 +177,7 @@
                 
                 <div class="flex flex-col gap-4 relative group">
                     <!-- Toggle Buttons -->
-                    <div class="flex justify-end z-30 px-2">
+                    <div class="flex justify-end relative z-30 px-2">
                         <div class="bg-slate-100 p-1 rounded-full inline-flex border border-slate-200 shadow-inner">
                             <button id="view-photo-btn" onclick="switchViz('photo')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white shadow-sm text-blue-600 transition-all focus:outline-none">Foto Kontainer</button>
                             <button id="view-map-btn" onclick="switchViz('map')" class="px-4 py-1.5 rounded-full text-sm font-medium text-slate-500 hover:text-slate-800 transition-all focus:outline-none">Rute Kapal</button>
@@ -202,6 +202,10 @@
                     <style>
                         #viz-slider::-webkit-scrollbar {
                             display: none;
+                        }
+                        /* Prevent Leaflet from capturing slider scroll/swipe events */
+                        #map-slide .leaflet-container {
+                            pointer-events: none;
                         }
                     </style>
                     
@@ -640,6 +644,7 @@
     // Toggle script
     function switchViz(view) {
         const slider = document.getElementById('viz-slider');
+        if (!slider) return;
         const photoBtn = document.getElementById('view-photo-btn');
         const mapBtn = document.getElementById('view-map-btn');
         
@@ -664,9 +669,9 @@
                 photoBtn.classList.add('text-slate-500', 'font-medium');
             }
             // Initialize map if needed
-            if (typeof initRouteMap === 'function') {
-                initRouteMap();
-            }
+            try {
+                if (typeof initRouteMap === 'function') initRouteMap();
+            } catch(e) { console.warn('Map init error:', e); }
         }
     }
 
