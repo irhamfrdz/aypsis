@@ -64,6 +64,7 @@ class StowagePlanController extends Controller
         }
 
         return response()->json([
+            'success' => true,
             'message' => 'Stowage plan updated successfully',
             'data' => $stowagePlan
         ]);
