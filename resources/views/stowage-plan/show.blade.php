@@ -35,7 +35,7 @@
                             $isLcl = $manifestGroup->count() > 1;
                             $displayNo = str_starts_with($containerNo, 'UNASSIGNED_') ? 'N/A' : $containerNo;
                         @endphp
-                        <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:border-purple-300 hover:shadow transition-all cursor-move group" draggable="true" ondragstart="dragStowage(event, '{{ $manifestIds }}')" ondragend="dragStowageEnd(event)">
+                        <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:border-purple-300 hover:shadow transition-all cursor-move group" draggable="true" ondragstart="dragStowage(event, '{{ $manifestIds }}', '{{ $firstManifest->size_kontainer ?? '' }}')" ondragend="dragStowageEnd(event)">
                             <div class="flex justify-between items-start mb-2">
                                 <span class="font-bold text-sm text-gray-800">{{ $displayNo }}</span>
                                 <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{{ $firstManifest->tipe_kontainer ?? '-' }} / {{ $firstManifest->size_kontainer ?? '-' }}</span>
@@ -81,7 +81,7 @@
                                     <input type="text" placeholder="Tier" class="w-full text-xs border-gray-200 rounded p-1 tier-input" />
                                 @endif
 
-                                <button onclick="saveStowagePlan(this, '{{ $manifestIds }}')" class="bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white rounded px-2 transition-colors">
+                                <button onclick="saveStowagePlan(this, '{{ $manifestIds }}', '{{ $firstManifest->size_kontainer ?? '' }}')" class="bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white rounded px-2 transition-colors">
                                     <i class="fas fa-check"></i>
                                 </button>
                             </div>
@@ -148,15 +148,22 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
-    function saveStowagePlan(button, manifestId) {
+    function saveStowagePlan(button, manifestId, size) {
         const container = button.closest('.group');
-        const bay = container.querySelector('.bay-input').value;
+        let bay = container.querySelector('.bay-input').value;
         const row = container.querySelector('.row-input').value;
         const tier = container.querySelector('.tier-input').value;
 
         if(!bay || !row || !tier) {
             alert('Mohon isi Bay, Row, dan Tier dengan lengkap!');
             return;
+        }
+
+        if (size && size.includes('40')) {
+            let bayNum = parseInt(bay);
+            if (!isNaN(bayNum) && bayNum % 2 !== 0) {
+                bay = (bayNum + 1).toString().padStart(2, '0');
+            }
         }
 
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -296,7 +303,12 @@
                                         ${sortedRows.map(row => {
                                             const slotId = `${bay}${row}${tier}`;
                                             const isDisabled = disabledSlots.includes(slotId);
-                                            const container = plansData.find(p => p.bay === bay && p.row === row && p.tier === tier);
+                                            const exactContainer = plansData.find(p => p.bay === bay && p.row === row && p.tier === tier);
+                                            
+                                            const evenBayNext = (parseInt(bay) + 1).toString().padStart(2, '0');
+                                            const containerNext40 = plansData.find(p => p.bay === evenBayNext && p.row === row && p.tier === tier);
+                                            const evenBayPrev = (parseInt(bay) - 1).toString().padStart(2, '0');
+                                            const containerPrev40 = plansData.find(p => p.bay === evenBayPrev && p.row === row && p.tier === tier);
                                             
                                             if (isDisabled) {
                                                 return `
@@ -306,13 +318,31 @@
                                                     </div>
                                                 </td>
                                                 `;
-                                            } else if (container) {
+                                            } else if (containerPrev40) {
+                                                return `
+                                                <td class="p-0 border-x border-b border-gray-100 text-center relative group">
+                                                    <div onclick="cancelStowage('${evenBayPrev}', '${row}', '${tier}')" class="w-10 mx-auto border-x-2 border-b-2 border-t-0 border-blue-500 rounded-b-sm bg-blue-500 hover:bg-red-500 hover:border-red-600 flex flex-col items-center justify-center shadow-md relative overflow-hidden cursor-pointer transition-colors" style="margin-top: -8px; height: calc(3.5rem + 8px);" title="40ft | No: ${containerPrev40.container} | Tipe: ${containerPrev40.type}">
+                                                        <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight group-hover:hidden text-center opacity-50 mb-1">40ft</span>
+                                                    </div>
+                                                </td>
+                                                `;
+                                            } else if (containerNext40) {
+                                                return `
+                                                <td class="p-0 border-x border-t border-gray-100 text-center relative group">
+                                                    <div onclick="cancelStowage('${evenBayNext}', '${row}', '${tier}')" class="w-10 mx-auto border-x-2 border-t-2 border-b-0 border-blue-500 rounded-t-sm bg-blue-500 hover:bg-red-500 hover:border-red-600 flex flex-col items-center justify-center shadow-md relative overflow-hidden cursor-pointer transition-colors z-10" style="margin-bottom: -8px; height: calc(3.5rem + 8px);" title="40ft | No: ${containerNext40.container} | Tipe: ${containerNext40.type}">
+                                                        <i class="fas fa-box text-white/30 text-xl absolute group-hover:hidden"></i>
+                                                        <i class="fas fa-times text-white/50 text-3xl absolute hidden group-hover:block z-20"></i>
+                                                        <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight group-hover:hidden text-center">${containerNext40.container.substring(0,4)}<br/>${containerNext40.container.substring(4)}</span>
+                                                    </div>
+                                                </td>
+                                                `;
+                                            } else if (exactContainer) {
                                                 return `
                                                 <td class="p-1.5 border border-gray-100 text-center relative group">
-                                                    <div onclick="cancelStowage('${bay}', '${row}', '${tier}')" class="w-10 h-14 mx-auto border-2 border-orange-500 rounded-sm bg-orange-500 hover:bg-red-500 hover:border-red-600 flex flex-col items-center justify-center shadow-md relative overflow-hidden cursor-pointer transition-colors" title="Klik untuk membatalkan | No: ${container.container} | Tipe: ${container.type}">
+                                                    <div onclick="cancelStowage('${bay}', '${row}', '${tier}')" class="w-10 h-14 mx-auto border-2 border-orange-500 rounded-sm bg-orange-500 hover:bg-red-500 hover:border-red-600 flex flex-col items-center justify-center shadow-md relative overflow-hidden cursor-pointer transition-colors" title="Klik untuk membatalkan | No: ${exactContainer.container} | Tipe: ${exactContainer.type}">
                                                         <i class="fas fa-box text-white/30 text-xl absolute group-hover:hidden"></i>
                                                         <i class="fas fa-times text-white/50 text-3xl absolute hidden group-hover:block"></i>
-                                                        <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight group-hover:hidden">${container.container.substring(0,4)}<br/>${container.container.substring(4)}</span>
+                                                        <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight group-hover:hidden">${exactContainer.container.substring(0,4)}<br/>${exactContainer.container.substring(4)}</span>
                                                     </div>
                                                 </td>
                                                 `;
@@ -418,9 +448,31 @@
                     const isDisabled = disabledSlots.includes(slotId);
                     const containerData = plansData.find(p => p.bay === bay && p.row === row && p.tier === tier);
                     
+                    const evenBayNext = (parseInt(bay) + 1).toString().padStart(2, '0');
+                    const containerNext40 = plansData.find(p => p.bay === evenBayNext && p.row === row && p.tier === tier);
+                    const evenBayPrev = (parseInt(bay) - 1).toString().padStart(2, '0');
+                    const containerPrev40 = plansData.find(p => p.bay === evenBayPrev && p.row === row && p.tier === tier);
+                    
                     let mesh;
                     if (isDisabled) {
                         mesh = new THREE.Mesh(boxGeo, disabledMat);
+                    } else if (containerNext40) {
+                        const box40Geo = new THREE.BoxGeometry(0.9, 1.2, 5.3); // span 2 bays
+                        const filled40Mat = new THREE.MeshPhongMaterial({ color: 0x3b82f6, shininess: 30 }); // blue-500
+                        mesh = new THREE.Mesh(box40Geo, filled40Mat);
+                        const edges = new THREE.EdgesGeometry(box40Geo);
+                        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x1d4ed8, transparent: true, opacity: 0.5 }));
+                        mesh.add(line);
+                        
+                        mesh.position.x = (rIdx - (rows.length - 1) / 2) * 1.1;
+                        mesh.position.y = (tIdx) * 1.4;
+                        // Shift backward by half distance (1.4)
+                        mesh.position.z = (bIdx - (bays.length - 1) / 2) * 2.8 + 1.4;
+                        
+                        shipGroup.add(mesh);
+                        return; // skip normal 20ft
+                    } else if (containerPrev40) {
+                        return; // already rendered by previous bay
                     } else if (containerData) {
                         mesh = new THREE.Mesh(boxGeo, filledMat);
                         const edges = new THREE.EdgesGeometry(boxGeo);
@@ -430,11 +482,12 @@
                         mesh = new THREE.Mesh(boxGeo, emptyMat);
                     }
                     
-                    mesh.position.x = (rIdx - (rows.length - 1) / 2) * 1.1;
-                    mesh.position.y = (tIdx) * 1.4;
-                    mesh.position.z = (bIdx - (bays.length - 1) / 2) * 2.8;
-                    
-                    shipGroup.add(mesh);
+                    if (mesh) {
+                        mesh.position.x = (rIdx - (rows.length - 1) / 2) * 1.1;
+                        mesh.position.y = (tIdx) * 1.4;
+                        mesh.position.z = (bIdx - (bays.length - 1) / 2) * 2.8;
+                        shipGroup.add(mesh);
+                    }
                 });
             });
         });
@@ -538,8 +591,9 @@
     }
 
     // --- Drag and Drop Handlers ---
-    function dragStowage(ev, manifestId) {
+    function dragStowage(ev, manifestId, size) {
         ev.dataTransfer.setData("manifestId", manifestId);
+        ev.dataTransfer.setData("size", size || '');
         ev.currentTarget.classList.add('opacity-50');
     }
 
@@ -573,8 +627,18 @@
         }
         
         const manifestId = ev.dataTransfer.getData("manifestId");
+        const size = ev.dataTransfer.getData("size");
+        
+        if (size && size.includes('40')) {
+            let bayNum = parseInt(bay);
+            if (!isNaN(bayNum) && bayNum % 2 !== 0) {
+                bay = (bayNum + 1).toString().padStart(2, '0');
+            }
+        }
+
         if (manifestId) {
             ev.currentTarget.innerHTML = `<div class="w-10 h-14 mx-auto border-2 border-purple-500 rounded-sm bg-purple-50 flex flex-col items-center justify-center shadow-md relative overflow-hidden"><i class="fas fa-spinner fa-spin text-purple-500 text-xl"></i></div>`;
+
             
             fetch('/api/stowage-plans', {
                 method: 'POST',
