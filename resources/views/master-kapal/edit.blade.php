@@ -380,6 +380,8 @@
     </div>
 </div>
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
     const configs = {
         bay: {
@@ -684,10 +686,11 @@
             `;
         } else if (activeViewMode === '3d') {
             html += `
-                <div class="w-full flex flex-col items-center justify-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
-                    <i class="fas fa-cubes text-6xl text-slate-300 mb-4"></i>
-                    <h3 class="text-lg font-bold text-slate-700">3D Isometric View (Placeholder)</h3>
-                    <p class="text-sm text-slate-500 mt-2 max-w-md text-center">Tampilan 3D penuh memerlukan engine khusus (seperti WebGL/Three.js). Gunakan Deck View dan Profile View untuk mengatur struktur slot kapal secara presisi.</p>
+                <div class="w-full bg-slate-900 rounded-lg overflow-hidden relative shadow-inner" style="height: 500px;">
+                    <div class="absolute top-4 left-4 z-10 bg-black/50 text-white px-3 py-1.5 rounded text-xs font-medium backdrop-blur-sm border border-white/10 pointer-events-none">
+                        <i class="fas fa-mouse mr-2"></i> Drag untuk rotasi &bull; Scroll untuk zoom
+                    </div>
+                    <div id="threejs-container" class="w-full h-full cursor-move"></div>
                 </div>
             `;
         }
@@ -696,6 +699,9 @@
 
 
         container.innerHTML = html;
+        if (activeViewMode === '3d') {
+            setTimeout(init3DPreview, 50);
+        }
     }
 
     window.setActiveTier = function(tier) {
@@ -723,6 +729,126 @@
         });
         renderPills(type); // Initial render
     });
+
+    let threeRenderer;
+    function init3DPreview() {
+        if (typeof THREE === 'undefined') {
+            document.getElementById('threejs-container').innerHTML = '<div class="flex items-center justify-center h-full text-white text-sm">Gagal memuat engine 3D (Pastikan koneksi internet aktif untuk CDN).</div>';
+            return;
+        }
+
+        const container = document.getElementById('threejs-container');
+        if (!container) return;
+        
+        if (threeRenderer) {
+            container.innerHTML = '';
+            threeRenderer.dispose();
+        }
+
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0f172a);
+
+        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+        
+        threeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        threeRenderer.setSize(width, height);
+        threeRenderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(threeRenderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, threeRenderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1.0;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(20, 40, 20);
+        scene.add(dirLight);
+        const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+        dirLight2.position.set(-20, -40, -20);
+        scene.add(dirLight2);
+
+        const shipGroup = new THREE.Group();
+        scene.add(shipGroup);
+
+        const bays = [...configs.bay.data].sort((a,b) => parseInt(a) - parseInt(b));
+        const tiers = [...configs.tier.data].sort((a,b) => parseInt(a) - parseInt(b));
+        const rows = [...configs.row.data].sort((a, b) => {
+            let numA = parseInt(a); let numB = parseInt(b);
+            let isAEven = numA % 2 === 0; let isBEven = numB % 2 === 0;
+            if (isAEven && !isBEven) return -1;
+            if (!isAEven && isBEven) return 1;
+            if (isAEven) return numB - numA; else return numA - numB;
+        });
+
+        const boxGeo = new THREE.BoxGeometry(0.9, 1.2, 2.5);
+        const activeMat = new THREE.MeshPhongMaterial({ color: 0x3b82f6, shininess: 30 });
+        const disabledMat = new THREE.MeshBasicMaterial({ color: 0xef4444, wireframe: true, transparent: true, opacity: 0.15 });
+        const edgeMat = new THREE.LineBasicMaterial({ color: 0x1d4ed8, transparent: true, opacity: 0.5 });
+
+        bays.forEach((bay, bIdx) => {
+            rows.forEach((row, rIdx) => {
+                tiers.forEach((tier, tIdx) => {
+                    const slotId = `${bay}${row}${tier}`;
+                    const isDisabled = disabledSlotsArr.includes(slotId);
+                    
+                    const mesh = new THREE.Mesh(boxGeo, isDisabled ? disabledMat : activeMat);
+                    mesh.position.x = (rIdx - (rows.length - 1) / 2) * 1.1;
+                    mesh.position.y = (tIdx) * 1.4;
+                    mesh.position.z = (bIdx - (bays.length - 1) / 2) * 2.8;
+                    
+                    if (!isDisabled) {
+                        const edges = new THREE.EdgesGeometry(boxGeo);
+                        const line = new THREE.LineSegments(edges, edgeMat);
+                        mesh.add(line);
+                    }
+                    shipGroup.add(mesh);
+                });
+            });
+        });
+
+        if (bays.length > 0 && rows.length > 0) {
+            const deckGeo = new THREE.BoxGeometry(rows.length * 1.1 + 1, 0.4, bays.length * 2.8 + 2);
+            const deckMat = new THREE.MeshPhongMaterial({ color: 0x94a3b8 });
+            const deck = new THREE.Mesh(deckGeo, deckMat);
+            deck.position.y = -0.7;
+            shipGroup.add(deck);
+        }
+
+        const box = new THREE.Box3().setFromObject(shipGroup);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        
+        shipGroup.position.x = -center.x;
+        shipGroup.position.y = -center.y;
+        shipGroup.position.z = -center.z;
+
+        const maxDim = Math.max(size.x, size.y, size.z) || 10;
+        camera.position.set(maxDim * 1.2, maxDim * 1, maxDim * 1.2);
+        camera.lookAt(0, 0, 0);
+
+        const animate = function () {
+            if (!document.getElementById('threejs-container')) return;
+            window.current3DAnimationId = requestAnimationFrame(animate);
+            controls.update();
+            threeRenderer.render(scene, camera);
+        };
+        
+        if (window.current3DAnimationId) cancelAnimationFrame(window.current3DAnimationId);
+        animate();
+        
+        window.addEventListener('resize', () => {
+            if (!document.getElementById('threejs-container')) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            threeRenderer.setSize(container.clientWidth, container.clientHeight);
+        }, false);
+    }
 </script>
 @endpush
 
