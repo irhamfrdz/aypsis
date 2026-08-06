@@ -194,7 +194,7 @@
                         </div>
                         
                         <!-- View 2: Rute Map (hidden by default) -->
-                        <div id="viz-map" class="w-full relative overflow-hidden h-[400px] md:h-[500px] hidden">
+                        <div id="viz-map" class="w-full relative overflow-hidden h-[400px] md:h-[500px]" style="display: none;">
                             <div id="map-route" class="w-full h-full"></div>
                         </div>
                     </div>
@@ -639,8 +639,8 @@
         const mapBtn = document.getElementById('view-map-btn');
         
         if (view === 'photo') {
-            if(photoView) photoView.classList.remove('hidden');
-            if(mapView) mapView.classList.add('hidden');
+            if(photoView) photoView.style.display = 'block';
+            if(mapView) mapView.style.display = 'none';
             if(photoBtn) {
                 photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
                 photoBtn.classList.remove('text-slate-500', 'font-medium');
@@ -650,8 +650,8 @@
                 mapBtn.classList.add('text-slate-500', 'font-medium');
             }
         } else {
-            if(photoView) photoView.classList.add('hidden');
-            if(mapView) mapView.classList.remove('hidden');
+            if(photoView) photoView.style.display = 'none';
+            if(mapView) mapView.style.display = 'block';
             if(mapBtn) {
                 mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
                 mapBtn.classList.remove('text-slate-500', 'font-medium');
@@ -662,7 +662,13 @@
             }
             // Initialize map if needed
             try {
-                if (typeof initRouteMap === 'function') initRouteMap();
+                if (typeof initRouteMap === 'function') {
+                    initRouteMap();
+                }
+                // Force Leaflet to redraw after container becomes visible
+                if (window.routeMapInstance) {
+                    setTimeout(() => window.routeMapInstance.invalidateSize(), 50);
+                }
             } catch(e) { console.warn('Map init error:', e); }
         }
     }
