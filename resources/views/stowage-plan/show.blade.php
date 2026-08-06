@@ -29,7 +29,7 @@
                 </div>
                 <div class="p-4 overflow-y-auto flex-1 space-y-3 bg-gray-50/50">
                     @forelse($manifestsWithoutPlan as $manifest)
-                        <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:border-purple-300 hover:shadow transition-all cursor-pointer group">
+                        <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:border-purple-300 hover:shadow transition-all cursor-move group" draggable="true" ondragstart="dragStowage(event, '{{ $manifest->id }}')" ondragend="dragStowageEnd(event)">
                             <div class="flex justify-between items-start mb-2">
                                 <span class="font-bold text-sm text-gray-800">{{ $manifest->nomor_kontainer ?? 'N/A' }}</span>
                                 <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{{ $manifest->tipe_kontainer ?? '-' }} / {{ $manifest->size_kontainer ?? '-' }}</span>
@@ -307,10 +307,14 @@
                                                 `;
                                             } else {
                                                 return `
-                                                <td class="p-1.5 border border-gray-100 text-center relative group transition-colors hover:bg-slate-50">
+                                                <td class="p-1.5 border border-gray-100 text-center relative group transition-colors hover:bg-slate-50"
+                                                    ondragover="allowStowageDrop(event)"
+                                                    ondragenter="allowStowageDrop(event)"
+                                                    ondragleave="dragStowageLeave(event)"
+                                                    ondrop="dropStowage(event, '${bay}', '${row}', '${tier}')">
                                                     <div class="w-10 h-14 mx-auto border-2 border-slate-300 rounded-sm bg-white flex flex-col items-center justify-center group-hover:border-slate-500 group-hover:bg-slate-100 transition-all shadow-sm gap-1">
-                                                        <div class="w-6 h-1.5 bg-slate-200 rounded-sm"></div>
-                                                        <span class="text-[8px] font-mono font-bold text-slate-500 group-hover:text-slate-700">${slotId}</span>
+                                                        <div class="w-6 h-1.5 bg-slate-200 rounded-sm pointer-events-none"></div>
+                                                        <span class="text-[8px] font-mono font-bold text-slate-500 group-hover:text-slate-700 pointer-events-none">${slotId}</span>
                                                     </div>
                                                 </td>
                                                 `;
@@ -520,6 +524,75 @@
             camera.updateProjectionMatrix();
             threeRenderer.setSize(container.clientWidth, container.clientHeight);
         }, false);
+    }
+
+    // --- Drag and Drop Handlers ---
+    function dragStowage(ev, manifestId) {
+        ev.dataTransfer.setData("manifestId", manifestId);
+        ev.currentTarget.classList.add('opacity-50');
+    }
+
+    function dragStowageEnd(ev) {
+        ev.currentTarget.classList.remove('opacity-50');
+    }
+
+    function allowStowageDrop(ev) {
+        ev.preventDefault();
+        const cell = ev.currentTarget.querySelector('div');
+        if (cell) {
+            cell.classList.add('bg-purple-100', 'border-purple-400');
+            cell.classList.remove('bg-white', 'border-slate-300');
+        }
+    }
+
+    function dragStowageLeave(ev) {
+        const cell = ev.currentTarget.querySelector('div');
+        if (cell) {
+            cell.classList.remove('bg-purple-100', 'border-purple-400');
+            cell.classList.add('bg-white', 'border-slate-300');
+        }
+    }
+
+    function dropStowage(ev, bay, row, tier) {
+        ev.preventDefault();
+        const cell = ev.currentTarget.querySelector('div');
+        if (cell) {
+            cell.classList.remove('bg-purple-100', 'border-purple-400');
+            cell.classList.add('bg-white', 'border-slate-300');
+        }
+        
+        const manifestId = ev.dataTransfer.getData("manifestId");
+        if (manifestId) {
+            ev.currentTarget.innerHTML = `<div class="w-10 h-14 mx-auto border-2 border-purple-500 rounded-sm bg-purple-50 flex flex-col items-center justify-center shadow-md relative overflow-hidden"><i class="fas fa-spinner fa-spin text-purple-500 text-xl"></i></div>`;
+            
+            fetch('/api/stowage-plans', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    manifest_id: manifestId,
+                    bay: bay,
+                    row: row,
+                    tier: tier
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    window.location.reload();
+                } else {
+                    alert('Gagal menyimpan stowage plan: ' + (data.message || 'Error'));
+                    renderDeckPlan();
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Terjadi kesalahan sistem');
+                renderDeckPlan();
+            });
+        }
     }
 </script>
 @endpush
