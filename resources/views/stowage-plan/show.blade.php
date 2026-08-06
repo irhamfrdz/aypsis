@@ -305,10 +305,20 @@
                                             const isDisabled = disabledSlots.includes(slotId);
                                             const exactContainer = plansData.find(p => p.bay === bay && p.row === row && p.tier === tier);
                                             
-                                            const evenBayNext = (parseInt(bay) + 1).toString().padStart(2, '0');
-                                            const containerNext40 = plansData.find(p => p.bay === evenBayNext && p.row === row && p.tier === tier);
-                                            const evenBayPrev = (parseInt(bay) - 1).toString().padStart(2, '0');
-                                            const containerPrev40 = plansData.find(p => p.bay === evenBayPrev && p.row === row && p.tier === tier);
+                                            const isOddBay = parseInt(bay) % 2 !== 0;
+                                            let containerNext40 = null;
+                                            let containerPrev40 = null;
+
+                                            if (isOddBay) {
+                                                const evenBayNext = (parseInt(bay) + 1).toString().padStart(2, '0');
+                                                if (!availableBays.includes(evenBayNext)) {
+                                                    containerNext40 = plansData.find(p => p.bay === evenBayNext && p.row === row && p.tier === tier && p.type && p.type.includes('40'));
+                                                }
+                                                const evenBayPrev = (parseInt(bay) - 1).toString().padStart(2, '0');
+                                                if (!availableBays.includes(evenBayPrev)) {
+                                                    containerPrev40 = plansData.find(p => p.bay === evenBayPrev && p.row === row && p.tier === tier && p.type && p.type.includes('40'));
+                                                }
+                                            }
                                             
                                             if (isDisabled) {
                                                 return `
@@ -321,7 +331,7 @@
                                             } else if (containerPrev40) {
                                                 return `
                                                 <td class="p-0 border-x border-b border-gray-100 text-center relative group">
-                                                    <div onclick="cancelStowage('${evenBayPrev}', '${row}', '${tier}')" class="w-10 mx-auto border-x-2 border-b-2 border-t-0 border-blue-500 rounded-b-sm bg-blue-500 hover:bg-red-500 hover:border-red-600 flex flex-col items-center justify-center shadow-md relative overflow-hidden cursor-pointer transition-colors" style="margin-top: -8px; height: calc(3.5rem + 8px);" title="40ft | No: ${containerPrev40.container} | Tipe: ${containerPrev40.type}">
+                                                    <div onclick="cancelStowage('${containerPrev40.bay}', '${row}', '${tier}')" class="w-10 mx-auto border-x-2 border-b-2 border-t-0 border-blue-500 rounded-b-sm bg-blue-500 hover:bg-red-500 hover:border-red-600 flex flex-col items-center justify-center shadow-md relative overflow-hidden cursor-pointer transition-colors" style="margin-top: -8px; height: calc(3.5rem + 8px);" title="40ft | No: ${containerPrev40.container} | Tipe: ${containerPrev40.type}">
                                                         <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight group-hover:hidden text-center opacity-50 mb-1">40ft</span>
                                                     </div>
                                                 </td>
@@ -329,7 +339,7 @@
                                             } else if (containerNext40) {
                                                 return `
                                                 <td class="p-0 border-x border-t border-gray-100 text-center relative group">
-                                                    <div onclick="cancelStowage('${evenBayNext}', '${row}', '${tier}')" class="w-10 mx-auto border-x-2 border-t-2 border-b-0 border-blue-500 rounded-t-sm bg-blue-500 hover:bg-red-500 hover:border-red-600 flex flex-col items-center justify-center shadow-md relative overflow-hidden cursor-pointer transition-colors z-10" style="margin-bottom: -8px; height: calc(3.5rem + 8px);" title="40ft | No: ${containerNext40.container} | Tipe: ${containerNext40.type}">
+                                                    <div onclick="cancelStowage('${containerNext40.bay}', '${row}', '${tier}')" class="w-10 mx-auto border-x-2 border-t-2 border-b-0 border-blue-500 rounded-t-sm bg-blue-500 hover:bg-red-500 hover:border-red-600 flex flex-col items-center justify-center shadow-md relative overflow-hidden cursor-pointer transition-colors z-10" style="margin-bottom: -8px; height: calc(3.5rem + 8px);" title="40ft | No: ${containerNext40.container} | Tipe: ${containerNext40.type}">
                                                         <i class="fas fa-box text-white/30 text-xl absolute group-hover:hidden"></i>
                                                         <i class="fas fa-times text-white/50 text-3xl absolute hidden group-hover:block z-20"></i>
                                                         <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight group-hover:hidden text-center">${containerNext40.container.substring(0,4)}<br/>${containerNext40.container.substring(4)}</span>
@@ -337,9 +347,13 @@
                                                 </td>
                                                 `;
                                             } else if (exactContainer) {
+                                                const is40ft = exactContainer.type && exactContainer.type.includes('40');
+                                                const bgColor = is40ft ? 'bg-blue-500' : 'bg-orange-500';
+                                                const borderColor = is40ft ? 'border-blue-500' : 'border-orange-500';
+                                                
                                                 return `
                                                 <td class="p-1.5 border border-gray-100 text-center relative group">
-                                                    <div onclick="cancelStowage('${bay}', '${row}', '${tier}')" class="w-10 h-14 mx-auto border-2 border-orange-500 rounded-sm bg-orange-500 hover:bg-red-500 hover:border-red-600 flex flex-col items-center justify-center shadow-md relative overflow-hidden cursor-pointer transition-colors" title="Klik untuk membatalkan | No: ${exactContainer.container} | Tipe: ${exactContainer.type}">
+                                                    <div onclick="cancelStowage('${bay}', '${row}', '${tier}')" class="w-10 h-14 mx-auto border-2 ${borderColor} rounded-sm ${bgColor} hover:bg-red-500 hover:border-red-600 flex flex-col items-center justify-center shadow-md relative overflow-hidden cursor-pointer transition-colors" title="Klik untuk membatalkan | No: ${exactContainer.container} | Tipe: ${exactContainer.type}">
                                                         <i class="fas fa-box text-white/30 text-xl absolute group-hover:hidden"></i>
                                                         <i class="fas fa-times text-white/50 text-3xl absolute hidden group-hover:block"></i>
                                                         <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight group-hover:hidden">${exactContainer.container.substring(0,4)}<br/>${exactContainer.container.substring(4)}</span>
@@ -448,10 +462,20 @@
                     const isDisabled = disabledSlots.includes(slotId);
                     const containerData = plansData.find(p => p.bay === bay && p.row === row && p.tier === tier);
                     
-                    const evenBayNext = (parseInt(bay) + 1).toString().padStart(2, '0');
-                    const containerNext40 = plansData.find(p => p.bay === evenBayNext && p.row === row && p.tier === tier);
-                    const evenBayPrev = (parseInt(bay) - 1).toString().padStart(2, '0');
-                    const containerPrev40 = plansData.find(p => p.bay === evenBayPrev && p.row === row && p.tier === tier);
+                    const isOddBay = parseInt(bay) % 2 !== 0;
+                    let containerNext40 = null;
+                    let containerPrev40 = null;
+
+                    if (isOddBay) {
+                        const evenBayNext = (parseInt(bay) + 1).toString().padStart(2, '0');
+                        if (!bays.includes(evenBayNext)) {
+                            containerNext40 = plansData.find(p => p.bay === evenBayNext && p.row === row && p.tier === tier && p.type && p.type.includes('40'));
+                        }
+                        const evenBayPrev = (parseInt(bay) - 1).toString().padStart(2, '0');
+                        if (!bays.includes(evenBayPrev)) {
+                            containerPrev40 = plansData.find(p => p.bay === evenBayPrev && p.row === row && p.tier === tier && p.type && p.type.includes('40'));
+                        }
+                    }
                     
                     let mesh;
                     if (isDisabled) {
