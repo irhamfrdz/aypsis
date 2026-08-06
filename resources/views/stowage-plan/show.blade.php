@@ -92,10 +92,7 @@
                 <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                     <div class="flex items-center gap-4">
                         <h3 class="font-bold text-gray-700"><i class="fas fa-ship text-purple-500 mr-2"></i> Peta Kapal</h3>
-                        <div class="bg-gray-100 p-1 rounded-lg flex text-xs">
-                            <button id="btn-topdown" onclick="toggleView('topdown')" class="px-3 py-1 bg-white shadow-sm rounded-md font-medium text-purple-700 transition-colors">Top Down</button>
-                            <button id="btn-deckplan" onclick="toggleView('deckplan')" class="px-3 py-1 text-gray-500 hover:text-gray-700 font-medium transition-colors">Deck Plan</button>
-                        </div>
+                        <!-- Toggles removed -->
                     </div>
                     <div class="flex gap-2">
                         <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded font-medium">Terisi: {{ $plans->count() }}</span>
@@ -103,61 +100,8 @@
                     </div>
                 </div>
                 
-                <!-- TOP DOWN VIEW -->
-                <div id="view-topdown" class="flex-1 bg-[#87CEEB] p-6 overflow-y-auto relative flex justify-center items-center" style="background-image: radial-gradient(#ffffff33 1px, transparent 1px); background-size: 20px 20px;">
-                    
-                    <!-- Vessel Shape -->
-                    <div class="relative w-[340px] min-h-[550px] bg-[#2C3E50] border-4 border-[#1A252F] rounded-t-[170px] rounded-b-3xl shadow-2xl flex flex-col py-12 px-6">
-                        
-                        <!-- Bow (Front) Indicator -->
-                        <div class="absolute top-4 left-1/2 transform -translate-x-1/2 text-white/50 text-xs font-bold tracking-widest">BOW</div>
-                        
-                        <!-- Grid of Bays (Generic layout) -->
-                        <div class="flex-1 w-full flex flex-col gap-2 mt-8 z-10 relative">
-                            @php
-                                // Group allocated plans by bay
-                                $bayPlans = $plans->groupBy('bay');
-                            @endphp
-
-                            @foreach($stowageBays as $index => $bayNum)
-                                @php
-                                    $hasContainers = isset($bayPlans[$bayNum]);
-                                    $count = $hasContainers ? $bayPlans[$bayNum]->count() : 0;
-                                    
-                                    // Make front and back bays narrower to fit ship curve
-                                    $widthClass = 'w-full';
-                                    if($index === 0 || $index === count($stowageBays) - 1) $widthClass = 'w-3/5 mx-auto';
-                                    elseif($index === 1 || $index === count($stowageBays) - 2) $widthClass = 'w-4/5 mx-auto';
-                                @endphp
-                                <div class="{{ $widthClass }} h-8 border border-white/20 rounded flex items-center justify-center relative group transition-all {{ $hasContainers ? 'bg-orange-500 border-orange-400 shadow-[0_0_10px_rgba(249,115,22,0.5)]' : 'bg-[#34495E] hover:bg-[#3D566E]' }}">
-                                    <span class="text-[10px] font-bold {{ $hasContainers ? 'text-white' : 'text-white/40 group-hover:text-white/80' }}">BAY {{ str_pad($bayNum, 2, '0', STR_PAD_LEFT) }}</span>
-                                    
-                                    @if($hasContainers)
-                                        <div class="absolute -right-8 bg-white text-orange-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md">
-                                            {{ $count }}
-                                        </div>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-
-                        <!-- Bridge / Accommodation Structure (Rear) -->
-                        <div class="w-[110%] -ml-[5%] h-24 bg-white mt-6 rounded-lg shadow-lg border-2 border-gray-300 flex flex-col justify-center items-center relative z-20">
-                            <div class="w-4/5 h-8 bg-blue-100 border border-blue-200 rounded flex gap-1 px-2 items-center justify-center mb-2">
-                                <div class="w-1/4 h-4 bg-blue-300 rounded-sm"></div>
-                                <div class="w-2/4 h-4 bg-blue-300 rounded-sm"></div>
-                                <div class="w-1/4 h-4 bg-blue-300 rounded-sm"></div>
-                            </div>
-                            <span class="text-[10px] font-bold text-gray-500 tracking-wider">BRIDGE</span>
-                        </div>
-
-                        <!-- Stern Indicator -->
-                        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white/50 text-[10px] font-bold tracking-widest">STERN</div>
-                    </div>
-                </div>
-
                 <!-- DECK PLAN VIEW -->
-                <div id="view-deckplan" class="hidden flex-1 bg-gray-50 flex flex-col">
+                <div id="view-deckplan" class="flex-1 bg-gray-50 flex flex-col">
                     <div class="p-4 border-b border-gray-200 bg-white flex justify-between items-center">
                         <h4 class="font-bold text-gray-600 text-sm">Denah Deck (Bays x Rows)</h4>
                         <div class="flex items-center gap-2">
@@ -244,23 +188,9 @@
     const availableTiers = Object.values(@json($stowageTiers));
     const disabledSlots = @json($disabledSlots);
 
-    function toggleView(view) {
-        if(view === 'topdown') {
-            document.getElementById('view-topdown').classList.remove('hidden');
-            document.getElementById('view-deckplan').classList.add('hidden');
-            
-            document.getElementById('btn-topdown').className = 'px-3 py-1 bg-white shadow-sm rounded-md font-medium text-purple-700 transition-colors';
-            document.getElementById('btn-deckplan').className = 'px-3 py-1 text-gray-500 hover:text-gray-700 font-medium transition-colors';
-        } else {
-            document.getElementById('view-topdown').classList.add('hidden');
-            document.getElementById('view-deckplan').classList.remove('hidden');
-            
-            document.getElementById('btn-deckplan').className = 'px-3 py-1 bg-white shadow-sm rounded-md font-medium text-purple-700 transition-colors';
-            document.getElementById('btn-topdown').className = 'px-3 py-1 text-gray-500 hover:text-gray-700 font-medium transition-colors';
-            
-            renderDeckPlan();
-        }
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        renderDeckPlan();
+    });
 
     function renderDeckPlan() {
         const tier = document.getElementById('deck-plan-tier').value;
