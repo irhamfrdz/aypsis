@@ -100,8 +100,8 @@
                 
                 <!-- History Info Panel -->
                 <div id="history-panel" class="hidden absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-[300px]">
-                    <div class="flex justify-between items-start mb-2 border-b pb-2">
-                        <h4 class="font-bold text-gray-800" id="history-title">Riwayat Perjalanan</h4>
+                    <div class="flex justify-between items-start mb-2 border-b pb-2 cursor-move" id="history-header">
+                        <h4 class="font-bold text-gray-800 select-none" id="history-title">Riwayat Perjalanan</h4>
                         <button type="button" onclick="clearHistory()" class="text-gray-400 hover:text-red-500 transition-colors">
                             <i class="fas fa-times"></i>
                         </button>
@@ -546,6 +546,52 @@
         } catch(e) {
             el.innerHTML = `<button onclick="loadHistoryAddress('${elId}', ${lat}, ${lng})" class="text-red-500 hover:underline text-[10px]">Gagal, Coba Lagi</button>`;
         }
+    }
+    // === DRAGGABLE HISTORY PANEL ===
+    const dragPanel = document.getElementById('history-panel');
+    const dragHeader = document.getElementById('history-header');
+
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+    dragHeader.onmousedown = dragMouseDown;
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        if (e.target.closest('button')) return;
+
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        
+        if (dragPanel.classList.contains('-translate-x-1/2')) {
+            let rect = dragPanel.getBoundingClientRect();
+            let parentRect = dragPanel.parentElement.getBoundingClientRect();
+            
+            dragPanel.classList.remove('left-1/2', 'transform', '-translate-x-1/2', 'top-4');
+            
+            dragPanel.style.left = (rect.left - parentRect.left) + "px";
+            dragPanel.style.top = (rect.top - parentRect.top) + "px";
+        }
+
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        
+        dragPanel.style.top = (dragPanel.offsetTop - pos2) + "px";
+        dragPanel.style.left = (dragPanel.offsetLeft - pos1) + "px";
+    }
+
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
     }
 </script>
 @endpush
