@@ -179,8 +179,8 @@
                     <!-- Toggle Buttons -->
                     <div class="flex justify-end relative z-30 px-2">
                         <div class="bg-slate-100 p-1 rounded-full inline-flex border border-slate-200 shadow-inner">
-                            <button id="view-photo-btn" onclick="switchViz('photo')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white shadow-sm text-blue-600 transition-all focus:outline-none">Foto Kontainer</button>
-                            <button id="view-map-btn" onclick="switchViz('map')" class="px-4 py-1.5 rounded-full text-sm font-medium text-slate-500 hover:text-slate-800 transition-all focus:outline-none">Rute Kapal</button>
+                            <button id="view-photo-btn" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white shadow-sm text-blue-600 transition-all focus:outline-none">Foto Kontainer</button>
+                            <button id="view-map-btn" class="px-4 py-1.5 rounded-full text-sm font-medium text-slate-500 hover:text-slate-800 transition-all focus:outline-none">Rute Kapal</button>
                         </div>
                     </div>
 
@@ -675,6 +675,24 @@
             console.error('Error in switchViz:', e);
         }
     };
+
+    // Attach event listeners safely
+    document.addEventListener('DOMContentLoaded', function() {
+        const photoBtn = document.getElementById('view-photo-btn');
+        const mapBtn = document.getElementById('view-map-btn');
+        if (photoBtn) {
+            photoBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.switchViz('photo');
+            });
+        }
+        if (mapBtn) {
+            mapBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.switchViz('map');
+            });
+        }
+    });
 
     // Initialize Map and Animation
     window.mapInitialized = false;
