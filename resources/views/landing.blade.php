@@ -645,16 +645,28 @@
         
         if (view === 'photo') {
             slider.scrollTo({ left: 0, behavior: 'smooth' });
-            photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-            photoBtn.classList.remove('text-slate-500', 'font-medium');
-            mapBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-            mapBtn.classList.add('text-slate-500', 'font-medium');
+            if(photoBtn) {
+                photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                photoBtn.classList.remove('text-slate-500', 'font-medium');
+            }
+            if(mapBtn) {
+                mapBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                mapBtn.classList.add('text-slate-500', 'font-medium');
+            }
         } else {
             slider.scrollTo({ left: slider.offsetWidth, behavior: 'smooth' });
-            mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-            mapBtn.classList.remove('text-slate-500', 'font-medium');
-            photoBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-            photoBtn.classList.add('text-slate-500', 'font-medium');
+            if(mapBtn) {
+                mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                mapBtn.classList.remove('text-slate-500', 'font-medium');
+            }
+            if(photoBtn) {
+                photoBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                photoBtn.classList.add('text-slate-500', 'font-medium');
+            }
+            // Initialize map if needed
+            if (typeof initRouteMap === 'function') {
+                initRouteMap();
+            }
         }
     }
 
@@ -854,13 +866,4 @@
         // Start animation
         animateShip();
     }
-    
-    // Also trigger init if user clicks the button
-    const originalSwitchViz = switchViz;
-    switchViz = function(view) {
-        originalSwitchViz(view);
-        if (view === 'map') {
-            initRouteMap();
-        }
-    };
 </script>
