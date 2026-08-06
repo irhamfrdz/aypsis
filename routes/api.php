@@ -364,5 +364,6 @@ Route::get('/stowage-plans/ships', [StowagePlanController::class, 'getShips']);
 Route::get('/stowage-plans/by-ship', [StowagePlanController::class, 'getByShip']);
 Route::get('/stowage-plans/manifests-without-plan', [StowagePlanController::class, 'getManifestsWithoutPlan']);
 Route::get('/stowage-plans', [StowagePlanController::class, 'index']);
+Route::post('/stowage-plans/cancel', [StowagePlanController::class, 'cancel']);
 Route::post('/stowage-plans', [StowagePlanController::class, 'store']);
 

@@ -89,4 +89,32 @@ class StowagePlanController extends Controller
         
         return response()->json($manifests->get());
     }
+
+    public function cancel(Request $request)
+    {
+        $data = $request->validate([
+            'bay' => 'required|string',
+            'row' => 'required|string',
+            'tier' => 'required|string',
+            'nama_kapal' => 'required|string',
+            'no_voyage' => 'nullable|string',
+        ]);
+
+        $plansQuery = StowagePlan::where('bay', $data['bay'])
+            ->where('row', $data['row'])
+            ->where('tier', $data['tier'])
+            ->whereHas('manifest', function($q) use ($data) {
+                $q->where('nama_kapal', $data['nama_kapal']);
+                if (!empty($data['no_voyage'])) {
+                    $q->where('no_voyage', $data['no_voyage']);
+                }
+            });
+
+        $plansQuery->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Stowage plan canceled successfully',
+        ]);
+    }
 }

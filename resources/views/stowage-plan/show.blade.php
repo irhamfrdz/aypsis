@@ -309,9 +309,10 @@
                                             } else if (container) {
                                                 return `
                                                 <td class="p-1.5 border border-gray-100 text-center relative group">
-                                                    <div class="w-10 h-14 mx-auto border-2 border-orange-500 rounded-sm bg-orange-500 flex flex-col items-center justify-center shadow-md relative overflow-hidden" title="No: ${container.container} | Tipe: ${container.type}">
-                                                        <i class="fas fa-box text-white/30 text-xl absolute"></i>
-                                                        <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight">${container.container.substring(0,4)}<br/>${container.container.substring(4)}</span>
+                                                    <div onclick="cancelStowage('${bay}', '${row}', '${tier}')" class="w-10 h-14 mx-auto border-2 border-orange-500 rounded-sm bg-orange-500 hover:bg-red-500 hover:border-red-600 flex flex-col items-center justify-center shadow-md relative overflow-hidden cursor-pointer transition-colors" title="Klik untuk membatalkan | No: ${container.container} | Tipe: ${container.type}">
+                                                        <i class="fas fa-box text-white/30 text-xl absolute group-hover:hidden"></i>
+                                                        <i class="fas fa-times text-white/50 text-3xl absolute hidden group-hover:block"></i>
+                                                        <span class="text-[8px] font-mono font-bold text-white relative z-10 leading-tight group-hover:hidden">${container.container.substring(0,4)}<br/>${container.container.substring(4)}</span>
                                                     </div>
                                                 </td>
                                                 `;
@@ -603,6 +604,37 @@
                 renderDeckPlan();
             });
         }
+    }
+
+    function cancelStowage(bay, row, tier) {
+        if (!confirm(`Batalkan alokasi kontainer di Bay ${bay}, Row ${row}, Tier ${tier}?`)) return;
+
+        fetch('/api/stowage-plans/cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                bay: bay,
+                row: row,
+                tier: tier,
+                nama_kapal: '{{ $shipName }}',
+                no_voyage: '{{ $voyage ?? '' }}'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                window.location.reload();
+            } else {
+                alert('Gagal membatalkan stowage plan: ' + (data.message || 'Error'));
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Terjadi kesalahan sistem');
+        });
     }
 </script>
 @endpush
