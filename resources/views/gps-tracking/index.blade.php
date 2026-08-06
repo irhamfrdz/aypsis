@@ -378,7 +378,17 @@
     function focusOnHistoryPoint(idx, lat, lng, element) {
         if (lat && lng) {
             map.setView([lat, lng], 17);
+            
+            // Reset all markers
+            historyMarkers.forEach((marker) => {
+                if (marker) {
+                    marker.setStyle({ radius: 8, weight: 2, color: '#ffffff' });
+                }
+            });
+
             if (historyMarkers[idx]) {
+                historyMarkers[idx].setStyle({ radius: 12, weight: 3, color: '#4f46e5' });
+                historyMarkers[idx].bringToFront();
                 historyMarkers[idx].openPopup();
             }
             
@@ -454,10 +464,10 @@
                             `;
                             
                             let marker = L.circleMarker(pt, {
-                                radius: 5,
+                                radius: 8,
                                 fillColor: item.speed > 0 ? '#10b981' : '#ef4444',
                                 color: '#ffffff',
-                                weight: 1.5,
+                                weight: 2,
                                 opacity: 1,
                                 fillOpacity: 0.9
                             }).bindPopup(popupContent);
