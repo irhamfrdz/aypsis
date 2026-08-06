@@ -659,29 +659,40 @@
     }
 
     // Scroll spy to update buttons if user swipes manually
-    document.getElementById('viz-slider').addEventListener('scroll', function(e) {
-        const slider = e.target;
-        const scrollPos = slider.scrollLeft;
-        const width = slider.offsetWidth;
-        
-        const photoBtn = document.getElementById('view-photo-btn');
-        const mapBtn = document.getElementById('view-map-btn');
-        
-        if (scrollPos > width * 0.5) {
-            // we are on map
-            mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-            mapBtn.classList.remove('text-slate-500', 'font-medium');
-            photoBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-            photoBtn.classList.add('text-slate-500', 'font-medium');
-            initRouteMap();
-        } else {
-            // we are on photo
-            photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-            photoBtn.classList.remove('text-slate-500', 'font-medium');
-            mapBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-            mapBtn.classList.add('text-slate-500', 'font-medium');
-        }
-    });
+    const vizSlider = document.getElementById('viz-slider');
+    if (vizSlider) {
+        vizSlider.addEventListener('scroll', function(e) {
+            const slider = e.target;
+            const scrollPos = slider.scrollLeft;
+            const width = slider.offsetWidth;
+            
+            const photoBtn = document.getElementById('view-photo-btn');
+            const mapBtn = document.getElementById('view-map-btn');
+            
+            if (scrollPos > width * 0.5) {
+                // we are on map
+                if(mapBtn) {
+                    mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                    mapBtn.classList.remove('text-slate-500', 'font-medium');
+                }
+                if(photoBtn) {
+                    photoBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                    photoBtn.classList.add('text-slate-500', 'font-medium');
+                }
+                initRouteMap();
+            } else {
+                // we are on photo
+                if(photoBtn) {
+                    photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                    photoBtn.classList.remove('text-slate-500', 'font-medium');
+                }
+                if(mapBtn) {
+                    mapBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                    mapBtn.classList.add('text-slate-500', 'font-medium');
+                }
+            }
+        });
+    }
 
     // Initialize Map and Animation
     let mapInitialized = false;
