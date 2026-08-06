@@ -631,37 +631,38 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script>
-    // Toggle script - simple show/hide (no slider conflicts with Leaflet)
-    function switchViz(view) {
-        const photoView = document.getElementById('viz-photo');
-        const mapView = document.getElementById('viz-map');
-        const photoBtn = document.getElementById('view-photo-btn');
-        const mapBtn = document.getElementById('view-map-btn');
-        
-        if (view === 'photo') {
-            if(photoView) photoView.style.display = 'block';
-            if(mapView) mapView.style.display = 'none';
-            if(photoBtn) {
-                photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                photoBtn.classList.remove('text-slate-500', 'font-medium');
-            }
-            if(mapBtn) {
-                mapBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                mapBtn.classList.add('text-slate-500', 'font-medium');
-            }
-        } else {
-            if(photoView) photoView.style.display = 'none';
-            if(mapView) mapView.style.display = 'block';
-            if(mapBtn) {
-                mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                mapBtn.classList.remove('text-slate-500', 'font-medium');
-            }
-            if(photoBtn) {
-                photoBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                photoBtn.classList.add('text-slate-500', 'font-medium');
-            }
-            // Initialize map if needed
-            try {
+    // Toggle script - robust implementation
+    window.switchViz = function(view) {
+        try {
+            const photoView = document.getElementById('viz-photo');
+            const mapView = document.getElementById('viz-map');
+            const photoBtn = document.getElementById('view-photo-btn');
+            const mapBtn = document.getElementById('view-map-btn');
+            
+            if (view === 'photo') {
+                if(photoView) photoView.style.display = 'block';
+                if(mapView) mapView.style.display = 'none';
+                if(photoBtn) {
+                    photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                    photoBtn.classList.remove('text-slate-500', 'font-medium');
+                }
+                if(mapBtn) {
+                    mapBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                    mapBtn.classList.add('text-slate-500', 'font-medium');
+                }
+            } else {
+                if(photoView) photoView.style.display = 'none';
+                if(mapView) mapView.style.display = 'block';
+                if(mapBtn) {
+                    mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                    mapBtn.classList.remove('text-slate-500', 'font-medium');
+                }
+                if(photoBtn) {
+                    photoBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+                    photoBtn.classList.add('text-slate-500', 'font-medium');
+                }
+                
+                // Initialize map if needed
                 if (typeof initRouteMap === 'function') {
                     initRouteMap();
                 }
@@ -669,24 +670,29 @@
                 if (window.routeMapInstance) {
                     setTimeout(() => window.routeMapInstance.invalidateSize(), 50);
                 }
-            } catch(e) { console.warn('Map init error:', e); }
+            }
+        } catch (e) {
+            console.error('Error in switchViz:', e);
         }
-    }
+    };
 
     // Initialize Map and Animation
-    let mapInitialized = false;
-    let shipAnimationId = null;
+    window.mapInitialized = false;
+    window.shipAnimationId = null;
+    window.routeMapInstance = null;
 
     function initRouteMap() {
-        if (mapInitialized) return;
-        mapInitialized = true;
+        if (window.mapInitialized) return;
+        window.mapInitialized = true;
 
-        const map = L.map('map-route', {
+        window.routeMapInstance = L.map('map-route', {
             zoomControl: false,
             dragging: false,
             scrollWheelZoom: false,
             doubleClickZoom: false
         }).setView([-2.5, 105.4], 6);
+        
+        const map = window.routeMapInstance;
         
         // Use a clean map style without too much distraction
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
