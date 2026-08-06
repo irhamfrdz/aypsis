@@ -176,25 +176,11 @@
                 </div>
                 
                 <div class="flex flex-col gap-4 relative group">
-                    <!-- Toggle Buttons -->
-                    <div class="flex justify-end relative z-30 px-2">
-                        <div class="bg-slate-100 p-1 rounded-full inline-flex border border-slate-200 shadow-inner">
-                            <button id="view-photo-btn" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white shadow-sm text-blue-600 transition-all focus:outline-none">Foto Kontainer</button>
-                            <button id="view-map-btn" class="px-4 py-1.5 rounded-full text-sm font-medium text-slate-500 hover:text-slate-800 transition-all focus:outline-none">Rute Kapal</button>
-                        </div>
-                    </div>
-
-                    <!-- Views Container (Show/Hide) -->
+                    <!-- Views Container -->
                     <div class="relative w-full rounded-3xl shadow-2xl z-10 overflow-hidden">
                         
-                        <!-- View 1: Photo -->
-                        <div id="viz-photo" class="w-full relative">
-                            <div class="absolute inset-0 bg-blue-600 transform rotate-3 scale-105 opacity-10 -z-10"></div>
-                            <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Shipping Container Port" class="w-full object-cover h-[400px] md:h-[500px]">
-                        </div>
-                        
-                        <!-- View 2: Rute Map (hidden by default) -->
-                        <div id="viz-map" class="w-full relative overflow-hidden h-[400px] md:h-[500px]" style="display: none;">
+                        <!-- Rute Map -->
+                        <div id="viz-map" class="w-full relative overflow-hidden h-[400px] md:h-[500px]">
                             <div id="map-route" class="w-full h-full"></div>
                         </div>
                     </div>
@@ -631,73 +617,14 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script>
-    // Toggle script - robust implementation
-    window.switchViz = function(view) {
-        try {
-            const photoView = document.getElementById('viz-photo');
-            const mapView = document.getElementById('viz-map');
-            const photoBtn = document.getElementById('view-photo-btn');
-            const mapBtn = document.getElementById('view-map-btn');
-            
-            if (view === 'photo') {
-                if(photoView) photoView.style.display = 'block';
-                if(mapView) mapView.style.display = 'none';
-                if(photoBtn) {
-                    photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                    photoBtn.classList.remove('text-slate-500', 'font-medium');
-                }
-                if(mapBtn) {
-                    mapBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                    mapBtn.classList.add('text-slate-500', 'font-medium');
-                }
-            } else {
-                if(photoView) photoView.style.display = 'none';
-                if(mapView) mapView.style.display = 'block';
-                if(mapBtn) {
-                    mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                    mapBtn.classList.remove('text-slate-500', 'font-medium');
-                }
-                if(photoBtn) {
-                    photoBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                    photoBtn.classList.add('text-slate-500', 'font-medium');
-                }
-                
-                // Initialize map if needed
-                if (typeof initRouteMap === 'function') {
-                    initRouteMap();
-                }
-                // Force Leaflet to redraw after container becomes visible
-                if (window.routeMapInstance) {
-                    setTimeout(() => window.routeMapInstance.invalidateSize(), 50);
-                }
-            }
-        } catch (e) {
-            console.error('Error in switchViz:', e);
-        }
-    };
-
-    // Attach event listeners safely
-    document.addEventListener('DOMContentLoaded', function() {
-        const photoBtn = document.getElementById('view-photo-btn');
-        const mapBtn = document.getElementById('view-map-btn');
-        if (photoBtn) {
-            photoBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                window.switchViz('photo');
-            });
-        }
-        if (mapBtn) {
-            mapBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                window.switchViz('map');
-            });
-        }
-    });
-
     // Initialize Map and Animation
     window.mapInitialized = false;
     window.shipAnimationId = null;
     window.routeMapInstance = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initRouteMap();
+    });
 
     function initRouteMap() {
         if (window.mapInitialized) return;
