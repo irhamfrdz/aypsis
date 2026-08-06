@@ -180,7 +180,7 @@
                     <div class="flex justify-end z-30 px-2">
                         <div class="bg-slate-100 p-1 rounded-full inline-flex border border-slate-200 shadow-inner">
                             <button id="view-photo-btn" onclick="switchViz('photo')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white shadow-sm text-blue-600 transition-all focus:outline-none">Foto Kontainer</button>
-                            <button id="view-map-btn" onclick="switchViz('map')" class="px-4 py-1.5 rounded-full text-sm font-medium text-slate-500 hover:text-slate-800 transition-all focus:outline-none">Lokasi Kantor</button>
+                            <button id="view-map-btn" onclick="switchViz('map')" class="px-4 py-1.5 rounded-full text-sm font-medium text-slate-500 hover:text-slate-800 transition-all focus:outline-none">Rute Kapal</button>
                         </div>
                     </div>
 
@@ -193,15 +193,9 @@
                             <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Shipping Container Port" class="w-full object-cover h-[400px] md:h-[500px]">
                         </div>
                         
-                        <!-- Slide 2: Google Maps -->
+                        <!-- Slide 2: Rute Map -->
                         <div class="w-full flex-shrink-0 snap-center relative overflow-hidden h-[400px] md:h-[500px]" id="map-slide">
-                            <iframe 
-                                src="https://maps.google.com/maps?q=PT.%20Alexindo%20Yakinprima,%20Jl.%20Pluit%20Raya%20No.8%20Blok%20B%20no%2012,%20Jakarta%20Utara&t=&z=15&ie=UTF8&iwloc=&output=embed" 
-                                class="w-full h-full border-0" 
-                                allowfullscreen="" 
-                                loading="lazy" 
-                                referrerpolicy="no-referrer-when-downgrade">
-                            </iframe>
+                            <div id="map-route" class="w-full h-full z-0"></div>
                         </div>
                     </div>
                     
@@ -638,6 +632,10 @@
 @endsection
 
 @section('scripts')
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <script>
     // Toggle script
     function switchViz(view) {
@@ -675,6 +673,7 @@
             mapBtn.classList.remove('text-slate-500', 'font-medium');
             photoBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
             photoBtn.classList.add('text-slate-500', 'font-medium');
+            initRouteMap();
         } else {
             // we are on photo
             photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
@@ -683,4 +682,116 @@
             mapBtn.classList.add('text-slate-500', 'font-medium');
         }
     });
+
+    // Initialize Map and Animation
+    let mapInitialized = false;
+    let shipAnimationId = null;
+
+    function initRouteMap() {
+        if (mapInitialized) return;
+        mapInitialized = true;
+
+        const map = L.map('map-route', {
+            zoomControl: false,
+            dragging: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false
+        }).setView([-2.5, 105.4], 6);
+        
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+
+        const sundaKelapa = [-6.1219, 106.8080];
+        const srimasBatam = [1.1301, 104.0531];
+
+        // Curved route approximation
+        const routeCoords = [
+            sundaKelapa,
+            [-4.5, 106.0],
+            [-2.5, 105.2],
+            [-0.5, 104.5],
+            srimasBatam
+        ];
+
+        // Draw dotted route line
+        L.polyline(routeCoords, {
+            color: '#3b82f6', // blue-500
+            weight: 3,
+            opacity: 0.8,
+            dashArray: '8, 8',
+            lineCap: 'round'
+        }).addTo(map);
+        
+        // Add Port Markers
+        L.circleMarker(sundaKelapa, { radius: 6, fillColor: '#f97316', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map)
+            .bindTooltip('<b>Sunda Kelapa</b><br>Jakarta', { permanent: true, direction: 'right', className: 'text-xs font-semibold' });
+            
+        L.circleMarker(srimasBatam, { radius: 6, fillColor: '#f97316', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map)
+            .bindTooltip('<b>Srimas</b><br>Batam', { permanent: true, direction: 'left', className: 'text-xs font-semibold' });
+        
+        // Add Ship Icon
+        const shipIcon = L.divIcon({
+            html: '<div id="animated-ship"><i class="fa-solid fa-ship text-blue-600 drop-shadow-md text-xl" style="transform: rotate(-30deg);"></i></div>',
+            className: '',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+        
+        const shipMarker = L.marker(sundaKelapa, { icon: shipIcon, zIndexOffset: 1000 }).addTo(map);
+        
+        // Animation Logic
+        let progress = 0;
+        let direction = 1;
+        const totalPoints = routeCoords.length;
+        
+        function getPointOnLine(p1, p2, t) {
+            return [
+                p1[0] + (p2[0] - p1[0]) * t,
+                p1[1] + (p2[1] - p1[1]) * t
+            ];
+        }
+        
+        function animateShip() {
+            // Speed of the ship
+            progress += 0.002 * direction;
+            
+            const shipEl = document.querySelector('#animated-ship i');
+            
+            if (progress >= 1) {
+                progress = 1;
+                direction = -1; // return journey
+                if(shipEl) shipEl.style.transform = 'rotate(150deg)';
+            } else if (progress <= 0) {
+                progress = 0;
+                direction = 1;
+                if(shipEl) shipEl.style.transform = 'rotate(-30deg)';
+            }
+            
+            const segmentProgress = progress * (totalPoints - 1);
+            const segmentIndex = Math.floor(segmentProgress);
+            const t = segmentProgress - segmentIndex;
+            
+            if (segmentIndex < totalPoints - 1) {
+                const currentPos = getPointOnLine(routeCoords[segmentIndex], routeCoords[segmentIndex + 1], t);
+                shipMarker.setLatLng(currentPos);
+            }
+            
+            shipAnimationId = requestAnimationFrame(animateShip);
+        }
+        
+        // Start animation
+        animateShip();
+    }
+    
+    // Also trigger init if user clicks the button
+    const originalSwitchViz = switchViz;
+    switchViz = function(view) {
+        originalSwitchViz(view);
+        if (view === 'map') {
+            initRouteMap();
+        }
+    };
 </script>
