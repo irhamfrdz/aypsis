@@ -560,6 +560,8 @@
             funnel.position.set(0, bridgeH, cl + sternL - 1);
             shipGroup.add(funnel);
             
+            const funnelTopGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.5, 16);
+            const funnelTopMat = new THREE.MeshPhongMaterial({ color: 0x1e293b }); // slate-800
             const funnelTop = new THREE.Mesh(funnelTopGeo, funnelTopMat);
             funnelTop.position.set(0, bridgeH + 1.5, cl + sternL - 1);
             shipGroup.add(funnelTop);
