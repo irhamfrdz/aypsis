@@ -499,12 +499,15 @@
             });
         });
 
+        let w = 4;
+        let cl = 10;
+        
         if (bays.length > 0 && rows.length > 0) {
             const rowsCount = Math.max(rows.length, 1);
             const baysCount = Math.max(bays.length, 1);
             
-            const w = (rowsCount * 1.1 + 1) / 2;
-            const cl = (baysCount * 2.8) / 2;
+            w = (rowsCount * 1.1 + 1) / 2;
+            cl = (baysCount * 2.8) / 2;
             const bowL = 5;
             const sternL = 3;
 
