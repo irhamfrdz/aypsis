@@ -709,6 +709,7 @@
             doubleClickZoom: false
         }).setView([-2.5, 105.4], 6);
         
+        // Use a clean map style without too much distraction
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
             subdomains: 'abcd',
@@ -717,47 +718,82 @@
 
         const sundaKelapa = [-6.1219, 106.8080];
         const srimasBatam = [1.1301, 104.0531];
+        const controlPoint = [-2.5, 107.5]; // Pull the curve slightly to the East for a smooth arc
 
-        // Curved route approximation
-        const routeCoords = [
-            sundaKelapa,
-            [-4.5, 106.0],
-            [-2.5, 105.2],
-            [-0.5, 104.5],
-            srimasBatam
-        ];
+        // Generate curved route using Quadratic Bezier
+        const routeCoords = [];
+        const segments = 60;
+        for (let i = 0; i <= segments; i++) {
+            const t = i / segments;
+            const u = 1 - t;
+            const tt = t * t;
+            const uu = u * u;
+            const lat = uu * sundaKelapa[0] + 2 * u * t * controlPoint[0] + tt * srimasBatam[0];
+            const lng = uu * sundaKelapa[1] + 2 * u * t * controlPoint[1] + tt * srimasBatam[1];
+            routeCoords.push([lat, lng]);
+        }
 
-        // Draw dotted route line
+        // Faint background line (the full route)
         L.polyline(routeCoords, {
-            color: '#3b82f6', // blue-500
-            weight: 3,
-            opacity: 0.8,
-            dashArray: '8, 8',
+            color: '#94a3b8', 
+            weight: 2,
+            opacity: 0.5,
+            dashArray: '4, 8',
+            lineCap: 'round'
+        }).addTo(map);
+        
+        // Solid RED active trail line
+        const activeLine = L.polyline([], {
+            color: '#ef4444', // Red trail
+            weight: 4,
+            opacity: 1,
             lineCap: 'round'
         }).addTo(map);
         
         // Add Port Markers
-        L.circleMarker(sundaKelapa, { radius: 6, fillColor: '#f97316', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map)
-            .bindTooltip('<b>Sunda Kelapa</b><br>Jakarta', { permanent: true, direction: 'right', className: 'text-xs font-semibold' });
+        L.circleMarker(sundaKelapa, { radius: 6, fillColor: '#ffffff', color: '#dc2626', weight: 3, fillOpacity: 1 }).addTo(map)
+            .bindTooltip('<b>Sunda Kelapa</b><br>Jakarta', { permanent: true, direction: 'right', className: 'text-xs font-bold border-none shadow-sm' });
             
-        L.circleMarker(srimasBatam, { radius: 6, fillColor: '#f97316', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map)
-            .bindTooltip('<b>Srimas</b><br>Batam', { permanent: true, direction: 'left', className: 'text-xs font-semibold' });
+        L.circleMarker(srimasBatam, { radius: 6, fillColor: '#ffffff', color: '#dc2626', weight: 3, fillOpacity: 1 }).addTo(map)
+            .bindTooltip('<b>Srimas</b><br>Batam', { permanent: true, direction: 'left', className: 'text-xs font-bold border-none shadow-sm' });
         
-        // Add Ship Icon
+        // Custom SVG Ship Icon (Top-down view)
+        const shipSvg = `
+        <svg width="30" height="75" viewBox="0 0 24 60" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.4));">
+          <path d="M 12,2 C 18,5 22,12 22,20 L 22,50 C 22,58 18,60 12,60 C 6,60 2,58 2,50 L 2,20 C 2,12 6,5 12,2 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/>
+          <path d="M 12,4 C 17,7 20,13 20,20 L 20,49 C 20,55 17,57 12,57 C 7,57 4,55 4,49 L 4,20 C 4,13 7,7 12,4 Z" fill="#f1f5f9"/>
+          <g stroke="#0f172a" stroke-width="0.5">
+              <rect x="6" y="14" width="5" height="10" fill="#ef4444"/>
+              <rect x="13" y="14" width="5" height="10" fill="#3b82f6"/>
+              <rect x="6" y="25" width="5" height="10" fill="#eab308"/>
+              <rect x="13" y="25" width="5" height="10" fill="#22c55e"/>
+              <rect x="6" y="36" width="5" height="10" fill="#f97316"/>
+              <rect x="13" y="36" width="5" height="10" fill="#8b5cf6"/>
+          </g>
+          <rect x="4" y="48" width="16" height="7" fill="#ffffff" stroke="#94a3b8" stroke-width="1" rx="1"/>
+          <rect x="6" y="49" width="12" height="2" fill="#0284c7"/>
+          <circle cx="12" cy="56" r="1.5" fill="#ef4444"/>
+        </svg>`;
+        
         const shipIcon = L.divIcon({
-            html: '<div id="animated-ship"><i class="fa-solid fa-ship text-blue-600 drop-shadow-md text-xl" style="transform: rotate(-30deg);"></i></div>',
+            html: `<div id="animated-ship" style="transition: transform 0.1s linear; transform-origin: center center;">${shipSvg}</div>`,
             className: '',
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
+            iconSize: [30, 75],
+            iconAnchor: [15, 37.5] // center anchor
         });
         
         const shipMarker = L.marker(sundaKelapa, { icon: shipIcon, zIndexOffset: 1000 }).addTo(map);
         
-        // Animation Logic
-        let progress = 0;
-        let direction = 1;
-        const totalPoints = routeCoords.length;
-        
+        // Helper to get bearing between two latlng arrays
+        function getBearing(start, end) {
+            const lat1 = start[0] * Math.PI / 180;
+            const lat2 = end[0] * Math.PI / 180;
+            const dLng = (end[1] - start[1]) * Math.PI / 180;
+            const y = Math.sin(dLng) * Math.cos(lat2);
+            const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+            return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+        }
+
         function getPointOnLine(p1, p2, t) {
             return [
                 p1[0] + (p2[0] - p1[0]) * t,
@@ -765,20 +801,22 @@
             ];
         }
         
+        let progress = 0;
+        let direction = 1;
+        const totalPoints = routeCoords.length;
+        
         function animateShip() {
-            // Speed of the ship
+            // Adjust speed (0.002 is approx 500 frames for one way trip)
             progress += 0.002 * direction;
-            
-            const shipEl = document.querySelector('#animated-ship i');
             
             if (progress >= 1) {
                 progress = 1;
                 direction = -1; // return journey
-                if(shipEl) shipEl.style.transform = 'rotate(150deg)';
+                activeLine.setLatLngs([]); 
             } else if (progress <= 0) {
                 progress = 0;
                 direction = 1;
-                if(shipEl) shipEl.style.transform = 'rotate(-30deg)';
+                activeLine.setLatLngs([]);
             }
             
             const segmentProgress = progress * (totalPoints - 1);
@@ -788,6 +826,26 @@
             if (segmentIndex < totalPoints - 1) {
                 const currentPos = getPointOnLine(routeCoords[segmentIndex], routeCoords[segmentIndex + 1], t);
                 shipMarker.setLatLng(currentPos);
+                
+                // Update red trail
+                if (direction === 1) {
+                    const trailCoords = routeCoords.slice(0, segmentIndex + 1);
+                    trailCoords.push(currentPos);
+                    activeLine.setLatLngs(trailCoords);
+                } else {
+                    const trailCoords = routeCoords.slice(segmentIndex + 1);
+                    trailCoords.unshift(currentPos);
+                    activeLine.setLatLngs(trailCoords);
+                }
+                
+                // Rotate Ship image. 
+                // SVG points UP (0 degrees is North). 
+                const bearing = getBearing(routeCoords[segmentIndex], routeCoords[segmentIndex + 1]);
+                const shipRotation = direction === 1 ? bearing : (bearing + 180) % 360;
+                const shipEl = document.getElementById('animated-ship');
+                if(shipEl) {
+                    shipEl.style.transform = `rotate(${shipRotation}deg)`;
+                }
             }
             
             shipAnimationId = requestAnimationFrame(animateShip);
