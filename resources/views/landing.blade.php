@@ -184,30 +184,20 @@
                         </div>
                     </div>
 
-                    <!-- Swipeable Wrapper -->
-                    <div id="viz-slider" class="relative flex overflow-x-auto snap-x snap-mandatory scroll-smooth w-full rounded-3xl shadow-2xl z-10" style="scrollbar-width: none; -ms-overflow-style: none;">
+                    <!-- Views Container (Show/Hide) -->
+                    <div class="relative w-full rounded-3xl shadow-2xl z-10 overflow-hidden">
                         
-                        <!-- Slide 1: Photo -->
-                        <div class="w-full flex-shrink-0 snap-center relative">
+                        <!-- View 1: Photo -->
+                        <div id="viz-photo" class="w-full relative">
                             <div class="absolute inset-0 bg-blue-600 transform rotate-3 scale-105 opacity-10 -z-10"></div>
                             <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Shipping Container Port" class="w-full object-cover h-[400px] md:h-[500px]">
                         </div>
                         
-                        <!-- Slide 2: Rute Map -->
-                        <div class="w-full flex-shrink-0 snap-center relative overflow-hidden h-[400px] md:h-[500px]" id="map-slide">
-                            <div id="map-route" class="w-full h-full z-0"></div>
+                        <!-- View 2: Rute Map (hidden by default) -->
+                        <div id="viz-map" class="w-full relative overflow-hidden h-[400px] md:h-[500px] hidden">
+                            <div id="map-route" class="w-full h-full"></div>
                         </div>
                     </div>
-                    
-                    <style>
-                        #viz-slider::-webkit-scrollbar {
-                            display: none;
-                        }
-                        /* Prevent Leaflet from capturing slider scroll/swipe events */
-                        #map-slide .leaflet-container {
-                            pointer-events: none;
-                        }
-                    </style>
                     
                     <!-- Stats Container -->
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-4 relative z-20">
@@ -641,15 +631,16 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
 <script>
-    // Toggle script
+    // Toggle script - simple show/hide (no slider conflicts with Leaflet)
     function switchViz(view) {
-        const slider = document.getElementById('viz-slider');
-        if (!slider) return;
+        const photoView = document.getElementById('viz-photo');
+        const mapView = document.getElementById('viz-map');
         const photoBtn = document.getElementById('view-photo-btn');
         const mapBtn = document.getElementById('view-map-btn');
         
         if (view === 'photo') {
-            slider.scrollTo({ left: 0, behavior: 'smooth' });
+            if(photoView) photoView.classList.remove('hidden');
+            if(mapView) mapView.classList.add('hidden');
             if(photoBtn) {
                 photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
                 photoBtn.classList.remove('text-slate-500', 'font-medium');
@@ -659,7 +650,8 @@
                 mapBtn.classList.add('text-slate-500', 'font-medium');
             }
         } else {
-            slider.scrollTo({ left: slider.offsetWidth, behavior: 'smooth' });
+            if(photoView) photoView.classList.add('hidden');
+            if(mapView) mapView.classList.remove('hidden');
             if(mapBtn) {
                 mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
                 mapBtn.classList.remove('text-slate-500', 'font-medium');
@@ -673,42 +665,6 @@
                 if (typeof initRouteMap === 'function') initRouteMap();
             } catch(e) { console.warn('Map init error:', e); }
         }
-    }
-
-    // Scroll spy to update buttons if user swipes manually
-    const vizSlider = document.getElementById('viz-slider');
-    if (vizSlider) {
-        vizSlider.addEventListener('scroll', function(e) {
-            const slider = e.target;
-            const scrollPos = slider.scrollLeft;
-            const width = slider.offsetWidth;
-            
-            const photoBtn = document.getElementById('view-photo-btn');
-            const mapBtn = document.getElementById('view-map-btn');
-            
-            if (scrollPos > width * 0.5) {
-                // we are on map
-                if(mapBtn) {
-                    mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                    mapBtn.classList.remove('text-slate-500', 'font-medium');
-                }
-                if(photoBtn) {
-                    photoBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                    photoBtn.classList.add('text-slate-500', 'font-medium');
-                }
-                initRouteMap();
-            } else {
-                // we are on photo
-                if(photoBtn) {
-                    photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                    photoBtn.classList.remove('text-slate-500', 'font-medium');
-                }
-                if(mapBtn) {
-                    mapBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
-                    mapBtn.classList.add('text-slate-500', 'font-medium');
-                }
-            }
-        });
     }
 
     // Initialize Map and Animation
