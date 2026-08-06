@@ -175,19 +175,74 @@
                     </a>
                 </div>
                 
-                <div class="relative">
-                    <div class="absolute inset-0 bg-blue-600 rounded-3xl transform rotate-3 scale-105 opacity-10"></div>
-                    <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Shipping Container Port" class="rounded-3xl shadow-2xl relative z-10 w-full object-cover h-[500px]">
+                <div class="flex flex-col gap-4 relative group">
+                    <!-- Toggle Buttons -->
+                    <div class="flex justify-end z-30 px-2">
+                        <div class="bg-slate-100 p-1 rounded-full inline-flex border border-slate-200 shadow-inner">
+                            <button id="view-photo-btn" onclick="switchViz('photo')" class="px-4 py-1.5 rounded-full text-sm font-bold bg-white shadow-sm text-blue-600 transition-all focus:outline-none">Foto Kontainer</button>
+                            <button id="view-map-btn" onclick="switchViz('map')" class="px-4 py-1.5 rounded-full text-sm font-medium text-slate-500 hover:text-slate-800 transition-all focus:outline-none">Lokasi Kantor</button>
+                        </div>
+                    </div>
+
+                    <!-- Swipeable Wrapper -->
+                    <div id="viz-slider" class="relative flex overflow-x-auto snap-x snap-mandatory scroll-smooth w-full rounded-3xl shadow-2xl z-10" style="scrollbar-width: none; -ms-overflow-style: none;">
+                        
+                        <!-- Slide 1: Photo -->
+                        <div class="w-full flex-shrink-0 snap-center relative">
+                            <div class="absolute inset-0 bg-blue-600 transform rotate-3 scale-105 opacity-10 -z-10"></div>
+                            <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Shipping Container Port" class="w-full object-cover h-[400px] md:h-[500px]">
+                        </div>
+                        
+                        <!-- Slide 2: Google Maps -->
+                        <div class="w-full flex-shrink-0 snap-center relative overflow-hidden h-[400px] md:h-[500px]" id="map-slide">
+                            <iframe 
+                                src="https://maps.google.com/maps?q=PT.%20Alexindo%20Yakinprima,%20Jl.%20Pluit%20Raya%20No.8%20Blok%20B%20no%2012,%20Jakarta%20Utara&t=&z=15&ie=UTF8&iwloc=&output=embed" 
+                                class="w-full h-full border-0" 
+                                allowfullscreen="" 
+                                loading="lazy" 
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
+                    </div>
                     
-                    <!-- Floating Stats -->
-                    <div class="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-xl z-20 border border-slate-100 animate-bounce" style="animation-duration: 3s;">
-                        <div class="flex items-center gap-4">
-                            <div class="bg-blue-100 text-blue-600 p-3 rounded-xl">
-                                <i class="fa-solid fa-anchor text-2xl"></i>
+                    <style>
+                        #viz-slider::-webkit-scrollbar {
+                            display: none;
+                        }
+                    </style>
+                    
+                    <!-- Stats Container -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 relative z-20">
+                        <!-- Stat 1 -->
+                        <div class="bg-white p-4 lg:p-5 rounded-2xl shadow-lg border border-slate-100 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-3 lg:gap-4 transition-transform hover:-translate-y-1">
+                            <div class="bg-blue-100 text-blue-600 p-2.5 rounded-xl flex-shrink-0">
+                                <i class="fa-solid fa-anchor text-xl"></i>
                             </div>
                             <div>
-                                <p class="text-3xl font-black text-slate-900">20+</p>
-                                <p class="text-slate-500 font-medium text-sm" data-lang-en="Destination Ports" data-lang-zh="目的港">Pelabuhan Tujuan</p>
+                                <p class="text-xl lg:text-3xl font-black text-slate-900 leading-none mb-1">20+</p>
+                                <p class="text-slate-500 font-medium text-xs lg:text-sm leading-tight" data-lang-en="Destination Ports" data-lang-zh="目的港">Pelabuhan Tujuan</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Stat 2 -->
+                        <div class="bg-white p-4 lg:p-5 rounded-2xl shadow-lg border border-slate-100 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-3 lg:gap-4 transition-transform hover:-translate-y-1">
+                            <div class="bg-blue-100 text-blue-600 p-2.5 rounded-xl flex-shrink-0">
+                                <i class="fa-solid fa-ship text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-xl lg:text-3xl font-black text-slate-900 leading-none mb-1">6</p>
+                                <p class="text-slate-500 font-medium text-xs lg:text-sm leading-tight" data-lang-en="Ships Fleet" data-lang-zh="船队">Kapal</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Stat 3 -->
+                        <div class="bg-white p-4 lg:p-5 rounded-2xl shadow-lg border border-slate-100 flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-3 lg:gap-4 transition-transform hover:-translate-y-1 col-span-2 md:col-span-1 w-2/3 md:w-full mx-auto md:mx-0">
+                            <div class="bg-blue-100 text-blue-600 p-2.5 rounded-xl flex-shrink-0">
+                                <i class="fa-solid fa-box text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-xl lg:text-3xl font-black text-slate-900 leading-none mb-1">100+</p>
+                                <p class="text-slate-500 font-medium text-xs lg:text-sm leading-tight" data-lang-en="Containers" data-lang-zh="集装箱">Kontainer</p>
                             </div>
                         </div>
                     </div>
@@ -581,3 +636,51 @@
         });
     </script>
 @endsection
+
+@section('scripts')
+<script>
+    // Toggle script
+    function switchViz(view) {
+        const slider = document.getElementById('viz-slider');
+        const photoBtn = document.getElementById('view-photo-btn');
+        const mapBtn = document.getElementById('view-map-btn');
+        
+        if (view === 'photo') {
+            slider.scrollTo({ left: 0, behavior: 'smooth' });
+            photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+            photoBtn.classList.remove('text-slate-500', 'font-medium');
+            mapBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+            mapBtn.classList.add('text-slate-500', 'font-medium');
+        } else {
+            slider.scrollTo({ left: slider.offsetWidth, behavior: 'smooth' });
+            mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+            mapBtn.classList.remove('text-slate-500', 'font-medium');
+            photoBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+            photoBtn.classList.add('text-slate-500', 'font-medium');
+        }
+    }
+
+    // Scroll spy to update buttons if user swipes manually
+    document.getElementById('viz-slider').addEventListener('scroll', function(e) {
+        const slider = e.target;
+        const scrollPos = slider.scrollLeft;
+        const width = slider.offsetWidth;
+        
+        const photoBtn = document.getElementById('view-photo-btn');
+        const mapBtn = document.getElementById('view-map-btn');
+        
+        if (scrollPos > width * 0.5) {
+            // we are on map
+            mapBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+            mapBtn.classList.remove('text-slate-500', 'font-medium');
+            photoBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+            photoBtn.classList.add('text-slate-500', 'font-medium');
+        } else {
+            // we are on photo
+            photoBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+            photoBtn.classList.remove('text-slate-500', 'font-medium');
+            mapBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'font-bold');
+            mapBtn.classList.add('text-slate-500', 'font-medium');
+        }
+    });
+</script>

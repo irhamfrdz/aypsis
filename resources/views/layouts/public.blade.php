@@ -92,9 +92,16 @@
                     <a href="{{ route('home') }}#mitra" class="nav-link font-medium hover:text-blue-400 transition-colors" data-lang-en="Partners" data-lang-zh="合作伙伴">Mitra</a>
                     
                     <!-- Language Toggle -->
-                    <button onclick="toggleLang()" class="flex items-center gap-1 nav-link font-medium hover:text-blue-400 transition-colors focus:outline-none" title="Ubah Bahasa / Change Language">
-                        <i class="fa-solid fa-globe"></i> <span id="current-lang-label">ID</span>
-                    </button>
+                    <div class="relative group">
+                        <button class="flex items-center gap-1 nav-link font-medium hover:text-blue-400 transition-colors focus:outline-none" title="Ubah Bahasa / Change Language">
+                            <i class="fa-solid fa-globe"></i> <span id="current-lang-label">ID</span> <i class="fa-solid fa-chevron-down text-[10px] ml-0.5 opacity-70"></i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top scale-95 group-hover:scale-100 py-2 border border-slate-100 z-50 text-slate-800">
+                            <button onclick="setLang('id')" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors"><img src="https://flagcdn.com/w20/id.png" width="16" alt="ID" class="rounded-[2px]"> Indonesia (ID)</button>
+                            <button onclick="setLang('en')" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors"><img src="https://flagcdn.com/w20/gb.png" width="16" alt="EN" class="rounded-[2px]"> English (EN)</button>
+                            <button onclick="setLang('zh')" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors"><img src="https://flagcdn.com/w20/cn.png" width="16" alt="ZH" class="rounded-[2px]"> 中文 (ZH)</button>
+                        </div>
+                    </div>
 
                     @auth
                         <a href="{{ route('dashboard') }}" class="btn-primary px-6 py-2.5 rounded-full font-semibold text-white shadow-lg" data-lang-en='Dashboard <i class="fa-solid fa-arrow-right ml-2"></i>' data-lang-zh='仪表盘 <i class="fa-solid fa-arrow-right ml-2"></i>'>
@@ -124,9 +131,16 @@
                 <a href="{{ route('public.pelabuhan') }}" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Ports" data-lang-zh="港口">Pelabuhan</a>
                 <a href="{{ route('home') }}#mitra" class="block px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50" data-lang-en="Partners" data-lang-zh="合作伙伴">Mitra</a>
                 
-                <button onclick="toggleLang()" class="block w-full text-left px-3 py-2 text-base font-medium hover:text-blue-600 hover:bg-slate-50 focus:outline-none">
-                    <i class="fa-solid fa-globe"></i> Language: <span id="mobile-lang-label">ID</span>
-                </button>
+                <div class="px-3 py-2">
+                    <div class="flex items-center gap-2 text-base font-medium mb-2 text-slate-800">
+                        <i class="fa-solid fa-globe"></i> Language
+                    </div>
+                    <div class="flex gap-2 pl-6">
+                        <button onclick="setLang('id')" id="lang-btn-id" class="flex items-center gap-1.5 px-3 py-1 text-sm rounded-lg border border-slate-200 transition-colors"><img src="https://flagcdn.com/w20/id.png" width="16" alt="ID" class="rounded-[2px]"> ID</button>
+                        <button onclick="setLang('en')" id="lang-btn-en" class="flex items-center gap-1.5 px-3 py-1 text-sm rounded-lg border border-slate-200 transition-colors"><img src="https://flagcdn.com/w20/gb.png" width="16" alt="EN" class="rounded-[2px]"> EN</button>
+                        <button onclick="setLang('zh')" id="lang-btn-zh" class="flex items-center gap-1.5 px-3 py-1 text-sm rounded-lg border border-slate-200 transition-colors"><img src="https://flagcdn.com/w20/cn.png" width="16" alt="ZH" class="rounded-[2px]"> ZH</button>
+                    </div>
+                </div>
 
                 @auth
                     <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-base font-medium text-blue-600" data-lang-en="Dashboard Portal" data-lang-zh="仪表盘门户">Dashboard Portal</a>
@@ -275,9 +289,21 @@
         let currentLang = localStorage.getItem('ayp_lang') || 'id';
         function updateLanguageUI() {
             const langLabel = document.getElementById('current-lang-label');
-            const mobileLangLabel = document.getElementById('mobile-lang-label');
             if(langLabel) langLabel.textContent = currentLang.toUpperCase();
-            if(mobileLangLabel) mobileLangLabel.textContent = currentLang.toUpperCase();
+
+            // Update mobile buttons active state
+            ['id', 'en', 'zh'].forEach(l => {
+                const btn = document.getElementById('lang-btn-' + l);
+                if (btn) {
+                    if (l === currentLang) {
+                        btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                        btn.classList.remove('text-slate-700', 'hover:bg-blue-50', 'hover:text-blue-600');
+                    } else {
+                        btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                        btn.classList.add('text-slate-700', 'hover:bg-blue-50', 'hover:text-blue-600');
+                    }
+                }
+            });
 
             document.querySelectorAll('[data-lang-en]').forEach(el => {
                 if(!el.hasAttribute('data-lang-id')) {
@@ -307,11 +333,8 @@
                 }
             });
         }
-        function toggleLang() {
-            if (currentLang === 'id') currentLang = 'en';
-            else if (currentLang === 'en') currentLang = 'zh';
-            else currentLang = 'id';
-            
+        function setLang(lang) {
+            currentLang = lang;
             localStorage.setItem('ayp_lang', currentLang);
             updateLanguageUI();
         }
