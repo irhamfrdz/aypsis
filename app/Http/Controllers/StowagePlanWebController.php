@@ -39,7 +39,9 @@ class StowagePlanWebController extends Controller
         if ($voyage) {
             $manifestQuery->where('no_voyage', $voyage);
         }
-        $manifestsWithoutPlan = $manifestQuery->get();
+        $manifestsWithoutPlan = $manifestQuery->get()->groupBy(function($item) {
+            return $item->nomor_kontainer ?: 'UNASSIGNED_' . $item->id;
+        });
 
         $masterKapal = MasterKapal::where('nama_kapal', $shipName)->first();
         $stowageBays = $masterKapal && $masterKapal->stowage_bays 

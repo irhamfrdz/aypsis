@@ -39,34 +39,42 @@ class StowagePlanController extends Controller
 
     public function store(Request $request)
     {
+        $manifestIds = $request->input('manifest_ids', []);
+        if ($request->has('manifest_id')) {
+            $manifestIds[] = $request->input('manifest_id');
+        }
+        $request->merge(['manifest_ids' => $manifestIds]);
+
         $data = $request->validate([
-            'manifest_id' => 'required|exists:manifests,id',
+            'manifest_ids' => 'required|array|min:1',
+            'manifest_ids.*' => 'exists:manifests,id',
             'bay' => 'nullable|string',
             'row' => 'nullable|string',
             'tier' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
 
-        $stowagePlan = StowagePlan::updateOrCreate(
-            ['manifest_id' => $data['manifest_id']],
-            [
-                'bay' => $data['bay'] ?? null,
-                'row' => $data['row'] ?? null,
-                'tier' => $data['tier'] ?? null,
-                'notes' => $data['notes'] ?? null,
-                'updated_by' => auth()->id() ?? null,
-            ]
-        );
-        
-        if ($stowagePlan->wasRecentlyCreated) {
-            $stowagePlan->created_by = auth()->id() ?? null;
-            $stowagePlan->save();
+        foreach ($data['manifest_ids'] as $mId) {
+            $stowagePlan = StowagePlan::updateOrCreate(
+                ['manifest_id' => $mId],
+                [
+                    'bay' => $data['bay'] ?? null,
+                    'row' => $data['row'] ?? null,
+                    'tier' => $data['tier'] ?? null,
+                    'notes' => $data['notes'] ?? null,
+                    'updated_by' => auth()->id() ?? null,
+                ]
+            );
+            
+            if ($stowagePlan->wasRecentlyCreated) {
+                $stowagePlan->created_by = auth()->id() ?? null;
+                $stowagePlan->save();
+            }
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Stowage plan updated successfully',
-            'data' => $stowagePlan
         ]);
     }
     

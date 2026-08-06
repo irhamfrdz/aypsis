@@ -28,14 +28,24 @@
                     <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-1 rounded-full">{{ $manifestsWithoutPlan->count() }}</span>
                 </div>
                 <div class="p-4 overflow-y-auto flex-1 space-y-3 bg-gray-50/50">
-                    @forelse($manifestsWithoutPlan as $manifest)
-                        <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:border-purple-300 hover:shadow transition-all cursor-move group" draggable="true" ondragstart="dragStowage(event, '{{ $manifest->id }}')" ondragend="dragStowageEnd(event)">
+                    @forelse($manifestsWithoutPlan as $containerNo => $manifestGroup)
+                        @php
+                            $firstManifest = $manifestGroup->first();
+                            $manifestIds = $manifestGroup->pluck('id')->join(',');
+                            $isLcl = $manifestGroup->count() > 1;
+                            $displayNo = str_starts_with($containerNo, 'UNASSIGNED_') ? 'N/A' : $containerNo;
+                        @endphp
+                        <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:border-purple-300 hover:shadow transition-all cursor-move group" draggable="true" ondragstart="dragStowage(event, '{{ $manifestIds }}')" ondragend="dragStowageEnd(event)">
                             <div class="flex justify-between items-start mb-2">
-                                <span class="font-bold text-sm text-gray-800">{{ $manifest->nomor_kontainer ?? 'N/A' }}</span>
-                                <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{{ $manifest->tipe_kontainer ?? '-' }} / {{ $manifest->size_kontainer ?? '-' }}</span>
+                                <span class="font-bold text-sm text-gray-800">{{ $displayNo }}</span>
+                                <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{{ $firstManifest->tipe_kontainer ?? '-' }} / {{ $firstManifest->size_kontainer ?? '-' }}</span>
                             </div>
-                            <div class="text-xs text-gray-500 mb-1"><i class="fas fa-file-invoice text-gray-400 mr-1"></i> {{ $manifest->nomor_manifest ?? $manifest->nomor_bl }}</div>
-                            <div class="text-xs text-gray-500 truncate"><i class="fas fa-map-marker-alt text-gray-400 mr-1"></i> {{ $manifest->pelabuhan_asal }} <i class="fas fa-arrow-right mx-1 text-gray-300"></i> {{ $manifest->pelabuhan_tujuan }}</div>
+                            @if($isLcl)
+                                <div class="text-xs text-purple-600 font-semibold mb-1"><i class="fas fa-layer-group mr-1"></i> LCL ({{ $manifestGroup->count() }} Manifest)</div>
+                            @else
+                                <div class="text-xs text-gray-500 mb-1"><i class="fas fa-file-invoice text-gray-400 mr-1"></i> {{ $firstManifest->nomor_manifest ?? $firstManifest->nomor_bl }}</div>
+                            @endif
+                            <div class="text-xs text-gray-500 truncate"><i class="fas fa-map-marker-alt text-gray-400 mr-1"></i> {{ $firstManifest->pelabuhan_asal }} <i class="fas fa-arrow-right mx-1 text-gray-300"></i> {{ $firstManifest->pelabuhan_tujuan }}</div>
                             
                             <div class="mt-3 pt-3 border-t border-gray-100 flex gap-2">
                                 @if(count($stowageBays) > 0)
@@ -71,7 +81,7 @@
                                     <input type="text" placeholder="Tier" class="w-full text-xs border-gray-200 rounded p-1 tier-input" />
                                 @endif
 
-                                <button onclick="saveStowagePlan(this, '{{ $manifest->id }}')" class="bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white rounded px-2 transition-colors">
+                                <button onclick="saveStowagePlan(this, '{{ $manifestIds }}')" class="bg-purple-100 text-purple-700 hover:bg-purple-600 hover:text-white rounded px-2 transition-colors">
                                     <i class="fas fa-check"></i>
                                 </button>
                             </div>
@@ -159,7 +169,7 @@
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                manifest_id: manifestId,
+                manifest_ids: manifestId.toString().split(','),
                 bay: bay,
                 row: row,
                 tier: tier
@@ -572,7 +582,7 @@
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    manifest_id: manifestId,
+                    manifest_ids: manifestId.toString().split(','),
                     bay: bay,
                     row: row,
                     tier: tier
