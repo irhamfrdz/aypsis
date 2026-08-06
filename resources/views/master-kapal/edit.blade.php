@@ -813,11 +813,71 @@
         });
 
         if (bays.length > 0 && rows.length > 0) {
-            const deckGeo = new THREE.BoxGeometry(rows.length * 1.1 + 1, 0.4, bays.length * 2.8 + 2);
-            const deckMat = new THREE.MeshPhongMaterial({ color: 0x94a3b8 });
+            const rowsCount = Math.max(rows.length, 1);
+            const baysCount = Math.max(bays.length, 1);
+            
+            const w = (rowsCount * 1.1 + 1) / 2;
+            const cl = (baysCount * 2.8) / 2;
+            const bowL = 5;
+            const sternL = 3;
+
+            const boatShape = new THREE.Shape();
+            boatShape.moveTo(-w, cl + sternL);
+            boatShape.lineTo(w, cl + sternL);
+            boatShape.lineTo(w, -cl + 1);
+            boatShape.quadraticCurveTo(w, -cl - bowL/2, 0, -cl - bowL);
+            boatShape.quadraticCurveTo(-w, -cl - bowL/2, -w, -cl + 1);
+            boatShape.lineTo(-w, cl + sternL);
+
+            const extrudeSettings = {
+                depth: 3,
+                bevelEnabled: true,
+                bevelSegments: 2,
+                steps: 1,
+                bevelSize: 0.3,
+                bevelThickness: 0.3
+            };
+
+            const hullGeo = new THREE.ExtrudeGeometry(boatShape, extrudeSettings);
+            hullGeo.rotateX(Math.PI / 2); 
+            const hullMat = new THREE.MeshPhongMaterial({ color: 0x991b1b }); // red-800
+            const hull = new THREE.Mesh(hullGeo, hullMat);
+            hull.position.y = -0.5;
+            shipGroup.add(hull);
+
+            const deckGeo = new THREE.ShapeGeometry(boatShape);
+            deckGeo.rotateX(-Math.PI / 2);
+            const deckMat = new THREE.MeshPhongMaterial({ color: 0x475569 }); // slate-600
             const deck = new THREE.Mesh(deckGeo, deckMat);
-            deck.position.y = -0.7;
+            deck.position.y = -0.48;
             shipGroup.add(deck);
+
+            const bridgeW = w * 1.8;
+            const bridgeL = 2.5;
+            const bridgeH = 4;
+            const bridgeGeo = new THREE.BoxGeometry(bridgeW, bridgeH, bridgeL);
+            const bridgeMat = new THREE.MeshPhongMaterial({ color: 0xf1f5f9 }); // slate-100
+            const bridge = new THREE.Mesh(bridgeGeo, bridgeMat);
+            bridge.position.set(0, bridgeH/2 - 0.5, cl + sternL/2);
+            shipGroup.add(bridge);
+            
+            const windowGeo = new THREE.BoxGeometry(bridgeW * 0.8, 1, bridgeL + 0.1);
+            const windowMat = new THREE.MeshPhongMaterial({ color: 0x0f172a }); // dark glass
+            const bridgeWindows = new THREE.Mesh(windowGeo, windowMat);
+            bridgeWindows.position.set(0, bridgeH/2, cl + sternL/2);
+            shipGroup.add(bridgeWindows);
+            
+            const funnelGeo = new THREE.CylinderGeometry(0.6, 0.8, 2.5, 16);
+            const funnelMat = new THREE.MeshPhongMaterial({ color: 0xeab308 }); // yellow-500
+            const funnel = new THREE.Mesh(funnelGeo, funnelMat);
+            funnel.position.set(0, bridgeH, cl + sternL - 1);
+            shipGroup.add(funnel);
+            
+            const funnelTopGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.5, 16);
+            const funnelTopMat = new THREE.MeshPhongMaterial({ color: 0x1e293b }); // slate-800
+            const funnelTop = new THREE.Mesh(funnelTopGeo, funnelTopMat);
+            funnelTop.position.set(0, bridgeH + 1.5, cl + sternL - 1);
+            shipGroup.add(funnelTop);
         }
 
         const box = new THREE.Box3().setFromObject(shipGroup);
