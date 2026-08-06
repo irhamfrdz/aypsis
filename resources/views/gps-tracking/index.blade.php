@@ -135,6 +135,7 @@
     let map;
     let markers = {};
     let activeHistoryLayer = null; // Menyimpan layer polyline riwayat yang sedang aktif
+    let historyMarkers = []; // Menyimpan marker titik riwayat
     let currentFilter = 'all'; // all, berjalan, berhenti
     const defaultCenter = [-6.2088, 106.8456]; // Jakarta Default Coordinate
 
@@ -374,6 +375,19 @@
         $('#truck-counter').text(visibleCount + ' Truk');
     }
 
+    function focusOnHistoryPoint(idx, lat, lng, element) {
+        if (lat && lng) {
+            map.setView([lat, lng], 17);
+            if (historyMarkers[idx]) {
+                historyMarkers[idx].openPopup();
+            }
+            
+            // Highlight the clicked item
+            $('#history-list li').removeClass('bg-indigo-50 border-indigo-100 shadow-sm');
+            $(element).addClass('bg-indigo-50 border-indigo-100 shadow-sm');
+        }
+    }
+
     function clearHistory() {
         if (activeHistoryLayer) {
             map.removeLayer(activeHistoryLayer);
@@ -414,6 +428,7 @@
                 if (activeHistoryLayer) {
                     map.removeLayer(activeHistoryLayer);
                 }
+                historyMarkers = [];
 
                 if (history.length > 0) {
                     let latlngs = [];
@@ -447,18 +462,19 @@
                                 fillOpacity: 0.9
                             }).bindPopup(popupContent);
                             layers.push(marker);
+                            historyMarkers[idx] = marker;
                             
                             let elId = 'hist-addr-' + Math.random().toString(36).substr(2, 9);
-                            let locName = item.alamat ? item.alamat : `<span id="${elId}"><button type="button" onclick="loadHistoryAddress('${elId}', ${item.lat}, ${item.lng})" class="text-indigo-600 hover:underline text-[10px]"><i class="fas fa-map-marker-alt"></i> Tampilkan Alamat</button></span>`;
+                            let locName = item.alamat ? item.alamat : `<span id="${elId}"><button type="button" onclick="event.stopPropagation(); loadHistoryAddress('${elId}', ${item.lat}, ${item.lng})" class="text-indigo-600 hover:underline text-[10px]"><i class="fas fa-map-marker-alt"></i> Tampilkan Alamat</button></span>`;
                             
                             listHtml += `
-                                <li class="pl-4 relative">
-                                    <div class="absolute w-2.5 h-2.5 ${idx === 0 ? 'bg-indigo-600' : 'bg-gray-400'} rounded-full -left-[6px] top-1 border-2 border-white shadow-sm"></div>
-                                    <div class="flex justify-between items-center mb-0.5">
+                                <li class="pl-4 relative cursor-pointer hover:bg-gray-50 transition-colors py-2 rounded -ml-2 border border-transparent" onclick="focusOnHistoryPoint(${idx}, ${item.lat}, ${item.lng}, this)">
+                                    <div class="absolute w-2.5 h-2.5 ${idx === 0 ? 'bg-indigo-600' : 'bg-gray-400'} rounded-full left-[2px] top-3 border-2 border-white shadow-sm"></div>
+                                    <div class="flex justify-between items-center mb-0.5 ml-2">
                                         <div class="text-[10px] font-semibold ${idx === 0 ? 'text-indigo-600' : 'text-gray-500'}"><i class="far fa-clock"></i> ${item.recorded_at}</div>
                                         <div class="text-[9px] font-medium px-1.5 py-0.5 rounded ${item.speed > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.speed} km/h</div>
                                     </div>
-                                    <div class="text-xs font-medium text-gray-800 break-words" title="${item.alamat || ''}">${locName}</div>
+                                    <div class="text-xs font-medium text-gray-800 break-words ml-2" title="${item.alamat || ''}">${locName}</div>
                                 </li>
                             `;
                         }
