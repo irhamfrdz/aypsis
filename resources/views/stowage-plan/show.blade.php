@@ -92,7 +92,10 @@
                 <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                     <div class="flex items-center gap-4">
                         <h3 class="font-bold text-gray-700"><i class="fas fa-ship text-purple-500 mr-2"></i> Peta Kapal</h3>
-                        <!-- Toggles removed -->
+                        <div class="bg-gray-100 p-1 rounded-lg flex text-xs">
+                            <button id="btn-deckplan" onclick="toggleView('deckplan')" class="px-3 py-1 bg-white shadow-sm rounded-md font-medium text-purple-700 transition-colors">Deck Plan</button>
+                            <button id="btn-3d" onclick="toggleView('3d')" class="px-3 py-1 text-gray-500 hover:text-gray-700 font-medium transition-colors">3D View (Beta)</button>
+                        </div>
                     </div>
                     <div class="flex gap-2">
                         <span class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded font-medium">Terisi: {{ $plans->count() }}</span>
@@ -118,12 +121,22 @@
                     </div>
                 </div>
 
+                <!-- 3D VIEW -->
+                <div id="view-3d" class="hidden w-full bg-slate-900 rounded-b-xl overflow-hidden relative shadow-inner" style="height: 700px;">
+                    <div class="absolute top-4 left-4 z-10 bg-black/50 text-white px-3 py-1.5 rounded text-xs font-medium backdrop-blur-sm border border-white/10 pointer-events-none">
+                        <i class="fas fa-mouse mr-2"></i> Drag untuk rotasi &bull; Scroll untuk zoom
+                    </div>
+                    <div id="threejs-container" class="w-full h-full cursor-move"></div>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
     function saveStowagePlan(button, manifestId) {
         const container = button.closest('.group');
@@ -191,6 +204,24 @@
     document.addEventListener('DOMContentLoaded', function() {
         renderDeckPlan();
     });
+
+    function toggleView(view) {
+        if(view === 'deckplan') {
+            document.getElementById('view-deckplan').classList.remove('hidden');
+            document.getElementById('view-3d').classList.add('hidden');
+            
+            document.getElementById('btn-deckplan').className = 'px-3 py-1 bg-white shadow-sm rounded-md font-medium text-purple-700 transition-colors';
+            document.getElementById('btn-3d').className = 'px-3 py-1 text-gray-500 hover:text-gray-700 font-medium transition-colors';
+        } else {
+            document.getElementById('view-deckplan').classList.add('hidden');
+            document.getElementById('view-3d').classList.remove('hidden');
+            
+            document.getElementById('btn-3d').className = 'px-3 py-1 bg-white shadow-sm rounded-md font-medium text-purple-700 transition-colors';
+            document.getElementById('btn-deckplan').className = 'px-3 py-1 text-gray-500 hover:text-gray-700 font-medium transition-colors';
+            
+            setTimeout(init3DPreview, 50);
+        }
+    }
 
     function renderDeckPlan() {
         const tier = document.getElementById('deck-plan-tier').value;
@@ -301,6 +332,194 @@
         `;
         
         grid.innerHTML = html;
+    }
+
+    let threeRenderer;
+    function init3DPreview() {
+        if (typeof THREE === 'undefined') {
+            document.getElementById('threejs-container').innerHTML = '<div class="flex items-center justify-center h-full text-white text-sm">Gagal memuat engine 3D (Pastikan koneksi internet aktif untuk CDN).</div>';
+            return;
+        }
+
+        const container = document.getElementById('threejs-container');
+        if (!container) return;
+        
+        if (threeRenderer) {
+            container.innerHTML = '';
+            threeRenderer.dispose();
+        }
+
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0f172a);
+
+        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+        
+        threeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        threeRenderer.setSize(width, height);
+        threeRenderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(threeRenderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, threeRenderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1.0;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(20, 40, 20);
+        scene.add(dirLight);
+        const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+        dirLight2.position.set(-20, -40, -20);
+        scene.add(dirLight2);
+
+        const shipGroup = new THREE.Group();
+        scene.add(shipGroup);
+
+        const bays = [...availableBays].sort((a,b) => parseInt(a) - parseInt(b));
+        const tiers = [...availableTiers].sort((a,b) => parseInt(a) - parseInt(b));
+        const rows = [...availableRows].sort((a, b) => {
+            let numA = parseInt(a); let numB = parseInt(b);
+            let isAEven = numA % 2 === 0; let isBEven = numB % 2 === 0;
+            if (isAEven && !isBEven) return -1;
+            if (!isAEven && isBEven) return 1;
+            if (isAEven) return numB - numA; else return numA - numB;
+        });
+
+        const boxGeo = new THREE.BoxGeometry(0.9, 1.2, 2.5);
+        const filledMat = new THREE.MeshPhongMaterial({ color: 0xf97316, shininess: 30 }); // orange-500
+        const disabledMat = new THREE.MeshBasicMaterial({ color: 0xef4444, wireframe: true, transparent: true, opacity: 0.15 });
+        const emptyMat = new THREE.MeshBasicMaterial({ color: 0x64748b, wireframe: true, transparent: true, opacity: 0.1 });
+        const edgeMat = new THREE.LineBasicMaterial({ color: 0xc2410c, transparent: true, opacity: 0.5 }); // darker orange
+
+        bays.forEach((bay, bIdx) => {
+            rows.forEach((row, rIdx) => {
+                tiers.forEach((tier, tIdx) => {
+                    const slotId = `${bay}${row}${tier}`;
+                    const isDisabled = disabledSlots.includes(slotId);
+                    const containerData = plansData.find(p => p.bay === bay && p.row === row && p.tier === tier);
+                    
+                    let mesh;
+                    if (isDisabled) {
+                        mesh = new THREE.Mesh(boxGeo, disabledMat);
+                    } else if (containerData) {
+                        mesh = new THREE.Mesh(boxGeo, filledMat);
+                        const edges = new THREE.EdgesGeometry(boxGeo);
+                        const line = new THREE.LineSegments(edges, edgeMat);
+                        mesh.add(line);
+                    } else {
+                        mesh = new THREE.Mesh(boxGeo, emptyMat);
+                    }
+                    
+                    mesh.position.x = (rIdx - (rows.length - 1) / 2) * 1.1;
+                    mesh.position.y = (tIdx) * 1.4;
+                    mesh.position.z = (bIdx - (bays.length - 1) / 2) * 2.8;
+                    
+                    shipGroup.add(mesh);
+                });
+            });
+        });
+
+        if (bays.length > 0 && rows.length > 0) {
+            const rowsCount = Math.max(rows.length, 1);
+            const baysCount = Math.max(bays.length, 1);
+            
+            const w = (rowsCount * 1.1 + 1) / 2;
+            const cl = (baysCount * 2.8) / 2;
+            const bowL = 5;
+            const sternL = 3;
+
+            const boatShape = new THREE.Shape();
+            boatShape.moveTo(-w, cl + sternL);
+            boatShape.lineTo(w, cl + sternL);
+            boatShape.lineTo(w, -cl + 1);
+            boatShape.quadraticCurveTo(w, -cl - bowL/2, 0, -cl - bowL);
+            boatShape.quadraticCurveTo(-w, -cl - bowL/2, -w, -cl + 1);
+            boatShape.lineTo(-w, cl + sternL);
+
+            const extrudeSettings = {
+                depth: 3,
+                bevelEnabled: true,
+                bevelSegments: 2,
+                steps: 1,
+                bevelSize: 0.3,
+                bevelThickness: 0.3
+            };
+
+            const hullGeo = new THREE.ExtrudeGeometry(boatShape, extrudeSettings);
+            hullGeo.rotateX(Math.PI / 2); 
+            const hullMat = new THREE.MeshPhongMaterial({ color: 0x991b1b }); // red-800
+            const hull = new THREE.Mesh(hullGeo, hullMat);
+            hull.position.y = -0.5;
+            shipGroup.add(hull);
+
+            const deckGeo = new THREE.ShapeGeometry(boatShape);
+            deckGeo.rotateX(-Math.PI / 2);
+            const deckMat = new THREE.MeshPhongMaterial({ color: 0x475569 }); // slate-600
+            const deck = new THREE.Mesh(deckGeo, deckMat);
+            deck.position.y = -0.48;
+            shipGroup.add(deck);
+
+            const bridgeW = w * 1.8;
+            const bridgeL = 2.5;
+            const bridgeH = 4;
+            const bridgeGeo = new THREE.BoxGeometry(bridgeW, bridgeH, bridgeL);
+            const bridgeMat = new THREE.MeshPhongMaterial({ color: 0xf1f5f9 }); // slate-100
+            const bridge = new THREE.Mesh(bridgeGeo, bridgeMat);
+            bridge.position.set(0, bridgeH/2 - 0.5, cl + sternL/2);
+            shipGroup.add(bridge);
+            
+            const windowGeo = new THREE.BoxGeometry(bridgeW * 0.8, 1, bridgeL + 0.1);
+            const windowMat = new THREE.MeshPhongMaterial({ color: 0x0f172a }); // dark glass
+            const bridgeWindows = new THREE.Mesh(windowGeo, windowMat);
+            bridgeWindows.position.set(0, bridgeH/2, cl + sternL/2);
+            shipGroup.add(bridgeWindows);
+            
+            const funnelGeo = new THREE.CylinderGeometry(0.6, 0.8, 2.5, 16);
+            const funnelMat = new THREE.MeshPhongMaterial({ color: 0xeab308 }); // yellow-500
+            const funnel = new THREE.Mesh(funnelGeo, funnelMat);
+            funnel.position.set(0, bridgeH, cl + sternL - 1);
+            shipGroup.add(funnel);
+            
+            const funnelTopGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.5, 16);
+            const funnelTopMat = new THREE.MeshPhongMaterial({ color: 0x1e293b }); // slate-800
+            const funnelTop = new THREE.Mesh(funnelTopGeo, funnelTopMat);
+            funnelTop.position.set(0, bridgeH + 1.5, cl + sternL - 1);
+            shipGroup.add(funnelTop);
+        }
+
+        const box = new THREE.Box3().setFromObject(shipGroup);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        
+        shipGroup.position.x = -center.x;
+        shipGroup.position.y = -center.y;
+        shipGroup.position.z = -center.z;
+
+        const maxDim = Math.max(size.x, size.y, size.z) || 10;
+        camera.position.set(maxDim * 1.2, maxDim * 1, maxDim * 1.2);
+        camera.lookAt(0, 0, 0);
+
+        const animate = function () {
+            if (!document.getElementById('threejs-container')) return;
+            window.current3DAnimationId = requestAnimationFrame(animate);
+            controls.update();
+            threeRenderer.render(scene, camera);
+        };
+        
+        if (window.current3DAnimationId) cancelAnimationFrame(window.current3DAnimationId);
+        animate();
+        
+        window.addEventListener('resize', () => {
+            if (!document.getElementById('threejs-container')) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            threeRenderer.setSize(container.clientWidth, container.clientHeight);
+        }, false);
     }
 </script>
 @endpush
