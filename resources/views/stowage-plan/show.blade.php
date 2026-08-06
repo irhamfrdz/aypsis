@@ -560,11 +560,54 @@
             funnel.position.set(0, bridgeH, cl + sternL - 1);
             shipGroup.add(funnel);
             
-            const funnelTopGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.5, 16);
-            const funnelTopMat = new THREE.MeshPhongMaterial({ color: 0x1e293b }); // slate-800
             const funnelTop = new THREE.Mesh(funnelTopGeo, funnelTopMat);
             funnelTop.position.set(0, bridgeH + 1.5, cl + sternL - 1);
             shipGroup.add(funnelTop);
+        }
+
+        // --- Add Animated Workers ---
+        const workers = [];
+        const workerColors = [0xeab308, 0xf97316, 0x38bdf8, 0x4ade80, 0xf87171]; // High-vis colors
+        
+        for (let i = 0; i < 8; i++) {
+            const workerGroup = new THREE.Group();
+            
+            // Body
+            const bodyGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.5, 8);
+            const bodyMat = new THREE.MeshPhongMaterial({ color: workerColors[i % workerColors.length] });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 0.25;
+            
+            // Head
+            const headGeo = new THREE.SphereGeometry(0.1, 8, 8);
+            const headMat = new THREE.MeshPhongMaterial({ color: 0xffcc99 });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 0.55;
+            
+            // Hard Hat
+            const hatGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.08, 8);
+            const hatMat = new THREE.MeshPhongMaterial({ color: 0xeab308 }); // yellow hat
+            const hat = new THREE.Mesh(hatGeo, hatMat);
+            hat.position.y = 0.65;
+            
+            workerGroup.add(body);
+            workerGroup.add(head);
+            workerGroup.add(hat);
+            
+            // Random start position on deck
+            workerGroup.position.x = (Math.random() - 0.5) * w * 0.8;
+            workerGroup.position.y = -0.48; // Deck height
+            workerGroup.position.z = (Math.random() - 0.5) * cl * 0.8;
+            
+            workerGroup.userData = {
+                angle: Math.random() * Math.PI * 2,
+                speed: 0.02 + Math.random() * 0.03,
+                turnSpeed: (Math.random() - 0.5) * 0.1,
+                bobOffset: Math.random() * Math.PI * 2
+            };
+            
+            shipGroup.add(workerGroup);
+            workers.push(workerGroup);
         }
 
         const box = new THREE.Box3().setFromObject(shipGroup);
@@ -582,6 +625,44 @@
         const animate = function () {
             if (!document.getElementById('threejs-container')) return;
             window.current3DAnimationId = requestAnimationFrame(animate);
+            
+            // Animate workers
+            const time = Date.now();
+            const maxX = (w / 2) * 0.85;
+            const maxZ = (cl / 2) * 0.85;
+            
+            workers.forEach(wkr => {
+                // Random turn behavior
+                if (Math.random() < 0.03) {
+                    wkr.userData.turnSpeed = (Math.random() - 0.5) * 0.15;
+                }
+                
+                wkr.userData.angle += wkr.userData.turnSpeed;
+                const dx = Math.cos(wkr.userData.angle) * wkr.userData.speed;
+                const dz = Math.sin(wkr.userData.angle) * wkr.userData.speed;
+                
+                wkr.position.x += dx;
+                wkr.position.z += dz;
+                
+                // Walking bobbing effect
+                wkr.position.y = -0.48 + Math.abs(Math.sin(time * 0.01 * wkr.userData.speed * 50 + wkr.userData.bobOffset)) * 0.05;
+                
+                // Boundary collision (bounce)
+                if (wkr.position.x > maxX || wkr.position.x < -maxX) {
+                    wkr.userData.angle = Math.PI - wkr.userData.angle;
+                    wkr.position.x = Math.max(-maxX, Math.min(maxX, wkr.position.x));
+                    wkr.userData.turnSpeed = 0;
+                }
+                if (wkr.position.z > maxZ || wkr.position.z < -maxZ) {
+                    wkr.userData.angle = -wkr.userData.angle;
+                    wkr.position.z = Math.max(-maxZ, Math.min(maxZ, wkr.position.z));
+                    wkr.userData.turnSpeed = 0;
+                }
+                
+                // Face direction of movement (Y-axis rotation)
+                wkr.rotation.y = -wkr.userData.angle;
+            });
+            
             controls.update();
             threeRenderer.render(scene, camera);
         };
