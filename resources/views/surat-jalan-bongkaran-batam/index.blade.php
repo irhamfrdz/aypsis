@@ -2840,6 +2840,11 @@ function parseBulkData() {
             return;
         }
 
+        if (isVoyageEmpty && !row.no_voyage) {
+            warnings.push(`Baris ${index + 1}: No Voyage kosong, baris ini akan diabaikan.`);
+            return;
+        }
+
         bulkParsedRows.push(row);
 
         // Fungsi bantuan untuk format tanggal Excel di preview
@@ -2904,8 +2909,7 @@ function parseBulkData() {
         ];
 
         if (isVoyageEmpty) {
-            cellValues.push(row.no_voyage || '<span class="text-red-500">Kosong</span>');
-            if (!row.no_voyage) warnings.push(`Baris ${index + 1}: No Voyage kosong, wajib diisi.`);
+            cellValues.push(row.no_voyage);
         }
 
         cellValues.forEach((val, i) => {
