@@ -1059,6 +1059,7 @@
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tujuan Pengiriman</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">F/E</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
                                     @if(empty($selectedVoyage))
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Voyage</th>
                                     @endif
@@ -2858,6 +2859,34 @@ function parseBulkData() {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-gray-50';
 
+        // Hitung estimasi biaya
+        let displayBiaya = 0;
+        let matchedItem = null;
+        const rowLokasi = (row.lokasi || 'batam').toLowerCase();
+        let searchTujuan = (row.tujuan_pengiriman || '').trim();
+        
+        // Parse nama expedisi dan ring (jika format "Lokasi (Ring X - EXPEDISI)")
+        const matchTujuan = searchTujuan.match(/^(.*?)\s*\((?:Ring\s+(\d+)\s*-\s*)?([A-Za-z0-9]+)\)$/i);
+        if (matchTujuan) {
+            searchTujuan = matchTujuan[1].trim();
+        }
+        searchTujuan = searchTujuan.toLowerCase();
+
+        if (tujuanData[rowLokasi]) {
+            matchedItem = tujuanData[rowLokasi].find(item => item.value.toLowerCase() === searchTujuan);
+        }
+        
+        if (matchedItem) {
+            const feType = row.f_e || 'Full';
+            const isFull = feType.toLowerCase() === 'full';
+            
+            if (rowLokasi === 'batam') {
+                displayBiaya = isFull ? matchedItem.uj20_full : matchedItem.uj20_empty;
+            } else {
+                displayBiaya = matchedItem.uj20 || 0;
+            }
+        }
+
         const cellValues = [
             bulkParsedRows.length,
             row.nomor_surat_jalan,
@@ -2870,7 +2899,8 @@ function parseBulkData() {
             row.aktifitas || '-',
             row.lokasi || 'batam',
             row.tujuan_pengiriman || '-',
-            row.f_e || 'Full'
+            row.f_e || 'Full',
+            displayBiaya > 0 ? 'Rp ' + displayBiaya.toLocaleString('id-ID') : '<span class="text-gray-400 italic">Auto (Berdasarkan Kontainer)</span>'
         ];
 
         if (isVoyageEmpty) {
