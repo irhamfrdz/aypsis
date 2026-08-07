@@ -37,6 +37,7 @@
                 <option value="50" {{ $currentPerPage == 50 ? 'selected' : '' }}>50</option>
                 <option value="100" {{ $currentPerPage == 100 ? 'selected' : '' }}>100</option>
                 <option value="200" {{ $currentPerPage == 200 ? 'selected' : '' }}>200</option>
+                <option value="10000" {{ $currentPerPage == 10000 ? 'selected' : '' }}>Semua</option>
             </select>
         </form>
         <span>baris per halaman</span>
