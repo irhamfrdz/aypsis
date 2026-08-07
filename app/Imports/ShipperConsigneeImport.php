@@ -10,6 +10,14 @@ class ShipperConsigneeImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
+        $statusInput = $row['status'] ?? 1;
+        $status = 1; // Default Aktif
+        if (is_string($statusInput) && in_array(strtolower(trim($statusInput)), ['tidak aktif', 'non aktif', 'non-aktif'])) {
+            $status = 0;
+        } elseif (is_numeric($statusInput) && $statusInput == 0) {
+            $status = 0;
+        }
+
         return new ShipperConsignee([
             'telepon' => $row['telepon'] ?? null,
             'hs_code' => $row['hs_code'] ?? null,
@@ -27,7 +35,7 @@ class ShipperConsigneeImport implements ToModel, WithHeadingRow
             'npwp_notify_party' => $row['npwp_notify_party'] ?? null,
             'delivery_address' => $row['delivery_address'] ?? null,
             'nitku_consignee' => $row['nitku_consignee'] ?? null,
-            'status' => $row['status'] ?? 'Aktif',
+            'status' => $status,
         ]);
     }
 }
