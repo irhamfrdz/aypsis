@@ -289,13 +289,26 @@ function updateTandaTerima(isDryRun) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
         body: JSON.stringify({
             dry_run: isDryRun
         })
     })
-    .then(response => response.json())
+    .then(async response => {
+        const text = await response.text();
+        try {
+            const data = JSON.parse(text);
+            if (!response.ok) {
+                throw new Error(data.message || 'Terjadi kesalahan HTTP: ' + response.status);
+            }
+            return data;
+        } catch (e) {
+            console.error('Raw Server Response:', text);
+            throw new Error('Respon dari server tidak valid (bukan JSON). Cek console log.');
+        }
+    })
     .then(data => {
         // Remove loading
         document.getElementById('loading-overlay').remove();
