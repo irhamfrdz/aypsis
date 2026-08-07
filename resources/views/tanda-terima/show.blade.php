@@ -416,24 +416,28 @@
                                                         <div class="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                                                             {{ $index + 1 }}
                                                         </div>
-                                                        <div>
-                                                            <div class="font-semibold text-gray-900">
-                                                                {{ $item['nama_barang'] ?? 'Barang ' . ($index + 1) }}
-                                                            </div>
-                                                            @if(isset($item['jumlah']) || isset($item['satuan']))
-                                                            <div class="text-xs text-gray-600 mt-1">
-                                                                @if(isset($item['jumlah']))
-                                                                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-medium">
-                                                                        {{ number_format($item['jumlah'], 0, ',', '.') }} {{ $item['satuan'] ?? 'Unit' }}
-                                                                    </span>
-                                                                @endif
-                                                            </div>
-                                                            @endif
+                                                        <div class="font-semibold text-gray-900">
+                                                            Item {{ $index + 1 }}
                                                         </div>
                                                     </div>
                                                 </div>
                                                 
-                                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                                                    <div class="bg-white p-2 rounded">
+                                                        <div class="text-xs text-gray-500">Nama Barang</div>
+                                                        <div class="text-sm font-semibold text-gray-900">{{ $item['nama_barang'] ?? '-' }}</div>
+                                                    </div>
+                                                    <div class="bg-white p-2 rounded">
+                                                        <div class="text-xs text-gray-500">Jumlah</div>
+                                                        <div class="text-sm font-semibold text-gray-900">{{ isset($item['jumlah']) ? number_format($item['jumlah'], 0, ',', '.') : '-' }}</div>
+                                                    </div>
+                                                    <div class="bg-white p-2 rounded">
+                                                        <div class="text-xs text-gray-500">Satuan</div>
+                                                        <div class="text-sm font-semibold text-gray-900">{{ $item['satuan'] ?? '-' }}</div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                                                     @if(isset($item['panjang']) && $item['panjang'] > 0)
                                                         <div class="bg-white p-2 rounded">
                                                             <div class="text-xs text-gray-500">Panjang</div>
