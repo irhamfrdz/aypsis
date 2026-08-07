@@ -2,73 +2,98 @@
 
 @section('content')
 <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+    <!-- Header Section -->
+    <div class="sm:flex sm:items-center sm:justify-between mb-8 pb-4 border-b border-gray-100">
         <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold">Riwayat Pranota PUML (Uang Makan & Lembur)</h1>
+            <h1 class="text-2xl md:text-3xl text-gray-800 font-extrabold tracking-tight">Riwayat PUML</h1>
+            <p class="text-sm text-gray-500 mt-1">Kelola gabungan Pranota Uang Makan & Lembur Karyawan.</p>
         </div>
-        <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-            <a href="{{ route('pranota-puml.create') }}" class="btn bg-white border-gray-200 hover:border-gray-300 text-indigo-500">
-                <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
-                    <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
+        <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-3">
+            <a href="{{ route('pranota-puml.create') }}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 ease-in-out hover:-translate-y-0.5">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
-                <span class="hidden xs:block ml-2">Gabungkan / Generate PUML Baru</span>
+                <span>Generate PUML Baru</span>
             </a>
         </div>
     </div>
 
     @if(session('success'))
-        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
-            <p>{{ session('success') }}</p>
+        <div class="bg-emerald-50 border-l-4 border-emerald-500 rounded-r-lg p-4 mb-6 shadow-sm flex items-start" role="alert">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-emerald-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-emerald-700 font-medium">{{ session('success') }}</p>
+            </div>
         </div>
     @endif
 
-    <div class="bg-white shadow-lg rounded-sm border border-gray-200">
+    <!-- Table Section -->
+    <div class="bg-white rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="table-auto w-full">
-                <thead class="text-xs font-semibold uppercase text-gray-500 bg-gray-50 border-t border-b border-gray-200">
+            <table class="w-full text-sm text-left">
+                <thead class="text-xs text-gray-500 uppercase bg-gray-50/80 border-b border-gray-200">
                     <tr>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"><div class="font-semibold text-left">Nomor PUML</div></th>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"><div class="font-semibold text-left">Tanggal</div></th>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"><div class="font-semibold text-right">Total U.Makan</div></th>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"><div class="font-semibold text-right">Total Lembur</div></th>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"><div class="font-semibold text-right">Grand Total</div></th>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"><div class="font-semibold text-center">Status</div></th>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"><div class="font-semibold text-center">Aksi</div></th>
+                        <th scope="col" class="px-6 py-4 font-semibold">Nomor PUML</th>
+                        <th scope="col" class="px-6 py-4 font-semibold text-center">Tanggal</th>
+                        <th scope="col" class="px-6 py-4 font-semibold text-right">Total U.Makan</th>
+                        <th scope="col" class="px-6 py-4 font-semibold text-right">Total Lembur</th>
+                        <th scope="col" class="px-6 py-4 font-semibold text-right">Grand Total</th>
+                        <th scope="col" class="px-6 py-4 font-semibold text-center">Status</th>
+                        <th scope="col" class="px-6 py-4 font-semibold text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="text-sm divide-y divide-gray-200">
+                <tbody class="divide-y divide-gray-100 bg-white">
                     @forelse($pranotas as $pranota)
-                        <tr>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                                <div class="font-medium text-sky-500">{{ $pranota->nomor_pranota }}</div>
+                        <tr class="hover:bg-gray-50/50 transition-colors duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="font-bold text-indigo-600">{{ $pranota->nomor_pranota }}</div>
                             </td>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                                <div>{{ $pranota->tanggal_pranota->format('d/m/Y') }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="text-gray-600 font-medium">{{ $pranota->tanggal_pranota->format('d M Y') }}</div>
                             </td>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap text-right">
-                                <div class="font-medium text-gray-800">Rp {{ number_format($pranota->total_uang_makan, 0, ',', '.') }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="text-gray-600 font-medium">Rp {{ number_format($pranota->total_uang_makan, 0, ',', '.') }}</div>
                             </td>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap text-right">
-                                <div class="font-medium text-gray-800">Rp {{ number_format($pranota->total_lembur, 0, ',', '.') }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="text-gray-600 font-medium">Rp {{ number_format($pranota->total_lembur, 0, ',', '.') }}</div>
                             </td>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap text-right">
-                                <div class="font-medium text-green-600">Rp {{ number_format($pranota->grand_total, 0, ',', '.') }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="text-gray-900 font-bold">Rp {{ number_format($pranota->grand_total, 0, ',', '.') }}</div>
                             </td>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap text-center">
-                                <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 bg-yellow-100 text-yellow-600">{{ ucfirst($pranota->status) }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                @if($pranota->status == 'draft')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                                        Draft
+                                    </span>
+                                @elseif($pranota->status == 'submitted')
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                        Submitted
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                        {{ ucfirst($pranota->status) }}
+                                    </span>
+                                @endif
                             </td>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap text-center w-px">
-                                <div class="space-x-1">
-                                    <a href="{{ route('pranota-puml.show', $pranota->id) }}" class="inline-flex items-center justify-center p-2 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title="Detail">
-                                        <i class="fas fa-eye text-sm"></i>
-                                    </a>
-                                </div>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <a href="{{ route('pranota-puml.show', $pranota->id) }}" class="inline-flex items-center justify-center p-2 text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 rounded-full transition-colors duration-200" title="Detail">
+                                    <i class="fas fa-arrow-right text-sm"></i>
+                                </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap text-center text-gray-500">
-                                Belum ada data PUML.
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="h-12 w-12 text-gray-200 mb-3">
+                                        <i class="fas fa-folder-open text-4xl"></i>
+                                    </div>
+                                    <p class="text-gray-500 text-sm font-medium">Belum ada data PUML yang digenerate.</p>
+                                </div>
                             </td>
                         </tr>
                     @endforelse
