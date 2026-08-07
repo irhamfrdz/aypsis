@@ -18,13 +18,12 @@ return new class extends Migration
             // Ignore if it doesn't exist
         }
 
-        Schema::table('pranota_lembur_karyawans', function (Blueprint $table) {
-            // Add the new one pointing to the headers table
-            $table->foreign('pranota_lembur_karyawan_header_id', 'fk_pranota_lembur_karyawan_header')
-                  ->references('id')
-                  ->on('pranota_lembur_karyawan_headers')
-                  ->onDelete('cascade');
-        });
+        // Add the new one pointing to the headers table safely
+        try {
+            \Illuminate\Support\Facades\DB::statement('ALTER TABLE `pranota_lembur_karyawans` ADD CONSTRAINT `fk_pranota_lembur_karyawan_header` FOREIGN KEY (`pranota_lembur_karyawan_header_id`) REFERENCES `pranota_lembur_karyawan_headers` (`id`) ON DELETE CASCADE');
+        } catch (\Exception $e) {
+            // Ignore if it already exists or if column doesn't exist yet
+        }
     }
 
     /**
@@ -38,12 +37,11 @@ return new class extends Migration
             // Ignore if it doesn't exist
         }
 
-        Schema::table('pranota_lembur_karyawans', function (Blueprint $table) {
-            $table->foreign('pranota_lembur_karyawan_header_id', 'pranota_lembur_karyawans_pranota_lembur_id_foreign')
-                  ->references('id')
-                  ->on('pranota_lemburs')
-                  ->onDelete('cascade');
-        });
+        try {
+            \Illuminate\Support\Facades\DB::statement('ALTER TABLE `pranota_lembur_karyawans` ADD CONSTRAINT `pranota_lembur_karyawans_pranota_lembur_id_foreign` FOREIGN KEY (`pranota_lembur_karyawan_header_id`) REFERENCES `pranota_lemburs` (`id`) ON DELETE CASCADE');
+        } catch (\Exception $e) {
+            // Ignore if it already exists or if column doesn't exist
+        }
     }
 };
 
