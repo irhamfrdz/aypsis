@@ -58,6 +58,19 @@
                         Update Manifest
                     </button>
                     @endcan
+                    <form action="{{ route('manifests.sync') }}" method="POST" class="inline">
+                        @csrf
+                        <input type="hidden" name="nama_kapal" value="{{ $namaKapal }}">
+                        <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
+                        <button type="submit"
+                           onclick="return confirm('Apakah Anda yakin ingin melakukan sinkronisasi data Manifest dari data Naik Kapal untuk voyage ini? Proses ini mungkin akan memakan waktu sejenak dan memperbarui data nama barang yang kosong atau belum sesuai dengan Tanda Terima.')"
+                           class="inline-flex items-center justify-center px-4 py-2 bg-pink-600 text-white text-sm font-medium rounded-lg hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Sync Data
+                        </button>
+                    </form>
                     <a href="{{ route('report.manifests.export', request()->all()) }}"
                        class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

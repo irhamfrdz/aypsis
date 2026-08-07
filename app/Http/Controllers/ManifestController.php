@@ -123,6 +123,31 @@ class ManifestController extends Controller
     }
 
     /**
+     * Sync data from naik_kapal for the selected ship and voyage
+     */
+    public function sync(Request $request)
+    {
+        $namaKapal = $request->get('nama_kapal');
+        $noVoyage = $request->get('no_voyage');
+
+        if (! $namaKapal || ! $noVoyage) {
+            return redirect()->back()->with('error', 'Nama Kapal dan No Voyage harus ada untuk melakukan sinkronisasi');
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('sync:naik-kapal-to-manifest', [
+                '--voyage' => $noVoyage,
+                '--kapal' => $namaKapal,
+                '--force' => true
+            ]);
+
+            return redirect()->back()->with('success', 'Sinkronisasi data berhasil dijalankan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal melakukan sinkronisasi: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Export manifest data to Excel
      */
     public function export(Request $request)

@@ -5971,6 +5971,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::post('manifests/{id}/update-nomor-urut', [App\Http\Controllers\ManifestController::class, 'updateNomorUrut'])->name('manifests.update-nomor-urut');
     Route::post('manifests/{id}/update-satuan', [App\Http\Controllers\ManifestController::class, 'updateSatuan'])->name('manifests.update-satuan');
     Route::post('manifests/{id}/update-kuantitas', [App\Http\Controllers\ManifestController::class, 'updateKuantitas'])->name('manifests.update-kuantitas');
+    Route::post('manifests/sync', [App\Http\Controllers\ManifestController::class, 'sync'])->name('manifests.sync');
     Route::get('manifests/export', [App\Http\Controllers\ManifestController::class, 'export'])->name('manifests.export');
     Route::get('manifests/{id}/print-document', [App\Http\Controllers\ManifestController::class, 'printDocument'])->name('manifests.print-document');
     Route::get('manifests/{id}/print-ba', [App\Http\Controllers\ManifestController::class, 'printBa'])->name('manifests.print-ba');
