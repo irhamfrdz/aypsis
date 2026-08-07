@@ -8,9 +8,22 @@ use Illuminate\Http\Request;
 
 class ShipperConsigneeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $shipperConsignees = ShipperConsignee::orderBy('id', 'desc')->get();
+        $query = ShipperConsignee::query();
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('shipper', 'like', "%{$search}%")
+                  ->orWhere('consignee', 'like', "%{$search}%")
+                  ->orWhere('telepon', 'like', "%{$search}%")
+                  ->orWhere('hs_code', 'like', "%{$search}%")
+                  ->orWhere('commodity', 'like', "%{$search}%");
+            });
+        }
+
+        $shipperConsignees = $query->orderBy('id', 'desc')->get();
         return view('master.shipper-consignee.index', compact('shipperConsignees'));
     }
 
