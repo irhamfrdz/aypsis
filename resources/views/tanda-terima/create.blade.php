@@ -229,261 +229,260 @@
                         </div>
                         @endif
 
-                        <!-- Data Pengirim & Order Section -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-4">
-                                Data Pengirim & Penerima
-                            </label>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <div class="flex items-center justify-between mb-2">
-                                        <label for="pengirim" class="block text-xs font-medium text-gray-500">
-                                            Pengirim
-                                        </label>
-                                        <button type="button"
-                                                onclick="openPengirimPopup()"
-                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors">
-                                            <i class="fas fa-plus mr-1"></i>
-                                            Tambah Pengirim Baru
-                                        </button>
+                        <!-- 2. Informasi Penerima dan Pengirim -->
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-6 mb-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                Informasi Penerima dan Pengirim
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <!-- Kolom Penerima -->
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-medium text-blue-800 border-b border-blue-200 pb-2 flex-1">Data Penerima</h4>
                                     </div>
-                                    <select name="pengirim"
-                                            id="pengirim"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-pengirim">
-                                        <option value="">-- Pilih Pengirim --</option>
-                                        @foreach($pengirims as $pengirim)
-                                            <option value="{{ $pengirim->nama_pengirim }}"
-                                                    data-alamat="{{ $pengirim->alamat }}"
-                                                    data-kontak="{{ $pengirim->contact_person }}"
-                                                    {{ old('pengirim', ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '')) == $pengirim->nama_pengirim ? 'selected' : '' }}>
-                                                {{ $pengirim->nama_pengirim }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="pic_pengirim" class="block text-xs font-medium text-gray-500 mb-2">
-                                        PIC Pengirim
-                                    </label>
-                                    <input type="text"
-                                           name="pic_pengirim"
-                                           id="pic_pengirim"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('pic_pengirim') border-red-500 @enderror"
-                                           placeholder="Nama PIC pengirim"
-                                           value="{{ old('pic_pengirim') }}">
-                                    @error('pic_pengirim')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label for="kontak_pengirim" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Kontak Pengirim
-                                    </label>
-                                    <input type="text"
-                                           name="kontak_pengirim"
-                                           id="kontak_pengirim"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('kontak_pengirim') border-red-500 @enderror"
-                                           placeholder="Kontak / No. Telp Pengirim"
-                                           value="{{ old('kontak_pengirim', ($suratJalan->order ? $suratJalan->order->kontak_pengirim : '')) }}">
-                                    @error('kontak_pengirim')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label for="alamat_pengirim" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Alamat Pengirim
-                                    </label>
-                                    <textarea name="alamat_pengirim"
-                                              id="alamat_pengirim"
-                                              rows="3"
-                                              class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('alamat_pengirim') border-red-500 @enderror"
-                                              placeholder="Alamat lengkap pengirim">{{ old('alamat_pengirim', ($suratJalan->order ? $suratJalan->order->alamat_pengirim : '')) }}</textarea>
-                                    @error('alamat_pengirim')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                    <p class="mt-1 text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                                        <i class="fas fa-info-circle mr-1"></i>Alamat pengirim akan terisi otomatis saat memilih pengirim, namun dapat diubah sesuai kebutuhan
-                                    </p>
-                                </div>
-                                <div>
-                                    <div class="flex items-center justify-between mb-2">
-                                        <label for="penerima" class="block text-xs font-medium text-gray-500">
-                                            Penerima <span class="text-red-500">*</span>
-                                        </label>
-                                        <button type="button"
-                                                onclick="openPenerimaPopup()"
-                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors">
-                                            <i class="fas fa-plus mr-1"></i>
-                                            Tambah Penerima Baru
-                                        </button>
-                                    </div>
-                                    <select name="penerima"
-                                            id="penerima"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-penerima @error('penerima') border-red-500 @enderror">
-                                        <option value="">-- Pilih Penerima --</option>
-                                        @foreach($masterPenerimaList as $penerima)
+                                    
+                                    <div class="space-y-3 p-3 bg-white rounded border border-blue-200 mb-3">
+                                        <div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <label for="penerima" class="block text-xs font-medium text-gray-700">
+                                                    Nama Penerima <span class="text-red-500">*</span>
+                                                </label>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <div class="flex-1">
+                                                    <select name="penerima" id="penerima"
+                                                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-penerima @error('penerima') border-red-500 @enderror">
+                                                        <option value="">-- Pilih Penerima --</option>
+                                                        @foreach($masterPenerimaList as $penerima)
+                                                            @php
+                                                                $selectedPenerima = null;
+                                                                if ($suratJalan->order && $suratJalan->order->notify_party_id) {
+                                                                    $notifyParty = \App\Models\Penerima::find($suratJalan->order->notify_party_id);
+                                                                    if ($notifyParty) {
+                                                                        $selectedPenerima = $notifyParty->nama_penerima;
+                                                                    }
+                                                                } elseif ($suratJalan->order && $suratJalan->order->penerima_id) {
+                                                                    $regularPenerima = \App\Models\Penerima::find($suratJalan->order->penerima_id);
+                                                                    if ($regularPenerima) {
+                                                                        $selectedPenerima = $regularPenerima->nama_penerima;
+                                                                    }
+                                                                } elseif ($suratJalan->order) {
+                                                                    $selectedPenerima = $suratJalan->order->penerima;
+                                                                }
+                                                                $isSelected = old('penerima', $selectedPenerima) == $penerima->nama_penerima;
+                                                            @endphp
+                                                            <option value="{{ $penerima->nama_penerima }}"
+                                                                    data-alamat="{{ $penerima->alamat }}"
+                                                                    data-kontak="{{ $penerima->contact_person }}"
+                                                                    {{ $isSelected ? 'selected' : '' }}>
+                                                                {{ $penerima->nama_penerima }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <button type="button" onclick="openPenerimaPopup()"
+                                                        class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors flex items-center shrink-0"
+                                                        title="Tambah Penerima Baru">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                                    Tambah Penerima
+                                                </button>
+                                            </div>
+                                            @error('penerima')
+                                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div>
+                                            <label for="pic_penerima" class="block text-xs font-medium text-gray-700 mb-1">
+                                                PIC Penerima
+                                            </label>
+                                            <input type="text" name="pic_penerima" id="pic_penerima"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm @error('pic_penerima') border-red-500 @enderror"
+                                                   placeholder="Nama PIC penerima" value="{{ old('pic_penerima') }}">
+                                            @error('pic_penerima')
+                                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div>
+                                            <label for="kontak_penerima" class="block text-xs font-medium text-gray-700 mb-1">
+                                                Telepon Penerima
+                                            </label>
+                                            <input type="text" name="kontak_penerima" id="kontak_penerima"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm @error('kontak_penerima') border-red-500 @enderror"
+                                                   placeholder="08123456789" value="{{ old('kontak_penerima') }}">
+                                            @error('kontak_penerima')
+                                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div>
+                                            <label for="alamat_penerima" class="block text-xs font-medium text-gray-700 mb-1">
+                                                Alamat Penerima <span class="text-red-500">*</span>
+                                            </label>
                                             @php
-                                                // Prioritize notify_party if available, otherwise use penerima
-                                                $selectedPenerima = null;
+                                                $alamatPenerima = '';
                                                 if ($suratJalan->order && $suratJalan->order->notify_party_id) {
-                                                    // Use notify party if available
                                                     $notifyParty = \App\Models\Penerima::find($suratJalan->order->notify_party_id);
                                                     if ($notifyParty) {
-                                                        $selectedPenerima = $notifyParty->nama_penerima;
+                                                        $alamatPenerima = $notifyParty->alamat;
                                                     }
                                                 } elseif ($suratJalan->order && $suratJalan->order->penerima_id) {
-                                                    // Use regular penerima if no notify party
                                                     $regularPenerima = \App\Models\Penerima::find($suratJalan->order->penerima_id);
                                                     if ($regularPenerima) {
-                                                        $selectedPenerima = $regularPenerima->nama_penerima;
+                                                        $alamatPenerima = $regularPenerima->alamat;
                                                     }
                                                 } elseif ($suratJalan->order) {
-                                                    // Fallback to penerima string field
-                                                    $selectedPenerima = $suratJalan->order->penerima;
+                                                    $alamatPenerima = $suratJalan->order->alamat_penerima;
                                                 }
-                                                
-                                                $isSelected = old('penerima', $selectedPenerima) == $penerima->nama_penerima;
                                             @endphp
-                                            <option value="{{ $penerima->nama_penerima }}"
-                                                    data-alamat="{{ $penerima->alamat }}"
-                                                    data-kontak="{{ $penerima->contact_person }}"
-                                                    {{ $isSelected ? 'selected' : '' }}>
-                                                {{ $penerima->nama_penerima }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('penerima')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                    <p class="mt-1 text-xs text-gray-500">
-                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari penerima
-                                    </p>
-                                </div>
-                                <div>
-                                    <label for="pic_penerima" class="block text-xs font-medium text-gray-500 mb-2">
-                                        PIC Penerima
-                                    </label>
-                                    <input type="text"
-                                           name="pic_penerima"
-                                           id="pic_penerima"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('pic_penerima') border-red-500 @enderror"
-                                           placeholder="Nama PIC penerima"
-                                           value="{{ old('pic_penerima') }}">
-                                    @error('pic_penerima')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label for="kontak_penerima" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Kontak Penerima
-                                    </label>
-                                    <input type="text"
-                                           name="kontak_penerima"
-                                           id="kontak_penerima"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('kontak_penerima') border-red-500 @enderror"
-                                           placeholder="Kontak / No. Telp Penerima"
-                                           value="{{ old('kontak_penerima') }}">
-                                    @error('kontak_penerima')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label for="alamat_penerima" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Alamat Penerima
-                                    </label>
-                                    @php
-                                        // Prioritize notify_party address if available
-                                        $alamatPenerima = '';
-                                        if ($suratJalan->order && $suratJalan->order->notify_party_id) {
-                                            $notifyParty = \App\Models\Penerima::find($suratJalan->order->notify_party_id);
-                                            if ($notifyParty) {
-                                                $alamatPenerima = $notifyParty->alamat;
-                                            }
-                                        } elseif ($suratJalan->order && $suratJalan->order->penerima_id) {
-                                            $regularPenerima = \App\Models\Penerima::find($suratJalan->order->penerima_id);
-                                            if ($regularPenerima) {
-                                                $alamatPenerima = $regularPenerima->alamat;
-                                            }
-                                        } elseif ($suratJalan->order) {
-                                            $alamatPenerima = $suratJalan->order->alamat_penerima;
-                                        }
-                                    @endphp
-                                    <textarea name="alamat_penerima"
-                                              id="alamat_penerima"
-                                              rows="3"
-                                              class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('alamat_penerima') border-red-500 @enderror"
-                                              placeholder="Alamat lengkap penerima">{{ old('alamat_penerima', $alamatPenerima) }}</textarea>
-                                    @error('alamat_penerima')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                    <p class="mt-1 text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                                        <i class="fas fa-info-circle mr-1"></i>Alamat akan terisi otomatis saat memilih penerima, namun dapat diubah sesuai kebutuhan
-                                    </p>
-                                </div>
-                                <div>
-                                    <div class="flex items-center justify-between mb-2">
-                                        <label for="notify_party" class="block text-xs font-medium text-gray-500">
-                                            Notify Party
-                                        </label>
-                                        <button type="button"
-                                                onclick="openNotifyPopup()"
-                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors">
-                                            <i class="fas fa-plus mr-1"></i>
-                                            Tambah Notify Party Baru
-                                        </button>
-                                    </div>
-                                    <select name="notify_party"
-                                            id="notify_party"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-notify @error('notify_party') border-red-500 @enderror">
-                                        <option value="">-- Pilih Notify Party --</option>
-                                        @foreach($masterPenerimaList as $penerima)
+                                            <textarea name="alamat_penerima" id="alamat_penerima" rows="2"
+                                                      class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm @error('alamat_penerima') border-red-500 @enderror"
+                                                      placeholder="Alamat lengkap penerima...">{{ old('alamat_penerima', $alamatPenerima) }}</textarea>
+                                            @error('alamat_penerima')
+                                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        
+                                        <!-- Notify Party -->
+                                        <div class="mt-4 border-t border-blue-100 pt-3">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <label for="notify_party" class="block text-xs font-medium text-gray-700">
+                                                    Notify Party
+                                                </label>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <div class="flex-1">
+                                                    <select name="notify_party" id="notify_party"
+                                                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-notify @error('notify_party') border-red-500 @enderror">
+                                                        <option value="">-- Pilih Notify Party --</option>
+                                                        @foreach($masterPenerimaList as $penerima)
+                                                            @php
+                                                                $selectedNotify = null;
+                                                                if ($suratJalan->order && $suratJalan->order->notify_party_id) {
+                                                                    $notifyParty = \App\Models\Penerima::find($suratJalan->order->notify_party_id);
+                                                                    if ($notifyParty) {
+                                                                        $selectedNotify = $notifyParty->nama_penerima;
+                                                                    }
+                                                                }
+                                                                $isSelected = old('notify_party', $selectedNotify) == $penerima->nama_penerima;
+                                                            @endphp
+                                                            <option value="{{ $penerima->nama_penerima }}" data-alamat="{{ $penerima->alamat }}"
+                                                                    {{ $isSelected ? 'selected' : '' }}>
+                                                                {{ $penerima->nama_penerima }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <button type="button" onclick="openNotifyPopup()"
+                                                        class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors flex items-center shrink-0"
+                                                        title="Tambah Notify Party Baru">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                                    Tambah Notify Party
+                                                </button>
+                                            </div>
+                                            @error('notify_party')
+                                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div class="mt-2">
+                                            <label for="alamat_notify_party" class="block text-xs font-medium text-gray-700 mb-1">
+                                                Alamat Notify Party
+                                            </label>
                                             @php
-                                                $selectedNotify = null;
+                                                $alamatNotify = '';
                                                 if ($suratJalan->order && $suratJalan->order->notify_party_id) {
                                                     $notifyParty = \App\Models\Penerima::find($suratJalan->order->notify_party_id);
                                                     if ($notifyParty) {
-                                                        $selectedNotify = $notifyParty->nama_penerima;
+                                                        $alamatNotify = $notifyParty->alamat;
                                                     }
                                                 }
-                                                $isSelected = old('notify_party', $selectedNotify) == $penerima->nama_penerima;
                                             @endphp
-                                            <option value="{{ $penerima->nama_penerima }}"
-                                                    data-alamat="{{ $penerima->alamat }}"
-                                                    {{ $isSelected ? 'selected' : '' }}>
-                                                {{ $penerima->nama_penerima }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('notify_party')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                    <p class="mt-1 text-xs text-gray-500">
-                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari notify party
-                                    </p>
+                                            <textarea name="alamat_notify_party" id="alamat_notify_party" rows="2"
+                                                      class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm @error('alamat_notify_party') border-red-500 @enderror"
+                                                      placeholder="Alamat lengkap Notify Party...">{{ old('alamat_notify_party', $alamatNotify) }}</textarea>
+                                            @error('alamat_notify_party')
+                                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="md:col-span-2">
-                                    <label for="alamat_notify_party" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Alamat Notify Party
-                                    </label>
-                                    @php
-                                        $alamatNotify = '';
-                                        if ($suratJalan->order && $suratJalan->order->notify_party_id) {
-                                            $notifyParty = \App\Models\Penerima::find($suratJalan->order->notify_party_id);
-                                            if ($notifyParty) {
-                                                $alamatNotify = $notifyParty->alamat;
-                                            }
-                                        }
-                                    @endphp
-                                    <textarea name="alamat_notify_party"
-                                              id="alamat_notify_party"
-                                              rows="2"
-                                              class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('alamat_notify_party') border-red-500 @enderror"
-                                              placeholder="Alamat lengkap Notify Party">{{ old('alamat_notify_party', $alamatNotify) }}</textarea>
-                                    @error('alamat_notify_party')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
+                                
+                                <!-- Kolom Pengirim -->
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-medium text-blue-800 border-b border-blue-200 pb-2 flex-1">Data Pengirim</h4>
+                                    </div>
+                                    
+                                    <div class="space-y-3 p-3 bg-white rounded border border-blue-200 mb-3">
+                                        <div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <label for="pengirim" class="block text-xs font-medium text-gray-700">
+                                                    Nama Pengirim <span class="text-red-500">*</span>
+                                                </label>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <div class="flex-1">
+                                                    <select name="pengirim" id="pengirim"
+                                                            class="w-full px-3 py-2 border border-gray-300 rounded text-sm select2-pengirim">
+                                                        <option value="">-- Pilih Pengirim --</option>
+                                                        @foreach($pengirims as $pengirim)
+                                                            <option value="{{ $pengirim->nama_pengirim }}"
+                                                                    data-alamat="{{ $pengirim->alamat }}"
+                                                                    data-kontak="{{ $pengirim->contact_person }}"
+                                                                    {{ old('pengirim', ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '')) == $pengirim->nama_pengirim ? 'selected' : '' }}>
+                                                                {{ $pengirim->nama_pengirim }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <button type="button" onclick="openPengirimPopup()"
+                                                        class="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition-colors flex items-center shrink-0"
+                                                        title="Tambah Pengirim Baru">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                                    Tambah Pengirim
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label for="pic_pengirim" class="block text-xs font-medium text-gray-700 mb-1">
+                                                PIC Pengirim
+                                            </label>
+                                            <input type="text" name="pic_pengirim" id="pic_pengirim"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm @error('pic_pengirim') border-red-500 @enderror"
+                                                   placeholder="Nama PIC pengirim" value="{{ old('pic_pengirim') }}">
+                                            @error('pic_pengirim')
+                                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div>
+                                            <label for="kontak_pengirim" class="block text-xs font-medium text-gray-700 mb-1">
+                                                Telepon Pengirim
+                                            </label>
+                                            <input type="text" name="kontak_pengirim" id="kontak_pengirim"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm @error('kontak_pengirim') border-red-500 @enderror"
+                                                   placeholder="08123456789" value="{{ old('kontak_pengirim', ($suratJalan->order ? $suratJalan->order->kontak_pengirim : '')) }}">
+                                            @error('kontak_pengirim')
+                                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                        <div>
+                                            <label for="alamat_pengirim" class="block text-xs font-medium text-gray-700 mb-1">
+                                                Alamat Pengirim <span class="text-red-500">*</span>
+                                            </label>
+                                            <textarea name="alamat_pengirim" id="alamat_pengirim" rows="2"
+                                                      class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 text-sm @error('alamat_pengirim') border-red-500 @enderror"
+                                                      placeholder="Alamat lengkap pengirim...">{{ old('alamat_pengirim', ($suratJalan->order ? $suratJalan->order->alamat_pengirim : '')) }}</textarea>
+                                            @error('alamat_pengirim')
+                                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+                        </div>
+
                                 @if($suratJalan->gambar_checkpoint)
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-medium text-gray-500 mb-2">
