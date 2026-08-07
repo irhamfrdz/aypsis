@@ -32,8 +32,6 @@ class SuratJalanBongkaranBatam extends Model
         'supir',
         'supir2',
         'no_plat',
-        'kenek',
-        'krani',
         'tipe_kontainer',
         'no_kontainer',
         'no_seal',
@@ -143,14 +141,6 @@ class SuratJalanBongkaranBatam extends Model
     public function supir2Karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'supir2', 'nama_panggilan');
-    }
-
-    /**
-     * Relationship to Karyawan as Kenek
-     */
-    public function kenekKaryawan()
-    {
-        return $this->belongsTo(Karyawan::class, 'kenek', 'nama_lengkap');
     }
 
     // Accessors & Mutators

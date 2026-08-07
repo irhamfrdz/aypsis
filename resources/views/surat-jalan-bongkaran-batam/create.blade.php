@@ -417,45 +417,7 @@
                     @enderror
                 </div>
 
-                <!-- Kenek -->
-                <div>
-                    <label for="kenek" class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
-                    <select name="kenek" id="kenek"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('kenek') border-red-500 @enderror">
-                        <option value="">Pilih Kenek</option>
-                        @foreach($karyawanKranis as $krani)
-                            <option value="{{ $krani->nama_lengkap }}" {{ old('kenek') == $krani->nama_lengkap ? 'selected' : '' }}>
-                                {{ $krani->nama_panggilan ?? $krani->nama_lengkap }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-blue-600">
-                        Ketik nama kenek untuk mencari dengan cepat
-                    </p>
-                    @error('kenek')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
 
-                <!-- Krani -->
-                <div>
-                    <label for="krani" class="block text-sm font-medium text-gray-700 mb-1">Krani</label>
-                    <select name="krani" id="krani"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('krani') border-red-500 @enderror">
-                        <option value="">Pilih Krani</option>
-                        @foreach($karyawanKranis as $krani)
-                            <option value="{{ $krani->nama_lengkap }}" {{ old('krani') == $krani->nama_lengkap ? 'selected' : '' }}>
-                                {{ $krani->nama_panggilan ?? $krani->nama_lengkap }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-blue-600">
-                        Ketik nama krani untuk mencari dengan cepat
-                    </p>
-                    @error('krani')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
 
                 <!-- Informasi Container -->
                 <div class="md:col-span-2 mt-4">

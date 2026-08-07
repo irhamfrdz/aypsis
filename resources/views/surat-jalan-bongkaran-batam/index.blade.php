@@ -728,35 +728,7 @@
                                    placeholder="Masukkan nomor plat">
                         </div>
 
-                        <!-- Kenek -->
-                        <div>
-                            <label for="modal_kenek" class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
-                            <select name="kenek" id="modal_kenek"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Pilih kenek</option>
-                                @foreach($karyawanKranis as $krani)
-                                    <option value="{{ $krani->nama_panggilan }}">
-                                        {{ $krani->nama_panggilan }} ({{ $krani->nama_lengkap }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-blue-600">Pilih kenek dari daftar karyawan krani</p>
-                        </div>
 
-                        <!-- Krani -->
-                        <div>
-                            <label for="modal_krani" class="block text-sm font-medium text-gray-700 mb-1">Krani</label>
-                            <select name="krani" id="modal_krani"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Pilih krani</option>
-                                @foreach($karyawanKranis as $krani)
-                                    <option value="{{ $krani->nama_panggilan }}">
-                                        {{ $krani->nama_panggilan }} ({{ $krani->nama_lengkap }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-blue-600">Pilih krani dari daftar karyawan</p>
-                        </div>
 
                         <!-- Informasi Container -->
                         <div class="md:col-span-2 mt-3">
@@ -995,20 +967,20 @@
                     <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
                     @if(empty($selectedVoyage))
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
-                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Kenek ; Krani ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty) ; No Voyage
+                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty) ; No Voyage
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar;batam;Batu Ampar (PB);Full;VOY123
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;Bongkar;batam;Batu Ampar (PB);Full;VOY123
                     </p>
                     <p class="text-xs text-indigo-600 mt-1 italic">
                         *Untuk tujuan dengan ekspedisi ganda, tambahkan dalam kurung untuk membedakan, misal: <strong>Batu Ampar (PB)</strong> atau <strong>Batu Ampar (AYP)</strong>.
                     </p>
                     @else
                     <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
-                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Kenek ; Krani ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty)
+                        No SJ ; Tanggal ; No Kontainer / BL ; Supir ; No Plat ; Aktifitas ; Lokasi ; Tujuan Pengiriman ; F/E (Full/Empty)
                     </div>
                     <p class="text-xs text-indigo-600 mt-1">
-                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;BUDI;CICI;Bongkar;batam;Batu Ampar (PB);Full
+                        <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;ANDI;B1234XX;Bongkar;batam;Batu Ampar (PB);Full
                     </p>
                     <p class="text-xs text-indigo-600 mt-1 italic">
                         *Untuk tujuan dengan ekspedisi ganda, tambahkan dalam kurung untuk membedakan, misal: <strong>Batu Ampar (PB)</strong> atau <strong>Batu Ampar (AYP)</strong>.
@@ -1053,8 +1025,7 @@
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Kontainer / BL</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Plat</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Kenek</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Krani</th>
+
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Aktifitas</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tujuan Pengiriman</th>
@@ -1320,35 +1291,7 @@
                                    placeholder="Masukkan nomor plat">
                         </div>
 
-                        <!-- Kenek -->
-                        <div>
-                            <label for="edit_modal_kenek" class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
-                            <select name="kenek" id="edit_modal_kenek"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Pilih kenek</option>
-                                @foreach($karyawanKranis as $krani)
-                                    <option value="{{ $krani->nama_panggilan }}">
-                                        {{ $krani->nama_panggilan }} ({{ $krani->nama_lengkap }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-blue-600">Pilih kenek dari daftar karyawan krani</p>
-                        </div>
 
-                        <!-- Krani -->
-                        <div>
-                            <label for="edit_modal_krani" class="block text-sm font-medium text-gray-700 mb-1">Krani</label>
-                            <select name="krani" id="edit_modal_krani"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">Pilih krani</option>
-                                @foreach($karyawanKranis as $krani)
-                                    <option value="{{ $krani->nama_panggilan }}">
-                                        {{ $krani->nama_panggilan }} ({{ $krani->nama_lengkap }})
-                                    </option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-blue-600">Pilih krani dari daftar karyawan</p>
-                        </div>
 
                         <!-- Informasi Container -->
                         <div class="md:col-span-2 mt-3">
@@ -2109,8 +2052,7 @@ function getFieldLabel(fieldName) {
         'tanggal_ambil_barang': 'Tanggal Ambil Barang',
         'supir': 'Supir',
         'no_plat': 'No Plat',
-        'kenek': 'Kenek',
-        'krani': 'Krani',
+
         'no_kontainer': 'No Kontainer',
         'no_seal': 'No Seal',
         'no_bl': 'Nomor BL',
@@ -2343,8 +2285,7 @@ function openEditModal(suratJalanId) {
                 
                 document.getElementById('edit_modal_supir').value = data.supir || '';
                 document.getElementById('edit_modal_no_plat').value = data.no_plat || '';
-                document.getElementById('edit_modal_kenek').value = data.kenek || '';
-                document.getElementById('edit_modal_krani').value = data.krani || '';
+
                 
                 document.getElementById('edit_modal_no_kontainer').value = data.no_kontainer || '';
                 document.getElementById('edit_modal_no_seal').value = data.no_seal || '';
@@ -2825,7 +2766,7 @@ async function parseBulkData() {
     const isVoyageEmpty = '{{ $selectedVoyage }}' === '';
     let columnKeys = [
         'nomor_surat_jalan', 'tanggal_surat_jalan', 'no_kontainer',
-        'supir', 'no_plat', 'kenek', 'krani', 'aktifitas', 'lokasi', 'tujuan_pengiriman', 'f_e'
+        'supir', 'no_plat', 'aktifitas', 'lokasi', 'tujuan_pengiriman', 'f_e'
     ];
     if (isVoyageEmpty) {
         columnKeys.push('no_voyage');
@@ -2937,8 +2878,7 @@ async function parseBulkData() {
             row.no_kontainer || '-',
             row.supir || '-',
             row.no_plat || '-',
-            row.kenek || '-',
-            row.krani || '-',
+
             row.aktifitas || '-',
             row.lokasi || 'batam',
             row.tujuan_pengiriman || '-',

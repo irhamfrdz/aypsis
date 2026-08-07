@@ -287,10 +287,6 @@ class SuratJalanBongkaranBatamController extends Controller
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
-        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
-            ->whereNull('tanggal_berhenti')
-            ->orderBy('nama_panggilan')
-            ->get(['id', 'nama_lengkap', 'nama_panggilan']);
 
         $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
             ->orderBy('ke')
@@ -306,7 +302,7 @@ class SuratJalanBongkaranBatamController extends Controller
         $terms = \App\Models\Term::orderBy('kode')->get();
         $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
 
-        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage', 'gudangs'));
+        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage', 'gudangs'));
     }
 
     public function penarikanIndex(Request $request)
@@ -589,11 +585,6 @@ class SuratJalanBongkaranBatamController extends Controller
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
-        // Get karyawan dengan divisi krani untuk dropdown kenek
-        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
-            ->whereNull('tanggal_berhenti')
-            ->orderBy('nama_panggilan')
-            ->get(['id', 'nama_lengkap', 'nama_panggilan']);
 
         // Get tujuan kegiatan utama untuk dropdown tujuan pengambilan
         $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
@@ -691,7 +682,7 @@ class SuratJalanBongkaranBatamController extends Controller
         }
 
         return view('surat-jalan-bongkaran-batam.create', compact(
-            'kapals', 'selectedKapal', 'noVoyage', 'selectedContainer', 'selectedBl', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'kapalId'
+            'kapals', 'selectedKapal', 'noVoyage', 'selectedContainer', 'selectedBl', 'karyawanSupirs', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms', 'kapalId'
         ));
     }
 
@@ -723,8 +714,6 @@ class SuratJalanBongkaranBatamController extends Controller
                 'tanggal_ambil_barang' => 'nullable|date',
                 'supir' => 'nullable|string|max:255',
                 'no_plat' => 'nullable|string|max:50',
-                'kenek' => 'nullable|string|max:255',
-                'krani' => 'nullable|string|max:255',
                 'no_kontainer' => 'nullable|string|max:100',
                 'manifest_id' => 'nullable|integer|exists:manifests,id',
                 'no_seal' => 'nullable|string|max:100',
@@ -875,13 +864,6 @@ class SuratJalanBongkaranBatamController extends Controller
             if ($k->nama_lengkap)   $supirMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
         }
 
-        $kraniMap = [];
-        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')->get(['nama_panggilan', 'nama_lengkap']);
-        foreach ($karyawanKranis as $k) {
-            if ($k->nama_panggilan) $kraniMap[strtolower(trim($k->nama_panggilan))] = $k->nama_panggilan;
-            if ($k->nama_lengkap)   $kraniMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
-        }
-
         $allKendaraansMap = [];
         foreach (\App\Models\Mobil::all(['nomor_polisi']) as $m) {
             if ($m->nomor_polisi) {
@@ -925,26 +907,6 @@ class SuratJalanBongkaranBatamController extends Controller
                         $row['supir'] = $supirMap[$supirKey];
                     } else {
                         $errors[] = "Baris {$rowNumber}: Supir '{$row['supir']}' tidak terdaftar di Master Karyawan dengan divisi Supir.";
-                    }
-                }
-                
-                // Check Kenek in Master Karyawan (divisi krani)
-                if (!empty($row['kenek'])) {
-                    $kenekKey = strtolower(trim($row['kenek']));
-                    if (isset($kraniMap[$kenekKey])) {
-                        $row['kenek'] = $kraniMap[$kenekKey];
-                    } else {
-                        $errors[] = "Baris {$rowNumber}: Kenek '{$row['kenek']}' tidak terdaftar di Master Karyawan dengan divisi Krani.";
-                    }
-                }
-                
-                // Check Krani in Master Karyawan (divisi krani)
-                if (!empty($row['krani'])) {
-                    $kraniKey = strtolower(trim($row['krani']));
-                    if (isset($kraniMap[$kraniKey])) {
-                        $row['krani'] = $kraniMap[$kraniKey];
-                    } else {
-                        $errors[] = "Baris {$rowNumber}: Krani '{$row['krani']}' tidak terdaftar di Master Karyawan dengan divisi Krani.";
                     }
                 }
 
@@ -1135,8 +1097,6 @@ class SuratJalanBongkaranBatamController extends Controller
                         'no_bl' => $finalNoBl,
                         'supir' => $row['supir'] ?? null,
                         'no_plat' => $row['no_plat'] ?? null,
-                        'kenek' => $row['kenek'] ?? null,
-                        'krani' => $row['krani'] ?? null,
                         'pengirim' => $finalPengirim,
                         'penerima' => $finalPenerima,
                         'jenis_barang' => $finalJenisBarang,
@@ -1217,11 +1177,6 @@ class SuratJalanBongkaranBatamController extends Controller
             ->orderBy('nama_panggilan')
             ->get(['id', 'nama_panggilan', 'nama_lengkap', 'plat']);
 
-        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
-            ->whereNull('tanggal_berhenti')
-            ->orderBy('nama_panggilan')
-            ->get(['id', 'nama_panggilan', 'nama_lengkap']);
-
         $pricelistUangJalanBatams = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('expedisi')->orderBy('ring')->get();
         $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
         
@@ -1244,7 +1199,6 @@ class SuratJalanBongkaranBatamController extends Controller
             'karyawanSupirs',
             'gudangs',
             'selectedGudangId',
-            'karyawanKranis',
             'pricelistUangJalanBatams'
         ));
     }
@@ -1277,8 +1231,6 @@ class SuratJalanBongkaranBatamController extends Controller
                 'tanggal_ambil_barang' => 'nullable|date',
                 'supir' => 'nullable|string|max:255',
                 'no_plat' => 'nullable|string|max:50',
-                'kenek' => 'nullable|string|max:255',
-                'krani' => 'nullable|string|max:255',
                 'no_kontainer' => 'nullable|string|max:100',
                 'no_seal' => 'nullable|string|max:100',
                 'size' => 'nullable|string|max:50',

@@ -137,14 +137,7 @@
                             <label class="text-sm font-medium text-gray-500">No Plat</label>
                             <p class="text-gray-900">{{ $suratJalanBongkaran->no_plat ?: '-' }}</p>
                         </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-500">Kenek</label>
-                            <p class="text-gray-900">{{ $suratJalanBongkaran->kenek ?: '-' }}</p>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-500">Krani</label>
-                            <p class="text-gray-900">{{ $suratJalanBongkaran->krani ?: '-' }}</p>
-                        </div>
+
                     </div>
                 </div>
 
