@@ -2826,6 +2826,7 @@ function parseBulkData() {
     tbody.innerHTML = '';
 
     let warnings = [];
+    let errors = [];
 
     lines.forEach((line, index) => {
         const cols = line.split(';');
@@ -2837,11 +2838,6 @@ function parseBulkData() {
 
         if (!row.nomor_surat_jalan) {
             warnings.push(`Baris ${index + 1}: Nomor Surat Jalan kosong, baris ini akan diabaikan.`);
-            return;
-        }
-
-        if (isVoyageEmpty && !row.no_voyage) {
-            warnings.push(`Baris ${index + 1}: No Voyage kosong, baris ini akan diabaikan.`);
             return;
         }
 
@@ -2909,7 +2905,12 @@ function parseBulkData() {
         ];
 
         if (isVoyageEmpty) {
-            cellValues.push(row.no_voyage);
+            if (!row.no_voyage) {
+                cellValues.push('<span class="text-red-600 font-bold">KOSONG</span>');
+                errors.push(`Baris ${index + 1}: No Voyage kosong. Harap isi No Voyage atau pilih filter di halaman depan.`);
+            } else {
+                cellValues.push(row.no_voyage);
+            }
         }
 
         cellValues.forEach((val, i) => {
@@ -2932,14 +2933,21 @@ function parseBulkData() {
 
     if (bulkParsedRows.length > 0) {
         previewContainer.classList.remove('hidden');
-        parseInfo.innerHTML = `<span class="text-green-600 font-semibold">${bulkParsedRows.length} baris valid</span>` +
-            (warnings.length > 0 ? ` | <span class="text-amber-600">${warnings.length} peringatan</span>` : '');
-        submitBtn.disabled = false;
-
-        if (warnings.length > 0) {
-            showBulkAlert('Peringatan', warnings.join('<br>'), 'warning');
+        
+        if (errors.length > 0) {
+            parseInfo.innerHTML = `<span class="text-red-600 font-semibold">Terdapat ${errors.length} baris bermasalah</span>`;
+            submitBtn.disabled = true;
+            showBulkAlert('Gagal Memproses Data', errors.join('<br>'), 'error');
         } else {
-            document.getElementById('bulkModalAlertArea').innerHTML = '';
+            parseInfo.innerHTML = `<span class="text-green-600 font-semibold">${bulkParsedRows.length} baris valid</span>` +
+                (warnings.length > 0 ? ` | <span class="text-amber-600">${warnings.length} peringatan</span>` : '');
+            submitBtn.disabled = false;
+            
+            if (warnings.length > 0) {
+                showBulkAlert('Peringatan', warnings.join('<br>'), 'warning');
+            } else {
+                document.getElementById('bulkModalAlertArea').innerHTML = '';
+            }
         }
     } else {
         previewContainer.classList.add('hidden');
