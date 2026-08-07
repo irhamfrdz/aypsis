@@ -2846,10 +2846,12 @@ function parseBulkData() {
         if (row.tanggal_surat_jalan && !isNaN(row.tanggal_surat_jalan) && parseInt(row.tanggal_surat_jalan) > 10000) {
             const serial = parseInt(row.tanggal_surat_jalan);
             const jsDate = new Date(Math.round((serial - 25569) * 86400 * 1000));
-            const y = jsDate.getFullYear();
-            const m = String(jsDate.getMonth() + 1).padStart(2, '0');
-            const d = String(jsDate.getDate()).padStart(2, '0');
+            const y = jsDate.getUTCFullYear();
+            const m = String(jsDate.getUTCMonth() + 1).padStart(2, '0');
+            const d = String(jsDate.getUTCDate()).padStart(2, '0');
             displayTanggal = `${d}/${m}/${y}`;
+            // Update properti tanggal_surat_jalan agar dikirim ke server dengan format Y-m-d, bukan format serial excel
+            row.tanggal_surat_jalan = `${y}-${m}-${d}`;
         }
 
         // Build preview row
