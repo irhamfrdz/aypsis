@@ -259,7 +259,7 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Nomor Pranota <span class="text-red-500">*</span></label>
                         <div class="flex rounded-md shadow-sm">
-                            <input type="text" id="nomor_pranota" name="nomor_pranota" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono text-gray-700 bg-gray-50" readonly value="PUM-{{ date('y') }}-{{ date('m') }}-001">
+                            <input type="text" id="nomor_pranota" name="nomor_pranota" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono text-gray-700 bg-gray-50" readonly value="PML-{{ date('y') }}-{{ date('m') }}-001">
                             <button type="button" onclick="generateNewPranotaNumber()" class="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Generate Ulang">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                             </button>
@@ -273,7 +273,15 @@
 
                 <!-- Item Terpilih -->
                 <div class="mb-2">
-                    <h4 class="text-sm font-semibold text-gray-800 mb-3">Item Terpilih</h4>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-semibold text-gray-800">Item Terpilih</h4>
+                        <div class="relative">
+                            <input type="text" id="modal-search-input" class="pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-64 md:w-80" placeholder="Cari Nama atau NIK...">
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                        </div>
+                    </div>
                     <div class="border border-gray-200 rounded-lg overflow-hidden flex flex-col">
                         <div class="custom-scrollbar">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -385,6 +393,31 @@
                 openPranotaModal();
             });
         }
+
+        // Modal Search Logic
+        const modalSearchInput = document.getElementById('modal-search-input');
+        if (modalSearchInput) {
+            modalSearchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#modal-item-list tr');
+                
+                rows.forEach(row => {
+                    const nameNode = row.querySelector('td:nth-child(1) .font-bold');
+                    const nikNode = row.querySelector('td:nth-child(1) .text-\\[10px\\]');
+                    
+                    if (nameNode && nikNode) {
+                        const name = nameNode.innerText.toLowerCase();
+                        const nik = nikNode.innerText.toLowerCase();
+                        
+                        if (name.includes(searchTerm) || nik.includes(searchTerm)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        }
     });
 
     function openPranotaModal() {
@@ -452,6 +485,10 @@
                 updateModalTotal();
             });
         });
+
+        // Reset search input
+        const searchInput = document.getElementById('modal-search-input');
+        if (searchInput) searchInput.value = '';
 
         document.getElementById('pranota-modal').classList.remove('hidden');
     }

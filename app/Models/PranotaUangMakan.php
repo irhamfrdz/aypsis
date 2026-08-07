@@ -13,6 +13,7 @@ class PranotaUangMakan extends Model
         'tanggal_pranota',
         'total_nominal',
         'status',
+        'pranota_puml_id',
     ];
 
     protected $casts = [

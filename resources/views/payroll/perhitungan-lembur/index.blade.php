@@ -16,6 +16,39 @@
                 </div>
             </div>
         </div>
+        @if(session('success'))
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-r-lg shadow-sm" role="alert">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <p class="font-medium">{{ session('success') }}</p>
+                </div>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-r-lg shadow-sm" role="alert">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <p class="font-medium">{{ session('error') }}</p>
+                </div>
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 mb-6 rounded-r-lg shadow-sm" role="alert">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle mt-0.5 mr-2"></i>
+                    <div>
+                        <p class="font-bold mb-1">Terjadi Kesalahan:</p>
+                        <ul class="list-disc ml-5 text-sm">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <!-- Filter Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
@@ -118,10 +151,27 @@
 
         <!-- Data Table -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            @if(count($rekapData) > 0)
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-900">Hasil Kalkulasi</h3>
+                    <p class="text-xs text-gray-500 mt-1">Ditemukan {{ count($rekapData) }} karyawan.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btn-masukkan-pranota" class="hidden inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer mr-2">
+                        <i class="fas fa-file-invoice mr-1.5"></i>
+                        Masukkan Pranota
+                    </button>
+                </div>
+            </div>
+            @endif
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-4 py-3 text-center w-10">
+                                <input type="checkbox" id="check-all" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-16">
                                 No
                             </th>
@@ -148,6 +198,9 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($rekapData as $id => $data)
                             <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                <td class="px-4 py-4 whitespace-nowrap text-center">
+                                    <input type="checkbox" value="{{ $data['karyawan']->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $loop->iteration }}
                                 </td>
@@ -176,7 +229,7 @@
                                         <span class="text-gray-400">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-emerald-600 total-payout-text" data-jam-lembur="{{ $data['total_jam_biasa'] + $data['total_jam_libur'] }}">
                                     Rp {{ number_format($data['total_nominal'], 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
@@ -202,6 +255,104 @@
                 </table>
             </div>
         </div>
+    </div>
+</div>
+
+{{-- Modal Masukkan Pranota --}}
+<div id="pranota-modal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closePranotaModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <!-- Modal panel -->
+        <form action="{{ route('pranota-lembur-karyawan.store') }}" method="POST" id="form-payout" class="inline-flex flex-col align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100 max-h-[90vh]">
+            @csrf
+            <!-- Header -->
+            <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-50 p-2 rounded-lg">
+                        <i class="fas fa-file-invoice text-blue-600 text-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800" id="modal-title">Konfirmasi Masuk Pranota Lembur Karyawan</h3>
+                </div>
+                <button type="button" onclick="closePranotaModal()" class="text-gray-400 hover:text-gray-500 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="bg-white px-6 py-5 flex-1 overflow-y-auto">
+                <!-- Form Inputs -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Nomor Pranota</label>
+                        <div class="flex rounded-md shadow-sm">
+                            <input type="text" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border border-gray-300 sm:text-sm font-mono text-gray-700 bg-gray-50" readonly value="PML-1-{{ date('m') }}-{{ date('y') }}-XXX (Auto Generated)">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Pranota <span class="text-red-500">*</span></label>
+                        <input type="date" name="tanggal_pranota" id="modal_tanggal_pranota" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" value="{{ date('Y-m-d') }}">
+                    </div>
+                </div>
+
+                <!-- Item Terpilih -->
+                <div class="mb-2">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-semibold text-gray-800">Item Terpilih</h4>
+                        <div class="relative">
+                            <input type="text" id="modal-search-input" class="pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-64 md:w-80" placeholder="Cari Nama atau NIK...">
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+                        <div class="custom-scrollbar">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Karyawan</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Penempatan</th>
+                                        <th scope="col" class="px-3 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Jam</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal Awal</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Adjustment</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Akhir</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Catatan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modal-item-list" class="bg-white divide-y divide-gray-100 text-sm">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="bg-gray-50 px-6 py-4 sm:flex sm:items-center sm:justify-between rounded-b-lg shrink-0 border-t border-gray-200">
+                <!-- Footer Stats -->
+                <div class="flex items-center gap-6 mb-4 sm:mb-0">
+                    <div class="text-sm text-gray-500">
+                        <span id="modal-item-count" class="font-medium text-gray-700">0</span> item
+                    </div>
+                    <div class="text-right sm:text-left">
+                        <div class="text-xs text-gray-500">Total Nominal</div>
+                        <div class="text-xl font-bold text-blue-600 leading-tight" id="modal-total-nominal">Rp 0</div>
+                    </div>
+                </div>
+                
+                <div class="sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-5 py-2 bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto transition-colors">
+                        Simpan Pranota
+                    </button>
+                    <button type="button" onclick="closePranotaModal()" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto transition-colors">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -281,6 +432,164 @@
     function closeDetailModal() {
         document.getElementById('detailModal').classList.add('hidden');
     }
+
+    // --- LOGIKA PRANOTA MODAL ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkAll = document.getElementById('check-all');
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+        const btnPranota = document.getElementById('btn-masukkan-pranota');
+
+        function togglePranotaButton() {
+            const anyChecked = Array.from(rowCheckboxes).some(cb => cb.checked);
+            if (anyChecked) {
+                btnPranota.classList.remove('hidden');
+            } else {
+                btnPranota.classList.add('hidden');
+            }
+        }
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                rowCheckboxes.forEach(cb => cb.checked = this.checked);
+                togglePranotaButton();
+            });
+        }
+
+        rowCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (!this.checked) checkAll.checked = false;
+                if (Array.from(rowCheckboxes).every(c => c.checked)) checkAll.checked = true;
+                togglePranotaButton();
+            });
+        });
+
+        if (btnPranota) {
+            btnPranota.addEventListener('click', function() {
+                openPranotaModal();
+            });
+        }
+
+        // Modal Search Logic
+        const modalSearchInput = document.getElementById('modal-search-input');
+        if (modalSearchInput) {
+            modalSearchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#modal-item-list tr');
+                
+                rows.forEach(row => {
+                    const nameNode = row.querySelector('td:nth-child(1) .font-bold');
+                    const nikNode = row.querySelector('td:nth-child(1) .text-\\[10px\\]');
+                    
+                    if (nameNode && nikNode) {
+                        const name = nameNode.innerText.toLowerCase();
+                        const nik = nikNode.innerText.toLowerCase();
+                        
+                        if (name.includes(searchTerm) || nik.includes(searchTerm)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        }
+    });
+
+    function openPranotaModal() {
+        const modalList = document.getElementById('modal-item-list');
+        const countSpan = document.getElementById('modal-item-count');
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox:checked');
+        
+        modalList.innerHTML = '';
+        
+        rowCheckboxes.forEach(cb => {
+            const tr = cb.closest('tr');
+            const karyawanId = cb.value;
+            
+            const karyawanNik = tr.querySelector('td:nth-child(3)').innerText.trim();
+            const nameTd = tr.querySelector('td:nth-child(4)');
+            
+            // Extract Name (it's the first text node before the penempatan div)
+            const karyawanName = nameTd.childNodes[0].textContent.trim() || nameTd.innerText.split('\n')[0].trim();
+            
+            // Extract Penempatan
+            const penempatanNode = nameTd.querySelector('div.text-xs');
+            const penempatan = penempatanNode ? penempatanNode.innerText.trim() : '-';
+            
+            const payoutTd = tr.querySelector('.total-payout-text');
+            const totalJam = payoutTd.getAttribute('data-jam-lembur') + ' Jam';
+            const payoutText = payoutTd.innerText;
+            
+            // Parse Rp 325.000 to integer 325000
+            const basePayoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
+            
+            const trModal = document.createElement('tr');
+            trModal.innerHTML = `
+                <td class="px-3 py-2 whitespace-nowrap">
+                    <div class="font-bold text-gray-900">${karyawanName}</div>
+                    <div class="text-[10px] text-gray-500 font-mono">${karyawanNik}</div>
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-gray-600">${penempatan}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-center text-gray-600 font-medium">
+                    ${totalJam}
+                    <input type="hidden" name="karyawans[${karyawanId}][kehadiran]" value="${totalJam}">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right font-medium text-gray-700">
+                    Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}
+                    <input type="hidden" name="karyawans[${karyawanId}][nominal_awal]" value="${basePayoutVal}">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right">
+                    <input type="number" name="karyawans[${karyawanId}][adjustment]" class="modal-adjustment-input w-24 px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-right" value="0" data-base-payout="${basePayoutVal}">
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-right font-bold text-blue-700 modal-row-payout" data-current-payout="${basePayoutVal}">Rp ${new Intl.NumberFormat('id-ID').format(basePayoutVal)}</td>
+                <td class="px-3 py-2 whitespace-nowrap">
+                    <input type="text" name="karyawans[${karyawanId}][catatan]" class="w-full min-w-[120px] px-2 py-1 text-sm border border-gray-300 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Catatan...">
+                </td>
+            `;
+            modalList.appendChild(trModal);
+        });
+        
+        countSpan.innerText = rowCheckboxes.length;
+        updateModalTotal();
+        
+        // Add event listeners to adjustment inputs
+        const adjInputs = document.querySelectorAll('.modal-adjustment-input');
+        adjInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const base = parseInt(this.getAttribute('data-base-payout')) || 0;
+                const adj = parseInt(this.value) || 0;
+                const newPayout = base + adj;
+                
+                const tr = this.closest('tr');
+                const payoutTd = tr.querySelector('.modal-row-payout');
+                payoutTd.setAttribute('data-current-payout', newPayout);
+                payoutTd.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(newPayout);
+                
+                updateModalTotal();
+            });
+        });
+
+        // Reset search input
+        const searchInput = document.getElementById('modal-search-input');
+        if (searchInput) searchInput.value = '';
+
+        document.getElementById('pranota-modal').classList.remove('hidden');
+    }
+
+    function updateModalTotal() {
+        const payouts = document.querySelectorAll('.modal-row-payout');
+        let total = 0;
+        payouts.forEach(td => {
+            total += parseInt(td.getAttribute('data-current-payout')) || 0;
+        });
+        document.getElementById('modal-total-nominal').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+    }
+
+    function closePranotaModal() {
+        document.getElementById('pranota-modal').classList.add('hidden');
+    }
+
+    // --- END LOGIKA PRANOTA MODAL ---
 
     const grupMap = @json($grupMap ?? []);
     const oldSubGrup = '{{ request('sub_grup') }}';

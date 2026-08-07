@@ -415,13 +415,13 @@
                 <!-- Pranota Uang Makan -->
                 @if($user && $user->can('pranota-uang-makan-view'))
                 @php
-                    $isPranotaUangMakan = Request::routeIs('pranota-uang-makan.*');
+                    $isPranotaUangMakan = Request::routeIs('pranota-puml.*');
                 @endphp
-                <a href="{{ route('pranota-uang-makan.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isPranotaUangMakan ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-700 hover:bg-orange-100 hover:text-orange-700' }}">
+                <a href="{{ route('pranota-puml.index') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isPranotaUangMakan ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-700 hover:bg-orange-100 hover:text-orange-700' }}">
                     <svg class="w-4 h-4 mr-2 {{ $isPranotaUangMakan ? 'text-orange-700' : 'text-gray-500 group-hover:text-orange-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
-                    <span class="text-xs font-medium menu-text text-left">Pranota Uang Makan</span>
+                    <span class="text-xs font-medium menu-text text-left">Riwayat Pranota PUML</span>
                 </a>
                 @endif
 

@@ -146,8 +146,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     
     <script>
-        // API Base URL mapping to Node.js backend port
-        const API_BASE_URL = "{{ request()->getScheme() }}://{{ request()->getHost() }}:8085";
+        // API Base URL mapping to backend
+        const API_BASE_URL = "{{ url('') }}";
 
         // Inisialisasi Map ke Indonesia (light mode / standard OpenStreetMap)
         const map = L.map('map', { zoomControl: false }).setView([-2.548926, 118.0148634], 5);

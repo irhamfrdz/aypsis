@@ -6785,10 +6785,18 @@ Route::middleware(['auth',
     Route::get('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'uangMakan'])->name('payroll.uang-makan')->middleware('can:payroll-view');
     Route::post('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'storeUangMakan'])->name('payroll.uang-makan.store')->middleware('can:payroll-view');
     Route::get('pranota-uang-makan/{id}/export-auto-transfer', [\App\Http\Controllers\PranotaUangMakanController::class, 'exportAutoTransfer'])->name('pranota-uang-makan.export-auto-transfer')->middleware('can:payroll-view');
+    
+    // Restore PranotaUangMakan untuk menyimpan draft Kalkulasi Uang Makan
     Route::resource('pranota-uang-makan', \App\Http\Controllers\PranotaUangMakanController::class)->middleware('can:payroll-view');
+    
+    // Tambah controller baru untuk Pranota Gabungan PUML
+    Route::resource('pranota-puml', \App\Http\Controllers\PranotaPumlController::class)->middleware('can:payroll-view');
 
     // Perhitungan Lembur
     Route::get('/payroll/perhitungan-lembur', [\App\Http\Controllers\PerhitunganLemburController::class, 'index'])->name('payroll.perhitungan-lembur')->middleware('can:payroll-perhitungan-lembur-view');
+    Route::get('/payroll/pranota-lembur-karyawan', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'index'])->name('pranota-lembur-karyawan.index')->middleware('can:payroll-view');
+    Route::post('/payroll/pranota-lembur-karyawan', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'store'])->name('pranota-lembur-karyawan.store')->middleware('can:payroll-perhitungan-lembur-create');
+    Route::get('/payroll/pranota-lembur-karyawan/{id}', [\App\Http\Controllers\PranotaLemburKaryawanController::class, 'show'])->name('pranota-lembur-karyawan.show')->middleware('can:payroll-view');
     
     // Master Tunjangan
     Route::resource('master/tunjangan', \App\Http\Controllers\MasterTunjanganController::class)
