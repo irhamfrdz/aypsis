@@ -1,6 +1,31 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Custom Select2 styling to match Tailwind */
+    .select2-container--default .select2-selection--single {
+        height: 42px;
+        border-color: #d1d5db;
+        border-radius: 0.375rem;
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 28px;
+        color: #374151;
+        font-size: 0.875rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 1px #3b82f6;
+    }
+</style>
+
 <div class="container mx-auto px-4 py-6">
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <div class="flex items-center justify-between">
@@ -61,10 +86,21 @@
     </div>
 </div>
 
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const kapalSelect = document.getElementById('kapal_id');
-    const voyageSelect = document.getElementById('no_voyage');
+$(document).ready(function() {
+    // Initialize Select2
+    $('#kapal_id').select2({
+        placeholder: '--Pilih Kapal--',
+        width: '100%'
+    });
+    
+    $('#no_voyage').select2({
+        placeholder: '-PILIH KAPAL TERLEBIH DAHULU-',
+        width: '100%'
+    });
+
     const manualVoyageInput = document.getElementById('manual_voyage');
     const toggleManualVoyageBtn = document.getElementById('toggleManualVoyage');
     const goToIndexFilteredBtn = document.getElementById('goToIndexFiltered');
@@ -73,27 +109,31 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleManualVoyageBtn.addEventListener('click', function() {
         if (manualVoyageInput.classList.contains('hidden')) {
             manualVoyageInput.classList.remove('hidden');
-            voyageSelect.classList.add('hidden');
-            voyageSelect.removeAttribute('required');
+            $('#no_voyage').next('.select2-container').addClass('hidden');
+            $('#no_voyage').removeAttr('required');
             manualVoyageInput.setAttribute('required', 'required');
             this.innerHTML = '<i class="fas fa-list"></i> List';
         } else {
             manualVoyageInput.classList.add('hidden');
-            voyageSelect.classList.remove('hidden');
+            $('#no_voyage').next('.select2-container').removeClass('hidden');
             manualVoyageInput.removeAttribute('required');
-            voyageSelect.setAttribute('required', 'required');
+            $('#no_voyage').attr('required', 'required');
             this.innerHTML = '<i class="fas fa-edit"></i> Baru';
         }
     });
 
-    kapalSelect.addEventListener('change', function() {
+    $('#kapal_id').on('change', function() {
         const namaKapal = this.value;
+        const voyageSelect = document.getElementById('no_voyage');
+        
         voyageSelect.innerHTML = '<option value="">Loading...</option>';
         voyageSelect.disabled = true;
+        $('#no_voyage').trigger('change.select2');
 
         if (!namaKapal) {
             voyageSelect.innerHTML = '<option value="">-PILIH KAPAL TERLEBIH DAHULU-</option>';
             voyageSelect.disabled = false;
+            $('#no_voyage').trigger('change.select2');
             return;
         }
 
@@ -125,18 +165,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('No voyages found');
             }
             voyageSelect.disabled = false;
+            $('#no_voyage').trigger('change.select2');
         })
         .catch(err => {
             console.error('Fetch error:', err);
             voyageSelect.innerHTML = '<option value="">Error loading voyage</option>';
             voyageSelect.disabled = false;
+            $('#no_voyage').trigger('change.select2');
         });
     });
 
     // Go to index with filter
     goToIndexFilteredBtn.addEventListener('click', function() {
-        const namaKapal = kapalSelect.value;
-        const voyage = manualVoyageInput.classList.contains('hidden') ? voyageSelect.value : manualVoyageInput.value;
+        const namaKapal = $('#kapal_id').val();
+        const voyage = !manualVoyageInput.classList.contains('hidden') ? manualVoyageInput.value : $('#no_voyage').val();
 
         if (!namaKapal || !voyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
@@ -154,8 +196,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Go to create BL manual
     const goToCreateBlBtn = document.getElementById('goToCreateBl');
     goToCreateBlBtn.addEventListener('click', function() {
-        const namaKapal = kapalSelect.value;
-        const voyage = manualVoyageInput.classList.contains('hidden') ? voyageSelect.value : manualVoyageInput.value;
+        const namaKapal = $('#kapal_id').val();
+        const voyage = !manualVoyageInput.classList.contains('hidden') ? manualVoyageInput.value : $('#no_voyage').val();
 
         if (!namaKapal || !voyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
@@ -173,8 +215,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Export Excel with filter
     const exportExcelBtn = document.getElementById('exportExcelBtn');
     exportExcelBtn.addEventListener('click', function() {
-        const namaKapal = kapalSelect.value;
-        const voyage = manualVoyageInput.classList.contains('hidden') ? voyageSelect.value : manualVoyageInput.value;
+        const namaKapal = $('#kapal_id').val();
+        const voyage = !manualVoyageInput.classList.contains('hidden') ? manualVoyageInput.value : $('#no_voyage').val();
 
         if (!namaKapal || !voyage) {
             alert('Silakan pilih kapal dan voyage terlebih dahulu');
