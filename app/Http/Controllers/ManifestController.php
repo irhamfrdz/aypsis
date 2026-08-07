@@ -138,7 +138,8 @@ class ManifestController extends Controller
             \Illuminate\Support\Facades\Artisan::call('sync:naik-kapal-to-manifest', [
                 '--voyage' => $noVoyage,
                 '--kapal' => $namaKapal,
-                '--force' => true
+                '--force' => true,
+                '--nama-barang-only' => true
             ]);
 
             return redirect()->back()->with('success', 'Sinkronisasi data berhasil dijalankan.');

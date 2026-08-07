@@ -19,6 +19,7 @@ class SyncNaikKapalToManifest extends Command
                             {--kapal= : Specific ship name to sync}
                             {--dry-run : Show what would be synced without actually syncing}
                             {--force : Force sync even if manifest already exists}
+                            {--nama-barang-only : Only update the nama_barang field on existing manifests}
                             {--all : Sync all records, not just those with sudah_ob=true}';
 
     /**
@@ -37,6 +38,7 @@ class SyncNaikKapalToManifest extends Command
         $kapal = $this->option('kapal');
         $dryRun = $this->option('dry-run');
         $force = $this->option('force');
+        $namaBarangOnly = $this->option('nama-barang-only');
         $all = $this->option('all');
 
         $this->info('=== Sync NaikKapal to Manifest ===');
@@ -166,7 +168,11 @@ class SyncNaikKapalToManifest extends Command
                             $manifestData['term'] = $tandaTerima->term ? ($tandaTerima->term instanceof \App\Models\Term ? $tandaTerima->term->kode : $tandaTerima->term) : null;
 
                             if ($existingManifest && $force) {
-                                $existingManifest->update($manifestData);
+                                if ($namaBarangOnly) {
+                                    $existingManifest->update(['nama_barang' => $manifestData['nama_barang']]);
+                                } else {
+                                    $existingManifest->update($manifestData);
+                                }
                             } else {
                                 $lastManifest = Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
                                 if ($lastManifest && $lastManifest->nomor_bl) {
@@ -280,7 +286,11 @@ class SyncNaikKapalToManifest extends Command
 
                 if ($existingManifest && $force) {
                     // Update existing
-                    $existingManifest->update($manifestData);
+                    if ($namaBarangOnly) {
+                        $existingManifest->update(['nama_barang' => $manifestData['nama_barang']]);
+                    } else {
+                        $existingManifest->update($manifestData);
+                    }
                 } else {
                     // Create new
                     Manifest::create($manifestData);
