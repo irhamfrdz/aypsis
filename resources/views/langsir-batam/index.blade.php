@@ -384,11 +384,12 @@ function showBulkAlert(title, message, type = 'error') {
 
 function convertExcelDate(serial) {
     if (!serial || isNaN(serial) || serial.toString().length !== 5) return serial;
-    const excelEpoch = new Date(1899, 11, 30); // Excel epoch starts at Dec 30 1899 for some reason
-    const jsDate = new Date(excelEpoch.getTime() + (parseInt(serial) * 86400000));
-    const year = jsDate.getFullYear();
-    const month = String(jsDate.getMonth() + 1).padStart(2, '0');
-    const day = String(jsDate.getDate()).padStart(2, '0');
+    // Excel epoch issue workaround using UTC to avoid historical timezone offset shifts (e.g., Batavia Mean Time vs WIB)
+    const daysSince1970 = parseInt(serial) - 25569;
+    const jsDate = new Date(daysSince1970 * 86400000);
+    const year = jsDate.getUTCFullYear();
+    const month = String(jsDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(jsDate.getUTCDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
 
