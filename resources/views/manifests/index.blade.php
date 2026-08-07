@@ -58,7 +58,7 @@
                         Update Manifest
                     </button>
                     @endcan
-                    <form action="{{ route('manifests.sync') }}" method="POST" class="inline">
+                    <form action="{{ route('report.manifests.sync') }}" method="POST" class="inline">
                         @csrf
                         <input type="hidden" name="nama_kapal" value="{{ $namaKapal }}">
                         <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
