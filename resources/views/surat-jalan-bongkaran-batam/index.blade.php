@@ -1059,6 +1059,7 @@
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Tujuan Pengiriman</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">F/E</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Size</th>
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
                                     @if(empty($selectedVoyage))
                                     <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">No Voyage</th>
@@ -2802,7 +2803,7 @@ function closeBulkModal() {
     bulkParsedRows = [];
 }
 
-function parseBulkData() {
+async function parseBulkData() {
     const textarea = document.getElementById('bulkTextarea');
     const rawText = textarea.value.trim();
 
@@ -2810,6 +2811,15 @@ function parseBulkData() {
         showBulkAlert('Data Kosong', 'Silakan paste atau ketik data surat jalan terlebih dahulu.', 'error');
         return;
     }
+
+    const parseInfo = document.getElementById('bulkParseInfo');
+    const submitBtn = document.getElementById('btnSubmitBulk');
+    const previewContainer = document.getElementById('bulkPreviewContainer');
+    
+    // Show loading indicator
+    previewContainer.classList.remove('hidden');
+    parseInfo.innerHTML = '<span class="text-blue-500 font-semibold">Mengecek ukuran kontainer...</span>';
+    submitBtn.disabled = true;
 
     const lines = rawText.split('\n').filter(line => line.trim() !== '');
     const isVoyageEmpty = '{{ $selectedVoyage }}' === '';
@@ -2819,6 +2829,36 @@ function parseBulkData() {
     ];
     if (isVoyageEmpty) {
         columnKeys.push('no_voyage');
+    }
+
+    // Ekstrak semua no_kontainer
+    const noKontainers = [];
+    lines.forEach(line => {
+        const cols = line.split(';');
+        const noKontainerCol = cols[2] ? cols[2].trim() : '';
+        if (noKontainerCol) {
+            noKontainers.push(noKontainerCol);
+        }
+    });
+
+    let containerSizes = {};
+    if (noKontainers.length > 0) {
+        try {
+            const response = await fetch('{{ route("surat-jalan-bongkaran-batam.check-container-sizes") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ no_kontainers: noKontainers })
+            });
+            const data = await response.json();
+            if (data.success) {
+                containerSizes = data.sizes;
+            }
+        } catch (error) {
+            console.error('Error fetching container sizes:', error);
+        }
     }
 
     bulkParsedRows = [];
@@ -2852,21 +2892,19 @@ function parseBulkData() {
             const m = String(jsDate.getUTCMonth() + 1).padStart(2, '0');
             const d = String(jsDate.getUTCDate()).padStart(2, '0');
             displayTanggal = `${d}/${m}/${y}`;
-            // Update properti tanggal_surat_jalan agar dikirim ke server dengan format Y-m-d, bukan format serial excel
             row.tanggal_surat_jalan = `${y}-${m}-${d}`;
         }
 
-        // Build preview row
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-gray-50';
 
-        // Hitung estimasi biaya
         let displayBiaya = 0;
         let matchedItem = null;
         const rowLokasi = (row.lokasi || 'batam').toLowerCase();
         let searchTujuan = (row.tujuan_pengiriman || '').trim();
+        const kontainerSize = containerSizes[row.no_kontainer] || '20'; // Default to 20 if unknown
+        const displaySize = containerSizes[row.no_kontainer] || '<span class="text-amber-500 font-semibold" title="Default 20ft">20*</span>';
         
-        // Parse nama expedisi dan ring (jika format "Lokasi (Ring X - EXPEDISI)")
         const matchTujuan = searchTujuan.match(/^(.*?)\s*\((?:Ring\s+(\d+)\s*-\s*)?([A-Za-z0-9]+)\)$/i);
         if (matchTujuan) {
             searchTujuan = matchTujuan[1].trim();
@@ -2882,7 +2920,11 @@ function parseBulkData() {
             const isFull = feType.toLowerCase() === 'full';
             
             if (rowLokasi === 'batam') {
-                displayBiaya = isFull ? matchedItem.uj20_full : matchedItem.uj20_empty;
+                if (kontainerSize == '40' || kontainerSize == '45') {
+                    displayBiaya = isFull ? matchedItem.uj40_full : matchedItem.uj40_empty;
+                } else {
+                    displayBiaya = isFull ? matchedItem.uj20_full : matchedItem.uj20_empty;
+                }
             } else {
                 displayBiaya = matchedItem.uj20 || 0;
             }
@@ -2901,6 +2943,7 @@ function parseBulkData() {
             row.lokasi || 'batam',
             row.tujuan_pengiriman || '-',
             row.f_e || 'Full',
+            displaySize,
             displayBiaya > 0 ? 'Rp ' + displayBiaya.toLocaleString('id-ID') : '<span class="text-gray-400 italic">Auto (Berdasarkan Kontainer)</span>'
         ];
 
@@ -2927,9 +2970,6 @@ function parseBulkData() {
     });
 
     // Show preview
-    const previewContainer = document.getElementById('bulkPreviewContainer');
-    const parseInfo = document.getElementById('bulkParseInfo');
-    const submitBtn = document.getElementById('btnSubmitBulk');
 
     if (bulkParsedRows.length > 0) {
         previewContainer.classList.remove('hidden');

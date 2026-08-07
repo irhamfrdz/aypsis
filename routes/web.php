@@ -3608,6 +3608,9 @@ Route::middleware([
             ->middleware('can:surat-jalan-bongkaran-batam-view');
         Route::get('/surat-jalan-bongkaran-batam/get-voyages', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'getVoyages'])
             ->name('surat-jalan-bongkaran-batam.get-voyages')
+            ->middleware('permission:surat-jalan-bongkaran-batam-view');
+        Route::post('/surat-jalan-bongkaran-batam/check-container-sizes', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'checkContainerSizes'])
+            ->name('surat-jalan-bongkaran-batam.check-container-sizes')
             ->middleware('can:surat-jalan-bongkaran-batam-view');
         Route::get('/penarikan-surat-jalan-batam', [\App\Http\Controllers\SuratJalanBongkaranBatamController::class, 'penarikanIndex'])
             ->name('penarikan-surat-jalan-batam.index')
