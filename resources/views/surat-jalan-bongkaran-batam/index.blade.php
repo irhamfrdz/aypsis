@@ -2858,7 +2858,11 @@ async function parseBulkData() {
 
         let displayBiaya = 0;
         let matchedItem = null;
-        const rowLokasi = (row.lokasi || 'batam').toLowerCase();
+        let rowLokasi = (row.lokasi || 'batam').toLowerCase();
+        if (rowLokasi !== 'batam' && rowLokasi !== 'jakarta') {
+            rowLokasi = 'batam'; // Fallback to batam for Surat Jalan Bongkaran Batam
+        }
+        
         let searchTujuan = (row.tujuan_pengiriman || '').trim();
         const kontainerSize = containerSizes[row.no_kontainer] || '20'; // Default to 20 if unknown
         const displaySize = containerSizes[row.no_kontainer] || '<span class="text-amber-500 font-semibold" title="Default 20ft">20*</span>';
