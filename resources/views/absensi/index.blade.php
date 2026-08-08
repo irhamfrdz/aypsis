@@ -810,21 +810,24 @@
         document.getElementById('edit_nik').value = nik;
         document.getElementById('edit_tanggal').value = tanggal;
         
-        const setEditValue = (id, val) => {
+        const setAndLockEdit = (id, val) => {
             const el = document.getElementById(id);
-            if (el) {
-                el.value = val || '';
+            el.value = val || '';
+            if (val) {
+                el.readOnly = true;
+                el.classList.add('bg-gray-200', 'cursor-not-allowed');
+            } else {
                 el.readOnly = false;
                 el.classList.remove('bg-gray-200', 'cursor-not-allowed');
             }
         };
 
-        setEditValue('edit_waktu_masuk', masuk);
-        setEditValue('edit_waktu_istirahat_keluar', isOut);
-        setEditValue('edit_waktu_istirahat_masuk', isIn);
-        setEditValue('edit_waktu_pulang', pulang);
-        setEditValue('edit_waktu_lembur_masuk', lemburIn);
-        setEditValue('edit_waktu_lembur_pulang', lemburOut);
+        setAndLockEdit('edit_waktu_masuk', masuk);
+        setAndLockEdit('edit_waktu_istirahat_keluar', isOut);
+        setAndLockEdit('edit_waktu_istirahat_masuk', isIn);
+        setAndLockEdit('edit_waktu_pulang', pulang);
+        setAndLockEdit('edit_waktu_lembur_masuk', lemburIn);
+        setAndLockEdit('edit_waktu_lembur_pulang', lemburOut);
         
         document.getElementById('editModal').classList.remove('hidden');
     }
