@@ -104,7 +104,9 @@ class PranotaPumlController extends Controller
     
     public function show($id)
     {
-        $puml = \App\Models\PranotaPuml::with(['uangMakans.details.karyawan', 'lemburs.karyawans.karyawan'])->findOrFail($id);
+        $puml = \App\Models\PranotaPuml::with(['uangMakans.details.karyawan', 'lemburs.karyawans.karyawan', 'potongans'])->findOrFail($id);
+        
+        $potonganMap = $puml->potongans->keyBy('karyawan_id');
         
         // Kita butuh merekap data berdasarkan karyawan_id
         $karyawanRekap = [];
@@ -113,10 +115,15 @@ class PranotaPumlController extends Controller
             foreach ($um->details as $d) {
                 $kid = $d->karyawan_id;
                 if (!isset($karyawanRekap[$kid])) {
+                    $pot = $potonganMap->get($kid);
                     $karyawanRekap[$kid] = [
                         'karyawan' => $d->karyawan,
                         'total_uang_makan' => 0,
-                        'total_lembur' => 0
+                        'total_lembur' => 0,
+                        'pot_utang' => $pot ? $pot->pot_utang : 0,
+                        'pot_bpjs' => $pot ? $pot->pot_bpjs : 0,
+                        'pot_pph' => $pot ? $pot->pot_pph : 0,
+                        'pot_terlambat' => $pot ? $pot->pot_terlambat : 0,
                     ];
                 }
                 $karyawanRekap[$kid]['total_uang_makan'] += $d->total_akhir;
@@ -127,10 +134,15 @@ class PranotaPumlController extends Controller
             foreach ($lm->karyawans as $d) {
                 $kid = $d->karyawan_id;
                 if (!isset($karyawanRekap[$kid])) {
+                    $pot = $potonganMap->get($kid);
                     $karyawanRekap[$kid] = [
                         'karyawan' => $d->karyawan,
                         'total_uang_makan' => 0,
-                        'total_lembur' => 0
+                        'total_lembur' => 0,
+                        'pot_utang' => $pot ? $pot->pot_utang : 0,
+                        'pot_bpjs' => $pot ? $pot->pot_bpjs : 0,
+                        'pot_pph' => $pot ? $pot->pot_pph : 0,
+                        'pot_terlambat' => $pot ? $pot->pot_terlambat : 0,
                     ];
                 }
                 $karyawanRekap[$kid]['total_lembur'] += $d->total_akhir;
@@ -138,6 +150,29 @@ class PranotaPumlController extends Controller
         }
         
         return view('pranota-puml.show', compact('puml', 'karyawanRekap'));
+    }
+
+    public function storePotongan(Request $request, $id)
+    {
+        $puml = \App\Models\PranotaPuml::findOrFail($id);
+        $potonganData = $request->input('potongan', []);
+        
+        foreach ($potonganData as $karyawanId => $data) {
+            \App\Models\PranotaPumlPotongan::updateOrCreate(
+                [
+                    'pranota_puml_id' => $puml->id,
+                    'karyawan_id' => $karyawanId
+                ],
+                [
+                    'pot_utang' => preg_replace('/[^0-9-]/', '', $data['pot_utang'] ?? '0'),
+                    'pot_bpjs' => preg_replace('/[^0-9-]/', '', $data['pot_bpjs'] ?? '0'),
+                    'pot_pph' => preg_replace('/[^0-9-]/', '', $data['pot_pph'] ?? '0'),
+                    'pot_terlambat' => preg_replace('/[^0-9-]/', '', $data['pot_terlambat'] ?? '0'),
+                ]
+            );
+        }
+        
+        return back()->with('success', 'Data potongan berhasil disimpan!');
     }
 
     public function destroy($id)

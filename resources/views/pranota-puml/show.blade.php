@@ -50,45 +50,117 @@
 
     <!-- Rekap per Karyawan -->
     <div class="bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-xl border border-gray-100 overflow-hidden mb-6">
-        <header class="px-6 py-4 bg-gray-50/80 border-b border-gray-200">
-            <h2 class="text-lg font-bold text-gray-800">Rincian Penerimaan Karyawan</h2>
-        </header>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left">
-                <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th scope="col" class="px-6 py-4 font-semibold">NIK</th>
-                        <th scope="col" class="px-6 py-4 font-semibold">Nama Karyawan</th>
-                        <th scope="col" class="px-6 py-4 font-semibold text-right">Uang Makan</th>
-                        <th scope="col" class="px-6 py-4 font-semibold text-right">Uang Lembur</th>
-                        <th scope="col" class="px-6 py-4 font-bold text-right text-indigo-600">Total Terima</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 bg-white">
-                    @foreach($karyawanRekap as $rekap)
-                        <tr class="hover:bg-gray-50/50 transition-colors duration-200">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-semibold text-gray-600">{{ $rekap['karyawan']->nik ?? '-' }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-bold text-gray-900">{{ $rekap['karyawan']->nama_lengkap ?? 'Unknown' }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <div class="text-gray-600 font-medium">Rp {{ number_format($rekap['total_uang_makan'], 0, ',', '.') }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <div class="text-gray-600 font-medium">Rp {{ number_format($rekap['total_lembur'], 0, ',', '.') }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right bg-indigo-50/30">
-                                <div class="font-extrabold text-indigo-700">Rp {{ number_format($rekap['total_uang_makan'] + $rekap['total_lembur'], 0, ',', '.') }}</div>
-                            </td>
+        <form action="{{ route('pranota-puml.store-potongan', $puml->id) }}" method="POST">
+            @csrf
+            <header class="px-6 py-4 bg-gray-50/80 border-b border-gray-200 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-gray-800">Rincian Penerimaan Karyawan</h2>
+                <button type="submit" class="no-print inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200">
+                    <i class="fas fa-save mr-2"></i> Simpan Potongan
+                </button>
+            </header>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 font-semibold">NIK</th>
+                            <th scope="col" class="px-6 py-4 font-semibold">Nama Karyawan</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-right">Uang Makan</th>
+                            <th scope="col" class="px-6 py-4 font-semibold text-right">Uang Lembur</th>
+                            <th scope="col" class="px-4 py-4 font-semibold text-right no-print">Pot. Utang</th>
+                            <th scope="col" class="px-4 py-4 font-semibold text-right no-print">Pot. BPJS</th>
+                            <th scope="col" class="px-4 py-4 font-semibold text-right no-print">Pot. PPh</th>
+                            <th scope="col" class="px-4 py-4 font-semibold text-right no-print">Pot. Terlambat</th>
+                            <th scope="col" class="px-6 py-4 font-bold text-right text-indigo-600">Total Terima</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
+                        @foreach($karyawanRekap as $kid => $rekap)
+                            @php
+                                $totalAwal = $rekap['total_uang_makan'] + $rekap['total_lembur'];
+                                $potUtang = $rekap['pot_utang'] ?? 0;
+                                $potBpjs = $rekap['pot_bpjs'] ?? 0;
+                                $potPph = $rekap['pot_pph'] ?? 0;
+                                $potTerlambat = $rekap['pot_terlambat'] ?? 0;
+                                $totalAkhir = $totalAwal - ($potUtang + $potBpjs + $potPph + $potTerlambat);
+                            @endphp
+                            <tr class="hover:bg-gray-50/50 transition-colors duration-200 karyawan-row" data-total-awal="{{ $totalAwal }}">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="font-semibold text-gray-600">{{ $rekap['karyawan']->nik ?? '-' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="font-bold text-gray-900">{{ $rekap['karyawan']->nama_lengkap ?? 'Unknown' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    <div class="text-gray-600 font-medium">Rp {{ number_format($rekap['total_uang_makan'], 0, ',', '.') }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    <div class="text-gray-600 font-medium">Rp {{ number_format($rekap['total_lembur'], 0, ',', '.') }}</div>
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-right no-print">
+                                    <input type="text" name="potongan[{{ $kid }}][pot_utang]" value="{{ number_format($potUtang, 0, ',', '.') }}" class="potongan-input text-right w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-right no-print">
+                                    <input type="text" name="potongan[{{ $kid }}][pot_bpjs]" value="{{ number_format($potBpjs, 0, ',', '.') }}" class="potongan-input text-right w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-right no-print">
+                                    <input type="text" name="potongan[{{ $kid }}][pot_pph]" value="{{ number_format($potPph, 0, ',', '.') }}" class="potongan-input text-right w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </td>
+                                <td class="px-2 py-4 whitespace-nowrap text-right no-print">
+                                    <input type="text" name="potongan[{{ $kid }}][pot_terlambat]" value="{{ number_format($potTerlambat, 0, ',', '.') }}" class="potongan-input text-right w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right bg-indigo-50/30">
+                                    <div class="font-extrabold text-indigo-700 total-akhir-text">Rp {{ number_format($totalAkhir, 0, ',', '.') }}</div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </form>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('.potongan-input');
+        
+        inputs.forEach(input => {
+            input.addEventListener('input', function(e) {
+                // Format rupiah
+                let value = this.value.replace(/[^,\d]/g, '').toString();
+                let split = value.split(',');
+                let sisa = split[0].length % 3;
+                let rupiah = split[0].substr(0, sisa);
+                let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+                if (ribuan) {
+                    let separator = sisa ? '.' : '';
+                    rupiah += separator + ribuan.join('.');
+                }
+
+                rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+                this.value = rupiah;
+                
+                // Kalkulasi ulang total akhir baris ini
+                const row = this.closest('.karyawan-row');
+                const totalAwal = parseFloat(row.getAttribute('data-total-awal'));
+                
+                let totalPotongan = 0;
+                row.querySelectorAll('.potongan-input').forEach(inp => {
+                    const val = parseFloat(inp.value.replace(/\./g, '')) || 0;
+                    totalPotongan += val;
+                });
+                
+                const totalAkhir = totalAwal - totalPotongan;
+                
+                // Format total akhir ke rupiah
+                row.querySelector('.total-akhir-text').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalAkhir);
+            });
+        });
+    });
+</script>
+@endpush
 
 <style>
     @media print {

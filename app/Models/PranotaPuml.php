@@ -34,4 +34,9 @@ class PranotaPuml extends Model
     {
         return $this->hasMany(PranotaLemburKaryawanHeader::class, 'pranota_puml_id');
     }
+
+    public function potongans()
+    {
+        return $this->hasMany(PranotaPumlPotongan::class, 'pranota_puml_id');
+    }
 }
