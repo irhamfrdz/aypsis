@@ -6832,5 +6832,9 @@ Route::middleware(['auth',
     Route::put('uang-makan/{uang_makan}', [UangMakanController::class, 'update'])->name('uang-makan.update')->middleware('can:data-uang-makan-edit');
     Route::delete('uang-makan/{uang_makan}', [UangMakanController::class, 'destroy'])->name('uang-makan.destroy')->middleware('can:data-uang-makan-delete');
     Route::post('uang-makan/bulk-delete', [UangMakanController::class, 'bulkDelete'])->name('uang-makan.bulk-delete')->middleware('can:data-uang-makan-delete');
+
+    // Rekap Perbaikan Kontainer
+    Route::get('rekap-perbaikan-kontainer', [\App\Http\Controllers\RekapPerbaikanKontainerController::class, 'index'])->name('rekap-perbaikan-kontainer.index');
+    Route::get('rekap-perbaikan-kontainer/show', [\App\Http\Controllers\RekapPerbaikanKontainerController::class, 'show'])->name('rekap-perbaikan-kontainer.show');
 });
 
