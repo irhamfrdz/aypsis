@@ -629,7 +629,8 @@
                     <thead>
                         <tr>
                             <th style="width: 6%; border: 1.5px solid #000; padding: 5px; font-size: 11px;">NO.</th>
-                            <th style="width: 44%; border: 1.5px solid #000; padding: 5px; font-size: 11px;">NAMA</th>
+                            <th style="width: 15%; border: 1.5px solid #000; padding: 5px; font-size: 11px;">NIK</th>
+                            <th style="width: 29%; border: 1.5px solid #000; padding: 5px; font-size: 11px;">NAMA</th>
                             <th style="width: 25%; border: 1.5px solid #000; padding: 5px; font-size: 11px;">JUMLAH</th>
                             <th style="width: 25%; border: 1.5px solid #000; padding: 5px; font-size: 11px;">PARAF</th>
                         </tr>
@@ -638,6 +639,7 @@
                         @foreach($details as $index => $tk)
                         <tr>
                             <td class="text-center" style="border: 1.5px solid #000; padding: 4px; font-size: 11px;">{{ $index + 1 }}</td>
+                            <td class="text-center" style="border: 1.5px solid #000; padding: 4px 8px; font-size: 11px;">{{ $tk->buruh->nik ?? '-' }}</td>
                             <td style="border: 1.5px solid #000; padding: 4px 8px; font-size: 11px; text-transform: uppercase;">{{ $tk->buruh->nama ?? '-' }}</td>
                             <td class="text-right" style="border: 1.5px solid #000; padding: 4px 8px; font-size: 11px;">{{ number_format($tk->nominal, 0, ',', '.') }}</td>
                             <td style="border: 1.5px solid #000; padding: 0; position: relative; height: 28px;">
@@ -648,7 +650,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="2" style="border: none; padding: 8px;"></td>
+                            <td colspan="3" style="border: none; padding: 8px;"></td>
                             <td class="text-right" style="border-bottom: 3px double #000; padding: 6px 8px; font-weight: bold; font-size: 12px;">
                                 {{ number_format($details->sum('nominal'), 0, ',', '.') }}
                             </td>
