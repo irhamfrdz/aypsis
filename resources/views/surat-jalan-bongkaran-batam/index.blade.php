@@ -2748,7 +2748,9 @@ const tujuanData = {
     batam: [
         @foreach($pricelistUangJalanBatams as $t)
         {
-            value: {!! json_encode(strtolower($t->expedisi)) !!},
+            expedisi: {!! json_encode(strtoupper($t->expedisi)) !!},
+            ring: {!! json_encode((string)$t->ring) !!},
+            wilayahs: {!! json_encode(array_map('trim', explode(',', strtolower($t->wilayah)))) !!},
             uj20_full: {{ $t->tarif_20ft_full ?? 0 }},
             uj20_empty: {{ $t->tarif_20ft_empty ?? 0 }},
             uj40_full: {{ $t->tarif_40ft_full ?? 0 }},
@@ -2758,7 +2760,6 @@ const tujuanData = {
     ],
     bintan: []
 };
-
 
 async function parseBulkData() {
     const textarea = document.getElementById('bulkTextarea');
@@ -2862,14 +2863,22 @@ async function parseBulkData() {
         const kontainerSize = containerSizes[row.no_kontainer] || '20'; // Default to 20 if unknown
         const displaySize = containerSizes[row.no_kontainer] || '<span class="text-amber-500 font-semibold" title="Default 20ft">20*</span>';
         
+        let requestedExpedisi = null;
+        let requestedRing = null;
         const matchTujuan = searchTujuan.match(/^(.*?)\s*\((?:Ring\s+(\d+)\s*-\s*)?([A-Za-z0-9]+)\)$/i);
         if (matchTujuan) {
             searchTujuan = matchTujuan[1].trim();
+            requestedRing = matchTujuan[2] ? matchTujuan[2].trim() : null;
+            requestedExpedisi = matchTujuan[3] ? matchTujuan[3].toUpperCase().trim() : null;
         }
         searchTujuan = searchTujuan.toLowerCase();
 
         if (tujuanData[rowLokasi]) {
-            matchedItem = tujuanData[rowLokasi].find(item => item.value.toLowerCase() === searchTujuan);
+            matchedItem = tujuanData[rowLokasi].find(item => {
+                if (requestedExpedisi && item.expedisi !== requestedExpedisi) return false;
+                if (requestedRing && item.ring != requestedRing) return false;
+                return item.wilayahs.includes(searchTujuan);
+            });
         }
         
         if (matchedItem) {
