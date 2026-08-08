@@ -119,13 +119,15 @@
                 </tr>
                 <tr style="background-color: #f8f9fa;">
                     <th style="border: 1px solid #000; font-weight: bold; text-align: center;">NO</th>
-                    <th colspan="2" style="border: 1px solid #000; font-weight: bold;">NAMA</th>
+                    <th style="border: 1px solid #000; font-weight: bold;">NIK</th>
+                    <th style="border: 1px solid #000; font-weight: bold;">NAMA</th>
                     <th style="border: 1px solid #000; font-weight: bold; text-align: right;">JUMLAH</th>
                 </tr>
                 @foreach($details as $index => $tk)
                     <tr>
                         <td style="border: 1px solid #000; text-align: center;">{{ $index + 1 }}</td>
-                        <td colspan="2" style="border: 1px solid #000; text-transform: uppercase;">{{ $tk->buruh->nama ?? '-' }}</td>
+                        <td style="border: 1px solid #000; text-align: center;">{{ $tk->buruh->nik ?? '-' }}</td>
+                        <td style="border: 1px solid #000; text-transform: uppercase;">{{ $tk->buruh->nama ?? '-' }}</td>
                         <td style="border: 1px solid #000; text-align: right;">{{ $tk->nominal }}</td>
                     </tr>
                 @endforeach
