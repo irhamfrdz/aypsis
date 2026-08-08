@@ -2744,6 +2744,22 @@ function closeBulkModal() {
     bulkParsedRows = [];
 }
 
+const tujuanData = {
+    batam: [
+        @foreach($pricelistUangJalanBatams as $t)
+        {
+            value: {!! json_encode(strtolower($t->expedisi)) !!},
+            uj20_full: {{ $t->tarif_20ft_full ?? 0 }},
+            uj20_empty: {{ $t->tarif_20ft_empty ?? 0 }},
+            uj40_full: {{ $t->tarif_40ft_full ?? 0 }},
+            uj40_empty: {{ $t->tarif_40ft_empty ?? 0 }}
+        },
+        @endforeach
+    ],
+    bintan: []
+};
+
+
 async function parseBulkData() {
     const textarea = document.getElementById('bulkTextarea');
     const rawText = textarea.value.trim();
