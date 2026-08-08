@@ -55,9 +55,15 @@ class ProfileController extends Controller
 
         // Update basic user info
         User::where('id', $user->id)->update([
-            'name' => $request->name,
             'username' => $request->username,
         ]);
+
+        // Update name in karyawan table if it exists
+        if ($user->karyawan_id) {
+            \App\Models\Karyawan::where('id', $user->karyawan_id)->update([
+                'nama_lengkap' => $request->name,
+            ]);
+        }
 
         // Update password if provided
         if ($request->filled('new_password')) {

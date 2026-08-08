@@ -190,33 +190,46 @@ class PerhitunganLemburController extends Controller
                                 if ($rule->tipe_hari === $tipeHari) {
                                     $matchesTime = false;
                                     
-                                    if ($rule->jam_mulai) {
-                                        // Build Carbon boundaries for the rule
-                                        $ruleMulai = \Carbon\Carbon::parse($lm->format('Y-m-d') . ' ' . $rule->jam_mulai);
-                                        
-                                        // If rule jam_mulai is far before lembur masuk, it implies it's for the next day (e.g. masuk 17:00, rule 00:00)
-                                        if ($ruleMulai->copy()->addHours(6) < $lm) {
-                                            $ruleMulai->addDay();
-                                        }
-
+                                    if ($tipeHari === 'Hari Libur') {
+                                        // Evaluasi khusus Hari Libur berdasarkan durasi lembur (threshold 10 jam)
                                         if ($rule->is_sampai_selesai) {
-                                            if ($lp >= $ruleMulai) {
+                                            if ($durasiJam > 10) {
                                                 $matchesTime = true;
                                             }
-                                        } else if ($rule->jam_selesai) {
-                                            $ruleSelesai = \Carbon\Carbon::parse($ruleMulai->format('Y-m-d') . ' ' . $rule->jam_selesai);
-                                            // If rule jam_selesai is less than rule jam_mulai time, it crosses midnight
-                                            if ($ruleSelesai < $ruleMulai) {
-                                                $ruleSelesai->addDay();
-                                            }
-                                            
-                                            if ($lp >= $ruleMulai && $lp <= $ruleSelesai) {
+                                        } else {
+                                            if ($durasiJam <= 10) {
                                                 $matchesTime = true;
                                             }
                                         }
                                     } else {
-                                        // No time condition, matches by default
-                                        $matchesTime = true;
+                                        if ($rule->jam_mulai) {
+                                            // Build Carbon boundaries for the rule
+                                            $ruleMulai = \Carbon\Carbon::parse($lm->format('Y-m-d') . ' ' . $rule->jam_mulai);
+                                            
+                                            // If rule jam_mulai is far before lembur masuk, it implies it's for the next day (e.g. masuk 17:00, rule 00:00)
+                                            if ($ruleMulai->copy()->addHours(6) < $lm) {
+                                                $ruleMulai->addDay();
+                                            }
+
+                                            if ($rule->is_sampai_selesai) {
+                                                if ($lp >= $ruleMulai) {
+                                                    $matchesTime = true;
+                                                }
+                                            } else if ($rule->jam_selesai) {
+                                                $ruleSelesai = \Carbon\Carbon::parse($ruleMulai->format('Y-m-d') . ' ' . $rule->jam_selesai);
+                                                // If rule jam_selesai is less than rule jam_mulai time, it crosses midnight
+                                                if ($ruleSelesai < $ruleMulai) {
+                                                    $ruleSelesai->addDay();
+                                                }
+                                                
+                                                if ($lp >= $ruleMulai && $lp <= $ruleSelesai) {
+                                                    $matchesTime = true;
+                                                }
+                                            }
+                                        } else {
+                                            // No time condition, matches by default
+                                            $matchesTime = true;
+                                        }
                                     }
 
                                     if ($matchesTime) {

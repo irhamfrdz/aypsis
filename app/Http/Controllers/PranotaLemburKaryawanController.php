@@ -9,7 +9,8 @@ class PranotaLemburKaryawanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = \App\Models\PranotaLemburKaryawanHeader::query();
+        $query = \App\Models\PranotaLemburKaryawanHeader::query()
+            ->whereNull('pranota_puml_id');
 
         if ($request->filled('nomor_pranota')) {
             $query->where('nomor_pranota', 'like', '%' . $request->nomor_pranota . '%');

@@ -5201,11 +5201,11 @@ Route::middleware([
 Route::middleware(['auth'])->group(function () {
     Route::prefix('profile')->group(function () {
         Route::get('/', [\App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
-        Route::get('/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit')->middleware('can:profile-update');
-        Route::put('/account', [\App\Http\Controllers\ProfileController::class, 'updateAccount'])->name('profile.update.account')->middleware('can:profile-update');
-        Route::put('/personal', [\App\Http\Controllers\ProfileController::class, 'updatePersonal'])->name('profile.update.personal')->middleware('can:profile-update');
-        Route::post('/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.update.avatar')->middleware('can:profile-update');
-        Route::delete('/delete', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy')->middleware('can:profile-delete');
+        Route::get('/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/account', [\App\Http\Controllers\ProfileController::class, 'updateAccount'])->name('profile.update.account');
+        Route::put('/personal', [\App\Http\Controllers\ProfileController::class, 'updatePersonal'])->name('profile.update.personal');
+        Route::post('/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.update.avatar');
+        Route::delete('/delete', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
     });
 });
 
@@ -6817,8 +6817,8 @@ Route::middleware(['auth',
     Route::get('uang-lembur', [\App\Http\Controllers\UangLemburController::class, 'index'])->name('uang-lembur.index')->middleware('can:payroll-uang-karyawan-view');
     Route::get('uang-lembur/create', [\App\Http\Controllers\UangLemburController::class, 'create'])->name('uang-lembur.create')->middleware('can:payroll-uang-karyawan-create');
     Route::post('uang-lembur', [\App\Http\Controllers\UangLemburController::class, 'store'])->name('uang-lembur.store')->middleware('can:payroll-uang-karyawan-create');
-    Route::get('uang-lembur/{uangLembur}/edit', [\App\Http\Controllers\UangLemburController::class, 'edit'])->name('uang-lembur.edit')->middleware('can:payroll-uang-karyawan-update');
-    Route::put('uang-lembur/{uangLembur}', [\App\Http\Controllers\UangLemburController::class, 'update'])->name('uang-lembur.update')->middleware('can:payroll-uang-karyawan-update');
+    Route::get('uang-lembur/{uangLembur}/edit', [\App\Http\Controllers\UangLemburController::class, 'edit'])->name('uang-lembur.edit')->middleware('can:payroll-uang-karyawan-edit');
+    Route::put('uang-lembur/{uangLembur}', [\App\Http\Controllers\UangLemburController::class, 'update'])->name('uang-lembur.update')->middleware('can:payroll-uang-karyawan-edit');
     Route::delete('uang-lembur/{uangLembur}', [\App\Http\Controllers\UangLemburController::class, 'destroy'])->name('uang-lembur.destroy')->middleware('can:payroll-uang-karyawan-delete');
 
     Route::delete('uang-makan/bulk-delete', [UangMakanController::class, 'bulkDelete'])->name('uang-makan.bulk-delete')->middleware('can:data-uang-makan-delete');

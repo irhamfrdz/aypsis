@@ -364,12 +364,19 @@
                     <form method="POST" action="{{ route('profile.update.account') }}" class="p-6">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="name" value="{{ $user->name }}">
+                        <input type="hidden" name="username" value="{{ $user->username }}">
 
                         <div class="space-y-6">
                             <div class="space-y-2">
                                 <label for="current_password" class="block text-sm font-semibold text-gray-700">Password Saat Ini <span class="text-red-500">*</span></label>
-                                <input type="password" id="current_password" name="current_password"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent @error('current_password') border-red-300 @enderror">
+                                <div class="relative">
+                                    <input type="password" id="current_password" name="current_password"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent @error('current_password') border-red-300 @enderror">
+                                    <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none" onclick="togglePassword('current_password', this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                                 @error('current_password')
                                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                                 @enderror
@@ -377,8 +384,13 @@
 
                             <div class="space-y-2">
                                 <label for="new_password" class="block text-sm font-semibold text-gray-700">Password Baru <span class="text-red-500">*</span></label>
-                                <input type="password" id="new_password" name="new_password"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent @error('new_password') border-red-300 @enderror">
+                                <div class="relative">
+                                    <input type="password" id="new_password" name="new_password"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent @error('new_password') border-red-300 @enderror">
+                                    <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none" onclick="togglePassword('new_password', this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                                 @error('new_password')
                                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                                 @enderror
@@ -387,8 +399,13 @@
 
                             <div class="space-y-2">
                                 <label for="new_password_confirmation" class="block text-sm font-semibold text-gray-700">Konfirmasi Password Baru <span class="text-red-500">*</span></label>
-                                <input type="password" id="new_password_confirmation" name="new_password_confirmation"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <div class="relative">
+                                    <input type="password" id="new_password_confirmation" name="new_password_confirmation"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                    <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none" onclick="togglePassword('new_password_confirmation', this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -500,6 +517,21 @@ function closeDeleteModal() {
     document.getElementById('deleteModal').classList.add('hidden');
     document.querySelector('input[name="password"]').value = '';
     document.querySelector('input[name="confirmation"]').value = '';
+}
+
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
 }
 
 // Initialize

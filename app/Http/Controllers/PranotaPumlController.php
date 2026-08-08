@@ -139,4 +139,34 @@ class PranotaPumlController extends Controller
         
         return view('pranota-puml.show', compact('puml', 'karyawanRekap'));
     }
+
+    public function destroy($id)
+    {
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $puml = \App\Models\PranotaPuml::findOrFail($id);
+            
+            // Revert children (uang_makan and lembur) status back to 'draft' and remove relation
+            \App\Models\PranotaUangMakan::where('pranota_puml_id', $puml->id)->update([
+                'pranota_puml_id' => null,
+                'status' => 'draft'
+            ]);
+
+            \App\Models\PranotaLemburKaryawanHeader::where('pranota_puml_id', $puml->id)->update([
+                'pranota_puml_id' => null,
+                'status' => 'draft'
+            ]);
+
+            // Delete the parent
+            $puml->delete();
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return redirect()->route('pranota-puml.index')->with('success', 'Data Pranota PUML berhasil dihapus dan status pranota anak dikembalikan ke draft.');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return back()->with('error', 'Gagal menghapus data PUML: ' . $e->getMessage());
+        }
+    }
 }

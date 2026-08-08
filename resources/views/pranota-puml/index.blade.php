@@ -80,9 +80,21 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <a href="{{ route('pranota-puml.show', $pranota->id) }}" class="inline-flex items-center justify-center p-2 text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 rounded-full transition-colors duration-200" title="Detail">
-                                    <i class="fas fa-arrow-right text-sm"></i>
-                                </a>
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{ route('pranota-puml.show', $pranota->id) }}" class="inline-flex items-center justify-center p-2 text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 rounded-full transition-colors duration-200" title="Detail">
+                                        <i class="fas fa-arrow-right text-sm"></i>
+                                    </a>
+                                    
+                                    @can('payroll-delete')
+                                    <form action="{{ route('pranota-puml.destroy', $pranota->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus PUML ini? Data pranota anak (Uang Makan & Lembur) akan dikembalikan ke status draft.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="inline-flex items-center justify-center p-2 text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 rounded-full transition-colors duration-200" title="Hapus">
+                                            <i class="fas fa-trash text-sm"></i>
+                                        </button>
+                                    </form>
+                                    @endcan
+                                </div>
                             </td>
                         </tr>
                     @empty

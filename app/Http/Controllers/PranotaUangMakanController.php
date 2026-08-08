@@ -15,7 +15,10 @@ class PranotaUangMakanController extends Controller
 {
     public function index()
     {
-        $pranotas = PranotaUangMakan::with('details')->orderBy('created_at', 'desc')->get();
+        $pranotas = PranotaUangMakan::with('details')
+            ->whereNull('pranota_puml_id')
+            ->orderBy('created_at', 'desc')
+            ->get();
         return view('pranota-uang-makan.index', compact('pranotas'));
     }
 

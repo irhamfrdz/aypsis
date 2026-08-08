@@ -14,7 +14,7 @@
                     <p class="mt-1 text-sm text-gray-600">Pengaturan tarif lembur dengan Multi-Aturan Jam per Grup</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    @can('data-cuti-create')
+                    @can('payroll-uang-karyawan-create')
                     <a href="{{ route('uang-lembur.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200 shadow-sm">
                         Tambah Master Tarif
                     </a>
@@ -63,11 +63,11 @@
                         <h3 class="text-lg font-bold text-gray-900">{{ $lembur->group }} <span class="text-gray-500 text-sm font-normal">/ {{ $lembur->sub_group }}</span></h3>
                     </div>
                     <div class="flex gap-3">
-                        @can('data-cuti-edit')
+                        @can('payroll-uang-karyawan-edit')
                         <a href="{{ route('uang-lembur.edit', $lembur->id) }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-900">Edit Aturan</a>
                         @endcan
                         
-                        @can('data-cuti-delete')
+                        @can('payroll-uang-karyawan-delete')
                         <form action="{{ route('uang-lembur.destroy', $lembur->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus master tarif ini berserta semua aturannya?');">
                             @csrf
                             @method('DELETE')

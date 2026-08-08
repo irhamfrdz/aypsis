@@ -196,7 +196,7 @@ return [
                 'payroll-delete' => 'Hapus Payroll',
                 'payroll-uang-karyawan-view' => 'View Data Uang Karyawan',
                 'payroll-uang-karyawan-create' => 'Buat Data Uang Karyawan',
-                'payroll-uang-karyawan-update' => 'Edit Data Uang Karyawan',
+                'payroll-uang-karyawan-edit' => 'Edit Data Uang Karyawan',
                 'payroll-uang-karyawan-delete' => 'Hapus Data Uang Karyawan',
             ],
         ],
