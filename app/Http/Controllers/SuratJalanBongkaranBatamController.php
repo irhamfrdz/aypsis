@@ -1060,7 +1060,7 @@ class SuratJalanBongkaranBatamController extends Controller
                                         $is20ft = false;
                                     }
                                 }
-                                $isFull = (strtolower($rowFE) === 'full');
+                                $isFull = (strtolower($rowFE) === 'full' || strtolower($rowFE) === 'f');
 
                                 if ($is20ft) {
                                     $uangJalanNominal = $isFull ? ($matchedItem->tarif_20ft_full ?? 0) : ($matchedItem->tarif_20ft_empty ?? 0);

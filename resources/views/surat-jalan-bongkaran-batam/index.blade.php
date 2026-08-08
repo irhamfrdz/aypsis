@@ -2887,7 +2887,7 @@ async function parseBulkData() {
         
         if (matchedItem) {
             const feType = row.f_e || 'Full';
-            const isFull = feType.toLowerCase() === 'full';
+            const isFull = (feType.toLowerCase() === 'full' || feType.toLowerCase() === 'f');
             
             if (rowLokasi === 'batam') {
                 if (kontainerSize == '40' || kontainerSize == '45') {
