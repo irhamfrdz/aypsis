@@ -175,6 +175,12 @@ class PerhitunganLemburController extends Controller
                         $lm = Carbon::parse($lemburMasuk->waktu);
                         $lp = Carbon::parse($lemburPulang->waktu);
                         
+                        // Jika jam pulang terekam lebih awal dari jam masuk (melewati tengah malam)
+                        // asumsikan jam pulang adalah di keesokan harinya
+                        if ($lp < $lm) {
+                            $lp->addDay();
+                        }
+                        
                         $durationMinutes = $lm->diffInMinutes($lp);
                         $durasiJam = ceil($durationMinutes / 60);
 
