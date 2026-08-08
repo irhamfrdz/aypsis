@@ -5,12 +5,13 @@
     <title>SPKBM - {{ $validated['nomor_surat'] }}</title>
     <style>
         @page {
+            size: A4;
             margin: 3.5cm 2cm 1.5cm 2cm;
         }
         body {
             font-family: Arial, Helvetica, sans-serif;
             font-size: 10pt;
-            line-height: 1.4;
+            line-height: 1.3;
             color: #000000;
         }
         .text-justify {
@@ -19,35 +20,35 @@
         .text-indent {
             text-indent: 40px;
         }
-        .mb-2 { margin-bottom: 6px; }
-        .mb-4 { margin-bottom: 12px; }
-        .mb-6 { margin-bottom: 18px; }
-        .mb-8 { margin-bottom: 24px; }
+        .mb-2 { margin-bottom: 4px; }
+        .mb-4 { margin-bottom: 8px; }
+        .mb-6 { margin-bottom: 12px; }
+        .mb-8 { margin-bottom: 16px; }
         
         .meta-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
         .meta-table td {
             vertical-align: top;
-            padding: 2px 0;
+            padding: 1px 0;
         }
         
         .details-table {
             width: 100%;
             border-collapse: collapse;
             margin-left: 40px;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
         .details-table td {
             vertical-align: top;
-            padding: 2px 0;
+            padding: 1px 0;
         }
         
         .signature-block {
-            margin-top: 30px;
-            line-height: 1.4;
+            margin-top: 20px;
+            line-height: 1.3;
             page-break-inside: avoid;
         }
     </style>
