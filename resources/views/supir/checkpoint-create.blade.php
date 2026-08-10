@@ -869,9 +869,9 @@
                         } else if (myLocation && myLocation.lat) {
                             $('#gps-address-text').html(`<span class="text-gray-600"><i class="fas fa-spinner fa-spin mr-1"></i> Menerjemahkan titik lokasi...</span>`);
                             
-                            // Ambil nama jalan/alamat dari koordinat
+                            // Ambil nama jalan/alamat dari koordinat dengan bahasa Indonesia
                             $.ajax({
-                                url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${myLocation.lat}&lon=${myLocation.lng}`,
+                                url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${myLocation.lat}&lon=${myLocation.lng}&accept-language=id,id-ID&zoom=18&addressdetails=0`,
                                 method: 'GET',
                                 success: function(geo) {
                                     if(geo && geo.display_name) {
