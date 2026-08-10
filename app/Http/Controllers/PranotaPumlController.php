@@ -149,6 +149,11 @@ class PranotaPumlController extends Controller
             }
         }
         
+        // Urutkan berdasarkan nama karyawan
+        $karyawanRekap = collect($karyawanRekap)->sortBy(function ($item) {
+            return strtolower($item['karyawan']->nama_lengkap ?? 'z');
+        });
+        
         return view('pranota-puml.show', compact('puml', 'karyawanRekap'));
     }
 
