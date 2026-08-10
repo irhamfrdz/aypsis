@@ -38,6 +38,7 @@ class Permohonan extends Model
         'status',
         'approved_by_system_1',
         'approved_by_system_2',
+        'lokasi_gps',
     ];
 
     protected $casts = [

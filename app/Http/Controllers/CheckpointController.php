@@ -386,10 +386,10 @@ class CheckpointController extends Controller
                 $checkpointDate = $request->input('tanggal_checkpoint') ?? now()->format('Y-m-d');
                 // store as date string on permohonan for fast access by Tagihan aggregates
                 $permohonan->tanggal_checkpoint_supir = $checkpointDate;
-                // Ensure supir_id is set to the currently authenticated karyawan if missing
                 if (empty($permohonan->supir_id) && Auth::user()->karyawan?->id) {
                     $permohonan->supir_id = Auth::user()->karyawan->id;
                 }
+                $permohonan->lokasi_gps = $request->lokasi_gps;
                 $permohonan->save();
             } catch (\Exception $e) {
                 // Non-fatal: don't block on failing to save quick-access fields
@@ -567,6 +567,7 @@ class CheckpointController extends Controller
                 'bukti_muat' => $buktiMuatPath,
                 'bukti_timbangan' => $buktiTimbanganPath,
                 'bukti_timbangan_muat' => $buktiTimbanganMuatPath,
+                'lokasi_gps' => $request->lokasi_gps,
             ];
 
             // Handle cargo vs non-cargo types
@@ -1033,6 +1034,7 @@ class CheckpointController extends Controller
                 'bukti_muat' => $buktiMuatPath,
                 'bukti_timbangan' => $buktiTimbanganPath,
                 'bukti_timbangan_muat' => $buktiTimbanganMuatPath,
+                'lokasi_gps' => $request->lokasi_gps,
             ];
 
             // Handle cargo vs non-cargo types

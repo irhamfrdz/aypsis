@@ -159,6 +159,7 @@
                 @if(isset($permohonan))
                     <form action="{{ route('supir.checkpoint.store', $permohonan) }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        <input type="hidden" name="lokasi_gps" id="lokasi_gps_input" value="">
                         <div class="space-y-4">
                             {{-- Logika untuk menampilkan input atau daftar kontainer --}}
                             @if($permohonan->kontainers->isNotEmpty())
@@ -368,6 +369,7 @@
                 @elseif(isset($suratJalan))
                     <form action="{{ isset($isBongkaran) && $isBongkaran ? route('supir.checkpoint.store-surat-jalan-bongkaran', $suratJalan->id) : route('supir.checkpoint.store-surat-jalan', $suratJalan->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        <input type="hidden" name="lokasi_gps" id="lokasi_gps_input_2" value="">
                         <div class="space-y-4">
                             {{-- Simple form for surat jalan --}}
                             {{-- Simple form for surat jalan --}}
@@ -865,7 +867,9 @@
                         });
                         
                         if(myLocation && myLocation.alamat) {
-                            $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> ${myLocation.alamat}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                            let locStr = `${myLocation.alamat}`;
+                            $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> ${locStr}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                            $('#lokasi_gps_input, #lokasi_gps_input_2').val(locStr);
                         } else if (myLocation && myLocation.lat) {
                             $('#gps-address-text').html(`<span class="text-gray-600"><i class="fas fa-spinner fa-spin mr-1"></i> Menerjemahkan titik lokasi...</span>`);
                             
@@ -875,13 +879,19 @@
                                 method: 'GET',
                                 success: function(geo) {
                                     if(geo && geo.display_name) {
-                                        $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> ${geo.display_name}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                                        let locStr = `${geo.display_name}`;
+                                        $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> ${locStr}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                                        $('#lokasi_gps_input, #lokasi_gps_input_2').val(locStr);
                                     } else {
-                                        $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> Lokasi GPS: ${myLocation.lat}, ${myLocation.lng}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                                        let locStr = `${myLocation.lat}, ${myLocation.lng}`;
+                                        $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> Lokasi GPS: ${locStr}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                                        $('#lokasi_gps_input, #lokasi_gps_input_2').val(locStr);
                                     }
                                 },
                                 error: function() {
-                                    $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> Lokasi GPS: ${myLocation.lat}, ${myLocation.lng}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                                    let locStr = `${myLocation.lat}, ${myLocation.lng}`;
+                                    $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> Lokasi GPS: ${locStr}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                                    $('#lokasi_gps_input, #lokasi_gps_input_2').val(locStr);
                                 }
                             });
                         } else {

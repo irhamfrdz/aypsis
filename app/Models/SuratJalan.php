@@ -77,6 +77,7 @@ class SuratJalan extends Model
         'lembur',
         'nginap',
         'tidak_lembur_nginap',
+        'lokasi_gps',
     ];
 
     protected $casts = [
