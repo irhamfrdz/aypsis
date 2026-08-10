@@ -172,7 +172,7 @@
                                             <option value="">-- Pilih Gudang Tujuan --</option>
                                             @if(isset($gudangs))
                                                 @foreach($gudangs as $gudang)
-                                                    <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
+                                                    <option value="{{ $gudang->id }}" {{ $gudang->nama_gudang == 'GUDANG CUSTOMER JKT' ? 'selected' : '' }}>{{ $gudang->nama_gudang }}</option>
                                                 @endforeach
                                             @endif
                                         </select>
@@ -367,7 +367,7 @@
                                     <option value="">-- Pilih Gudang Tujuan --</option>
                                     @if(isset($gudangs))
                                         @foreach($gudangs as $gudang)
-                                            <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
+                                            <option value="{{ $gudang->id }}" {{ $gudang->nama_gudang == 'GUDANG CUSTOMER JKT' ? 'selected' : '' }}>{{ $gudang->nama_gudang }}</option>
                                         @endforeach
                                     @endif
                                 </select>
