@@ -867,7 +867,23 @@
                         if(myLocation && myLocation.alamat) {
                             $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> ${myLocation.alamat}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
                         } else if (myLocation && myLocation.lat) {
-                            $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> Lokasi GPS: ${myLocation.lat}, ${myLocation.lng}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                            $('#gps-address-text').html(`<span class="text-gray-600"><i class="fas fa-spinner fa-spin mr-1"></i> Menerjemahkan titik lokasi...</span>`);
+                            
+                            // Ambil nama jalan/alamat dari koordinat
+                            $.ajax({
+                                url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${myLocation.lat}&lon=${myLocation.lng}`,
+                                method: 'GET',
+                                success: function(geo) {
+                                    if(geo && geo.display_name) {
+                                        $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> ${geo.display_name}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                                    } else {
+                                        $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> Lokasi GPS: ${myLocation.lat}, ${myLocation.lng}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                                    }
+                                },
+                                error: function() {
+                                    $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> Lokasi GPS: ${myLocation.lat}, ${myLocation.lng}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                                }
+                            });
                         } else {
                             $('#gps-address-text').html('<span class="text-orange-500"><i class="fas fa-exclamation-triangle mr-1"></i> Sinyal GPS tidak ditemukan / GPS Off</span>');
                         }
