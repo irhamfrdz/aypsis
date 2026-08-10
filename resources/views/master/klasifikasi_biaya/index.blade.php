@@ -14,6 +14,7 @@
             <a href="{{ route('klasifikasi-biaya.import-form') }}" class="px-3 py-2 bg-yellow-500 text-white rounded text-sm">Import</a>
             @endcan
             @can('master-klasifikasi-biaya-view')
+            <a href="{{ route('klasifikasi-biaya.export') }}" class="px-3 py-2 bg-blue-500 text-white rounded text-sm">Export Excel</a>
             <a href="{{ route('klasifikasi-biaya.download-template') }}" class="px-3 py-2 bg-gray-200 rounded text-sm">Download Template</a>
             @endcan
         </div>

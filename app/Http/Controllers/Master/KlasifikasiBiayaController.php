@@ -354,4 +354,9 @@ class KlasifikasiBiayaController extends Controller
 
         return 'KB'.str_pad($running, 5, '0', STR_PAD_LEFT);
     }
+
+    public function export()
+    {
+        return Excel::download(new \App\Exports\KlasifikasiBiayaExport, 'klasifikasi_biaya.xlsx');
+    }
 }
