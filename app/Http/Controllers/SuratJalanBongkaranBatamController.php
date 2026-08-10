@@ -880,12 +880,14 @@ class SuratJalanBongkaranBatamController extends Controller
 
                 if (empty($nomorSuratJalan)) {
                     $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan wajib diisi.";
+                    $failedRows[] = $row['_original_line'] ?? '';
                     continue;
                 }
 
                 $rowVoyage = trim($row['no_voyage'] ?? $noVoyage);
                 if (empty($rowVoyage)) {
                     $errors[] = "Baris {$rowNumber}: Nomor Voyage wajib diisi.";
+                    $failedRows[] = $row['_original_line'] ?? '';
                     continue;
                 }
 
@@ -930,13 +932,16 @@ class SuratJalanBongkaranBatamController extends Controller
                             break;
                         }
                     }
-                    if ($rowHasError) continue;
+                    if ($rowHasError) {
+                        $failedRows[] = $row['_original_line'] ?? '';
+                        continue;
+                    }
                 }
 
                 // Check uniqueness
                 if (SuratJalanBongkaranBatam::where('nomor_surat_jalan', $nomorSuratJalan)->exists()) {
                     $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan '{$nomorSuratJalan}' sudah ada di database.";
-
+                    $failedRows[] = $row['_original_line'] ?? '';
                     continue;
                 }
 
@@ -982,7 +987,24 @@ class SuratJalanBongkaranBatamController extends Controller
 
                     if (empty($manifest)) {
                         $containerName = empty($noKontainerOrBl) ? 'kosong' : $noKontainerOrBl;
-                        $errors[] = "Baris {$rowNumber}: Nomor Kontainer/BL '{$containerName}' tidak ditemukan pada kapal {$namaKapal} dan voyage {$rowVoyage}.";
+                        
+                        // Suggest available voyages for this container
+                        $voyageSuggestion = '';
+                        if (!empty($noKontainerOrBl)) {
+                            $availableVoyages = \App\Models\Manifest::where('nomor_kontainer', 'LIKE', '%'.$noKontainerOrBl.'%')
+                                ->orWhere('nomor_bl', 'LIKE', '%'.$noKontainerOrBl.'%')
+                                ->pluck('no_voyage')
+                                ->unique()
+                                ->filter()
+                                ->implode(', ');
+                            
+                            if ($availableVoyages) {
+                                $voyageSuggestion = " (Tersedia di voyage: {$availableVoyages})";
+                            }
+                        }
+
+                        $errors[] = "Baris {$rowNumber}: Nomor Kontainer/BL '{$containerName}' tidak ditemukan pada kapal {$namaKapal} dan voyage {$rowVoyage}.{$voyageSuggestion}";
+                        $failedRows[] = $row['_original_line'] ?? '';
                         continue;
                     }
 
@@ -1118,24 +1140,22 @@ class SuratJalanBongkaranBatamController extends Controller
                     $successCount++;
                 } catch (\Exception $e) {
                     $errors[] = "Baris {$rowNumber}: ".$e->getMessage();
+                    $failedRows[] = $row['_original_line'] ?? '';
                 }
             }
 
-            if (empty($errors)) {
-                DB::commit();
-            } else {
-                DB::rollBack();
-                $successCount = 0; // Reset success count because everything is rolled back
-            }
+            // Always commit to save the successful ones
+            DB::commit();
 
             return response()->json([
                 'success' => empty($errors),
                 'message' => empty($errors) 
                     ? "{$successCount} surat jalan berhasil dibuat." 
-                    : "Proses dibatalkan. Terdapat " . count($errors) . " error yang harus diperbaiki terlebih dahulu.",
+                    : "Proses selesai sebagian. {$successCount} berhasil disimpan, namun terdapat " . count($errors) . " error yang harus diperbaiki.",
                 'success_count' => $successCount,
                 'error_count' => count($errors),
                 'errors' => $errors,
+                'failed_rows' => $failedRows,
                 'redirect' => route('surat-jalan-bongkaran-batam.list', [
                     'nama_kapal' => $namaKapal,
                     'no_voyage' => $noVoyage,

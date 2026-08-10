@@ -2839,6 +2839,7 @@ async function parseBulkData() {
             return;
         }
 
+        row._original_line = line; // Store original line for failure recovery
         bulkParsedRows.push(row);
 
         // Fungsi bantuan untuk format tanggal Excel di preview
@@ -3031,7 +3032,19 @@ function submitBulkSuratJalan() {
             if (data.errors && data.errors.length > 0) {
                 errorMsg += '<br><br><strong>Detail:</strong><br>' + data.errors.join('<br>');
             }
-            showBulkAlert('Gagal', errorMsg, 'error');
+            
+            // If some succeeded, change title to "Sebagian Berhasil"
+            let title = data.success_count > 0 ? 'Sebagian Berhasil' : 'Gagal';
+            let alertType = data.success_count > 0 ? 'warning' : 'error';
+            
+            showBulkAlert(title, errorMsg, alertType);
+            
+            if (data.failed_rows && data.failed_rows.length > 0) {
+                // put failed rows back into textarea
+                document.getElementById('bulkData').value = data.failed_rows.join('\n');
+                // parse again so preview updates with only failed rows
+                parseBulkData(); 
+            }
         }
     })
     .catch(error => {
