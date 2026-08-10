@@ -130,7 +130,7 @@
                         <i class="fas fa-ship mr-2"></i>
                         Daftar Tagihan OB (On Board)
                     </h5>
-                    @isset($selectedKapal, $selectedVoyage)
+                    @if(isset($selectedKapal) && isset($selectedVoyage))
                         <div class="mt-1 text-blue-100 text-sm">
                             <span class="bg-blue-500 px-2 py-1 rounded text-xs mr-2">
                                 <i class="fas fa-ship mr-1"></i>{{ $selectedKapal }}
@@ -139,15 +139,15 @@
                                 <i class="fas fa-route mr-1"></i>{{ $selectedVoyage }}
                             </span>
                         </div>
-                    @endisset
+                    @endif
                 </div>
                 <div class="flex space-x-2">
-                    @isset($selectedKapal, $selectedVoyage)
+                    @if(isset($selectedKapal) && isset($selectedVoyage))
                         <a href="{{ route('tagihan-ob.index') }}" class="bg-white text-blue-600 hover:bg-gray-50 px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
                             <i class="fas fa-exchange-alt mr-1"></i>
                             Ganti Kapal/Voyage
                         </a>
-                    @endisset
+                    @endif
                     @can('tagihan-ob-create')
                         <a href="{{ route('tagihan-ob.create') }}{{ isset($selectedKapal, $selectedVoyage) ? '?kapal=' . urlencode($selectedKapal) . '&voyage=' . urlencode($selectedVoyage) : '' }}" 
                            class="bg-white text-blue-600 hover:bg-gray-50 px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
@@ -183,7 +183,7 @@
             @endif
 
             <!-- Info Banner for Inline Editing -->
-            @isset($selectedKapal, $selectedVoyage)
+            @if(isset($selectedKapal) && isset($selectedVoyage))
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
@@ -199,7 +199,7 @@
                         </div>
                     </div>
                 </div>
-            @endisset
+            @endif
 
             <!-- Filter & Search -->
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
