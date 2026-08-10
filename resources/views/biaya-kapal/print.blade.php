@@ -490,15 +490,26 @@
                 @php
                     $combinedBarang = $biayaKapal->oppOptDetails
                         ->filter(function($item) {
-                            return $item->pricelist_opp_opt_id !== null;
+                            return $item->manifest_id !== null;
                         })
-                        ->groupBy('pricelist_opp_opt_id')
+                        ->groupBy('manifest_id')
                         ->map(function($items) {
                             $first = $items->first();
+                            
+                            $manifestLabel = '';
+                            $manifest = \App\Models\Manifest::find($first->manifest_id);
+                            if ($manifest) {
+                                if (!empty($manifest->nomor_kontainer)) $manifestLabel .= 'Kontainer: ' . $manifest->nomor_kontainer;
+                                if (!empty($manifest->nomor_bl)) $manifestLabel .= ($manifestLabel ? ' / ' : '') . 'BL: ' . $manifest->nomor_bl;
+                                if (empty($manifestLabel)) $manifestLabel = 'Manifest ID: ' . $manifest->id;
+                                $manifestLabel .= ' (' . ($manifest->size_kontainer ?: '-') . ' ' . ($manifest->tipe_kontainer ?: '-') . ')';
+                            }
+                            
                             return [
-                                'barang' => $first->pricelistOppOpt->nama_barang ?? '-',
-                                'harga_satuan' => $first->pricelistOppOpt->tarif ?? 0,
-                                'jumlah' => $items->sum('jumlah'),
+                                'barang' => $manifestLabel ?: 'Manifest ID: '.$first->manifest_id,
+                                'vendor' => $first->vendor ?: '-',
+                                'catatan' => $first->catatan ?: '-',
+                                'harga_satuan' => $first->tarif ?? 0,
                                 'subtotal' => $items->sum('subtotal'),
                             ];
                         })->values();
@@ -513,9 +524,10 @@
                     <thead>
                         <tr>
                             <th style="width: 6%;">No</th>
-                            <th style="width: 37%;">Jenis Barang</th>
-                            <th style="width: 12%;">Jumlah</th>
-                            <th style="width: 17%;">Harga Satuan</th>
+                            <th style="width: 27%;">Kontainer / BL</th>
+                            <th style="width: 16%;">Vendor</th>
+                            <th style="width: 18%;">Catatan</th>
+                            <th style="width: 15%;">Tarif</th>
                             <th style="width: 18%;">Subtotal</th>
                         </tr>
                     </thead>
@@ -524,13 +536,14 @@
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td>{{ $item['barang'] }}</td>
-                            <td class="text-center">{{ rtrim(rtrim(number_format($item['jumlah'], 4, ',', '.'), '0'), ',') }}</td>
+                            <td>{{ $item['vendor'] }}</td>
+                            <td>{{ $item['catatan'] }}</td>
                             <td class="text-right">Rp {{ number_format($item['harga_satuan'], 0, ',', '.') }}</td>
                             <td class="text-right">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</td>
                         </tr>
                         @endforeach
                         <tr class="total-row">
-                            <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
+                            <td colspan="5" class="text-right"><strong>TOTAL</strong></td>
                             <td class="text-right"><strong>Rp {{ number_format($overallTotal, 0, ',', '.') }}</strong></td>
                         </tr>
                     </tbody>
