@@ -57,10 +57,13 @@
         </div>
         <div class="mt-4 pt-4 border-t border-gray-100">
             <p class="font-medium text-gray-500 mb-1 text-sm">
-                <i class="fas fa-map-marker-alt text-red-500 mr-1"></i> Posisi Kendaraan (<span id="gps-plat-text">{{ old('no_plat', $suratJalan->no_plat ?? 'Tidak Ada Plat') }}</span>) 
-                <button type="button" onclick="fetchMyLatestLocation()" class="text-indigo-600 hover:text-indigo-800 text-xs ml-2" title="Refresh Lokasi"><i class="fas fa-sync-alt"></i></button>
+                <i class="fas fa-map-marker-alt text-red-500 mr-1"></i> Lokasi Checkpoint Kendaraan ({{ old('no_plat', $suratJalan->no_plat ?? 'Tidak Ada Plat') }})
             </p>
-            <p class="text-gray-800 text-sm font-semibold" id="gps-address-text"><i class="fas fa-spinner fa-spin mr-1"></i> Mencari lokasi GPS...</p>
+            @if($suratJalan->lokasi_gps)
+                <p class="text-green-700 text-sm font-semibold" id="gps-address-text"><i class="fas fa-check-circle mr-1"></i> {{ $suratJalan->lokasi_gps }}</p>
+            @else
+                <p class="text-orange-500 text-sm font-semibold" id="gps-address-text"><i class="fas fa-exclamation-triangle mr-1"></i> Belum ada data lokasi dari Supir</p>
+            @endif
         </div>
     </div>
 
@@ -74,7 +77,7 @@
         <form action="{{ route('tanda-terima.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
                     @csrf
                     <input type="hidden" name="surat_jalan_id" value="{{ $suratJalan->id }}">
-                    <input type="hidden" name="lokasi_gps" id="lokasi_gps_input" value="">
+                    <input type="hidden" name="lokasi_gps" id="lokasi_gps_input" value="{{ $suratJalan->lokasi_gps ?? '' }}">
 
                     {{-- General error alert for server-side issues or exception messages --}}
                     @if(session('error'))
@@ -3488,93 +3491,5 @@
             }
         }
     }
-
-    function fetchMyLatestLocation() {
-        $('#gps-address-text').html('<i class="fas fa-spinner fa-spin mr-1"></i> Sedang melacak lokasi...');
-        let platNo = $('#gps-plat-text').text().trim();
-        
-        if (!platNo || platNo === 'Tidak Ada Plat' || platNo === '') {
-            platNo = $('#no_plat').val(); // fallback if user typed something
-        }
-        if (!platNo) {
-            $('#gps-address-text').html('<span class="text-orange-500"><i class="fas fa-exclamation-triangle mr-1"></i> Harap isi No. Plat terlebih dahulu</span>');
-            return;
-        }
-
-        $.ajax({
-            url: `{{ url('/latest-locations') }}?imei=${encodeURIComponent(platNo)}`,
-            method: 'GET',
-            success: function(response) {
-                if(response.success && response.data) {
-                    let vehicles = Object.values(response.data);
-                    if(vehicles.length > 0) {
-                        let myLocation = vehicles.find(v => {
-                            return v.name.toLowerCase().includes(platNo.toLowerCase()) || 
-                                   v.plat_no.toLowerCase().includes(platNo.toLowerCase());
-                        });
-
-                        if(!myLocation) {
-                            myLocation = vehicles[0]; // fallback
-                        }
-                        
-                        if(myLocation && myLocation.alamat) {
-                            let locStr = `${myLocation.alamat}`;
-                            $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> ${locStr}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
-                            $('#lokasi_gps_input').val(locStr);
-                        } else if (myLocation && myLocation.lat) {
-                            $('#gps-address-text').html(`<span class="text-gray-600"><i class="fas fa-spinner fa-spin mr-1"></i> Menerjemahkan titik lokasi...</span>`);
-                            
-                            // Ambil nama jalan/alamat dari koordinat dengan bahasa Indonesia
-                            $.ajax({
-                                url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${myLocation.lat}&lon=${myLocation.lng}&accept-language=id,id-ID&zoom=18&addressdetails=0`,
-                                method: 'GET',
-                                success: function(geo) {
-                                    if(geo && geo.display_name) {
-                                        let locStr = `${geo.display_name}`;
-                                        $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> ${locStr}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
-                                        $('#lokasi_gps_input').val(locStr);
-                                    } else {
-                                        let locStr = `${myLocation.lat}, ${myLocation.lng}`;
-                                        $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> Lokasi GPS: ${locStr}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
-                                        $('#lokasi_gps_input').val(locStr);
-                                    }
-                                },
-                                error: function() {
-                                    let locStr = `${myLocation.lat}, ${myLocation.lng}`;
-                                    $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> Lokasi GPS: ${locStr}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
-                                    $('#lokasi_gps_input').val(locStr);
-                                }
-                            });
-                        } else {
-                            $('#gps-address-text').html('<span class="text-orange-500"><i class="fas fa-exclamation-triangle mr-1"></i> Sinyal GPS tidak ditemukan / GPS Off</span>');
-                        }
-                    } else {
-                        $('#gps-address-text').html('<span class="text-orange-500"><i class="fas fa-exclamation-triangle mr-1"></i> Data GPS tidak tersedia untuk kendaraan ini</span>');
-                    }
-                } else {
-                    $('#gps-address-text').html('<span class="text-red-500"><i class="fas fa-times-circle mr-1"></i> Gagal memuat lokasi</span>');
-                }
-            },
-            error: function() {
-                $('#gps-address-text').html('<span class="text-red-500"><i class="fas fa-times-circle mr-1"></i> Gagal terhubung ke server GPS</span>');
-            }
-        });
-    }
-
-    $(document).ready(function() {
-        // Fetch location automatically on page load
-        setTimeout(() => {
-            fetchMyLatestLocation();
-        }, 1500);
-
-        // Also fetch location if plate number changes (using select2 or direct input)
-        $('#no_plat').on('change', function() {
-            let plat = $(this).val();
-            if(plat) {
-                $('#gps-plat-text').text(plat);
-                fetchMyLatestLocation();
-            }
-        });
-    });
 </script>
 @endpush
