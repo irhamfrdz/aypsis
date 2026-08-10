@@ -84,6 +84,7 @@ class TandaTerima extends Model
         'bukti_muat',
         'bukti_timbangan',
         'bukti_timbangan_muat',
+        'lokasi_gps',
     ];
 
     protected $casts = [

@@ -923,10 +923,15 @@ class TandaTerimaController extends Controller
             }
 
             $tandaTerima->created_by = Auth::id();
+            $tandaTerima->lokasi_gps = $request->lokasi_gps;
             $tandaTerima->save();
 
             // Sync semua field yang diubah di form tanda terima ke surat jalan
             $suratJalanUpdate = [];
+
+            if ($request->filled('lokasi_gps')) {
+                $suratJalanUpdate['lokasi_gps'] = $request->lokasi_gps;
+            }
 
             // Nomor kontainer dan seal
             if (! empty($tandaTerima->no_kontainer)) {
