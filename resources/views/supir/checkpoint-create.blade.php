@@ -5,11 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Lapor Lokasi & Foto Bukti - AYPSIS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
@@ -57,23 +54,6 @@
                 </div>
             @endif
 
-            {{-- Peta Lokasi Armada --}}
-            <div class="bg-white shadow-md rounded-lg p-6 mb-6">
-                <h3 class="text-lg font-semibold text-gray-800 border-b pb-3 mb-4 flex justify-between items-center">
-                    <span><i class="fas fa-map-marker-alt text-red-500 mr-2"></i> Lokasi Kendaraan ({{ $suratJalan->no_plat ?? $permohonan->no_plat ?? 'Tidak Ada Plat' }})</span>
-                    <button type="button" onclick="fetchMyLatestLocation()" class="text-sm bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium px-3 py-1.5 rounded-md border border-indigo-200 transition-colors">
-                        <i class="fas fa-sync-alt mr-1"></i> Refresh
-                    </button>
-                </h3>
-                <div class="w-full h-[300px] rounded-lg overflow-hidden border border-gray-200 relative z-0">
-                    <div id="map" class="w-full h-full"></div>
-                </div>
-                <div class="mt-3 text-sm flex justify-between items-center">
-                    <span id="map-status" class="font-medium text-gray-600"><i class="fas fa-spinner fa-spin mr-1"></i> Mencari lokasi...</span>
-                    <span id="map-last-update" class="text-gray-500 text-xs"></span>
-                </div>
-            </div>
-
             {{-- Detail Permohonan atau Surat Jalan --}}
             <div class="bg-white shadow-md rounded-lg p-6">
                 @if(isset($permohonan))
@@ -120,6 +100,13 @@
                             <p class="text-gray-800">{{ $permohonan->tujuan_pengiriman }}</p>
                         </div>
                         @endif
+                        <div class="sm:col-span-2 mt-2 pt-2 border-t border-gray-100">
+                            <p class="font-medium text-gray-500 mb-1">
+                                <i class="fas fa-map-marker-alt text-red-500 mr-1"></i> Posisi Kendaraan ({{ $permohonan->no_plat ?? 'Tidak Ada Plat' }}) 
+                                <button type="button" onclick="fetchMyLatestLocation()" class="text-indigo-600 hover:text-indigo-800 text-xs ml-2" title="Refresh Lokasi"><i class="fas fa-sync-alt"></i></button>
+                            </p>
+                            <p class="text-gray-800 text-sm font-semibold" id="gps-address-text"><i class="fas fa-spinner fa-spin mr-1"></i> Mencari lokasi GPS...</p>
+                        </div>
                     </div>
                 @elseif(isset($suratJalan))
                     {{-- Detail Surat Jalan --}}
@@ -152,6 +139,13 @@
                         <div>
                             <p class="font-medium text-gray-500">Pengirim</p>
                             <p class="text-gray-800">{{ $suratJalan->pengirim ?? '-' }}</p>
+                        </div>
+                        <div class="sm:col-span-2 mt-2 pt-2 border-t border-gray-100">
+                            <p class="font-medium text-gray-500 mb-1">
+                                <i class="fas fa-map-marker-alt text-red-500 mr-1"></i> Posisi Kendaraan ({{ $suratJalan->no_plat ?? 'Tidak Ada Plat' }}) 
+                                <button type="button" onclick="fetchMyLatestLocation()" class="text-indigo-600 hover:text-indigo-800 text-xs ml-2" title="Refresh Lokasi"><i class="fas fa-sync-alt"></i></button>
+                            </p>
+                            <p class="text-gray-800 text-sm font-semibold" id="gps-address-text"><i class="fas fa-spinner fa-spin mr-1"></i> Mencari lokasi GPS...</p>
                         </div>
                     </div>
                 @endif
@@ -841,98 +835,47 @@
         </div>
     </main>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
-        let myMap;
-        let myMarker;
         let myPlat = '{{ $suratJalan->no_plat ?? $permohonan->no_plat ?? "" }}';
-        const defaultCenter = [-6.2088, 106.8456]; // Jakarta Default Coordinate
-
-        function getIcon(color) {
-            return L.icon({
-                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
-        }
 
         $(document).ready(function() {
             if(myPlat) {
-                initMyMap();
+                fetchMyLatestLocation();
+                setInterval(fetchMyLatestLocation, 30000); // 30 detik
             } else {
-                $('#map-status').html('<span class="text-red-500"><i class="fas fa-exclamation-triangle mr-1"></i> Nomor plat tidak tersedia, peta tidak dapat dimuat.</span>');
+                $('#gps-address-text').html('<span class="text-red-500"><i class="fas fa-exclamation-triangle mr-1"></i> Nomor plat tidak tersedia.</span>');
             }
         });
 
-        function initMyMap() {
-            myMap = L.map('map').setView(defaultCenter, 11);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(myMap);
-
-            fetchMyLatestLocation();
-            setInterval(fetchMyLatestLocation, 30000); // 30 detik
-        }
-
         function fetchMyLatestLocation() {
-            $('#map-status').html('<span class="text-gray-600"><i class="fas fa-spinner fa-spin mr-1"></i> Memperbarui lokasi...</span>');
+            $('#gps-address-text').html('<span class="text-gray-500"><i class="fas fa-spinner fa-spin mr-1"></i> Memperbarui...</span>');
             
             $.ajax({
                 url: '{{ route('gps-tracking.latest-locations') }}',
                 method: 'GET',
                 success: function(response) {
                     if(response.success && response.data) {
-                        // Cari data untuk plat kendaraan ini (hapus spasi untuk pencocokan lebih baik)
                         let searchPlat = myPlat.replace(/\s+/g, '').toUpperCase();
                         let myLocation = response.data.find(loc => {
                             let locPlat = loc.nomor_polisi ? loc.nomor_polisi.replace(/\s+/g, '').toUpperCase() : '';
                             return locPlat === searchPlat;
                         });
                         
-                        if(myLocation && myLocation.lat && myLocation.lng) {
-                            const position = [parseFloat(myLocation.lat), parseFloat(myLocation.lng)];
-                            
-                            let iconColor = 'blue';
-                            if(myLocation.status && myLocation.status.toLowerCase().includes('berhenti')) iconColor = 'red';
-                            else if (myLocation.speed > 0 || (myLocation.status && myLocation.status.toLowerCase().includes('berjalan'))) iconColor = 'green';
-                            
-                            if(myMarker) {
-                                myMarker.setLatLng(position);
-                                myMarker.setIcon(getIcon(iconColor));
-                            } else {
-                                myMarker = L.marker(position, {icon: getIcon(iconColor)}).addTo(myMap);
-                                myMap.setView(position, 15); // Zoom to location on first load
-                            }
-                            
-                            let popupContent = `
-                                <div class="text-sm">
-                                    <strong><i class="fas fa-truck mr-1"></i> ${myLocation.nomor_polisi}</strong><br>
-                                    Kec: ${myLocation.speed} km/h<br>
-                                    Status: ${myLocation.status}<br>
-                                    <span class="text-xs text-gray-500">${myLocation.alamat || ''}</span>
-                                </div>
-                            `;
-                            myMarker.bindPopup(popupContent);
-                            
-                            $('#map-status').html(`<span class="text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i> Lokasi ditemukan (${myLocation.speed} km/h - ${myLocation.status})</span>`);
-                            const now = new Date();
-                            $('#map-last-update').text('Diperbarui: ' + now.toLocaleTimeString());
+                        if(myLocation && myLocation.alamat) {
+                            $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> ${myLocation.alamat}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
+                        } else if (myLocation && myLocation.lat) {
+                            $('#gps-address-text').html(`<span class="text-green-700"><i class="fas fa-check-circle mr-1"></i> Lokasi GPS: ${myLocation.lat}, ${myLocation.lng}</span> <span class="text-xs font-normal text-gray-500 ml-2">(${myLocation.speed} km/h - ${myLocation.status})</span>`);
                         } else {
-                            $('#map-status').html('<span class="text-orange-500"><i class="fas fa-exclamation-triangle mr-1"></i> Sinyal GPS tidak ditemukan / GPS Off</span>');
+                            $('#gps-address-text').html('<span class="text-orange-500"><i class="fas fa-exclamation-triangle mr-1"></i> Sinyal GPS tidak ditemukan / GPS Off</span>');
                         }
                     } else {
-                        $('#map-status').html('<span class="text-red-500"><i class="fas fa-exclamation-circle mr-1"></i> Gagal memuat data GPS</span>');
+                        $('#gps-address-text').html('<span class="text-red-500"><i class="fas fa-exclamation-circle mr-1"></i> Gagal memuat data GPS</span>');
                     }
                 },
                 error: function() {
-                    $('#map-status').html('<span class="text-red-500"><i class="fas fa-exclamation-circle mr-1"></i> Gagal koneksi ke server GPS</span>');
+                    $('#gps-address-text').html('<span class="text-red-500"><i class="fas fa-exclamation-circle mr-1"></i> Gagal koneksi ke server GPS</span>');
                 }
             });
         }
