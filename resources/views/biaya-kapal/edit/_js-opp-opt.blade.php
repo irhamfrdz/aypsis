@@ -39,7 +39,7 @@
                 // Barang
                 if (data.barang && data.barang.length > 0) {
                     data.barang.forEach(b => {
-                        addBarangToOppOptSectionWithValue(sectionIndex, b.barang_id, b.jumlah);
+                        addBarangToOppOptSectionWithValue(sectionIndex, b.manifest_id, b.manifest_label, b.tarif, b.vendor, b.catatan);
                     });
                 } else {
                     addBarangToOppOptSection(sectionIndex);
@@ -116,10 +116,10 @@
             </div>
             
             <div class="mb-3">
-                <label class="block text-xs font-medium text-gray-700 mb-2">Detail Barang (OPP/OPT)</label>
+                <label class="block text-xs font-medium text-gray-700 mb-2">Detail Kontainer/BL (OPP/OPT)</label>
                 <div class="opp-opt-barang-container" data-opp-opt-section="${sectionIndex}"></div>
                 <button type="button" onclick="addBarangToOppOptSection(${sectionIndex})" class="mt-2 px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs rounded-lg transition">
-                    <i class="fas fa-plus mr-1"></i> Tambah Barang
+                    <i class="fas fa-plus mr-1"></i> Tambah Kontainer/BL
                 </button>
             </div>
             
@@ -213,15 +213,15 @@
         }
     };
 
-    // Auto-fill OPP/OPT barang based on container counts from BL table
+    // Load Manifests based on Kapal & Voyage
     function autoFillOppOptBarangForSection(sectionIndex, kapalNama, voyage) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
         
         // Show loading
-        container.innerHTML = '<div class="text-sm text-gray-500 italic py-2"><i class="fas fa-spinner fa-spin mr-2"></i>Menghitung item...</div>';
+        container.innerHTML = '<div class="text-sm text-gray-500 italic py-2"><i class="fas fa-spinner fa-spin mr-2"></i>Memuat data kontainer/BL...</div>';
         
-        fetch('{{ url("biaya-kapal/get-container-counts") }}', {
+        fetch('{{ url("biaya-kapal/get-manifests-by-kapal-voyage") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -234,99 +234,23 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success && data.counts) {
+            if (data.success && data.data) {
                 container.innerHTML = '';
-                let itemsAdded = false;
+                section.setAttribute('data-manifests', JSON.stringify(data.data));
                 
-                // Pricelist IDs mapping based on item names
-                const pricelistIds = {};
-                pricelistOppOptData.forEach(p => {
-                    pricelistIds[p.nama_barang] = p.id;
-                });
-
-                const isBongkaran = section.querySelector('.opp-opt-is-bongkaran-checkbox') && section.querySelector('.opp-opt-is-bongkaran-checkbox').checked;
-
-                if (isBongkaran) {
-                    // Logic full empty like TKBM
-                    const fullEmptyIds = { '20_full': null, '20_empty': null, '40_full': null, '40_empty': null };
-                    pricelistOppOptData.forEach(p => {
-                        const name = (p.nama_barang || '').toLowerCase();
-                        if (name.includes('20') && name.includes('full')) fullEmptyIds['20_full'] = p.id;
-                        if (name.includes('20') && name.includes('empty')) fullEmptyIds['20_empty'] = p.id;
-                        if (name.includes('40') && name.includes('full')) fullEmptyIds['40_full'] = p.id;
-                        if (name.includes('40') && name.includes('empty')) fullEmptyIds['40_empty'] = p.id;
-                    });
-                    
-                    if (data.counts['20'] && data.counts['20'].full > 0 && fullEmptyIds['20_full']) {
-                        addBarangToOppOptSectionWithValue(sectionIndex, fullEmptyIds['20_full'], data.counts['20'].full);
-                        itemsAdded = true;
-                    }
-                    if (data.counts['20'] && data.counts['20'].empty > 0 && fullEmptyIds['20_empty']) {
-                        addBarangToOppOptSectionWithValue(sectionIndex, fullEmptyIds['20_empty'], data.counts['20'].empty);
-                        itemsAdded = true;
-                    }
-                    if (data.counts['40'] && data.counts['40'].full > 0 && fullEmptyIds['40_full']) {
-                        addBarangToOppOptSectionWithValue(sectionIndex, fullEmptyIds['40_full'], data.counts['40'].full);
-                        itemsAdded = true;
-                    }
-                    if (data.counts['40'] && data.counts['40'].empty > 0 && fullEmptyIds['40_empty']) {
-                        addBarangToOppOptSectionWithValue(sectionIndex, fullEmptyIds['40_empty'], data.counts['40'].empty);
-                        itemsAdded = true;
-                    }
-                } else {
-                    // Standard Logic (FCL/LCL)
-                    // Add FCL 20FT
-                    if (data.counts['20'] && data.counts['20'].fcl > 0 && pricelistIds['FCL 20FT']) {
-                        addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['FCL 20FT'], data.counts['20'].fcl);
-                        itemsAdded = true;
-                    }
-                    
-                    // Add FCL 40FT
-                    if (data.counts['40'] && data.counts['40'].fcl > 0 && pricelistIds['FCL 40FT']) {
-                        addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['FCL 40FT'], data.counts['40'].fcl);
-                        itemsAdded = true;
-                    }
-                    
-                    // Add LCL 20FT
-                    if (data.counts['20'] && data.counts['20'].lcl > 0 && pricelistIds['LCL 20FT']) {
-                        addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['LCL 20FT'], data.counts['20'].lcl);
-                        itemsAdded = true;
-                    }
-                    
-                    // Add LCL 40FT
-                    if (data.counts['40'] && data.counts['40'].lcl > 0 && pricelistIds['LCL 40FT']) {
-                        addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds['LCL 40FT'], data.counts['40'].lcl);
-                        itemsAdded = true;
-                    }
-                } 
-                
-                // Add Extra items (Mobil, Trailer, Truck) always
-                if (data.counts.extra) {
-                    Object.keys(data.counts.extra).forEach(itemName => {
-                         const count = data.counts.extra[itemName];
-                         if (count > 0 && pricelistIds[itemName]) {
-                             addBarangToOppOptSectionWithValue(sectionIndex, pricelistIds[itemName], count);
-                             itemsAdded = true;
-                         }
-                    });
-                }
-                
-                // If no items found, add one empty row
-                if (!itemsAdded) {
-                    addBarangToOppOptSection(sectionIndex);
-                }
-                
-                // Recalculate total
+                // Add one default row
+                addBarangToOppOptSection(sectionIndex);
                 calculateTotalFromAllOppOptSections();
             } else {
-                // Fallback to empty input
                 container.innerHTML = '';
+                section.removeAttribute('data-manifests');
                 addBarangToOppOptSection(sectionIndex);
             }
         })
         .catch(error => {
-            console.error('Error fetching container counts for OPP/OPT:', error);
+            console.error('Error fetching manifests for OPP/OPT:', error);
             container.innerHTML = '';
+            section.removeAttribute('data-manifests');
             addBarangToOppOptSection(sectionIndex);
         });
     }
@@ -376,23 +300,38 @@
         const container = section.querySelector('.opp-opt-barang-container');
         const barangIndex = container.children.length;
         
-        let barangOptions = '<option value="">Pilih Nama Barang</option>';
-        pricelistOppOptData.forEach(pricelist => {
-            barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif}">${pricelist.nama_barang}</option>`;
+        let manifestsData = [];
+        try {
+            manifestsData = JSON.parse(section.getAttribute('data-manifests') || '[]');
+        } catch (e) {}
+
+        let barangOptions = '<option value="">Pilih Kontainer / BL</option>';
+        manifestsData.forEach(manifest => {
+            barangOptions += `<option value="${manifest.id}">${manifest.label}</option>`;
         });
         
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
-            <div class="flex-1">
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][barang_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+            <div class="w-[30%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${barangOptions}
                 </select>
             </div>
-            <div class="w-24">
-                <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" class="opp-opt-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
+            <div class="w-[15%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
+                <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
             </div>
-            <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+            <div class="w-[25%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
+                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
+            </div>
+            <div class="flex-1">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
+                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
+            </div>
+            <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
                 <i class="fas fa-trash text-xs"></i>
             </button>
         `;
@@ -400,42 +339,60 @@
         container.appendChild(inputGroup);
         
         // Add event listeners
-        const barangSelect = inputGroup.querySelector('.opp-opt-barang-select-item');
-        const jumlahInput = inputGroup.querySelector('.opp-opt-jumlah-input-item');
+        const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
         
-        barangSelect.addEventListener('change', function() {
-            calculateTotalFromAllOppOptSections();
-        });
-        
-        jumlahInput.addEventListener('input', function() {
+        tarifInput.addEventListener('input', function() {
             calculateTotalFromAllOppOptSections();
         });
     };
 
     // Add barang to OPP/OPT section with pre-filled values
-    window.addBarangToOppOptSectionWithValue = function(sectionIndex, barangId, jumlah) {
+    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, manifestLabel, tarif, jumlah, vendor, catatan) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
         const barangIndex = container.children.length;
         
-        let barangOptions = '<option value="">Pilih Nama Barang</option>';
-        pricelistOppOptData.forEach(pricelist => {
-            const selected = pricelist.id == barangId ? 'selected' : '';
-            barangOptions += `<option value="${pricelist.id}" data-tarif="${pricelist.tarif}" ${selected}>${pricelist.nama_barang}</option>`;
+        let manifestsData = [];
+        try {
+            manifestsData = JSON.parse(section.getAttribute('data-manifests') || '[]');
+        } catch (e) {}
+
+        let barangOptions = '<option value="">Pilih Kontainer / BL</option>';
+        let found = false;
+        manifestsData.forEach(manifest => {
+            const selected = manifest.id == manifestId ? 'selected' : '';
+            if (manifest.id == manifestId) found = true;
+            barangOptions += `<option value="${manifest.id}" ${selected}>${manifest.label}</option>`;
         });
+        
+        // If manifestId exists but not in current options, just add it as an option
+        if (manifestId && !found) {
+            const label = manifestLabel || `Manifest ID: ${manifestId}`;
+            barangOptions += `<option value="${manifestId}" selected>${label}</option>`;
+        }
         
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
-            <div class="flex-1">
-                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][barang_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+            <div class="w-[30%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${barangOptions}
                 </select>
             </div>
-            <div class="w-24">
-                <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][jumlah]" value="${jumlah}" class="opp-opt-jumlah-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
+            <div class="w-[15%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
+                <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" value="${tarif}" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
             </div>
-            <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition">
+            <div class="w-[25%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
+                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
+            </div>
+            <div class="flex-1">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Catatan</label>
+                <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][catatan]" value="${catatan || ''}" class="opp-opt-catatan-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Catatan">
+            </div>
+            <button type="button" onclick="removeBarangFromOppOptSection(this)" class="px-2 py-1.5 mb-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-sm transition h-[34px]">
                 <i class="fas fa-trash text-xs"></i>
             </button>
         `;
@@ -443,14 +400,9 @@
         container.appendChild(inputGroup);
         
         // Add event listeners
-        const barangSelect = inputGroup.querySelector('.opp-opt-barang-select-item');
-        const jumlahInput = inputGroup.querySelector('.opp-opt-jumlah-input-item');
+        const tarifInput = inputGroup.querySelector('.opp-opt-tarif-input-item');
         
-        barangSelect.addEventListener('change', function() {
-            calculateTotalFromAllOppOptSections();
-        });
-        
-        jumlahInput.addEventListener('input', function() {
+        tarifInput.addEventListener('input', function() {
             calculateTotalFromAllOppOptSections();
         });
     };
@@ -470,16 +422,24 @@
     function reindexOppOptBarangInputs(container) {
         const section = container.closest('.opp-opt-section');
         const sectionIndex = section.getAttribute('data-opp-opt-section-index');
-        const inputGroups = container.querySelectorAll('.flex');
+        const inputGroups = container.querySelectorAll('.flex.items-end');
         
         inputGroups.forEach((group, newIndex) => {
             const barangSelect = group.querySelector('.opp-opt-barang-select-item');
             if (barangSelect) {
-                barangSelect.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][barang_id]`;
+                barangSelect.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][manifest_id]`;
             }
-            const jumlahInput = group.querySelector('.opp-opt-jumlah-input-item');
-            if (jumlahInput) {
-                jumlahInput.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][jumlah]`;
+            const tarifInput = group.querySelector('.opp-opt-tarif-input-item');
+            if (tarifInput) {
+                tarifInput.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][tarif]`;
+            }
+            const vendorInput = group.querySelector('.opp-opt-vendor-input-item');
+            if (vendorInput) {
+                vendorInput.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][vendor]`;
+            }
+            const catatanInput = group.querySelector('.opp-opt-catatan-input-item');
+            if (catatanInput) {
+                catatanInput.name = `opp_opt_sections[${sectionIndex}][barang][${newIndex}][catatan]`;
             }
         });
     }
@@ -489,16 +449,12 @@
         
         document.querySelectorAll('.opp-opt-section').forEach(section => {
             let sectionTotal = 0;
-            const barangSelects = section.querySelectorAll('.opp-opt-barang-select-item');
-            const jumlahInputs = section.querySelectorAll('.opp-opt-jumlah-input-item');
+            const tarifInputs = section.querySelectorAll('.opp-opt-tarif-input-item');
             const nominalDisplay = section.querySelector('.opp-opt-section-nominal-display');
             
-            barangSelects.forEach((select, index) => {
-                const selectedOption = select.options[select.selectedIndex];
-                const tarif = parseFloat(selectedOption.getAttribute('data-tarif')) || 0;
-                const jumlahInput = jumlahInputs[index];
-                const jumlah = parseFloat(jumlahInput.value.replace(',', '.')) || 0;
-                sectionTotal += tarif * jumlah;
+            tarifInputs.forEach((tarifInput) => {
+                const tarif = parseFloat(tarifInput.value.replace(',', '.')) || 0;
+                sectionTotal += tarif;
             });
             
             // Update section nominal display

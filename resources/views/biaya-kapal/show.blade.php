@@ -865,41 +865,53 @@
                             <table class="min-w-full divide-y divide-gray-200 border rounded-lg overflow-hidden">
                                 <thead class="bg-gray-100">
                                     <tr>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama Barang</th>
-                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kontainer / BL</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Catatan</th>
                                         <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Tarif</th>
                                         <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     @foreach($details as $item)
-                                        @if($item->pricelist_opp_opt_id)
+                                        @if($item->manifest_id)
+                                        @php
+                                            $manifestLabel = '';
+                                            $manifest = \App\Models\Manifest::find($item->manifest_id);
+                                            if ($manifest) {
+                                                if (!empty($manifest->nomor_kontainer)) $manifestLabel .= 'Kontainer: ' . $manifest->nomor_kontainer;
+                                                if (!empty($manifest->nomor_bl)) $manifestLabel .= ($manifestLabel ? ' / ' : '') . 'BL: ' . $manifest->nomor_bl;
+                                                if (empty($manifestLabel)) $manifestLabel = 'Manifest ID: ' . $manifest->id;
+                                                $manifestLabel .= ' (' . ($manifest->size_kontainer ?: '-') . ' ' . ($manifest->tipe_kontainer ?: '-') . ')';
+                                            }
+                                        @endphp
                                         <tr>
-                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $item->pricelistOppOpt->nama_barang ?? '-' }}</td>
-                                            <td class="px-4 py-2 text-sm text-gray-600 text-right">{{ number_format($item->jumlah, 2, ',', '.') }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-900">{{ $manifestLabel ?: 'Manifest ID: '.$item->manifest_id }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600">{{ $item->vendor ?: '-' }}</td>
+                                            <td class="px-4 py-2 text-sm text-gray-600">{{ $item->catatan ?: '-' }}</td>
                                             <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->tarif, 0, ',', '.') }}</td>
                                             <td class="px-4 py-2 text-sm text-gray-600 text-right">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                                         </tr>
                                         @endif
                                     @endforeach
-                                    @if($details->whereNotNull('pricelist_opp_opt_id')->count() == 0)
+                                    @if($details->whereNotNull('manifest_id')->count() == 0)
                                         <tr>
-                                            <td colspan="4" class="px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada item tercatat</td>
+                                            <td colspan="5" class="px-4 py-3 text-sm text-gray-500 text-center italic">Tidak ada item tercatat</td>
                                         </tr>
                                     @endif
                                 </tbody>
                                 <tfoot class="bg-gray-50 font-bold">
                                     <tr class="bg-blue-50">
-                                        <td colspan="3" class="px-4 py-2 text-sm text-right">Total Nominal Kapal</td>
+                                        <td colspan="4" class="px-4 py-2 text-sm text-right">Total Nominal Kapal</td>
                                         <td class="px-4 py-2 text-sm text-right font-black text-blue-700">Rp {{ number_format($first->total_nominal, 0, ',', '.') }}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3" class="px-4 py-2 text-sm text-right">DP</td>
+                                        <td colspan="4" class="px-4 py-2 text-sm text-right">DP</td>
                                         <td class="px-4 py-2 text-sm text-right text-emerald-600">Rp {{ number_format($first->dp, 0, ',', '.') }}</td>
                                     </tr>
                                     <tr class="bg-purple-100">
-                                        <td colspan="3" class="px-4 py-2 text-sm text-right font-black">Sisa Pembayaran</td>
-                                        <td class="px-4 py-2 text-sm text-right font-black text-purple-900">Rp {{ number_format($first->sisa_pembayaran, 0, ',', '.') }}</td>
+                                        <td colspan="4" class="px-4 py-2 text-sm text-right">Sisa Pembayaran</td>
+                                        <td class="px-4 py-2 text-sm text-right font-black text-purple-700">Rp {{ number_format($first->sisa_pembayaran, 0, ',', '.') }}</td>
                                     </tr>
                                 </tfoot>
                             </table>

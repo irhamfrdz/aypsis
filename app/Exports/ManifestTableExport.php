@@ -270,15 +270,13 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
             ];
         });
 
-        // Sort data: cargo last, and others sorted naturally by bl_no
+        // Sort data: LCL first, then FCL, then Cargo last. Others sorted naturally by bl_no
         $sortedData = $enhancedData->sort(function ($a, $b) {
-            $isCargoA = $a['is_cargo'];
-            $isCargoB = $b['is_cargo'];
-            if ($isCargoA && ! $isCargoB) {
-                return 1;
-            }
-            if (! $isCargoA && $isCargoB) {
-                return -1;
+            $priorityA = $a['is_cargo'] ? 3 : ($a['is_lcl'] ? 1 : 2);
+            $priorityB = $b['is_cargo'] ? 3 : ($b['is_lcl'] ? 1 : 2);
+
+            if ($priorityA !== $priorityB) {
+                return $priorityA <=> $priorityB;
             }
 
             return strnatcasecmp($a['bl_no'] ?? '', $b['bl_no'] ?? '');

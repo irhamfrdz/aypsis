@@ -125,7 +125,7 @@
                     'dp' => $section['dp'] ?? 0,
                     'sisa_pembayaran' => $section['sisa_pembayaran'] ?? 0,
                     'barang' => collect($section['barang'] ?? [])->map(function($i){ 
-                        return ['barang_id' => $i['barang_id'] ?? null, 'jumlah' => (float)($i['jumlah'] ?? 0)]; 
+                        return ['manifest_id' => $i['manifest_id'] ?? null, 'tarif' => (float)($i['tarif'] ?? 0), 'vendor' => $i['vendor'] ?? '', 'catatan' => $i['catatan'] ?? '']; 
                     })->values()
                 ];
             }
@@ -144,9 +144,24 @@
                          'dp' => $firstItem->dp ?? 0,
                          'sisa_pembayaran' => $firstItem->sisa_pembayaran ?? 0,
                          'barang' => $items->map(function($i){
+                             // Ambil label dari relasi manifest jika ada
+                             $manifestLabel = '';
+                             if ($i->manifest_id) {
+                                 $manifest = \App\Models\Manifest::find($i->manifest_id);
+                                 if ($manifest) {
+                                     if (!empty($manifest->nomor_kontainer)) $manifestLabel .= 'Kontainer: ' . $manifest->nomor_kontainer;
+                                     if (!empty($manifest->nomor_bl)) $manifestLabel .= ($manifestLabel ? ' / ' : '') . 'BL: ' . $manifest->nomor_bl;
+                                     if (empty($manifestLabel)) $manifestLabel = 'Manifest ID: ' . $manifest->id;
+                                     $manifestLabel .= ' (' . ($manifest->size_kontainer ?: '-') . ' ' . ($manifest->tipe_kontainer ?: '-') . ')';
+                                 }
+                             }
+                             
                              return [
-                                 'barang_id' => $i->pricelist_opp_opt_id,
-                                 'jumlah' => (float)$i->jumlah
+                                 'manifest_id' => $i->manifest_id,
+                                 'manifest_label' => $manifestLabel,
+                                 'tarif' => (float)$i->tarif,
+                                 'vendor' => $i->vendor ?? '',
+                                 'catatan' => $i->catatan ?? ''
                              ];
                          })->values()
                      ];

@@ -2050,27 +2050,28 @@ class BiayaKapalController extends Controller
 
                     if (isset($section['barang']) && is_array($section['barang'])) {
                         foreach ($section['barang'] as $item) {
-                            $barangId = $item['barang_id'] ?? null;
-                            $jumlah = floatval($item['jumlah'] ?? 0);
+                            $manifestId = $item['manifest_id'] ?? null;
+                            $tarif = floatval($item['tarif'] ?? 0);
+                            $jumlah = 1; // Forced to 1 as per new spec
+                            $vendor = $item['vendor'] ?? null;
+                            $catatan = $item['catatan'] ?? null;
 
-                            if (empty($barangId) || $jumlah <= 0) {
+                            if (empty($manifestId) || $tarif <= 0) {
                                 continue;
                             }
 
-                            $barang = \App\Models\PricelistOppOpt::find($barangId);
-                            if (! $barang) {
-                                continue;
-                            }
-
-                            $subtotal = $barang->tarif * $jumlah;
+                            $subtotal = $tarif; // tarif * 1
 
                             \App\Models\BiayaKapalOppOpt::create([
                                 'biaya_kapal_id' => $biayaKapal->id,
-                                'pricelist_opp_opt_id' => $barang->id,
+                                'pricelist_opp_opt_id' => null, // Not used anymore
+                                'manifest_id' => $manifestId,
                                 'kapal' => $kapalName,
                                 'voyage' => $voyageName,
+                                'vendor' => $vendor,
+                                'catatan' => $catatan,
                                 'jumlah' => $jumlah,
-                                'tarif' => $barang->tarif,
+                                'tarif' => $tarif,
                                 'subtotal' => $subtotal,
                                 'total_nominal' => $sectionTotalNominal,
                                 'dp' => $sectionDp,
@@ -4030,6 +4031,86 @@ class BiayaKapalController extends Controller
                 $biayaKapal->update(['nominal' => $totalGrandTotal]);
             }
 
+            // OPP/OPT UPDATE
+            if ($request->has('opp_opt_sections')) {
+                \App\Models\BiayaKapalOppOpt::where('biaya_kapal_id', $biayaKapal->id)->delete();
+                if (! empty($request->opp_opt_sections)) {
+                    foreach ($request->opp_opt_sections as $section) {
+                        $kapalName = $section['kapal'] ?? null;
+                        $voyageName = $section['voyage'] ?? null;
+                        $sectionTotalNominal = is_string($section['total_nominal'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string) $section['total_nominal'])))) : floatval($section['total_nominal'] ?? 0);
+                        $sectionDp = is_string($section['dp'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string) $section['dp'])))) : floatval($section['dp'] ?? 0);
+                        $sectionSisa = is_string($section['sisa_pembayaran'] ?? 0) ? (floatval(str_replace(',', '.', str_replace('.', '', (string) $section['sisa_pembayaran'])))) : floatval($section['sisa_pembayaran'] ?? 0);
+                        
+                        $sectionHasData = false;
+
+                        if (isset($section['barang']) && is_array($section['barang'])) {
+                            foreach ($section['barang'] as $item) {
+                                $manifestId = $item['manifest_id'] ?? null;
+                                $tarif = floatval($item['tarif'] ?? 0);
+                                $jumlah = 1; // Forced to 1 as per new spec
+                                $vendor = $item['vendor'] ?? null;
+                                $catatan = $item['catatan'] ?? null;
+
+                                if (empty($manifestId) || $tarif <= 0) {
+                                    continue;
+                                }
+
+                                $subtotal = $tarif; // tarif * 1
+
+                                \App\Models\BiayaKapalOppOpt::create([
+                                    'biaya_kapal_id' => $biayaKapal->id,
+                                    'pricelist_opp_opt_id' => null, // Not used anymore
+                                    'manifest_id' => $manifestId,
+                                    'kapal' => $kapalName,
+                                    'voyage' => $voyageName,
+                                    'vendor' => $vendor,
+                                    'catatan' => $catatan,
+                                    'jumlah' => $jumlah,
+                                    'tarif' => $tarif,
+                                    'subtotal' => $subtotal,
+                                    'total_nominal' => $sectionTotalNominal,
+                                    'dp' => $sectionDp,
+                                    'sisa_pembayaran' => $sectionSisa,
+                                ]);
+
+                                $sectionHasData = true;
+                            }
+                        }
+
+                        // Create placeholder if section has vessel info but no items
+                        if (! $sectionHasData && ! empty($kapalName) && ! empty($voyageName)) {
+                            \App\Models\BiayaKapalOppOpt::create([
+                                'biaya_kapal_id' => $biayaKapal->id,
+                                'pricelist_opp_opt_id' => null,
+                                'kapal' => $kapalName,
+                                'voyage' => $voyageName,
+                                'jumlah' => 0,
+                                'tarif' => 0,
+                                'subtotal' => 0,
+                                'total_nominal' => $sectionTotalNominal,
+                                'dp' => $sectionDp,
+                                'sisa_pembayaran' => $sectionSisa,
+                            ]);
+                        }
+                    }
+                }
+                
+                // AUTO-CALCULATE NOMINAL FOR OPP/OPT
+                $totalGrandTotal = \App\Models\BiayaKapalOppOpt::where('biaya_kapal_id', $biayaKapal->id)
+                    ->get()
+                    ->groupBy(function ($item) {
+                        return ($item->kapal ?? '-').'|'.($item->voyage ?? '-');
+                    })
+                    ->map(function ($group) {
+                        return $group->first()->total_nominal ?? 0;
+                    })
+                    ->sum();
+                if ($totalGrandTotal > 0) {
+                    $biayaKapal->update(['nominal' => $totalGrandTotal]);
+                }
+            }
+
             // TKBM UPDATE
             if ($request->has('tkbm_sections')) {
                 BiayaKapalTkbm::where('biaya_kapal_id', $biayaKapal->id)->delete();
@@ -5397,6 +5478,54 @@ class BiayaKapalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal mengambil data BL: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function getManifestsByKapalVoyage(Request $request)
+    {
+        try {
+            $kapal = $request->kapal;
+            $voyage = $request->voyage;
+
+            if (empty($kapal) || empty($voyage)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kapal dan voyage wajib diisi'
+                ]);
+            }
+
+            $manifests = \App\Models\Manifest::where('nama_kapal', $kapal)
+                ->where('no_voyage', $voyage)
+                ->select('id', 'nomor_kontainer', 'nomor_bl', 'size_kontainer', 'tipe_kontainer')
+                ->orderBy('nomor_kontainer')
+                ->get()
+                ->map(function($item) {
+                    $label = '';
+                    if (!empty($item->nomor_kontainer)) {
+                        $label .= 'Kontainer: ' . $item->nomor_kontainer;
+                    }
+                    if (!empty($item->nomor_bl)) {
+                        $label .= ($label ? ' / ' : '') . 'BL: ' . $item->nomor_bl;
+                    }
+                    if (empty($label)) {
+                        $label = 'Manifest ID: ' . $item->id;
+                    }
+                    return [
+                        'id' => $item->id,
+                        'label' => $label . ' (' . ($item->size_kontainer ?: '-') . ' ' . ($item->tipe_kontainer ?: '-') . ')'
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $manifests
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching manifests: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memuat data kontainer/BL'
             ], 500);
         }
     }

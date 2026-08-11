@@ -3014,19 +3014,19 @@ function submitBulkSuratJalan() {
             let msg = data.message;
             if (data.errors && data.errors.length > 0) {
                 msg += '<br><br><strong>Detail error:</strong><br>' + data.errors.join('<br>');
-                showBulkAlert('Sebagian Berhasil', msg, 'warning');
+                showBulkOverlay('Sebagian Berhasil', msg, 'warning');
             } else {
-                showBulkAlert('Berhasil!', msg, 'success');
+                showBulkOverlay('Berhasil!', msg, 'success');
             }
 
-            // Redirect after 2 seconds
+            // Redirect after 4 seconds
             setTimeout(() => {
                 if (data.redirect) {
                     window.location.href = data.redirect;
                 } else {
                     window.location.reload();
                 }
-            }, 2000);
+            }, 4000);
         } else {
             let errorMsg = data.message || 'Gagal menyimpan data.';
             if (data.errors && data.errors.length > 0) {
@@ -3037,11 +3037,11 @@ function submitBulkSuratJalan() {
             let title = data.success_count > 0 ? 'Sebagian Berhasil' : 'Gagal';
             let alertType = data.success_count > 0 ? 'warning' : 'error';
             
-            showBulkAlert(title, errorMsg, alertType);
+            showBulkOverlay(title, errorMsg, alertType);
             
             if (data.failed_rows && data.failed_rows.length > 0) {
                 // put failed rows back into textarea
-                document.getElementById('bulkData').value = data.failed_rows.join('\n');
+                document.getElementById('bulkTextarea').value = data.failed_rows.join('\n');
                 // parse again so preview updates with only failed rows
                 parseBulkData(); 
             }
@@ -3052,7 +3052,7 @@ function submitBulkSuratJalan() {
         submitBtn.disabled = false;
         submitText.classList.remove('hidden');
         submitLoading.classList.add('hidden');
-        showBulkAlert('Error', 'Terjadi kesalahan jaringan. Silakan coba lagi.', 'error');
+        showBulkOverlay('Error', 'Terjadi kesalahan jaringan. Silakan coba lagi.', 'error');
     });
 }
 
@@ -3081,6 +3081,41 @@ function showBulkAlert(title, message, type = 'error') {
             </div>
         </div>
     `;
+    alertArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showBulkOverlay(title, message, type = 'error') {
+    // Also update the in-modal alert
+    showBulkAlert(title, message, type);
+
+    // Remove existing overlay if any
+    const existing = document.getElementById('bulkResultOverlay');
+    if (existing) existing.remove();
+
+    const iconMap = {
+        'success': `<svg class="w-16 h-16 text-green-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+        'warning': `<svg class="w-16 h-16 text-amber-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>`,
+        'error': `<svg class="w-16 h-16 text-red-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`
+    };
+
+    const bgMap = {
+        'success': 'bg-green-50 border-green-300',
+        'warning': 'bg-amber-50 border-amber-300',
+        'error': 'bg-red-50 border-red-300'
+    };
+
+    const overlay = document.createElement('div');
+    overlay.id = 'bulkResultOverlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);';
+    overlay.innerHTML = `
+        <div class="rounded-xl shadow-2xl p-8 max-w-lg w-full mx-4 border-2 ${bgMap[type] || bgMap['error']}" style="background:white;max-height:80vh;overflow-y:auto;">
+            ${iconMap[type] || iconMap['error']}
+            <h3 class="text-xl font-bold text-center mb-2">${title}</h3>
+            <div class="text-sm text-gray-700 text-center mb-4">${message}</div>
+            <button onclick="document.getElementById('bulkResultOverlay').remove()" class="w-full px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg font-medium transition">Tutup</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
 }
 
 </script>

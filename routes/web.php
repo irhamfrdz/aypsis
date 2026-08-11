@@ -2046,6 +2046,8 @@ Route::middleware([
             ->name('biaya-kapal.get-bls-by-voyages');
         Route::post('biaya-kapal/get-container-counts', [\App\Http\Controllers\BiayaKapalController::class, 'getContainerCounts'])
             ->name('biaya-kapal.get-container-counts');
+        Route::post('biaya-kapal/get-manifests-by-kapal-voyage', [\App\Http\Controllers\BiayaKapalController::class, 'getManifestsByKapalVoyage'])
+            ->name('biaya-kapal.get-manifests-by-kapal-voyage');
         Route::get('biaya-kapal/search-tanda-terima', [\App\Http\Controllers\BiayaKapalController::class, 'searchTandaTerima'])
             ->name('biaya-kapal.search-tanda-terima');
         Route::get('biaya-kapal/search-pengirim', [\App\Http\Controllers\BiayaKapalController::class, 'searchPengirim'])
@@ -2653,6 +2655,10 @@ Route::middleware([
             ->middleware('auth');
 
         // 📦 Klasifikasi Biaya (Master) Management with permissions
+        Route::get('master/klasifikasi-biaya-export', [\App\Http\Controllers\Master\KlasifikasiBiayaController::class, 'export'])
+            ->name('klasifikasi-biaya.export')
+            ->middleware('can:master-klasifikasi-biaya-view');
+
         Route::get('master/klasifikasi-biaya-download-template', [\App\Http\Controllers\Master\KlasifikasiBiayaController::class, 'downloadTemplate'])
             ->name('klasifikasi-biaya.download-template')
             ->middleware('can:master-klasifikasi-biaya-view');
