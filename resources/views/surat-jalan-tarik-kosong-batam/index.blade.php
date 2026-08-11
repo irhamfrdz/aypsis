@@ -206,6 +206,7 @@
                                 <th class="px-3 py-2 text-left text-gray-500 uppercase">No Plat</th>
                                 <th class="px-3 py-2 text-left text-gray-500 uppercase">Pengambilan</th>
                                 <th class="px-3 py-2 text-left text-gray-500 uppercase">Gudang Tujuan</th>
+                                <th class="px-3 py-2 text-left text-gray-500 uppercase">Uang Jalan</th>
                                 <th class="px-3 py-2 text-left text-gray-500 uppercase">Catatan</th>
                             </tr>
                         </thead>
@@ -233,6 +234,7 @@
 @push('scripts')
 <script>
 let bulkParsedRows = [];
+const pricelistRings = @json($pricelistRings ?? []);
 
 function buatSuratJalanMassal() {
     document.getElementById('modalBuatSuratJalanMassal').classList.remove('hidden');
@@ -311,12 +313,26 @@ async function parseBulkData() {
             tujuan_pengambilan: cols[6] || '',
             gudang_tujuan: cols[7] || '',
             catatan: cols[8] || '',
+            uang_jalan: 0,
             _original_line: line
         };
 
         // Auto-fill size from database if found
         if (row.no_kontainer && containerSizes[row.no_kontainer]) {
             row.size = containerSizes[row.no_kontainer];
+        }
+
+        // Auto-calculate uang jalan
+        if (row.tujuan_pengambilan && row.size) {
+            const ringData = pricelistRings.find(r => r.name.toLowerCase() === row.tujuan_pengambilan.toLowerCase());
+            if (ringData) {
+                // Tarik Kosong implies Empty
+                const key = `${row.size}_Empty`;
+                const rate = ringData.rates[key];
+                if (rate) {
+                    row.uang_jalan = rate;
+                }
+            }
         }
 
         if (row.no_surat_jalan) {
@@ -344,6 +360,7 @@ async function parseBulkData() {
                 <td class="px-3 py-2 whitespace-nowrap">${row.no_plat}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.tujuan_pengambilan}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.gudang_tujuan}</td>
+                <td class="px-3 py-2 whitespace-nowrap">Rp ${new Intl.NumberFormat('id-ID').format(row.uang_jalan)}</td>
                 <td class="px-3 py-2">${row.catatan}</td>
             `;
             tbody.appendChild(tr);

@@ -15,13 +15,15 @@ class SuratJalanTarikKosongBatamController extends Controller
     {
         $query = SuratJalanTarikKosongBatam::query();
 
+        // Search
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $query->where(function($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
-                    ->orWhere('no_kontainer', 'like', "%{$search}%")
-                    ->orWhere('supir', 'like', "%{$search}%")
-                    ->orWhere('no_plat', 'like', "%{$search}%");
+                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('tujuan_pengambilan', 'like', "%{$search}%");
             });
         }
 
@@ -34,10 +36,38 @@ class SuratJalanTarikKosongBatamController extends Controller
         }
 
         $items = $query->orderBy('tanggal_surat_jalan', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+                      ->orderBy('id', 'desc')
+                      ->paginate(10);
 
-        return view('surat-jalan-tarik-kosong-batam.index', compact('items'));
+        $pricelistRings = \App\Models\PricelistUangJalanBatam::activeBbm()->orderBy('ring')
+            ->get(['ring', 'expedisi', 'wilayah', 'tarif_20ft_full', 'tarif_20ft_empty', 'tarif_40ft_full', 'tarif_40ft_empty'])
+            ->flatMap(function ($item) {
+                $mapped = [];
+                if ($item->wilayah) {
+                    $subWilayahs = explode(',', $item->wilayah);
+                    foreach ($subWilayahs as $sw) {
+                        $name = trim($sw);
+                        if ($name) {
+                            $mapped[] = [
+                                'name' => $name,
+                                'ring' => $item->ring,
+                                'rates' => [
+                                    '20_F' => $item->tarif_20ft_full,
+                                    '20_Empty' => $item->tarif_20ft_empty,
+                                    '40_F' => $item->tarif_40ft_full,
+                                    '40_Empty' => $item->tarif_40ft_empty,
+                                    '45_F' => $item->tarif_40ft_full, // 45ft usually uses 40ft rate or specific
+                                    '45_Empty' => $item->tarif_40ft_empty,
+                                ]
+                            ];
+                        }
+                    }
+                }
+                return $mapped;
+            })
+            ->values();
+
+        return view('surat-jalan-tarik-kosong-batam.index', compact('items', 'pricelistRings'));
     }
 
     public function create()
@@ -442,6 +472,7 @@ class SuratJalanTarikKosongBatamController extends Controller
                     'f_e' => 'Empty', // Tarik kosong implies empty
                     'status' => 'active',
                     'catatan' => trim($row['catatan'] ?? ''),
+                    'uang_jalan' => $row['uang_jalan'] ?? 0,
                     'gudang_tujuan_id' => $rowGudangId,
                     'input_by' => Auth::id(),
                     'input_date' => now(),
