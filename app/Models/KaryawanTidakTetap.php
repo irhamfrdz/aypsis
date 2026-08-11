@@ -38,4 +38,24 @@ class KaryawanTidakTetap extends Model
         'group' => 'array',
         'sub_group' => 'array',
     ];
+
+    public function absensi()
+    {
+        return $this->hasMany(Absensi::class, 'nik', 'nik');
+    }
+
+    public function uangMakans()
+    {
+        return $this->morphMany(UangMakan::class, 'karyawan');
+    }
+
+    public function uangMakanTerbaru()
+    {
+        return $this->morphOne(UangMakan::class, 'karyawan')->latestOfMany('tanggal');
+    }
+
+    public function payrollUangMakan()
+    {
+        return $this->morphMany(PayrollUangMakan::class, 'karyawan');
+    }
 }

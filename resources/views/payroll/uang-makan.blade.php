@@ -86,6 +86,24 @@
                     </select>
                 </div>
                 
+                <div class="md:col-span-5">
+                    <label class="block text-xs font-semibold text-gray-700 mb-2">Tipe Karyawan</label>
+                    <div class="flex items-center space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="tipe_karyawan" value="all" {{ request('tipe_karyawan', 'all') == 'all' ? 'checked' : '' }} class="form-radio text-indigo-600 focus:ring-indigo-500 h-4 w-4 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Semua</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="tipe_karyawan" value="Karyawan" {{ request('tipe_karyawan') == 'Karyawan' ? 'checked' : '' }} class="form-radio text-indigo-600 focus:ring-indigo-500 h-4 w-4 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Karyawan</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="tipe_karyawan" value="KaryawanTidakTetap" {{ request('tipe_karyawan') == 'KaryawanTidakTetap' ? 'checked' : '' }} class="form-radio text-indigo-600 focus:ring-indigo-500 h-4 w-4 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Non Karyawan</span>
+                        </label>
+                    </div>
+                </div>
+                
                 <!-- Action Buttons -->
                 <div class="md:col-span-5 flex items-end gap-2 justify-end mt-2">
                     @if(request()->has('generate'))
@@ -127,6 +145,9 @@
                     @if(request('sub_group'))
                     <input type="hidden" name="sub_group" value="{{ request('sub_group') }}">
                     @endif
+                    @if(request('tipe_karyawan'))
+                    <input type="hidden" name="tipe_karyawan" value="{{ request('tipe_karyawan') }}">
+                    @endif
                     
                     <button type="button" id="btn-masukkan-pranota" class="hidden inline-flex items-center justify-center px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer mr-2">
                         <i class="fas fa-file-invoice mr-1.5"></i>
@@ -160,7 +181,7 @@
                     @forelse($payrolls as $row)
                     <tr class="hover:bg-gray-50 transition-colors duration-200">
                         <td class="px-4 py-4 whitespace-nowrap text-center">
-                            <input type="checkbox" name="selected_pranota[]" value="{{ $row['karyawan']->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <input type="checkbox" name="selected_pranota[]" value="{{ class_basename($row['karyawan']) . '_' . $row['karyawan']->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500 font-medium">
                             {{ $loop->iteration }}
@@ -197,7 +218,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right">
                             <div class="flex items-center justify-end gap-2">
                                 <span class="text-gray-500">Rp</span>
-                                <input type="number" name="payrolls[{{ $row['karyawan']->id }}][nominal_per_hari]" value="{{ $row['nominal_per_hari'] }}" 
+                                <input type="number" name="payrolls[{{ class_basename($row['karyawan']) . '_' . $row['karyawan']->id }}][nominal_per_hari]" value="{{ $row['nominal_per_hari'] }}" 
                                        data-kehadiran="{{ $row['total_kehadiran'] }}" 
                                        data-multiplier="{{ $row['multiplier'] }}"
                                        data-is-satpam-pelabuhan="{{ isset($row['is_satpam_pelabuhan']) && $row['is_satpam_pelabuhan'] ? '1' : '0' }}"

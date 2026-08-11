@@ -35,7 +35,7 @@ class PayrollUangMakanExport implements FromCollection, WithHeadings, WithMappin
             ->where('periode_end', $this->endDate);
 
         if (!empty($this->penempatan)) {
-            $query->whereHas('karyawan', function($q) {
+            $query->whereHasMorph('karyawan', '*', function($q) {
                 $q->where('penempatan', $this->penempatan);
             });
         }

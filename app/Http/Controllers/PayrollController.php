@@ -19,37 +19,70 @@ class PayrollController extends Controller
         $group = $request->group;
         $subGroup = $request->sub_group;
         $cabang = $request->cabang;
+        $tipeKaryawan = $request->tipe_karyawan ?? 'all';
 
         $payrolls = [];
         $isGenerated = $request->has('generate');
 
         if ($isGenerated) {
-            $query = \App\Models\Karyawan::where('status', 'active');
-            if (!empty($penempatan)) {
-                $query->where('penempatan', $penempatan);
-            }
-            if (!empty($group)) {
-                $query->where(function($q) use ($group) {
-                    $q->where('grup', 'LIKE', '%"' . $group . ':%')
-                      ->orWhere('grup', 'LIKE', '%"' . $group . '"%');
-                });
-            }
-            if (!empty($subGroup)) {
-                $query->where('grup', 'LIKE', '%:' . $subGroup . '"%');
-            }
-            if (!empty($cabang)) {
-                $query->where('cabang', $cabang);
-            }
+            $allKaryawans = collect();
             
-            $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
-                    $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
-                      ->where('tipe', 'Masuk');
-                }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
+            if ($tipeKaryawan === 'all' || $tipeKaryawan === 'Karyawan') {
+                $query = \App\Models\Karyawan::where('status', 'active');
+                if (!empty($penempatan)) {
+                    $query->where('penempatan', $penempatan);
+                }
+                if (!empty($group)) {
+                    $query->where(function($q) use ($group) {
+                        $q->where('grup', 'LIKE', '%"' . $group . ':%')
+                          ->orWhere('grup', 'LIKE', '%"' . $group . '"%');
+                    });
+                }
+                if (!empty($subGroup)) {
+                    $query->where('grup', 'LIKE', '%:' . $subGroup . '"%');
+                }
+                if (!empty($cabang)) {
+                    $query->where('cabang', $cabang);
+                }
+                $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                          ->where('tipe', 'Masuk');
+                    }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
+                $allKaryawans = $allKaryawans->merge($karyawans);
+            }
 
-            foreach ($karyawans as $k) {
+            if ($tipeKaryawan === 'all' || $tipeKaryawan === 'KaryawanTidakTetap') {
+                $queryNon = \App\Models\KaryawanTidakTetap::query();
+                if (!empty($penempatan)) {
+                    $queryNon->where('penempatan', $penempatan);
+                }
+                if (!empty($group)) {
+                    $queryNon->where(function($q) use ($group) {
+                        $q->where('group', 'LIKE', '%"' . $group . ':%')
+                          ->orWhere('group', 'LIKE', '%"' . $group . '"%');
+                    });
+                }
+                if (!empty($subGroup)) {
+                    $queryNon->where('group', 'LIKE', '%:' . $subGroup . '"%');
+                }
+                if (!empty($cabang)) {
+                    $queryNon->where('cabang', $cabang);
+                }
+                $nonKaryawans = $queryNon->with(['absensi' => function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                          ->where('tipe', 'Masuk');
+                    }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
+                $allKaryawans = $allKaryawans->merge($nonKaryawans);
+            }
+
+            foreach ($allKaryawans as $k) {
                 $isSatpam = false;
                 $isSatpamPelabuhan = false;
-                $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
+                if ($k instanceof \App\Models\Karyawan) {
+                    $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
+                } else {
+                    $kGrup = is_string($k->group) ? json_decode($k->group, true) : (array)$k->group;
+                }
                 if (is_array($kGrup)) {
                     foreach ($kGrup as $g) {
                         if (stripos($g, 'SATPAM GARASI') !== false) {
@@ -134,32 +167,61 @@ class PayrollController extends Controller
         $group = $request->group;
         $subGroup = $request->sub_group;
         $cabang = $request->cabang;
+        $tipeKaryawan = $request->tipe_karyawan ?? 'all';
 
-        $query = \App\Models\Karyawan::where('status', 'active');
-        if (!empty($penempatan)) {
-            $query->where('penempatan', $penempatan);
+        $allKaryawans = collect();
+            
+        if ($tipeKaryawan === 'all' || $tipeKaryawan === 'Karyawan') {
+            $query = \App\Models\Karyawan::where('status', 'active');
+            if (!empty($penempatan)) {
+                $query->where('penempatan', $penempatan);
+            }
+            if (!empty($group)) {
+                $query->where(function($q) use ($group) {
+                    $q->where('grup', 'LIKE', '%"' . $group . ':%')
+                      ->orWhere('grup', 'LIKE', '%"' . $group . '"%');
+                });
+            }
+            if (!empty($subGroup)) {
+                $query->where('grup', 'LIKE', '%:' . $subGroup . '"%');
+            }
+            if (!empty($cabang)) {
+                $query->where('cabang', $cabang);
+            }
+            $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
+                    $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                      ->where('tipe', 'Masuk');
+                }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
+            $allKaryawans = $allKaryawans->merge($karyawans);
         }
-        if (!empty($group)) {
-            $query->where(function($q) use ($group) {
-                $q->where('grup', 'LIKE', '%"' . $group . ':%')
-                  ->orWhere('grup', 'LIKE', '%"' . $group . '"%');
-            });
+
+        if ($tipeKaryawan === 'all' || $tipeKaryawan === 'KaryawanTidakTetap') {
+            $queryNon = \App\Models\KaryawanTidakTetap::query();
+            if (!empty($penempatan)) {
+                $queryNon->where('penempatan', $penempatan);
+            }
+            if (!empty($group)) {
+                $queryNon->where(function($q) use ($group) {
+                    $q->where('group', 'LIKE', '%"' . $group . ':%')
+                      ->orWhere('group', 'LIKE', '%"' . $group . '"%');
+                });
+            }
+            if (!empty($subGroup)) {
+                $queryNon->where('group', 'LIKE', '%:' . $subGroup . '"%');
+            }
+            if (!empty($cabang)) {
+                $queryNon->where('cabang', $cabang);
+            }
+            $nonKaryawans = $queryNon->with(['absensi' => function($q) use ($startDate, $endDate) {
+                    $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                      ->where('tipe', 'Masuk');
+                }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
+            $allKaryawans = $allKaryawans->merge($nonKaryawans);
         }
-        if (!empty($subGroup)) {
-            $query->where('grup', 'LIKE', '%:' . $subGroup . '"%');
-        }
-        if (!empty($cabang)) {
-            $query->where('cabang', $cabang);
-        }
-        
-        $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
-                $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
-                  ->where('tipe', 'Masuk');
-            }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
 
         $submittedPayrolls = $request->input('payrolls', []);
         $count = 0;
-        foreach ($karyawans as $k) {
+        foreach ($allKaryawans as $k) {
             $isSatpam = false;
             $isSatpamPelabuhan = false;
             $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
@@ -189,8 +251,11 @@ class PayrollController extends Controller
                     $multiplier = 2;
                 }
                 
+                // Identifikasi tipe dan id unik untuk mengambil data manual dari form
+                $formKey = class_basename($k) . '_' . $k->id;
+                
                 // Prioritaskan nilai dari form input manual, jika tidak ada gunakan data Uang Makan terbaru
-                $karyawanNominalDasar = $submittedPayrolls[$k->id]['nominal_per_hari'] ?? ($k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0));
+                $karyawanNominalDasar = $submittedPayrolls[$formKey]['nominal_per_hari'] ?? ($k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0));
                 
                 if ($isSatpamPelabuhan) {
                     $totalPayout = $multiplier * $karyawanNominalDasar;
@@ -200,6 +265,7 @@ class PayrollController extends Controller
 
                 \App\Models\PayrollUangMakan::updateOrCreate(
                     [
+                        'tipe_karyawan' => get_class($k),
                         'karyawan_id' => $k->id,
                         'periode_start' => $startDate->format('Y-m-d'),
                         'periode_end' => $endDate->format('Y-m-d'),

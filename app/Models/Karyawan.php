@@ -51,12 +51,17 @@ class Karyawan extends Model
 
     public function uangMakans()
     {
-        return $this->hasMany(UangMakan::class);
+        return $this->morphMany(UangMakan::class, 'karyawan');
     }
 
     public function uangMakanTerbaru()
     {
-        return $this->hasOne(UangMakan::class)->latestOfMany('tanggal');
+        return $this->morphOne(UangMakan::class, 'karyawan')->latestOfMany('tanggal');
+    }
+
+    public function payrollUangMakan()
+    {
+        return $this->morphMany(PayrollUangMakan::class, 'karyawan');
     }
 
     /**
