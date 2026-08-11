@@ -47,8 +47,20 @@ class PayrollController extends Controller
                 }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
 
             foreach ($karyawans as $k) {
+                $isSatpam = false;
+                $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
+                if (is_array($kGrup)) {
+                    foreach ($kGrup as $g) {
+                        if (stripos($g, 'SATPAM GARASI') !== false || stripos($g, 'SATPAM PELABUHAN') !== false) {
+                            $isSatpam = true;
+                            break;
+                        }
+                    }
+                }
+
                 // Count unique days they clocked in
-                $uniqueDaysDates = $k->absensi->filter(function($abs) {
+                $uniqueDaysDates = $k->absensi->filter(function($abs) use ($isSatpam) {
+                    if ($isSatpam) return true;
                     return !\Carbon\Carbon::parse($abs->waktu)->isSunday();
                 })->map(function($abs) {
                     return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
@@ -138,7 +150,19 @@ class PayrollController extends Controller
         $submittedPayrolls = $request->input('payrolls', []);
         $count = 0;
         foreach ($karyawans as $k) {
-            $uniqueDaysDates = $k->absensi->filter(function($abs) {
+            $isSatpam = false;
+            $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
+            if (is_array($kGrup)) {
+                foreach ($kGrup as $g) {
+                    if (stripos($g, 'SATPAM GARASI') !== false || stripos($g, 'SATPAM PELABUHAN') !== false) {
+                        $isSatpam = true;
+                        break;
+                    }
+                }
+            }
+
+            $uniqueDaysDates = $k->absensi->filter(function($abs) use ($isSatpam) {
+                if ($isSatpam) return true;
                 return !\Carbon\Carbon::parse($abs->waktu)->isSunday();
             })->map(function($abs) {
                 return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
