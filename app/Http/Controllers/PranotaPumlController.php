@@ -162,20 +162,33 @@ class PranotaPumlController extends Controller
         $puml = \App\Models\PranotaPuml::findOrFail($id);
         $potonganData = $request->input('potongan', []);
         
+        $totalPotonganSeluruhnya = 0;
+        
         foreach ($potonganData as $karyawanId => $data) {
+            $pot_utang = (float)(preg_replace('/[^0-9-]/', '', $data['pot_utang'] ?? '0') ?: 0);
+            $pot_bpjs = (float)(preg_replace('/[^0-9-]/', '', $data['pot_bpjs'] ?? '0') ?: 0);
+            $pot_pph = (float)(preg_replace('/[^0-9-]/', '', $data['pot_pph'] ?? '0') ?: 0);
+            $pot_terlambat = (float)(preg_replace('/[^0-9-]/', '', $data['pot_terlambat'] ?? '0') ?: 0);
+
             \App\Models\PranotaPumlPotongan::updateOrCreate(
                 [
                     'pranota_puml_id' => $puml->id,
                     'karyawan_id' => $karyawanId
                 ],
                 [
-                    'pot_utang' => preg_replace('/[^0-9-]/', '', $data['pot_utang'] ?? '0'),
-                    'pot_bpjs' => preg_replace('/[^0-9-]/', '', $data['pot_bpjs'] ?? '0'),
-                    'pot_pph' => preg_replace('/[^0-9-]/', '', $data['pot_pph'] ?? '0'),
-                    'pot_terlambat' => preg_replace('/[^0-9-]/', '', $data['pot_terlambat'] ?? '0'),
+                    'pot_utang' => $pot_utang,
+                    'pot_bpjs' => $pot_bpjs,
+                    'pot_pph' => $pot_pph,
+                    'pot_terlambat' => $pot_terlambat,
                 ]
             );
+            
+            $totalPotonganSeluruhnya += ($pot_utang + $pot_bpjs + $pot_pph + $pot_terlambat);
         }
+        
+        $puml->update([
+            'grand_total' => $puml->total_uang_makan + $puml->total_lembur - $totalPotonganSeluruhnya
+        ]);
         
         return back()->with('success', 'Data potongan berhasil disimpan!');
     }
