@@ -62,15 +62,15 @@
                 <table class="w-full text-sm text-left">
                     <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
                         <tr>
-                            <th scope="col" class="px-6 py-4 font-semibold">NIK</th>
-                            <th scope="col" class="px-6 py-4 font-semibold">Nama Karyawan</th>
-                            <th scope="col" class="px-6 py-4 font-semibold text-right">Uang Makan</th>
-                            <th scope="col" class="px-6 py-4 font-semibold text-right">Uang Lembur</th>
-                            <th scope="col" class="px-4 py-4 font-semibold text-right no-print">Pot. Utang</th>
-                            <th scope="col" class="px-4 py-4 font-semibold text-right no-print">Pot. BPJS</th>
-                            <th scope="col" class="px-4 py-4 font-semibold text-right no-print">Pot. PPh</th>
-                            <th scope="col" class="px-4 py-4 font-semibold text-right no-print">Pot. Terlambat</th>
-                            <th scope="col" class="px-6 py-4 font-bold text-right text-indigo-600">Total Terima</th>
+                            <th scope="col" class="px-2 py-3 font-semibold text-center">NIK</th>
+                            <th scope="col" class="px-2 py-3 font-semibold text-left">Nama Karyawan</th>
+                            <th scope="col" class="px-2 py-3 font-semibold text-right">Uang Makan</th>
+                            <th scope="col" class="px-2 py-3 font-semibold text-right">Uang Lembur</th>
+                            <th scope="col" class="px-1 py-3 font-semibold text-center no-print">Pot. Utang</th>
+                            <th scope="col" class="px-1 py-3 font-semibold text-center no-print">Pot. BPJS</th>
+                            <th scope="col" class="px-1 py-3 font-semibold text-center no-print">Pot. PPh</th>
+                            <th scope="col" class="px-1 py-3 font-semibold text-center no-print">Pot. Terlambat</th>
+                            <th scope="col" class="px-3 py-3 font-bold text-right text-indigo-600">Total Terima</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 bg-white">
@@ -84,32 +84,32 @@
                                 $totalAkhir = $totalAwal - ($potUtang + $potBpjs + $potPph + $potTerlambat);
                             @endphp
                             <tr class="hover:bg-gray-50/50 transition-colors duration-200 karyawan-row" data-total-awal="{{ $totalAwal }}" data-total-akhir="{{ $totalAkhir }}">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="font-semibold text-gray-600">{{ $rekap['karyawan']->nik ?? '-' }}</div>
+                                <td class="px-2 py-2 whitespace-nowrap text-center">
+                                    <div class="font-semibold text-gray-600 text-xs">{{ $rekap['karyawan']->nik ?? '-' }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="font-bold text-gray-900">{{ $rekap['karyawan']->nama_lengkap ?? 'Unknown' }}</div>
+                                <td class="px-2 py-2">
+                                    <div class="font-bold text-gray-900 text-xs min-w-[120px]">{{ $rekap['karyawan']->nama_lengkap ?? 'Unknown' }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-gray-600 font-medium">Rp {{ number_format($rekap['total_uang_makan'], 0, ',', '.') }}</div>
+                                <td class="px-2 py-2 whitespace-nowrap text-right">
+                                    <div class="text-gray-600 font-medium text-xs">Rp {{ number_format($rekap['total_uang_makan'], 0, ',', '.') }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right">
-                                    <div class="text-gray-600 font-medium">Rp {{ number_format($rekap['total_lembur'], 0, ',', '.') }}</div>
+                                <td class="px-2 py-2 whitespace-nowrap text-right">
+                                    <div class="text-gray-600 font-medium text-xs">Rp {{ number_format($rekap['total_lembur'], 0, ',', '.') }}</div>
                                 </td>
-                                <td class="px-2 py-4 whitespace-nowrap text-right no-print">
-                                    <input type="text" name="potongan[{{ $kid }}][pot_utang]" value="{{ number_format($potUtang, 0, ',', '.') }}" class="potongan-input text-right w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <td class="px-1 py-2 whitespace-nowrap text-center no-print">
+                                    <input type="text" name="potongan[{{ $kid }}][pot_utang]" value="{{ number_format($potUtang, 0, ',', '.') }}" class="potongan-input text-right w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:ring-indigo-500 focus:border-indigo-500">
                                 </td>
-                                <td class="px-2 py-4 whitespace-nowrap text-right no-print">
-                                    <input type="text" name="potongan[{{ $kid }}][pot_bpjs]" value="{{ number_format($potBpjs, 0, ',', '.') }}" class="potongan-input text-right w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <td class="px-1 py-2 whitespace-nowrap text-center no-print">
+                                    <input type="text" name="potongan[{{ $kid }}][pot_bpjs]" value="{{ number_format($potBpjs, 0, ',', '.') }}" class="potongan-input text-right w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:ring-indigo-500 focus:border-indigo-500">
                                 </td>
-                                <td class="px-2 py-4 whitespace-nowrap text-right no-print">
-                                    <input type="text" name="potongan[{{ $kid }}][pot_pph]" value="{{ number_format($potPph, 0, ',', '.') }}" class="potongan-input text-right w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <td class="px-1 py-2 whitespace-nowrap text-center no-print">
+                                    <input type="text" name="potongan[{{ $kid }}][pot_pph]" value="{{ number_format($potPph, 0, ',', '.') }}" class="potongan-input text-right w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:ring-indigo-500 focus:border-indigo-500">
                                 </td>
-                                <td class="px-2 py-4 whitespace-nowrap text-right no-print">
-                                    <input type="text" name="potongan[{{ $kid }}][pot_terlambat]" value="{{ number_format($potTerlambat, 0, ',', '.') }}" class="potongan-input text-right w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <td class="px-1 py-2 whitespace-nowrap text-center no-print">
+                                    <input type="text" name="potongan[{{ $kid }}][pot_terlambat]" value="{{ number_format($potTerlambat, 0, ',', '.') }}" class="potongan-input text-right w-20 px-2 py-1 border border-gray-300 rounded text-xs focus:ring-indigo-500 focus:border-indigo-500">
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right bg-indigo-50/30">
-                                    <div class="font-extrabold text-indigo-700 total-akhir-text">Rp {{ number_format($totalAkhir, 0, ',', '.') }}</div>
+                                <td class="px-3 py-2 whitespace-nowrap text-right bg-indigo-50/30">
+                                    <div class="font-extrabold text-indigo-700 total-akhir-text text-xs">Rp {{ number_format($totalAkhir, 0, ',', '.') }}</div>
                                 </td>
                             </tr>
                         @endforeach
