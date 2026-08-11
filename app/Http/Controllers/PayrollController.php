@@ -48,7 +48,9 @@ class PayrollController extends Controller
 
             foreach ($karyawans as $k) {
                 // Count unique days they clocked in
-                $uniqueDaysDates = $k->absensi->map(function($abs) {
+                $uniqueDaysDates = $k->absensi->filter(function($abs) {
+                    return !\Carbon\Carbon::parse($abs->waktu)->isSunday();
+                })->map(function($abs) {
                     return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
                 })->unique()->values();
                 $uniqueDays = $uniqueDaysDates->count();
@@ -136,7 +138,9 @@ class PayrollController extends Controller
         $submittedPayrolls = $request->input('payrolls', []);
         $count = 0;
         foreach ($karyawans as $k) {
-            $uniqueDaysDates = $k->absensi->map(function($abs) {
+            $uniqueDaysDates = $k->absensi->filter(function($abs) {
+                return !\Carbon\Carbon::parse($abs->waktu)->isSunday();
+            })->map(function($abs) {
                 return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
             })->unique()->values();
             $uniqueDays = $uniqueDaysDates->count();
