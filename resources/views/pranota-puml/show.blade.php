@@ -52,11 +52,19 @@
     <div class="bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] rounded-xl border border-gray-100 overflow-hidden mb-6">
         <form action="{{ route('pranota-puml.store-potongan', $puml->id) }}" method="POST">
             @csrf
-            <header class="px-6 py-4 bg-gray-50/80 border-b border-gray-200 flex justify-between items-center">
-                <h2 class="text-lg font-bold text-gray-800">Rincian Penerimaan Karyawan</h2>
-                <button type="submit" class="no-print inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200">
-                    <i class="fas fa-save mr-2"></i> Simpan Potongan
-                </button>
+            <header class="px-6 py-4 bg-gray-50/80 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <h2 class="text-lg font-bold text-gray-800 whitespace-nowrap">Rincian Penerimaan Karyawan</h2>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div class="relative w-full sm:w-64 no-print">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" id="searchKaryawan" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2 shadow-sm transition-colors duration-200" placeholder="Cari nama atau NIK...">
+                    </div>
+                    <button type="submit" class="no-print inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shrink-0">
+                        <i class="fas fa-save mr-2"></i> Simpan
+                    </button>
+                </div>
             </header>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
@@ -170,6 +178,27 @@
                 }
             });
         });
+
+        // Fitur pencarian karyawan
+        const searchInput = document.getElementById('searchKaryawan');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.karyawan-row');
+                
+                rows.forEach(row => {
+                    // Karena struktur tabel, kolom pertama = NIK, kedua = Nama
+                    const nik = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                    const nama = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    
+                    if (nik.includes(searchTerm) || nama.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
     });
 </script>
 @endpush
