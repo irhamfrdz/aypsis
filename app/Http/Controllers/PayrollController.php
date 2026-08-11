@@ -48,12 +48,16 @@ class PayrollController extends Controller
 
             foreach ($karyawans as $k) {
                 $isSatpam = false;
+                $isSatpamPelabuhan = false;
                 $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
                 if (is_array($kGrup)) {
                     foreach ($kGrup as $g) {
-                        if (stripos($g, 'SATPAM GARASI') !== false || stripos($g, 'SATPAM PELABUHAN') !== false) {
+                        if (stripos($g, 'SATPAM GARASI') !== false) {
                             $isSatpam = true;
-                            break;
+                        }
+                        if (stripos($g, 'SATPAM PELABUHAN') !== false) {
+                            $isSatpam = true;
+                            $isSatpamPelabuhan = true;
                         }
                     }
                 }
@@ -75,7 +79,12 @@ class PayrollController extends Controller
                     }
                     
                     $karyawanNominalDasar = $k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0);
-                    $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;
+                    
+                    if ($isSatpamPelabuhan) {
+                        $totalPayout = $multiplier * $karyawanNominalDasar;
+                    } else {
+                        $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;
+                    }
 
                     $payrolls[] = [
                         'karyawan' => $k,
@@ -84,6 +93,7 @@ class PayrollController extends Controller
                         'multiplier' => $multiplier,
                         'nominal_per_hari' => $karyawanNominalDasar,
                         'total_payout' => $totalPayout,
+                        'is_satpam_pelabuhan' => $isSatpamPelabuhan,
                     ];
                 }
             }
@@ -151,12 +161,16 @@ class PayrollController extends Controller
         $count = 0;
         foreach ($karyawans as $k) {
             $isSatpam = false;
+            $isSatpamPelabuhan = false;
             $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
             if (is_array($kGrup)) {
                 foreach ($kGrup as $g) {
-                    if (stripos($g, 'SATPAM GARASI') !== false || stripos($g, 'SATPAM PELABUHAN') !== false) {
+                    if (stripos($g, 'SATPAM GARASI') !== false) {
                         $isSatpam = true;
-                        break;
+                    }
+                    if (stripos($g, 'SATPAM PELABUHAN') !== false) {
+                        $isSatpam = true;
+                        $isSatpamPelabuhan = true;
                     }
                 }
             }
@@ -177,7 +191,12 @@ class PayrollController extends Controller
                 
                 // Prioritaskan nilai dari form input manual, jika tidak ada gunakan data Uang Makan terbaru
                 $karyawanNominalDasar = $submittedPayrolls[$k->id]['nominal_per_hari'] ?? ($k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0));
-                $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;
+                
+                if ($isSatpamPelabuhan) {
+                    $totalPayout = $multiplier * $karyawanNominalDasar;
+                } else {
+                    $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;
+                }
 
                 \App\Models\PayrollUangMakan::updateOrCreate(
                     [
