@@ -3212,6 +3212,12 @@ class BlController extends Controller
             
             preg_match('/\d+/', $nomor, $matches);
             return isset($matches[0]) ? (int) $matches[0] : 999998; 
+        })->sortBy(function ($row) {
+            $namaBarang = $row['nama_barang'] ?? '';
+            $isForklift = stripos($namaBarang, 'forklift') !== false;
+
+            if ($isForklift) return 2;
+            return 1;
         })->values();
 
         return $cargoRows->concat($containerRows);
