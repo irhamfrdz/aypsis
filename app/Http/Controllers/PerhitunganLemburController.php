@@ -184,6 +184,12 @@ class PerhitunganLemburController extends Controller
                         $durationMinutes = $lm->diffInMinutes($lp);
                         $durasiJam = ceil($durationMinutes / 60);
 
+                        // Aturan Hari Sabtu: jika lembur selesai nanggung 17:00-17:59, bulatkan ke 18:00
+                        $lpEvaluation = $lp->copy();
+                        if ($tempDate->isSaturday() && $lpEvaluation->hour == 17) {
+                            $lpEvaluation->setTime(18, 0, 0);
+                        }
+
                         $jamPulangTime = $lp->format('H:i:s');
                         
                         // Calculate nominal based on matched rules
@@ -191,25 +197,24 @@ class PerhitunganLemburController extends Controller
                         $ruleApplied = null;
 
                         foreach ($matchingUangLemburs as $ul) {
+                            $isPelabuhan1 = strtoupper(trim($ul->sub_group)) === 'PELABUHAN 1';
+                            
                             // Find rule for this tipe_hari that matches jam_pulang
                             foreach ($ul->rules as $rule) {
                                 if ($rule->tipe_hari === $tipeHari) {
                                     $matchesTime = false;
                                     
-                                    if ($tipeHari === 'Hari Libur') {
+                                    if ($tipeHari === 'Hari Libur' && !$isPelabuhan1) {
                                         // Evaluasi khusus Hari Libur berdasarkan durasi lembur (threshold 10 jam)
-                                        // Terkecuali grup PELABUHAN 1, mereka dibayar per jam (tanpa batas jam)
-                                        if (strtoupper($sub_group) === 'PELABUHAN 1') {
-                                            $matchesTime = true;
+                                        // Asumsi rule 18:00 - Selesai (is_sampai_selesai = 1) untuk > 10 jam
+                                        // Asumsi rule 08:00 - 18:00 (is_sampai_selesai = 0) untuk <= 10 jam
+                                        if ($rule->is_sampai_selesai) {
+                                            if ($durasiJam > 10) {
+                                                $matchesTime = true;
+                                            }
                                         } else {
-                                            if ($rule->is_sampai_selesai) {
-                                                if ($durasiJam > 10) {
-                                                    $matchesTime = true;
-                                                }
-                                            } else {
-                                                if ($durasiJam == 10) {
-                                                    $matchesTime = true;
-                                                }
+                                            if ($durasiJam <= 10) {
+                                                $matchesTime = true;
                                             }
                                         }
                                     } else {
@@ -223,7 +228,7 @@ class PerhitunganLemburController extends Controller
                                             }
 
                                             if ($rule->is_sampai_selesai) {
-                                                if ($lp >= $ruleMulai) {
+                                                if ($lpEvaluation >= $ruleMulai) {
                                                     $matchesTime = true;
                                                 }
                                             } else if ($rule->jam_selesai) {
@@ -233,7 +238,7 @@ class PerhitunganLemburController extends Controller
                                                     $ruleSelesai->addDay();
                                                 }
                                                 
-                                                if ($lp >= $ruleMulai && $lp <= $ruleSelesai) {
+                                                if ($lpEvaluation >= $ruleMulai && $lpEvaluation <= $ruleSelesai) {
                                                     $matchesTime = true;
                                                 }
                                             }
@@ -244,7 +249,7 @@ class PerhitunganLemburController extends Controller
                                     }
 
                                     if ($matchesTime) {
-                                        if (strtolower($rule->satuan) === 'jam') {
+                                        if (strtolower(trim($rule->satuan)) === 'jam' || strtolower(trim($rule->satuan)) === 'per jam') {
                                             $nominalHariIni = $durasiJam * $rule->nominal;
                                         } else { // Hari / Borongan
                                             $nominalHariIni = $rule->nominal;
