@@ -106,16 +106,20 @@ class PranotaPumlController extends Controller
     {
         $puml = \App\Models\PranotaPuml::with(['uangMakans.details.karyawan', 'lemburs.karyawans.karyawan', 'potongans'])->findOrFail($id);
         
-        $potonganMap = $puml->potongans->keyBy('karyawan_id');
+        $potonganMap = [];
+        foreach ($puml->potongans as $pot) {
+            $key = class_basename($pot->tipe_karyawan) . '_' . $pot->karyawan_id;
+            $potonganMap[$key] = $pot;
+        }
         
-        // Kita butuh merekap data berdasarkan karyawan_id
+        // Kita butuh merekap data berdasarkan karyawan_id dan tipe_karyawan
         $karyawanRekap = [];
         
         foreach ($puml->uangMakans as $um) {
             foreach ($um->details as $d) {
-                $kid = $d->karyawan_id;
+                $kid = class_basename($d->tipe_karyawan) . '_' . $d->karyawan_id;
                 if (!isset($karyawanRekap[$kid])) {
-                    $pot = $potonganMap->get($kid);
+                    $pot = $potonganMap[$kid] ?? null;
                     $karyawanRekap[$kid] = [
                         'karyawan' => $d->karyawan,
                         'total_uang_makan' => 0,
@@ -132,9 +136,10 @@ class PranotaPumlController extends Controller
         
         foreach ($puml->lemburs as $lm) {
             foreach ($lm->karyawans as $d) {
-                $kid = $d->karyawan_id;
+                $tipe_karyawan = $d->tipe_karyawan ?? 'App\\Models\\Karyawan';
+                $kid = class_basename($tipe_karyawan) . '_' . $d->karyawan_id;
                 if (!isset($karyawanRekap[$kid])) {
-                    $pot = $potonganMap->get($kid);
+                    $pot = $potonganMap[$kid] ?? null;
                     $karyawanRekap[$kid] = [
                         'karyawan' => $d->karyawan,
                         'total_uang_makan' => 0,
@@ -164,7 +169,12 @@ class PranotaPumlController extends Controller
         
         $totalPotonganSeluruhnya = 0;
         
-        foreach ($potonganData as $karyawanId => $data) {
+        foreach ($potonganData as $karyawanKey => $data) {
+            // Parse key like "Karyawan_257"
+            $parts = explode('_', $karyawanKey);
+            $tipeKaryawan = count($parts) > 1 ? 'App\\Models\\' . $parts[0] : 'App\\Models\\Karyawan';
+            $karyawanId = count($parts) > 1 ? $parts[1] : $karyawanKey;
+
             $pot_utang = (float)(preg_replace('/[^0-9-]/', '', $data['pot_utang'] ?? '0') ?: 0);
             $pot_bpjs = (float)(preg_replace('/[^0-9-]/', '', $data['pot_bpjs'] ?? '0') ?: 0);
             $pot_pph = (float)(preg_replace('/[^0-9-]/', '', $data['pot_pph'] ?? '0') ?: 0);
@@ -173,6 +183,7 @@ class PranotaPumlController extends Controller
             \App\Models\PranotaPumlPotongan::updateOrCreate(
                 [
                     'pranota_puml_id' => $puml->id,
+                    'tipe_karyawan' => $tipeKaryawan,
                     'karyawan_id' => $karyawanId
                 ],
                 [
