@@ -3018,6 +3018,9 @@ Route::middleware([
         Route::post('surat-jalan-tarik-kosong-batam/store-bulk', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'storeBulk'])
             ->name('surat-jalan-tarik-kosong-batam.store-bulk')
             ->middleware('can:surat-jalan-tarik-kosong-batam-create');
+        Route::post('surat-jalan-tarik-kosong-batam/check-container-sizes', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'checkContainerSizes'])
+            ->name('surat-jalan-tarik-kosong-batam.check-container-sizes')
+            ->middleware('can:surat-jalan-tarik-kosong-batam-view');
         Route::get('surat-jalan-tarik-kosong-batam/{id}', [\App\Http\Controllers\SuratJalanTarikKosongBatamController::class, 'show'])
             ->name('surat-jalan-tarik-kosong-batam.show')
             ->middleware('can:surat-jalan-tarik-kosong-batam-view');

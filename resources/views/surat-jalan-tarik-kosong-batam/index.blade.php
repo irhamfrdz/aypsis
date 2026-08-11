@@ -250,7 +250,7 @@ function closeBulkModal() {
     bulkParsedRows = [];
 }
 
-function parseBulkData() {
+async function parseBulkData() {
     const text = document.getElementById('bulkTextarea').value.trim();
     if (!text) {
         showBulkAlert('warning', 'Teks data masih kosong.');
@@ -263,6 +263,38 @@ function parseBulkData() {
     tbody.innerHTML = '';
     
     let validCount = 0;
+
+    // Collect all container numbers first
+    const noKontainers = [];
+    lines.forEach((line) => {
+        if (!line.trim()) return;
+        const cols = line.split(';').map(c => c.trim());
+        if (cols[2]) noKontainers.push(cols[2]);
+    });
+
+    let containerSizes = {};
+    if (noKontainers.length > 0) {
+        try {
+            const btnSubmit = document.getElementById('btnSubmitBulk');
+            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Memuat Data...';
+            btnSubmit.disabled = true;
+
+            const response = await fetch('{{ route("surat-jalan-tarik-kosong-batam.check-container-sizes") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ no_kontainers: noKontainers })
+            });
+            const data = await response.json();
+            if (data.success) {
+                containerSizes = data.sizes;
+            }
+        } catch (error) {
+            console.error('Error fetching container sizes:', error);
+        }
+    }
 
     lines.forEach((line, index) => {
         if (!line.trim()) return;
@@ -281,6 +313,11 @@ function parseBulkData() {
             catatan: cols[8] || '',
             _original_line: line
         };
+
+        // Auto-fill size from database if found
+        if (row.no_kontainer && containerSizes[row.no_kontainer]) {
+            row.size = containerSizes[row.no_kontainer];
+        }
 
         if (row.no_surat_jalan) {
             let displayTanggal = row.tanggal_surat_jalan;
@@ -317,6 +354,8 @@ function parseBulkData() {
     document.getElementById('bulkPreviewContainer').classList.remove('hidden');
 
     const btnSubmit = document.getElementById('btnSubmitBulk');
+    btnSubmit.innerHTML = '<i class="fas fa-save mr-1"></i> Simpan Massal';
+    
     if (validCount > 0) {
         btnSubmit.disabled = false;
         btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');

@@ -278,6 +278,58 @@ class SuratJalanTarikKosongBatamController extends Controller
         return view('surat-jalan-tarik-kosong-batam.print', compact('item'));
     }
 
+    public function checkContainerSizes(Request $request)
+    {
+        $no_kontainers = $request->input('no_kontainers', []);
+        
+        if (empty($no_kontainers) || !is_array($no_kontainers)) {
+            return response()->json(['success' => true, 'sizes' => []]);
+        }
+
+        // Clean container numbers
+        $cleanedNumbers = array_map(function($no) {
+            return preg_replace('/[^A-Za-z0-9]/', '', $no);
+        }, $no_kontainers);
+        
+        $cleanedNumbers = array_filter(array_unique($cleanedNumbers));
+
+        // First check in stock_kontainers
+        $stockSizes = \App\Models\StockKontainer::whereIn('nomor_seri_gabungan', $cleanedNumbers)
+            ->whereNotNull('ukuran')
+            ->pluck('ukuran', 'nomor_seri_gabungan')
+            ->toArray();
+
+        // Find which ones are still missing
+        $missingNumbers = array_diff($cleanedNumbers, array_keys($stockSizes));
+
+        $kontainerSizes = [];
+        if (!empty($missingNumbers)) {
+            // Check in kontainers for the missing ones
+            $kontainerSizes = \App\Models\Kontainer::whereIn('nomor_seri_gabungan', $missingNumbers)
+                ->whereNotNull('ukuran')
+                ->pluck('ukuran', 'nomor_seri_gabungan')
+                ->toArray();
+        }
+
+        // Merge results
+        $allSizes = array_merge($stockSizes, $kontainerSizes);
+
+        // Map back to original input strings (ignoring punctuation differences)
+        $result = [];
+        foreach ($no_kontainers as $original) {
+            if (!$original) continue;
+            $clean = preg_replace('/[^A-Za-z0-9]/', '', $original);
+            if (isset($allSizes[$clean])) {
+                $result[$original] = $allSizes[$clean];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'sizes' => $result
+        ]);
+    }
+
     public function storeBulk(Request $request)
     {
         $rows = $request->input('rows', []);
