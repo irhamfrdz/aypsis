@@ -1252,15 +1252,40 @@ class BlController extends Controller
                         $tonnageRaw = $getCol(['tonnage', 'tonnage (ton)', 'tonnage*'], 14);
                         if (isset($tonnageRaw) && $tonnageRaw !== '') {
                             $rawTrimmed = trim($tonnageRaw);
-                            if (preg_match('/^\d+(\.\d+)?$/', $rawTrimmed)) {
+                            if (is_numeric($rawTrimmed)) {
                                 $tonnage = (float) $rawTrimmed;
                             } else {
-                                $tonnageStr = str_replace(['.', ','], ['', '.'], $rawTrimmed);
-                                if (! is_numeric($tonnageStr)) {
+                                // Smart number parsing: detect thousand separators vs decimal separators
+                                // Pattern: commas followed by exactly 3 digits = thousand separator (e.g., 4,000 or 1,234,567)
+                                // Pattern: dots followed by exactly 3 digits = thousand separator (e.g., 4.000 or 1.234.567)
+                                $cleaned = $rawTrimmed;
+                                if (preg_match('/^\d{1,3}(,\d{3})+(\.\d+)?$/', $cleaned)) {
+                                    // EN format: 1,234,567 or 1,234,567.89
+                                    $cleaned = str_replace(',', '', $cleaned);
+                                } elseif (preg_match('/^\d{1,3}(\.\d{3})+(,\d+)?$/', $cleaned)) {
+                                    // ID format: 1.234.567 or 1.234.567,89
+                                    $cleaned = str_replace('.', '', $cleaned);
+                                    $cleaned = str_replace(',', '.', $cleaned);
+                                } elseif (strpos($cleaned, ',') !== false && strpos($cleaned, '.') === false) {
+                                    // Only comma present: treat as decimal if NOT followed by exactly 3 digits at end
+                                    if (preg_match('/,\d{3}$/', $cleaned)) {
+                                        $cleaned = str_replace(',', '', $cleaned); // thousand separator
+                                    } else {
+                                        $cleaned = str_replace(',', '.', $cleaned); // decimal separator
+                                    }
+                                } elseif (strpos($cleaned, '.') !== false && strpos($cleaned, ',') === false) {
+                                    // Only dot present: treat as decimal (already valid)
+                                    $cleaned = $cleaned;
+                                } else {
+                                    // Fallback: remove dots, replace comma with dot
+                                    $cleaned = str_replace('.', '', $cleaned);
+                                    $cleaned = str_replace(',', '.', $cleaned);
+                                }
+                                if (! is_numeric($cleaned)) {
                                     $errors[] = "Baris {$rowNumber}: Nilai tonnage tidak valid ('{$tonnageRaw}') ({$rowPreview})";
                                     $tonnage = null;
                                 } else {
-                                    $tonnage = (float) $tonnageStr;
+                                    $tonnage = (float) $cleaned;
                                 }
                             }
                         }
@@ -1269,15 +1294,33 @@ class BlController extends Controller
                         $volumeRaw = $getCol(['volume', 'volume (m3)', 'volume*'], 15);
                         if (isset($volumeRaw) && $volumeRaw !== '') {
                             $rawTrimmed = trim($volumeRaw);
-                            if (preg_match('/^\d+(\.\d+)?$/', $rawTrimmed)) {
+                            if (is_numeric($rawTrimmed)) {
                                 $volume = (float) $rawTrimmed;
                             } else {
-                                $volumeStr = str_replace(['.', ','], ['', '.'], $rawTrimmed);
-                                if (! is_numeric($volumeStr)) {
+                                // Smart number parsing (same logic as tonnage)
+                                $cleaned = $rawTrimmed;
+                                if (preg_match('/^\d{1,3}(,\d{3})+(\.\d+)?$/', $cleaned)) {
+                                    $cleaned = str_replace(',', '', $cleaned);
+                                } elseif (preg_match('/^\d{1,3}(\.\d{3})+(,\d+)?$/', $cleaned)) {
+                                    $cleaned = str_replace('.', '', $cleaned);
+                                    $cleaned = str_replace(',', '.', $cleaned);
+                                } elseif (strpos($cleaned, ',') !== false && strpos($cleaned, '.') === false) {
+                                    if (preg_match('/,\d{3}$/', $cleaned)) {
+                                        $cleaned = str_replace(',', '', $cleaned);
+                                    } else {
+                                        $cleaned = str_replace(',', '.', $cleaned);
+                                    }
+                                } elseif (strpos($cleaned, '.') !== false && strpos($cleaned, ',') === false) {
+                                    $cleaned = $cleaned;
+                                } else {
+                                    $cleaned = str_replace('.', '', $cleaned);
+                                    $cleaned = str_replace(',', '.', $cleaned);
+                                }
+                                if (! is_numeric($cleaned)) {
                                     $errors[] = "Baris {$rowNumber}: Nilai volume tidak valid ('{$volumeRaw}') ({$rowPreview})";
                                     $volume = null;
                                 } else {
-                                    $volume = (float) $volumeStr;
+                                    $volume = (float) $cleaned;
                                 }
                             }
                         }
@@ -1486,14 +1529,32 @@ class BlController extends Controller
                         }
                         $tonnage = null;
                         if (isset($rawTonnage) && $rawTonnage !== '') {
-                            if (is_float($rawTonnage) || is_int($rawTonnage) || preg_match('/^\d+(\.\d+)?$/', trim($rawTonnage))) {
+                            if (is_float($rawTonnage) || is_int($rawTonnage) || is_numeric(trim($rawTonnage))) {
                                 $tonnage = (float) trim($rawTonnage);
                             } else {
-                                $tonnageStr = str_replace(['.', ','], ['', '.'], trim($rawTonnage));
-                                if (! is_numeric($tonnageStr)) {
+                                // Smart number parsing: detect thousand separators vs decimal separators
+                                $cleaned = trim($rawTonnage);
+                                if (preg_match('/^\d{1,3}(,\d{3})+(\.\d+)?$/', $cleaned)) {
+                                    $cleaned = str_replace(',', '', $cleaned);
+                                } elseif (preg_match('/^\d{1,3}(\.\d{3})+(,\d+)?$/', $cleaned)) {
+                                    $cleaned = str_replace('.', '', $cleaned);
+                                    $cleaned = str_replace(',', '.', $cleaned);
+                                } elseif (strpos($cleaned, ',') !== false && strpos($cleaned, '.') === false) {
+                                    if (preg_match('/,\d{3}$/', $cleaned)) {
+                                        $cleaned = str_replace(',', '', $cleaned);
+                                    } else {
+                                        $cleaned = str_replace(',', '.', $cleaned);
+                                    }
+                                } elseif (strpos($cleaned, '.') !== false && strpos($cleaned, ',') === false) {
+                                    $cleaned = $cleaned;
+                                } else {
+                                    $cleaned = str_replace('.', '', $cleaned);
+                                    $cleaned = str_replace(',', '.', $cleaned);
+                                }
+                                if (! is_numeric($cleaned)) {
                                     $errors[] = "Baris {$row}: Nilai tonnage tidak valid ('{$rawTonnage}') ({$rowPreview})";
                                 } else {
-                                    $tonnage = (float) $tonnageStr;
+                                    $tonnage = (float) $cleaned;
                                 }
                             }
                         }
@@ -1507,14 +1568,32 @@ class BlController extends Controller
                         }
                         $volume = null;
                         if (isset($rawVolume) && $rawVolume !== '') {
-                            if (is_float($rawVolume) || is_int($rawVolume) || preg_match('/^\d+(\.\d+)?$/', trim($rawVolume))) {
+                            if (is_float($rawVolume) || is_int($rawVolume) || is_numeric(trim($rawVolume))) {
                                 $volume = (float) trim($rawVolume);
                             } else {
-                                $volumeStr = str_replace(['.', ','], ['', '.'], trim($rawVolume));
-                                if (! is_numeric($volumeStr)) {
+                                // Smart number parsing (same logic as tonnage)
+                                $cleaned = trim($rawVolume);
+                                if (preg_match('/^\d{1,3}(,\d{3})+(\.\d+)?$/', $cleaned)) {
+                                    $cleaned = str_replace(',', '', $cleaned);
+                                } elseif (preg_match('/^\d{1,3}(\.\d{3})+(,\d+)?$/', $cleaned)) {
+                                    $cleaned = str_replace('.', '', $cleaned);
+                                    $cleaned = str_replace(',', '.', $cleaned);
+                                } elseif (strpos($cleaned, ',') !== false && strpos($cleaned, '.') === false) {
+                                    if (preg_match('/,\d{3}$/', $cleaned)) {
+                                        $cleaned = str_replace(',', '', $cleaned);
+                                    } else {
+                                        $cleaned = str_replace(',', '.', $cleaned);
+                                    }
+                                } elseif (strpos($cleaned, '.') !== false && strpos($cleaned, ',') === false) {
+                                    $cleaned = $cleaned;
+                                } else {
+                                    $cleaned = str_replace('.', '', $cleaned);
+                                    $cleaned = str_replace(',', '.', $cleaned);
+                                }
+                                if (! is_numeric($cleaned)) {
                                     $errors[] = "Baris {$row}: Nilai volume tidak valid ('{$rawVolume}') ({$rowPreview})";
                                 } else {
-                                    $volume = (float) $volumeStr;
+                                    $volume = (float) $cleaned;
                                 }
                             }
                         }
