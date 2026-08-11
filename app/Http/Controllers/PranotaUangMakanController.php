@@ -53,13 +53,19 @@ class PranotaUangMakanController extends Controller
 
             $totalNominal = 0;
 
-            foreach ($request->karyawans as $karyawanId => $data) {
+            foreach ($request->karyawans as $karyawanKey => $data) {
+                // Parse key like "Karyawan_257" or "KaryawanTidakTetap_12"
+                $parts = explode('_', $karyawanKey);
+                $tipeKaryawan = count($parts) > 1 ? 'App\\Models\\' . $parts[0] : 'App\\Models\\Karyawan';
+                $karyawanId = count($parts) > 1 ? $parts[1] : $karyawanKey;
+
                 // Determine the total akhir based on inputs
                 $nominalAwal = isset($data['nominal_awal']) ? (int) $data['nominal_awal'] : 0;
                 $adjustment = isset($data['adjustment']) ? (int) $data['adjustment'] : 0;
                 $totalAkhir = $nominalAwal + $adjustment;
                 
                 $pranota->details()->create([
+                    'tipe_karyawan' => $tipeKaryawan,
                     'karyawan_id' => $karyawanId,
                     'kehadiran' => $data['kehadiran'] ?? null,
                     'nominal_awal' => $nominalAwal,
