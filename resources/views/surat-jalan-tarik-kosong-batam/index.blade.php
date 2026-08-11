@@ -283,13 +283,24 @@ function parseBulkData() {
         };
 
         if (row.no_surat_jalan) {
+            let displayTanggal = row.tanggal_surat_jalan;
+            if (row.tanggal_surat_jalan && !isNaN(row.tanggal_surat_jalan) && parseInt(row.tanggal_surat_jalan) > 10000) {
+                const serial = parseInt(row.tanggal_surat_jalan);
+                const jsDate = new Date(Math.round((serial - 25569) * 86400 * 1000));
+                const y = jsDate.getUTCFullYear();
+                const m = String(jsDate.getUTCMonth() + 1).padStart(2, '0');
+                const d = String(jsDate.getUTCDate()).padStart(2, '0');
+                displayTanggal = `${d}/${m}/${y}`;
+                row.tanggal_surat_jalan = `${y}-${m}-${d}`;
+            }
+
             bulkParsedRows.push(row);
             validCount++;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="px-3 py-2 whitespace-nowrap">${row.no_surat_jalan}</td>
-                <td class="px-3 py-2 whitespace-nowrap">${row.tanggal_surat_jalan}</td>
+                <td class="px-3 py-2 whitespace-nowrap">${displayTanggal}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.no_kontainer}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.size}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.supir}</td>
