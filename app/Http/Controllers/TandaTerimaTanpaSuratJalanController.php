@@ -628,7 +628,7 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 $validated['nama_barang'] = $namaBarangArray[0] ?? null;
             }
             if (! empty($jumlahArray)) {
-                $validated['jumlah_barang'] = $jumlahArray[0] ?? 1;
+                $validated['jumlah_barang'] = array_sum(array_filter($jumlahArray, 'is_numeric')) ?: 1;
             }
             if (! empty($satuanArray)) {
                 $validated['satuan_barang'] = $satuanArray[0] ?? 'unit';
@@ -1241,9 +1241,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                         'no_seal' => $tandaTerimaTanpaSuratJalan->no_seal,
                         'tujuan_pengiriman' => $tandaTerimaTanpaSuratJalan->tujuan_pengiriman,
                         'nama_kapal' => $tandaTerimaTanpaSuratJalan->estimasi_naik_kapal,
-                        'total_ton' => $tandaTerimaTanpaSuratJalan->tonase,
-                        'total_volume' => $tandaTerimaTanpaSuratJalan->meter_kubik,
-                        'kuantitas' => $tandaTerimaTanpaSuratJalan->jumlah_barang ?? 1,
+                        'total_ton' => $tandaTerimaTanpaSuratJalan->total_tonase ?: $tandaTerimaTanpaSuratJalan->tonase,
+                        'total_volume' => $tandaTerimaTanpaSuratJalan->total_volume ?: $tandaTerimaTanpaSuratJalan->meter_kubik,
+                        'kuantitas' => $tandaTerimaTanpaSuratJalan->jumlah_barang ?: ($tandaTerimaTanpaSuratJalan->dimensiItems()->sum('jumlah') ?: 1),
                         'updated_by' => Auth::id(),
                     ];
 
@@ -1472,8 +1472,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     'no_surat_jalan' => $tandaTerimaTanpaSuratJalan->no_tanda_terima ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima,
                     'tujuan_pengiriman' => $tandaTerimaTanpaSuratJalan->tujuan_pengiriman ?: 'Tidak ada tujuan',
                     'nama_kapal' => $tandaTerimaTanpaSuratJalan->estimasi_naik_kapal ?: 'Tidak ada nama kapal',
-                    'total_ton' => $tandaTerimaTanpaSuratJalan->tonase,
-                    'total_volume' => $tandaTerimaTanpaSuratJalan->meter_kubik,
+                    'total_ton' => $tandaTerimaTanpaSuratJalan->total_tonase ?: $tandaTerimaTanpaSuratJalan->tonase,
+                    'total_volume' => $tandaTerimaTanpaSuratJalan->total_volume ?: $tandaTerimaTanpaSuratJalan->meter_kubik,
+                    'kuantitas' => $tandaTerimaTanpaSuratJalan->jumlah_barang ?: ($tandaTerimaTanpaSuratJalan->dimensiItems()->sum('jumlah') ?: 1),
                     'keterangan' => 'Data manual transfer TTSJ: '.($tandaTerimaTanpaSuratJalan->no_tanda_terima ?? $tandaTerimaTanpaSuratJalan->nomor_tanda_terima).' Kegiatan: '.($tandaTerimaTanpaSuratJalan->aktifitas ?? ''),
                     'status' => 'aktif',
                     'created_by' => Auth::id(),
