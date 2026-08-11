@@ -43,7 +43,7 @@
                 <div class="flex items-center text-sm font-semibold text-indigo-500 mb-2">
                     <i class="fas fa-wallet text-indigo-400 mr-2"></i> Grand Total
                 </div>
-                <p class="text-xl font-extrabold text-indigo-600">Rp {{ number_format($puml->grand_total, 0, ',', '.') }}</p>
+                <p class="text-xl font-extrabold text-indigo-600" id="grand-total-header">Rp {{ number_format($puml->grand_total, 0, ',', '.') }}</p>
             </div>
         </div>
     </div>
@@ -83,7 +83,7 @@
                                 $potTerlambat = $rekap['pot_terlambat'] ?? 0;
                                 $totalAkhir = $totalAwal - ($potUtang + $potBpjs + $potPph + $potTerlambat);
                             @endphp
-                            <tr class="hover:bg-gray-50/50 transition-colors duration-200 karyawan-row" data-total-awal="{{ $totalAwal }}">
+                            <tr class="hover:bg-gray-50/50 transition-colors duration-200 karyawan-row" data-total-awal="{{ $totalAwal }}" data-total-akhir="{{ $totalAkhir }}">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="font-semibold text-gray-600">{{ $rekap['karyawan']->nik ?? '-' }}</div>
                                 </td>
@@ -156,6 +156,18 @@
                 
                 // Format total akhir ke rupiah
                 row.querySelector('.total-akhir-text').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalAkhir);
+                row.setAttribute('data-total-akhir', totalAkhir);
+                
+                // Update Grand Total
+                let grandTotal = 0;
+                document.querySelectorAll('.karyawan-row').forEach(tr => {
+                    grandTotal += parseFloat(tr.getAttribute('data-total-akhir')) || 0;
+                });
+                
+                const grandTotalEl = document.getElementById('grand-total-header');
+                if (grandTotalEl) {
+                    grandTotalEl.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(grandTotal);
+                }
             });
         });
     });
