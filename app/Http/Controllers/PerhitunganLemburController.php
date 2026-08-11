@@ -196,7 +196,9 @@ class PerhitunganLemburController extends Controller
                                 if ($rule->tipe_hari === $tipeHari) {
                                     $matchesTime = false;
                                     
-                                    if ($tipeHari === 'Hari Libur') {
+                                    if (in_array(strtolower($rule->satuan), ['hari', 'borongan'])) {
+                                        $matchesTime = true;
+                                    } else if ($tipeHari === 'Hari Libur') {
                                         // Evaluasi khusus Hari Libur berdasarkan durasi lembur (threshold 10 jam)
                                         if ($rule->is_sampai_selesai) {
                                             if ($durasiJam > 10) {
