@@ -27,6 +27,8 @@ class UangMakanController extends Controller
         
         $uangMakans = $query->paginate(10)->withQueryString();
         $penempatans = \App\Models\Karyawan::whereNotNull('penempatan')->distinct()->pluck('penempatan');
+        $penempatans2 = \App\Models\KaryawanTidakTetap::whereNotNull('penempatan')->distinct()->pluck('penempatan');
+        $penempatans = $penempatans->merge($penempatans2)->unique()->values();
         
         return view('uang-makan.index', compact('uangMakans', 'penempatans'));
     }
@@ -34,8 +36,9 @@ class UangMakanController extends Controller
     public function create()
     {
         $karyawans = \App\Models\Karyawan::whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get();
-        $penempatans = $karyawans->pluck('penempatan')->filter()->unique()->values();
-        return view('uang-makan.create', compact('karyawans', 'penempatans'));
+        $nonKaryawans = \App\Models\KaryawanTidakTetap::orderBy('nama_lengkap')->get();
+        $penempatans = $karyawans->pluck('penempatan')->merge($nonKaryawans->pluck('penempatan'))->filter()->unique()->values();
+        return view('uang-makan.create', compact('karyawans', 'nonKaryawans', 'penempatans'));
     }
 
     public function checkExisting(Request $request)
@@ -45,25 +48,34 @@ class UangMakanController extends Controller
             return response()->json([]);
         }
 
-        $existingIds = \App\Models\UangMakan::whereDate('tanggal', $tanggal)
-            ->pluck('karyawan_id')
+        $existing = \App\Models\UangMakan::whereDate('tanggal', $tanggal)
+            ->get(['karyawan_id', 'tipe_karyawan'])
+            ->map(function($u) {
+                return str_replace('\\', '\\\\', $u->tipe_karyawan) . '-' . $u->karyawan_id;
+            })
             ->toArray();
 
-        return response()->json($existingIds);
+        return response()->json($existing);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'karyawan_id' => 'required|array|min:1',
-            'karyawan_id.*' => 'exists:karyawans,id',
             'tanggal' => 'required|date',
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
 
-        foreach ($validated['karyawan_id'] as $id) {
+        foreach ($validated['karyawan_id'] as $typeAndId) {
+            $parts = explode('-', $typeAndId);
+            if (count($parts) != 2) continue;
+            
+            $tipe = str_replace('\\\\', '\\', $parts[0]);
+            $id = $parts[1];
+
             \App\Models\UangMakan::firstOrCreate([
+                'tipe_karyawan' => $tipe,
                 'karyawan_id' => $id,
                 'tanggal' => $validated['tanggal'],
             ], [
@@ -77,17 +89,24 @@ class UangMakanController extends Controller
     public function edit(\App\Models\UangMakan $uangMakan)
     {
         $karyawans = \App\Models\Karyawan::orderBy('nama_lengkap')->get();
-        return view('uang-makan.edit', compact('uangMakan', 'karyawans'));
+        $nonKaryawans = \App\Models\KaryawanTidakTetap::orderBy('nama_lengkap')->get();
+        return view('uang-makan.edit', compact('uangMakan', 'karyawans', 'nonKaryawans'));
     }
 
     public function update(Request $request, \App\Models\UangMakan $uangMakan)
     {
         $validated = $request->validate([
-            'karyawan_id' => 'required|exists:karyawans,id',
+            'karyawan_id' => 'required',
             'tanggal' => 'required|date',
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
         ]);
+
+        $parts = explode('-', $validated['karyawan_id']);
+        if (count($parts) == 2) {
+            $validated['tipe_karyawan'] = str_replace('\\\\', '\\', $parts[0]);
+            $validated['karyawan_id'] = $parts[1];
+        }
 
         $uangMakan->update($validated);
         return redirect()->route('uang-makan.index')->with('success', 'Data uang makan berhasil diupdate.');

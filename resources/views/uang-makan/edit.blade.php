@@ -21,9 +21,16 @@
                             <label for="karyawan_id" class="block text-sm font-medium text-gray-700">Karyawan</label>
                             <select id="karyawan_id" name="karyawan_id" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                                 <option value="">Pilih Karyawan</option>
+                                <optgroup label="Karyawan">
                                 @foreach($karyawans as $karyawan)
-                                    <option value="{{ $karyawan->id }}" {{ (old('karyawan_id', $uangMakan->karyawan_id) == $karyawan->id) ? 'selected' : '' }}>{{ $karyawan->nama_lengkap }} ({{ $karyawan->nik }})</option>
+                                    <option value="App\Models\Karyawan-{{ $karyawan->id }}" {{ (old('karyawan_id', $uangMakan->tipe_karyawan.'-'.$uangMakan->karyawan_id) == 'App\Models\Karyawan-'.$karyawan->id) ? 'selected' : '' }}>{{ $karyawan->nama_lengkap }} ({{ $karyawan->nik }})</option>
                                 @endforeach
+                                </optgroup>
+                                <optgroup label="Non Karyawan">
+                                @foreach($nonKaryawans as $nonKaryawan)
+                                    <option value="App\Models\KaryawanTidakTetap-{{ $nonKaryawan->id }}" {{ (old('karyawan_id', $uangMakan->tipe_karyawan.'-'.$uangMakan->karyawan_id) == 'App\Models\KaryawanTidakTetap-'.$nonKaryawan->id) ? 'selected' : '' }}>{{ $nonKaryawan->nama_lengkap }} ({{ $nonKaryawan->nik }})</option>
+                                @endforeach
+                                </optgroup>
                             </select>
                             @error('karyawan_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

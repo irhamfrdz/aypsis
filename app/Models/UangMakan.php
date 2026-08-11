@@ -14,6 +14,6 @@ class UangMakan extends Model
 
     public function karyawan()
     {
-        return $this->belongsTo(Karyawan::class);
+        return $this->morphTo('karyawan', 'tipe_karyawan', 'karyawan_id');
     }
 }

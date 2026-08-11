@@ -58,6 +58,22 @@
                                         <option value="{{ $sg }}">{{ $sg }}</option>
                                     @endforeach
                                 </select>
+                                
+                                <label class="block text-sm font-medium text-gray-700 mt-4">Filter Tipe Karyawan</label>
+                                <div class="mt-1 flex space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="filter_tipe" value="all" checked class="form-radio text-indigo-600 filter-tipe focus:ring-indigo-500 h-4 w-4 border-gray-300">
+                                        <span class="ml-2 text-sm text-gray-700">Semua</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="filter_tipe" value="Karyawan" class="form-radio text-indigo-600 filter-tipe focus:ring-indigo-500 h-4 w-4 border-gray-300">
+                                        <span class="ml-2 text-sm text-gray-700">Karyawan</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="filter_tipe" value="KaryawanTidakTetap" class="form-radio text-indigo-600 filter-tipe focus:ring-indigo-500 h-4 w-4 border-gray-300">
+                                        <span class="ml-2 text-sm text-gray-700">Non Karyawan</span>
+                                    </label>
+                                </div>
                             </div>
 
                             <div>
@@ -82,10 +98,30 @@
                                                 }
                                             }
                                         @endphp
-                                        <div class="flex items-center py-2 border-b border-gray-100 last:border-0 karyawan-item" data-penempatan="{{ $karyawan->penempatan }}" data-grup="{{ implode(',', $itemGrup) }}" data-subgrup="{{ implode(',', $itemSubGrup) }}" data-search="{{ strtolower($karyawan->nama_lengkap . ' ' . $karyawan->nik) }}">
-                                            <input type="checkbox" name="karyawan_id[]" value="{{ $karyawan->id }}" id="karyawan_{{ $karyawan->id }}" data-nominal="{{ $karyawan->nominal_uang_makan ?? 0 }}" class="karyawan-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" {{ (is_array(old('karyawan_id')) && in_array($karyawan->id, old('karyawan_id'))) ? 'checked' : '' }}>
+                                        <div class="flex items-center py-2 border-b border-gray-100 last:border-0 karyawan-item" data-tipe="Karyawan" data-penempatan="{{ $karyawan->penempatan }}" data-grup="{{ implode(',', $itemGrup) }}" data-subgrup="{{ implode(',', $itemSubGrup) }}" data-search="{{ strtolower($karyawan->nama_lengkap . ' ' . $karyawan->nik) }}">
+                                            <input type="checkbox" name="karyawan_id[]" value="App\Models\Karyawan-{{ $karyawan->id }}" id="karyawan_{{ $karyawan->id }}" data-nominal="{{ $karyawan->nominal_uang_makan ?? 0 }}" class="karyawan-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" {{ (is_array(old('karyawan_id')) && in_array('App\Models\Karyawan-'.$karyawan->id, old('karyawan_id'))) ? 'checked' : '' }}>
                                             <label for="karyawan_{{ $karyawan->id }}" class="ml-3 block text-sm font-medium text-gray-700">
                                                 {{ $karyawan->nama_lengkap }} <span class="text-xs text-gray-500 font-normal">({{ $karyawan->nik }})</span>
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                    @foreach($nonKaryawans as $nonKaryawan)
+                                        @php
+                                            $itemGrup = [];
+                                            $itemSubGrup = [];
+                                            $kGrup = is_string($nonKaryawan->group) ? json_decode($nonKaryawan->group, true) : (array)$nonKaryawan->group;
+                                            if(is_array($kGrup)) {
+                                                foreach($kGrup as $g) {
+                                                    $parts = explode(':', $g, 2);
+                                                    if($parts[0] !== '') $itemGrup[] = $parts[0];
+                                                    if(isset($parts[1]) && $parts[1] !== '') $itemSubGrup[] = $parts[1];
+                                                }
+                                            }
+                                        @endphp
+                                        <div class="flex items-center py-2 border-b border-gray-100 last:border-0 karyawan-item" data-tipe="KaryawanTidakTetap" data-penempatan="{{ $nonKaryawan->penempatan }}" data-grup="{{ implode(',', $itemGrup) }}" data-subgrup="{{ implode(',', $itemSubGrup) }}" data-search="{{ strtolower($nonKaryawan->nama_lengkap . ' ' . $nonKaryawan->nik) }}">
+                                            <input type="checkbox" name="karyawan_id[]" value="App\Models\KaryawanTidakTetap-{{ $nonKaryawan->id }}" id="nonkaryawan_{{ $nonKaryawan->id }}" data-nominal="0" class="karyawan-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" {{ (is_array(old('karyawan_id')) && in_array('App\Models\KaryawanTidakTetap-'.$nonKaryawan->id, old('karyawan_id'))) ? 'checked' : '' }}>
+                                            <label for="nonkaryawan_{{ $nonKaryawan->id }}" class="ml-3 block text-sm font-medium text-gray-700">
+                                                {{ $nonKaryawan->nama_lengkap }} <span class="text-xs text-gray-500 font-normal">({{ $nonKaryawan->nik }})</span> <span class="text-xs text-blue-500">[Non Karyawan]</span>
                                             </label>
                                         </div>
                                     @endforeach
@@ -200,13 +236,15 @@
             const selectedPenempatan = penempatanSelect.value;
             const selectedGroup = groupSelect.value;
             const selectedSubGroup = subGroupSelect.value;
+            const selectedTipe = document.querySelector('.filter-tipe:checked').value;
             
             karyawanItems.forEach(item => {
                 const matchesPenempatan = (selectedPenempatan === "" || item.dataset.penempatan === selectedPenempatan);
                 const matchesGroup = (selectedGroup === "" || item.dataset.grup.includes(selectedGroup));
                 const matchesSubGroup = (selectedSubGroup === "" || item.dataset.subgrup.includes(selectedSubGroup));
+                const matchesTipe = (selectedTipe === "all" || item.dataset.tipe === selectedTipe);
                 
-                if (matchesPenempatan && matchesGroup && matchesSubGroup) {
+                if (matchesPenempatan && matchesGroup && matchesSubGroup && matchesTipe) {
                     item.style.display = 'flex';
                 } else {
                     item.style.display = 'none';
@@ -221,6 +259,9 @@
         penempatanSelect.addEventListener('change', applyFilters);
         groupSelect.addEventListener('change', applyFilters);
         subGroupSelect.addEventListener('change', applyFilters);
+        document.querySelectorAll('.filter-tipe').forEach(rb => {
+            rb.addEventListener('change', applyFilters);
+        });
 
         checkAllBox.addEventListener('change', function() {
             const isChecked = this.checked;
