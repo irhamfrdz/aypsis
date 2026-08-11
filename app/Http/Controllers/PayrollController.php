@@ -44,7 +44,7 @@ class PayrollController extends Controller
             $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
                     $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
                       ->where('tipe', 'Masuk');
-                }, 'uangMakanTerbaru'])->get();
+                }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
 
             foreach ($karyawans as $k) {
                 // Count unique days they clocked in
@@ -131,7 +131,7 @@ class PayrollController extends Controller
         $karyawans = $query->with(['absensi' => function($q) use ($startDate, $endDate) {
                 $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
                   ->where('tipe', 'Masuk');
-            }, 'uangMakanTerbaru'])->get();
+            }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
 
         $submittedPayrolls = $request->input('payrolls', []);
         $count = 0;
