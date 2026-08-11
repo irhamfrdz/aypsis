@@ -327,7 +327,10 @@ async function parseBulkData() {
             const ringData = pricelistRings.find(r => r.name.toLowerCase() === row.tujuan_pengambilan.toLowerCase());
             if (ringData) {
                 // Tarik Kosong implies Empty
-                const key = `${row.size}_Empty`;
+                let sizeNum = row.size.toString().replace(/[^0-9]/g, '');
+                if (!sizeNum) sizeNum = row.size;
+                
+                const key = `${sizeNum}_Empty`;
                 const rate = ringData.rates[key];
                 if (rate) {
                     row.uang_jalan = rate;
