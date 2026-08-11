@@ -8,9 +8,14 @@
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-bold text-gray-800">Daftar Surat Jalan Tarik Kosong Batam</h2>
         @can('surat-jalan-tarik-kosong-batam-create')
-        <a href="{{ route('surat-jalan-tarik-kosong-batam.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
-            <i class="fas fa-plus mr-2"></i> Tambah Surat Jalan
-        </a>
+        <div class="flex space-x-2">
+            <button onclick="buatSuratJalanMassal()" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+                <i class="fas fa-list mr-2"></i> Tambah Massal
+            </button>
+            <a href="{{ route('surat-jalan-tarik-kosong-batam.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+                <i class="fas fa-plus mr-2"></i> Tambah Surat Jalan
+            </a>
+        </div>
         @endcan
     </div>
 
@@ -122,4 +127,283 @@
         {{ $items->links() }}
     </div>
 </div>
+
+<!-- Modal Buat Surat Jalan Massal -->
+<div id="modalBuatSuratJalanMassal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-5 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-lg bg-white">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-3 border-b">
+            <h3 class="text-xl font-semibold text-gray-900">Buat Surat Jalan Massal</h3>
+            <button type="button" onclick="closeBulkModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="mt-4 max-h-[80vh] overflow-y-auto px-1">
+            <div id="bulkModalAlertArea"></div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Gudang Tujuan Default (Opsional, jika kosong di data)</label>
+                <select id="bulk_gudang_tujuan" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">Pilih Gudang Default</option>
+                    @php
+                        $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
+                    @endphp
+                    @foreach($gudangs as $g)
+                        <option value="{{ $g->id }}">{{ $g->nama_gudang }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <!-- Guide -->
+            <div class="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                <h4 class="text-sm font-semibold text-indigo-800 mb-2">
+                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Panduan Format Data (Semicolon-separated / Dipisahkan Titik Koma)
+                </h4>
+                <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
+                <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
+                    No SJ ; Tanggal (YYYY-MM-DD) ; No Kontainer ; Size ; Supir ; No Plat ; Tujuan Pengambilan ; Tujuan Pengiriman (Gudang Tujuan) ; Catatan
+                </div>
+                <p class="text-xs text-indigo-600 mt-1">
+                    <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;20;ANDI;B1234XX;Pelabuhan;Gudang A;Cepat
+                </p>
+            </div>
+
+            <!-- Textarea Input -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Data Surat Jalan <span class="text-red-500">*</span>
+                </label>
+                <textarea id="bulkTextarea" rows="10"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                          placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;20;ANDI;B1234XX;Pelabuhan;Gudang A;Cepat"></textarea>
+            </div>
+
+            <div class="flex justify-end mb-4">
+                <button type="button" onclick="parseBulkData()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors">
+                    <i class="fas fa-magic mr-1"></i> Proses Data
+                </button>
+            </div>
+
+            <!-- Preview Area -->
+            <div id="bulkPreviewContainer" class="hidden">
+                <h4 class="text-md font-semibold text-gray-800 mb-2">Pratinjau Data (<span id="bulkCount">0</span> baris)</h4>
+                <div class="overflow-x-auto border rounded-lg max-h-64">
+                    <table class="min-w-full divide-y divide-gray-200 text-xs">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-3 py-2 text-left text-gray-500 uppercase">No SJ</th>
+                                <th class="px-3 py-2 text-left text-gray-500 uppercase">Tanggal</th>
+                                <th class="px-3 py-2 text-left text-gray-500 uppercase">Kontainer</th>
+                                <th class="px-3 py-2 text-left text-gray-500 uppercase">Size</th>
+                                <th class="px-3 py-2 text-left text-gray-500 uppercase">Supir</th>
+                                <th class="px-3 py-2 text-left text-gray-500 uppercase">No Plat</th>
+                                <th class="px-3 py-2 text-left text-gray-500 uppercase">Pengambilan</th>
+                                <th class="px-3 py-2 text-left text-gray-500 uppercase">Gudang Tujuan</th>
+                                <th class="px-3 py-2 text-left text-gray-500 uppercase">Catatan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulkPreviewBody" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end pt-3 border-t mt-4 space-x-2">
+            <button type="button" onclick="closeBulkModal()" class="px-4 py-2 bg-white text-gray-700 border rounded-lg hover:bg-gray-50 text-sm font-medium">
+                Batal
+            </button>
+            <button type="button" id="btnSubmitBulk" onclick="submitBulkData()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium opacity-50 cursor-not-allowed" disabled>
+                <i class="fas fa-save mr-1"></i> Simpan Massal
+            </button>
+        </div>
+    </div>
+</div>
+
 @endsection
+
+@push('scripts')
+<script>
+let bulkParsedRows = [];
+
+function buatSuratJalanMassal() {
+    document.getElementById('modalBuatSuratJalanMassal').classList.remove('hidden');
+    document.getElementById('bulkTextarea').value = '';
+    document.getElementById('bulkPreviewContainer').classList.add('hidden');
+    document.getElementById('bulkModalAlertArea').innerHTML = '';
+    
+    const btnSubmit = document.getElementById('btnSubmitBulk');
+    btnSubmit.disabled = true;
+    btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+}
+
+function closeBulkModal() {
+    document.getElementById('modalBuatSuratJalanMassal').classList.add('hidden');
+    bulkParsedRows = [];
+}
+
+function parseBulkData() {
+    const text = document.getElementById('bulkTextarea').value.trim();
+    if (!text) {
+        showBulkAlert('warning', 'Teks data masih kosong.');
+        return;
+    }
+
+    const lines = text.split('\n');
+    bulkParsedRows = [];
+    const tbody = document.getElementById('bulkPreviewBody');
+    tbody.innerHTML = '';
+    
+    let validCount = 0;
+
+    lines.forEach((line, index) => {
+        if (!line.trim()) return;
+
+        const cols = line.split(';').map(c => c.trim());
+        
+        const row = {
+            no_surat_jalan: cols[0] || '',
+            tanggal_surat_jalan: cols[1] || '',
+            no_kontainer: cols[2] || '',
+            size: cols[3] || '',
+            supir: cols[4] || '',
+            no_plat: cols[5] || '',
+            tujuan_pengambilan: cols[6] || '',
+            gudang_tujuan: cols[7] || '',
+            catatan: cols[8] || '',
+            _original_line: line
+        };
+
+        if (row.no_surat_jalan) {
+            bulkParsedRows.push(row);
+            validCount++;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="px-3 py-2 whitespace-nowrap">${row.no_surat_jalan}</td>
+                <td class="px-3 py-2 whitespace-nowrap">${row.tanggal_surat_jalan}</td>
+                <td class="px-3 py-2 whitespace-nowrap">${row.no_kontainer}</td>
+                <td class="px-3 py-2 whitespace-nowrap">${row.size}</td>
+                <td class="px-3 py-2 whitespace-nowrap">${row.supir}</td>
+                <td class="px-3 py-2 whitespace-nowrap">${row.no_plat}</td>
+                <td class="px-3 py-2 whitespace-nowrap">${row.tujuan_pengambilan}</td>
+                <td class="px-3 py-2 whitespace-nowrap">${row.gudang_tujuan}</td>
+                <td class="px-3 py-2">${row.catatan}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    });
+
+    document.getElementById('bulkCount').innerText = validCount;
+    document.getElementById('bulkPreviewContainer').classList.remove('hidden');
+
+    const btnSubmit = document.getElementById('btnSubmitBulk');
+    if (validCount > 0) {
+        btnSubmit.disabled = false;
+        btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+        showBulkAlert('success', `Berhasil mem-parsing ${validCount} baris data. Silakan cek pratinjau di bawah, lalu klik Simpan.`);
+    } else {
+        btnSubmit.disabled = true;
+        btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+        showBulkAlert('error', 'Tidak ada data valid yang bisa diparsing.');
+    }
+}
+
+function submitBulkData() {
+    if (bulkParsedRows.length === 0) return;
+
+    const gudang_tujuan_id = document.getElementById('bulk_gudang_tujuan').value;
+
+    const btnSubmit = document.getElementById('btnSubmitBulk');
+    const originalText = btnSubmit.innerHTML;
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...';
+    btnSubmit.disabled = true;
+
+    fetch('{{ route('surat-jalan-tarik-kosong-batam.store-bulk') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            rows: bulkParsedRows,
+            gudang_tujuan_id: gudang_tujuan_id
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            let errorHtml = data.message + '<br><br>';
+            if (data.errors && data.errors.length > 0) {
+                errorHtml += '<ul class="text-left text-sm list-disc pl-5">';
+                data.errors.forEach(err => {
+                    errorHtml += `<li>${err}</li>`;
+                });
+                errorHtml += '</ul>';
+            }
+            
+            if (data.failedRows && data.failedRows.length > 0) {
+                document.getElementById('bulkTextarea').value = data.failedRows.join('\n');
+                parseBulkData(); 
+            }
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Menyimpan',
+                html: errorHtml
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Terjadi kesalahan saat menghubungi server.', 'error');
+    })
+    .finally(() => {
+        btnSubmit.innerHTML = originalText;
+        btnSubmit.disabled = false;
+    });
+}
+
+function showBulkAlert(type, message) {
+    const alertArea = document.getElementById('bulkModalAlertArea');
+    let colorClass = 'bg-blue-100 text-blue-800 border-blue-200';
+    let icon = 'fas fa-info-circle';
+    
+    if (type === 'success') {
+        colorClass = 'bg-green-100 text-green-800 border-green-200';
+        icon = 'fas fa-check-circle';
+    } else if (type === 'error') {
+        colorClass = 'bg-red-100 text-red-800 border-red-200';
+        icon = 'fas fa-exclamation-circle';
+    } else if (type === 'warning') {
+        colorClass = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        icon = 'fas fa-exclamation-triangle';
+    }
+    
+    alertArea.innerHTML = `
+        <div class="mb-4 p-3 rounded-lg border ${colorClass} text-sm flex items-start">
+            <i class="${icon} mt-0.5 mr-2"></i>
+            <div>${message}</div>
+        </div>
+    `;
+}
+</script>
+@endpush

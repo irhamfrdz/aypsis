@@ -7,6 +7,7 @@ use App\Models\Mobil;
 use App\Models\SuratJalanTarikKosongBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SuratJalanTarikKosongBatamController extends Controller
 {
@@ -275,5 +276,160 @@ class SuratJalanTarikKosongBatamController extends Controller
         $item = SuratJalanTarikKosongBatam::findOrFail($id);
 
         return view('surat-jalan-tarik-kosong-batam.print', compact('item'));
+    }
+
+    public function storeBulk(Request $request)
+    {
+        $rows = $request->input('rows', []);
+        $gudang_tujuan_id = $request->input('gudang_tujuan_id', null);
+
+        if (empty($rows)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada data yang dikirim.',
+            ], 422);
+        }
+
+        $successCount = 0;
+        $errors = [];
+        $failedRows = [];
+
+        // Map valid karyawans (separated by division) and kendaraans to validate and auto-correct bulk data
+        $supirMap = [];
+        $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')->get(['nama_panggilan', 'nama_lengkap']);
+        foreach ($karyawanSupirs as $k) {
+            if ($k->nama_panggilan) $supirMap[strtolower(trim($k->nama_panggilan))] = $k->nama_panggilan;
+            if ($k->nama_lengkap)   $supirMap[strtolower(trim($k->nama_lengkap))] = $k->nama_panggilan ?: $k->nama_lengkap;
+        }
+
+        $allKendaraansMap = [];
+        foreach (\App\Models\Mobil::all(['nomor_polisi']) as $m) {
+            if ($m->nomor_polisi) {
+                $allKendaraansMap[strtolower(trim(str_replace(' ', '', $m->nomor_polisi)))] = $m->nomor_polisi;
+            }
+        }
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($rows as $index => $row) {
+                $rowNumber = $index + 1;
+                $nomorSuratJalan = trim($row['no_surat_jalan'] ?? '');
+
+                if (empty($nomorSuratJalan)) {
+                    $errors[] = "Baris {$rowNumber}: Nomor Surat Jalan wajib diisi.";
+                    $failedRows[] = $row['_original_line'] ?? '';
+                    continue;
+                }
+
+                $tanggalSuratJalan = trim($row['tanggal_surat_jalan'] ?? '');
+                if (empty($tanggalSuratJalan)) {
+                    $errors[] = "Baris {$rowNumber}: Tanggal wajib diisi.";
+                    $failedRows[] = $row['_original_line'] ?? '';
+                    continue;
+                }
+
+                $tujuanPengambilan = trim($row['tujuan_pengambilan'] ?? '');
+                $gudangTujuanInput = trim($row['gudang_tujuan'] ?? '');
+                
+                // Determine the Gudang ID to use
+                // 1. Try to match from row if specified
+                $rowGudangId = null;
+                if (!empty($gudangTujuanInput)) {
+                    $matchedGudang = \App\Models\Gudang::where('nama_gudang', 'like', "%{$gudangTujuanInput}%")->first();
+                    if ($matchedGudang) {
+                        $rowGudangId = $matchedGudang->id;
+                    }
+                }
+                
+                // 2. Fallback to global setting if no row specific setting matched
+                if (empty($rowGudangId)) {
+                    $rowGudangId = $gudang_tujuan_id;
+                }
+                
+                if (empty($rowGudangId)) {
+                    $errors[] = "Baris {$rowNumber}: Gudang Tujuan wajib diisi atau tidak valid.";
+                    $failedRows[] = $row['_original_line'] ?? '';
+                    continue;
+                }
+
+                $supir = trim($row['supir'] ?? '');
+                if ($supir) {
+                    $lowerSupir = strtolower($supir);
+                    if (isset($supirMap[$lowerSupir])) {
+                        $supir = $supirMap[$lowerSupir];
+                    }
+                }
+
+                $noPlat = trim($row['no_plat'] ?? '');
+                if ($noPlat) {
+                    $lowerPlat = strtolower(str_replace(' ', '', $noPlat));
+                    if (isset($allKendaraansMap[$lowerPlat])) {
+                        $noPlat = $allKendaraansMap[$lowerPlat];
+                    }
+                }
+
+                // Cek duplikasi no SJ
+                $exists = SuratJalanTarikKosongBatam::where('no_surat_jalan', $nomorSuratJalan)->exists();
+                if ($exists) {
+                    $errors[] = "Baris {$rowNumber}: Surat Jalan '{$nomorSuratJalan}' sudah ada (duplikat).";
+                    $failedRows[] = $row['_original_line'] ?? '';
+                    continue;
+                }
+                
+                $noKontainer = trim($row['no_kontainer'] ?? '');
+
+                SuratJalanTarikKosongBatam::create([
+                    'no_surat_jalan' => $nomorSuratJalan,
+                    'tanggal_surat_jalan' => $tanggalSuratJalan,
+                    'tujuan_pengambilan' => $tujuanPengambilan,
+                    'supir' => $supir,
+                    'no_plat' => $noPlat,
+                    'no_kontainer' => $noKontainer,
+                    'size' => trim($row['size'] ?? ''),
+                    'f_e' => 'Empty', // Tarik kosong implies empty
+                    'status' => 'active',
+                    'catatan' => trim($row['catatan'] ?? ''),
+                    'gudang_tujuan_id' => $rowGudangId,
+                    'input_by' => Auth::id(),
+                    'input_date' => now(),
+                    'lokasi' => 'batam'
+                ]);
+
+                if (!empty($noKontainer)) {
+                    $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $noKontainer)
+                        ->where('status', '!=', 'inactive')
+                        ->first();
+                    
+                    if ($stockKontainer) {
+                        $stockKontainer->update(['gudangs_id' => $rowGudangId]);
+                    }
+                }
+
+                $successCount++;
+            }
+
+            if ($successCount > 0) {
+                DB::commit();
+            } else {
+                DB::rollBack();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil memproses {$successCount} surat jalan.",
+                'errors' => $errors,
+                'failedRows' => $failedRows,
+                'successCount' => $successCount,
+                'hasErrors' => count($errors) > 0
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan sistem: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
