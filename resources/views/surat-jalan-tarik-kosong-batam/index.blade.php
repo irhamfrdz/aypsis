@@ -236,6 +236,7 @@
 <script>
 let bulkParsedRows = [];
 const pricelistRings = @json($pricelistRings ?? []);
+const validGudangs = @json(\App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->pluck('nama_gudang'));
 
 function buatSuratJalanMassal() {
     document.getElementById('modalBuatSuratJalanMassal').classList.remove('hidden');
@@ -318,6 +319,18 @@ async function parseBulkData() {
             _original_line: line
         };
 
+        let displayGudang = row.gudang_tujuan;
+        if (row.gudang_tujuan) {
+            const searchGudang = row.gudang_tujuan.toLowerCase();
+            const matchedGudang = validGudangs.find(g => g.toLowerCase().includes(searchGudang));
+            if (matchedGudang) {
+                row.gudang_tujuan = matchedGudang;
+                displayGudang = matchedGudang;
+            } else {
+                displayGudang = `<span class="text-red-500 font-bold" title="Gudang tidak ditemukan di sistem">${row.gudang_tujuan} <i class="fas fa-exclamation-circle"></i></span>`;
+            }
+        }
+
         // Auto-fill size from database if found
         if (row.no_kontainer && containerSizes[row.no_kontainer]) {
             row.size = containerSizes[row.no_kontainer];
@@ -363,7 +376,7 @@ async function parseBulkData() {
                 <td class="px-3 py-2 whitespace-nowrap">${row.supir}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.no_plat}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.tujuan_pengambilan}</td>
-                <td class="px-3 py-2 whitespace-nowrap">${row.gudang_tujuan}</td>
+                <td class="px-3 py-2 whitespace-nowrap">${displayGudang}</td>
                 <td class="px-3 py-2 whitespace-nowrap">Rp ${new Intl.NumberFormat('id-ID').format(row.uang_jalan)}</td>
                 <td class="px-3 py-2">${row.catatan}</td>
             `;

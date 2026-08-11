@@ -177,7 +177,19 @@ class SuratJalanTarikKosongBatamController extends Controller
                 ->first();
             
             if ($stockKontainer) {
+                $asalGudangId = $stockKontainer->gudangs_id;
                 $stockKontainer->update(['gudangs_id' => $request->gudang_tujuan_id]);
+
+                \App\Models\HistoryKontainer::create([
+                    'nomor_kontainer' => $request->no_kontainer,
+                    'tipe_kontainer' => 'stock',
+                    'jenis_kegiatan' => 'Tarik Kosong Batam',
+                    'tanggal_kegiatan' => $request->tanggal_surat_jalan,
+                    'asal_gudang_id' => $asalGudangId,
+                    'gudang_id' => $request->gudang_tujuan_id,
+                    'keterangan' => 'SJ Tarik Kosong Batam: ' . $request->no_surat_jalan,
+                    'created_by' => Auth::id(),
+                ]);
             }
         }
 
@@ -421,11 +433,13 @@ class SuratJalanTarikKosongBatamController extends Controller
                     $matchedGudang = \App\Models\Gudang::where('nama_gudang', 'like', "%{$gudangTujuanInput}%")->first();
                     if ($matchedGudang) {
                         $rowGudangId = $matchedGudang->id;
+                    } else {
+                        $errors[] = "Baris {$rowNumber}: Gudang Tujuan '{$gudangTujuanInput}' tidak valid atau tidak ditemukan.";
+                        $failedRows[] = $row['_original_line'] ?? '';
+                        continue;
                     }
-                }
-                
-                // 2. Fallback to global setting if no row specific setting matched
-                if (empty($rowGudangId)) {
+                } else {
+                    // 2. Fallback to global setting if no row specific setting matched
                     $rowGudangId = $gudang_tujuan_id;
                 }
                 
@@ -485,7 +499,19 @@ class SuratJalanTarikKosongBatamController extends Controller
                         ->first();
                     
                     if ($stockKontainer) {
+                        $asalGudangId = $stockKontainer->gudangs_id;
                         $stockKontainer->update(['gudangs_id' => $rowGudangId]);
+
+                        \App\Models\HistoryKontainer::create([
+                            'nomor_kontainer' => $noKontainer,
+                            'tipe_kontainer' => 'stock',
+                            'jenis_kegiatan' => 'Tarik Kosong Batam',
+                            'tanggal_kegiatan' => $tanggalSuratJalan,
+                            'asal_gudang_id' => $asalGudangId,
+                            'gudang_id' => $rowGudangId,
+                            'keterangan' => 'SJ Tarik Kosong Batam: ' . $nomorSuratJalan,
+                            'created_by' => Auth::id(),
+                        ]);
                     }
                 }
 
