@@ -47,8 +47,24 @@ class PayrollController extends Controller
                 }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
 
             foreach ($karyawans as $k) {
+                $isSatpam = false;
+                $isSatpamPelabuhan = false;
+                $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
+                if (is_array($kGrup)) {
+                    foreach ($kGrup as $g) {
+                        if (stripos($g, 'SATPAM GARASI') !== false) {
+                            $isSatpam = true;
+                        }
+                        if (stripos($g, 'SATPAM PELABUHAN') !== false) {
+                            $isSatpam = true;
+                            $isSatpamPelabuhan = true;
+                        }
+                    }
+                }
+
                 // Count unique days they clocked in
-                $uniqueDaysDates = $k->absensi->filter(function($abs) {
+                $uniqueDaysDates = $k->absensi->filter(function($abs) use ($isSatpam) {
+                    if ($isSatpam) return true;
                     return !\Carbon\Carbon::parse($abs->waktu)->isSunday();
                 })->map(function($abs) {
                     return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
@@ -63,7 +79,12 @@ class PayrollController extends Controller
                     }
                     
                     $karyawanNominalDasar = $k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0);
-                    $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;
+                    
+                    if ($isSatpamPelabuhan) {
+                        $totalPayout = $multiplier * $karyawanNominalDasar;
+                    } else {
+                        $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;
+                    }
 
                     $payrolls[] = [
                         'karyawan' => $k,
@@ -72,6 +93,7 @@ class PayrollController extends Controller
                         'multiplier' => $multiplier,
                         'nominal_per_hari' => $karyawanNominalDasar,
                         'total_payout' => $totalPayout,
+                        'is_satpam_pelabuhan' => $isSatpamPelabuhan,
                     ];
                 }
             }
@@ -138,7 +160,23 @@ class PayrollController extends Controller
         $submittedPayrolls = $request->input('payrolls', []);
         $count = 0;
         foreach ($karyawans as $k) {
-            $uniqueDaysDates = $k->absensi->filter(function($abs) {
+            $isSatpam = false;
+            $isSatpamPelabuhan = false;
+            $kGrup = is_string($k->grup) ? json_decode($k->grup, true) : (array)$k->grup;
+            if (is_array($kGrup)) {
+                foreach ($kGrup as $g) {
+                    if (stripos($g, 'SATPAM GARASI') !== false) {
+                        $isSatpam = true;
+                    }
+                    if (stripos($g, 'SATPAM PELABUHAN') !== false) {
+                        $isSatpam = true;
+                        $isSatpamPelabuhan = true;
+                    }
+                }
+            }
+
+            $uniqueDaysDates = $k->absensi->filter(function($abs) use ($isSatpam) {
+                if ($isSatpam) return true;
                 return !\Carbon\Carbon::parse($abs->waktu)->isSunday();
             })->map(function($abs) {
                 return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
@@ -153,7 +191,12 @@ class PayrollController extends Controller
                 
                 // Prioritaskan nilai dari form input manual, jika tidak ada gunakan data Uang Makan terbaru
                 $karyawanNominalDasar = $submittedPayrolls[$k->id]['nominal_per_hari'] ?? ($k->uangMakanTerbaru ? $k->uangMakanTerbaru->nominal : ($k->nominal_uang_makan ?? 0));
-                $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;
+                
+                if ($isSatpamPelabuhan) {
+                    $totalPayout = $multiplier * $karyawanNominalDasar;
+                } else {
+                    $totalPayout = $uniqueDays * $multiplier * $karyawanNominalDasar;
+                }
 
                 \App\Models\PayrollUangMakan::updateOrCreate(
                     [

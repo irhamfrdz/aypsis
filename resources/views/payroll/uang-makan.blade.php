@@ -200,6 +200,7 @@
                                 <input type="number" name="payrolls[{{ $row['karyawan']->id }}][nominal_per_hari]" value="{{ $row['nominal_per_hari'] }}" 
                                        data-kehadiran="{{ $row['total_kehadiran'] }}" 
                                        data-multiplier="{{ $row['multiplier'] }}"
+                                       data-is-satpam-pelabuhan="{{ isset($row['is_satpam_pelabuhan']) && $row['is_satpam_pelabuhan'] ? '1' : '0' }}"
                                        class="nominal-input w-28 px-3 py-1 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 text-right text-xs transition-colors duration-200" readonly>
                             </div>
                         </td>
@@ -340,9 +341,10 @@
             input.addEventListener('input', function() {
                 const kehadiran = parseFloat(this.getAttribute('data-kehadiran')) || 0;
                 const multiplier = parseFloat(this.getAttribute('data-multiplier')) || 1;
+                const isSatpamPelabuhan = this.getAttribute('data-is-satpam-pelabuhan') === '1';
                 const nominal = parseFloat(this.value) || 0;
                 
-                const total = kehadiran * multiplier * nominal;
+                const total = isSatpamPelabuhan ? (multiplier * nominal) : (kehadiran * multiplier * nominal);
                 
                 // Cari td target di row (tr) yang sama
                 const targetTd = this.closest('tr').querySelector('.total-payout-text');
