@@ -196,17 +196,20 @@ class PerhitunganLemburController extends Controller
                                 if ($rule->tipe_hari === $tipeHari) {
                                     $matchesTime = false;
                                     
-                                    if (in_array(strtolower($rule->satuan), ['hari', 'borongan'])) {
-                                        $matchesTime = true;
-                                    } else if ($tipeHari === 'Hari Libur') {
+                                    if ($tipeHari === 'Hari Libur') {
                                         // Evaluasi khusus Hari Libur berdasarkan durasi lembur (threshold 10 jam)
-                                        if ($rule->is_sampai_selesai) {
-                                            if ($durasiJam > 10) {
-                                                $matchesTime = true;
-                                            }
+                                        // Terkecuali grup PELABUHAN 1, mereka dibayar per jam (tanpa batas jam)
+                                        if (strtoupper($sub_group) === 'PELABUHAN 1') {
+                                            $matchesTime = true;
                                         } else {
-                                            if ($durasiJam <= 10) {
-                                                $matchesTime = true;
+                                            if ($rule->is_sampai_selesai) {
+                                                if ($durasiJam > 10) {
+                                                    $matchesTime = true;
+                                                }
+                                            } else {
+                                                if ($durasiJam == 10) {
+                                                    $matchesTime = true;
+                                                }
                                             }
                                         }
                                     } else {
