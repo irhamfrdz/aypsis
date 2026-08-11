@@ -307,8 +307,19 @@ class AbsensiController extends Controller
                 ->whereBetween('waktu', [$startDateObj, $endDateObj])
                 ->first();
 
-            // Jika sudah ada data, jangan diubah atau dihapus (dikunci)
+            // Update data jika sudah ada, atau abaikan jika kosong
             if ($existingLog) {
+                if (!empty($time)) {
+                    $waktu = Carbon::parse($tanggal . ' ' . $time);
+                    if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
+                        $waktu->addDay(); 
+                    }
+                    $existingLog->update([
+                        'waktu' => $waktu,
+                        'status' => 'Manual',
+                        'keterangan' => 'Diperbarui dari edit manual',
+                    ]);
+                }
                 continue;
             }
 
