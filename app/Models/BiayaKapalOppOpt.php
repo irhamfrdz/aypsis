@@ -10,6 +10,7 @@ class BiayaKapalOppOpt extends Model
 
     protected $fillable = [
         'biaya_kapal_id',
+        'klasifikasi_biaya_id',
         'pricelist_opp_opt_id',
         'manifest_id',
         'kapal',
@@ -36,6 +37,12 @@ class BiayaKapalOppOpt extends Model
     public function biayaKapal()
     {
         return $this->belongsTo(BiayaKapal::class, 'biaya_kapal_id');
+    }
+    
+    // Relationship to KlasifikasiBiaya
+    public function klasifikasiBiaya()
+    {
+        return $this->belongsTo(KlasifikasiBiaya::class, 'klasifikasi_biaya_id');
     }
 
     // Relationship to PricelistOppOpt

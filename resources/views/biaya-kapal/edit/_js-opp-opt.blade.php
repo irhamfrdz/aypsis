@@ -38,9 +38,7 @@
 
                 // Barang
                 if (data.barang && data.barang.length > 0) {
-                    data.barang.forEach(b => {
-                        addBarangToOppOptSectionWithValue(sectionIndex, b.manifest_id, b.manifest_label, b.tarif, b.vendor, b.catatan);
-                    });
+                        addBarangToOppOptSectionWithValue(sectionIndex, b.manifest_id, b.manifest_label, b.tarif, b.vendor, b.catatan, b.klasifikasi_biaya_id);
                 } else {
                     addBarangToOppOptSection(sectionIndex);
                 }
@@ -309,11 +307,24 @@
         manifestsData.forEach(manifest => {
             barangOptions += `<option value="${manifest.id}">${manifest.label}</option>`;
         });
+
+        let biayaOptions = '<option value="">Pilih Biaya</option>';
+        @if(isset($klasifikasiBiayas))
+            @foreach($klasifikasiBiayas as $kb)
+                biayaOptions += `<option value="{{ $kb->id }}">{{ $kb->nama }}</option>`;
+            @endforeach
+        @endif
         
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
-            <div class="w-[30%]">
+            <div class="w-[20%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                    ${biayaOptions}
+                </select>
+            </div>
+            <div class="w-[20%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
                 <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${barangOptions}
@@ -323,7 +334,7 @@
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
                 <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
             </div>
-            <div class="w-[25%]">
+            <div class="w-[20%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
                 <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
             </div>
@@ -347,7 +358,7 @@
     };
 
     // Add barang to OPP/OPT section with pre-filled values
-    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, manifestLabel, tarif, jumlah, vendor, catatan) {
+    window.addBarangToOppOptSectionWithValue = function(sectionIndex, manifestId, manifestLabel, tarif, vendor, catatan, klasifikasiBiayaId) {
         const section = document.querySelector(`[data-opp-opt-section-index="${sectionIndex}"]`);
         const container = section.querySelector('.opp-opt-barang-container');
         const barangIndex = container.children.length;
@@ -371,10 +382,23 @@
             barangOptions += `<option value="${manifestId}" selected>${label}</option>`;
         }
         
+        let biayaOptions = '<option value="">Pilih Biaya</option>';
+        @if(isset($klasifikasiBiayas))
+            @foreach($klasifikasiBiayas as $kb)
+                biayaOptions += `<option value="{{ $kb->id }}" ${klasifikasiBiayaId == '{{ $kb->id }}' ? 'selected' : ''}>{{ $kb->nama }}</option>`;
+            @endforeach
+        @endif
+        
         const inputGroup = document.createElement('div');
         inputGroup.className = 'flex items-end gap-2 mb-2';
         inputGroup.innerHTML = `
-            <div class="w-[30%]">
+            <div class="w-[20%]">
+                <label class="block text-[10px] font-medium text-gray-700 mb-1">Biaya</label>
+                <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][klasifikasi_biaya_id]" class="opp-opt-biaya-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
+                    ${biayaOptions}
+                </select>
+            </div>
+            <div class="w-[20%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Kontainer / BL</label>
                 <select name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][manifest_id]" class="opp-opt-barang-select-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" required>
                     ${barangOptions}
@@ -382,9 +406,9 @@
             </div>
             <div class="w-[15%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Tarif (Rp)</label>
-                <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" value="${tarif}" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
+                <input type="number" step="any" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][tarif]" value="${tarif || 0}" class="opp-opt-tarif-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="0" required>
             </div>
-            <div class="w-[25%]">
+            <div class="w-[20%]">
                 <label class="block text-[10px] font-medium text-gray-700 mb-1">Vendor</label>
                 <input type="text" name="opp_opt_sections[${sectionIndex}][barang][${barangIndex}][vendor]" value="${vendor || ''}" class="opp-opt-vendor-input-item w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-purple-500" placeholder="Vendor">
             </div>
