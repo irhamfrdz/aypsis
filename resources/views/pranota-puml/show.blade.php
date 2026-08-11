@@ -70,6 +70,7 @@
                 <table class="w-full text-sm text-left">
                     <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
                         <tr>
+                            <th scope="col" class="px-2 py-3 font-semibold text-center w-10">No.</th>
                             <th scope="col" class="px-2 py-3 font-semibold text-center">NIK</th>
                             <th scope="col" class="px-2 py-3 font-semibold text-left">Nama Karyawan</th>
                             <th scope="col" class="px-2 py-3 font-semibold text-right">Uang Makan</th>
@@ -92,6 +93,9 @@
                                 $totalAkhir = $totalAwal - ($potUtang + $potBpjs + $potPph + $potTerlambat);
                             @endphp
                             <tr class="hover:bg-gray-50/50 transition-colors duration-200 karyawan-row" data-total-awal="{{ $totalAwal }}" data-total-akhir="{{ $totalAkhir }}">
+                                <td class="px-2 py-2 whitespace-nowrap text-center text-gray-500 text-xs">
+                                    {{ $loop->iteration }}
+                                </td>
                                 <td class="px-2 py-2 whitespace-nowrap text-center">
                                     <div class="font-semibold text-gray-600 text-xs">{{ $rekap['karyawan']->nik ?? '-' }}</div>
                                 </td>
@@ -187,9 +191,9 @@
                 const rows = document.querySelectorAll('.karyawan-row');
                 
                 rows.forEach(row => {
-                    // Karena struktur tabel, kolom pertama = NIK, kedua = Nama
-                    const nik = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
-                    const nama = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    // Karena struktur tabel, kolom pertama = No, kedua = NIK, ketiga = Nama
+                    const nik = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    const nama = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
                     
                     if (nik.includes(searchTerm) || nama.includes(searchTerm)) {
                         row.style.display = '';
