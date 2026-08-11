@@ -202,8 +202,9 @@ class AbsensiController extends Controller
         $penempatans = Karyawan::whereNull('tanggal_berhenti')->whereNotNull('penempatan')->where('penempatan', '!=', '')->distinct()->pluck('penempatan');
         $mesins = Mesin::all()->keyBy('id');
         $karyawanList = Karyawan::whereNull('tanggal_berhenti')->orderBy('nama_lengkap')->get(['nik', 'nama_lengkap']);
+        $nonKaryawanList = \App\Models\KaryawanTidakTetap::orderBy('nama_lengkap')->get(['nik', 'nama_lengkap']);
 
-        return view('absensi.index', compact('absensis', 'pekerjaans', 'divisis', 'penempatans', 'startDate', 'endDate', 'mesins', 'karyawanList'));
+        return view('absensi.index', compact('absensis', 'pekerjaans', 'divisis', 'penempatans', 'startDate', 'endDate', 'mesins', 'karyawanList', 'nonKaryawanList'));
     }
 
     /**

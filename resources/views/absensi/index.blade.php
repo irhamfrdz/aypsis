@@ -497,8 +497,21 @@
                 <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
                     <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modal-title">Tambah Absensi Manual</h3>
                     <div class="space-y-4">
+                        <div class="mb-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Filter Data</label>
+                            <div class="flex items-center space-x-4">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="tipe_karyawan_filter" value="karyawan" checked class="form-radio text-indigo-600 focus:ring-indigo-500 h-4 w-4 border-gray-300" onchange="updateNikOptions('karyawan')">
+                                    <span class="ml-2 text-sm text-gray-700">Karyawan</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="tipe_karyawan_filter" value="non_karyawan" class="form-radio text-indigo-600 focus:ring-indigo-500 h-4 w-4 border-gray-300" onchange="updateNikOptions('non_karyawan')">
+                                    <span class="ml-2 text-sm text-gray-700">Non Karyawan</span>
+                                </label>
+                            </div>
+                        </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Karyawan</label>
+                            <label class="block text-sm font-medium text-gray-700">Pilih Orang</label>
                             <select name="nik" id="create_nik" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm select2" required style="width: 100%">
                                 <option value="">Pilih Karyawan</option>
                                 @foreach($karyawanList as $karyawan)
@@ -792,7 +805,25 @@
         clearEntryInputs(firstEntry);
         updateEntryNumbers();
     }
-    
+    const karyawanData = @json($karyawanList);
+    const nonKaryawanData = @json($nonKaryawanList);
+
+    function updateNikOptions(type) {
+        const select = $('#create_nik');
+        select.empty();
+        
+        let options = '<option value="">Pilih ' + (type === 'karyawan' ? 'Karyawan' : 'Non Karyawan') + '</option>';
+        const data = type === 'karyawan' ? karyawanData : nonKaryawanData;
+        
+        data.forEach(item => {
+            options += `<option value="${item.nik}">${item.nik} - ${item.nama_lengkap}</option>`;
+        });
+        
+        select.html(options);
+        select.trigger('change.select2');
+        fetchAllEntriesData();
+    }
+
     $(document).ready(function() {
         // Initialize Select2 for modal
         $('#create_nik').select2({
