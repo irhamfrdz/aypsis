@@ -2656,24 +2656,21 @@ class BlController extends Controller
         // -----------------------------------------------------------------------
         // Sort: Other Cargo first, then Forklift, then Containers
         // -----------------------------------------------------------------------
-        $items = $items->sortBy([
-            function ($item) {
-                $namaBarang = $item['nama_barang'] ?? '';
-                $isContainer = stripos($namaBarang, 'Container') !== false;
-                $isForklift = stripos($namaBarang, 'forklift') !== false;
+        $items = $items->sortBy(function ($item) {
+            $nomor = $item['nomor_bl'] ?? '';
+            if ($nomor === '' || $nomor === '-') return 999999;
+            
+            preg_match('/\d+/', $nomor, $matches);
+            return isset($matches[0]) ? (int) $matches[0] : 999998; 
+        })->sortBy(function ($item) {
+            $namaBarang = $item['nama_barang'] ?? '';
+            $isContainer = stripos($namaBarang, 'Container') !== false;
+            $isForklift = stripos($namaBarang, 'forklift') !== false;
 
-                if ($isContainer) return 3;
-                if ($isForklift) return 2;
-                return 1;
-            },
-            function ($item) {
-                $nomor = $item['nomor_bl'] ?? '';
-                if ($nomor === '' || $nomor === '-') return 999999;
-                
-                preg_match('/\d+/', $nomor, $matches);
-                return isset($matches[0]) ? (int) $matches[0] : 999998; 
-            }
-        ])->values();
+            if ($isContainer) return 3;
+            if ($isForklift) return 2;
+            return 1;
+        })->values();
 
         $totalAmount = $items->sum('amount');
 
@@ -2864,24 +2861,21 @@ class BlController extends Controller
         // -----------------------------------------------------------------------
         // Sort: Other Cargo first, then Forklift, then Containers
         // -----------------------------------------------------------------------
-        $items = $items->sortBy([
-            function ($item) {
-                $namaBarang = $item['nama_barang'] ?? '';
-                $isContainer = stripos($namaBarang, 'Container') !== false;
-                $isForklift = stripos($namaBarang, 'forklift') !== false;
+        $items = $items->sortBy(function ($item) {
+            $nomor = $item['nomor_bl'] ?? '';
+            if ($nomor === '' || $nomor === '-') return 999999;
+            
+            preg_match('/\d+/', $nomor, $matches);
+            return isset($matches[0]) ? (int) $matches[0] : 999998; 
+        })->sortBy(function ($item) {
+            $namaBarang = $item['nama_barang'] ?? '';
+            $isContainer = stripos($namaBarang, 'Container') !== false;
+            $isForklift = stripos($namaBarang, 'forklift') !== false;
 
-                if ($isContainer) return 3;
-                if ($isForklift) return 2;
-                return 1;
-            },
-            function ($item) {
-                $nomor = $item['nomor_bl'] ?? '';
-                if ($nomor === '' || $nomor === '-') return 999999;
-                
-                preg_match('/\d+/', $nomor, $matches);
-                return isset($matches[0]) ? (int) $matches[0] : 999998; 
-            }
-        ])->values();
+            if ($isContainer) return 3;
+            if ($isForklift) return 2;
+            return 1;
+        })->values();
 
         $totalAmount = $items->sum('amount');
 
