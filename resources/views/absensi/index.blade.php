@@ -813,13 +813,8 @@
         const setAndLockEdit = (id, val) => {
             const el = document.getElementById(id);
             el.value = val || '';
-            if (val) {
-                el.readOnly = true;
-                el.classList.add('bg-gray-200', 'cursor-not-allowed');
-            } else {
-                el.readOnly = false;
-                el.classList.remove('bg-gray-200', 'cursor-not-allowed');
-            }
+            el.readOnly = false;
+            el.classList.remove('bg-gray-200', 'cursor-not-allowed');
         };
 
         setAndLockEdit('edit_waktu_masuk', masuk);
