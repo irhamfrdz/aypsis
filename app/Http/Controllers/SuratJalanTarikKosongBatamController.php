@@ -124,6 +124,18 @@ class SuratJalanTarikKosongBatamController extends Controller
                                     '45_E' => $item->tarif_40ft_empty,
                                 ],
                             ];
+                            $mapped[] = [
+                                'name' => $trimmed . ' (' . $item->expedisi . ')',
+                                'label' => $trimmed.' (Ring '.$item->ring.' - '.$item->expedisi.')',
+                                'rates' => [
+                                    '20_F' => $item->tarif_20ft_full,
+                                    '20_E' => $item->tarif_20ft_empty,
+                                    '40_F' => $item->tarif_40ft_full,
+                                    '40_E' => $item->tarif_40ft_empty,
+                                    '45_F' => $item->tarif_40ft_full,
+                                    '45_E' => $item->tarif_40ft_empty,
+                                ],
+                            ];
                         }
                     }
                 }
@@ -249,6 +261,18 @@ class SuratJalanTarikKosongBatamController extends Controller
                         if ($trimmed !== '') {
                             $mapped[] = [
                                 'name' => $trimmed,
+                                'label' => $trimmed.' (Ring '.$item->ring.' - '.$item->expedisi.')',
+                                'rates' => [
+                                    '20_F' => $item->tarif_20ft_full,
+                                    '20_E' => $item->tarif_20ft_empty,
+                                    '40_F' => $item->tarif_40ft_full,
+                                    '40_E' => $item->tarif_40ft_empty,
+                                    '45_F' => $item->tarif_40ft_full,
+                                    '45_E' => $item->tarif_40ft_empty,
+                                ],
+                            ];
+                            $mapped[] = [
+                                'name' => $trimmed . ' (' . $item->expedisi . ')',
                                 'label' => $trimmed.' (Ring '.$item->ring.' - '.$item->expedisi.')',
                                 'rates' => [
                                     '20_F' => $item->tarif_20ft_full,

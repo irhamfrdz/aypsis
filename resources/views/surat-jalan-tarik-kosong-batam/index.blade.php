@@ -166,12 +166,14 @@
                     </svg>
                     Panduan Format Data (Semicolon-separated / Dipisahkan Titik Koma)
                 </h4>
-                <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.</p>
+                <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.<br>
+                Untuk <strong>Tujuan Pengambilan</strong>, tambahkan ekspedisi <strong>(PB)</strong> atau <strong>(AYP)</strong> di belakang nama daerah agar tarif sesuai.</p>
                 <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
                     No SJ ; Tanggal (YYYY-MM-DD) ; No Kontainer ; Size ; Supir ; No Plat ; Tujuan Pengambilan ; Tujuan Pengiriman (Gudang Tujuan) ; Catatan
                 </div>
                 <p class="text-xs text-indigo-600 mt-1">
-                    <strong>Contoh:</strong> SJ-001;2026-06-27;CONT123;20;ANDI;B1234XX;Pelabuhan;Gudang A;Cepat
+                    <strong>Contoh 1 (AYP):</strong> SJ-001;2026-06-27;CONT123;20;ANDI;B1234XX;Nagoya (AYP);Gudang A;Cepat<br>
+                    <strong>Contoh 2 (PB):</strong> SJ-002;2026-06-27;CONT124;40;BUDI;B5678XX;Sekupang (PB);Gudang B;Segera
                 </p>
             </div>
 
@@ -182,7 +184,7 @@
                 </label>
                 <textarea id="bulkTextarea" rows="10"
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                          placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;20;ANDI;B1234XX;Pelabuhan;Gudang A;Cepat"></textarea>
+                          placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;20;ANDI;B1234XX;Nagoya (AYP);Gudang A;Cepat&#10;SJ-002;2026-06-27;CONT124;40;BUDI;B5678XX;Sekupang (PB);Gudang B;Segera"></textarea>
             </div>
 
             <div class="flex justify-end mb-4">
