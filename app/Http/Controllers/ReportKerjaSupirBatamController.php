@@ -186,7 +186,7 @@ class ReportKerjaSupirBatamController extends Controller
                     $waybills[] = [
                         'tanggal_sort' => $sj->tanggal_surat_jalan->format('Y-m-d H:i:s'),
                         'tanggal' => $sj->tanggal_surat_jalan->format('d/m/Y'),
-                        'tipe' => 'SJ Tarik Kosong',
+                        'tipe' => ($sj->f_e === 'Full') ? 'SJ Tarik Full' : 'SJ Tarik Kosong',
                         'no_dokumen' => $sj->no_surat_jalan,
                         'no_kontainer' => $sj->no_kontainer ?? '-',
                         'supir' => $sj->supir,
