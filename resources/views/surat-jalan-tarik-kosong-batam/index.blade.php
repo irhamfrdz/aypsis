@@ -340,7 +340,11 @@ async function parseBulkData() {
 
         // Auto-calculate uang jalan
         if (row.tujuan_pengambilan && row.size) {
-            const ringData = pricelistRings.find(r => r.name.toLowerCase() === row.tujuan_pengambilan.toLowerCase());
+            // Normalize spaces before parenthesis to handle missing spaces like "BUKIT SENYUM(PB)"
+            const normalizeStr = (str) => str.toLowerCase().replace(/\s*\(\s*/g, '(').trim();
+            const searchTp = normalizeStr(row.tujuan_pengambilan);
+            
+            const ringData = pricelistRings.find(r => normalizeStr(r.name) === searchTp);
             if (ringData) {
                 // Tarik Kosong implies Empty
                 let sizeNum = row.size.toString().replace(/[^0-9]/g, '');
