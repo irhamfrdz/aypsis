@@ -483,7 +483,7 @@
         {{-- Pagination --}}
         @if($items->hasPages())
         <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
-            {{ $items->links() }}
+            {{ $items->withQueryString()->links() }}
         </div>
         @endif
     </div>
