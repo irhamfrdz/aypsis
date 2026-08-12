@@ -520,7 +520,7 @@ class SuratJalanTarikKosongBatamController extends Controller
                     'no_plat' => $noPlat,
                     'no_kontainer' => $noKontainer,
                     'size' => trim($row['size'] ?? ''),
-                    'f_e' => 'Empty', // Tarik kosong implies empty
+                    'f_e' => trim($row['f_e'] ?? 'Empty'), // Full or Empty from input
                     'status' => 'active',
                     'catatan' => trim($row['catatan'] ?? ''),
                     'uang_jalan' => $row['uang_jalan'] ?? 0,

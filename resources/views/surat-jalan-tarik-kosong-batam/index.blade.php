@@ -167,13 +167,14 @@
                     Panduan Format Data (Semicolon-separated / Dipisahkan Titik Koma)
                 </h4>
                 <p class="text-xs text-indigo-700 mb-1">Setiap baris = 1 surat jalan. Kolom dipisahkan dengan <strong>Titik Koma (;)</strong>.<br>
-                Untuk <strong>Tujuan Pengambilan</strong>, tambahkan ekspedisi <strong>(PB)</strong> atau <strong>(AYP)</strong> di belakang nama daerah agar tarif sesuai.</p>
+                Untuk <strong>Tujuan Pengambilan</strong>, tambahkan ekspedisi <strong>(PB)</strong> atau <strong>(AYP)</strong> di belakang nama daerah agar tarif sesuai.<br>
+                Untuk <strong>F/E</strong>, isi dengan <strong>Full</strong> atau <strong>Empty</strong> (mempengaruhi tarif uang jalan).</p>
                 <div class="bg-white rounded px-3 py-2 text-xs text-indigo-900 font-mono overflow-x-auto border border-indigo-100">
-                    No SJ ; Tanggal (YYYY-MM-DD) ; No Kontainer ; Size ; Supir ; No Plat ; Tujuan Pengambilan ; Tujuan Pengiriman (Gudang Tujuan) ; Catatan
+                    No SJ ; Tanggal (YYYY-MM-DD) ; No Kontainer ; Size ; F/E (Full/Empty) ; Supir ; No Plat ; Tujuan Pengambilan ; Tujuan Pengiriman (Gudang Tujuan) ; Catatan
                 </div>
                 <p class="text-xs text-indigo-600 mt-1">
-                    <strong>Contoh 1 (AYP):</strong> SJ-001;2026-06-27;CONT123;20;ANDI;B1234XX;Nagoya (AYP);Gudang A;Cepat<br>
-                    <strong>Contoh 2 (PB):</strong> SJ-002;2026-06-27;CONT124;40;BUDI;B5678XX;Sekupang (PB);Gudang B;Segera
+                    <strong>Contoh 1 (Empty):</strong> SJ-001;2026-06-27;CONT123;20;Empty;ANDI;B1234XX;Nagoya (AYP);Gudang A;Cepat<br>
+                    <strong>Contoh 2 (Full):</strong> SJ-002;2026-06-27;CONT124;40;Full;BUDI;B5678XX;Sekupang (PB);Gudang B;Segera
                 </p>
             </div>
 
@@ -184,7 +185,7 @@
                 </label>
                 <textarea id="bulkTextarea" rows="10"
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                          placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;20;ANDI;B1234XX;Nagoya (AYP);Gudang A;Cepat&#10;SJ-002;2026-06-27;CONT124;40;BUDI;B5678XX;Sekupang (PB);Gudang B;Segera"></textarea>
+                          placeholder="Masukkan data di sini...&#10;SJ-001;2026-06-27;CONT123;20;Empty;ANDI;B1234XX;Nagoya (AYP);Gudang A;Cepat&#10;SJ-002;2026-06-27;CONT124;40;Full;BUDI;B5678XX;Sekupang (PB);Gudang B;Segera"></textarea>
             </div>
 
             <div class="flex justify-end mb-4">
@@ -204,6 +205,7 @@
                                 <th class="px-3 py-2 text-left text-gray-500 uppercase">Tanggal</th>
                                 <th class="px-3 py-2 text-left text-gray-500 uppercase">Kontainer</th>
                                 <th class="px-3 py-2 text-left text-gray-500 uppercase">Size</th>
+                                <th class="px-3 py-2 text-left text-gray-500 uppercase">F/E</th>
                                 <th class="px-3 py-2 text-left text-gray-500 uppercase">Supir</th>
                                 <th class="px-3 py-2 text-left text-gray-500 uppercase">No Plat</th>
                                 <th class="px-3 py-2 text-left text-gray-500 uppercase">Pengambilan</th>
@@ -312,14 +314,23 @@ async function parseBulkData() {
             tanggal_surat_jalan: cols[1] || '',
             no_kontainer: cols[2] || '',
             size: cols[3] || '',
-            supir: cols[4] || '',
-            no_plat: cols[5] || '',
-            tujuan_pengambilan: cols[6] || '',
-            gudang_tujuan: cols[7] || '',
-            catatan: cols[8] || '',
+            f_e: cols[4] || 'Empty',
+            supir: cols[5] || '',
+            no_plat: cols[6] || '',
+            tujuan_pengambilan: cols[7] || '',
+            gudang_tujuan: cols[8] || '',
+            catatan: cols[9] || '',
             uang_jalan: 0,
             _original_line: line
         };
+
+        // Normalize f_e value
+        const feUpper = row.f_e.toUpperCase();
+        if (feUpper === 'F' || feUpper === 'FULL') {
+            row.f_e = 'Full';
+        } else {
+            row.f_e = 'Empty';
+        }
 
         let displayGudang = row.gudang_tujuan;
         if (row.gudang_tujuan) {
@@ -346,11 +357,12 @@ async function parseBulkData() {
             
             const ringData = pricelistRings.find(r => normalizeStr(r.name) === searchTp);
             if (ringData) {
-                // Tarik Kosong implies Empty
                 let sizeNum = row.size.toString().replace(/[^0-9]/g, '');
                 if (!sizeNum) sizeNum = row.size;
                 
-                const key = `${sizeNum}_Empty`;
+                // Use F/E value to determine rate key
+                const feKey = row.f_e === 'Full' ? 'F' : 'Empty';
+                const key = `${sizeNum}_${feKey}`;
                 const rate = ringData.rates[key];
                 if (rate) {
                     row.uang_jalan = rate;
@@ -379,6 +391,7 @@ async function parseBulkData() {
                 <td class="px-3 py-2 whitespace-nowrap">${displayTanggal}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.no_kontainer}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.size}</td>
+                <td class="px-3 py-2 whitespace-nowrap">${row.f_e}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.supir}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.no_plat}</td>
                 <td class="px-3 py-2 whitespace-nowrap">${row.tujuan_pengambilan}</td>
