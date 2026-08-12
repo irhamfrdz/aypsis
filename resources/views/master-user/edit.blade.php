@@ -2148,6 +2148,10 @@
                             </tr>
 
                             {{-- User Sub-modules --}}
+                            {{-- Hidden checkbox for master-karyawan main permission --}}
+                            <input type="hidden" name="permissions[master-karyawan][main]" value="0" id="master-karyawan-main">
+                            <input type="checkbox" name="permissions[master-karyawan][main]" value="1" id="master-karyawan-main-checkbox" class="hidden" @if(isset($userMatrixPermissions['master-karyawan']['main']) && $userMatrixPermissions['master-karyawan']['main']) checked @endif>
+
                             {{-- Data User --}}
                             <tr class="submodule-row" data-parent="user">
                                 <td class="submodule">
