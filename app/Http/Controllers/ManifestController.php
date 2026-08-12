@@ -1190,43 +1190,50 @@ class ManifestController extends Controller
     {
         $q = $request->get('q');
 
-        $pengirims = \App\Models\Pengirim::select('id', 'nama_pengirim as name', 'alamat')
-            ->where('nama_pengirim', 'LIKE', "%$q%")
+        $shippers = \App\Models\ShipperConsignee::select('id', 'shipper as name', 'alamat_shipper as alamat')
+            ->whereNotNull('shipper')
+            ->where('shipper', '!=', '')
+            ->where('shipper', 'LIKE', "%$q%")
             ->limit(50)
             ->get()->map(function ($item) {
                 return [
                     'id' => $item->name,
                     'text' => $item->name,
                     'alamat' => $item->alamat,
-                    'edit_url' => route('pengirim.edit', $item->id),
+                    'edit_url' => route('master.shipper-consignee.edit', $item->id),
                 ];
             });
 
-        $penerimas = \App\Models\Penerima::select('id', 'nama_penerima as name', 'alamat')
-            ->where('nama_penerima', 'LIKE', "%$q%")
+        $results = $shippers
+            ->unique('text')
+            ->values()
+            ->take(50);
+
+        return response()->json($results);
+    }
+
+    /**
+     * Search consignees via AJAX from shipper_consignees table
+     */
+    public function searchConsignees(Request $request)
+    {
+        $q = $request->get('q');
+
+        $consignees = \App\Models\ShipperConsignee::select('id', 'consignee as name', 'alamat_consignee as alamat')
+            ->whereNotNull('consignee')
+            ->where('consignee', '!=', '')
+            ->where('consignee', 'LIKE', "%$q%")
             ->limit(50)
             ->get()->map(function ($item) {
                 return [
                     'id' => $item->name,
                     'text' => $item->name,
                     'alamat' => $item->alamat,
-                    'edit_url' => route('penerima.edit', $item->id),
+                    'edit_url' => route('master.shipper-consignee.edit', $item->id),
                 ];
             });
 
-        $masters = \App\Models\MasterPengirimPenerima::select('id', 'nama as name', 'alamat')
-            ->where('nama', 'LIKE', "%$q%")
-            ->limit(50)
-            ->get()->map(function ($item) {
-                return [
-                    'id' => $item->name,
-                    'text' => $item->name,
-                    'alamat' => $item->alamat,
-                    'edit_url' => route('master-pengirim-penerima.edit', $item->id),
-                ];
-            });
-
-        $results = $pengirims->concat($penerimas)->concat($masters)
+        $results = $consignees
             ->unique('text')
             ->values()
             ->take(50);

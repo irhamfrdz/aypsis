@@ -263,9 +263,29 @@
                     </div>
 
                     <div>
-                        <label for="penerima" class="block text-sm font-medium text-gray-700 mb-2">CONSIGNEE</label>
-                        <input type="text" name="penerima" id="penerima" value="{{ old('penerima', $manifest->penerima) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="penerima" class="text-sm font-medium text-gray-700">CONSIGNEE</label>
+                            <a href="#" id="edit_consignee_link"
+                               class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 hidden"
+                               title="Edit" target="_blank">
+                                Edit
+                            </a>
+                        </div>
+                        <div class="relative">
+                            <div class="dropdown-container-consignee">
+                                <input type="text" id="search_consignee" placeholder="Search consignee..." autocomplete="off"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-purple-500 bg-white text-sm">
+                                <select name="penerima" id="penerima_id" class="hidden">
+                                    <option value="">- Pilih Consignee -</option>
+                                    @if(old('penerima', $manifest->penerima))
+                                        <option value="{{ old('penerima', $manifest->penerima) }}" selected>{{ old('penerima', $manifest->penerima) }}</option>
+                                    @endif
+                                </select>
+                                <div id="dropdown_options_consignee" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                    <!-- Options populated by JS -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div>
@@ -449,6 +469,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Initialize Consignee Dropdown
+    const editConsigneeLink = document.getElementById('edit_consignee_link');
+    function updateEditConsigneeLink() {
+        const selectElement = document.getElementById('penerima_id');
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const editUrl = selectedOption ? selectedOption.getAttribute('data-edit-url') : '';
+        if (editUrl) {
+            editConsigneeLink.href = editUrl;
+            editConsigneeLink.classList.remove('hidden');
+        } else {
+            editConsigneeLink.classList.add('hidden');
+        }
+    }
+
+    initSearchableDropdown({
+        containerSelector: '.dropdown-container-consignee',
+        searchInputId: 'search_consignee',
+        selectElementId: 'penerima_id',
+        optionsContainerId: 'dropdown_options_consignee',
+        apiUrl: '/api/manifests/search-consignees',
+        onSelect: (option, optElement) => {
+            // Optional: You can auto-fill alamat if needed, like shipper
+            updateEditConsigneeLink();
+        }
+    });
+
     // Initialize Prospek Dropdown
     initSearchableDropdown({
         containerSelector: '.dropdown-container-prospek',
@@ -460,6 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial state for edit link
     updateEditLink();
+    updateEditConsigneeLink();
 });
 </script>
 @endpush
