@@ -60,6 +60,19 @@ class SuratJalanTarikKosongBatamController extends Controller
                                     '45_Empty' => $item->tarif_40ft_empty,
                                 ]
                             ];
+                            // Entry with expedition name, e.g. "Bukit Senyum (PB)"
+                            $mapped[] = [
+                                'name' => $name . ' (' . $item->expedisi . ')',
+                                'ring' => $item->ring,
+                                'rates' => [
+                                    '20_F' => $item->tarif_20ft_full,
+                                    '20_Empty' => $item->tarif_20ft_empty,
+                                    '40_F' => $item->tarif_40ft_full,
+                                    '40_Empty' => $item->tarif_40ft_empty,
+                                    '45_F' => $item->tarif_40ft_full,
+                                    '45_Empty' => $item->tarif_40ft_empty,
+                                ]
+                            ];
                         }
                     }
                 }
