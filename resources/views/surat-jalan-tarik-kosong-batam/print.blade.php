@@ -139,7 +139,7 @@
         </div>
         <div>
             <span class="label">Status:</span>
-            <span class="value">{{ $item->f_e == 'E' ? 'EMPTY (E)' : 'FULL (F)' }}</span>
+            <span class="value">{{ strtoupper($item->f_e ?? 'Empty') }}</span>
         </div>
     </div>
 

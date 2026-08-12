@@ -94,7 +94,7 @@
                                     </div>
                                     <div class="text-center bg-gray-50 p-2 rounded-lg">
                                         <span class="text-[10px] text-gray-400 uppercase block">Status</span>
-                                        <span class="text-xs font-bold text-gray-800">{{ $item->f_e == 'E' ? 'Empty' : 'Full' }}</span>
+                                        <span class="text-xs font-bold text-gray-800">{{ $item->f_e ?? 'Empty' }}</span>
                                     </div>
                                 </div>
 

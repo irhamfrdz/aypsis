@@ -215,8 +215,8 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">F / E</label>
                     <select name="f_e"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="E" {{ old('f_e', 'E') == 'E' ? 'selected' : '' }}>Empty (E)</option>
-                        <option value="F" {{ old('f_e') == 'F' ? 'selected' : '' }}>Full (F)</option>
+                        <option value="Empty" {{ old('f_e', 'Empty') == 'Empty' ? 'selected' : '' }}>Empty</option>
+                        <option value="Full" {{ old('f_e') == 'Full' ? 'selected' : '' }}>Full</option>
                     </select>
                 </div>
 
