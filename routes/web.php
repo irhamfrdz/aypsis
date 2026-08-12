@@ -402,6 +402,30 @@ Route::middleware([
             return view('master-persetujuan-absensi.index');
         })->name('persetujuan-absensi.index')->middleware('can:approval-absensi-view');
 
+        // Persetujuan Absensi Lupa
+        Route::group(['prefix' => 'persetujuan-absensi-lupa', 'as' => 'persetujuan-absensi-lupa.'], function () {
+            Route::get('/', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'index'])->name('index')->middleware('can:approval-absensi-lupa-view');
+            Route::get('/create', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'create'])->name('create')->middleware('can:approval-absensi-lupa-create');
+            Route::post('/', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'store'])->name('store')->middleware('can:approval-absensi-lupa-create');
+            Route::get('/{persetujuanAbsensiLupa}/edit', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'edit'])->name('edit')->middleware('can:approval-absensi-lupa-edit');
+            Route::put('/{persetujuanAbsensiLupa}', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'update'])->name('update')->middleware('can:approval-absensi-lupa-edit');
+            Route::delete('/{persetujuanAbsensiLupa}', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'destroy'])->name('destroy')->middleware('can:approval-absensi-lupa-delete');
+            Route::post('/{persetujuanAbsensiLupa}/approve', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'approve'])->name('approve')->middleware('can:approval-absensi-lupa-approve');
+            Route::post('/{persetujuanAbsensiLupa}/reject', [\App\Http\Controllers\MasterPersetujuanAbsensiLupaController::class, 'reject'])->name('reject')->middleware('can:approval-absensi-lupa-approve');
+        });
+        
+        // Persetujuan Absensi Lembur
+        Route::group(['prefix' => 'persetujuan-absensi-lembur', 'as' => 'persetujuan-absensi-lembur.'], function () {
+            Route::get('/', [\App\Http\Controllers\MasterPersetujuanAbsensiLemburController::class, 'index'])->name('index')->middleware('can:approval-absensi-lembur-view');
+            Route::get('/create', [\App\Http\Controllers\MasterPersetujuanAbsensiLemburController::class, 'create'])->name('create')->middleware('can:approval-absensi-lembur-create');
+            Route::post('/', [\App\Http\Controllers\MasterPersetujuanAbsensiLemburController::class, 'store'])->name('store')->middleware('can:approval-absensi-lembur-create');
+            Route::get('/{persetujuanAbsensiLembur}/edit', [\App\Http\Controllers\MasterPersetujuanAbsensiLemburController::class, 'edit'])->name('edit')->middleware('can:approval-absensi-lembur-edit');
+            Route::put('/{persetujuanAbsensiLembur}', [\App\Http\Controllers\MasterPersetujuanAbsensiLemburController::class, 'update'])->name('update')->middleware('can:approval-absensi-lembur-edit');
+            Route::delete('/{persetujuanAbsensiLembur}', [\App\Http\Controllers\MasterPersetujuanAbsensiLemburController::class, 'destroy'])->name('destroy')->middleware('can:approval-absensi-lembur-delete');
+            Route::post('/{persetujuanAbsensiLembur}/approve', [\App\Http\Controllers\MasterPersetujuanAbsensiLemburController::class, 'approve'])->name('approve')->middleware('can:approval-absensi-lembur-approve');
+            Route::post('/{persetujuanAbsensiLembur}/reject', [\App\Http\Controllers\MasterPersetujuanAbsensiLemburController::class, 'reject'])->name('reject')->middleware('can:approval-absensi-lembur-approve');
+        });
+
         // User Management - Separate routes to avoid middleware conflicts
         Route::get('user', [UserController::class, 'index'])
             ->name('user.index')
@@ -2847,7 +2871,7 @@ Route::middleware([
     });
 
     // ═══════════════════════════════════════════════════════════════════════
-    // � ORDER MANAGEMENT ROUTES
+    //  ORDER MANAGEMENT ROUTES
     // ═══════════════════════════════════════════════════════════════════════
 
     Route::middleware(['auth'])->group(function () {
@@ -2899,6 +2923,7 @@ Route::middleware([
             Route::get('/', [NotificationController::class, 'index'])->name('index');
             Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('mark-as-read');
             Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+            Route::delete('/clear-all', [NotificationController::class, 'clearAll'])->name('clear-all');
             Route::get('/unread-count', [NotificationController::class, 'getUnreadCount'])->name('unread-count');
         });
 

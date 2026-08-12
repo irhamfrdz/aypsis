@@ -55,6 +55,18 @@ return [
             'description' => 'Menyetujui user baru',
             'required' => true,
         ],
+        'approval-absensi-lupa' => [
+            'name' => 'Persetujuan Absensi Lupa',
+            'description' => 'Menu Persetujuan Absensi Lupa',
+            'required' => true,
+            'sub_modules' => [
+                'approval-absensi-lupa-view' => 'View Persetujuan Absensi Lupa',
+                'approval-absensi-lupa-create' => 'Buat Persetujuan Absensi Lupa',
+                'approval-absensi-lupa-edit' => 'Edit Persetujuan Absensi Lupa',
+                'approval-absensi-lupa-delete' => 'Hapus Persetujuan Absensi Lupa',
+                'approval-absensi-lupa-approve' => 'Setuju Persetujuan Absensi Lupa',
+            ],
+        ],
         'tagihan-kontainer' => [
             'name' => 'Tagihan Kontainer Sewa',
             'description' => 'Menu tagihan kontainer sewa',
@@ -251,6 +263,9 @@ return [
 
         // User Approval - butuh master-user atau user-approval
         'user-approval' => ['master-user', 'user-approval'],
+
+        // Persetujuan Absensi Lupa
+        'approval-absensi-lupa' => ['approval-absensi-lupa-view'],
 
         // Tagihan Kontainer - butuh tagihan-kontainer
         'tagihan-kontainer' => ['tagihan-kontainer'],

@@ -24,7 +24,15 @@ class NotificationController extends Controller
 
         // Redirect to the notification URL if it exists
         if (isset($notification->data['url'])) {
-            return redirect($notification->data['url']);
+            $url = $notification->data['url'];
+            
+            // Fix absolute URL to relative to support different ports (php artisan serve vs apache)
+            if (\Illuminate\Support\Str::startsWith($url, ['http://localhost', 'http://127.0.0.1'])) {
+                $parsed = parse_url($url);
+                $url = ($parsed['path'] ?? '/') . (isset($parsed['query']) ? '?' . $parsed['query'] : '');
+            }
+            
+            return redirect($url);
         }
 
         return back()->with('success', 'Notifikasi ditandai sebagai dibaca.');
@@ -38,6 +46,16 @@ class NotificationController extends Controller
         auth()->user()->unreadNotifications->markAsRead();
 
         return back()->with('success', 'Semua notifikasi ditandai sebagai dibaca.');
+    }
+
+    /**
+     * Delete all notifications.
+     */
+    public function clearAll()
+    {
+        auth()->user()->notifications()->delete();
+
+        return back()->with('success', 'Semua riwayat notifikasi berhasil dihapus.');
     }
 
     /**

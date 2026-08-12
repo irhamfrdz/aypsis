@@ -477,8 +477,8 @@
 
                 {{-- Kelola Absensi Section --}}
                 @php
-                    $isAbsensiRoute = Request::is('absensi*') || Request::routeIs('absensi.*') || Request::routeIs('kelola-absensi.*');
-                    $hasAbsensiPermissions = $isAdmin || ($user && ($user->can('absensi-view') || $user->can('kelola-absensi-view') || $user->can('master-lokasi-absensi-view') || $user->can('master-jam-kerja-view') || $user->can('approval-absensi-view')));
+                    $isAbsensiRoute = Request::routeIs('absensi.*') || Request::routeIs('master.jam-kerja.*') || Request::routeIs('master.lokasi-absensi.*') || Request::routeIs('master.persetujuan-absensi.*') || Request::routeIs('master.persetujuan-absensi-lupa.*') || Request::routeIs('master.persetujuan-absensi-lembur.*');
+                    $hasAbsensiPermissions = $isAdmin || ($user && ($user->can('absensi-view') || $user->can('kelola-absensi-view') || $user->can('master-lokasi-absensi-view') || $user->can('master-jam-kerja-view') || $user->can('approval-absensi-view') || $user->can('approval-absensi-lupa-view') || $user->can('approval-absensi-lembur-view')));
                 @endphp
 
                 @if($hasAbsensiPermissions)
@@ -499,6 +499,16 @@
                         @if($user && $user->can('approval-absensi-view'))
                             <a href="{{ route('master.persetujuan-absensi.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.persetujuan-absensi.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                                 <span class="text-xs font-medium">📋 Persetujuan Absensi</span>
+                            </a>
+                        @endif
+                        @if($user && $user->can('approval-absensi-lupa-view'))
+                            <a href="{{ route('master.persetujuan-absensi-lupa.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.persetujuan-absensi-lupa.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">⏰ Persetujuan Absensi Lupa</span>
+                            </a>
+                        @endif
+                        @if($user && $user->can('approval-absensi-lembur-view'))
+                            <a href="{{ route('master.persetujuan-absensi-lembur.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.persetujuan-absensi-lembur.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">🌙 Persetujuan Absen Lembur</span>
                             </a>
                         @endif
                         @if($user && $user->can('master-lokasi-absensi-view'))

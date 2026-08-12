@@ -487,6 +487,36 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Persetujuan Absensi Lupa --}}
+                            <tr class="submodule-row" data-parent="approval">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Persetujuan Absensi Lupa</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lupa][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lupa][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lupa][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lupa][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lupa][approve]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+                            <tr class="submodule-row" data-parent="approval">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Persetujuan Absen Lembur</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lembur][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lembur][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lembur][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lembur][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lembur][approve]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Karyawan (Cuti & Uang Makan) --}}
                             <tr class="module-row" data-module="data-karyawan">
                                 <td class="module-header">

@@ -4431,6 +4431,34 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Persetujuan Absensi Lupa --}}
+                            <tr class="submodule-row" data-parent="approval">
+                                <td class="submodule">
+                                    <span class="module-icon">⏰</span>
+                                    Persetujuan Absensi Lupa
+                                </td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lupa][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi-lupa']['view']) && $userMatrixPermissions['approval-absensi-lupa']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lupa][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi-lupa']['create']) && $userMatrixPermissions['approval-absensi-lupa']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lupa][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi-lupa']['update']) && $userMatrixPermissions['approval-absensi-lupa']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lupa][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi-lupa']['delete']) && $userMatrixPermissions['approval-absensi-lupa']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lupa][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi-lupa']['approve']) && $userMatrixPermissions['approval-absensi-lupa']['approve']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+                            <tr class="submodule-row" data-parent="approval">
+                                <td class="submodule">
+                                    <span class="module-icon">🌙</span>
+                                    Persetujuan Absen Lembur
+                                </td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lembur][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi-lembur']['view']) && $userMatrixPermissions['approval-absensi-lembur']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lembur][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi-lembur']['create']) && $userMatrixPermissions['approval-absensi-lembur']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lembur][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi-lembur']['update']) && $userMatrixPermissions['approval-absensi-lembur']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lembur][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi-lembur']['delete']) && $userMatrixPermissions['approval-absensi-lembur']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-absensi-lembur][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-absensi-lembur']['approve']) && $userMatrixPermissions['approval-absensi-lembur']['approve']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
                             {{-- Aktivitas Lain-lain --}}
                             <tr class="module-row" data-module="aktivitas-lainnya">

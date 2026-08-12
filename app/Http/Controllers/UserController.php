@@ -642,7 +642,7 @@ class UserController extends Controller
             }
 
             // Special handling for approval-absensi permissions (dash notation)
-            if (strpos($permissionName, 'approval-absensi-') === 0) {
+            if (in_array($permissionName, ['approval-absensi-view', 'approval-absensi-approve'])) {
                 $module = 'approval-absensi';
                 $action = str_replace('approval-absensi-', '', $permissionName);
 
@@ -4939,6 +4939,46 @@ class UserController extends Controller
                         $actionMap = [
                             'view' => 'approval-absensi-view',
                             'approve' => 'approval-absensi-approve',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle approval-absensi-lupa permissions explicitly
+                    if ($module === 'approval-absensi-lupa' && in_array($action, ['view', 'create', 'update', 'delete', 'approve'])) {
+                        $actionMap = [
+                            'view' => 'approval-absensi-lupa-view',
+                            'create' => 'approval-absensi-lupa-create',
+                            'update' => 'approval-absensi-lupa-edit',
+                            'delete' => 'approval-absensi-lupa-delete',
+                            'approve' => 'approval-absensi-lupa-approve',
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle approval-absensi-lembur permissions explicitly
+                    if ($module === 'approval-absensi-lembur' && in_array($action, ['view', 'create', 'update', 'delete', 'approve'])) {
+                        $actionMap = [
+                            'view' => 'approval-absensi-lembur-view',
+                            'create' => 'approval-absensi-lembur-create',
+                            'update' => 'approval-absensi-lembur-edit',
+                            'delete' => 'approval-absensi-lembur-delete',
+                            'approve' => 'approval-absensi-lembur-approve',
                         ];
 
                         if (isset($actionMap[$action])) {
