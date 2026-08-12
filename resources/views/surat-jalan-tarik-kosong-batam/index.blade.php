@@ -443,7 +443,7 @@ function submitBulkData() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
+        if (data.success && !data.hasErrors) {
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil',
@@ -453,14 +453,38 @@ function submitBulkData() {
             }).then(() => {
                 window.location.reload();
             });
-        } else {
+        } else if (data.success && data.hasErrors) {
             let errorHtml = data.message + '<br><br>';
             if (data.errors && data.errors.length > 0) {
-                errorHtml += '<ul class="text-left text-sm list-disc pl-5">';
+                errorHtml += '<div style="max-height: 200px; overflow-y: auto;"><ul class="text-left text-sm list-disc pl-5">';
                 data.errors.forEach(err => {
                     errorHtml += `<li>${err}</li>`;
                 });
-                errorHtml += '</ul>';
+                errorHtml += '</ul></div>';
+            }
+            
+            if (data.failedRows && data.failedRows.length > 0) {
+                document.getElementById('bulkTextarea').value = data.failedRows.join('\n');
+                parseBulkData(); 
+            }
+            
+            Swal.fire({
+                icon: 'warning',
+                title: 'Selesai dengan Peringatan',
+                html: errorHtml
+            }).then(() => {
+                if (data.successCount > 0) {
+                    window.location.reload();
+                }
+            });
+        } else {
+            let errorHtml = data.message + '<br><br>';
+            if (data.errors && data.errors.length > 0) {
+                errorHtml += '<div style="max-height: 200px; overflow-y: auto;"><ul class="text-left text-sm list-disc pl-5">';
+                data.errors.forEach(err => {
+                    errorHtml += `<li>${err}</li>`;
+                });
+                errorHtml += '</ul></div>';
             }
             
             if (data.failedRows && data.failedRows.length > 0) {
