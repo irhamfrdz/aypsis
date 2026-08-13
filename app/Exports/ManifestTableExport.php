@@ -828,7 +828,11 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
         for ($r = $sigStart; $r <= $highestRow; $r++) {
             $sheet->getStyle("W{$r}")->getFont()->setName('Arial')->setSize(10)->setBold(true);
         }
-
         return [];
+    }
+
+    public function title(): string
+    {
+        return 'Manifest';
     }
 }
