@@ -597,27 +597,57 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Jam Masuk</label>
-                                <input type="time" name="waktu_masuk" id="edit_waktu_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <input type="time" name="waktu_masuk" id="edit_waktu_masuk" class="flex-1 block w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <button type="button" onclick="document.getElementById('edit_waktu_masuk').value = ''" class="inline-flex items-center px-3 border border-l-0 border-gray-300 bg-gray-50 text-gray-500 rounded-r-md hover:bg-red-50 hover:text-red-500 transition-colors" title="Reset Jam Masuk">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Jam Pulang</label>
-                                <input type="time" name="waktu_pulang" id="edit_waktu_pulang" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <input type="time" name="waktu_pulang" id="edit_waktu_pulang" class="flex-1 block w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <button type="button" onclick="document.getElementById('edit_waktu_pulang').value = ''" class="inline-flex items-center px-3 border border-l-0 border-gray-300 bg-gray-50 text-gray-500 rounded-r-md hover:bg-red-50 hover:text-red-500 transition-colors" title="Reset Jam Pulang">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Istirahat Keluar</label>
-                                <input type="time" name="waktu_istirahat_keluar" id="edit_waktu_istirahat_keluar" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <input type="time" name="waktu_istirahat_keluar" id="edit_waktu_istirahat_keluar" class="flex-1 block w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <button type="button" onclick="document.getElementById('edit_waktu_istirahat_keluar').value = ''" class="inline-flex items-center px-3 border border-l-0 border-gray-300 bg-gray-50 text-gray-500 rounded-r-md hover:bg-red-50 hover:text-red-500 transition-colors" title="Reset Istirahat Keluar">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Istirahat Masuk</label>
-                                <input type="time" name="waktu_istirahat_masuk" id="edit_waktu_istirahat_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <input type="time" name="waktu_istirahat_masuk" id="edit_waktu_istirahat_masuk" class="flex-1 block w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <button type="button" onclick="document.getElementById('edit_waktu_istirahat_masuk').value = ''" class="inline-flex items-center px-3 border border-l-0 border-gray-300 bg-gray-50 text-gray-500 rounded-r-md hover:bg-red-50 hover:text-red-500 transition-colors" title="Reset Istirahat Masuk">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Lembur Masuk</label>
-                                <input type="time" name="waktu_lembur_masuk" id="edit_waktu_lembur_masuk" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <input type="time" name="waktu_lembur_masuk" id="edit_waktu_lembur_masuk" class="flex-1 block w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <button type="button" onclick="document.getElementById('edit_waktu_lembur_masuk').value = ''" class="inline-flex items-center px-3 border border-l-0 border-gray-300 bg-gray-50 text-gray-500 rounded-r-md hover:bg-red-50 hover:text-red-500 transition-colors" title="Reset Lembur Masuk">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Lembur Pulang</label>
-                                <input type="time" name="waktu_lembur_pulang" id="edit_waktu_lembur_pulang" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <input type="time" name="waktu_lembur_pulang" id="edit_waktu_lembur_pulang" class="flex-1 block w-full px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                    <button type="button" onclick="document.getElementById('edit_waktu_lembur_pulang').value = ''" class="inline-flex items-center px-3 border border-l-0 border-gray-300 bg-gray-50 text-gray-500 rounded-r-md hover:bg-red-50 hover:text-red-500 transition-colors" title="Reset Lembur Pulang">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -628,9 +658,6 @@
                     </button>
                     <button type="button" onclick="document.getElementById('editModal').classList.add('hidden')" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Batal
-                    </button>
-                    <button type="button" onclick="resetEditJam()" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-red-700 bg-red-100 border border-transparent rounded-md shadow-sm hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:mr-auto sm:w-auto sm:text-sm">
-                        Reset Jam
                     </button>
                 </div>
             </form>
