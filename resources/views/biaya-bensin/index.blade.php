@@ -45,7 +45,7 @@
 
     <!-- Search Form -->
     <form method="GET" action="{{ route('biaya-bensin.index') }}" class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
                 <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
                 <input type="date" name="start_date" id="start_date" value="{{ request('start_date') }}" class="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm">
@@ -54,11 +54,15 @@
                 <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
                 <input type="date" name="end_date" id="end_date" value="{{ request('end_date') }}" class="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm">
             </div>
+            <div>
+                <label for="nama_supir" class="block text-sm font-medium text-gray-700 mb-1">Nama Supir</label>
+                <input type="text" name="nama_supir" id="nama_supir" value="{{ request('nama_supir') }}" placeholder="Cari nama supir..." class="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm px-3 py-2">
+            </div>
             <div class="flex items-end space-x-2">
                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors duration-200">
                     <i class="fas fa-filter mr-2"></i> Filter
                 </button>
-                @if(request('start_date') || request('end_date'))
+                @if(request('start_date') || request('end_date') || request('nama_supir'))
                     <a href="{{ route('biaya-bensin.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors duration-200">
                         <i class="fas fa-times mr-2"></i> Reset
                     </a>

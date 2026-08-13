@@ -19,8 +19,15 @@ class BiayaBensinController extends Controller
     {
         $query = BiayaBensin::with(['mobil', 'supir', 'creator']);
 
-        if ($request->has('start_date') && $request->has('end_date')) {
+        if ($request->has('start_date') && $request->has('end_date') && $request->start_date && $request->end_date) {
             $query->whereBetween('tanggal', [$request->start_date, $request->end_date]);
+        }
+
+        if ($request->filled('nama_supir')) {
+            $query->whereHas('supir', function ($q) use ($request) {
+                $q->where('nama_panggilan', 'like', '%' . $request->nama_supir . '%')
+                  ->orWhere('nama_lengkap', 'like', '%' . $request->nama_supir . '%');
+            });
         }
 
         $items = $query->orderBy('tanggal', 'desc')->paginate(20);
