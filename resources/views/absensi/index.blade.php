@@ -627,6 +627,9 @@
                     <button type="button" onclick="document.getElementById('editModal').classList.add('hidden')" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Batal
                     </button>
+                    <button type="button" onclick="resetEditJam()" class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-red-700 bg-red-100 border border-transparent rounded-md shadow-sm hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:mr-auto sm:w-auto sm:text-sm">
+                        Reset Jam
+                    </button>
                 </div>
             </form>
         </div>
@@ -851,6 +854,15 @@
         setAndLockEdit('edit_waktu_lembur_pulang', lemburOut);
         
         document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function resetEditJam() {
+        document.getElementById('edit_waktu_masuk').value = '';
+        document.getElementById('edit_waktu_istirahat_keluar').value = '';
+        document.getElementById('edit_waktu_istirahat_masuk').value = '';
+        document.getElementById('edit_waktu_pulang').value = '';
+        document.getElementById('edit_waktu_lembur_masuk').value = '';
+        document.getElementById('edit_waktu_lembur_pulang').value = '';
     }
 </script>
 @endpush
