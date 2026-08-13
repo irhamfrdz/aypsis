@@ -41,8 +41,8 @@ class MasterDokumenKapalAlexindoController extends Controller
             'kapal_id' => 'required|exists:master_kapals,id',
             'sertifikat_kapal_id' => 'required|exists:sertifikat_kapals,id',
             'nomor_dokumen' => 'nullable|string|max:255',
-            'tanggal_terbit' => 'nullable|date',
-            'tanggal_berakhir' => 'nullable|date',
+            'tanggal_terbit' => 'required|date',
+            'tanggal_berakhir' => 'required|date',
             'file_dokumen' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'keterangan' => 'nullable|string',
         ]);
@@ -77,8 +77,8 @@ class MasterDokumenKapalAlexindoController extends Controller
             'kapal_id' => 'required|exists:master_kapals,id',
             'sertifikat_kapal_id' => 'required|exists:sertifikat_kapals,id',
             'nomor_dokumen' => 'nullable|string|max:255',
-            'tanggal_terbit' => 'nullable|date',
-            'tanggal_berakhir' => 'nullable|date',
+            'tanggal_terbit' => 'required|date',
+            'tanggal_berakhir' => 'required|date',
             'file_dokumen' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'keterangan' => 'nullable|string',
         ]);
