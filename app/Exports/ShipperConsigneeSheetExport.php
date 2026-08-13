@@ -81,8 +81,49 @@ class ShipperConsigneeSheetExport implements FromCollection, WithHeadings, WithM
             ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER)
             ->setWrapText(true);
             
-        $sheet->getRowDimension(1)->setRowHeight(30);
+        $sheet->getRowDimension(1)->setRowHeight(40);
         
         $sheet->getStyle('A1:T' . ($sheet->getHighestRow()))->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
+        // Header Background Colors
+        // NPWP SHIPPER (Column H) -> Red
+        $sheet->getStyle('H1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFFF0000'); // Red
+            
+        // CONSIGNEE section (Column I, J, K) -> Lime Green
+        $sheet->getStyle('I1:K1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FF92D050'); // Lime Green
+            
+        // NOTIFY PARTY section (Column L, M, N) -> Orange
+        $sheet->getStyle('L1:N1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFFFC000'); // Orange/Gold
+
+        // Autofilter for Row 1
+        $sheet->setAutoFilter('A1:T1');
+
+        // Freeze top row
+        $sheet->freezePane('A2');
+
+        // Column widths for better readability (optional but good)
+        $sheet->getColumnDimension('A')->setWidth(15);
+        $sheet->getColumnDimension('B')->setWidth(15);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(25);
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $sheet->getColumnDimension('F')->setWidth(30); // Shipper
+        $sheet->getColumnDimension('G')->setWidth(30); // Address
+        $sheet->getColumnDimension('H')->setWidth(20); // NPWP
+        $sheet->getColumnDimension('I')->setWidth(30); // Consignee
+        $sheet->getColumnDimension('J')->setWidth(30); // Consignee Address
+        $sheet->getColumnDimension('K')->setWidth(20); // Consignee NPWP
+        $sheet->getColumnDimension('L')->setWidth(30); // Notify Party
+        $sheet->getColumnDimension('M')->setWidth(30); // Notify Address
+        $sheet->getColumnDimension('N')->setWidth(20); // Notify NPWP
+        $sheet->getColumnDimension('O')->setWidth(35); // Delivery
+        $sheet->getColumnDimension('P')->setWidth(15); // Document
+        $sheet->getColumnDimension('Q')->setWidth(15); // Condition
+        $sheet->getColumnDimension('R')->setWidth(15); // IU BP
+        $sheet->getColumnDimension('S')->setWidth(20); // NITKU Consignee
+        $sheet->getColumnDimension('T')->setWidth(20); // NPWP Consignee 16
     }
 }
