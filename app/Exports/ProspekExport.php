@@ -16,6 +16,8 @@ class ProspekExport implements FromCollection, ShouldAutoSize, WithEvents, WithH
 
     protected $prospekIds;
 
+    protected $rowStatuses = [];
+
     public function __construct(array $filters = [], array $prospekIds = [])
     {
         $this->filters = $filters;
@@ -82,6 +84,8 @@ class ProspekExport implements FromCollection, ShouldAutoSize, WithEvents, WithH
         $prospeks = $query->get();
 
         $rows = $prospeks->map(function ($p, $index) {
+            $this->rowStatuses[$index + 2] = $p->status; // Data starts at row 2
+
             return [
                 $index + 1, // Nomor urut
                 $p->nama_supir ?? '-', // Nama supir
@@ -125,6 +129,21 @@ class ProspekExport implements FromCollection, ShouldAutoSize, WithEvents, WithH
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $sheet->getStyle('A1:L1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A1:L1')->getFont()->setBold(true);
+
+                foreach ($this->rowStatuses as $rowIndex => $status) {
+                    if ($status === 'sudah_muat') {
+                        // Green for sudah naik kapal
+                        $sheet->getStyle("A{$rowIndex}:L{$rowIndex}")->getFill()
+                              ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                              ->getStartColor()->setARGB('FFC6EFCE');
+                    } elseif (in_array($status, ['aktif', ''])) {
+                        // Blue for belum naik kapal (aktif)
+                        $sheet->getStyle("A{$rowIndex}:L{$rowIndex}")->getFill()
+                              ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                              ->getStartColor()->setARGB('FFCCE5FF');
+                    }
+                }
             },
         ];
     }
