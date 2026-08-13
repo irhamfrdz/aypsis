@@ -56,7 +56,14 @@
             </div>
             <div>
                 <label for="nama_supir" class="block text-sm font-medium text-gray-700 mb-1">Nama Supir</label>
-                <input type="text" name="nama_supir" id="nama_supir" value="{{ request('nama_supir') }}" placeholder="Cari nama supir..." class="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm px-3 py-2">
+                <select name="nama_supir" id="nama_supir" class="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm px-3 py-2 select2">
+                    <option value="">-- Semua Supir --</option>
+                    @foreach($supirs as $supir)
+                        <option value="{{ $supir->nama_panggilan }}" {{ request('nama_supir') == $supir->nama_panggilan ? 'selected' : '' }}>
+                            {{ $supir->nama_panggilan }} - {{ $supir->nama_lengkap }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
             <div class="flex items-end space-x-2">
                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors duration-200">
@@ -173,3 +180,17 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        if ($.fn.select2) {
+            $('.select2').select2({
+                placeholder: "-- Semua Supir --",
+                allowClear: true,
+                width: '100%'
+            });
+        }
+    });
+</script>
+@endpush
