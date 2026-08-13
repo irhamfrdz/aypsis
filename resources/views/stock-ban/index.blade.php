@@ -1512,10 +1512,13 @@
                 $banDalamQty = $stockBanDalams->sum('qty');
                 $banPerutQty = $stockBanPeruts->sum('qty');
                 $ringVelgQty = $stockRingVelgs->sum('qty');
-                $velgQty = $stockVelgs->sum('qty');
+                
+                $velgStats = $stockVelgs->groupBy('ukuran')->map(function($items) {
+                    return $items->sum('qty');
+                });
             @endphp
  
-            @if($paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0 || $banDalamQty > 0 || $banPerutQty > 0 || $ringVelgQty > 0 || $velgQty > 0)
+            @if($paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0 || $banDalamQty > 0 || $banPerutQty > 0 || $ringVelgQty > 0 || $velgStats->sum() > 0)
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Quick Summary</h3>
                 <div class="flex items-center gap-2">
@@ -1604,23 +1607,25 @@
                 </div>
                 @endif
 
-                @if($velgQty > 0)
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-indigo-500 hover:bg-indigo-50/30"
-                     onclick="filterBarangLainnya('VELG', this)">
-                    <div class="flex items-center gap-3">
-                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-                            <i class="fas fa-dharmachakra text-lg"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">VELG</p>
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-xl font-black text-gray-800">{{ $velgQty }}</span>
-                                <span class="text-[10px] font-medium text-gray-400 uppercase">PCS</span>
+                @foreach($velgStats as $ukuran => $qty)
+                    @if($qty > 0)
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-indigo-500 hover:bg-indigo-50/30"
+                         onclick="filterBarangLainnya('VELG{{ $ukuran ? ' ' . $ukuran : '' }}', this)">
+                        <div class="flex items-center gap-3">
+                            <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                                <i class="fas fa-dharmachakra text-lg"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">VELG {{ $ukuran ? 'LOBANG '.$ukuran : '' }}</p>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-xl font-black text-gray-800">{{ $qty }}</span>
+                                    <span class="text-[10px] font-medium text-gray-400 uppercase">PCS</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                @endif
+                    @endif
+                @endforeach
 
                 @if($majunQty > 0)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-orange-400 hover:bg-orange-50/30"
