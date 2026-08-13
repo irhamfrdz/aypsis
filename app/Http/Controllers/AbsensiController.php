@@ -799,8 +799,11 @@ class AbsensiController extends Controller
                             $izin++;
                         }
                     } else {
-                        $alpha++;
-                        $detail_alpha[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
+                        // Jangan hitung alpha jika tanggalnya belum terjadi (future dates)
+                        if ($dateStr <= \Carbon\Carbon::today()->toDateString()) {
+                            $alpha++;
+                            $detail_alpha[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
+                        }
                     }
                 }
                 
