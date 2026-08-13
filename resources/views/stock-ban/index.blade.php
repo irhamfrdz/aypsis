@@ -1511,14 +1511,17 @@
 
                 $banDalamQty = $stockBanDalams->sum('qty');
                 $banPerutQty = $stockBanPeruts->sum('qty');
-                $ringVelgQty = $stockRingVelgs->sum('qty');
+                
+                $ringVelgStats = $stockRingVelgs->groupBy('ukuran')->map(function($items) {
+                    return $items->sum('qty');
+                });
                 
                 $velgStats = $stockVelgs->groupBy('ukuran')->map(function($items) {
                     return $items->sum('qty');
                 });
             @endphp
  
-            @if($paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0 || $banDalamQty > 0 || $banPerutQty > 0 || $ringVelgQty > 0 || $velgStats->sum() > 0)
+            @if($paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0 || $banDalamQty > 0 || $banPerutQty > 0 || $ringVelgStats->sum() > 0 || $velgStats->sum() > 0)
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Quick Summary</h3>
                 <div class="flex items-center gap-2">
@@ -1589,23 +1592,25 @@
                 </div>
                 @endif
 
-                @if($ringVelgQty > 0)
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-yellow-500 hover:bg-yellow-50/30"
-                     onclick="filterBarangLainnya('RING VELG', this)">
-                    <div class="flex items-center gap-3">
-                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-yellow-50 text-yellow-600">
-                            <i class="fas fa-ring text-lg"></i>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">RING VELG</p>
-                            <div class="flex items-baseline gap-1">
-                                <span class="text-xl font-black text-gray-800">{{ $ringVelgQty }}</span>
-                                <span class="text-[10px] font-medium text-gray-400 uppercase">PCS</span>
+                @foreach($ringVelgStats as $ukuran => $qty)
+                    @if($qty > 0)
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-yellow-500 hover:bg-yellow-50/30"
+                         onclick="filterBarangLainnya('RING VELG{{ $ukuran ? ' ' . $ukuran : '' }}', this)">
+                        <div class="flex items-center gap-3">
+                            <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-yellow-50 text-yellow-600">
+                                <i class="fas fa-ring text-lg"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">RING VELG {{ $ukuran ? 'LOBANG '.$ukuran : '' }}</p>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-xl font-black text-gray-800">{{ $qty }}</span>
+                                    <span class="text-[10px] font-medium text-gray-400 uppercase">PCS</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                @endif
+                    @endif
+                @endforeach
 
                 @foreach($velgStats as $ukuran => $qty)
                     @if($qty > 0)
