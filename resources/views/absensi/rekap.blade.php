@@ -281,10 +281,14 @@
                                         {{ $stats['izin'] }} Hari
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $stats['alpha'] > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-500' }}">
-                                        {{ $stats['alpha'] }} Hari
-                                    </span>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
+                                    @if($stats['alpha'] > 0)
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_alpha'] ?? []) }}" class="btn-detail-alpha inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 bg-red-100 text-red-800 hover:bg-red-200" title="Alpha">
+                                            {{ $stats['alpha'] }}x
+                                        </button>
+                                    @else
+                                        <span class="text-xs font-medium text-gray-500">-</span>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -791,6 +795,16 @@
                 let dates = [];
                 try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
                 showDetailLupaAbsen(nama, dates, 'Tidak Absen Istirahat');
+            });
+        });
+
+        // Event listener for Alpha
+        document.querySelectorAll('.btn-detail-alpha').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                let dates = [];
+                try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
+                showDetailLupaAbsen(nama, dates, 'Alpha');
             });
         });
 

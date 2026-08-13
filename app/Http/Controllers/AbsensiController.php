@@ -688,6 +688,7 @@ class AbsensiController extends Controller
             $sakit = 0;
             $izin = 0;
             $alpha = 0;
+            $detail_alpha = [];
             $terlambatKali = 0;
             $terlambatMenit = 0;
             $pulangCepatKali = 0;
@@ -799,6 +800,7 @@ class AbsensiController extends Controller
                         }
                     } else {
                         $alpha++;
+                        $detail_alpha[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     }
                 }
                 
@@ -811,6 +813,7 @@ class AbsensiController extends Controller
                 'sakit' => $sakit,
                 'izin' => $izin,
                 'alpha' => $alpha,
+                'detail_alpha' => $detail_alpha,
                 'terlambat_kali' => $terlambatKali,
                 'terlambat_menit' => $terlambatMenit,
                 'pulang_cepat_kali' => $pulangCepatKali,
