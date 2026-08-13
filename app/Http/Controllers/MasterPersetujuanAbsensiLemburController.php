@@ -73,7 +73,7 @@ class MasterPersetujuanAbsensiLemburController extends Controller
             'karyawan_id' => 'required|exists:karyawans,id',
             'tanggal' => 'required|date',
             'jam_mulai' => 'required',
-            'jam_selesai' => 'required',
+            'jam_selesai' => 'nullable',
             'keterangan' => 'required|string',
         ]);
 
@@ -135,7 +135,7 @@ class MasterPersetujuanAbsensiLemburController extends Controller
             'karyawan_id' => 'required|exists:karyawans,id',
             'tanggal' => 'required|date',
             'jam_mulai' => 'required',
-            'jam_selesai' => 'required',
+            'jam_selesai' => 'nullable',
             'keterangan' => 'required|string',
         ]);
 
@@ -191,21 +191,12 @@ class MasterPersetujuanAbsensiLemburController extends Controller
             
             $karyawan = Karyawan::find($persetujuanAbsensiLembur->karyawan_id);
             if ($karyawan) {
-                // Insert Lembur Masuk
+                // Insert Lembur Masuk (Hanya jam mulai yang dimasukkan sesuai request)
                 Absensi::create([
                     'karyawan_id' => $karyawan->id,
                     'nik' => $karyawan->nik ?? '-',
                     'waktu' => $waktuMasuk,
                     'tipe' => 'Lembur Masuk',
-                    'keterangan' => "Disetujui dari form lembur: {$persetujuanAbsensiLembur->keterangan}",
-                ]);
-
-                // Insert Lembur Pulang
-                Absensi::create([
-                    'karyawan_id' => $karyawan->id,
-                    'nik' => $karyawan->nik ?? '-',
-                    'waktu' => $waktuPulang,
-                    'tipe' => 'Lembur Pulang',
                     'keterangan' => "Disetujui dari form lembur: {$persetujuanAbsensiLembur->keterangan}",
                 ]);
             }

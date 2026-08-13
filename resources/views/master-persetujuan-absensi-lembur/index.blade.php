@@ -107,7 +107,6 @@
                         <th class="px-4">NIK</th>
                         <th class="px-4">Tanggal</th>
                         <th class="px-4">Jam Mulai</th>
-                        <th class="px-4">Jam Selesai</th>
                         <th class="px-4">Keterangan</th>
                         <th class="px-4">Foto</th>
                         <th class="px-4">Status</th>
@@ -176,7 +175,6 @@
                     {data: 'karyawan_nik', name: 'karyawan.nik', className: 'text-gray-500'},
                     {data: 'tanggal_format', name: 'tanggal'},
                     {data: 'jam_mulai_format', name: 'jam_mulai', className: 'text-sm'},
-                    {data: 'jam_selesai_format', name: 'jam_selesai', className: 'text-sm'},
                     {data: 'keterangan', name: 'keterangan', className: 'text-sm', render: function(data) {
                         return data ? '<span class="truncate block max-w-[200px]" title="'+data+'">'+data+'</span>' : '-';
                     }},
