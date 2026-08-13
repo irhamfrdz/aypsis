@@ -303,12 +303,22 @@ class AbsensiController extends Controller
             $startDateObj = Carbon::parse($tanggal)->setTime(6, 0, 0);
             $endDateObj = Carbon::parse($tanggal)->addDays(1)->setTime(5, 59, 59);
 
+            $tipeLower = strtolower($tipe);
+            
             $existingLog = Absensi::where('nik', $nik)
-                ->where('tipe', $tipe)
+                ->where(function($q) use ($tipeLower) {
+                    if ($tipeLower === 'masuk') $q->whereRaw('LOWER(tipe) = ?', ['masuk']);
+                    elseif (in_array($tipeLower, ['pulang', 'keluar'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['pulang', 'keluar']);
+                    elseif (in_array($tipeLower, ['istirahat_keluar', 'istirahat keluar'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['istirahat_keluar', 'istirahat keluar']);
+                    elseif (in_array($tipeLower, ['istirahat_masuk', 'istirahat masuk'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['istirahat_masuk', 'istirahat masuk']);
+                    elseif (in_array($tipeLower, ['lembur_masuk', 'lembur masuk', 'mulai lembur'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_masuk', 'lembur masuk', 'mulai lembur']);
+                    elseif (in_array($tipeLower, ['lembur_pulang', 'lembur pulang', 'selesai lembur'])) $q->whereIn(\DB::raw('LOWER(tipe)'), ['lembur_pulang', 'lembur pulang', 'selesai lembur']);
+                    else $q->whereRaw('LOWER(tipe) = ?', [$tipeLower]);
+                })
                 ->whereBetween('waktu', [$startDateObj, $endDateObj])
                 ->first();
 
-            // Update data jika sudah ada, atau abaikan jika kosong
+            // Update data jika sudah ada, atau hapus jika kosong
             if ($existingLog) {
                 if (!empty($time)) {
                     $waktu = Carbon::parse($tanggal . ' ' . $time);
@@ -320,10 +330,14 @@ class AbsensiController extends Controller
                         'status' => 'Manual',
                         'keterangan' => 'Diperbarui dari edit manual',
                     ]);
+                } else {
+                    // Jika di-kosongkan dari form, hapus data jam tersebut
+                    $existingLog->delete();
                 }
                 continue;
             }
 
+            // Jika belum ada dan form diisi
             if (!empty($time)) {
                 $waktu = Carbon::parse($tanggal . ' ' . $time);
                 if (in_array($tipe, ['Pulang', 'Lembur_Pulang']) && $time < '06:00') {
@@ -398,25 +412,20 @@ class AbsensiController extends Controller
 
         foreach ($absensis as $absensi) {
             $time = Carbon::parse($absensi->waktu)->format('H:i');
-            switch ($absensi->tipe) {
-                case 'Masuk':
-                    $data['waktu_masuk'] = $time;
-                    break;
-                case 'Pulang':
-                    $data['waktu_pulang'] = $time;
-                    break;
-                case 'Istirahat_Keluar':
-                    $data['waktu_istirahat_keluar'] = $time;
-                    break;
-                case 'Istirahat_Masuk':
-                    $data['waktu_istirahat_masuk'] = $time;
-                    break;
-                case 'Lembur_Masuk':
-                    $data['waktu_lembur_masuk'] = $time;
-                    break;
-                case 'Lembur_Pulang':
-                    $data['waktu_lembur_pulang'] = $time;
-                    break;
+            $tipeLower = strtolower($absensi->tipe);
+            
+            if ($tipeLower === 'masuk') {
+                $data['waktu_masuk'] = $time;
+            } elseif (in_array($tipeLower, ['pulang', 'keluar'])) {
+                $data['waktu_pulang'] = $time;
+            } elseif (in_array($tipeLower, ['istirahat_keluar', 'istirahat keluar'])) {
+                $data['waktu_istirahat_keluar'] = $time;
+            } elseif (in_array($tipeLower, ['istirahat_masuk', 'istirahat masuk'])) {
+                $data['waktu_istirahat_masuk'] = $time;
+            } elseif (in_array($tipeLower, ['lembur_masuk', 'lembur masuk', 'mulai lembur'])) {
+                $data['waktu_lembur_masuk'] = $time;
+            } elseif (in_array($tipeLower, ['lembur_pulang', 'lembur pulang', 'selesai lembur'])) {
+                $data['waktu_lembur_pulang'] = $time;
             }
         }
 
