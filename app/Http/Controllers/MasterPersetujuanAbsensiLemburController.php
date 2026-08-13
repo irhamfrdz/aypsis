@@ -181,16 +181,32 @@ class MasterPersetujuanAbsensiLemburController extends Controller
             ]);
 
             // Sync ke absensi
-            $waktuAbsen = Carbon::parse($persetujuanAbsensiLembur->tanggal->format('Y-m-d') . ' ' . $persetujuanAbsensiLembur->jam_selesai);
+            $waktuMasuk = Carbon::parse($persetujuanAbsensiLembur->tanggal->format('Y-m-d') . ' ' . $persetujuanAbsensiLembur->jam_mulai);
+            $waktuPulang = Carbon::parse($persetujuanAbsensiLembur->tanggal->format('Y-m-d') . ' ' . $persetujuanAbsensiLembur->jam_selesai);
+            
+            // Jika jam selesai lebih kecil dari jam mulai (misal lewat tengah malam), tambah 1 hari
+            if ($waktuPulang->lt($waktuMasuk)) {
+                $waktuPulang->addDay();
+            }
             
             $karyawan = Karyawan::find($persetujuanAbsensiLembur->karyawan_id);
             if ($karyawan) {
+                // Insert Lembur Masuk
                 Absensi::create([
                     'karyawan_id' => $karyawan->id,
                     'nik' => $karyawan->nik ?? '-',
-                    'waktu' => $waktuAbsen,
-                    'tipe' => 'Lembur',
-                    'keterangan' => "Lembur: {$persetujuanAbsensiLembur->jam_mulai} - {$persetujuanAbsensiLembur->jam_selesai} ({$persetujuanAbsensiLembur->keterangan})",
+                    'waktu' => $waktuMasuk,
+                    'tipe' => 'Lembur Masuk',
+                    'keterangan' => "Disetujui dari form lembur: {$persetujuanAbsensiLembur->keterangan}",
+                ]);
+
+                // Insert Lembur Pulang
+                Absensi::create([
+                    'karyawan_id' => $karyawan->id,
+                    'nik' => $karyawan->nik ?? '-',
+                    'waktu' => $waktuPulang,
+                    'tipe' => 'Lembur Pulang',
+                    'keterangan' => "Disetujui dari form lembur: {$persetujuanAbsensiLembur->keterangan}",
                 ]);
             }
 
