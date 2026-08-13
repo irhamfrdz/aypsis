@@ -85,7 +85,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                     <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Semua Status</option>
+                        <option value="all" {{ request('status') == 'all' ? 'selected' : (request('status') === '' ? 'selected' : '') }}>Semua Status</option>
                         <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                         <option value="sudah_muat" {{ request('status') == 'sudah_muat' ? 'selected' : '' }}>Sudah Muat</option>
                         <option value="sudah_muat_no_voyage" {{ request('status') == 'sudah_muat_no_voyage' ? 'selected' : '' }}>Sudah Muat (Tanpa Voyage)</option>

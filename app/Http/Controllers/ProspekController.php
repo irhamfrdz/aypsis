@@ -53,7 +53,7 @@ class ProspekController extends Controller
             $query = Prospek::with(['createdBy', 'updatedBy', 'bls', 'suratJalan'])->orderBy('created_at', 'desc');
 
             // Filter berdasarkan status
-            if ($request->filled('status')) {
+            if ($request->filled('status') && $request->status !== 'all') {
                 if ($request->status == 'sudah_muat_no_voyage') {
                     $query->where('status', 'sudah_muat')
                         ->where(function ($q) {

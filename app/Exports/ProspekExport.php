@@ -30,7 +30,7 @@ class ProspekExport implements FromCollection, ShouldAutoSize, WithEvents, WithH
         } else {
             $query = Prospek::with(['suratJalan'])->orderBy('created_at', 'desc');
 
-            if (! empty($this->filters['status'])) {
+            if (! empty($this->filters['status']) && $this->filters['status'] !== 'all') {
                 if ($this->filters['status'] == 'sudah_muat_no_voyage') {
                     $query->where('status', 'sudah_muat')
                         ->where(function ($q) {
