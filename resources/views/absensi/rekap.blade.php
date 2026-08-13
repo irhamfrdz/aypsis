@@ -90,13 +90,13 @@
 
                     <!-- Tingkat Kehadiran -->
                     <div class="md:col-span-1">
-                        <label for="kehadiran" class="block text-xs font-semibold text-gray-700 mb-1">Tingkat Kehadiran</label>
+                        <label for="kehadiran" class="block text-xs font-semibold text-gray-700 mb-1">Filter Lupa Absen</label>
                         <select name="kehadiran" id="kehadiran"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                            <option value="">Semua Tingkat</option>
-                            <option value="0_hari" {{ request('kehadiran') == '0_hari' ? 'selected' : '' }}>0 Hari (Tidak Absen)</option>
-                            <option value="ada_absen" {{ request('kehadiran') == 'ada_absen' ? 'selected' : '' }}>Ada Absen (> 0 Hari)</option>
-                            <option value="tidak_lengkap" {{ request('kehadiran') == 'tidak_lengkap' ? 'selected' : '' }}>Hanya Masuk/Pulang Saja</option>
+                            <option value="">Semua Karyawan</option>
+                            <option value="tidak_absen_masuk" {{ request('kehadiran') == 'tidak_absen_masuk' ? 'selected' : '' }}>Tidak Absen Masuk</option>
+                            <option value="tidak_absen_pulang" {{ request('kehadiran') == 'tidak_absen_pulang' ? 'selected' : '' }}>Tidak Absen Pulang</option>
+                            <option value="tidak_absen_istirahat" {{ request('kehadiran') == 'tidak_absen_istirahat' ? 'selected' : '' }}>Tidak Absen Istirahat</option>
                         </select>
                     </div>
 

@@ -498,24 +498,35 @@ class AbsensiController extends Controller
             $startObj = $startDate->copy()->setTime(6, 0, 0);
             $endObj = $endDate->copy()->addDays(1)->setTime(5, 59, 59);
 
-            if ($kehadiran === '0_hari') {
-                $karyawansQuery->whereDoesntHave('absensi', function ($q) use ($startObj, $endObj) {
-                    $q->whereBetween('waktu', [$startObj, $endObj]);
-                });
-            } elseif ($kehadiran === 'ada_absen') {
-                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj) {
-                    $q->whereBetween('waktu', [$startObj, $endObj]);
-                });
-            } elseif ($kehadiran === 'tidak_lengkap') {
+            if ($kehadiran === 'tidak_absen_masuk') {
                 $driver = \DB::connection()->getDriverName();
                 $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : "DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))";
 
                 $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
                     $q->select(\DB::raw($dateExpr))
                       ->whereBetween('waktu', [$startObj, $endObj])
-                      ->whereIn('tipe', ['Masuk', 'Pulang'])
                       ->groupBy(\DB::raw($dateExpr))
-                      ->havingRaw('COUNT(DISTINCT tipe) = 1');
+                      ->havingRaw('SUM(CASE WHEN LOWER(tipe) IN ("masuk", "check in") THEN 1 ELSE 0 END) = 0');
+                });
+            } elseif ($kehadiran === 'tidak_absen_pulang') {
+                $driver = \DB::connection()->getDriverName();
+                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : "DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))";
+
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
+                    $q->select(\DB::raw($dateExpr))
+                      ->whereBetween('waktu', [$startObj, $endObj])
+                      ->groupBy(\DB::raw($dateExpr))
+                      ->havingRaw('SUM(CASE WHEN LOWER(tipe) IN ("pulang", "keluar") THEN 1 ELSE 0 END) = 0');
+                });
+            } elseif ($kehadiran === 'tidak_absen_istirahat') {
+                $driver = \DB::connection()->getDriverName();
+                $dateExpr = $driver === 'sqlite' ? "date(datetime(waktu, '-6 hours'))" : "DATE(DATE_SUB(waktu, INTERVAL 6 HOUR))";
+
+                $karyawansQuery->whereHas('absensi', function ($q) use ($startObj, $endObj, $dateExpr) {
+                    $q->select(\DB::raw($dateExpr))
+                      ->whereBetween('waktu', [$startObj, $endObj])
+                      ->groupBy(\DB::raw($dateExpr))
+                      ->havingRaw('SUM(CASE WHEN LOWER(tipe) LIKE "%istirahat%" THEN 1 ELSE 0 END) = 0');
                 });
             }
         }
