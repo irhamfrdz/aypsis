@@ -191,7 +191,22 @@
                                     {{ $karyawan->nik }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap font-medium">
-                                    {{ $karyawan->nama_lengkap }}
+                                    <div class="flex items-center">
+                                        <span>{{ $karyawan->nama_lengkap }}</span>
+                                        @if(request('kehadiran') == 'tidak_absen_masuk')
+                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-800" title="Karyawan ini memiliki hari dimana tidak absen masuk">
+                                                Tidak Absen Masuk
+                                            </span>
+                                        @elseif(request('kehadiran') == 'tidak_absen_pulang')
+                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-800" title="Karyawan ini memiliki hari dimana tidak absen pulang">
+                                                Tidak Absen Pulang
+                                            </span>
+                                        @elseif(request('kehadiran') == 'tidak_absen_istirahat')
+                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800" title="Karyawan ini memiliki hari dimana tidak absen istirahat">
+                                                Tidak Absen Istirahat
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-500">
                                     {{ $karyawan->penempatan ?: '-' }}
