@@ -253,6 +253,18 @@
         .then(response => response.json())
         .then(data => {
             if (data.success && data.bls && Object.keys(data.bls).length > 0) {
+                // Group by kontainer to remove duplicates
+                const groupedBls = {};
+                Object.keys(data.bls).forEach(id => {
+                    const blData = data.bls[id];
+                    if (!groupedBls[blData.kontainer]) {
+                        groupedBls[blData.kontainer] = {
+                            id: id,
+                            ...blData
+                        };
+                    }
+                });
+
                 // Create search input and options container
                 let html = `
                     <div class="sticky top-0 bg-white border-b border-gray-200 p-2 z-10">
@@ -267,15 +279,13 @@
                     <div class="trucking-bl-options-list">
                 `;
                 
-                Object.keys(data.bls).forEach(id => {
-                    const blData = data.bls[id];
+                Object.keys(groupedBls).forEach(kontainer => {
+                    const blData = groupedBls[kontainer];
                     html += `
                         <div class="trucking-bl-option px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
-                             data-id="${id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}" data-size="${blData.size}">
+                             data-id="${blData.id}" data-kontainer="${blData.kontainer}" data-seal="${blData.seal}" data-size="${blData.size}">
                             <div class="font-medium text-gray-900">${blData.kontainer} <span class="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 rounded ml-1">${blData.size}'</span></div>
                             <div class="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-3">
-                                <span><i class="fas fa-box text-gray-400 mr-1"></i> ${blData.nama_barang || 'Tidak ada kargo'}</span>
-                                <span><i class="fas fa-user text-gray-400 mr-1"></i> ${blData.penerima || 'Tidak ada penerima'}</span>
                                 <span><i class="fas fa-lock text-gray-400 mr-1"></i> Seal: ${blData.seal}</span>
                             </div>
                         </div>
