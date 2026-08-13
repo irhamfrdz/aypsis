@@ -45,6 +45,11 @@ class ShipperConsigneeController extends Controller
             ->with('success', 'Data Shipper / Consignee berhasil ditambahkan.');
     }
 
+    public function show(ShipperConsignee $shipper_consignee)
+    {
+        return view('master.shipper-consignee.show', compact('shipper_consignee'));
+    }
+
     public function edit(ShipperConsignee $shipper_consignee)
     {
         return view('master.shipper-consignee.edit', compact('shipper_consignee'));

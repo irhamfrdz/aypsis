@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('nama_barang')->nullable();
             $table->decimal('tonnage', 12, 3)->nullable();
             $table->integer('kuantitas')->nullable();
+            $table->unsignedBigInteger('shipper_id')->nullable();
             $table->timestamps();
         });
     }

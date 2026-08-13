@@ -12,6 +12,7 @@ class Manifest extends Model
         'nomor_manifest',
         'nomor_tanda_terima',
         'prospek_id',
+        'shipper_id',
         'nomor_kontainer',
         'no_seal',
         'tipe_kontainer',

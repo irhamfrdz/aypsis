@@ -17,6 +17,7 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
     protected $manifests;
 
     protected $penerimaLookup = [];
+    protected $shipperConsigneeLookup = [];
 
     protected $termLookup = [];
 
@@ -65,6 +66,12 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
         \App\Models\Term::all()->each(function ($t) {
             $this->termLookup[$t->id] = $t->nama_status;
         });
+
+        // Fetch ShipperConsignee if manifest has shipper_id
+        $shipperIds = $this->manifests->pluck('shipper_id')->filter()->unique();
+        if ($shipperIds->isNotEmpty()) {
+            $this->shipperConsigneeLookup = \App\Models\ShipperConsignee::whereIn('id', $shipperIds)->get()->keyBy('id');
+        }
     }
 
     protected function getSourceDocument($m)
@@ -219,10 +226,34 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
             $sLookup = $this->penerimaLookup[$sName] ?? null;
 
             // Address & CP fallback
+            $shipperName = $m->pengirim;
             $shipperAddress = $m->alamat_pengirim ?: ($sLookup['address'] ?? '-');
+            $shipperNpwp = $sLookup['npwp'] ?? '-';
+
+            $consigneeName = $m->penerima;
             $consigneeAddress = $m->alamat_penerima ?: ($pLookup['address'] ?? '-');
             $contactPerson = $m->contact_person ?: ($pLookup['cp'] ?? '-');
-            $npwp = $pLookup['npwp'] ?? '-';
+            $consigneeNpwp = $pLookup['npwp'] ?? '-';
+
+            $notifyName = $m->notify_party ?: $consigneeName;
+            $nLookup = $this->penerimaLookup[strtoupper(trim($notifyName))] ?? null;
+            $notifyAddress = $m->alamat_notify_party ?: ($nLookup['address'] ?? $consigneeAddress);
+            $notifyNpwp = $nLookup['npwp'] ?? $consigneeNpwp;
+
+            if ($m->shipper_id && isset($this->shipperConsigneeLookup[$m->shipper_id])) {
+                $sc = $this->shipperConsigneeLookup[$m->shipper_id];
+                $shipperName = $sc->shipper ?: $shipperName;
+                $shipperAddress = $sc->alamat_shipper ?: $shipperAddress;
+                $shipperNpwp = $sc->npwp_shipper ?: $shipperNpwp;
+                
+                $consigneeName = $sc->consignee ?: $consigneeName;
+                $consigneeAddress = $sc->alamat_consignee ?: $consigneeAddress;
+                $consigneeNpwp = $sc->npwp_consignee ?: $consigneeNpwp;
+                
+                $notifyName = $sc->notify_party ?: $notifyName;
+                $notifyAddress = $sc->alamat_notify_party ?: $notifyAddress;
+                $notifyNpwp = $sc->npwp_notify_party ?: $notifyNpwp;
+            }
 
             $noSjPabrik = $srcModel ? ($srcModel->surat_jalan_pabrik ?? null) : null;
             $ppftz = $srcModel ? $this->getPpftzFromDocs($srcModel->dokumen_ppbj) : '-';
@@ -253,12 +284,16 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
                 'no_kontainer' => $m->nomor_kontainer,
                 'no_seal' => $m->no_seal,
                 'size' => $m->size_kontainer,
-                'pengirim' => $m->pengirim,
+                'pengirim' => $shipperName,
                 's_address' => $shipperAddress,
-                'penerima' => $m->penerima,
+                's_npwp' => $shipperNpwp,
+                'penerima' => $consigneeName,
                 'p_address' => $consigneeAddress,
                 'p_cp' => $contactPerson,
-                'p_npwp' => $npwp,
+                'p_npwp' => $consigneeNpwp,
+                'notify_name' => $notifyName,
+                'notify_address' => $notifyAddress,
+                'notify_npwp' => $notifyNpwp,
                 'ppftz' => $ppftz,
                 'term' => $m->term,
                 'tujuan' => $m->pelabuhan_tujuan ?: $m->ke,
@@ -527,18 +562,15 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
 
             $shipperName = $row['pengirim'];
             $shipperAddress = $row['s_address'];
-            $sLookup = $this->penerimaLookup[strtoupper(trim($row['pengirim']))] ?? null;
-            $shipperNpwp = $sLookup['npwp'] ?? '-';
+            $shipperNpwp = $row['s_npwp'];
 
-            $consigneeNpwp = $row['p_npwp'];
             $consigneeName = $row['penerima'];
             $consigneeAddress = $row['p_address'];
+            $consigneeNpwp = $row['p_npwp'];
 
-            $notifyName = $row['model']->notify_party ?: $row['penerima'];
-            $nName = strtoupper(trim($notifyName));
-            $nLookup = $this->penerimaLookup[$nName] ?? null;
-            $notifyAddress = $row['model']->alamat_notify_party ?: ($nLookup['address'] ?? $row['p_address']);
-            $notifyNpwp = $nLookup['npwp'] ?? $consigneeNpwp;
+            $notifyName = $row['notify_name'];
+            $notifyAddress = $row['notify_address'];
+            $notifyNpwp = $row['notify_npwp'];
 
             $deliveryAddress = trim($consigneeName).'    '.trim($consigneeAddress);
             if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {
@@ -549,19 +581,15 @@ class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMa
                 $blNo = $row['bl_no'];
                 $shipperName = $row['pengirim'];
                 $shipperAddress = $row['s_address'];
+                $shipperNpwp = $row['s_npwp'];
 
-                $sLookup = $this->penerimaLookup[strtoupper(trim($row['pengirim']))] ?? null;
-                $shipperNpwp = $sLookup['npwp'] ?? '-';
-
-                $consigneeNpwp = $row['p_npwp'];
                 $consigneeName = $row['penerima'];
                 $consigneeAddress = $row['p_address'];
+                $consigneeNpwp = $row['p_npwp'];
 
-                $notifyName = $row['model']->notify_party ?: $row['penerima'];
-                $nName = strtoupper(trim($notifyName));
-                $nLookup = $this->penerimaLookup[$nName] ?? null;
-                $notifyAddress = $row['model']->alamat_notify_party ?: ($nLookup['address'] ?? $row['p_address']);
-                $notifyNpwp = $nLookup['npwp'] ?? $consigneeNpwp;
+                $notifyName = $row['notify_name'];
+                $notifyAddress = $row['notify_address'];
+                $notifyNpwp = $row['notify_npwp'];
 
                 $deliveryAddress = trim($consigneeName).'    '.trim($consigneeAddress);
                 if (! empty($row['p_cp']) && $row['p_cp'] !== '-') {

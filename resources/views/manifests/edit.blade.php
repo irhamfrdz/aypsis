@@ -235,6 +235,7 @@
                         </div>
                         <div class="relative">
                             <div class="dropdown-container-shipper">
+                                <input type="hidden" name="shipper_id" id="shipper_id" value="{{ old('shipper_id', $manifest->shipper_id ?? '') }}">
                                 <input type="text" id="search_shipper" name="pengirim" placeholder="Search shipper..." autocomplete="off"
                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-purple-500 bg-white text-sm"
                                        value="{{ old('pengirim', $manifest->pengirim) }}">
@@ -389,13 +390,13 @@ document.addEventListener('DOMContentLoaded', function() {
             options.forEach(option => {
                 const div = document.createElement('div');
                 div.className = 'px-3 py-2 hover:bg-purple-50 cursor-pointer border-b border-gray-100 text-sm';
-                div.textContent = option.text;
+                div.textContent = option.display_text || option.text;
                 
                 div.addEventListener('click', () => {
                     // Update select element (add option if not exists)
                     let opt = Array.from(selectElement.options).find(o => o.value == option.id);
                     if (!opt) {
-                        opt = new Option(option.text, option.id);
+                        opt = new Option(option.display_text || option.text, option.id);
                         if (option.alamat) opt.setAttribute('data-alamat', option.alamat);
                         if (option.edit_url) opt.setAttribute('data-edit-url', option.edit_url);
                         selectElement.add(opt);
@@ -465,6 +466,39 @@ document.addEventListener('DOMContentLoaded', function() {
             if (alamatTextarea && option.alamat) {
                 alamatTextarea.value = option.alamat;
             }
+            const shipperIdInput = document.getElementById('shipper_id');
+            if (shipperIdInput && option.real_id) {
+                shipperIdInput.value = option.real_id;
+            }
+            
+            // Auto-populate consignee
+            if (option.consignee) {
+                const searchConsignee = document.getElementById('search_consignee');
+                const selectConsignee = document.getElementById('penerima_id');
+                if (searchConsignee) searchConsignee.value = option.consignee;
+                if (selectConsignee) {
+                    let opt = Array.from(selectConsignee.options).find(o => o.value == option.consignee);
+                    if (!opt) {
+                        opt = new Option(option.consignee, option.consignee);
+                        selectConsignee.add(opt);
+                    }
+                    selectConsignee.value = option.consignee;
+                    updateEditConsigneeLink();
+                }
+            }
+            
+            // Auto-populate notify party
+            if (option.notify_party) {
+                const notifyPartyInput = document.getElementById('notify_party');
+                if (notifyPartyInput) notifyPartyInput.value = option.notify_party;
+            }
+            
+            // Auto-populate alamat notify party
+            if (option.alamat_notify_party) {
+                const alamatNotifyPartyInput = document.getElementById('alamat_notify_party');
+                if (alamatNotifyPartyInput) alamatNotifyPartyInput.value = option.alamat_notify_party;
+            }
+
             updateEditLink();
         }
     });

@@ -233,6 +233,7 @@ class ManifestController extends Controller
             'nama_barang' => 'nullable|string',
             'asal_kontainer' => 'nullable|string|max:255',
             'ke' => 'nullable|string|max:255',
+            'shipper_id' => 'nullable|integer',
             'pengirim' => 'nullable|string|max:255',
             'alamat_pengirim' => 'nullable|string',
             'penerima' => 'nullable|string|max:255',
@@ -316,6 +317,7 @@ class ManifestController extends Controller
             'nama_barang' => 'nullable|string',
             'asal_kontainer' => 'nullable|string|max:255',
             'ke' => 'nullable|string|max:255',
+            'shipper_id' => 'nullable|integer',
             'pengirim' => 'nullable|string|max:255',
             'alamat_pengirim' => 'nullable|string',
             'penerima' => 'nullable|string|max:255',
@@ -1190,22 +1192,31 @@ class ManifestController extends Controller
     {
         $q = $request->get('q');
 
-        $shippers = \App\Models\ShipperConsignee::select('id', 'shipper as name', 'alamat_shipper as alamat')
+        $shippers = \App\Models\ShipperConsignee::select('id', 'shipper as name', 'alamat_shipper as alamat', 'consignee', 'notify_party', 'alamat_notify_party')
             ->whereNotNull('shipper')
             ->where('shipper', '!=', '')
             ->where('shipper', 'LIKE', "%$q%")
-            ->limit(50)
+            ->limit(100)
             ->get()->map(function ($item) {
+                $displayText = $item->name;
+                if ($item->consignee) {
+                    $displayText .= ' - ' . $item->consignee;
+                }
                 return [
                     'id' => $item->name,
+                    'real_id' => $item->id,
                     'text' => $item->name,
+                    'display_text' => $displayText,
                     'alamat' => $item->alamat,
+                    'consignee' => $item->consignee,
+                    'notify_party' => $item->notify_party,
+                    'alamat_notify_party' => $item->alamat_notify_party,
                     'edit_url' => route('master.shipper-consignee.edit', $item->id),
                 ];
             });
 
         $results = $shippers
-            ->unique('text')
+            ->unique('display_text')
             ->values()
             ->take(50);
 
@@ -1219,22 +1230,30 @@ class ManifestController extends Controller
     {
         $q = $request->get('q');
 
-        $consignees = \App\Models\ShipperConsignee::select('id', 'consignee as name', 'alamat_consignee as alamat')
+        $consignees = \App\Models\ShipperConsignee::select('id', 'consignee as name', 'alamat_consignee as alamat', 'notify_party', 'alamat_notify_party')
             ->whereNotNull('consignee')
             ->where('consignee', '!=', '')
             ->where('consignee', 'LIKE', "%$q%")
-            ->limit(50)
+            ->limit(100)
             ->get()->map(function ($item) {
+                $displayText = $item->name;
+                if ($item->notify_party) {
+                    $displayText .= ' - ' . $item->notify_party;
+                }
                 return [
                     'id' => $item->name,
+                    'real_id' => $item->id,
                     'text' => $item->name,
+                    'display_text' => $displayText,
                     'alamat' => $item->alamat,
+                    'notify_party' => $item->notify_party,
+                    'alamat_notify_party' => $item->alamat_notify_party,
                     'edit_url' => route('master.shipper-consignee.edit', $item->id),
                 ];
             });
 
         $results = $consignees
-            ->unique('text')
+            ->unique('display_text')
             ->values()
             ->take(50);
 
