@@ -181,7 +181,7 @@
                             <th class="px-6 py-3 text-left">Perangkat (IN / OUT)</th>
                             <th class="px-6 py-3 text-left">Detail Lokasi</th>
                             <th class="px-6 py-3 text-center">Foto</th>
-                            <th class="px-6 py-3 text-left">Keterangan</th>
+
                             <th class="px-6 py-3 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -313,12 +313,7 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-gray-500 max-w-xs text-[11px]">
-                                    <div class="space-y-1">
-                                        <div class="truncate" title="{{ $absensi->keterangan_masuk }}"><span class="text-[9px] font-extrabold text-green-600 mr-1">IN:</span>{{ $absensi->keterangan_masuk ?: '-' }}</div>
-                                        <div class="truncate" title="{{ $absensi->keterangan_pulang }}"><span class="text-[9px] font-extrabold text-red-600 mr-1">OUT:</span>{{ $absensi->keterangan_pulang ?: '-' }}</div>
-                                    </div>
-                                </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                     <div class="flex justify-center space-x-2">
                                         @can('absensi-edit')
