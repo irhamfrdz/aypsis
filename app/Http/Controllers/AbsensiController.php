@@ -659,6 +659,8 @@ class AbsensiController extends Controller
             $hadir = 0;
             $detail_hadir = [];
             $detail_lembur = [];
+            $detail_terlambat = [];
+            $detail_pulang_cepat = [];
             $sakit = 0;
             $izin = 0;
             $alpha = 0;
@@ -696,6 +698,7 @@ class AbsensiController extends Controller
                             if (!$hasLatePermission && !$isExempt) {
                                 $terlambatKali++;
                                 $terlambatMenit += $jamMasukNormal->diffInMinutes($waktuMasuk);
+                                $detail_terlambat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $jamMasukNormal->diffInMinutes($waktuMasuk) . ' mnt)';
                             }
                         }
                     }
@@ -717,6 +720,7 @@ class AbsensiController extends Controller
                             if (!$hasEarlyPermission) {
                                 $pulangCepatKali++;
                                 $pulangCepatMenit += $waktuPulang->diffInMinutes($jamPulangNormal);
+                                $detail_pulang_cepat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $waktuPulang->diffInMinutes($jamPulangNormal) . ' mnt)';
                             }
                         }
                     }
@@ -771,6 +775,8 @@ class AbsensiController extends Controller
                 'lembur_kali' => $lemburKali,
                 'detail_hadir' => $detail_hadir,
                 'detail_lembur' => $detail_lembur,
+                'detail_terlambat' => $detail_terlambat,
+                'detail_pulang_cepat' => $detail_pulang_cepat,
             ];
         }
 

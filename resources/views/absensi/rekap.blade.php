@@ -201,18 +201,22 @@
                                         {{ $stats['total_masuk'] }} Hari
                                     </button>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium {{ $stats['terlambat_kali'] > 0 ? 'text-red-600' : 'text-gray-500' }}">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
                                     @if($stats['terlambat_kali'] > 0)
-                                        {{ $stats['terlambat_kali'] }}x ({{ $stats['terlambat_menit'] }}m)
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_terlambat'] ?? []) }}" class="btn-detail-terlambat inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 bg-red-100 text-red-800 hover:bg-red-200">
+                                            {{ $stats['terlambat_kali'] }}x ({{ $stats['terlambat_menit'] }}m)
+                                        </button>
                                     @else
-                                        -
+                                        <span class="text-gray-500">-</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium {{ $stats['pulang_cepat_kali'] > 0 ? 'text-amber-600' : 'text-gray-500' }}">
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
                                     @if($stats['pulang_cepat_kali'] > 0)
-                                        {{ $stats['pulang_cepat_kali'] }}x ({{ $stats['pulang_cepat_menit'] }}m)
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_pulang_cepat'] ?? []) }}" class="btn-detail-pulang-cepat inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 bg-amber-100 text-amber-800 hover:bg-amber-200">
+                                            {{ $stats['pulang_cepat_kali'] }}x ({{ $stats['pulang_cepat_menit'] }}m)
+                                        </button>
                                     @else
-                                        -
+                                        <span class="text-gray-500">-</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
@@ -396,6 +400,70 @@
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button type="button" onclick="closeDetailLembur()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Terlambat -->
+<div id="detailTerlambatModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDetailTerlambat()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="detailTerlambatTitle">
+                            Detail Terlambat
+                        </h3>
+                        <div class="mt-4 max-h-[60vh] overflow-y-auto pr-2" id="detailTerlambatContent">
+                            <!-- Content will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="closeDetailTerlambat()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Pulang Cepat -->
+<div id="detailPulangCepatModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDetailPulangCepat()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-amber-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="detailPulangCepatTitle">
+                            Detail Pulang Cepat
+                        </h3>
+                        <div class="mt-4 max-h-[60vh] overflow-y-auto pr-2" id="detailPulangCepatContent">
+                            <!-- Content will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="closeDetailPulangCepat()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 sm:mt-0 sm:w-auto sm:text-sm">
                     Tutup
                 </button>
             </div>
@@ -593,6 +661,34 @@
             });
         });
 
+        // Event listener for detail terlambat
+        document.querySelectorAll('.btn-detail-terlambat').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                let dates = [];
+                try {
+                    dates = JSON.parse(this.getAttribute('data-dates'));
+                } catch (e) {
+                    console.error("Gagal parse dates", e);
+                }
+                showDetailTerlambat(nama, dates);
+            });
+        });
+
+        // Event listener for detail pulang cepat
+        document.querySelectorAll('.btn-detail-pulang-cepat').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                let dates = [];
+                try {
+                    dates = JSON.parse(this.getAttribute('data-dates'));
+                } catch (e) {
+                    console.error("Gagal parse dates", e);
+                }
+                showDetailPulangCepat(nama, dates);
+            });
+        });
+
     });
     
     function openIzinModal() {
@@ -653,6 +749,58 @@
 
     function closeDetailLembur() {
         document.getElementById('detailLemburModal').classList.add('hidden');
+    }
+
+    function showDetailTerlambat(nama, dates) {
+        let html = '';
+        if (!dates || dates.length === 0) {
+            html = '<p class="text-sm text-gray-500 text-center py-4">Tidak ada data terlambat.</p>';
+        } else {
+            html = '<ul class="space-y-2">';
+            dates.forEach((date, index) => {
+                html += `
+                    <li class="flex items-center text-sm font-medium text-gray-700 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                        <span class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs mr-3 shrink-0">${index + 1}</span>
+                        ${date}
+                    </li>
+                `;
+            });
+            html += '</ul>';
+        }
+        
+        document.getElementById('detailTerlambatTitle').innerText = 'Detail Terlambat: ' + nama;
+        document.getElementById('detailTerlambatContent').innerHTML = html;
+        document.getElementById('detailTerlambatModal').classList.remove('hidden');
+    }
+
+    function closeDetailTerlambat() {
+        document.getElementById('detailTerlambatModal').classList.add('hidden');
+    }
+
+    function showDetailPulangCepat(nama, dates) {
+        let html = '';
+        if (!dates || dates.length === 0) {
+            html = '<p class="text-sm text-gray-500 text-center py-4">Tidak ada data pulang cepat.</p>';
+        } else {
+            html = '<ul class="space-y-2">';
+            dates.forEach((date, index) => {
+                html += `
+                    <li class="flex items-center text-sm font-medium text-gray-700 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                        <span class="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs mr-3 shrink-0">${index + 1}</span>
+                        ${date}
+                    </li>
+                `;
+            });
+            html += '</ul>';
+        }
+        
+        document.getElementById('detailPulangCepatTitle').innerText = 'Detail Pulang Cepat: ' + nama;
+        document.getElementById('detailPulangCepatContent').innerHTML = html;
+        document.getElementById('detailPulangCepatModal').classList.remove('hidden');
+    }
+
+    function closeDetailPulangCepat() {
+        document.getElementById('detailPulangCepatModal').classList.add('hidden');
     }
 </script>
 @endpush
