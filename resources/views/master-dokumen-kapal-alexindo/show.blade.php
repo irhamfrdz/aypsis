@@ -42,6 +42,7 @@
                         <tr>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">No</th>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dokumen</th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nickname</th>
                             <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor</th>
                             <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Terbit</th>
                             <th scope="col" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Berakhir</th>
@@ -59,6 +60,7 @@
                                 <div class="text-xs text-gray-500 mt-0.5">{{ Str::limit($dokumen->keterangan, 30) }}</div>
                                 @endif
                             </td>
+                            <td class="px-3 py-3 whitespace-nowrap text-gray-600">{{ $dokumen->sertifikatKapal->nickname ?? '-' }}</td>
                             <td class="px-3 py-3 whitespace-nowrap text-gray-600">{{ $dokumen->nomor_dokumen ?? '-' }}</td>
                             <td class="px-3 py-3 whitespace-nowrap text-center text-gray-600">
                                 {{ $dokumen->tanggal_terbit ? \Carbon\Carbon::parse($dokumen->tanggal_terbit)->format('d M Y') : '-' }}
@@ -102,7 +104,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-3 py-8 text-center text-gray-500">Tidak ada dokumen</td>
+                            <td colspan="8" class="px-3 py-8 text-center text-gray-500">Tidak ada dokumen</td>
                         </tr>
                         @endforelse
                     </tbody>
