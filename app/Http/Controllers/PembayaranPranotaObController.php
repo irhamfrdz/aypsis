@@ -94,23 +94,30 @@ class PembayaranPranotaObController extends Controller
             session()->forget('errors');
         }
 
-        // Get the selected DP
-        $selectedDp = null;
+        // Get the selected DPs
+        $selectedDps = collect();
         $dpSupirData = [];
         if ($request->filled('dp')) {
-            $selectedDp = \App\Models\PembayaranOb::find($request->dp);
+            $dpIds = is_array($request->dp) ? $request->dp : [$request->dp];
+            $selectedDps = \App\Models\PembayaranOb::whereIn('id', $dpIds)->get();
 
-            // Build dpSupirData array dari jumlah_per_supir
-            if ($selectedDp && $selectedDp->jumlah_per_supir) {
-                $jumlahPerSupir = is_array($selectedDp->jumlah_per_supir) ? $selectedDp->jumlah_per_supir : json_decode($selectedDp->jumlah_per_supir, true);
+            foreach ($selectedDps as $dp) {
+                // Build dpSupirData array dari jumlah_per_supir
+                if ($dp && $dp->jumlah_per_supir) {
+                    $jumlahPerSupir = is_array($dp->jumlah_per_supir) ? $dp->jumlah_per_supir : json_decode($dp->jumlah_per_supir, true);
 
-                if (is_array($jumlahPerSupir)) {
-                    foreach ($jumlahPerSupir as $supirId => $jumlah) {
-                        // Get supir name
-                        $supir = \App\Models\Karyawan::find($supirId);
-                        if ($supir) {
-                            $namaSupir = $supir->nama_panggilan ? $supir->nama_panggilan : $supir->nama_lengkap;
-                            $dpSupirData[strtoupper(trim($namaSupir))] = floatval($jumlah);
+                    if (is_array($jumlahPerSupir)) {
+                        foreach ($jumlahPerSupir as $supirId => $jumlah) {
+                            // Get supir name
+                            $supir = \App\Models\Karyawan::find($supirId);
+                            if ($supir) {
+                                $namaSupir = $supir->nama_panggilan ? $supir->nama_panggilan : $supir->nama_lengkap;
+                                $key = strtoupper(trim($namaSupir));
+                                if (!isset($dpSupirData[$key])) {
+                                    $dpSupirData[$key] = 0;
+                                }
+                                $dpSupirData[$key] += floatval($jumlah);
+                            }
                         }
                     }
                 }
@@ -149,7 +156,7 @@ class PembayaranPranotaObController extends Controller
             ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
-        return view('pembayaran-pranota-ob.create', compact('pranotaList', 'akunBank', 'akunBiaya', 'selectedDp', 'dpSupirData'));
+        return view('pembayaran-pranota-ob.create', compact('pranotaList', 'akunBank', 'akunBiaya', 'selectedDps', 'dpSupirData'));
     }
 
     /**
@@ -182,7 +189,8 @@ class PembayaranPranotaObController extends Controller
                 'keterangan' => 'nullable|string',
                 'kapal' => 'nullable|string',
                 'voyage' => 'nullable|string',
-                'dp_id' => 'nullable|exists:pembayaran_obs,id',
+                'dp_ids' => 'nullable|array',
+                'dp_ids.*' => 'exists:pembayaran_obs,id',
                 'breakdown_supir' => 'nullable|json',
             ]);
 
@@ -207,16 +215,16 @@ class PembayaranPranotaObController extends Controller
             Log::info('Calculated total biaya pranota', ['total' => $totalBiayaPranota]);
 
             // Get DP data
-            $dpId = $request->input('dp_id');
+            $dpIds = $request->input('dp_ids');
             $dpAmount = 0;
-            $selectedDp = null;
+            $selectedDps = collect();
 
-            if ($dpId) {
-                $selectedDp = \App\Models\PembayaranOb::find($dpId);
-                if ($selectedDp) {
-                    $dpAmount = $selectedDp->dp_amount ?? 0;
-                    Log::info('DP found', ['dp_id' => $dpId, 'dp_amount' => $dpAmount]);
+            if (!empty($dpIds)) {
+                $selectedDps = \App\Models\PembayaranOb::whereIn('id', $dpIds)->get();
+                foreach ($selectedDps as $dp) {
+                    $dpAmount += $dp->dp_amount ?? 0;
                 }
+                Log::info('DPs found', ['dp_ids' => $dpIds, 'total_dp_amount' => $dpAmount]);
             }
 
             // Total pembayaran = Total Biaya - DP (SISA yang harus dibayar)
@@ -259,7 +267,8 @@ class PembayaranPranotaObController extends Controller
                 'keterangan' => $request->keterangan,
                 'status' => 'approved',
                 'pranota_ob_ids' => $pranotaIds,
-                'pembayaran_ob_id' => $dpId,
+                'pembayaran_ob_id' => !empty($dpIds) ? $dpIds[0] : null,
+                'pembayaran_ob_ids' => $dpIds,
                 'kapal' => $request->kapal,
                 'voyage' => $request->voyage,
                 'dp_amount' => $dpAmount,

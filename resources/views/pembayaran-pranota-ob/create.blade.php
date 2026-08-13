@@ -115,35 +115,19 @@
                                 <span class="font-semibold">Voyage:</span>
                                 <span class="ml-1 px-2 py-0.5 bg-blue-100 rounded">{{ request('voyage', '-') }}</span>
                             </div>
-                            @php
-                                $selectedDp = request('dp') ? \App\Models\PembayaranOb::find(request('dp')) : null;
-                            @endphp
                             <div>
                                 <span class="font-semibold">DP:</span>
-                                <span class="ml-1 px-2 py-0.5 bg-blue-100 rounded">
-                                    @if($selectedDp)
-                                        {{ $selectedDp->nomor_pembayaran }} - Rp {{ number_format($selectedDp->dp_amount, 0, ',', '.') }}
-                                        @php
-                                            // Get supir data from DP
-                                            $dpSupirIds = $selectedDp->supir_ids ?? [];
-                                            $dpJumlahPerSupir = $selectedDp->jumlah_per_supir ?? [];
-                                            $dpSupirData = [];
-                                            if (!empty($dpSupirIds)) {
-                                                foreach ($dpSupirIds as $supirId) {
-                                                    $supir = \App\Models\Karyawan::find($supirId);
-                                                    if ($supir) {
-                                                        // Use nama_panggilan (nickname) if available, else nama_lengkap
-                                                        // Then uppercase to match enrichedItems normalization
-                                                        $namaKey = $supir->nama_panggilan ?: $supir->nama_lengkap;
-                                                        $dpSupirData[strtoupper(trim($namaKey))] = $dpJumlahPerSupir[$supirId] ?? 0;
-                                                    }
-                                                }
-                                            }
-                                        @endphp
+                                <div class="flex flex-wrap gap-1 ml-1 mt-1">
+                                    @if(isset($selectedDps) && $selectedDps->count() > 0)
+                                        @foreach($selectedDps as $dp)
+                                            <span class="px-2 py-0.5 bg-blue-100 rounded inline-block">
+                                                {{ $dp->nomor_pembayaran }} - Rp {{ number_format($dp->dp_amount, 0, ',', '.') }}
+                                            </span>
+                                        @endforeach
                                     @else
-                                        -
+                                        <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-500 inline-block">-</span>
                                     @endif
-                                </span>
+                                </div>
                             </div>
                         </div>
                         <div class="mt-2">
@@ -218,7 +202,13 @@
             <input type="hidden" name="nomor_pembayaran" id="nomor_pembayaran_hidden" value="{{ old('nomor_pembayaran') }}">
             <input type="hidden" name="kapal" value="{{ request('kapal') }}">
             <input type="hidden" name="voyage" value="{{ request('voyage') }}">
-            <input type="hidden" name="dp_id" value="{{ request('dp') }}">
+            @if(is_array(request('dp')))
+                @foreach(request('dp') as $dpId)
+                    <input type="hidden" name="dp_ids[]" value="{{ $dpId }}">
+                @endforeach
+            @elseif(request('dp'))
+                <input type="hidden" name="dp_ids[]" value="{{ request('dp') }}">
+            @endif
             <input type="hidden" name="breakdown_supir" id="breakdown_supir_hidden" value="">
 
             <!-- Data Pembayaran & Bank -->
@@ -548,7 +538,7 @@
             let totalDp = 0;
             
             // Get DP supir data
-            const dpSupirData = @json($selectedDp && isset($dpSupirData) ? $dpSupirData : []);
+            const dpSupirData = @json(isset($dpSupirData) ? $dpSupirData : []);
             
             pranotaCheckboxes.forEach(checkbox => {
                 if (checkbox.checked) {
@@ -605,7 +595,7 @@
             let totalBiaya = 0;
             
             // Get DP supir data from PHP
-            const dpSupirData = @json($selectedDp && isset($dpSupirData) ? $dpSupirData : []);
+            const dpSupirData = @json(isset($dpSupirData) ? $dpSupirData : []);
             
             // Seed supirData with drivers from DP to ensure they appear even if they have 0 items
             Object.keys(dpSupirData).forEach(supirName => {
@@ -615,7 +605,12 @@
                 };
             });
             
-            const dpAmount = {{ $selectedDp ? $selectedDp->dp_amount : 0 }};
+            let dpAmount = 0;
+            @if(isset($selectedDps) && $selectedDps->count() > 0)
+                @foreach($selectedDps as $dp)
+                    dpAmount += {{ $dp->dp_amount ?? 0 }};
+                @endforeach
+            @endif
             let totalDp = 0;
 
             pranotaCheckboxes.forEach(checkbox => {

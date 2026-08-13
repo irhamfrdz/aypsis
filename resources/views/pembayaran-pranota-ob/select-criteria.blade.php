@@ -3,6 +3,21 @@
 @section('title', 'Pilih Kriteria Pembayaran Pranota OB')
 @section('page_title', 'Pilih Kriteria Pembayaran Pranota OB')
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--multiple {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        min-height: 42px;
+    }
+    .select2-container .select2-search--inline .select2-search__field {
+        margin-top: 8px;
+        margin-left: 8px;
+    }
+</style>
+@endpush
+
 @section('content')
     <div class="bg-white shadow-lg rounded-lg p-6 max-w-4xl mx-auto">
         <div class="mb-6">
@@ -52,13 +67,15 @@
                 <label for="dp" class="block text-sm font-medium text-gray-700 mb-2">
                     Pilih DP <span class="text-gray-400 text-xs font-normal">(Opsional)</span>
                 </label>
-                <select name="dp" id="dp" 
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">-- Tanpa DP / Pilih Voyage Terlebih Dahulu --</option>
+                <select name="dp[]" id="dp" multiple="multiple"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" data-placeholder="Pilih DP (Bisa lebih dari satu)">
+                    @php
+                        $selectedDps = is_array(request('dp')) ? request('dp') : (request('dp') ? [request('dp')] : []);
+                    @endphp
                     @foreach($dpList as $dp)
                         <option value="{{ $dp->id }}" 
                                 data-voyage="{{ $dp->nomor_voyage }}"
-                                {{ request('dp') == $dp->id ? 'selected' : '' }}>
+                                {{ in_array($dp->id, $selectedDps) ? 'selected' : '' }}>
                             {{ $dp->nomor_accurate ?? $dp->nomor_pembayaran }} - {{ \Carbon\Carbon::parse($dp->tanggal_pembayaran)->format('d/m/Y') }} - Rp {{ number_format($dp->dp_amount, 0, ',', '.') }}
                         </option>
                     @endforeach
@@ -104,12 +121,22 @@
     </div>
 
     {{-- Script for dynamic filtering --}}
+    @push('scripts')
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        $(document).ready(function() {
             const kapalSelect = document.getElementById('kapal');
             const voyageSelect = document.getElementById('voyage');
             const dpSelect = document.getElementById('dp');
             const dpHelpText = document.getElementById('dp-help-text');
+
+            // Initialize Select2
+            $('#dp').select2({
+                placeholder: "Pilih DP (Bisa lebih dari satu) atau biarkan kosong",
+                allowClear: true,
+                width: '100%'
+            });
 
             // Store all DP options
             const allDpOptions = [];
@@ -118,7 +145,8 @@
                     allDpOptions.push({
                         value: option.value,
                         text: option.textContent,
-                        voyage: option.getAttribute('data-voyage')
+                        voyage: option.getAttribute('data-voyage'),
+                        selected: option.selected
                     });
                 }
             });
@@ -127,12 +155,16 @@
             voyageSelect.addEventListener('change', function() {
                 const selectedVoyage = this.value;
                 
-                // Always start with "Tanpa DP" option
-                dpSelect.innerHTML = '<option value="">-- Tanpa DP --</option>';
+                // Get currently selected values before rebuilding
+                const currentSelected = $('#dp').val() || [];
+                
+                // Clear options
+                dpSelect.innerHTML = '';
                 
                 if (!selectedVoyage) {
                     dpHelpText.textContent = 'Kosongkan jika tidak menggunakan DP, atau pilih voyage untuk melihat DP yang tersedia';
                     dpHelpText.className = 'mt-1 text-xs text-gray-500';
+                    $('#dp').trigger('change');
                     return;
                 }
                 
@@ -148,11 +180,16 @@
                         option.value = dp.value;
                         option.textContent = dp.text;
                         option.setAttribute('data-voyage', dp.voyage);
+                        // Re-select if it was selected previously or from backend
+                        if (currentSelected.includes(dp.value) || dp.selected) {
+                            option.selected = true;
+                        }
                         dpSelect.appendChild(option);
                     });
-                    dpHelpText.textContent = `Ditemukan ${matchingDps.length} DP untuk voyage ${selectedVoyage}. Pilih salah satu atau kosongkan untuk tanpa DP.`;
+                    dpHelpText.textContent = `Ditemukan ${matchingDps.length} DP untuk voyage ${selectedVoyage}. Pilih satu atau lebih, atau kosongkan untuk tanpa DP.`;
                     dpHelpText.className = 'mt-1 text-xs text-green-600';
                 }
+                $('#dp').trigger('change');
             });
 
             // Initialize on page load if voyage is already selected
@@ -161,4 +198,5 @@
             }
         });
     </script>
+    @endpush
 @endsection

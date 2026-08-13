@@ -26,6 +26,7 @@ class PembayaranPranotaOb extends Model
         'status',
         'pranota_ob_ids',
         'pembayaran_ob_id',
+        'pembayaran_ob_ids',
         'kapal',
         'voyage',
         'dp_amount',
@@ -45,6 +46,7 @@ class PembayaranPranotaOb extends Model
         'dp_amount' => 'decimal:2',
         'total_biaya_pranota' => 'decimal:2',
         'pranota_ob_ids' => 'array',
+        'pembayaran_ob_ids' => 'array',
         'breakdown_supir' => 'array',
     ];
 
@@ -74,6 +76,28 @@ class PembayaranPranotaOb extends Model
     public function pembayaranOb()
     {
         return $this->belongsTo(PembayaranOb::class, 'pembayaran_ob_id');
+    }
+
+    /**
+     * Get the multiple DP payments (PembayaranOb) associated with this payment
+     */
+    public function getPembayaranObsAttribute()
+    {
+        $ids = $this->pembayaran_ob_ids ?? [];
+
+        if (is_string($ids)) {
+            $ids = json_decode($ids, true) ?? [];
+        }
+
+        if (empty($ids) || ! is_array($ids)) {
+            // Fallback to single ID if exists for backward compatibility
+            if ($this->pembayaran_ob_id) {
+                return PembayaranOb::where('id', $this->pembayaran_ob_id)->get();
+            }
+            return collect([]);
+        }
+
+        return PembayaranOb::whereIn('id', $ids)->get();
     }
 
     /**

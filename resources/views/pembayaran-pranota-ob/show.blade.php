@@ -87,9 +87,9 @@
                 <div>
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Total Pembayaran</h3>
                     <dl class="space-y-3">
-                        @if($pembayaran->pembayaranOb)
+                        @if($pembayaran->pembayaranObs && $pembayaran->pembayaranObs->count() > 0)
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">DP ({{ $pembayaran->pembayaranOb->nomor_pembayaran }})</dt>
+                            <dt class="text-sm font-medium text-gray-500">DP ({{ $pembayaran->pembayaranObs->pluck('nomor_pembayaran')->join(', ') }})</dt>
                             <dd class="text-sm font-semibold text-green-600">Rp {{ number_format($pembayaran->dp_amount, 0, ',', '.') }}</dd>
                         </div>
                         @endif
