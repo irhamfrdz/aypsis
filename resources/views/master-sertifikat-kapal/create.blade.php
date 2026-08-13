@@ -60,9 +60,15 @@
                     @enderror
                 </div>
 
-
-
                 <div>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="has_masa_berlaku" id="has_masa_berlaku" value="1" 
+                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                               {{ old('has_masa_berlaku', true) ? 'checked' : '' }}>
+                        <span class="text-sm font-medium text-gray-700">Memiliki Masa Berlaku</span>
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1">Hapus centang jika sertifikat ini berlaku seumur hidup / tidak memiliki tanggal kedaluwarsa.</p>
+                </div>                <div>
                     <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="aktif" {{ old('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>

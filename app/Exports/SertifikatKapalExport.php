@@ -44,6 +44,7 @@ class SertifikatKapalExport implements FromCollection, ShouldAutoSize, WithEvent
                 $s->nama_sertifikat,
                 $s->name_certificate ?? '-',
                 $s->nickname ?? '-',
+                $s->has_masa_berlaku ? 'Ya' : 'Tidak',
                 $s->status === 'aktif' ? 'Aktif' : 'Nonaktif',
             ];
         });
@@ -58,6 +59,7 @@ class SertifikatKapalExport implements FromCollection, ShouldAutoSize, WithEvent
             'Nama Sertifikat (ID)',
             'Name of Certificate (EN)',
             'Nickname',
+            'Ada Masa Berlaku',
             'Status',
         ];
     }
@@ -67,9 +69,9 @@ class SertifikatKapalExport implements FromCollection, ShouldAutoSize, WithEvent
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $sheet->getStyle('A1:E1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('A1:E1')->getFont()->setBold(true);
-                $sheet->getStyle('A1:E1')->getFill()
+                $sheet->getStyle('A1:F1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+                $sheet->getStyle('A1:F1')->getFill()
                       ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
                       ->getStartColor()->setARGB('FFE2E8F0'); // Light gray
             },

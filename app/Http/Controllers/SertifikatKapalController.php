@@ -62,10 +62,14 @@ class SertifikatKapalController extends Controller
             'nama_sertifikat' => 'required|string|max:255',
             'name_certificate' => 'nullable|string|max:255',
             'nickname' => 'nullable|string|max:255',
+            'has_masa_berlaku' => 'boolean',
             'status' => 'required|in:aktif,nonaktif',
         ]);
 
-        SertifikatKapal::create($request->all());
+        $data = $request->all();
+        $data['has_masa_berlaku'] = $request->has('has_masa_berlaku') ? 1 : 0;
+
+        SertifikatKapal::create($data);
 
         return redirect()->route('master-sertifikat-kapal.index')
             ->with('success', 'Sertifikat kapal berhasil ditambahkan.');
@@ -96,10 +100,14 @@ class SertifikatKapalController extends Controller
             'nama_sertifikat' => 'required|string|max:255',
             'name_certificate' => 'nullable|string|max:255',
             'nickname' => 'nullable|string|max:255',
+            'has_masa_berlaku' => 'boolean',
             'status' => 'required|in:aktif,nonaktif',
         ]);
 
-        $master_sertifikat_kapal->update($request->all());
+        $data = $request->all();
+        $data['has_masa_berlaku'] = $request->has('has_masa_berlaku') ? 1 : 0;
+
+        $master_sertifikat_kapal->update($data);
 
         return redirect()->route('master-sertifikat-kapal.index')
             ->with('success', 'Sertifikat kapal berhasil diperbarui.');

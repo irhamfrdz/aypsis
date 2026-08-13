@@ -16,10 +16,12 @@ class SertifikatKapal extends Model
         'nama_sertifikat',
         'name_certificate',
         'nickname',
+        'has_masa_berlaku',
         'status',
     ];
 
     protected $casts = [
+        'has_masa_berlaku' => 'boolean',
         'status' => 'string',
     ];
 
