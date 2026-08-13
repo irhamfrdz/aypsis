@@ -1807,7 +1807,7 @@
                         @endphp
                         
                         @forelse($allItems as $item)
-                        <tr class="hover:bg-gray-50 row-barang-lainnya" data-nama="{{ strtoupper($item->nama) }}" data-jenis="{{ strtoupper($item->jenis) }}">
+                        <tr class="hover:bg-gray-50 row-barang-lainnya" data-nama="{{ strtoupper($item->nama) }}" data-jenis="{{ strtoupper($item->jenis) }}" data-ukuran="{{ strtoupper($item->ukuran) }}">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold
                                     {{ $item->jenis == 'Ban Dalam' ? 'bg-blue-100 text-blue-800' : '' }}
@@ -4254,7 +4254,12 @@ function closeJualBanModal() {
         rows.forEach(row => {
             const rowName = row.getAttribute('data-nama') || '';
             const rowJenis = row.getAttribute('data-jenis') || '';
-            if (rowName === upperName || rowJenis === upperName || rowName.includes(upperName)) {
+            const rowUkuran = row.getAttribute('data-ukuran') || '';
+            const combinedName = (rowName + ' ' + rowUkuran).trim();
+            const combinedJenis = (rowJenis + ' ' + rowUkuran).trim();
+
+            if (rowName === upperName || rowJenis === upperName || rowName.includes(upperName) || 
+                combinedName === upperName || combinedJenis === upperName) {
                 row.classList.remove('hidden');
                 found++;
             } else {
