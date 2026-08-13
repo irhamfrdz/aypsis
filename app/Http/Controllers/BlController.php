@@ -1234,8 +1234,10 @@ class BlController extends Controller
 
                         // Auto-fill size kontainer from database if not provided in file; allow using file size if present
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
-                        if (empty($autoFilledSize['size'])) {
-                            // Do not block import even if size not found — treat as a warning and proceed with NULL size
+                        if ($autoFilledSize['warning'] === 'not_found_in_db') {
+                            $warnings[] = "Baris {$rowNumber}: Kontainer {$nomorKontainer} tidak ditemukan di master data (kontainers/stock_kontainers). " . (empty($autoFilledSize['size']) ? 'Data akan disimpan tanpa ukuran.' : 'Data akan disimpan menggunakan ukuran dari file Excel.') . " ({$rowPreview})";
+                        } elseif (empty($autoFilledSize['size']) && stripos($nomorKontainer, 'cargo') === false && stripos($nomorKontainer, 'kargo') === false) {
+                            // If size is still null and it's not a cargo, maybe it was found in DB but size was null
                             $warnings[] = "Baris {$rowNumber}: ukuran kontainer tidak ditemukan di database untuk nomor {$nomorKontainer} dan tidak ada ukuran yang disertakan pada file. Data akan tetap disimpan tanpa ukuran. ({$rowPreview})";
                         }
 
@@ -1507,8 +1509,9 @@ class BlController extends Controller
 
                         // Auto-fill size kontainer from database if not provided in file; allow using file size if present
                         $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
-                        if (empty($autoFilledSize['size'])) {
-                            // Do not block import even if size not found — treat as a warning and proceed with NULL size
+                        if ($autoFilledSize['warning'] === 'not_found_in_db') {
+                            $warnings[] = "Baris {$row}: Kontainer {$nomorKontainer} tidak ditemukan di master data (kontainers/stock_kontainers). " . (empty($autoFilledSize['size']) ? 'Data akan disimpan tanpa ukuran.' : 'Data akan disimpan menggunakan ukuran dari file Excel.') . " ({$rowPreview})";
+                        } elseif (empty($autoFilledSize['size']) && stripos($nomorKontainer, 'cargo') === false && stripos($nomorKontainer, 'kargo') === false) {
                             $warnings[] = "Baris {$row}: ukuran kontainer tidak ditemukan di database untuk nomor {$nomorKontainer} dan tidak ada ukuran yang disertakan pada file. Data akan tetap disimpan tanpa ukuran. ({$rowPreview})";
                         }
 
@@ -2096,18 +2099,10 @@ class BlController extends Controller
      */
     private function getContainerSize($nomorKontainer, $sizeFromFile = null)
     {
-        // If size is already provided in file, use it
-        if (! empty($sizeFromFile)) {
-            return [
-                'size' => trim($sizeFromFile),
-                'warning' => null,
-            ];
-        }
-
         // Skip auto-fill for auto-generated cargo containers (case-insensitive)
-        if (stripos($nomorKontainer, 'cargo') === 0) {
+        if (stripos($nomorKontainer, 'cargo') !== false || stripos($nomorKontainer, 'kargo') !== false) {
             return [
-                'size' => null,
+                'size' => !empty($sizeFromFile) ? trim($sizeFromFile) : null,
                 'warning' => null,
             ];
         }
@@ -2149,12 +2144,10 @@ class BlController extends Controller
 
         if ($stockKontainer) {
             \Log::info('Found in stock_kontainers: '.($stockKontainer->ukuran ?? 'NULL'));
-            if ($stockKontainer->ukuran) {
-                return [
-                    'size' => $stockKontainer->ukuran,
-                    'warning' => null,
-                ];
-            }
+            return [
+                'size' => !empty($sizeFromFile) ? trim($sizeFromFile) : $stockKontainer->ukuran,
+                'warning' => null,
+            ];
         }
 
         // If not found in stock_kontainers, try kontainers table
@@ -2187,20 +2180,18 @@ class BlController extends Controller
 
         if ($kontainer) {
             \Log::info('Found in kontainers: '.($kontainer->ukuran ?? 'NULL'));
-            if ($kontainer->ukuran) {
-                return [
-                    'size' => $kontainer->ukuran,
-                    'warning' => null,
-                ];
-            }
+            return [
+                'size' => !empty($sizeFromFile) ? trim($sizeFromFile) : $kontainer->ukuran,
+                'warning' => null,
+            ];
         }
 
         \Log::warning("Container size not found for: {$nomorKontainer}");
 
-        // If container not found in either table, do not stop import — return the size from file if provided, otherwise null
+        // If container not found in either table, do not stop import — return the size from file if provided, otherwise null, and a warning
         return [
-            'size' => $sizeFromFile ? trim($sizeFromFile) : null,
-            'warning' => null,
+            'size' => !empty($sizeFromFile) ? trim($sizeFromFile) : null,
+            'warning' => 'not_found_in_db',
         ];
     }
 
