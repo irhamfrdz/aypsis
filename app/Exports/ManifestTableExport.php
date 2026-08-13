@@ -10,9 +10,10 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMapping, WithStyles
+class ManifestTableExport implements FromCollection, WithCustomStartCell, WithMapping, WithStyles, WithTitle
 {
     protected $manifests;
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ManifestMultipleExport;
 use App\Exports\ManifestTableExport;
 use App\Models\Manifest;
 use App\Models\Prospek;
@@ -198,7 +199,7 @@ class ManifestController extends Controller
 
         $filename = 'Manifest_'.str_replace(' ', '_', $namaKapal).'_'.str_replace('/', '-', $noVoyage).'.xlsx';
 
-        return Excel::download(new ManifestTableExport($manifests), $filename);
+        return Excel::download(new ManifestMultipleExport($manifests), $filename);
     }
 
     /**
