@@ -39,10 +39,13 @@
                         <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
                     </select>
                 </div>
-                <div class="flex items-end">
+                <div class="flex items-end gap-2">
                     <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-md transition duration-200">
                         <i class="fas fa-search mr-2"></i> Filter
                     </button>
+                    <a href="{{ route('master-sertifikat-kapal.export-excel', request()->query()) }}" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 text-center">
+                        <i class="fas fa-file-excel mr-2"></i> Export Excel
+                    </a>
                 </div>
             </div>
         </form>

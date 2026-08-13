@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\SertifikatKapalExport;
 use App\Models\SertifikatKapal;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SertifikatKapalController extends Controller
 {
@@ -23,13 +25,24 @@ class SertifikatKapalController extends Controller
             });
         }
 
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         $sertifikats = $query->latest()->paginate($request->get('per_page', 10));
 
         return view('master-sertifikat-kapal.index', compact('sertifikats'));
+    }
+
+    /**
+     * Export a listing of the resource to excel.
+     */
+    public function exportExcel(Request $request)
+    {
+        $filters = $request->query();
+        $fileName = 'master_sertifikat_kapal_'.date('Ymd_His').'.xlsx';
+
+        return Excel::download(new SertifikatKapalExport($filters), $fileName);
     }
 
     /**

@@ -6572,6 +6572,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('master-sertifikat-kapal', [SertifikatKapalController::class, 'index'])
         ->name('master-sertifikat-kapal.index')
         ->middleware('can:master-sertifikat-kapal-view');
+    Route::get('master-sertifikat-kapal/export-excel', [SertifikatKapalController::class, 'exportExcel'])
+        ->name('master-sertifikat-kapal.export-excel')
+        ->middleware('can:master-sertifikat-kapal-view');
     Route::get('master-sertifikat-kapal/create', [SertifikatKapalController::class, 'create'])
         ->name('master-sertifikat-kapal.create')
         ->middleware('can:master-sertifikat-kapal-create');
