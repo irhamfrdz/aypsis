@@ -168,6 +168,9 @@
                             <th class="px-6 py-3 text-center">Terlambat</th>
                             <th class="px-6 py-3 text-center">Pulang Cpt</th>
                             <th class="px-6 py-3 text-center">Lembur</th>
+                            <th class="px-6 py-3 text-center">Tdk Masuk</th>
+                            <th class="px-6 py-3 text-center">Tdk Pulang</th>
+                            <th class="px-6 py-3 text-center">Tdk Istirahat</th>
                             <th class="px-6 py-3 text-center">Sakit</th>
                             <th class="px-6 py-3 text-center">Izin / Cuti</th>
                             <th class="px-6 py-3 text-center">Alpha</th>
@@ -180,7 +183,8 @@
                                     'total_masuk' => 0, 'sakit' => 0, 'izin' => 0, 'alpha' => 0,
                                     'terlambat_kali' => 0, 'terlambat_menit' => 0,
                                     'pulang_cepat_kali' => 0, 'pulang_cepat_menit' => 0,
-                                    'lembur_jam' => 0, 'lembur_kali' => 0
+                                    'lembur_jam' => 0, 'lembur_kali' => 0,
+                                    'tidak_absen_masuk_kali' => 0, 'tidak_absen_pulang_kali' => 0, 'tidak_absen_istirahat_kali' => 0
                                 ];
                             @endphp
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
@@ -191,22 +195,7 @@
                                     {{ $karyawan->nik }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap font-medium">
-                                    <div class="flex items-center">
-                                        <span>{{ $karyawan->nama_lengkap }}</span>
-                                        @if(request('kehadiran') == 'tidak_absen_masuk')
-                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-800" title="Karyawan ini memiliki hari dimana tidak absen masuk">
-                                                Tidak Absen Masuk
-                                            </span>
-                                        @elseif(request('kehadiran') == 'tidak_absen_pulang')
-                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-orange-100 text-orange-800" title="Karyawan ini memiliki hari dimana tidak absen pulang">
-                                                Tidak Absen Pulang
-                                            </span>
-                                        @elseif(request('kehadiran') == 'tidak_absen_istirahat')
-                                            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800" title="Karyawan ini memiliki hari dimana tidak absen istirahat">
-                                                Tidak Absen Istirahat
-                                            </span>
-                                        @endif
-                                    </div>
+                                    {{ $karyawan->nama_lengkap }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-500">
                                     {{ $karyawan->penempatan ?: '-' }}
@@ -243,6 +232,33 @@
                                         <span class="text-xs font-medium text-gray-500">-</span>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
+                                    @if($stats['tidak_absen_masuk_kali'] > 0)
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_tidak_absen_masuk'] ?? []) }}" class="btn-detail-tdk-masuk inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 bg-red-100 text-red-800 hover:bg-red-200" title="Tidak Absen Masuk">
+                                            {{ $stats['tidak_absen_masuk_kali'] }}x
+                                        </button>
+                                    @else
+                                        <span class="text-gray-500">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
+                                    @if($stats['tidak_absen_pulang_kali'] > 0)
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_tidak_absen_pulang'] ?? []) }}" class="btn-detail-tdk-pulang inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 bg-orange-100 text-orange-800 hover:bg-orange-200" title="Tidak Absen Pulang">
+                                            {{ $stats['tidak_absen_pulang_kali'] }}x
+                                        </button>
+                                    @else
+                                        <span class="text-gray-500">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-xs font-medium">
+                                    @if($stats['tidak_absen_istirahat_kali'] > 0)
+                                        <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_tidak_absen_istirahat'] ?? []) }}" class="btn-detail-tdk-istirahat inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-1 bg-yellow-100 text-yellow-800 hover:bg-yellow-200" title="Tidak Absen Istirahat">
+                                            {{ $stats['tidak_absen_istirahat_kali'] }}x
+                                        </button>
+                                    @else
+                                        <span class="text-gray-500">-</span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold {{ $stats['sakit'] > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500' }}">
                                         {{ $stats['sakit'] }} Hari
@@ -261,7 +277,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-10 text-center">
+                                <td colspan="14" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -479,6 +495,38 @@
             </div>
             <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                 <button type="button" onclick="closeDetailPulangCepat()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Lupa Absen (Generic) -->
+<div id="detailLupaAbsenModal" class="fixed inset-0 z-[100] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDetailLupaAbsen()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="detailLupaAbsenTitle">
+                            Detail Lupa Absen
+                        </h3>
+                        <div class="mt-4 max-h-[60vh] overflow-y-auto pr-2" id="detailLupaAbsenContent">
+                            <!-- Content will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button" onclick="closeDetailLupaAbsen()" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
                     Tutup
                 </button>
             </div>
@@ -704,6 +752,36 @@
             });
         });
 
+        // Event listener for Tdk Masuk
+        document.querySelectorAll('.btn-detail-tdk-masuk').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                let dates = [];
+                try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
+                showDetailLupaAbsen(nama, dates, 'Tidak Absen Masuk');
+            });
+        });
+
+        // Event listener for Tdk Pulang
+        document.querySelectorAll('.btn-detail-tdk-pulang').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                let dates = [];
+                try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
+                showDetailLupaAbsen(nama, dates, 'Tidak Absen Pulang');
+            });
+        });
+
+        // Event listener for Tdk Istirahat
+        document.querySelectorAll('.btn-detail-tdk-istirahat').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const nama = this.getAttribute('data-nama');
+                let dates = [];
+                try { dates = JSON.parse(this.getAttribute('data-dates')); } catch (e) {}
+                showDetailLupaAbsen(nama, dates, 'Tidak Absen Istirahat');
+            });
+        });
+
     });
     
     function openIzinModal() {
@@ -816,6 +894,32 @@
 
     function closeDetailPulangCepat() {
         document.getElementById('detailPulangCepatModal').classList.add('hidden');
+    }
+
+    function showDetailLupaAbsen(nama, dates, typeLabel) {
+        let html = '';
+        if (!dates || dates.length === 0) {
+            html = `<p class="text-sm text-gray-500 text-center py-4">Tidak ada data ${typeLabel}.</p>`;
+        } else {
+            html = '<ul class="space-y-2">';
+            dates.forEach((date, index) => {
+                html += `
+                    <li class="flex items-center text-sm font-medium text-gray-700 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                        <span class="w-6 h-6 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-xs mr-3 shrink-0">${index + 1}</span>
+                        ${date}
+                    </li>
+                `;
+            });
+            html += '</ul>';
+        }
+        
+        document.getElementById('detailLupaAbsenTitle').innerText = `Detail ${typeLabel}: ${nama}`;
+        document.getElementById('detailLupaAbsenContent').innerHTML = html;
+        document.getElementById('detailLupaAbsenModal').classList.remove('hidden');
+    }
+
+    function closeDetailLupaAbsen() {
+        document.getElementById('detailLupaAbsenModal').classList.add('hidden');
     }
 </script>
 @endpush

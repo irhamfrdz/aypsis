@@ -694,6 +694,13 @@ class AbsensiController extends Controller
             $pulangCepatMenit = 0;
             $lemburJam = 0;
             $lemburKali = 0;
+            
+            $tidakAbsenMasukKali = 0;
+            $tidakAbsenPulangKali = 0;
+            $tidakAbsenIstirahatKali = 0;
+            $detail_tidak_absen_masuk = [];
+            $detail_tidak_absen_pulang = [];
+            $detail_tidak_absen_istirahat = [];
 
             $tempDate = $startDate->copy();
             while ($tempDate->lte($endDate)) {
@@ -725,6 +732,9 @@ class AbsensiController extends Controller
                                 $detail_terlambat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $jamMasukNormal->diffInMinutes($waktuMasuk) . ' mnt)';
                             }
                         }
+                    } else {
+                        $tidakAbsenMasukKali++;
+                        $detail_tidak_absen_masuk[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     }
 
                     // Early leave
@@ -747,6 +757,16 @@ class AbsensiController extends Controller
                                 $detail_pulang_cepat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y') . ' (' . $waktuPulang->diffInMinutes($jamPulangNormal) . ' mnt)';
                             }
                         }
+                    } else {
+                        $tidakAbsenPulangKali++;
+                        $detail_tidak_absen_pulang[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
+                    }
+
+                    // Istirahat
+                    $istirahatLog = $dayLogs->first(function($val) { return strpos(strtolower($val->tipe), 'istirahat') !== false; });
+                    if (!$istirahatLog) {
+                        $tidakAbsenIstirahatKali++;
+                        $detail_tidak_absen_istirahat[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     }
 
                     // Overtime (Lembur)
@@ -797,10 +817,16 @@ class AbsensiController extends Controller
                 'pulang_cepat_menit' => $pulangCepatMenit,
                 'lembur_jam' => round($lemburJam, 1),
                 'lembur_kali' => $lemburKali,
+                'tidak_absen_masuk_kali' => $tidakAbsenMasukKali,
+                'tidak_absen_pulang_kali' => $tidakAbsenPulangKali,
+                'tidak_absen_istirahat_kali' => $tidakAbsenIstirahatKali,
                 'detail_hadir' => $detail_hadir,
                 'detail_lembur' => $detail_lembur,
                 'detail_terlambat' => $detail_terlambat,
                 'detail_pulang_cepat' => $detail_pulang_cepat,
+                'detail_tidak_absen_masuk' => $detail_tidak_absen_masuk,
+                'detail_tidak_absen_pulang' => $detail_tidak_absen_pulang,
+                'detail_tidak_absen_istirahat' => $detail_tidak_absen_istirahat,
             ];
         }
 
