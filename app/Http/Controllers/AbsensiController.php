@@ -189,6 +189,8 @@ class AbsensiController extends Controller
                 $query->havingRaw('waktu_masuk IS NULL');
             } elseif ($status_absen === 'tidak_pulang') {
                 $query->havingRaw('waktu_pulang IS NULL AND waktu_masuk IS NOT NULL'); // Jika tidak masuk, tidak dihitung tidak pulang
+            } elseif ($status_absen === 'tidak_istirahat') {
+                $query->havingRaw('(waktu_istirahat_keluar IS NULL OR waktu_istirahat_masuk IS NULL) AND waktu_masuk IS NOT NULL');
             } elseif ($status_absen === 'lengkap') {
                 $query->havingRaw('waktu_masuk IS NOT NULL AND waktu_pulang IS NOT NULL');
             } elseif ($status_absen === 'ada_lembur') {
