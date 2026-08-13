@@ -799,8 +799,8 @@ class AbsensiController extends Controller
                             $izin++;
                         }
                     } else {
-                        // Jangan hitung alpha jika tanggalnya belum terjadi (future dates)
-                        if ($dateStr <= \Carbon\Carbon::today()->toDateString()) {
+                        // Jangan hitung alpha jika tanggalnya belum terjadi (future dates) atau jika hari libur (Minggu)
+                        if ($dateStr <= \Carbon\Carbon::today()->toDateString() && !$tempDate->isSunday()) {
                             $alpha++;
                             $detail_alpha[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                         }
