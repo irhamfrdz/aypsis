@@ -318,6 +318,99 @@ class PembayaranPranotaCatController extends Controller
         }
     }
 
+    public function edit($id)
+    {
+        if (! Gate::allows('pembayaran-pranota-cat-update')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk mengedit pembayaran ini.');
+        }
+
+        $pembayaran = PembayaranPranotaCat::with(['pranotaTagihanCats', 'pranotaPerbaikanKontainers'])->findOrFail($id);
+
+        $akunCoa = \App\Models\Coa::where(function ($query) {
+            $query->where('tipe_akun', 'Kas/Bank')
+                ->orWhere('tipe_akun', 'Bank/Kas')
+                ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+        })
+            ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
+            ->get();
+
+        return view('pembayaran-pranota-cat.edit', compact('pembayaran', 'akunCoa'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        if (! Gate::allows('pembayaran-pranota-cat-update')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk mengedit pembayaran ini.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $pembayaran = PembayaranPranotaCat::findOrFail($id);
+
+            $request->validate([
+                'nomor_accurate' => 'nullable|string|max:255',
+                'bank' => 'required|string|max:255',
+                'tanggal_kas' => 'required|date',
+                'total_tagihan_penyesuaian' => 'nullable|numeric',
+                'penyesuaian' => 'nullable|numeric',
+                'alasan_penyesuaian' => 'nullable|string',
+                'keterangan' => 'nullable|string',
+            ]);
+
+            $penyesuaian = floatval($request->input('total_tagihan_penyesuaian', $request->input('penyesuaian', 0)));
+            $totalPembayaran = $pembayaran->total_pembayaran;
+            $totalSetelahPenyesuaian = $totalPembayaran + $penyesuaian;
+
+            // Update COA Transaction (Delete old, create new)
+            $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
+
+            $tanggalTransaksi = $request->tanggal_kas;
+
+            $keterangan = 'Pembayaran Pranota CAT Kontainer - '.$pembayaran->nomor_pembayaran;
+            if ($request->keterangan) {
+                $keterangan .= ' | '.$request->keterangan;
+            }
+            if ($request->alasan_penyesuaian) {
+                $keterangan .= ' | Penyesuaian: '.$request->alasan_penyesuaian;
+            }
+
+            $this->coaTransactionService->recordDoubleEntry(
+                ['nama_akun' => 'Biaya CAT Kontainer', 'jumlah' => $totalSetelahPenyesuaian],
+                ['nama_akun' => $request->bank, 'jumlah' => $totalSetelahPenyesuaian],
+                $tanggalTransaksi,
+                $pembayaran->nomor_pembayaran,
+                'Pembayaran Pranota CAT Kontainer',
+                $keterangan
+            );
+
+            // Update Pembayaran Record
+            $pembayaran->update([
+                'nomor_accurate' => $request->nomor_accurate,
+                'bank' => $request->bank,
+                'tanggal_kas' => $request->tanggal_kas,
+                'penyesuaian' => $penyesuaian,
+                'total_setelah_penyesuaian' => $totalSetelahPenyesuaian,
+                'alasan_penyesuaian' => $request->alasan_penyesuaian,
+                'keterangan' => $request->keterangan,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('pembayaran-pranota-cat.index')->with('success', 'Pembayaran pranota CAT berhasil diperbarui.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Error in pembayaran pranota CAT update', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all(),
+            ]);
+
+            return redirect()->back()->withInput()->with('error', 'Gagal memperbarui pembayaran: '.$e->getMessage());
+        }
+    }
+
     public function print($id)
     {
         $pembayaran = PembayaranPranotaCat::with(['pranotaTagihanCats', 'pranotaPerbaikanKontainers'])->findOrFail($id);

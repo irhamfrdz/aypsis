@@ -114,6 +114,13 @@
                                    class="text-blue-600 hover:text-blue-900 mr-3">
                                     <i class="fas fa-eye"></i> Lihat Detail
                                 </a>
+                                @can('pembayaran-pranota-cat-update')
+                                <span class="text-gray-300">|</span>
+                                <a href="{{ route('pembayaran-pranota-cat.edit', $pembayaran->id) }}"
+                                   class="text-yellow-600 hover:text-yellow-900 mx-3">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                @endcan
                                 <span class="text-gray-300">|</span>
                                 <a href="{{ route('pembayaran-pranota-cat.print', $pembayaran->id) }}"
                                    class="text-green-600 hover:text-green-900 mr-3" target="_blank">
