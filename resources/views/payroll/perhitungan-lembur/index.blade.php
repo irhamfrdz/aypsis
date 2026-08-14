@@ -390,6 +390,7 @@
 <script>
     document.querySelectorAll('.btn-detail').forEach(btn => {
         btn.addEventListener('click', function() {
+            const tr = this.closest('tr');
             const nama = this.getAttribute('data-nama');
             let details = [];
             try {
@@ -398,33 +399,105 @@
                 console.error("Gagal parse details", e);
             }
             
-            let html = '<table class="min-w-full divide-y divide-gray-200 mt-2"><thead class="bg-gray-50"><tr><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tipe Hari</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Pulang</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Durasi</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tarif/Rule</th><th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Nominal</th></tr></thead><tbody class="divide-y divide-gray-200">';
+            const btnEl = this;
             
-            let total = 0;
-            if (details.length > 0) {
-                details.forEach(row => {
-                    html += `<tr>
-                        <td class="px-4 py-2 text-sm text-gray-900">${row.tanggal}</td>
-                        <td class="px-4 py-2 text-sm text-gray-500">${row.tipe_hari}</td>
-                        <td class="px-4 py-2 text-sm text-center text-gray-900 font-mono">${row.jam_pulang}</td>
-                        <td class="px-4 py-2 text-sm text-center font-bold text-indigo-600">${row.durasi_jam} Jam</td>
-                        <td class="px-4 py-2 text-sm text-gray-500">${row.rule}</td>
-                        <td class="px-4 py-2 text-sm text-right font-bold text-emerald-600">Rp ${Number(row.nominal).toLocaleString('id-ID')}</td>
+            function renderDetail() {
+                let html = '<table class="min-w-full divide-y divide-gray-200 mt-2"><thead class="bg-gray-50"><tr>';
+                html += '<th class="px-4 py-2 text-center w-10"><input type="checkbox" id="detail-check-all" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></th>';
+                html += '<th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tanggal</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tipe Hari</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Jam Pulang</th><th class="px-4 py-2 text-center text-xs font-bold text-gray-500 uppercase">Durasi</th><th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Tarif/Rule</th><th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Nominal</th></tr></thead><tbody class="divide-y divide-gray-200">';
+                
+                let total = 0;
+                let totalJam = 0;
+                let totalBiasa = 0;
+                let totalLibur = 0;
+                let allChecked = true;
+                
+                if (details.length > 0) {
+                    details.forEach((row, i) => {
+                        let isChecked = (row.selected !== false);
+                        if (!isChecked) allChecked = false;
+                        
+                        html += `<tr>
+                            <td class="px-4 py-2 text-center">
+                                <input type="checkbox" class="detail-row-cb rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" data-idx="${i}" ${isChecked ? 'checked' : ''}>
+                            </td>
+                            <td class="px-4 py-2 text-sm text-gray-900">${row.tanggal}</td>
+                            <td class="px-4 py-2 text-sm text-gray-500">${row.tipe_hari}</td>
+                            <td class="px-4 py-2 text-sm text-center text-gray-900 font-mono">${row.jam_pulang}</td>
+                            <td class="px-4 py-2 text-sm text-center font-bold text-indigo-600">${row.durasi_jam} Jam</td>
+                            <td class="px-4 py-2 text-sm text-gray-500">${row.rule}</td>
+                            <td class="px-4 py-2 text-sm text-right font-bold text-emerald-600">Rp ${Number(row.nominal).toLocaleString('id-ID')}</td>
+                        </tr>`;
+                        
+                        if (isChecked) {
+                            total += Number(row.nominal);
+                            totalJam += Number(row.durasi_jam);
+                            if (row.tipe_hari === 'Hari Biasa') {
+                                totalBiasa += Number(row.durasi_jam);
+                            } else {
+                                totalLibur += Number(row.durasi_jam);
+                            }
+                        }
+                    });
+                    
+                    html += `<tr class="bg-gray-50">
+                        <td colspan="6" class="px-4 py-3 text-right text-sm font-bold text-gray-900">TOTAL TERPILIH</td>
+                        <td class="px-4 py-3 text-right text-sm font-bold text-emerald-700">Rp ${total.toLocaleString('id-ID')}</td>
                     </tr>`;
-                    total += Number(row.nominal);
+                } else {
+                    html += '<tr><td colspan="7" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian</td></tr>';
+                }
+                html += '</tbody></table>';
+                
+                document.getElementById('detailContent').innerHTML = html;
+                
+                const checkAllCb = document.getElementById('detail-check-all');
+                if (checkAllCb) {
+                    checkAllCb.checked = allChecked && details.length > 0;
+                    checkAllCb.addEventListener('change', function() {
+                        const checked = this.checked;
+                        details.forEach(r => r.selected = checked);
+                        btnEl.setAttribute('data-detail', JSON.stringify(details));
+                        renderDetail(); 
+                    });
+                }
+                
+                document.querySelectorAll('.detail-row-cb').forEach(cb => {
+                    cb.addEventListener('change', function() {
+                        const idx = this.getAttribute('data-idx');
+                        details[idx].selected = this.checked;
+                        btnEl.setAttribute('data-detail', JSON.stringify(details));
+                        renderDetail();
+                    });
                 });
                 
-                html += `<tr class="bg-gray-50">
-                    <td colspan="5" class="px-4 py-3 text-right text-sm font-bold text-gray-900">TOTAL</td>
-                    <td class="px-4 py-3 text-right text-sm font-bold text-emerald-700">Rp ${total.toLocaleString('id-ID')}</td>
-                </tr>`;
-            } else {
-                html += '<tr><td colspan="6" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada rincian</td></tr>';
+                updateMainTable(totalJam, totalBiasa, totalLibur, total);
             }
-            html += '</tbody></table>';
+            
+            function updateMainTable(totalJam, totalBiasa, totalLibur, totalNominal) {
+                const payoutTd = tr.querySelector('.total-payout-text');
+                if (payoutTd) {
+                    payoutTd.setAttribute('data-jam-lembur', totalJam);
+                    payoutTd.innerText = 'Rp ' + totalNominal.toLocaleString('id-ID');
+                }
+                
+                const biasaTd = tr.querySelector('td:nth-child(5)');
+                if (biasaTd) {
+                    biasaTd.innerHTML = totalBiasa > 0 
+                        ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">${totalBiasa} Jam</span>`
+                        : `<span class="text-gray-400">-</span>`;
+                }
+                
+                const liburTd = tr.querySelector('td:nth-child(6)');
+                if (liburTd) {
+                    liburTd.innerHTML = totalLibur > 0 
+                        ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">${totalLibur} Jam</span>`
+                        : `<span class="text-gray-400">-</span>`;
+                }
+            }
             
             document.getElementById('detailTitle').innerText = 'Rincian Lembur: ' + nama;
-            document.getElementById('detailContent').innerHTML = html;
+            renderDetail();
             document.getElementById('detailModal').classList.remove('hidden');
         });
     });
