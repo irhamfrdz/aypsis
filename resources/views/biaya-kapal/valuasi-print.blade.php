@@ -110,7 +110,9 @@
                                 {{ $biaya->klasifikasiBiaya ? $biaya->klasifikasiBiaya->nama : ($biaya->jenis_biaya ?? '-') }}
                             </td>
                             <td class="px-4 py-2 text-sm text-gray-900 border">
-                                @if($biaya->vendor)
+                                @if(isset($biaya->dynamic_vendor))
+                                    {{ $biaya->dynamic_vendor }}
+                                @elseif($biaya->vendor)
                                     {{ $biaya->vendor->nama }}
                                 @elseif($biaya->nama_vendor)
                                     {{ $biaya->nama_vendor }}

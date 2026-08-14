@@ -98,6 +98,15 @@ class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMappi
             }
         }
 
+        $vendorName = '-';
+        if (isset($row->dynamic_vendor)) {
+            $vendorName = $row->dynamic_vendor;
+        } elseif ($row->vendor) {
+            $vendorName = $row->vendor->nama;
+        } elseif ($row->nama_vendor) {
+            $vendorName = $row->nama_vendor;
+        }
+
         return [
             $no++,
             $row->tanggal ? $row->tanggal->format('d/M/Y') : '-',
@@ -107,7 +116,7 @@ class ValuasiBiayaKapalExport implements FromCollection, WithHeadings, WithMappi
             $displayVoyage,
             $row->display_no_bl,
             $row->klasifikasiBiaya ? $row->klasifikasiBiaya->nama : ($row->jenis_biaya ?? '-'),
-            $row->vendor ? $row->vendor->nama : ($row->nama_vendor ?? '-'),
+            $vendorName,
             $row->keterangan ?? '-',
             $row->nominal ?? 0,
             $row->ppn ?? 0,

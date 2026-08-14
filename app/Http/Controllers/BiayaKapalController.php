@@ -6232,6 +6232,7 @@ class BiayaKapalController extends Controller
             foreach ($biayaKapals as $biaya) {
                 if (is_array($biaya->nama_kapal) && count($biaya->nama_kapal) > 1) {
                     $shipNominal = 0;
+                    $shipVendor = null;
                     foreach ($relationsToFilter as $rel) {
                         if ($biaya->relationLoaded($rel) && $biaya->{$rel}) {
                             $filtered = $biaya->{$rel}->filter(function($detail) use ($normalizedRequestKapal) {
@@ -6251,11 +6252,49 @@ class BiayaKapalController extends Controller
                                 } elseif (isset($item->nominal)) {
                                     $shipNominal += $item->nominal;
                                 }
+
+                                if (empty($shipVendor)) {
+                                    if (isset($item->vendor)) {
+                                        $shipVendor = $item->vendor;
+                                        if (is_object($shipVendor) && isset($shipVendor->nama)) {
+                                            $shipVendor = $shipVendor->nama;
+                                        }
+                                    } elseif (isset($item->nama_vendor)) {
+                                        $shipVendor = $item->nama_vendor;
+                                    }
+                                }
                             }
                         }
                     }
                     if ($shipNominal > 0) {
                         $biaya->nominal = $shipNominal;
+                    }
+                    if (!empty($shipVendor)) {
+                        $biaya->dynamic_vendor = is_string($shipVendor) ? $shipVendor : '-';
+                    }
+                } else {
+                    // For single ship invoice, also try to find vendor from details if header doesn't have it
+                    if (!$biaya->vendor && !$biaya->nama_vendor) {
+                        $shipVendor = null;
+                        foreach ($relationsToFilter as $rel) {
+                            if ($biaya->relationLoaded($rel) && $biaya->{$rel}) {
+                                foreach ($biaya->{$rel} as $item) {
+                                    if (empty($shipVendor)) {
+                                        if (isset($item->vendor)) {
+                                            $shipVendor = $item->vendor;
+                                            if (is_object($shipVendor) && isset($shipVendor->nama)) {
+                                                $shipVendor = $shipVendor->nama;
+                                            }
+                                        } elseif (isset($item->nama_vendor)) {
+                                            $shipVendor = $item->nama_vendor;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (!empty($shipVendor)) {
+                            $biaya->dynamic_vendor = is_string($shipVendor) ? $shipVendor : '-';
+                        }
                     }
                 }
             }
