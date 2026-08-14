@@ -6,47 +6,7 @@
 <div class="container mx-auto px-4 py-8">
     <div class="space-y-12">
 
-        {{-- Section Report Mingguan --}}
-        <div>
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-bold text-gray-900 flex items-center">
-                    <span class="w-1.5 h-6 bg-blue-500 rounded-full mr-3"></span>
-                    Laporan Kerja (7 Hari Terakhir)
-                </h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Total Tugas</p>
-                        <h3 class="text-3xl font-black text-gray-900">{{ $reportMingguan['total'] }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
-                        <i class="fas fa-tasks text-blue-500 text-xl"></i>
-                    </div>
-                </div>
 
-                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Surat Jalan</p>
-                        <h3 class="text-3xl font-black text-amber-600">{{ $reportMingguan['surat_jalan'] }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center">
-                        <i class="fas fa-truck text-amber-500 text-xl"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Memo Permohonan</p>
-                        <h3 class="text-3xl font-black text-indigo-600">{{ $reportMingguan['permohonan'] }}</h3>
-                    </div>
-                    <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center">
-                        <i class="fas fa-envelope-open-text text-indigo-500 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         {{-- Section Surat Jalan --}}
         <div>
@@ -127,6 +87,48 @@
                         <p class="text-gray-500 text-sm mt-1">Saat ini tidak ada surat jalan yang ditugaskan kepada Anda.</p>
                     </div>
                 @endforelse
+            </div>
+        </div>
+
+        {{-- Section Report Mingguan --}}
+        <div>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                    <span class="w-1.5 h-6 bg-blue-500 rounded-full mr-3"></span>
+                    Laporan Kerja (7 Hari Terakhir)
+                </h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Total Tugas</p>
+                        <h3 class="text-3xl font-black text-gray-900">{{ $reportMingguan['total'] }}</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                        <i class="fas fa-tasks text-blue-500 text-xl"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Surat Jalan</p>
+                        <h3 class="text-3xl font-black text-amber-600">{{ $reportMingguan['surat_jalan'] }}</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center">
+                        <i class="fas fa-truck text-amber-500 text-xl"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Memo Permohonan</p>
+                        <h3 class="text-3xl font-black text-indigo-600">{{ $reportMingguan['permohonan'] }}</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center">
+                        <i class="fas fa-envelope-open-text text-indigo-500 text-xl"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
