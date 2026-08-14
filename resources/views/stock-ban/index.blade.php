@@ -183,6 +183,13 @@
                 </button>
             </div>
             
+            <!-- Button Print -->
+            <button type="button" 
+                    onclick="printTable()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 whitespace-nowrap">
+                <i class="fas fa-print"></i> Print
+            </button>
+
             <!-- Button Export Opname -->
             <button type="button" 
                     onclick="openExportOpnameModal()"
@@ -4317,6 +4324,120 @@ function closeJualBanModal() {
             searchInput.value = name;
             searchInput.dispatchEvent(new Event('input', { bubbles: true }));
         }
+    }
+    function printTable() {
+        const activeTab = document.querySelector('.tab-content:not(.hidden)');
+        if (!activeTab) {
+            alert('Tidak ada tab yang aktif untuk di-print.');
+            return;
+        }
+        
+        const table = activeTab.querySelector('table');
+        if (!table) {
+            alert('Tidak ada tabel yang ditemukan pada tab ini.');
+            return;
+        }
+
+        // Dapatkan nama filter aktif
+        let filterName = 'Semua';
+        if (typeof currentCardFilter !== 'undefined' && currentCardFilter) {
+            filterName = currentCardFilter.replace(/-/g, ' ').toUpperCase();
+        }
+
+        // Tentukan nama tab yang aktif
+        let tabName = '';
+        const activeTabBtn = document.querySelector('.tab-btn.border-blue-500');
+        if (activeTabBtn) {
+            tabName = activeTabBtn.innerText.trim();
+        }
+        
+        let printContents = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Print Stock Ban - ${tabName}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+                    h2 { text-align: center; margin-bottom: 5px; color: #111; }
+                    h4 { text-align: center; margin-top: 0; margin-bottom: 20px; color: #555; }
+                    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+                    th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
+                    th { background-color: #f3f4f6; color: #374151; font-weight: bold; text-transform: uppercase; }
+                    tr:nth-child(even) { background-color: #f9fafb; }
+                    
+                    /* Hide rows that are filtered out */
+                    tr[style*="display: none"], tr.hidden { display: none !important; }
+                    
+                    /* Utility classes from Tailwind used in table */
+                    .text-center { text-align: center; }
+                    .text-right { text-align: right; }
+                    .font-medium { font-weight: 500; }
+                    .font-bold { font-weight: bold; }
+                    .text-xs { font-size: 10px; }
+                    .text-sm { font-size: 11px; }
+                    .bg-green-100 { background-color: #d1fae5; }
+                    .text-green-800 { color: #065f46; }
+                    .bg-blue-100 { background-color: #dbeafe; }
+                    .text-blue-800 { color: #1e40af; }
+                    .bg-yellow-100 { background-color: #fef3c7; }
+                    .text-yellow-800 { color: #92400e; }
+                    .bg-red-100 { background-color: #fee2e2; }
+                    .text-red-800 { color: #991b1b; }
+                    .bg-gray-100 { background-color: #f3f4f6; }
+                    .text-gray-800 { color: #1f2937; }
+                    .rounded-full { border-radius: 9999px; padding: 2px 6px; }
+                    
+                    @media print {
+                        @page { size: landscape; margin: 1cm; }
+                    }
+                </style>
+            </head>
+            <body>
+                <h2>Laporan Stock Ban - ${tabName}</h2>
+                <h4>Filter: ${filterName}</h4>
+        `;
+        
+        // Clone table to modify it before printing
+        const clonedTable = table.cloneNode(true);
+        
+        // Remove Action column (usually the last one)
+        const thead = clonedTable.querySelector('thead');
+        if (thead) {
+            const ths = thead.querySelectorAll('th');
+            if (ths.length > 0) {
+                const lastTh = ths[ths.length - 1];
+                if (lastTh.innerText.toLowerCase().includes('aksi') || lastTh.innerHTML.includes('Aksi')) {
+                    lastTh.remove();
+                    
+                    // Remove last td from each row in tbody
+                    const tbodies = clonedTable.querySelectorAll('tbody');
+                    tbodies.forEach(tbody => {
+                        const trs = tbody.querySelectorAll('tr');
+                        trs.forEach(tr => {
+                            const tds = tr.querySelectorAll('td');
+                            if (tds.length > 0) {
+                                tds[tds.length - 1].remove();
+                            }
+                        });
+                    });
+                }
+            }
+        }
+
+        printContents += clonedTable.outerHTML;
+        printContents += '</body></html>';
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.open();
+        printWindow.document.write(printContents);
+        printWindow.document.close();
+        
+        // Wait for styles to load then print
+        setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+            // Optional: printWindow.close(); // You can uncomment this if you want it to auto-close after print dialog
+        }, 500);
     }
 </script>
 @endpush
