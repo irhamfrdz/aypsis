@@ -54,6 +54,7 @@
                         <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border">Invoice/Ref</th>
                         <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border">Kapal & Voyage</th>
                         <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border">Jenis Biaya</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider border">Vendor</th>
                         <th scope="col" class="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider border">Nominal</th>
                     </tr>
                 </thead>
@@ -107,10 +108,14 @@
                             </td>
                             <td class="px-4 py-2 text-sm text-gray-900 border">
                                 {{ $biaya->klasifikasiBiaya ? $biaya->klasifikasiBiaya->nama : ($biaya->jenis_biaya ?? '-') }}
+                            </td>
+                            <td class="px-4 py-2 text-sm text-gray-900 border">
                                 @if($biaya->vendor)
-                                    <div class="text-xs text-gray-500">Vendor: {{ $biaya->vendor->nama }}</div>
+                                    {{ $biaya->vendor->nama }}
                                 @elseif($biaya->nama_vendor)
-                                    <div class="text-xs text-gray-500">Vendor: {{ $biaya->nama_vendor }}</div>
+                                    {{ $biaya->nama_vendor }}
+                                @else
+                                    -
                                 @endif
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap text-sm text-right font-medium text-gray-900 border">
@@ -119,7 +124,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center border">
+                            <td colspan="7" class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-center border">
                                 Tidak ada data yang ditemukan.
                             </td>
                         </tr>
@@ -127,7 +132,7 @@
                 </tbody>
                 <tfoot class="bg-gray-100 font-bold">
                     <tr>
-                        <td colspan="5" class="px-4 py-3 text-right text-sm text-gray-900 border">Total Keseluruhan</td>
+                        <td colspan="6" class="px-4 py-3 text-right text-sm text-gray-900 border">Total Keseluruhan</td>
                         <td class="px-4 py-3 text-right text-sm text-purple-700 border">Rp {{ number_format($totalNominal, 0, ',', '.') }}</td>
                     </tr>
                 </tfoot>
