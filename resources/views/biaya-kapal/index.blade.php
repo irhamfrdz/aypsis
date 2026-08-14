@@ -353,6 +353,21 @@
             width: '100%'
         });
 
+        // Initialize Select2 for valuasi modal dropdowns
+        $('#valuasi_jenis_biaya_select').select2({
+            placeholder: "-- Semua Jenis Biaya --",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#valuasi_modal')
+        });
+
+        $('#valuasi_kapal_select').select2({
+            placeholder: "-- Semua Kapal --",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#valuasi_modal')
+        });
+
         // Auto-hide alerts after 5 seconds
         setTimeout(function() {
             const alerts = document.querySelectorAll('.bg-green-50, .bg-red-50');
